@@ -1,7 +1,7 @@
 {
   "source_commit": "a65465138adca914d61d492d940fca015b86c9c6",
   "upstream_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
-  "scan_scope": "Every tracked file at BASE; case-insensitive lexical path/name/stem matches. Binary files excluded from text scan but all tracked src bytes checked by SHA-256. Matches are candidates, not proof of binding. Dynamic family evidence is explained in PROPOSAL.md.",
+  "scan_scope": "Every tracked file at BASE; case-insensitive lexical path/name/stem/source-hash matches. Binary files excluded from text scan but all tracked src Git blobs checked by SHA-256. Matches are candidates, not proof of binding. Dynamic family evidence is explained in PROPOSAL.md.",
   "files": [
     {
       "id": "R001",
@@ -1579,6 +1579,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 9,
           "matched": [
+            "e42a24530869a054eda7462eb3735553c1ec9a28023c95a7e71120f79dc14db9",
             "models/item/models/motor.mtl"
           ],
           "category": "inventory/documentation/test/tool"
@@ -2947,6 +2948,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 1819,
+          "matched": [
+            "e42a24530869a054eda7462eb3735553c1ec9a28023c95a7e71120f79dc14db9"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1274,
           "matched": [
@@ -2968,6 +2977,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 289,
           "matched": [
+            "e42a24530869a054eda7462eb3735553c1ec9a28023c95a7e71120f79dc14db9",
             "models/item/models/motor.mtl"
           ],
           "category": "inventory/documentation/test/tool"
@@ -6411,6 +6421,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 10,
           "matched": [
+            "87b7707e5195bf38a5b1d661daa3c0ff74a1cc83af41d702e37628f81d2a7354",
             "models/item/models/motor.obj"
           ],
           "category": "inventory/documentation/test/tool"
@@ -7788,6 +7799,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 1824,
+          "matched": [
+            "87b7707e5195bf38a5b1d661daa3c0ff74a1cc83af41d702e37628f81d2a7354"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1274,
           "matched": [
@@ -7807,6 +7826,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 290,
           "matched": [
+            "87b7707e5195bf38a5b1d661daa3c0ff74a1cc83af41d702e37628f81d2a7354",
             "models/item/models/motor.obj"
           ],
           "category": "inventory/documentation/test/tool"
@@ -11305,6 +11325,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 11,
           "matched": [
+            "02c727b9eb66fc5ece70576845e38e8d9c03bf176c2e114fa14ab84b4fe07046",
             "models/motor.obj"
           ],
           "category": "inventory/documentation/test/tool"
@@ -12673,6 +12694,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 2103,
+          "matched": [
+            "02c727b9eb66fc5ece70576845e38e8d9c03bf176c2e114fa14ab84b4fe07046"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1274,
           "matched": [
@@ -12684,6 +12713,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 341,
           "matched": [
+            "02c727b9eb66fc5ece70576845e38e8d9c03bf176c2e114fa14ab84b4fe07046",
             "models/motor.obj"
           ],
           "category": "inventory/documentation/test/tool"
@@ -14750,6 +14780,7 @@
           "line": 31,
           "matched": [
             "airHissLoop",
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -14847,6 +14878,7 @@
           "line": 31,
           "matched": [
             "airHissLoop",
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -14936,6 +14968,7 @@
           "line": 31,
           "matched": [
             "airHissLoop",
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15024,6 +15057,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 253,
           "matched": [
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15056,6 +15090,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 12,
           "matched": [
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15101,6 +15136,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 2948,
+          "matched": [
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1375,
           "matched": [
@@ -15113,6 +15156,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 510,
           "matched": [
+            "f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72",
             "sounds/airhissloop.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15403,6 +15447,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 32,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "basicLaserGun",
             "sounds/basiclasergun.ogg"
           ],
@@ -15516,6 +15561,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 32,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "basicLaserGun",
             "sounds/basiclasergun.ogg"
           ],
@@ -15621,6 +15667,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 32,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "basicLaserGun",
             "sounds/basiclasergun.ogg"
           ],
@@ -15702,6 +15749,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 254,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "sounds/basiclasergun.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15734,6 +15782,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 13,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "sounds/basiclasergun.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -15958,6 +16007,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 2953,
+          "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 24537,
           "matched": [
             "basiclasergun"
@@ -16059,6 +16116,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 511,
           "matched": [
+            "00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2",
             "sounds/basiclasergun.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -16460,6 +16518,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 33,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "combustionRocket",
             "sounds/combustionrocket.ogg"
           ],
@@ -16557,6 +16616,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 33,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "combustionRocket",
             "sounds/combustionrocket.ogg"
           ],
@@ -16646,6 +16706,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 33,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "combustionRocket",
             "sounds/combustionrocket.ogg"
           ],
@@ -16719,6 +16780,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 255,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "sounds/combustionrocket.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -16751,6 +16813,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 14,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "sounds/combustionrocket.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -16796,6 +16859,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 2963,
+          "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1378,
           "matched": [
@@ -16808,6 +16879,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 513,
           "matched": [
+            "18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f",
             "sounds/combustionrocket.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -17072,6 +17144,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 34,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "ElectricShockSmall",
             "sounds/electricshocksmall.ogg"
           ],
@@ -17169,6 +17242,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 34,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "ElectricShockSmall",
             "sounds/electricshocksmall.ogg"
           ],
@@ -17258,6 +17332,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 34,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "ElectricShockSmall",
             "sounds/electricshocksmall.ogg"
           ],
@@ -17323,6 +17398,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 256,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "sounds/electricshocksmall.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -17355,6 +17431,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 15,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "sounds/electricshocksmall.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -17416,6 +17493,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3096,
+          "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1373,
           "matched": [
@@ -17428,6 +17513,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 518,
           "matched": [
+            "004051efb25324f970a607de71b02379131027c461625fa160847200880a384b",
             "sounds/electricshocksmall.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -17701,6 +17787,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 35,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "gravityOhhh",
             "sounds/gravityohhh.ogg"
           ],
@@ -17798,6 +17885,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 35,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "gravityOhhh",
             "sounds/gravityohhh.ogg"
           ],
@@ -17887,6 +17975,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 35,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "gravityOhhh",
             "sounds/gravityohhh.ogg"
           ],
@@ -17960,6 +18049,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 257,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "sounds/gravityohhh.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -17992,6 +18082,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 16,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "sounds/gravityohhh.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -18037,6 +18128,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3133,
+          "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1383,
           "matched": [
@@ -18049,6 +18148,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 520,
           "matched": [
+            "0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64",
             "sounds/gravityohhh.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -18433,6 +18533,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 36,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "laserDrill",
             "sounds/laserdrill.ogg"
           ],
@@ -18530,6 +18631,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 36,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "laserDrill",
             "sounds/laserdrill.ogg"
           ],
@@ -18619,6 +18721,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 36,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "laserDrill",
             "sounds/laserdrill.ogg"
           ],
@@ -18668,6 +18771,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 258,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "sounds/laserdrill.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -18700,6 +18804,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 17,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "sounds/laserdrill.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -18745,6 +18850,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3138,
+          "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1384,
           "matched": [
@@ -18757,6 +18870,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 521,
           "matched": [
+            "dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5",
             "sounds/laserdrill.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -20133,6 +20247,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe",
             "sounds/lathe.ogg"
           ],
@@ -20158,6 +20273,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe"
           ],
           "category": "inventory/documentation/test/tool"
@@ -20294,6 +20410,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe",
             "sounds/lathe.ogg"
           ],
@@ -20319,6 +20436,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe"
           ],
           "category": "inventory/documentation/test/tool"
@@ -20415,6 +20533,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe",
             "sounds/lathe.ogg"
           ],
@@ -20440,6 +20559,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe"
           ],
           "category": "inventory/documentation/test/tool"
@@ -20528,6 +20648,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 259,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "lathe",
             "sounds/lathe.ogg"
           ],
@@ -20681,7 +20802,16 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 18,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "sounds/lathe.ogg"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
+          "line": 21,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -22096,6 +22226,22 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3143,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3197,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 3201,
           "matched": [
             "sounds/lathe.ogg"
@@ -22259,7 +22405,16 @@
           "file": "legacy-manifest/assets.csv",
           "line": 522,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "sounds/lathe.ogg"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "legacy-manifest/assets.csv",
+          "line": 526,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -25268,6 +25423,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 38,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "MachineLarge",
             "sounds/machinelarge.ogg"
           ],
@@ -25365,6 +25521,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 38,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "MachineLarge",
             "sounds/machinelarge.ogg"
           ],
@@ -25454,6 +25611,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 38,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "MachineLarge",
             "sounds/machinelarge.ogg"
           ],
@@ -25495,6 +25653,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 260,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "sounds/machinelarge.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -25527,6 +25686,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 19,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "sounds/machinelarge.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -25596,6 +25756,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3155,
+          "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1374,
           "matched": [
@@ -25608,6 +25776,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 523,
           "matched": [
+            "05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1",
             "sounds/machinelarge.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -25905,6 +26074,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 39,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "railgunBang",
             "sounds/railgunbang.ogg"
           ],
@@ -26002,6 +26172,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 39,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "railgunBang",
             "sounds/railgunbang.ogg"
           ],
@@ -26091,6 +26262,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 39,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "railgunBang",
             "sounds/railgunbang.ogg"
           ],
@@ -26116,6 +26288,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 261,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "sounds/railgunbang.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26148,6 +26321,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 20,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "sounds/railgunbang.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26193,6 +26367,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3192,
+          "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1387,
           "matched": [
@@ -26205,6 +26387,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 525,
           "matched": [
+            "5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002",
             "sounds/railgunbang.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26647,6 +26830,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26671,6 +26855,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine",
             "sounds/rollingmachine.ogg"
           ],
@@ -26762,6 +26947,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26786,6 +26972,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine",
             "sounds/rollingmachine.ogg"
           ],
@@ -26869,6 +27056,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 37,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26893,6 +27081,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 40,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "rollingMachine",
             "sounds/rollingmachine.ogg"
           ],
@@ -26927,6 +27116,7 @@
           "file": "docs/work/v1.8.0-c18d-audio/CONTRACT-01.md",
           "line": 259,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "sounds/rollingmachine.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -26957,8 +27147,17 @@
         },
         {
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
+          "line": 18,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 21,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "sounds/rollingmachine.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -27253,6 +27452,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3143,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 3147,
           "matched": [
             "sounds/rollingmachine.ogg"
@@ -27264,6 +27471,14 @@
           "line": 3196,
           "matched": [
             "sounds/rollingmachine.ogg"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3197,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -27422,8 +27637,17 @@
         },
         {
           "file": "legacy-manifest/assets.csv",
+          "line": 522,
+          "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "legacy-manifest/assets.csv",
           "line": 526,
           "matched": [
+            "673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32",
             "sounds/rollingmachine.ogg"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28273,6 +28497,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 554,
+          "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 65,
           "matched": [
@@ -28292,6 +28524,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 41,
           "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1",
             "textures/armor/spacesuit_layer1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28300,6 +28533,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 41,
           "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1",
             "textures/armor/spacesuit_layer1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28308,6 +28542,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 41,
           "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1",
             "textures/armor/spacesuit_layer1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28316,6 +28551,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 22,
           "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1",
             "textures/armor/spacesuit_layer1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28354,6 +28590,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3269,
+          "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 3381,
           "matched": [
             "textures/armor/spacesuit_layer1.png"
@@ -28372,6 +28616,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 529,
           "matched": [
+            "7ac3d475ba451ee266f19b5e701ee91e77023bb84bde75d5af97f83595fdc3a1",
             "textures/armor/spacesuit_layer1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28556,6 +28801,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 562,
+          "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 66,
           "matched": [
@@ -28575,6 +28828,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 42,
           "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3",
             "textures/armor/spacesuit_layer1_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28583,6 +28837,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 42,
           "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3",
             "textures/armor/spacesuit_layer1_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28591,6 +28846,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 42,
           "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3",
             "textures/armor/spacesuit_layer1_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28599,6 +28855,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 23,
           "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3",
             "textures/armor/spacesuit_layer1_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28608,6 +28865,14 @@
           "line": 3310,
           "matched": [
             "textures/armor/spacesuit_layer1_overlay.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3311,
+          "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -28631,6 +28896,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 530,
           "matched": [
+            "b08ac177e1cd4b12e6ffdbb4fe3329bf7ab1f2df394aa434b8b52342efe308d3",
             "textures/armor/spacesuit_layer1_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28848,6 +29114,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 570,
+          "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 67,
           "matched": [
@@ -28875,6 +29149,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 43,
           "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8",
             "textures/armor/spacesuit_layer2_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28883,6 +29158,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 43,
           "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8",
             "textures/armor/spacesuit_layer2_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28891,6 +29167,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 43,
           "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8",
             "textures/armor/spacesuit_layer2_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28899,6 +29176,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 24,
           "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8",
             "textures/armor/spacesuit_layer2_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -28952,9 +29230,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3428,
+          "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 532,
           "matched": [
+            "50cbee4333b2ea9992cb5cd84f6882d85aae9af176e874e7ebdaca9cb346edf8",
             "textures/armor/spacesuit_layer2_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -29297,6 +29584,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 25,
           "matched": [
+            "2e4d6ba0bc4fa1fb2f86ee6bc62456a200a79a4a09c99de6a32ad81f15a721cd",
             "textures/blocks/atmospheredetector.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -29322,6 +29610,14 @@
           "line": 3502,
           "matched": [
             "textures/blocks/atmospheredetector.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3503,
+          "matched": [
+            "2e4d6ba0bc4fa1fb2f86ee6bc62456a200a79a4a09c99de6a32ad81f15a721cd"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -29642,6 +29938,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 533,
           "matched": [
+            "2e4d6ba0bc4fa1fb2f86ee6bc62456a200a79a4a09c99de6a32ad81f15a721cd",
             "textures/blocks/atmospheredetector.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -30048,6 +30345,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 26,
           "matched": [
+            "fe52a855f30b124784f80d3e4a91d7e7acf4aa83d2c7cbdd3bf1cfeeba5b1e7b",
             "textures/blocks/atmospheredetector_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -30073,6 +30371,14 @@
           "line": 3731,
           "matched": [
             "textures/blocks/atmospheredetector_active.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3732,
+          "matched": [
+            "fe52a855f30b124784f80d3e4a91d7e7acf4aa83d2c7cbdd3bf1cfeeba5b1e7b"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -30377,6 +30683,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 534,
           "matched": [
+            "fe52a855f30b124784f80d3e4a91d7e7acf4aa83d2c7cbdd3bf1cfeeba5b1e7b",
             "textures/blocks/atmospheredetector_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -31649,6 +31956,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 27,
           "matched": [
+            "4925a6775061f753c3f140b2247fe718385c98f38e926eae73bcc66c0e346673",
             "textures/blocks/beacon.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -33737,6 +34045,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 3979,
+          "matched": [
+            "4925a6775061f753c3f140b2247fe718385c98f38e926eae73bcc66c0e346673"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 4348,
           "matched": [
             "textures/blocks/beacon.png"
@@ -34205,6 +34521,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 536,
           "matched": [
+            "4925a6775061f753c3f140b2247fe718385c98f38e926eae73bcc66c0e346673",
             "textures/blocks/beacon.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -38297,6 +38614,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 28,
           "matched": [
+            "7eb980646afc6dea9b2110e003384a4b2e13b3245c39f338b4457f6b02c74da1",
             "textures/blocks/controlpanel.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -38346,6 +38664,14 @@
           "line": 4330,
           "matched": [
             "textures/blocks/controlpanel.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 4331,
+          "matched": [
+            "7eb980646afc6dea9b2110e003384a4b2e13b3245c39f338b4457f6b02c74da1"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -38589,6 +38915,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 542,
           "matched": [
+            "7eb980646afc6dea9b2110e003384a4b2e13b3245c39f338b4457f6b02c74da1",
             "textures/blocks/controlpanel.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -39432,6 +39759,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 29,
           "matched": [
+            "ac9f9ac3df4d64846d2f38bf614a4ffd1d203d6729d436347136dafa16f0d499",
             "textures/blocks/crystallizer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -40419,6 +40747,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 4512,
+          "matched": [
+            "ac9f9ac3df4d64846d2f38bf614a4ffd1d203d6729d436347136dafa16f0d499"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 4747,
           "matched": [
             "textures/blocks/crystallizer.png"
@@ -40936,6 +41272,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 544,
           "matched": [
+            "ac9f9ac3df4d64846d2f38bf614a4ffd1d203d6729d436347136dafa16f0d499",
             "textures/blocks/crystallizer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -42695,6 +43032,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 30,
           "matched": [
+            "bbba5be3f386b0c96137098efa6b9b9efc1963ee48d665ed171c1f0d29b7a4ef",
             "textures/blocks/crystallizer_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -42745,6 +43083,14 @@
           "line": 4707,
           "matched": [
             "textures/blocks/crystallizer_active.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 4708,
+          "matched": [
+            "bbba5be3f386b0c96137098efa6b9b9efc1963ee48d665ed171c1f0d29b7a4ef"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -42984,6 +43330,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 545,
           "matched": [
+            "bbba5be3f386b0c96137098efa6b9b9efc1963ee48d665ed171c1f0d29b7a4ef",
             "textures/blocks/crystallizer_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -43745,6 +44092,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 31,
           "matched": [
+            "d4bf7f571d5d386befeae2e571e7ff0be2314829b78b175b35d4948c34f2da32",
             "textures/blocks/cuttingmachine.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -44106,6 +44454,14 @@
           "line": 4914,
           "matched": [
             "textures/blocks/cuttingmachine.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 4915,
+          "matched": [
+            "d4bf7f571d5d386befeae2e571e7ff0be2314829b78b175b35d4948c34f2da32"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -44659,6 +45015,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 546,
           "matched": [
+            "d4bf7f571d5d386befeae2e571e7ff0be2314829b78b175b35d4948c34f2da32",
             "textures/blocks/cuttingmachine.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45401,6 +45758,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 32,
           "matched": [
+            "d15e5f55c7104b73e1200303b4d7a1b51f962157781f6cedd330471fd8632bef",
             "textures/blocks/cuttingmachine_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45490,6 +45848,14 @@
           "line": 5121,
           "matched": [
             "textures/blocks/cuttingmachine_active.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5122,
+          "matched": [
+            "d15e5f55c7104b73e1200303b4d7a1b51f962157781f6cedd330471fd8632bef"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -45677,6 +46043,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 547,
           "matched": [
+            "d15e5f55c7104b73e1200303b4d7a1b51f962157781f6cedd330471fd8632bef",
             "textures/blocks/cuttingmachine_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45831,6 +46198,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 33,
           "matched": [
+            "3f9dfe1ee363bec798fb78dffbafe72a605a75491c9cfc11dc2d21471a5f64b2",
             "textures/blocks/fluid/lava_flow.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45844,9 +46212,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5558,
+          "matched": [
+            "3f9dfe1ee363bec798fb78dffbafe72a605a75491c9cfc11dc2d21471a5f64b2"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 549,
           "matched": [
+            "3f9dfe1ee363bec798fb78dffbafe72a605a75491c9cfc11dc2d21471a5f64b2",
             "textures/blocks/fluid/lava_flow.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45955,6 +46332,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 34,
           "matched": [
+            "2054ec23771561d5c388c5aa16ec87c9690c220c85ffdb28608868ce8c27d14e",
             "textures/blocks/fluid/lava_flow.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -45976,6 +46354,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5577,
+          "matched": [
+            "2054ec23771561d5c388c5aa16ec87c9690c220c85ffdb28608868ce8c27d14e"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 549,
           "matched": [
@@ -45987,6 +46373,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 550,
           "matched": [
+            "2054ec23771561d5c388c5aa16ec87c9690c220c85ffdb28608868ce8c27d14e",
             "textures/blocks/fluid/lava_flow.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46093,6 +46480,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 35,
           "matched": [
+            "bc1d47723ef56effb0690d355db63a64efbf563f7c54229bcc85793cbc05f423",
             "textures/blocks/fluid/lava_still.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46106,9 +46494,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5582,
+          "matched": [
+            "bc1d47723ef56effb0690d355db63a64efbf563f7c54229bcc85793cbc05f423"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 551,
           "matched": [
+            "bc1d47723ef56effb0690d355db63a64efbf563f7c54229bcc85793cbc05f423",
             "textures/blocks/fluid/lava_still.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46217,6 +46614,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 36,
           "matched": [
+            "966ddb55dae4ac5960610f1732f0ac36e4952ac95c34f5798413c9cdb60de7f3",
             "textures/blocks/fluid/lava_still.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46238,6 +46636,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5601,
+          "matched": [
+            "966ddb55dae4ac5960610f1732f0ac36e4952ac95c34f5798413c9cdb60de7f3"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 551,
           "matched": [
@@ -46249,6 +46655,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 552,
           "matched": [
+            "966ddb55dae4ac5960610f1732f0ac36e4952ac95c34f5798413c9cdb60de7f3",
             "textures/blocks/fluid/lava_still.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46456,6 +46863,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 37,
           "matched": [
+            "e3e8741da6ff8915903b873bd0871a016ff467170bdd25551c1020e2ba32f49c",
             "textures/blocks/forcefield.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -46798,6 +47206,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5654,
+          "matched": [
+            "e3e8741da6ff8915903b873bd0871a016ff467170bdd25551c1020e2ba32f49c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 355,
           "matched": [
@@ -46835,6 +47251,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 557,
           "matched": [
+            "e3e8741da6ff8915903b873bd0871a016ff467170bdd25551c1020e2ba32f49c",
             "textures/blocks/forcefield.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -47629,6 +48046,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 38,
           "matched": [
+            "a148f3e86c9bf40ad4587ee1f11d23b6296875a678a09a48e309371de00a8be0",
             "textures/blocks/forcefield.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -47979,6 +48397,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5672,
+          "matched": [
+            "a148f3e86c9bf40ad4587ee1f11d23b6296875a678a09a48e309371de00a8be0"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 355,
           "matched": [
@@ -48024,6 +48450,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 558,
           "matched": [
+            "a148f3e86c9bf40ad4587ee1f11d23b6296875a678a09a48e309371de00a8be0",
             "textures/blocks/forcefield.png.mcmeta"
           ],
           "category": "inventory/documentation/test/tool"
@@ -49042,6 +49469,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 39,
           "matched": [
+            "f4198630712704b190f8dcc53608e21559d99d7116c42921cd4d19b947021179",
             "textures/blocks/forcefieldprojector.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -49203,6 +49631,14 @@
           "line": 5676,
           "matched": [
             "textures/blocks/forcefieldprojector.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5677,
+          "matched": [
+            "f4198630712704b190f8dcc53608e21559d99d7116c42921cd4d19b947021179"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -49602,6 +50038,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 559,
           "matched": [
+            "f4198630712704b190f8dcc53608e21559d99d7116c42921cd4d19b947021179",
             "textures/blocks/forcefieldprojector.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -50147,6 +50584,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 40,
           "matched": [
+            "f89cd2544369d59224bf0682af8d0a62e1ff6969b2cae5cf9f55a9fce9a20998",
             "textures/blocks/forcefieldprojector_off.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -50220,6 +50658,14 @@
           "line": 5905,
           "matched": [
             "textures/blocks/forcefieldprojector_off.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 5906,
+          "matched": [
+            "f89cd2544369d59224bf0682af8d0a62e1ff6969b2cae5cf9f55a9fce9a20998"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -50521,6 +50967,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 560,
           "matched": [
+            "f89cd2544369d59224bf0682af8d0a62e1ff6969b2cae5cf9f55a9fce9a20998",
             "textures/blocks/forcefieldprojector_off.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -50779,6 +51226,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 41,
           "matched": [
+            "714ffea57623c2481b91575f2d236727c527cc13cc41ba5bf12cf4cdc494030c",
             "textures/blocks/forcefieldprojectorfront.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -50796,6 +51244,14 @@
           "line": 6134,
           "matched": [
             "textures/blocks/forcefieldprojectorfront.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 6135,
+          "matched": [
+            "714ffea57623c2481b91575f2d236727c527cc13cc41ba5bf12cf4cdc494030c"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -50860,6 +51316,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 561,
           "matched": [
+            "714ffea57623c2481b91575f2d236727c527cc13cc41ba5bf12cf4cdc494030c",
             "textures/blocks/forcefieldprojectorfront.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -51068,6 +51525,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 42,
           "matched": [
+            "6c01999e420211d1dcf1dd8f8a0a52560adf92c3ade9916ccd6abaf258a21b80",
             "textures/blocks/fuelingmachine.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -51173,6 +51631,14 @@
           "line": 6188,
           "matched": [
             "textures/blocks/fuelingmachine.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 6189,
+          "matched": [
+            "6c01999e420211d1dcf1dd8f8a0a52560adf92c3ade9916ccd6abaf258a21b80"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -51358,6 +51824,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 562,
           "matched": [
+            "6c01999e420211d1dcf1dd8f8a0a52560adf92c3ade9916ccd6abaf258a21b80",
             "textures/blocks/fuelingmachine.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -51709,6 +52176,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 43,
           "matched": [
+            "36e2001bcfd5a31770c8e156e1ce58d59027f669ea812fd56c7f4810dcd82c58",
             "textures/blocks/gaschargertop.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -51806,6 +52274,14 @@
           "line": 6274,
           "matched": [
             "textures/blocks/gaschargertop.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 6275,
+          "matched": [
+            "36e2001bcfd5a31770c8e156e1ce58d59027f669ea812fd56c7f4810dcd82c58"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -52046,6 +52522,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 563,
           "matched": [
+            "36e2001bcfd5a31770c8e156e1ce58d59027f669ea812fd56c7f4810dcd82c58",
             "textures/blocks/gaschargertop.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -52246,6 +52723,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 44,
           "matched": [
+            "479bc4d9a880d14291b487ed9b28c5920a02b475922f749a3b873b633f6753bd",
             "textures/blocks/guidancecomputer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -52439,6 +52917,14 @@
           "line": 6539,
           "matched": [
             "textures/blocks/guidancecomputer.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 6540,
+          "matched": [
+            "479bc4d9a880d14291b487ed9b28c5920a02b475922f749a3b873b633f6753bd"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -52707,6 +53193,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 566,
           "matched": [
+            "479bc4d9a880d14291b487ed9b28c5920a02b475922f749a3b873b633f6753bd",
             "textures/blocks/guidancecomputer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -53425,6 +53912,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 45,
           "matched": [
+            "8cfe6f83c26c71ec8fe134560570145c3c3cc3b8f44f12def5ca08e5a19b2400",
             "textures/blocks/guidancecomputeraccesshatch.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -53562,6 +54050,14 @@
           "line": 6625,
           "matched": [
             "textures/blocks/guidancecomputeraccesshatch.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 6626,
+          "matched": [
+            "8cfe6f83c26c71ec8fe134560570145c3c3cc3b8f44f12def5ca08e5a19b2400"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -53911,6 +54407,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 567,
           "matched": [
+            "8cfe6f83c26c71ec8fe134560570145c3c3cc3b8f44f12def5ca08e5a19b2400",
             "textures/blocks/guidancecomputeraccesshatch.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -54350,6 +54847,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 50,
           "matched": [
+            "ebcf3d56473362fb564df1440385cb9c53b7d26bbc6e8c6c456b8e966b361fbe",
             "textures/blocks/machinegeneric.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -54535,6 +55033,14 @@
           "line": 8190,
           "matched": [
             "textures/blocks/machinegeneric.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 8191,
+          "matched": [
+            "ebcf3d56473362fb564df1440385cb9c53b7d26bbc6e8c6c456b8e966b361fbe"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -55313,6 +55819,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 583,
           "matched": [
+            "ebcf3d56473362fb564df1440385cb9c53b7d26bbc6e8c6c456b8e966b361fbe",
             "textures/blocks/machinegeneric.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -56924,6 +57431,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 51,
           "matched": [
+            "4c3e58810060d76b297e103392a8f3a87a8a2ec53dde43917fe5f41f66ebfad2",
             "textures/blocks/machinenuclear.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -57098,6 +57606,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 8420,
+          "matched": [
+            "4c3e58810060d76b297e103392a8f3a87a8a2ec53dde43917fe5f41f66ebfad2"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 8776,
           "matched": [
             "textures/blocks/machinenuclear.png"
@@ -57262,6 +57778,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 584,
           "matched": [
+            "4c3e58810060d76b297e103392a8f3a87a8a2ec53dde43917fe5f41f66ebfad2",
             "textures/blocks/machinenuclear.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -57614,6 +58131,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 52,
           "matched": [
+            "e0fbe894ccb04ffc5e42257b8566000986d5444446081c2f42c80eda51e02c5e",
             "textures/blocks/machineorientationcontrol.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -57804,6 +58322,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 8649,
+          "matched": [
+            "e0fbe894ccb04ffc5e42257b8566000986d5444446081c2f42c80eda51e02c5e"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 9201,
           "matched": [
             "textures/blocks/machineorientationcontrol.png"
@@ -57988,6 +58514,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 585,
           "matched": [
+            "e0fbe894ccb04ffc5e42257b8566000986d5444446081c2f42c80eda51e02c5e",
             "textures/blocks/machineorientationcontrol.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -58382,6 +58909,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 53,
           "matched": [
+            "079d0773a6718a705c4d80e7ed65c100d9c98b144b060cb634d5809024c687e1",
             "textures/blocks/machineprecisionlaseretcher.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -58548,6 +59076,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 8878,
+          "matched": [
+            "079d0773a6718a705c4d80e7ed65c100d9c98b144b060cb634d5809024c687e1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 11510,
           "matched": [
             "textures/blocks/machineprecisionlaseretcher.png"
@@ -58623,6 +59159,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 586,
           "matched": [
+            "079d0773a6718a705c4d80e7ed65c100d9c98b144b060cb634d5809024c687e1",
             "textures/blocks/machineprecisionlaseretcher.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -58957,6 +59494,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 54,
           "matched": [
+            "2e25be8a1e92df5c36ad80602d01e6368c2f846c8afc04ce6cd31ee463d02b8c",
             "textures/blocks/machinescrubber.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -59163,6 +59701,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 9063,
+          "matched": [
+            "2e25be8a1e92df5c36ad80602d01e6368c2f846c8afc04ce6cd31ee463d02b8c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 9441,
           "matched": [
             "textures/blocks/machinescrubber.png"
@@ -59286,6 +59832,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 587,
           "matched": [
+            "2e25be8a1e92df5c36ad80602d01e6368c2f846c8afc04ce6cd31ee463d02b8c",
             "textures/blocks/machinescrubber.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -59620,6 +60167,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 55,
           "matched": [
+            "fa1df5bc75f9de59963c68f33b778d7039169a666bdcc0e4b8410dcf32642ace",
             "textures/blocks/machinescrubber_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -59842,6 +60390,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 9292,
+          "matched": [
+            "fa1df5bc75f9de59963c68f33b778d7039169a666bdcc0e4b8410dcf32642ace"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 9712,
           "matched": [
             "textures/blocks/machinescrubber_active.png"
@@ -59976,6 +60532,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 588,
           "matched": [
+            "fa1df5bc75f9de59963c68f33b778d7039169a666bdcc0e4b8410dcf32642ace",
             "textures/blocks/machinescrubber_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60227,6 +60784,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 56,
           "matched": [
+            "b3d52d7d3e80d1439050b2bcab238bb93d997e14d3ac0653e980c77989be0eef",
             "textures/blocks/monitorfront.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60401,6 +60959,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10010,
+          "matched": [
+            "b3d52d7d3e80d1439050b2bcab238bb93d997e14d3ac0653e980c77989be0eef"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 11532,
           "matched": [
             "textures/blocks/monitorfront.png"
@@ -60494,6 +61060,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 592,
           "matched": [
+            "b3d52d7d3e80d1439050b2bcab238bb93d997e14d3ac0653e980c77989be0eef",
             "textures/blocks/monitorfront.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60663,6 +61230,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 57,
           "matched": [
+            "19e623d2e4567af5bcfe12861dafd2f5a8be4e8d9667940f685d9b248d6469bb",
             "textures/blocks/monitorfrontleft.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60672,6 +61240,14 @@
           "line": 10107,
           "matched": [
             "textures/blocks/monitorfrontleft.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10108,
+          "matched": [
+            "19e623d2e4567af5bcfe12861dafd2f5a8be4e8d9667940f685d9b248d6469bb"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -60791,6 +61367,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 593,
           "matched": [
+            "19e623d2e4567af5bcfe12861dafd2f5a8be4e8d9667940f685d9b248d6469bb",
             "textures/blocks/monitorfrontleft.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60910,6 +61487,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 58,
           "matched": [
+            "6bb19da207cc674e0910fd02c51d71328cc9a5d22e141e01e55c1b96c26937ea",
             "textures/blocks/monitorfrontmid.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -60935,6 +61513,14 @@
           "line": 10139,
           "matched": [
             "textures/blocks/monitorfrontmid.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10140,
+          "matched": [
+            "6bb19da207cc674e0910fd02c51d71328cc9a5d22e141e01e55c1b96c26937ea"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -61065,6 +61651,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 594,
           "matched": [
+            "6bb19da207cc674e0910fd02c51d71328cc9a5d22e141e01e55c1b96c26937ea",
             "textures/blocks/monitorfrontmid.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61315,6 +61902,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 59,
           "matched": [
+            "a2abac551720b4ad5dddfebae07ce2842045e4a40a9ef9ca9becfc8ef101bfa4",
             "textures/blocks/monitorfrontright.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61348,6 +61936,14 @@
           "line": 10171,
           "matched": [
             "textures/blocks/monitorfrontright.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10172,
+          "matched": [
+            "a2abac551720b4ad5dddfebae07ce2842045e4a40a9ef9ca9becfc8ef101bfa4"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -61435,6 +62031,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 595,
           "matched": [
+            "a2abac551720b4ad5dddfebae07ce2842045e4a40a9ef9ca9becfc8ef101bfa4",
             "textures/blocks/monitorfrontright.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61619,6 +62216,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 60,
           "matched": [
+            "e1a0f069df62789df89fcf3291b96fedee10636a08a9774c98de93d1d92a9230",
             "textures/blocks/monitormoon.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61628,6 +62226,14 @@
           "line": 10268,
           "matched": [
             "textures/blocks/monitormoon.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10269,
+          "matched": [
+            "e1a0f069df62789df89fcf3291b96fedee10636a08a9774c98de93d1d92a9230"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -61699,6 +62305,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 596,
           "matched": [
+            "e1a0f069df62789df89fcf3291b96fedee10636a08a9774c98de93d1d92a9230",
             "textures/blocks/monitormoon.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61883,6 +62490,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 61,
           "matched": [
+            "33c861c8ef6dc02dfc99e32959e2e1a8e88413d2fa81cc1e2d1745562187fe90",
             "textures/blocks/monitorplanet.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -61924,6 +62532,14 @@
           "line": 10365,
           "matched": [
             "textures/blocks/monitorplanet.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10366,
+          "matched": [
+            "33c861c8ef6dc02dfc99e32959e2e1a8e88413d2fa81cc1e2d1745562187fe90"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -61988,6 +62604,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 597,
           "matched": [
+            "33c861c8ef6dc02dfc99e32959e2e1a8e88413d2fa81cc1e2d1745562187fe90",
             "textures/blocks/monitorplanet.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62190,6 +62807,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 62,
           "matched": [
+            "08c8f8b1c80b6202b1edd0a86baf7dfd1fb3acaf79806d4db924cc319f196f82",
             "textures/blocks/monitorplanet_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62247,6 +62865,14 @@
           "line": 10462,
           "matched": [
             "textures/blocks/monitorplanet_active.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10463,
+          "matched": [
+            "08c8f8b1c80b6202b1edd0a86baf7dfd1fb3acaf79806d4db924cc319f196f82"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -62322,6 +62948,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 598,
           "matched": [
+            "08c8f8b1c80b6202b1edd0a86baf7dfd1fb3acaf79806d4db924cc319f196f82",
             "textures/blocks/monitorplanet_active.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62493,6 +63120,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 63,
           "matched": [
+            "2cdebf9f65bf5881a20af480b21a71e3cb8623b7aa8afd2dadac5bee7e0f2f65",
             "textures/blocks/monitorrear.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62546,9 +63174,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10560,
+          "matched": [
+            "2cdebf9f65bf5881a20af480b21a71e3cb8623b7aa8afd2dadac5bee7e0f2f65"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 599,
           "matched": [
+            "2cdebf9f65bf5881a20af480b21a71e3cb8623b7aa8afd2dadac5bee7e0f2f65",
             "textures/blocks/monitorrear.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62768,6 +63405,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 64,
           "matched": [
+            "a962906ee9ea08e472a935669a5d8104cf0022e3ad4529d654204fd177dd9923",
             "textures/blocks/monitorrocket.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -62854,6 +63492,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10578,
+          "matched": [
+            "a962906ee9ea08e472a935669a5d8104cf0022e3ad4529d654204fd177dd9923"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 10769,
           "matched": [
             "textures/blocks/monitorrocket.png"
@@ -62881,6 +63527,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 600,
           "matched": [
+            "a962906ee9ea08e472a935669a5d8104cf0022e3ad4529d654204fd177dd9923",
             "textures/blocks/monitorrocket.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63094,6 +63741,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 65,
           "matched": [
+            "cf3ffbe147c7dcad7ea847701ef841aae8afb84442f4211636425580e8839e2b",
             "textures/blocks/monitorsatellite.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63195,6 +63843,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10686,
+          "matched": [
+            "cf3ffbe147c7dcad7ea847701ef841aae8afb84442f4211636425580e8839e2b"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 782,
           "matched": [
@@ -63207,6 +63863,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 601,
           "matched": [
+            "cf3ffbe147c7dcad7ea847701ef841aae8afb84442f4211636425580e8839e2b",
             "textures/blocks/monitorsatellite.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63330,6 +63987,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 66,
           "matched": [
+            "4ed301657f3cd4912136881b8c10cc9ea83fbfa1e078331a4ca2b64ddc73aa7f",
             "textures/blocks/monitorside.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63359,6 +64017,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10794,
+          "matched": [
+            "4ed301657f3cd4912136881b8c10cc9ea83fbfa1e078331a4ca2b64ddc73aa7f"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 866,
           "matched": [
@@ -63371,6 +64037,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 602,
           "matched": [
+            "4ed301657f3cd4912136881b8c10cc9ea83fbfa1e078331a4ca2b64ddc73aa7f",
             "textures/blocks/monitorside.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63517,6 +64184,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 67,
           "matched": [
+            "35feccca5bbfc540f65800fa3115e814d3f5fa8329cccaa115e33555b5803613",
             "textures/blocks/panelside.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63542,6 +64210,14 @@
           "line": 10933,
           "matched": [
             "textures/blocks/panelside.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10934,
+          "matched": [
+            "35feccca5bbfc540f65800fa3115e814d3f5fa8329cccaa115e33555b5803613"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -63655,6 +64331,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 607,
           "matched": [
+            "35feccca5bbfc540f65800fa3115e814d3f5fa8329cccaa115e33555b5803613",
             "textures/blocks/panelside.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -63997,6 +64674,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 68,
           "matched": [
+            "50f6566c68a33131b8f52a9e3d02c2188ed88584a777e5bb7ad902292c2cd779",
             "textures/blocks/panelsideworkstation.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -64042,6 +64720,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 10965,
+          "matched": [
+            "50f6566c68a33131b8f52a9e3d02c2188ed88584a777e5bb7ad902292c2cd779"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 900,
           "matched": [
@@ -64063,6 +64749,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 608,
           "matched": [
+            "50f6566c68a33131b8f52a9e3d02c2188ed88584a777e5bb7ad902292c2cd779",
             "textures/blocks/panelsideworkstation.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -64227,6 +64914,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 71,
           "matched": [
+            "a78ce54a602e590db4babf78f3e71585a31cf34cd8314a69ba5cb7cc87ef3c6f",
             "textures/blocks/qcrucible_top.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -64236,6 +64924,14 @@
           "line": 12299,
           "matched": [
             "textures/blocks/qcrucible_top.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 12300,
+          "matched": [
+            "a78ce54a602e590db4babf78f3e71585a31cf34cd8314a69ba5cb7cc87ef3c6f"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -64261,6 +64957,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 624,
           "matched": [
+            "a78ce54a602e590db4babf78f3e71585a31cf34cd8314a69ba5cb7cc87ef3c6f",
             "textures/blocks/qcrucible_top.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -64423,6 +65120,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 74,
           "matched": [
+            "eb014fc79c1de0e9c74cf8d4c1cf855efd75f45f97b0bec72b71801726d92105",
             "textures/blocks/satellitebay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -64492,6 +65190,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 15734,
+          "matched": [
+            "eb014fc79c1de0e9c74cf8d4c1cf855efd75f45f97b0bec72b71801726d92105"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 887,
           "matched": [
@@ -64521,6 +65227,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 644,
           "matched": [
+            "eb014fc79c1de0e9c74cf8d4c1cf855efd75f45f97b0bec72b71801726d92105",
             "textures/blocks/satellitebay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -67154,6 +67861,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 75,
           "matched": [
+            "8fe4afc846bc66bee33a77a339f8aef04bf94c0153ebce04523998ab52e9f0c0",
             "textures/blocks/seal.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -68336,6 +69044,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 15765,
+          "matched": [
+            "8fe4afc846bc66bee33a77a339f8aef04bf94c0153ebce04523998ab52e9f0c0"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 618,
           "matched": [
@@ -68348,6 +69064,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 645,
           "matched": [
+            "8fe4afc846bc66bee33a77a339f8aef04bf94c0153ebce04523998ab52e9f0c0",
             "textures/blocks/seal.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -72305,6 +73022,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 76,
           "matched": [
+            "00cc30b275c27d07cc892b5067afb1d810e57208cfa52d4c2b181f0cb3dd43b3",
             "textures/blocks/solar.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -74676,6 +75394,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 15865,
+          "matched": [
+            "00cc30b275c27d07cc892b5067afb1d810e57208cfa52d4c2b181f0cb3dd43b3"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 503,
           "matched": [
@@ -74733,6 +75459,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 649,
           "matched": [
+            "00cc30b275c27d07cc892b5067afb1d810e57208cfa52d4c2b181f0cb3dd43b3",
             "textures/blocks/solar.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -80243,6 +80970,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 77,
           "matched": [
+            "c0b2ce6ff6f2c62b7083149d5f5278eace653bd980ae28d622ea8e3fd525461e",
             "textures/blocks/starshipcontrolpanel.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -80609,6 +81337,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 15883,
+          "matched": [
+            "c0b2ce6ff6f2c62b7083149d5f5278eace653bd980ae28d622ea8e3fd525461e"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 19153,
           "matched": [
             "textures/blocks/starshipcontrolpanel.png"
@@ -80636,6 +81372,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 650,
           "matched": [
+            "c0b2ce6ff6f2c62b7083149d5f5278eace653bd980ae28d622ea8e3fd525461e",
             "textures/blocks/starshipcontrolpanel.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -80839,6 +81576,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 81,
           "matched": [
+            "ef0f9a649feb473f255910328edc33b42a468683942511584249904a6d725dc3",
             "textures/gui/buttons/buttonautoeject.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -80864,6 +81602,14 @@
           "line": 19664,
           "matched": [
             "textures/gui/buttons/buttonautoeject.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 19665,
+          "matched": [
+            "ef0f9a649feb473f255910328edc33b42a468683942511584249904a6d725dc3"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -81047,6 +81793,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 690,
           "matched": [
+            "ef0f9a649feb473f255910328edc33b42a468683942511584249904a6d725dc3",
             "textures/gui/buttons/buttonautoeject.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81291,6 +82038,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 82,
           "matched": [
+            "623c4f4be6533a4922c10656a835a7d65ef320db803408768534d98b96fb3ef4",
             "textures/gui/buttons/buttonautoeject_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81308,6 +82056,14 @@
           "line": 19729,
           "matched": [
             "textures/gui/buttons/buttonautoeject_hover.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 19730,
+          "matched": [
+            "623c4f4be6533a4922c10656a835a7d65ef320db803408768534d98b96fb3ef4"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -81331,6 +82087,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 691,
           "matched": [
+            "623c4f4be6533a4922c10656a835a7d65ef320db803408768534d98b96fb3ef4",
             "textures/gui/buttons/buttonautoeject_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81501,6 +82258,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 83,
           "matched": [
+            "d580e60740446f114397b1a2f5a041cac75114d0fe37b8247918228e1b3ede31",
             "textures/gui/buttons/buttonautoeject_pressed.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81538,9 +82296,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 19794,
+          "matched": [
+            "d580e60740446f114397b1a2f5a041cac75114d0fe37b8247918228e1b3ede31"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 692,
           "matched": [
+            "d580e60740446f114397b1a2f5a041cac75114d0fe37b8247918228e1b3ede31",
             "textures/gui/buttons/buttonautoeject_pressed.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81757,6 +82524,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 84,
           "matched": [
+            "539bf7906d7771ef3026372dada4b24fbc4e67ad5c07c0929c41617fb9b5bc2f",
             "textures/gui/buttons/buttonredstoneinverted.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -81766,6 +82534,14 @@
           "line": 19951,
           "matched": [
             "textures/gui/buttons/buttonredstoneinverted.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 19952,
+          "matched": [
+            "539bf7906d7771ef3026372dada4b24fbc4e67ad5c07c0929c41617fb9b5bc2f"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -82013,6 +82789,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 695,
           "matched": [
+            "539bf7906d7771ef3026372dada4b24fbc4e67ad5c07c0929c41617fb9b5bc2f",
             "textures/gui/buttons/buttonredstoneinverted.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -92038,6 +92815,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 85,
           "matched": [
+            "8c81936c66bc7189c03da6b16887c3b4dffad3a445035a3464f51ca9de3637e1",
             "textures/gui/buttons/copy.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -100454,6 +101232,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 20038,
+          "matched": [
+            "8c81936c66bc7189c03da6b16887c3b4dffad3a445035a3464f51ca9de3637e1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 20174,
           "matched": [
             "textures/gui/buttons/copy.png"
@@ -100728,6 +101514,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 696,
           "matched": [
+            "8c81936c66bc7189c03da6b16887c3b4dffad3a445035a3464f51ca9de3637e1",
             "textures/gui/buttons/copy.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -128337,6 +129124,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 86,
           "matched": [
+            "c1ae695286d01271e19b291e57f827cce6e39ab6f84b217578350f0ad6dd6e7b",
             "textures/gui/buttons/copy_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -128378,6 +129166,14 @@
           "line": 20134,
           "matched": [
             "textures/gui/buttons/copy_hover.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 20135,
+          "matched": [
+            "c1ae695286d01271e19b291e57f827cce6e39ab6f84b217578350f0ad6dd6e7b"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -128561,6 +129357,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 697,
           "matched": [
+            "c1ae695286d01271e19b291e57f827cce6e39ab6f84b217578350f0ad6dd6e7b",
             "textures/gui/buttons/copy_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -131473,6 +132270,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 87,
           "matched": [
+            "b1c5ffcb77a9fcefa9133be62e311c5cbb835340523e9f30394fa0ce2a4dac70",
             "textures/gui/buttons/kill.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -132919,6 +133717,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 20232,
+          "matched": [
+            "b1c5ffcb77a9fcefa9133be62e311c5cbb835340523e9f30394fa0ce2a4dac70"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 20379,
           "matched": [
             "textures/gui/buttons/kill.png"
@@ -133113,6 +133919,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 698,
           "matched": [
+            "b1c5ffcb77a9fcefa9133be62e311c5cbb835340523e9f30394fa0ce2a4dac70",
             "textures/gui/buttons/kill.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -135161,6 +135968,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 88,
           "matched": [
+            "b3ca8f09ae2a56f4c28955567281021a5666131e158899b5d4e648067826d07f",
             "textures/gui/buttons/kill_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -135234,6 +136042,14 @@
           "line": 20317,
           "matched": [
             "textures/gui/buttons/kill_hover.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 20318,
+          "matched": [
+            "b3ca8f09ae2a56f4c28955567281021a5666131e158899b5d4e648067826d07f"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -135417,6 +136233,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 699,
           "matched": [
+            "b3ca8f09ae2a56f4c28955567281021a5666131e158899b5d4e648067826d07f",
             "textures/gui/buttons/kill_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -135730,6 +136547,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 89,
           "matched": [
+            "fa4dbafc139c1bb29e09460e82485614042c88b4a080ea6ae10566603d4b8431",
             "textures/gui/buttons/tabdata.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -135888,6 +136706,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 20818,
+          "matched": [
+            "fa4dbafc139c1bb29e09460e82485614042c88b4a080ea6ae10566603d4b8431"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 21141,
           "matched": [
             "textures/gui/buttons/tabdata.png"
@@ -136018,6 +136844,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 702,
           "matched": [
+            "fa4dbafc139c1bb29e09460e82485614042c88b4a080ea6ae10566603d4b8431",
             "textures/gui/buttons/tabdata.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -136373,6 +137200,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 90,
           "matched": [
+            "ca38c3377f3355c543e2f06d1ac892168ab0a6f6361c5d7c310ed65b022f909c",
             "textures/gui/buttons/tabdata_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -136539,6 +137367,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 21025,
+          "matched": [
+            "ca38c3377f3355c543e2f06d1ac892168ab0a6f6361c5d7c310ed65b022f909c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 21359,
           "matched": [
             "textures/gui/buttons/tabdata_hover.png"
@@ -136653,6 +137489,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 703,
           "matched": [
+            "ca38c3377f3355c543e2f06d1ac892168ab0a6f6361c5d7c310ed65b022f909c",
             "textures/gui/buttons/tabdata_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -136966,6 +137803,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 91,
           "matched": [
+            "7d80ef35a7f6115e7662172548b568ee1f0a8780a11a05c73f3dc88078dd4e3c",
             "textures/gui/buttons/tabguidance.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -137055,6 +137893,14 @@
           "line": 21231,
           "matched": [
             "textures/gui/buttons/tabguidance.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 21232,
+          "matched": [
+            "7d80ef35a7f6115e7662172548b568ee1f0a8780a11a05c73f3dc88078dd4e3c"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -137158,6 +138004,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 704,
           "matched": [
+            "7d80ef35a7f6115e7662172548b568ee1f0a8780a11a05c73f3dc88078dd4e3c",
             "textures/gui/buttons/tabguidance.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -137471,6 +138318,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 92,
           "matched": [
+            "6d4b9503f33afd391f40e7b5f4c22a25ba9f7e22a8b6b794cf542996033047c1",
             "textures/gui/buttons/tabguidance_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -137573,6 +138421,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 21439,
+          "matched": [
+            "6d4b9503f33afd391f40e7b5f4c22a25ba9f7e22a8b6b794cf542996033047c1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 21795,
           "matched": [
             "textures/gui/buttons/tabguidance_hover.png"
@@ -137655,6 +138511,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 705,
           "matched": [
+            "6d4b9503f33afd391f40e7b5f4c22a25ba9f7e22a8b6b794cf542996033047c1",
             "textures/gui/buttons/tabguidance_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -137987,6 +138844,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 93,
           "matched": [
+            "0aff01d6c190e70c2ac712c04a9f89c011519cab9c260389d9fac0b0f50523d6",
             "textures/gui/buttons/tabplanet.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -138105,6 +138963,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 21646,
+          "matched": [
+            "0aff01d6c190e70c2ac712c04a9f89c011519cab9c260389d9fac0b0f50523d6"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 22013,
           "matched": [
             "textures/gui/buttons/tabplanet.png"
@@ -138171,6 +139037,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 706,
           "matched": [
+            "0aff01d6c190e70c2ac712c04a9f89c011519cab9c260389d9fac0b0f50523d6",
             "textures/gui/buttons/tabplanet.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -138505,6 +139372,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 94,
           "matched": [
+            "991d7b0212fc3dccc40776aebf7ea79550edb9e2b925d0c25f5adc0c63cdb23b",
             "textures/gui/buttons/tabplanet_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -138647,6 +139515,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 21853,
+          "matched": [
+            "991d7b0212fc3dccc40776aebf7ea79550edb9e2b925d0c25f5adc0c63cdb23b"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 22232,
           "matched": [
             "textures/gui/buttons/tabplanet_hover.png"
@@ -138697,6 +139573,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 707,
           "matched": [
+            "991d7b0212fc3dccc40776aebf7ea79550edb9e2b925d0c25f5adc0c63cdb23b",
             "textures/gui/buttons/tabplanet_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -139018,6 +139895,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 95,
           "matched": [
+            "80523778f556ea8971b1e339690bb00fc9c86554e501d4baec5d4c187604b4d0",
             "textures/gui/buttons/tabwarp.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -139216,6 +140094,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 22290,
+          "matched": [
+            "80523778f556ea8971b1e339690bb00fc9c86554e501d4baec5d4c187604b4d0"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 22668,
           "matched": [
             "textures/gui/buttons/tabwarp.png"
@@ -139234,6 +140120,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 709,
           "matched": [
+            "80523778f556ea8971b1e339690bb00fc9c86554e501d4baec5d4c187604b4d0",
             "textures/gui/buttons/tabwarp.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -139581,6 +140468,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 96,
           "matched": [
+            "8c2f7575e84c4fcadd763a9679063e31edf80ea17c36f99e279d14f3ba6c89cd",
             "textures/gui/buttons/tabwarp_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -139762,9 +140650,18 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 22486,
+          "matched": [
+            "8c2f7575e84c4fcadd763a9679063e31edf80ea17c36f99e279d14f3ba6c89cd"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/assets.csv",
           "line": 710,
           "matched": [
+            "8c2f7575e84c4fcadd763a9679063e31edf80ea17c36f99e279d14f3ba6c89cd",
             "textures/gui/buttons/tabwarp_hover.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -143868,6 +144765,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 98,
           "matched": [
+            "88c971a06bf2c4712e5640b834be1a82633e87e6372859d2c68a52882cc742f4",
             "textures/gui/warning.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -146122,6 +147020,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24114,
+          "matched": [
+            "88c971a06bf2c4712e5640b834be1a82633e87e6372859d2c68a52882cc742f4"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "docs/work/v1.8.0-w246-flat-textures/VERIFICATION.md",
           "line": 33,
           "matched": [
@@ -146165,6 +147071,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 740,
           "matched": [
+            "88c971a06bf2c4712e5640b834be1a82633e87e6372859d2c68a52882cc742f4",
             "textures/gui/warning.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -147737,6 +148644,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 100,
           "matched": [
+            "2eaaea45656663d6c2a1f7124d60d88b80f82664b922fb29670adbde442c06e2",
             "textures/items/antifogvisor.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -147778,6 +148686,14 @@
           "line": 24315,
           "matched": [
             "textures/items/antifogvisor.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24316,
+          "matched": [
+            "2eaaea45656663d6c2a1f7124d60d88b80f82664b922fb29670adbde442c06e2"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -147851,6 +148767,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 745,
           "matched": [
+            "2eaaea45656663d6c2a1f7124d60d88b80f82664b922fb29670adbde442c06e2",
             "textures/items/antifogvisor.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148023,6 +148940,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 101,
           "matched": [
+            "d5f04ceff835ad42a8af8fb4581eb1bf0e46c3750c470dd04d292d7370270be4",
             "textures/items/atmanalyzer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148032,6 +148950,14 @@
           "line": 24411,
           "matched": [
             "textures/items/atmanalyzer.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24412,
+          "matched": [
+            "d5f04ceff835ad42a8af8fb4581eb1bf0e46c3750c470dd04d292d7370270be4"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -148064,6 +148990,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 747,
           "matched": [
+            "d5f04ceff835ad42a8af8fb4581eb1bf0e46c3750c470dd04d292d7370270be4",
             "textures/items/atmanalyzer.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148294,6 +149221,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 103,
           "matched": [
+            "a19f794dd32c3904c00f346bd248f8efb65de7d76b39da43e71c90c2edd628e7",
             "textures/items/beaconfinder.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148412,6 +149340,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24636,
+          "matched": [
+            "a19f794dd32c3904c00f346bd248f8efb65de7d76b39da43e71c90c2edd628e7"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 25013,
           "matched": [
             "textures/items/beaconfinder.png"
@@ -148464,6 +149400,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 753,
           "matched": [
+            "a19f794dd32c3904c00f346bd248f8efb65de7d76b39da43e71c90c2edd628e7",
             "textures/items/beaconfinder.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148687,6 +149624,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 104,
           "matched": [
+            "90df3b82a637fc50b824219fd9e27fb1d18f510d4c8fbd61ab2212219602fb7b",
             "textures/items/bioniclegs.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -148724,6 +149662,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24779,
+          "matched": [
+            "90df3b82a637fc50b824219fd9e27fb1d18f510d4c8fbd61ab2212219602fb7b"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1187,
           "matched": [
@@ -148753,6 +149699,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 756,
           "matched": [
+            "90df3b82a637fc50b824219fd9e27fb1d18f510d4c8fbd61ab2212219602fb7b",
             "textures/items/bioniclegs.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149150,6 +150097,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 105,
           "matched": [
+            "b5d40920ce9226c91e6bb674039cc00132b0574a3a72d0a4b81d1c1ebbd0290d",
             "textures/items/earthbrightvisor.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149203,6 +150151,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 24984,
+          "matched": [
+            "b5d40920ce9226c91e6bb674039cc00132b0574a3a72d0a4b81d1c1ebbd0290d"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1209,
           "matched": [
@@ -149232,6 +150188,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 762,
           "matched": [
+            "b5d40920ce9226c91e6bb674039cc00132b0574a3a72d0a4b81d1c1ebbd0290d",
             "textures/items/earthbrightvisor.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149373,6 +150330,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 106,
           "matched": [
+            "2f1806a72adf80f6b1032dfa56ada9d4aa25e74c68423bc17cffae4510f18223",
             "textures/items/landingboots.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149398,6 +150356,14 @@
           "line": 25310,
           "matched": [
             "textures/items/landingboots.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 25311,
+          "matched": [
+            "2f1806a72adf80f6b1032dfa56ada9d4aa25e74c68423bc17cffae4510f18223"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -149431,6 +150397,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 771,
           "matched": [
+            "2f1806a72adf80f6b1032dfa56ada9d4aa25e74c68423bc17cffae4510f18223",
             "textures/items/landingboots.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149642,6 +150609,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 107,
           "matched": [
+            "e96889fbdc01a33bf5a66cbe7f8d6827e4ab4f78b8f0f2e3485ef2de16a4f22b",
             "textures/items/pressuretank0.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149675,6 +150643,14 @@
           "line": 25647,
           "matched": [
             "textures/items/pressuretank0.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 25648,
+          "matched": [
+            "e96889fbdc01a33bf5a66cbe7f8d6827e4ab4f78b8f0f2e3485ef2de16a4f22b"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -149756,6 +150732,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 779,
           "matched": [
+            "e96889fbdc01a33bf5a66cbe7f8d6827e4ab4f78b8f0f2e3485ef2de16a4f22b",
             "textures/items/pressuretank0.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -149967,6 +150944,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 108,
           "matched": [
+            "41aba3582ad64108ef1ce8537c48d8bb5bb8309eb448085bf30cf11102e81a96",
             "textures/items/pressuretank1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150000,6 +150978,14 @@
           "line": 25700,
           "matched": [
             "textures/items/pressuretank1.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 25701,
+          "matched": [
+            "41aba3582ad64108ef1ce8537c48d8bb5bb8309eb448085bf30cf11102e81a96"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -150065,6 +151051,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 780,
           "matched": [
+            "41aba3582ad64108ef1ce8537c48d8bb5bb8309eb448085bf30cf11102e81a96",
             "textures/items/pressuretank1.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150276,6 +151263,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 109,
           "matched": [
+            "94bd41a30b07f67166b3c637539ff77ec47c7bf2635b6fe07e675c64c5f9e585",
             "textures/items/pressuretank2.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150330,6 +151318,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 25754,
+          "matched": [
+            "94bd41a30b07f67166b3c637539ff77ec47c7bf2635b6fe07e675c64c5f9e585"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 25846,
           "matched": [
             "textures/items/pressuretank2.png"
@@ -150374,6 +151370,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 781,
           "matched": [
+            "94bd41a30b07f67166b3c637539ff77ec47c7bf2635b6fe07e675c64c5f9e585",
             "textures/items/pressuretank2.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150585,6 +151582,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 110,
           "matched": [
+            "e799e994113f943677ff8165c8572f27d7cfedd06e6c845c9776cd23a534d02e",
             "textures/items/pressuretank3.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150654,6 +151652,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 25807,
+          "matched": [
+            "e799e994113f943677ff8165c8572f27d7cfedd06e6c845c9776cd23a534d02e"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1297,
           "matched": [
@@ -150683,6 +151689,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 782,
           "matched": [
+            "e799e994113f943677ff8165c8572f27d7cfedd06e6c845c9776cd23a534d02e",
             "textures/items/pressuretank3.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -150847,6 +151854,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 113,
           "matched": [
+            "7d905b07ed70b77f319b633c45194af7840bf778c610b88024f3192eb32594a7",
             "textures/items/sawbladeiron.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151044,6 +152052,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26365,
+          "matched": [
+            "7d905b07ed70b77f319b633c45194af7840bf778c610b88024f3192eb32594a7"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "docs/work/v1.8.0-w246-flat-textures/VERIFICATION.md",
           "line": 11,
           "matched": [
@@ -151089,6 +152105,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 795,
           "matched": [
+            "7d905b07ed70b77f319b633c45194af7840bf778c610b88024f3192eb32594a7",
             "textures/items/sawbladeiron.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151342,6 +152359,7 @@
           "file": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
           "line": 353,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceboots"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151367,6 +152385,14 @@
           "line": 657,
           "matched": [
             "textures/items/spaceboots.png"
+          ],
+          "category": "provenance record"
+        },
+        {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 658,
+          "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6"
           ],
           "category": "provenance record"
         },
@@ -151471,6 +152497,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 82,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151487,6 +152514,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 84,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots",
             "textures/items/spaceboots.png"
           ],
@@ -151552,6 +152580,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 82,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151568,6 +152597,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 84,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots",
             "textures/items/spaceboots.png"
           ],
@@ -151633,6 +152663,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 82,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots",
             "spaceboots"
           ],
@@ -151651,6 +152682,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 84,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "spaceBoots",
             "spaceboots",
             "textures/items/spaceboots.png"
@@ -151692,8 +152724,17 @@
         },
         {
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
+          "line": 114,
+          "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 116,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "textures/items/spaceboots.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -151764,6 +152805,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26490,
+          "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 26518,
           "matched": [
             "textures/items/spaceboots.png"
@@ -151791,6 +152840,14 @@
           "line": 26798,
           "matched": [
             "textures/items/spaceboots.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26799,
+          "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -151870,8 +152927,17 @@
         },
         {
           "file": "legacy-manifest/assets.csv",
+          "line": 799,
+          "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "legacy-manifest/assets.csv",
           "line": 803,
           "matched": [
+            "79ce28db42f00c86f90f99140ac3be60168ed0fcaf69452445e1dad6bb1bb5f6",
             "textures/items/spaceboots.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152202,6 +153268,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 666,
+          "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 215,
           "matched": [
@@ -152221,6 +153295,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 85,
           "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5",
             "textures/items/spaceboots_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152229,6 +153304,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 85,
           "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5",
             "textures/items/spaceboots_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152237,6 +153313,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 85,
           "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5",
             "textures/items/spaceboots_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152245,6 +153322,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 117,
           "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5",
             "textures/items/spaceboots_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152298,6 +153376,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26857,
+          "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1339,
           "matched": [
@@ -152310,6 +153396,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 804,
           "matched": [
+            "8a4c62941843cd40a57cbded184ccc1e6eeafb0e6c3cca73abe61cd513a189a5",
             "textures/items/spaceboots_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152536,6 +153623,7 @@
           "file": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
           "line": 354,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spacechestplate"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152553,6 +153641,14 @@
           "line": 673,
           "matched": [
             "textures/items/spacechestplate.png"
+          ],
+          "category": "provenance record"
+        },
+        {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 674,
+          "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c"
           ],
           "category": "provenance record"
         },
@@ -152665,6 +153761,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 83,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152689,6 +153786,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 86,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate",
             "textures/items/spacechestplate.png"
           ],
@@ -152746,6 +153844,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 83,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152770,6 +153869,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 86,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate",
             "textures/items/spacechestplate.png"
           ],
@@ -152828,6 +153928,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 83,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate",
             "spacechestplate"
           ],
@@ -152853,6 +153954,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 86,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "spaceChestplate",
             "spacechestplate",
             "textures/items/spacechestplate.png"
@@ -152878,8 +153980,17 @@
         },
         {
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
+          "line": 115,
+          "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 118,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "textures/items/spacechestplate.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -152958,6 +154069,14 @@
         },
         {
           "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26548,
+          "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
           "line": 26587,
           "matched": [
             "textures/items/spacechestplate.png"
@@ -153001,6 +154120,14 @@
           "line": 26898,
           "matched": [
             "textures/items/spacechestplate.png"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26899,
+          "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c"
           ],
           "category": "inventory/documentation/test/tool"
         },
@@ -153096,8 +154223,17 @@
         },
         {
           "file": "legacy-manifest/assets.csv",
+          "line": 800,
+          "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
+          "file": "legacy-manifest/assets.csv",
           "line": 805,
           "matched": [
+            "a84114f2315e4bc70cc04092f0834f113ce8016bea3b1c30b23068c76d46572c",
             "textures/items/spacechestplate.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153348,6 +154484,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 682,
+          "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 217,
           "matched": [
@@ -153367,6 +154511,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 87,
           "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800",
             "textures/items/spacechestplate_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153375,6 +154520,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 87,
           "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800",
             "textures/items/spacechestplate_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153383,6 +154529,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 87,
           "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800",
             "textures/items/spacechestplate_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153391,6 +154538,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 119,
           "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800",
             "textures/items/spacechestplate_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153444,6 +154592,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 26979,
+          "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1342,
           "matched": [
@@ -153456,6 +154612,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 806,
           "matched": [
+            "2c56f35586d4f8e87d2d8768b6985466e7c7df6a1f487ceb7840170b8e08e800",
             "textures/items/spacechestplate_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153649,6 +154806,14 @@
           "category": "provenance record"
         },
         {
+          "file": "docs/provenance/v1.8.0-c18d-new-art.json",
+          "line": 690,
+          "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e"
+          ],
+          "category": "provenance record"
+        },
+        {
           "file": "docs/work/v1.8.0-asset-import-allowlist.txt",
           "line": 218,
           "matched": [
@@ -153668,6 +154833,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-02/asset-coverage.csv",
           "line": 88,
           "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e",
             "textures/items/spacehelmet_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153676,6 +154842,7 @@
           "file": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
           "line": 88,
           "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e",
             "textures/items/spacehelmet_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153684,6 +154851,7 @@
           "file": "docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv",
           "line": 88,
           "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e",
             "textures/items/spacehelmet_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153692,6 +154860,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 120,
           "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e",
             "textures/items/spacehelmet_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -153753,6 +154922,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 27101,
+          "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 1345,
           "matched": [
@@ -153765,6 +154942,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 808,
           "matched": [
+            "51ae33ded2c3cc1d5ca117b1f6940b42d7bfb5bebc9f415c8f310ccf948d669e",
             "textures/items/spacehelmet_overlay.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -154972,6 +156150,7 @@
           "file": "docs/work/v1.8.0-claude-asset-review-assignment.csv",
           "line": 122,
           "matched": [
+            "70ba37771e7f0c5ff2a009b6f2ea875a52c3f71de7abb63268aded87b11c4ed1",
             "textures/models/beacon.png"
           ],
           "category": "inventory/documentation/test/tool"
@@ -156971,6 +158150,14 @@
           "category": "inventory/documentation/test/tool"
         },
         {
+          "file": "docs/work/v1.8.0-vanilla-derivation.json",
+          "line": 27725,
+          "matched": [
+            "70ba37771e7f0c5ff2a009b6f2ea875a52c3f71de7abb63268aded87b11c4ed1"
+          ],
+          "category": "inventory/documentation/test/tool"
+        },
+        {
           "file": "legacy-manifest/asset-references.csv",
           "line": 161,
           "matched": [
@@ -157111,6 +158298,7 @@
           "file": "legacy-manifest/assets.csv",
           "line": 820,
           "matched": [
+            "70ba37771e7f0c5ff2a009b6f2ea875a52c3f71de7abb63268aded87b11c4ed1",
             "textures/models/beacon.png"
           ],
           "category": "inventory/documentation/test/tool"

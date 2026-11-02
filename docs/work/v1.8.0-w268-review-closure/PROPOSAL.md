@@ -3,6 +3,7 @@
 **DRAFT - PENDING OWNER DECISION. Nothing here is applied or accepted.**
 
 Baseline: `a65465138adca914d61d492d940fca015b86c9c6`; original AR 1.12 source pin: `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`.
+Input inventory: `D:/GitHub/ARCE-Task-Evidence/root-queue/W263/INVENTORY.md`, SHA-256 `861320967dde0492569d8e31f2874a0d7288c603af8d2bca5720c720fb97925a` (checked). Its projected 95 REVIEW files equal the assigned shared head's actual first matches. The historical AUDIT-01 is not edited or treated as a current binding audit.
 Write scope: this directory and `docs/work/v1.8.0-root-queue/records/W268.md`; external W268 logs/scratch copies only. No source, resources, tracked plan, allowlist, origin findings, ADR, ledger or status changes.
 
 ## Decision groups
@@ -151,7 +152,7 @@ Each row below has an exact source identity and an evidence ID into `REVIEW-EVID
 
 ## Reference audit method and limits
 
-The scan covers every tracked baseline file, not only Java: models, MTL, blockstates, JSON, import plans, provenance, records, data generators, tests and historical audit material are included. Exact path, basename and extensionless lexical tokens are searched case-insensitively. Every matching line is retained in JSON; bare-stem hits such as `copy`, `motor`, `solar` and `beacon` are deliberately broad candidates, not evidence of a runtime binding. Same-named modern resources are namespace/path-distinct. Source SHA-256 comparison separately checks every tracked src file, including binary files. Generated build outputs/untracked files are not the source of the delivery claim.
+The scan covers every tracked baseline file, not only Java: models, MTL, blockstates, JSON, import plans, provenance, records, data generators, tests and historical audit material are included. Exact path, basename, extensionless lexical tokens and source SHA-256 strings are searched case-insensitively. Every matching line is retained in JSON; bare-stem hits such as `copy`, `motor`, `solar` and `beacon` are deliberately broad candidates, not evidence of a runtime binding. Same-named modern resources are namespace/path-distinct. Source SHA-256 comparison separately checks every tracked src Git blob, including binary files, independently of Windows checkout line endings. Generated build outputs/untracked files are not the source of the delivery claim.
 The upstream scan reads the pinned Git archive in memory, not the upstream working tree. It does not execute 1.12.2. Family-generated paths (numbered tanks, suit layers/overlays, lava animation and GUI state suffixes) require the explicit dynamic notes below in addition to literal hits. No static scan proves a real-client render, provenance clearance or audio listen.
 
 ## Draft files and reproduction

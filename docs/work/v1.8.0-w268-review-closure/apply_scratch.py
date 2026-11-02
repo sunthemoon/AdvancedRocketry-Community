@@ -63,17 +63,22 @@ def audit(scratch: Path, before: list[dict], expected: set[str]) -> dict:
 
 def apply(scratch: Path) -> dict:
     scratch = scratch.resolve()
-    assert not scratch.exists(), "Scratch destination must not exist."
-    assert not scratch.is_relative_to(ROOT.resolve()), "Scratch must be outside this worktree."
-    assert scratch.parent.is_dir(), "Create the external evidence parent first."
+    if scratch.exists():
+        raise ValueError("Scratch destination must not exist.")
+    if scratch.is_relative_to(ROOT.resolve()):
+        raise ValueError("Scratch must be outside this worktree.")
+    if not scratch.parent.is_dir():
+        raise ValueError("Create the external evidence parent first.")
     existing = git("worktree", "list", "--porcelain").decode().splitlines()
     for line in existing:
         if line.startswith("worktree "):
             worktree = Path(line[9:]).resolve()
-            assert not scratch.is_relative_to(worktree), "Scratch must not be inside ANY worktree."
+            if scratch.is_relative_to(worktree):
+                raise ValueError("Scratch must not be inside ANY worktree.")
     changes = json.loads((HERE / "changes.json").read_text())
     for path, expected in changes["source_sha256"].items():
-        assert sha((ROOT / path).read_bytes()) == expected, "Central baseline changed: " + path
+        if sha((ROOT / path).read_bytes()) != expected:
+            raise ValueError("Central baseline changed: " + path)
     source_head = git("rev-parse", "HEAD").decode().strip()
     before = csv_rows(ROOT / PLAN)
     subprocess.run(["git", "clone", "--shared", "--no-checkout", "--quiet", str(ROOT), str(scratch)], check=True)

@@ -103,7 +103,7 @@ def category(path: str) -> str:
     return "inventory/documentation/test/tool"
 
 
-def scan(assets: list[str], files: dict[str, bytes]) -> dict[str, list[dict]]:
+def scan(assets: list[str], files: dict[str, bytes], source_hashes: dict[str, str]) -> dict[str, list[dict]]:
     """All matching lines, no truncation. Bare stems deliberately over-approximate.
 
     Case-insensitive whole lexical tokens also find extensionless IDs and Java
@@ -115,7 +115,7 @@ def scan(assets: list[str], files: dict[str, bytes]) -> dict[str, list[dict]]:
         base = asset.removesuffix(".mcmeta")
         name = Path(base).name
         stem = Path(base).stem
-        for token in (asset, base, name, stem, base.removeprefix("textures/").removesuffix(".png")):
+        for token in (asset, base, name, stem, base.removeprefix("textures/").removesuffix(".png"), source_hashes[asset]):
             tokens[token.lower()].add(asset)
     pattern = re.compile(r"(?<![a-z0-9_])(?:" + "|".join(re.escape(t) for t in sorted(tokens, key=lambda x: (-len(x), x))) + r")(?![a-z0-9_])", re.I)
     found = defaultdict(list)
@@ -277,15 +277,10 @@ def build(upstream: Path) -> None:
         old = {m.name: tar.extractfile(m).read() for m in tar.getmembers() if m.isfile()}
     for asset in review:
         assert digest(old[PREFIX + asset]) == manifest[asset]["sha256"], asset
-    cache = HERE / "REVIEW-EVIDENCE.json"
-    previous = json.loads(cache.read_bytes()) if cache.exists() else {}
-    # The immutable baseline and pin make the prior exhaustive scan reusable.
-    if previous.get("source_commit") == BASE and previous.get("upstream_commit") == PIN:
-        current_refs = {e["asset"]: e["current_references"] for e in previous["files"]}
-        old_refs = {e["asset"]: e["upstream_references"] for e in previous["files"]}
-    else:
-        current_refs = scan(review, files)
-        old_refs = scan(review, old)
+    # Always rescan immutable Git inputs; generated evidence is never trusted as input.
+    source_hashes = {a: manifest[a]["sha256"] for a in review}
+    current_refs = scan(review, files, source_hashes)
+    old_refs = scan(review, old, source_hashes)
     derivation = json.loads(files["docs/work/v1.8.0-vanilla-derivation.json"])
     verdicts = {r["asset"]: r for r in derivation["assets"]}
     allow = dict(line.split("\t") for line in files[ALLOW].decode().splitlines())
@@ -306,7 +301,7 @@ def build(upstream: Path) -> None:
                              all_matching_plan_rules=[r for r in plan if fnmatch.fnmatchcase(asset, r["pattern"])]))
         assert not evidence[-1]["source_hash_copies"], asset
     dump("REVIEW-EVIDENCE.json", dict(source_commit=BASE, upstream_commit=PIN,
-         scan_scope="Every tracked file at BASE; case-insensitive lexical path/name/stem matches. Binary files excluded from text scan but all tracked src bytes checked by SHA-256. Matches are candidates, not proof of binding. Dynamic family evidence is explained in PROPOSAL.md.", files=evidence))
+         scan_scope="Every tracked file at BASE; case-insensitive lexical path/name/stem/source-hash matches. Binary files excluded from text scan but all tracked src Git blobs checked by SHA-256. Matches are candidates, not proof of binding. Dynamic family evidence is explained in PROPOSAL.md.", files=evidence))
     changes = []
     for rule in plan:
         effective = [e for e in evidence if e["rule"]["pattern"] == rule["pattern"]]
@@ -347,6 +342,7 @@ def build(upstream: Path) -> None:
 def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, rules: int) -> list[str]:
     lines = ["# W268 - REVIEW closure proposal", "", "**DRAFT - PENDING OWNER DECISION. Nothing here is applied or accepted.**", "",
              f"Baseline: `{BASE}`; original AR 1.12 source pin: `{PIN}`.",
+             "Input inventory: `D:/GitHub/ARCE-Task-Evidence/root-queue/W263/INVENTORY.md`, SHA-256 `861320967dde0492569d8e31f2874a0d7288c603af8d2bca5720c720fb97925a` (checked). Its projected 95 REVIEW files equal the assigned shared head's actual first matches. The historical AUDIT-01 is not edited or treated as a current binding audit.",
              "Write scope: this directory and `docs/work/v1.8.0-root-queue/records/W268.md`; external W268 logs/scratch copies only. No source, resources, tracked plan, allowlist, origin findings, ADR, ledger or status changes.", "",
              "## Decision groups", "", "85 EXCLUDE proposals and 10 named REVIEW holds account for all 95 files. No IMPORT is proposed: there is no cleared legacy source that a live consumer needs instead of its existing replacement.", "",
              "| Group | Files | Proposed handling | One owner question |", "|---|---:|---|---|"]
@@ -380,7 +376,7 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, ru
             detail += " Proposed EXCLUDED finding does not clear authorship."
         lines.append(f"| `{e['asset']}` | `{e['source_sha256']}` | {e['group']} / {e['proposed']} | {detail} |")
     lines += ["", "## Reference audit method and limits", "",
-              "The scan covers every tracked baseline file, not only Java: models, MTL, blockstates, JSON, import plans, provenance, records, data generators, tests and historical audit material are included. Exact path, basename and extensionless lexical tokens are searched case-insensitively. Every matching line is retained in JSON; bare-stem hits such as `copy`, `motor`, `solar` and `beacon` are deliberately broad candidates, not evidence of a runtime binding. Same-named modern resources are namespace/path-distinct. Source SHA-256 comparison separately checks every tracked src file, including binary files. Generated build outputs/untracked files are not the source of the delivery claim.",
+              "The scan covers every tracked baseline file, not only Java: models, MTL, blockstates, JSON, import plans, provenance, records, data generators, tests and historical audit material are included. Exact path, basename, extensionless lexical tokens and source SHA-256 strings are searched case-insensitively. Every matching line is retained in JSON; bare-stem hits such as `copy`, `motor`, `solar` and `beacon` are deliberately broad candidates, not evidence of a runtime binding. Same-named modern resources are namespace/path-distinct. Source SHA-256 comparison separately checks every tracked src Git blob, including binary files, independently of Windows checkout line endings. Generated build outputs/untracked files are not the source of the delivery claim.",
               "The upstream scan reads the pinned Git archive in memory, not the upstream working tree. It does not execute 1.12.2. Family-generated paths (numbered tanks, suit layers/overlays, lava animation and GUI state suffixes) require the explicit dynamic notes below in addition to literal hits. No static scan proves a real-client render, provenance clearance or audio listen.", "",
               "## Draft files and reproduction", "",
               "`asset-plan.csv.draft`, `allowlist.txt.draft` and `origin-findings.json.draft` are separate inert full-file previews; `changes.json` records exact semantic operations and central input hashes. `build_proposal.py --upstream <pinned-clone>` rebuilds them and the evidence from the assigned baseline. `apply_scratch.py --scratch <new-directory>` creates a new Git-backed LF export, verifies inputs, applies only these previews plus draft ADR metadata/pin/table there, and audits first-match changes. It refuses this worktree, another worktree, and any existing destination. It never creates acceptance or fills in the owner's name.",

@@ -15,7 +15,7 @@ import uuid
 from apply_scratch import apply, ROOT
 
 
-def verify(upstream: Path, clients: Path, output: Path) -> None:
+def verify(upstream: Path, clients: Path, output: Path, quick: bool = False) -> None:
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     # A short sibling path keeps the repository's long historical JUnit filenames
@@ -23,7 +23,7 @@ def verify(upstream: Path, clients: Path, output: Path) -> None:
     scratch = output.parent / ("s" + uuid.uuid4().hex[:8])
     if scratch.exists():
         raise FileExistsError(scratch)
-    report = dict(commands=[], source_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip())
+    report = dict(commands=[], mode="quick" if quick else "full", source_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip())
     prefix = [sys.executable, "-X", "utf8", "-B"]
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", GIT_OPTIONAL_LOCKS="0")
 
@@ -45,6 +45,16 @@ def verify(upstream: Path, clients: Path, output: Path) -> None:
         report["first_match_audit"] = {k: v for k, v in audit.items() if k != "changes"}
         for suffix, flags in (("normal", []), ("accepted", ["--require-accepted"]), ("closure", ["--closure"])):
             run("scratch-ledger-" + suffix, prefix + ["scripts/validate_v180_content_ledger.py"] + flags)
+        if quick:
+            # Supplement a full run after proposal-only/helper edits. Never report
+            # this mode as execution of the importer or four repository suites.
+            local_test = "docs/work/v1.8.0-w268-review-closure/test_proposal.py"
+            run("proposal-tests", prefix + [local_test])
+            run("proposal-tests-optimized", prefix + ["-O", local_test])
+            run("scratch-repository", prefix + ["scripts/validate_repository.py", "--require-approved-identity"])
+            run("branch-repository", prefix + ["scripts/validate_repository.py", "--require-approved-identity"], ROOT)
+            report["completed"] = True
+            return
         for plan in sorted((scratch / "tools/import").glob("v180-*-plan.json")):
             data = json.loads(plan.read_bytes())
             # The matching record is identified from the plan's targets, not a stale hardcoded batch list.
@@ -73,8 +83,8 @@ def verify(upstream: Path, clients: Path, output: Path) -> None:
         raise
     finally:
         if scratch.exists():
-            assert scratch.parent == output.parent and scratch.name.startswith("s")
-            assert not scratch.resolve().is_relative_to(ROOT.resolve())
+            if scratch.parent != output.parent or not scratch.name.startswith("s") or scratch.resolve().is_relative_to(ROOT.resolve()):
+                raise RuntimeError("Scratch cleanup boundary mismatch: " + str(scratch))
             shutil.rmtree(scratch)
         report["scratch_removed"] = not scratch.exists()
         (output / "verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
@@ -85,5 +95,6 @@ if __name__ == "__main__":
     parser.add_argument("--upstream", type=Path, required=True)
     parser.add_argument("--clients", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--quick", action="store_true", help="Supplemental draft/helper checks only; skips all imports and the four repository test modules")
     args = parser.parse_args()
-    verify(args.upstream.resolve(), args.clients.resolve(), args.output)
+    verify(args.upstream.resolve(), args.clients.resolve(), args.output, args.quick)
