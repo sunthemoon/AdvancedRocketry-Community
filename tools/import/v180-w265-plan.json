@@ -13,7 +13,10 @@
         "mtllib": {
           "basicLaserGun.mtl": "basiclasergun.mtl"
         },
-        "usemtl": {}
+        "usemtl": {
+          "Diff": "Diff",
+          "spec": "spec"
+        }
       },
       "units": [
         "item:basicLaserGun"
