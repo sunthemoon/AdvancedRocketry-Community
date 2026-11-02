@@ -87,6 +87,14 @@ class V180FuelTankModelDataTest {
                 assertEquals(model(kind, id), JsonParser.parseString(Files.readString(path)), path.toString());
             }
         }
+        assertEquals(2, V180FuelTankModelData.files().size());
+        assertEquals(V180FuelTankModelData.block(), model("block", "rocket_fuel_tank"));
+        assertEquals(V180FuelTankModelData.item("rocket_fuel_tank"), model("item", "rocket_fuel_tank"));
+        for (String id : IDS) {
+            assertEquals(V180FuelTankModelData.block(), model("block", id));
+            assertEquals(V180FuelTankModelData.item(id), model("item", id));
+        }
+        assertThrows(IllegalArgumentException.class, () -> V180FuelTankModelData.item("nuclear_fuel_tank"));
     }
 
     @Test void tanksKeepOneIdentityVariantAndNuclearTankKeepsItsSeparateArt() throws Exception {

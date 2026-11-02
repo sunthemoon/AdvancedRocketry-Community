@@ -166,12 +166,12 @@ public final class ModBlocks {
                     .sound(SoundType.METAL))
     );
     public static final RegistryObject<Block> ROCKET_MOTOR = chemicalMotor("rocket_motor");
-    public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
+    public static final RegistryObject<Block> ROCKET_FUEL_TANK = chemicalFuelTank("rocket_fuel_tank");
     public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = chemicalMotor("advanced_rocket_motor");
     public static final RegistryObject<Block> BIPROPELLANT_ROCKET_MOTOR = chemicalMotor("bipropellant_rocket_motor");
     public static final RegistryObject<Block> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = chemicalMotor("advanced_bipropellant_rocket_motor");
-    public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = metalBlock("bipropellant_fuel_tank");
-    public static final RegistryObject<Block> OXIDIZER_FUEL_TANK = metalBlock("oxidizer_fuel_tank");
+    public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = chemicalFuelTank("bipropellant_fuel_tank");
+    public static final RegistryObject<Block> OXIDIZER_FUEL_TANK = chemicalFuelTank("oxidizer_fuel_tank");
     public static final RegistryObject<Block> NUCLEAR_ROCKET_MOTOR = BLOCKS.register("nuclear_rocket_motor", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketNuclearNozzleBlock(metalProperties().noOcclusion()));
     public static final RegistryObject<Block> NUCLEAR_FUEL_TANK = metalBlock("nuclear_fuel_tank");
@@ -250,6 +250,11 @@ public final class ModBlocks {
      * these blocks do not occlude (W249-R2, W255). Collision, support and sealing stay a full cube.
      */
     private static RegistryObject<Block> chemicalMotor(String name) {
+        return BLOCKS.register(name, () -> new Block(metalProperties().noOcclusion()));
+    }
+
+    /** R286: the standalone middle-tank mesh is not a full cube; collision, support and sealing remain solid. */
+    private static RegistryObject<Block> chemicalFuelTank(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties().noOcclusion()));
     }
 

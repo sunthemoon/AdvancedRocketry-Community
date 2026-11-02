@@ -50,7 +50,7 @@ public final class MonoMotorOcclusionGameTests {
     /** Shared bounded fixture; each supplied state has its own enclosed light column and an opaque control. */
     static void assertNonOccludingColumns(GameTestHelper helper, List<BlockState> states) {
         if (states.isEmpty() || states.size() > 6) {
-            throw new IllegalArgumentException("Expected one to six motor states");
+            throw new IllegalArgumentException("Expected one to six block states");
         }
         var driver = new GameTestTickDriver(helper);
         ServerLevel level = helper.getLevel();
@@ -74,7 +74,10 @@ public final class MonoMotorOcclusionGameTests {
 
     static BlockPos columnBase(int index) {
         if (index < 0 || index > 6) throw new IllegalArgumentException("Expected column index zero to six");
-        return new BlockPos(2, 2, index * 2 - 2);
+        // The 1x1x1 empty template clears x [-2,3], z [-3,3], y [-3,20]. Six columns fit on one
+        // 2x3 deck; the seventh (opaque control) is five blocks higher, with all walls/probes inside.
+        // Indices zero to two retain the exact columns used by the original two-state fixtures.
+        return new BlockPos(2 - 2 * ((index % 6) / 3), 2 + 5 * (index / 6), 2 * (index % 3) - 2);
     }
 
     private static void await(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, List<Column> columns,

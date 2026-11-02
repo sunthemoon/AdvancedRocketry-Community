@@ -45,10 +45,13 @@ Preserve full collision/support, IDs, recipes, capacities and fuel roles.
 The intended light/adjacent-face effects follow R278; stop if a mod gameplay
 predicate would change. Test all three through `assertNonOccludingColumns`.
 
-For W258-R3, arrange up to six states plus the opaque control on a bounded
-3-by-3 grid, preserving all light/property assertions and the tick deadline.
-Every column, wall and probe stays within relative x/z [-3,3], the `empty`
-template's cleared horizontal space. Pin layout and bounds in a unit test.
+For W258-R3, arrange up to six states on a bounded 2-by-3 deck, with the
+seventh column (opaque control) five blocks higher, preserving all light/
+property assertions and the tick deadline. Local mapped vanilla bytecode
+confirms `empty` clears x [-2,3], z [-3,3], y [-3,20], not a symmetric
+3-by-3 horizontal margin. Every wall/probe stays inside these actual bounds;
+the original two-state fixture positions stay identical. Pin the bounds
+in a unit test. This corrects the initial grid assumption before implementation.
 For W258-R1, explicitly restore the nuclear model rows to IMPORT/C17a in
 the batch-order fixture, without changing its rejection assertion.
 For W258-R2, the asset-plan draft trims the nuclear owner/reason from the
