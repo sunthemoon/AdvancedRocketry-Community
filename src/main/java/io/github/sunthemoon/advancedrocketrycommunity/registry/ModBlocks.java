@@ -206,7 +206,9 @@ public final class ModBlocks {
                             ClassicMachineDefinition.CUTTING)));
     public static final RegistryObject<Block> BLAST_BRICK = BLOCKS.register("blast_brick", () -> new Block(
             BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-    public static final RegistryObject<Block> SAW_BLADE = metalBlock("saw_blade");
+    // R282: the static saw mesh is open; retain full collision/support and atmosphere sealing.
+    public static final RegistryObject<Block> SAW_BLADE = BLOCKS.register("saw_blade", () ->
+            new Block(metalProperties().noOcclusion()));
     public static final RegistryObject<ClassicControllerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer", () ->
             new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
                     (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CRYSTALLIZER.get(),
