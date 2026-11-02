@@ -1,0 +1,31 @@
+{
+  "asset_coverage": "docs/work/v1.8.0-root-queue/records/W261-asset-coverage.csv",
+  "batch_id": "v1.8.0-w261-landing-pad",
+  "entries": [
+    {
+      "asset_coverage_row": 1,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/rocketpad_noedge.png",
+      "source_sha256": "06b1ed723649858c4e21003f4fb92ecd3422ad49706e86570bc201b1f6f57320",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocketpad_noedge.png",
+      "transformation": {
+        "kind": "rename"
+      },
+      "units": [
+        "block:landingPad"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "ar": {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    }
+  },
+  "target_version": "v1.8.0"
+}
