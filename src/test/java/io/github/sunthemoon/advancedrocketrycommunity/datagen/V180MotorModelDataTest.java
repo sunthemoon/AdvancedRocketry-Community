@@ -83,6 +83,8 @@ class V180MotorModelDataTest {
             JsonObject block = V180PropulsionData.files(true, false).get("assets/" + NS + "/models/block/" + id + ".json");
             if (id.equals("nuclear_rocket_motor")) {
                 assertEquals(V180NuclearMotorModelData.block(), block);
+            } else if (id.equals("bipropellant_fuel_tank") || id.equals("oxidizer_fuel_tank")) {
+                assertEquals(V180FuelTankModelData.block(), block);
             } else if (!IDS.contains(id)) {
                 assertFalse(block.has("loader"));
                 assertEquals("minecraft:block/cube_bottom_top", block.get("parent").getAsString());

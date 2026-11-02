@@ -29,7 +29,11 @@ public final class BayPassengerExitEvents {
         }
     }
     @SubscribeEvent public static void playerTick(TickEvent.PlayerTickEvent event) {
-        if (event.player instanceof ServerPlayer player) { RocketRuntime.passengerExits().ifPresent(exits -> exits.sample(player)); }
+        if (event.player instanceof ServerPlayer player) {
+            // END sees vanilla's temporary travel step, before the connection restores its committed position.
+            RocketRuntime.passengerExits().ifPresent(exits -> exits.sample(player, event.phase == TickEvent.Phase.START
+                    ? BayPassengerExitMotion.Point.PLAYER_START : BayPassengerExitMotion.Point.PLAYER_END));
+        }
     }
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void tick(TickEvent.ServerTickEvent event) {

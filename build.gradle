@@ -199,7 +199,10 @@ def supersededK6ItemModels = [
 def supersededW49Models = [
         // W249 (R271): the v1.8 baked OBJ motor models supersede the v0.5 rocket_motor models, kept byte-identical.
         'src/generated/v0.5/resources':['assets/advancedrocketrycommunity/models/block/rocket_motor.json',
-                                       'assets/advancedrocketrycommunity/models/item/rocket_motor.json'] as Set,
+                                       'assets/advancedrocketrycommunity/models/item/rocket_motor.json',
+                                       // W260 (R286): preserve the v0.5 tank models, package their v1.8 replacements.
+                                       'assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json',
+                                       'assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json'] as Set,
         'src/generated/v0.2/resources': ['assets/advancedrocketrycommunity/models/block/electrolyzer.json', 'assets/advancedrocketrycommunity/models/block/electrolyzer_active.json'] as Set,
         'src/generated/v0.4/resources': ['assets/advancedrocketrycommunity/models/item/space_suit_boots.json', 'assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json',
                                          'assets/advancedrocketrycommunity/models/item/space_suit_helmet.json', 'assets/advancedrocketrycommunity/models/item/space_suit_leggings.json'] as Set,

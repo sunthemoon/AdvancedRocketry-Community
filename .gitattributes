@@ -88,3 +88,7 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models
 # W258 P3: preserve importer-written nuclear OBJ/MTL bytes.
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.mtl -text
+
+# W260 P4: preserve importer-written middle tank OBJ/MTL bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/middletank.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/middletank.mtl -text

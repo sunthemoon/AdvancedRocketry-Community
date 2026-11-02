@@ -142,11 +142,14 @@ final class BayPassengerExitService {
         return new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult(code, 0);
     }
     void sample(ServerPlayer player) {
+        sample(player, BayPassengerExitMotion.Point.SERVER_END);
+    }
+    void sample(ServerPlayer player, BayPassengerExitMotion.Point point) {
         if (!thread()) { return; }
         var slot = state.live.get(player);
         if (slot != null && slot.descent != null) {
             if (++observations > 1024) { revoke(player); return; }
-            slot.descent.sample(motion, budget, slot.world);
+            slot.descent.sample(motion, budget, slot.world, point);
             if (slot.descent.closed) { revoke(player); }
         }
     }
