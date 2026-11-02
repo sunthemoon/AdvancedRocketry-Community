@@ -123,7 +123,12 @@ class V180FlatTextureImportTest {
             planned.add(entry.getAsJsonObject().get("target_path").getAsString().substring("src/imported/v1.8/resources/".length()));
         }
         assertEquals(16, planned.size());
-        assertEquals(planned, consumed);
+        // R282 (W256): this provider now also consumes S1's two sprites. Keep W246's exact sixteen-file pin
+        // and the exact consumer-set assertion; do not mistake the new saw sprites for unused W246 imports.
+        Set<String> expectedConsumed = new HashSet<>(planned);
+        expectedConsumed.add(ASSETS + "textures/block/cuttingmachine2.png");
+        expectedConsumed.add(ASSETS + "textures/item/saw_blade_classic.png");
+        assertEquals(expectedConsumed, consumed);
     }
 
     @Test void importsUseTheStitchedSingularFoldersAndRenameOnlyWhereNewArtHoldsTheName() throws Exception {
