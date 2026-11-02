@@ -3,6 +3,7 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import unittest
 
 from apply_scratch import apply, ROOT
@@ -41,7 +42,9 @@ class ProposalTests(unittest.TestCase):
         self.assertEqual(self.changes["allowlist_after_sha256"], hashlib.sha256(data).hexdigest())
 
     def test_no_new_human_attestation(self):
-        baseline = json.loads((ROOT / "docs/provenance/v1.8.0-origin-findings.json").read_bytes())
+        baseline = json.loads(subprocess.check_output([
+            "git", "-C", str(ROOT), "show", self.changes["source_commit"] + ":docs/provenance/v1.8.0-origin-findings.json"
+        ]))
         draft = json.loads((HERE / "origin-findings.json.draft").read_bytes())
         self.assertEqual(baseline["findings"], draft["findings"][:len(baseline["findings"])])
         added = draft["findings"][len(baseline["findings"]):]
