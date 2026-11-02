@@ -128,7 +128,7 @@ block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-
 block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,,
 block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,,
 block:satelliteControlCenter,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:satellite_terminal,ADR-049,,
-block:sawBlade,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:saw_blade,ADR-062 ADR-064,cutting machine structure,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
+block:sawBlade,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:saw_blade,ADR-062 ADR-064,"cutting machine structure; R282 W256 S1 imported block/item mesh, material/assembly sprites; provenance and V1 review pending",docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:seat,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_seat,V0.5.0,,
 block:solararray,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:solar_array,ADR-062 ADR-065,controller-owned multiblock generator,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:solararraypanel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:solar_array_panel,ADR-062 ADR-065,solar array structure,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
