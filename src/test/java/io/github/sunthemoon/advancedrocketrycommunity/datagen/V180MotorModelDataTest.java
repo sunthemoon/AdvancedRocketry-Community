@@ -18,11 +18,12 @@ class V180MotorModelDataTest {
     private static final String NS = ModIdentity.MOD_ID;
     private static final Path IMPORTED = Path.of("src/imported/v1.8/resources/assets", NS);
     private static final Path GENERATED = Path.of("src/generated/v1.8/resources");
-    private static final List<String> IDS = List.of("rocket_motor", "advanced_rocket_motor");
+    private static final List<String> IDS = List.of("rocket_motor", "advanced_rocket_motor",
+            "bipropellant_rocket_motor", "advanced_bipropellant_rocket_motor");
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void bothBoundedMeshesResolveTheirMaterialsAndAtlasTextures() throws Exception {
+    @Test void allBoundedMeshesResolveTheirMaterialsAndAtlasTextures() throws Exception {
         for (String id : IDS) {
             JsonObject model = V180MotorModelData.block(id);
             assertEquals("forge:obj", model.get("loader").getAsString());
@@ -72,7 +73,7 @@ class V180MotorModelDataTest {
                 JsonObject expected = kind.equals("block") ? V180MotorModelData.block(id) : V180MotorModelData.item(id);
                 Path file = GENERATED.resolve("assets/" + NS + "/models/" + kind + "/" + id + ".json");
                 assertEquals(expected, JsonParser.parseString(Files.readString(file)));
-                if (id.equals("advanced_rocket_motor")) {
+                if (!id.equals("rocket_motor")) {
                     assertEquals(expected, V180PropulsionData.files(true, false).get("assets/" + NS + "/models/" + kind + "/" + id + ".json"));
                 }
             }
@@ -87,7 +88,7 @@ class V180MotorModelDataTest {
         }
     }
 
-    @Test void monoStatesKeepTheSingleDownwardIdentityVariant() throws Exception {
+    @Test void chemicalMotorStatesKeepTheSingleDownwardIdentityVariant() throws Exception {
         for (String id : IDS) {
             Path base = id.equals("rocket_motor") ? Path.of("src/generated/v0.5/resources") : GENERATED;
             Path file = base.resolve("assets/" + NS + "/blockstates/" + id + ".json");
@@ -95,6 +96,19 @@ class V180MotorModelDataTest {
             assertEquals(Set.of(""), variants.keySet());
             assertEquals(Set.of("model"), variants.getAsJsonObject("").keySet());
             assertEquals(NS + ":block/" + id, variants.getAsJsonObject("").get("model").getAsString());
+        }
+    }
+
+    @Test void bipropellantMotorsKeepTheirOwnMeshAndSpriteIdentities() {
+        String[][] bindings = {
+                {"bipropellant_rocket_motor", "bipropellantrocketmotor", "bipropellantcombustion"},
+                {"advanced_bipropellant_rocket_motor", "advbipropellantrocketmotor", "advbipropellantcombustion"}
+        };
+        for (String[] binding : bindings) {
+            JsonObject model = V180MotorModelData.block(binding[0]);
+            assertEquals(NS + ":models/block/models/" + binding[1] + ".obj", model.get("model").getAsString());
+            assertEquals(NS + ":block/" + binding[2] + "_classic",
+                    model.getAsJsonObject("textures").get("particle").getAsString());
         }
     }
 }

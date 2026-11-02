@@ -165,11 +165,11 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(SatelliteTerminalBlock.LIT) ? 7 : 0)
                     .sound(SoundType.METAL))
     );
-    public static final RegistryObject<Block> ROCKET_MOTOR = monoMotor("rocket_motor");
+    public static final RegistryObject<Block> ROCKET_MOTOR = chemicalMotor("rocket_motor");
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
-    public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = monoMotor("advanced_rocket_motor");
-    public static final RegistryObject<Block> BIPROPELLANT_ROCKET_MOTOR = metalBlock("bipropellant_rocket_motor");
-    public static final RegistryObject<Block> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = metalBlock("advanced_bipropellant_rocket_motor");
+    public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = chemicalMotor("advanced_rocket_motor");
+    public static final RegistryObject<Block> BIPROPELLANT_ROCKET_MOTOR = chemicalMotor("bipropellant_rocket_motor");
+    public static final RegistryObject<Block> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = chemicalMotor("advanced_bipropellant_rocket_motor");
     public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = metalBlock("bipropellant_fuel_tank");
     public static final RegistryObject<Block> OXIDIZER_FUEL_TANK = metalBlock("oxidizer_fuel_tank");
     public static final RegistryObject<Block> NUCLEAR_ROCKET_MOTOR = BLOCKS.register("nuclear_rocket_motor", () ->
@@ -246,10 +246,10 @@ public final class ModBlocks {
     }
 
     /**
-     * The mono motors' baked OBJ meshes do not fill the cube, and upstream's isOpaqueCube returned false, so these
-     * blocks do not occlude (W249-R2). Collision, support and sealing stay a full cube.
+     * The chemical motors' baked OBJ meshes do not fill the cube, and upstream's isOpaqueCube returned false, so
+     * these blocks do not occlude (W249-R2, W255). Collision, support and sealing stay a full cube.
      */
-    private static RegistryObject<Block> monoMotor(String name) {
+    private static RegistryObject<Block> chemicalMotor(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties().noOcclusion()));
     }
 
