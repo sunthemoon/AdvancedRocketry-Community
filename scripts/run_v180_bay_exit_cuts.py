@@ -164,7 +164,8 @@ def check_counts(before: dict, after: dict, case: str, what: str) -> dict:
 
 
 def saved_rider(world: Path) -> dict:
-    """W257-R3: the rider's player file after the kill: its saved position and whether it was saved aboard a vehicle."""
+    """W257-R3: the rider's player file after the kill: its saved position, its velocity and whether it holds a vehicle.
+    In this fixture even a seated rider's file holds no ``RootVehicle``; a seated rider's velocity is zeroed every tick."""
     path = world / "playerdata" / f"{RIDER}.dat"
     require(path.is_file(), f"No saved player file for the rider: {path}")
     try:
@@ -173,14 +174,18 @@ def saved_rider(world: Path) -> dict:
         raise smoke.SmokeError(f"The rider's player file is unreadable: {failure}") from failure
     position = root.get("Pos")
     require(isinstance(position, list) and len(position) == 3, f"The rider's saved position is missing: {position!r}")
-    return dict(x=float(position[0]), y=float(position[1]), z=float(position[2]), riding="RootVehicle" in root,
-                sha256=bay.digest(path))
+    motion = root.get("Motion")
+    require(isinstance(motion, list) and len(motion) == 3, f"The rider's saved velocity is missing: {motion!r}")
+    return dict(x=float(position[0]), y=float(position[1]), z=float(position[2]), motion_y=float(motion[1]),
+                riding="RootVehicle" in root, sha256=bay.digest(path))
 
 
 def check_saved_rider(saved: dict, case: str, at_cut: dict | None) -> None:
-    """A flushed cut's save contains the exit: the rider detached, at its position at the cut; the others are recorded."""
+    """A flushed cut's save contains the exit: the rider detached, at its position at the cut, and falling or standing
+    under vanilla's gravity, not at the zero velocity of a seated rider (X5's exit position is its seat's). The other
+    cases are recorded."""
     if CASES[case].get("flush"):
-        require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]),
+        require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]) and saved["motion_y"] < 0,
                 f"{case}: the save after the phase does not hold the exited rider: {saved}; at the cut: {at_cut}")
 
 

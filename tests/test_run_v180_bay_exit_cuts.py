@@ -176,8 +176,9 @@ class ClosedAndRestartChecks(unittest.TestCase):
 
 
 class SavedRiderAndCounts(unittest.TestCase):
-    def player_file(self, directory: Path, y: float, riding: bool) -> Path:
+    def player_file(self, directory: Path, y: float, riding: bool, motion: float = -0.0784) -> Path:
         root = {"Pos": nbt.Tag(nbt.LIST, (nbt.DOUBLE, [nbt.Tag(nbt.DOUBLE, value) for value in (8.5, y, 8.5)])),
+                "Motion": nbt.Tag(nbt.LIST, (nbt.DOUBLE, [nbt.Tag(nbt.DOUBLE, value) for value in (0.0, motion, 0.0)])),
                 "Health": nbt.Tag(nbt.FLOAT, 20.0)}
         if riding:
             root["RootVehicle"] = nbt.Tag(nbt.COMPOUND, {"Entity": nbt.Tag(nbt.COMPOUND, {
@@ -189,11 +190,12 @@ class SavedRiderAndCounts(unittest.TestCase):
 
     def test_the_player_file_gives_the_saved_position_and_mount(self):
         with tempfile.TemporaryDirectory() as directory:
-            seated = runner.saved_rider(self.player_file(Path(directory), 51.15, True))
-            self.assertEqual((51.15, True), (seated["y"], seated["riding"])); self.assertEqual(64, len(seated["sha256"]))
+            seated = runner.saved_rider(self.player_file(Path(directory), 51.15, True, 0.0))
+            self.assertEqual((51.15, True, 0.0), (seated["y"], seated["riding"], seated["motion_y"]))
+            self.assertEqual(64, len(seated["sha256"]))
         with tempfile.TemporaryDirectory() as directory:
             exited = runner.saved_rider(self.player_file(Path(directory), 41.0, False))
-            self.assertEqual((41.0, False), (exited["y"], exited["riding"]))
+            self.assertEqual((41.0, False, -0.0784), (exited["y"], exited["riding"], exited["motion_y"]))
 
     def test_a_missing_or_unreadable_player_file_refuses(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -206,13 +208,13 @@ class SavedRiderAndCounts(unittest.TestCase):
 
     def test_a_flushed_cut_must_hold_the_exited_rider_where_the_cut_saw_it(self):
         at_cut = runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(y="41.0", offer="closed"), "STATE")
-        exited = dict(y=41.0, riding=False)
+        exited = dict(y=41.0, riding=False, motion_y=-0.0784)
         runner.check_saved_rider(exited, "X4_LANDING", at_cut)
-        for saved, cut in ((dict(y=51.15, riding=True), at_cut), (dict(y=41.0, riding=True), at_cut),
-                           (dict(y=51.15, riding=False), at_cut), (exited, None)):
+        for saved, cut in ((dict(exited, y=51.15, riding=True), at_cut), (dict(exited, riding=True), at_cut),
+                           (dict(exited, y=51.15), at_cut), (dict(exited, motion_y=0.0), at_cut), (exited, None)):
             with self.subTest(saved=saved, cut=cut is not None), self.assertRaises(SmokeError):
                 runner.check_saved_rider(saved, "X4_LANDING", cut)
-        runner.check_saved_rider(dict(y=51.15, riding=True), "X7_REVOKED", at_cut)  # unflushed: recorded, not asserted
+        runner.check_saved_rider(dict(y=51.15, riding=True, motion_y=0.0), "X7_REVOKED", at_cut)  # unflushed: recorded
 
     def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
         state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
