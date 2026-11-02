@@ -25,7 +25,7 @@ final class BayPassengerExitCommittedMotionTest {
             assertTrue(motion.observe(sample(0, 80, tick), true));
         }
     }
-    @Test void checkedDisplacementIsProjectedOntoCommittedTickUsage() {
+    @Test void checkedDisplacementIsMeasuredOnItsOwnFromTheCommittedBaseline() {
         var motion = descent();
         assertTrue(motion.observe(sample(.5, 78, 101), true));
         for (int i = 0; i < 3; i++) { assertTrue(motion.observe(sample(1, 76, 101), false)); }
@@ -34,7 +34,15 @@ final class BayPassengerExitCommittedMotionTest {
         assertTrue(motion.observe(sample(1, 76, 101), true));
         assertEquals(1, motion.horizontal);
         assertEquals(4, motion.downward);
-        assertFalse(motion.observe(sample(1.01, 75.99, 101), false));
+        // R288 (W257-R2) replaces R283's projection: a check is not charged on top of the tick's committed usage ...
+        assertTrue(motion.observe(sample(1.01, 75.99, 101), false));
+        assertEquals(1, motion.horizontal);
+        assertEquals(4, motion.downward);
+        // ... its own displacement from the committed baseline keeps the per-tick limits ...
+        assertFalse(motion.observe(sample(2.01, 76, 101), false));
+        assertFalse(motion.observe(sample(1, 71.99, 101), false));
+        // ... and committed samples stay cumulative within the tick.
+        assertFalse(motion.observe(sample(1.01, 75.99, 101), true));
     }
     @Test void checkCannotReplenishTheCumulativeCommittedAllowance() {
         var motion = descent();

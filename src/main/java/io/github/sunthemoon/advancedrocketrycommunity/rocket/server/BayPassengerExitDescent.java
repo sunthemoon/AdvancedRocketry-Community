@@ -26,12 +26,12 @@ final class BayPassengerExitDescent {
         corrections = new BayPassengerExitMotion.CorrectionWindow(generation, continuity, deadline);
     }
     boolean valid(BayPassengerExitMotion observer) {
-        return valid(observer, false);
+        return valid(observer, BayPassengerExitMotion.Point.CALLBACK);
     }
-    private boolean valid(BayPassengerExitMotion observer, boolean committed) {
+    private boolean valid(BayPassengerExitMotion observer, BayPassengerExitMotion.Point point) {
         return !closed && permit.authority() && permit.server.getTickCount() < deadline
                 && corrections.observe(observer.generation(permit.player),
-                        BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()), committed);
+                        BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()), point);
     }
     Contact contact(BayExitBudget budget, BayPassengerExitWorld world) {
         var allowance = budget.openProbe();
@@ -49,13 +49,20 @@ final class BayPassengerExitDescent {
                     : world.contact ? Contact.UNSAFE : Contact.AIR;
         }
     }
-    void sample(BayPassengerExitMotion observer, BayExitBudget budget, BayPassengerExitWorld world, boolean committed) {
-        if (token || !valid(observer, committed) || contact(budget, world) != Contact.AIR) { close(); }
+    void sample(BayPassengerExitMotion observer, BayExitBudget budget, BayPassengerExitWorld world, BayPassengerExitMotion.Point point) {
+        if (token || !valid(observer, point)) { close(); return; }
+        var contact = contact(budget, world);
+        // R288 (W257-R1, option a): at PlayerTick END vanilla's temporary step can already stand the rider on an ordinary
+        // floor, one tick before a real client's landing packet; that contact alone does not end the offer there. Fluid,
+        // unsafe and unknown contact still do, and a committed sample still ends it on any contact.
+        if (contact != Contact.AIR && !(point == BayPassengerExitMotion.Point.PLAYER_END && contact == Contact.ORDINARY)) { close(); }
     }
     void fall(LivingFallEvent event, BayPassengerExitMotion observer, BayPassengerExitLanding landing,
               BayExitBudget budget, BayPassengerExitWorld world) {
         var previous = continuity.last;
-        if (token || !valid(observer) || !previous.airborne() || previous.velocity().y > 0
+        // R288: airborne as of the last committed START, or of the committed state the landing packet moves from when no
+        // temporary step ran since; never the onGround that vanilla's temporary step left at the server-tick END.
+        if (token || !valid(observer) || !continuity.airborne || previous.velocity().y > 0
                 || !landing.ordinaryStack() || event.isCanceled() || event.getDistance() <= 3 || event.getDamageMultiplier() <= 0
                 || contact(budget, world) != Contact.ORDINARY) { close(); return; }
         token = true; landingTick = permit.server.getTickCount();

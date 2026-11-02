@@ -53,6 +53,46 @@ final class BayPassengerExitRealClientMotionTest {
         assertEquals(PAD + .25, motion.last.position().y, 1e-9);
     }
 
+    private static BayPassengerExitMotion.Sample grounded(double y, double velocity, long tick) {
+        return new BayPassengerExitMotion.Sample(new Vec3(0, y, 0), new Vec3(0, velocity, 0), tick, true, false);
+    }
+
+    /** R288 (W257-R1): the server-END sample after a temporary step that reached the pad carries that step's onGround. */
+    @Test void theLandingKeepsTheStartFlagAcrossTheTemporaryStepsOnGround() {
+        var motion = new BayPassengerExitMotion.Continuity(sample(PAD + 3.25, 0, 10));
+        assertTrue(motion.observe(sample(PAD + .25, -.3, 11), BayPassengerExitMotion.Point.PLAYER_START));
+        assertTrue(motion.observe(grounded(PAD, -.0784, 11), BayPassengerExitMotion.Point.PLAYER_END));
+        assertTrue(motion.airborne, "a check never sets the landing flag");
+        assertTrue(motion.observe(grounded(PAD + .25, -.0784, 11), BayPassengerExitMotion.Point.SERVER_END));
+        assertTrue(motion.airborne, "the server END after this tick's temporary step keeps the START flag");
+        assertFalse(motion.last.airborne(), "the committed baseline itself is unchanged");
+        assertEquals(PAD + .25, motion.last.position().y, 1e-9);
+        // The next tick's START, before its own temporary step, decides again.
+        assertTrue(motion.observe(grounded(PAD + .25, -.0784, 12), BayPassengerExitMotion.Point.PLAYER_START));
+        assertFalse(motion.airborne);
+    }
+
+    @Test void withoutATemporaryStepTheCommittedFlagIsUsedAsBefore() {
+        var motion = new BayPassengerExitMotion.Continuity(grounded(PAD + 3, 0, 10));
+        assertFalse(motion.airborne, "the exit's own sample");
+        assertTrue(motion.observe(sample(PAD + 2, -.2, 11), BayPassengerExitMotion.Point.SERVER_END));
+        assertTrue(motion.airborne);
+        assertTrue(motion.observe(grounded(PAD + 1, -.2, 12), BayPassengerExitMotion.Point.SERVER_END));
+        assertFalse(motion.airborne, "no PlayerTick ran in this tick, so the server END's own flag stands");
+        assertTrue(motion.observe(sample(PAD + 1, -.2, 12), true));
+        assertTrue(motion.airborne);
+        assertTrue(motion.observe(grounded(PAD + 1, -.2, 12), BayPassengerExitMotion.Point.CALLBACK));
+        assertTrue(motion.airborne, "a callback never sets the landing flag");
+    }
+
+    @Test void aFailedCommittedSampleChangesNoLandingFlag() {
+        var motion = new BayPassengerExitMotion.Continuity(sample(PAD + 3, 0, 10));
+        assertFalse(motion.observe(grounded(PAD + 3.01, -.2, 11), BayPassengerExitMotion.Point.PLAYER_START));
+        assertTrue(motion.airborne);
+        assertFalse(motion.observe(grounded(PAD - 1.01, -.2, 11), BayPassengerExitMotion.Point.SERVER_END));
+        assertTrue(motion.airborne);
+    }
+
     @Test void aCheckStillRefusesMoreThanTheHardLimitFromTheCommittedBaseline() {
         var motion = new BayPassengerExitMotion.Continuity(sample(PAD + 10, 0, 10));
         assertTrue(motion.observe(sample(PAD + 8, -2, 11), true));
