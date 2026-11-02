@@ -55,18 +55,19 @@ public final class BayReleaseTestCommands {
         if (!Boolean.getBoolean(ReleaseTestCommands.PROPERTY)) { return; }
         BayCopyReleaseTestCommands.register(event);
         BayReleasedTestCommands.register(event);
+        BayPassengerExitReleaseTest.register(event);
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(context -> {
                             // The gate decides before the position is resolved against a Level (W128R-R1).
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
-                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), false);
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), false, null);
                         })
                         // W170 B4: the second bay holds a survey package, a non-data kind that needs no research.
                         .then(Commands.literal("survey").executes(context -> {
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
-                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true);
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true, null);
                         }))))
                 // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
                 .then(Commands.literal("release").executes(context -> release(context.getSource())))
@@ -86,7 +87,9 @@ public final class BayReleaseTestCommands {
                 .then(Commands.literal("pending").executes(context -> pending(context.getSource()))))));
     }
 
-    private static int fixture(CommandSourceStack source, BlockPos origin, boolean survey) {
+    /** W254: a non-null {@code rider}, a facility-owned test player, is assigned the seat and boards before the launch. */
+    static int fixture(CommandSourceStack source, BlockPos origin, boolean survey,
+                       @javax.annotation.Nullable net.minecraft.server.level.ServerPlayer rider) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
@@ -124,7 +127,9 @@ public final class BayReleaseTestCommands {
         if (Boolean.getBoolean("advancedrocketrycommunity.bayOfflinePassenger")) {
             flight = flight.withPassengers(flight.passengers().assign(BayCopyReleaseTestCommands.PASSENGER).orElseThrow());
         }
+        if (rider != null) { flight = flight.withPassengers(flight.passengers().assign(rider.getUUID()).orElseThrow()); }
         rocket.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), level.getGameTime()));
+        if (rider != null && !rider.startRiding(rocket, true)) { throw new IllegalStateException("The bay fixture rider did not board"); }
         var launched = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer);
         LOGGER.info("ARCE_RELEASE_BAY_FIXTURE logical={} transfer={} rocket={} data={} solar={} launch={} packages={}", logical,
                 transfer, rocket.getUUID(), BayDeploymentGameTestSupport.satellite(data), BayDeploymentGameTestSupport.satellite(solar),

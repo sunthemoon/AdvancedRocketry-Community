@@ -116,6 +116,37 @@ final class BayReleaseTestGateTest {
         }
     }
 
+    /** W254: the exit fixture's entries (rider, exit, pad, descent, teleport, trusted move, reports) pass the same gate first. */
+    @Test void everyExitFixtureCommandIsRefusedByTheGateBeforeItsFirstRead() throws Exception {
+        property(HOOKS, "true");
+        var dispatcher = new CommandDispatcher<CommandSourceStack>();
+        new BayReleaseTestCommands().register(new RegisterCommandsEvent(dispatcher, Commands.CommandSelection.DEDICATED, null));
+        UUID logical = UUID.randomUUID();
+        List<String> commands = List.of("arce bay release-test exit fixture 8 2 8", "arce bay release-test exit ready " + logical,
+                "arce bay release-test exit leave " + logical + " sneak", "arce bay release-test exit leave " + logical + " menu freeze",
+                "arce bay release-test exit pad " + logical + " below", "arce bay release-test exit descend " + logical + " 3",
+                "arce bay release-test exit teleport " + logical, "arce bay release-test exit move " + logical,
+                "arce bay release-test exit state " + logical, "arce bay release-test exit login " + logical);
+        MinecraftServer rcon = servers.server(directory, true);
+        MinecraftServer foreign = servers.server(directory, false);
+        servers.join(foreign, UUID.randomUUID());
+        for (MinecraftServer closed : List.of(rcon, foreign)) {
+            for (String command : commands) {
+                var refused = assertThrows(IllegalArgumentException.class, () -> dispatcher.execute(command, source(closed)), command);
+                assertTrue(refused.getMessage().startsWith("Escrow fixture requires"), command + ": " + refused.getMessage());
+            }
+        }
+        // Control: the open gate lets each entry past it; with no world it then reports nothing or fails on its first read.
+        MinecraftServer open = servers.server(directory, false);
+        for (String command : commands) {
+            try { dispatcher.execute(command, source(open)); }
+            catch (Throwable past) {
+                assertFalse(past instanceof IllegalArgumentException && String.valueOf(past.getMessage()).startsWith("Escrow fixture requires"),
+                        command + " was refused by an open gate");
+            }
+        }
+    }
+
     private void assertFirstTickRefused(MinecraftServer server) {
         UUID satellite = UUID.randomUUID();
         var registry = registryWith(satellite);
