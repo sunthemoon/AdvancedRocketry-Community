@@ -83,6 +83,16 @@ final class BayPassengerExitReleaseDrive {
         String then;
         float fall = -1;
         final List<String> attacks = new ArrayList<>();
+        /** W262: the client's fall per packet; a GameTest may arm a faster one, a native drive keeps {@link #STEP}. */
+        double step = STEP;
+        /**
+         * W262 (R288): the artificial same-tick pair, two packets bunched into one server tick, which no steadily sending
+         * client produces. Off by default: a real client's landing packet follows its last airborne one a full tick later.
+         */
+        boolean pair;
+        /** The tick of the last airborne packet, its height, vanilla's temporary step at PlayerTick END, and the landing. */
+        long staged = -1, landed = -1;
+        double stagedY = Double.NaN, physicsY = Double.NaN;
         Drive(ServerPlayer player, UUID logical) { this.player = player; this.logical = logical; }
     }
 
@@ -197,6 +207,11 @@ final class BayPassengerExitReleaseDrive {
 
     private static void afterPlayerSample(TickEvent.PlayerTickEvent event) {
         if (event.player instanceof ServerPlayer player && player.getServer() != null) {
+            Drive drive;
+            synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(player.getServer()); }
+            // Read-only: where vanilla's temporary step put the rider between its last airborne and its landing packet.
+            if (drive != null && drive.player == player && event.phase == TickEvent.Phase.END
+                    && drive.staged == player.getServer().getTickCount()) { drive.physicsY = player.getY(); }
             observe(player.getServer(), player, "PLAYER_" + event.phase.name());
         }
     }
@@ -249,8 +264,17 @@ final class BayPassengerExitReleaseDrive {
     static void descend(ServerPlayer player, UUID logical, int steps) {
         var drive = drive(player, logical);
         if (steps == 0 && drive.landY == null) { throw new IllegalStateException("No landing pad recorded for this drive"); }
-        drive.steps = steps; drive.sent = 0; drive.descending = true;
+        drive.steps = steps; drive.sent = 0; drive.descending = true; drive.step = STEP; drive.pair = false;
+        drive.staged = -1; drive.landed = -1; drive.stagedY = Double.NaN; drive.physicsY = Double.NaN;
         if (steps > 0) { drive.landY = null; }
+    }
+
+    /** W262: a GameTest descent at {@code step} blocks per packet, or as the named artificial same-tick pair. */
+    static void descend(ServerPlayer player, UUID logical, int steps, double step, boolean pair) {
+        if (!(step > 0) || step > 4) { throw new IllegalArgumentException("A client step must be in (0, 4]: " + step); }
+        descend(player, logical, steps);
+        var drive = drive(player, logical);
+        drive.step = step; drive.pair = pair;
     }
 
     private static void tick(TickEvent.ServerTickEvent event) {
@@ -312,6 +336,8 @@ final class BayPassengerExitReleaseDrive {
         acknowledge(drive, view.exits());
         player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), airborne, player.getZ(), false));
         drive.landY = (double) top;
+        // Both packets precede the exit's first server-side player tick; W242's first-tick shape, not a descent.
+        drive.staged = view.server().getTickCount(); drive.stagedY = airborne; drive.physicsY = Double.NaN;
         land(drive, view);
     }
 
@@ -329,12 +355,16 @@ final class BayPassengerExitReleaseDrive {
             LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=packets sent={} {}", drive.logical, drive.sent, view.describe());
             return;
         }
-        double next = drive.landY == null ? player.getY() - STEP : Math.max(drive.landY + .25D, player.getY() - STEP);
+        double next = drive.landY == null ? player.getY() - drive.step : Math.max(drive.landY + .25D, player.getY() - drive.step);
         player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), next, player.getZ(), false));
         drive.sent++;
-        // Finish the final packet pair before doTick can turn the staging point into an earlier contact.
-        // The exit's contact rules still see every physics sample; the drive must not manufacture a spare landing.
-        if (drive.landY != null && next <= drive.landY + .25D + 1e-6) { land(drive, view); return; }
+        if (drive.landY != null && next <= drive.landY + .25D + 1e-6) {
+            // W262 (R288): a real client sends one move packet per tick. Its last airborne packet stays less than one
+            // server fall step above the pad; the server then runs a full tick, whose temporary step reaches the pad,
+            // and the landing packet follows at the next tick. Only the named artificial pair lands at once.
+            drive.staged = view.server().getTickCount(); drive.stagedY = next; drive.physicsY = Double.NaN;
+            if (drive.pair) { land(drive, view); return; }
+        }
         if (drive.landY == null && drive.sent >= drive.steps) {
             drive.descending = false;
             LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=steps sent={} airborne={} {}", drive.logical, drive.sent,
@@ -350,12 +380,13 @@ final class BayPassengerExitReleaseDrive {
             player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), drive.landY, player.getZ(), true));
         } finally { drive.capturing = false; drive.descending = false; }
         var after = Measure.take(view);
+        drive.landed = view.server().getTickCount();
         long cancelled = drive.attacks.stream().filter(attack -> attack.endsWith(":true")).count();
         LOGGER.info("ARCE_RELEASE_BAY_EXIT_LANDED logical={} fall={} landingHealth={}>{} attacks=[{}] cancelled={} landedY={} onGround={} chunks={}>{} "
-                        + "tickets={} authority={} {}", drive.logical, drive.fall, before.health(), after.health(),
-                String.join(",", drive.attacks), cancelled, player.getY(), player.onGround(), before.chunks(), after.chunks(),
-                before.ticketChange(after), before.sameAuthority(after) ? "same" : "changed",
-                BayPassengerExitReleaseTest.View.of(view.server(), drive.logical).describe());
+                        + "tickets={} authority={} staged={} stagedY={} physicsY={} padY={} {}", drive.logical, drive.fall, before.health(),
+                after.health(), String.join(",", drive.attacks), cancelled, player.getY(), player.onGround(), before.chunks(), after.chunks(),
+                before.ticketChange(after), before.sameAuthority(after) ? "same" : "changed", drive.staged, drive.stagedY, drive.physicsY,
+                drive.landY, BayPassengerExitReleaseTest.View.of(view.server(), drive.logical).describe());
     }
 
     /** The pad top that a zero-step descent lands on; damage attempts are recorded only while that landing packet runs. */

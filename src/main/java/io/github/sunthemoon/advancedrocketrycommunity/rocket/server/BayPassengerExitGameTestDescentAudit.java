@@ -43,7 +43,7 @@ final class BayPassengerExitGameTestDescentAudit {
     static void enclose(BayPassengerExitGameTestFixture fixture) {
         if (!Set.of(ORDINARY, FIRST_TICK, DRIPSTONE, ZERO_LANDING, NON_FALL_LANDING, CANCELLED_FALL,
                 REENTRANT_DAMAGE, EXPIRY, TELEPORT, EARLY_CONTINUOUS, SECOND_CORRECTION,
-                EARLY_DISCONTINUITY, AMBIENT_FLUID, DESCENT, PACKET_LANDING).contains(fixture.scenario)) { return; }
+                EARLY_DISCONTINUITY, AMBIENT_FLUID, DESCENT, PACKET_LANDING, PACKET_PAIR, FALL_2_1, FALL_3_9).contains(fixture.scenario)) { return; }
         var level = fixture.helper.getLevel();
         if (fixture.scenario == AMBIENT_FLUID) {
             var source = fixture.origin.offset(4, 48, 0);

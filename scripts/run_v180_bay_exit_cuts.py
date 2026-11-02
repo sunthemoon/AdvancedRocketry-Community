@@ -137,6 +137,18 @@ def check_landed(landed: dict, case: str, granted: bool) -> None:
     require(landed["offer"] in ("closed", "none"), f"{case}: a landing left a live offer: {landed}")
 
 
+def check_real_timing(landed: dict, case: str) -> None:
+    """W262 (R288): a descent lands the way a real client does. Its last airborne packet stays at most 0.25 above the pad,
+    less than one server fall step; vanilla's temporary step then reaches the pad at PlayerTick END in one full server tick;
+    the landing packet follows at the next tick. Two packets bunched into one tick are not this case's stimulus."""
+    staged, landed_tick = int(landed["staged"]), int(landed["tick"])
+    pad, staged_y, physics_y = (float(landed[key]) for key in ("padY", "stagedY", "physicsY"))
+    require(staged >= 0 and landed_tick == staged + 1,
+            f"{case}: the landing packet did not follow the last airborne packet by one full server tick: {landed}")
+    require(0.01 < staged_y - pad <= 0.25 + 1e-6, f"{case}: the last airborne packet was not just above the pad: {landed}")
+    require(physics_y == pad, f"{case}: vanilla's temporary step did not reach the pad between the two packets: {landed}")
+
+
 def check_closed(state: dict, case: str, left: dict) -> None:
     """After expiry, a trusted move, a teleport or a landing: no live offer, the history and its deadline unchanged."""
     require(state["offer"] != "live", f"{case}: the offer is still live: {state}")
@@ -330,7 +342,11 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         run.exit(f"descend {logical} 0", "DESCEND")
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
         observed["landed"] = landed
-        check_landed(landed, case, True)
+        check_real_timing(landed, case)
+        try:
+            check_landed(landed, case, True)
+        except smoke.SmokeError as failure:  # name the observation that ended the offer, if any
+            raise smoke.SmokeError(f"{failure} closings={closings(lines, logical)}") from failure
         observed["closing"] = await_closing(run, logical, case, int(landed["tick"]), "the landing")
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the landing's revocation", 10)
         check_closed(observed["after"], case, left)
@@ -363,6 +379,7 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         run.exit(f"descend {logical} 0", "DESCEND")
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
         observed["landed"] = landed
+        check_real_timing(landed, case)
         check_landed(landed, case, False)
     elif spec["phase"] == "OFFER":
         observed["after"] = require_live(run, logical, case)
