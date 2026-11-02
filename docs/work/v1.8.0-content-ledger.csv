@@ -89,7 +89,7 @@ block:hotTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_sand,ADR-063,M
 block:hydrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:hydrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:intake,REDESIGNED,v1.6.0,advancedrocketrycommunity:gas_intake_module,ADR-051,gas collection is a logical mission,
 block:landingfloat,DEFERRED,post-2.0,-,ADR-062,landing on lava and other non-water liquids needs a landing-site rule change,
-block:landingPad,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:landing_pad,ADR-062 ADR-065,named landing pads as flight targets with occupancy checks,docs/work/v1.8.0-c17b-station/VERIFICATION.md
+block:landingPad,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:landing_pad,ADR-062 ADR-065,named landing pads as flight targets with occupancy checks; W261-fix R289 upstream landing pad tile on every face; docs/provenance/v1.8.0-w261-landing-pad.json; retained NEW art unbound; human review and V1 pending,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:lathe,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lathe,ADR-062 ADR-064,rods,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:launchpad,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0 ADR-062,the assembler scans connected blocks; no pad bounds,
 block:lightSource,REJECTED,-,-,ADR-055 ADR-062,technical light block of the legacy laser drill,
