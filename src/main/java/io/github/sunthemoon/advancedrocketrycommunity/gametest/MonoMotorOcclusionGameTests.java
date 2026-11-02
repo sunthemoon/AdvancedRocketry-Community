@@ -21,7 +21,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * W249-R2: the mono motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
+ * W249-R2/W255: the chemical motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
  * {@code isOpaqueCube} returned false. Block light passes through a motor into the cell beneath it. Collision, the
  * sturdy top face and atmosphere sealing stay a full cube, and sky light is still attenuated by one level, so the
  * server rules that read those properties see no change.
