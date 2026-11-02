@@ -13,7 +13,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** New MIT acquisition recipe and original code-drawn icon; no legacy or official art copied. */
+/** New MIT acquisition recipe and presentation JSON; W265 binds the provenance-recorded legacy flat icon. */
 public final class V180LaserGunData implements DataProvider {
     public static final String ID = "advancedrocketrycommunity:basic_laser_gun";
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/item/basic_laser_gun.png";
@@ -25,7 +25,16 @@ public final class V180LaserGunData implements DataProvider {
     }
     public static Map<String, JsonObject> clientFiles() {
         return Map.of("assets/advancedrocketrycommunity/models/item/basic_laser_gun.json", json("""
-                {"parent":"minecraft:item/handheld","textures":{"layer0":"advancedrocketrycommunity:item/basic_laser_gun"}}
+                {
+                  "parent":"minecraft:item/generated",
+                  "textures":{"layer0":"advancedrocketrycommunity:item/basiclasergun"},
+                  "display":{
+                    "firstperson_righthand":{"rotation":[0,-90,0],"translation":[1.13,3.2,1.13],"scale":[0.68,0.68,0.68]},
+                    "firstperson_lefthand":{"rotation":[0,90,0],"translation":[1.13,3.2,1.13],"scale":[0.68,0.68,0.68]},
+                    "thirdperson_righthand":{"rotation":[-80,260,-150],"translation":[-1,5,2.5],"scale":[0.9,0.9,0.9]},
+                    "thirdperson_lefthand":{"rotation":[-80,-280,150],"translation":[-1,5,2.5],"scale":[0.9,0.9,0.9]}
+                  }
+                }
                 """));
     }
     public static Map<String, JsonObject> serverFiles() {
