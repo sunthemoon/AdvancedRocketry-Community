@@ -6,7 +6,9 @@ STAGED pause, launches the bay forced-stop fixture with a facility-owned surviva
 ``arce bay release-test exit fixture``), and waits until the in-session INTENT hold gives the rider a checked exit:
 the claim, its acknowledged INTENT, the exit lease and both mapped observers. After ``save-all flush`` (the rocket at
 altitude and the seated rider on disk) the case drives one exit to its phase, the way a client does, and kills the
-server there. Two restarts with ``bayRegistryBlocked=true`` then show B10's REPAIR hold with:
+server there. X2, X4, X5 and X8 first run a second ``save-all flush`` after the phase (W257-R3), so their restarts load a
+save that contains the exit: the rider's player file must hold it detached at its position at the cut. The other cases
+are crash cuts after an unsaved exit. Two restarts with ``bayRegistryBlocked=true`` then show B10's REPAIR hold with:
 
 * no exit state (W230 R-043: live slots, refusals and the UUID/T history are RAM only);
 * T still PREPARED with the rider's seat, and the rocket's own manifest seat unchanged;
@@ -29,6 +31,7 @@ import time
 import uuid
 import zipfile
 
+import loader_cut_nbt as nbt
 import run_v180_bay_forced_stop as bay
 
 smoke = bay.smoke
@@ -42,19 +45,20 @@ HELD_RECEIPT = ("INTENT", "NONE")
 DEADLINE_TICKS = 200  # W230 section 4.2: the fixed first-exit deadline
 LANDING_DROP = 10  # BayPassengerExitReleaseTest.LANDING_DROP
 FALL_CASES = ("OFFER", "DESCENT", "CORRECTION", "LANDING", "EXPIRY", "TRUSTED", "REVOKED")
-# phase: the exit's state at the kill; mode: sneak (vanilla dismount), input (the sneak input packet) or menu (held LEAVE).
+# phase: the exit's state at the kill; mode: sneak (vanilla dismount), input (the sneak input packet) or menu (held LEAVE);
+# flush: a second save-all flush after the phase and before the kill (W257-R3).
 # then: a stimulus the fixture applies at the END of the exit's own tick, before vanilla's tracker correction and before
 # the server-side player tick first moves the rider. X2, X4, X5 and X7 need the offer to survive later ticks.
 CASES = {
     "X0_CONTROL": dict(phase="NONE"),
     "X1_OFFER": dict(phase="OFFER", mode="input"),
-    "X2_DESCENT": dict(phase="DESCENT", mode="sneak", steps=3),
+    "X2_DESCENT": dict(phase="DESCENT", mode="sneak", steps=3, flush=True),
     "X3_CORRECTION": dict(phase="CORRECTION", mode="sneak"),
-    "X4_LANDING": dict(phase="LANDING", mode="sneak"),
-    "X5_EXPIRY": dict(phase="EXPIRY", mode="sneak"),
+    "X4_LANDING": dict(phase="LANDING", mode="sneak", flush=True),
+    "X5_EXPIRY": dict(phase="EXPIRY", mode="sneak", flush=True),
     "X6_TRUSTED": dict(phase="TRUSTED", mode="sneak", then="move"),
     "X7_REVOKED": dict(phase="REVOKED", mode="sneak"),
-    "X8_SAFE_MENU": dict(phase="SAFE", mode="menu"),
+    "X8_SAFE_MENU": dict(phase="SAFE", mode="menu", flush=True),
     "X9_FIRST_TICK": dict(phase="FIRST_TICK", mode="sneak", then="first", smoke="GRANTED"),
     "X10_FIRST_TICK_REVOKED": dict(phase="FIRST_TICK_REVOKED", mode="sneak", then="first-revoked", smoke="REVOKED"),
 }
@@ -147,6 +151,35 @@ def check_real_timing(landed: dict, case: str) -> None:
             f"{case}: the landing packet did not follow the last airborne packet by one full server tick: {landed}")
     require(0.01 < staged_y - pad <= 0.25 + 1e-6, f"{case}: the last airborne packet was not just above the pad: {landed}")
     require(physics_y == pad, f"{case}: vanilla's temporary step did not reach the pad between the two packets: {landed}")
+
+
+def check_counts(before: dict, after: dict, case: str, what: str) -> dict:
+    """W257-R3: the loaded-chunk and ticket counts stay the same across a descent or a wait in which the probe runs."""
+    counts = {key: [before[key], after[key]] for key in ("loadedChunks", "ticketCount")}
+    require(all(int(old) >= 0 and old == new for old, new in counts.values()),
+            f"{case}: {what} changed the loaded-chunk or ticket count: {counts}")
+    return counts
+
+
+def saved_rider(world: Path) -> dict:
+    """W257-R3: the rider's player file after the kill: its saved position and whether it was saved aboard a vehicle."""
+    path = world / "playerdata" / f"{RIDER}.dat"
+    require(path.is_file(), f"No saved player file for the rider: {path}")
+    try:
+        root = nbt.plain(nbt.read_gzip(path)[1])
+    except (OSError, EOFError, nbt.NbtError) as failure:
+        raise smoke.SmokeError(f"The rider's player file is unreadable: {failure}") from failure
+    position = root.get("Pos")
+    require(isinstance(position, list) and len(position) == 3, f"The rider's saved position is missing: {position!r}")
+    return dict(x=float(position[0]), y=float(position[1]), z=float(position[2]), riding="RootVehicle" in root,
+                sha256=bay.digest(path))
+
+
+def check_saved_rider(saved: dict, case: str, at_cut: dict | None) -> None:
+    """A flushed cut's save contains the exit: the rider detached, at its position at the cut; the others are recorded."""
+    if CASES[case].get("flush"):
+        require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]),
+                f"{case}: the save after the phase does not hold the exited rider: {saved}; at the cut: {at_cut}")
 
 
 def check_closed(state: dict, case: str, left: dict) -> None:
@@ -337,6 +370,7 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         require(descent["stopped"] == "steps" and descent["sent"] == str(spec["steps"]) and descent["airborne"] == "true"
                 and descent["offer"] == "live", f"{case}: the descent did not stay a live airborne offer: {descent} {closings(lines, logical)}")
         require(float(descent["y"]) <= float(left["y"]) - 3 * spec["steps"] + 1e-6, f"{case}: the rider did not descend: {descent}")
+        observed["counts"] = check_counts(left, descent, case, "the descent")
     elif spec["phase"] == "LANDING":
         observed["pad"] = run.exit(f"pad {logical} below", "PAD")
         run.exit(f"descend {logical} 0", "DESCEND")
@@ -352,6 +386,7 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "EXPIRY":
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the deadline's revocation", 30)
+        observed["counts"] = check_counts(left, observed["after"], case, "the wait to the deadline")
         observed["closing"] = await_closing(run, logical, case, int(left["deadline"]), "the deadline")
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "TRUSTED":
@@ -444,6 +479,8 @@ def first_start(run: Run, case: str, world: Path) -> tuple[dict, dict]:
         observed["at_cut"] = run.state(fixture["logical"])
         observed["at_cut_status_after"] = run.status(fixture["logical"])
         check_status_unchanged(observed["at_cut_status"], observed["at_cut_status_after"], case)
+    if CASES[case].get("flush"):  # W257-R3: the restarts then load a save that contains the exit and its phase
+        observed["saved_after_phase"] = run.send("save-all flush", bay.SAVED, 120).strip()
     require(not any(UNAVAILABLE in line for line in process.lines), f"{case}: a pinned observer was unavailable")
     run.end("kill", run.args.exit_timeout)
     return fixture, observed
@@ -461,7 +498,8 @@ def run_case(run: Run, case: str) -> dict:
     row["fixture"] = fixture
     receipts = world / "data" / bay.RECEIPTS
     require(receipts.is_file(), f"{case}: no receipt file at the cut")
-    row["cut_disk"] = dict(receipts=bay.digest(receipts))
+    row["cut_disk"] = dict(receipts=bay.digest(receipts), rider=saved_rider(world))
+    check_saved_rider(row["cut_disk"]["rider"], case, row["first_start"].get("at_cut"))
     row["restarts"] = []
     for restart in (1, 2):
         process = run.start(case, restart, {"bayRegistryBlocked": "true"})
@@ -478,6 +516,9 @@ def run_case(run: Run, case: str) -> dict:
         if restart == 1:
             entry["login"] = run.exit(f"login {fixture['logical']}", "LOGIN")
             check_restart_state(entry["login"], case, restart, True)
+            if CASES[case].get("flush"):  # the exited rider returns where the save after the phase put it
+                require(float(entry["login"]["y"]) == row["cut_disk"]["rider"]["y"],
+                        f"{case}/{restart}: the rider did not return at its saved exit position: {entry['login']}")
             assert run.process is not None
             try:  # the existing held-login queue keeps the seat and expires after 200 ticks; recorded, not required
                 entry["login_expired"] = run.wait_after(EXPIRED, 0, 20).strip()

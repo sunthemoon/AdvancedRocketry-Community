@@ -243,14 +243,17 @@ final class BayPassengerExitReleaseTest {
         boolean counter() { return exits != null && rider != null && exits.motion.generation(rider) != null; }
         boolean landing() { return exits != null && exits.landing.available(); }
 
-        /** The fields every report shares: the RAM exit state, the rider, T's seat and the rocket's seat. */
+        /**
+         * The fields every report shares: the RAM exit state, the rider, T's seat and the rocket's seat, and (W257-R3) the
+         * overworld's loaded-chunk and ticket counts.
+         */
         String describe() {
             var slot = exits == null || rider == null ? null : exits.state.live.get(rider);
             var history = exits == null || record == null ? null : exits.state.history(RIDER, record.transferId());
             String offer = slot == null || slot.descent == null ? "none" : slot.descent.closed ? "closed" : "live";
             return String.format(Locale.ROOT, "tick=%d service=%s live=%d refusals=%d histories=%d rider=%s mounted=%s y=%s "
                             + "health=%s gameMode=%s slot=%s ordinal=%d offer=%s accepted=%s history=%s first=%d deadline=%d transfer=%s seat=%d "
-                            + "rocket=%s rocketY=%s rocketSeat=%d claim=%s hold=%s reason=%s observer=%s landing=%s",
+                            + "rocket=%s rocketY=%s rocketSeat=%d claim=%s hold=%s reason=%s observer=%s landing=%s loadedChunks=%d ticketCount=%d",
                     server.getTickCount(), exits != null, exits == null ? -1 : exits.state.live.size(),
                     exits == null ? -1 : exits.state.refusals.size(), exits == null ? -1 : exits.state.histories(),
                     rider == null ? "offline" : "online", rider != null && rocket != null && rider.getVehicle() == rocket,
@@ -265,7 +268,8 @@ final class BayPassengerExitReleaseTest {
                     rocket == null ? "NONE" : rocket.getUUID(), rocket == null ? "NONE" : rocket.getY(),
                     rocket == null ? -1 : seat(rocket.flightData().map(data -> data.passengers()).orElse(null)),
                     claim == null ? "NONE" : claim.stage().name(), claim == null ? "NONE" : claim.hold().name(),
-                    claim == null ? "NONE" : claim.reason(), counter(), landing());
+                    claim == null ? "NONE" : claim.reason(), counter(), landing(),
+                    server.overworld().getChunkSource().getLoadedChunksCount(), BayPassengerExitReleaseDrive.ticketCount(server.overworld()));
         }
     }
 }

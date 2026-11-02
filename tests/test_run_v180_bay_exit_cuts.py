@@ -9,6 +9,7 @@ import zipfile
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import loader_cut_nbt as nbt
 import run_v180_bay_exit_cuts as runner
 
 SmokeError = runner.smoke.SmokeError
@@ -21,7 +22,7 @@ def describe(**overrides) -> str:
                   y="51.5", health="20.0", gameMode="survival", slot="NO_SAFE_EXIT", ordinal="0", offer="live",
                   accepted="false", history="issued", first="390", deadline="590", transfer="PREPARED", seat="0",
                   rocket="33333333-3333-4333-8333-333333333333", rocketY="50.0", rocketSeat="0", claim="OUTCOMES",
-                  hold="NONE", reason="NONE", observer="true", landing="true")
+                  hold="NONE", reason="NONE", observer="true", landing="true", loadedChunks="2209", ticketCount="317")
     values.update(overrides)
     return " ".join(f"{key}={value}" for key, value in values.items())
 
@@ -52,6 +53,10 @@ class CaseTable(unittest.TestCase):
         self.assertLessEqual(len(runner.CASES) * runner.STARTS_PER_CASE, 60)
         self.assertEqual({"GRANTED", "REVOKED"}, {spec["smoke"] for spec in runner.CASES.values() if "smoke" in spec})
         self.assertEqual({"sneak", "input", "menu"}, {spec["mode"] for spec in runner.CASES.values() if "mode" in spec})
+
+    def test_w257_r3_flushes_the_save_after_the_descent_landing_expiry_and_safe_exit(self):
+        self.assertEqual({"X2_DESCENT", "X4_LANDING", "X5_EXPIRY", "X8_SAFE_MENU"},
+                         {case for case, spec in runner.CASES.items() if spec.get("flush")})
 
 
 class SessionRoot(unittest.TestCase):
@@ -167,6 +172,56 @@ class ClosedAndRestartChecks(unittest.TestCase):
                        dict(rider="online")):
             with self.subTest(change=change), self.assertRaises(SmokeError):
                 runner.check_restart_state(self.state(**dict(clean, **change)), "X4_LANDING", 1, False)
+
+
+class SavedRiderAndCounts(unittest.TestCase):
+    def player_file(self, directory: Path, y: float, riding: bool) -> Path:
+        root = {"Pos": nbt.Tag(nbt.LIST, (nbt.DOUBLE, [nbt.Tag(nbt.DOUBLE, value) for value in (8.5, y, 8.5)])),
+                "Health": nbt.Tag(nbt.FLOAT, 20.0)}
+        if riding:
+            root["RootVehicle"] = nbt.Tag(nbt.COMPOUND, {"Entity": nbt.Tag(nbt.COMPOUND, {
+                "Pos": nbt.Tag(nbt.LIST, (nbt.DOUBLE, [nbt.Tag(nbt.DOUBLE, value) for value in (8.5, 50.0, 8.5)]))})})
+        (directory / "playerdata").mkdir(exist_ok=True)
+        path = directory / "playerdata" / f"{runner.RIDER}.dat"
+        nbt.write_gzip(path, b"", nbt.Tag(nbt.COMPOUND, root))
+        return directory
+
+    def test_the_player_file_gives_the_saved_position_and_mount(self):
+        with tempfile.TemporaryDirectory() as directory:
+            seated = runner.saved_rider(self.player_file(Path(directory), 51.15, True))
+            self.assertEqual((51.15, True), (seated["y"], seated["riding"])); self.assertEqual(64, len(seated["sha256"]))
+        with tempfile.TemporaryDirectory() as directory:
+            exited = runner.saved_rider(self.player_file(Path(directory), 41.0, False))
+            self.assertEqual((41.0, False), (exited["y"], exited["riding"]))
+
+    def test_a_missing_or_unreadable_player_file_refuses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(SmokeError):
+                runner.saved_rider(Path(directory))
+            (Path(directory) / "playerdata").mkdir()
+            (Path(directory) / "playerdata" / f"{runner.RIDER}.dat").write_bytes(b"not gzip")
+            with self.assertRaises(SmokeError):
+                runner.saved_rider(Path(directory))
+
+    def test_a_flushed_cut_must_hold_the_exited_rider_where_the_cut_saw_it(self):
+        at_cut = runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(y="41.0", offer="closed"), "STATE")
+        exited = dict(y=41.0, riding=False)
+        runner.check_saved_rider(exited, "X4_LANDING", at_cut)
+        for saved, cut in ((dict(y=51.15, riding=True), at_cut), (dict(y=41.0, riding=True), at_cut),
+                           (dict(y=51.15, riding=False), at_cut), (exited, None)):
+            with self.subTest(saved=saved, cut=cut is not None), self.assertRaises(SmokeError):
+                runner.check_saved_rider(saved, "X4_LANDING", cut)
+        runner.check_saved_rider(dict(y=51.15, riding=True), "X7_REVOKED", at_cut)  # unflushed: recorded, not asserted
+
+    def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
+        state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
+        self.assertEqual({"loadedChunks": ["2209", "2209"], "ticketCount": ["317", "317"]},
+                         runner.check_counts(state(), state(tick="600"), "X5_EXPIRY", "the wait"))
+        for change in (dict(loadedChunks="2210"), dict(ticketCount="318"), dict(ticketCount="316")):
+            with self.subTest(change=change), self.assertRaises(SmokeError):
+                runner.check_counts(state(), state(**change), "X5_EXPIRY", "the wait")
+        with self.assertRaises(SmokeError):
+            runner.check_counts(state(ticketCount="-1"), state(ticketCount="-1"), "X2_DESCENT", "the descent")
 
 
 class HoldAndControl(unittest.TestCase):

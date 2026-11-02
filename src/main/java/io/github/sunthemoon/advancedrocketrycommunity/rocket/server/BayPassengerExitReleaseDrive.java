@@ -157,6 +157,20 @@ final class BayPassengerExitReleaseDrive {
         }
     }
 
+    /** W262 (W257-R3): the number of chunk tickets in this Level, read-only; -1 when they cannot be observed. */
+    static synchronized int ticketCount(ServerLevel level) {
+        try {
+            if (tickets == null) { tickets = ObfuscationReflectionHelper.findField(DistanceManager.class, "f_140761_"); }
+            int count = 0;
+            for (Object set : ((Map<?, ?>) tickets.get(level.getChunkSource().chunkMap.getDistanceManager())).values()) {
+                count += ((java.util.Collection<?>) set).size();
+            }
+            return count;
+        } catch (ReflectiveOperationException | RuntimeException failure) {
+            return -1;
+        }
+    }
+
     /** Like a client, accept the newest teleport once; every teleport since the last acceptance left one awaited. */
     static void acknowledge(Drive drive, BayPassengerExitService exits) {
         var generation = exits.motion.generation(drive.player);
