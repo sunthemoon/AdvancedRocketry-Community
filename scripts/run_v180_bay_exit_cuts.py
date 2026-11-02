@@ -293,47 +293,78 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
     left = run.exit(f"leave {logical} {spec['mode']}", "LEFT")
     check_left(left, case, bay.ORIGIN[1])
     observed["left"] = left
+    assert run.process is not None
+    lines = run.process.lines
     if spec["phase"] == "DESCENT":
         descent = run.exit(f"descend {logical} {spec['steps']}", "DESCENT", 30)
-        require(descent["stopped"] == "steps" and descent["sent"] == str(spec["steps"]) and descent["airborne"] == "true"
-                and descent["offer"] == "live", f"{case}: the descent did not stay a live airborne offer: {descent}")
-        require(float(descent["y"]) <= float(left["y"]) - 3 * spec["steps"] + 1e-6, f"{case}: the rider did not descend: {descent}")
         observed["descent"] = descent
+        require(descent["stopped"] == "steps" and descent["sent"] == str(spec["steps"]) and descent["airborne"] == "true"
+                and descent["offer"] == "live", f"{case}: the descent did not stay a live airborne offer: {descent} {closings(lines, logical)}")
+        require(float(descent["y"]) <= float(left["y"]) - 3 * spec["steps"] + 1e-6, f"{case}: the rider did not descend: {descent}")
     elif spec["phase"] == "LANDING":
         observed["pad"] = run.exit(f"pad {logical} below", "PAD")
         run.exit(f"descend {logical} 0", "DESCEND")
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
-        check_landed(landed, case, True)
         observed["landed"] = landed
+        check_landed(landed, case, True)
+        observed["closing"] = check_closing(lines, logical, case, int(landed["tick"]), "the landing")
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the landing's revocation", 10)
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "EXPIRY":
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the deadline's revocation", 30)
-        require(int(observed["after"]["tick"]) >= int(left["deadline"]), f"{case}: revoked before the deadline: {observed['after']}")
+        observed["closing"] = check_closing(lines, logical, case, int(left["deadline"]), "the deadline")
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "TRUSTED":
+        observed["before"] = require_live(run, logical, case)
         moved = run.exit(f"move {logical}", "MOVED")
+        observed["moved"] = moved
         require(moved["remounted"] == "false" and moved["offer"] != "live" and moved["live"] == "0",
                 f"{case}: the trusted move did not revoke before its refusal: {moved}")
-        observed["moved"] = moved
+        observed["closing"] = check_closing(lines, logical, case, int(moved["tick"]), "the trusted move")
         check_closed(moved, case, left)
     elif spec["phase"] == "REVOKED":
-        time.sleep(0.5)  # beyond the correction window: the teleport is the second counter step
+        time.sleep(0.5)  # beyond the correction window (start + 2 ticks): the teleport is a later counter step
+        observed["before"] = require_live(run, logical, case)
+        require(int(observed["before"]["tick"]) > int(left["first"]) + 2, f"{case}: still inside the correction window")
         teleported = run.exit(f"teleport {logical}", "TELEPORTED")
+        observed["teleported"] = teleported
         before, after = (int(value) for value in pair(teleported["counter"]))
         require(after == before + 1, f"{case}: the teleport did not step the counter once: {teleported}")
-        observed["teleported"] = teleported
         observed["revoked"] = run.poll(logical, lambda state: state["live"] == "0", "the teleport's revocation", 10)
+        observed["closing"] = check_closing(lines, logical, case, int(teleported["tick"]), "the teleport")
         check_closed(observed["revoked"], case, left)
         observed["pad"] = run.exit(f"pad {logical} below", "PAD")
         run.exit(f"descend {logical} 0", "DESCEND")
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
-        check_landed(landed, case, False)
         observed["landed"] = landed
+        check_landed(landed, case, False)
     elif spec["phase"] == "OFFER":
-        observed["after"] = run.state(logical)
-        require(observed["after"]["offer"] == "live", f"{case}: the offer is not live at the cut: {observed['after']}")
+        observed["after"] = require_live(run, logical, case)
+    observed["trace"] = [line.split("ARCE_RELEASE_BAY_EXIT_TRACE ", 1)[1].strip() for line in lines if "ARCE_RELEASE_BAY_EXIT_TRACE " in line]
+    observed["closings"] = closings(lines, logical)
     return observed
+
+
+def closings(lines: list[str], logical: str) -> list[dict]:
+    """The fixture's read-only reports of the exit service ending the tracked offer, with the observation that ended it."""
+    return [fields(line, "CLOSED") for line in lines if "ARCE_RELEASE_BAY_EXIT_CLOSED " in line and f"logical={logical} " in line]
+
+
+def check_closing(lines: list[str], logical: str, case: str, earliest: int, stimulus: str) -> dict:
+    """Exactly one end of the offer, and not before its named stimulus: nothing else ended it first."""
+    found = closings(lines, logical)
+    require(len(found) == 1, f"{case}: expected one end of the offer, found {found}")
+    require(int(found[0]["tick"]) >= earliest, f"{case}: the offer ended at tick {found[0]['tick']}, before {stimulus} at {earliest}: {found[0]}")
+    return found[0]
+
+
+def require_live(run: Run, logical: str, case: str) -> dict:
+    """The offer must still be live when the case applies its named stimulus or cut."""
+    assert run.process is not None
+    state = run.state(logical)
+    require(state["offer"] == "live" and state["live"] == "1",
+            f"{case}: the offer ended before the named stimulus: {state} {closings(run.process.lines, logical)}")
+    return state
 
 
 def first_start(run: Run, case: str, world: Path) -> tuple[dict, dict]:

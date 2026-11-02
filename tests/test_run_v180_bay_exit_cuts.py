@@ -191,6 +191,22 @@ class HoldAndControl(unittest.TestCase):
                 runner.check_outcome_line(lines, self.fixture, "X1_OFFER")
 
 
+class Closings(unittest.TestCase):
+    def line(self, tick: int, logical: str = LOGICAL) -> str:
+        return (f"[Server thread/INFO] ARCE_RELEASE_BAY_EXIT_CLOSED logical={logical} point=SERVER_END tick={tick} slot=removed "
+                "closed=true authority=true lease=true deadline=349 counter=6 window=5:true:false last=150:8.5:51.15:8.5:0.0:true:true "
+                "now=151:8.5:51.15:8.5:-0.07:true:true contact=false inspected=true first=null usage=Usage[candidates=0,_reads=3]")
+
+    def test_one_end_at_or_after_its_stimulus_passes(self):
+        lines = ["noise", self.line(360), self.line(100, logical="other")]
+        self.assertEqual("360", runner.check_closing(lines, LOGICAL, "X5_EXPIRY", 349, "the deadline")["tick"])
+
+    def test_an_earlier_end_or_a_second_end_or_none_refuses(self):
+        for lines in ([self.line(151)], [self.line(360), self.line(361)], []):
+            with self.subTest(lines=len(lines)), self.assertRaises(SmokeError):
+                runner.check_closing(lines, LOGICAL, "X5_EXPIRY", 349, "the deadline")
+
+
 class JarEvidence(unittest.TestCase):
     PREFIX = "io/github/sunthemoon/advancedrocketrycommunity/rocket/server/"
 
