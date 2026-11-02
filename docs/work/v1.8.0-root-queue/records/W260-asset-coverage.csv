@@ -1,0 +1,4 @@
+source_path,source_sha256,owning_units
+src/main/resources/assets/advancedrocketry/models/block/models/middletank.obj,e4503b6cacf3a409e2a1cdecf4d8f5059644abf6325759f9b0046e8345cf33e4,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank
+src/main/resources/assets/advancedrocketry/models/block/models/middletank.mtl,8fef88b377bd5cb7c4882d7753019a4e8de5f10dc3c8ad7d2f9e46d9692c229d,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank
+src/main/resources/assets/advancedrocketry/textures/models/tank.png,32382f871b7b972d8edb1fec3646457d39fe7d6d928e6e98a4412846cf01c89b,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank
