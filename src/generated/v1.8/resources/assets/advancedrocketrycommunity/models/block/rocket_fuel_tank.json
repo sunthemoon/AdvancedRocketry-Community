@@ -1,0 +1,9 @@
+{
+  "automatic_culling": false,
+  "flip_v": false,
+  "loader": "forge:obj",
+  "model": "advancedrocketrycommunity:models/block/models/middletank.obj",
+  "textures": {
+    "particle": "advancedrocketrycommunity:block/tank"
+  }
+}
