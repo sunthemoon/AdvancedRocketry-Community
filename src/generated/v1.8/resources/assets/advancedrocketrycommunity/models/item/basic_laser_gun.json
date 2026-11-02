@@ -1,5 +1,5 @@
 {
-  "automatic_culling": false,
+  "parent": "minecraft:item/generated",
   "display": {
     "firstperson_lefthand": {
       "rotation": [
@@ -33,74 +33,6 @@
         1.13,
         3.2,
         1.13
-      ]
-    },
-    "fixed": {
-      "rotation": [
-        0,
-        90,
-        0
-      ],
-      "scale": [
-        0.75,
-        0.75,
-        0.75
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ]
-    },
-    "ground": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        0.5,
-        0.5,
-        0.5
-      ],
-      "translation": [
-        0,
-        3,
-        0
-      ]
-    },
-    "gui": {
-      "rotation": [
-        30,
-        135,
-        0
-      ],
-      "scale": [
-        0.8,
-        0.8,
-        0.8
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ]
-    },
-    "head": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "translation": [
-        0,
-        0,
-        0
       ]
     },
     "thirdperson_lefthand": {
@@ -138,32 +70,7 @@
       ]
     }
   },
-  "flip_v": false,
-  "loader": "forge:obj",
-  "model": "advancedrocketrycommunity:models/item/models/basiclasergun.obj",
   "textures": {
-    "particle": "advancedrocketrycommunity:block/basiclasergun"
-  },
-  "transform": {
-    "matrix": [
-      [
-        0.3,
-        0,
-        0,
-        0.15
-      ],
-      [
-        0,
-        0.3,
-        0,
-        -0.0239253
-      ],
-      [
-        0,
-        0,
-        0.3,
-        -0.22499985
-      ]
-    ]
+    "layer0": "advancedrocketrycommunity:item/basiclasergun"
   }
 }

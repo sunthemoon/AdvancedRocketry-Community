@@ -13,7 +13,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** New MIT acquisition recipe and presentation JSON; W265 binds the provenance-recorded legacy mesh. */
+/** New MIT acquisition recipe and presentation JSON; W265 binds the provenance-recorded legacy flat icon. */
 public final class V180LaserGunData implements DataProvider {
     public static final String ID = "advancedrocketrycommunity:basic_laser_gun";
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/item/basic_laser_gun.png";
@@ -26,21 +26,13 @@ public final class V180LaserGunData implements DataProvider {
     public static Map<String, JsonObject> clientFiles() {
         return Map.of("assets/advancedrocketrycommunity/models/item/basic_laser_gun.json", json("""
                 {
-                  "loader":"forge:obj",
-                  "model":"advancedrocketrycommunity:models/item/models/basiclasergun.obj",
-                  "automatic_culling":false,
-                  "flip_v":false,
-                  "textures":{"particle":"advancedrocketrycommunity:block/basiclasergun"},
-                  "transform":{"matrix":[[0.3,0,0,0.15],[0,0.3,0,-0.0239253],[0,0,0.3,-0.22499985]]},
+                  "parent":"minecraft:item/generated",
+                  "textures":{"layer0":"advancedrocketrycommunity:item/basiclasergun"},
                   "display":{
                     "firstperson_righthand":{"rotation":[0,-90,0],"translation":[1.13,3.2,1.13],"scale":[0.68,0.68,0.68]},
                     "firstperson_lefthand":{"rotation":[0,90,0],"translation":[1.13,3.2,1.13],"scale":[0.68,0.68,0.68]},
                     "thirdperson_righthand":{"rotation":[-80,260,-150],"translation":[-1,5,2.5],"scale":[0.9,0.9,0.9]},
-                    "thirdperson_lefthand":{"rotation":[-80,-280,150],"translation":[-1,5,2.5],"scale":[0.9,0.9,0.9]},
-                    "gui":{"rotation":[30,135,0],"translation":[0,0,0],"scale":[0.8,0.8,0.8]},
-                    "ground":{"rotation":[0,0,0],"translation":[0,3,0],"scale":[0.5,0.5,0.5]},
-                    "fixed":{"rotation":[0,90,0],"translation":[0,0,0],"scale":[0.75,0.75,0.75]},
-                    "head":{"rotation":[0,0,0],"translation":[0,0,0],"scale":[1,1,1]}
+                    "thirdperson_lefthand":{"rotation":[-80,-280,150],"translation":[-1,5,2.5],"scale":[0.9,0.9,0.9]}
                   }
                 }
                 """));
