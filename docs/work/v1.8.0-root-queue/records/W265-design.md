@@ -53,6 +53,12 @@ The raw mesh has 206 positions, 398 faces, 1,592 baked corners and bounds
 `0.3 * p + [0.5, 0.3260747, 0.12500015]`, centering it at `[0.5,0.5,0.5]`
 with maximum extent 0.9899997. This normalization is derived from the box,
 not a mesh edit. Use Forge's matrix form to avoid implicit transform origins.
+Source inspection before implementation found that Forge 47.4.10's
+`ObjModel.makeQuad` calls `blockCenterToCorner()` on the root matrix.
+The JSON matrix must therefore specify translation
+`[0.15, -0.0239253, -0.22499985]`; that conversion adds 0.35 on each axis
+at scale 0.3, producing the corner-space map above. The test applies the
+same conversion, rather than testing only the JSON matrix in isolation.
 
 Display values below are rotation degrees, translation model pixels and
 uniform scale. Hand values transcribe the upstream item JSON, now applied

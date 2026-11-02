@@ -72,7 +72,8 @@ class V180LaserGunModelDataTest {
         ObjModelCheck.checkPng(Files.readAllBytes(png), png.toString());
 
         var transform = new TransformationHelper.Deserializer().deserialize(model().get("transform"), Transformation.class, null);
-        var matrix = transform.getMatrix();
+        // Forge ObjModel.makeQuad converts the centered root transform to the OBJ's corner coordinates.
+        var matrix = transform.blockCenterToCorner().getMatrix();
         Vector4f center = matrix.transform(new Vector4f(0, 0.579751F, 1.2499995F, 1));
         assertEquals(0.5F, center.x, 0.000001F);
         assertEquals(0.5F, center.y, 0.000001F);
