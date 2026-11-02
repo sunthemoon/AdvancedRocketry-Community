@@ -22,6 +22,9 @@ attempt) and X7 (a same-Level teleport revokes the offer: the landing is not pro
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
+from collections import Counter
 import hashlib
 import json
 from pathlib import Path
@@ -162,13 +165,32 @@ def check_real_timing(landed: dict, case: str, staged_contact: bool = True) -> N
         require(0 <= contact <= staged, f"{case}: vanilla's temporary step did not reach the pad before the landing packet: {landed}")
 
 
+def ticket_identities(state: dict) -> Counter:
+    """Read the gated reporter's complete, timestamp-free non-UNKNOWN ticket multiset; never accept missing evidence."""
+    encoded = state.get("ticketIdentities")
+    require(isinstance(encoded, str), "Missing ticket identity observation")
+    try:
+        rows = json.loads(base64.b64decode(encoded + "=" * (-len(encoded) % 4), altchars=b"-_", validate=True))
+    except (ValueError, UnicodeError, binascii.Error) as failure:
+        raise smoke.SmokeError(f"Unreadable ticket identity observation: {encoded!r}") from failure
+    require(isinstance(rows, list), "Ticket identities must be a list")
+    for row in rows:
+        require(isinstance(row, list) and len(row) == 5 and all(isinstance(row[i], str) for i in (0, 1, 3))
+                and type(row[2]) is int and row[2] >= 0 and type(row[4]) is bool,
+                f"Invalid chunk/type/level/key/force ticket identity: {row!r}")
+    return Counter(tuple(row) for row in rows)
+
+
 def check_counts(before: dict, after: dict, case: str, what: str) -> dict:
-    """W257-R3: across a descent or a wait in which the probe runs, the loaded-chunk count and the number of tickets
-    without a timeout stay the same. Timed tickets release themselves (vanilla adds a one-tick ``unknown`` ticket on every
-    loading chunk lookup, loaded or not), so their number depends on the point in the tick; it is recorded, not compared."""
-    counts = {key: [before[key], after[key]] for key in ("loadedChunks", "heldTickets", "timedTickets", "ticketTypes")}
+    """W266 (R294): across X2's descent and X5's wait, compare chunks and every non-UNKNOWN ticket identity.
+    Only the actual vanilla UNKNOWN (timeout 1) is excluded by the gated Java reporter. Other timed tickets remain
+    comparable by chunk, type, level, key and force flag; refresh timestamps alone are normalized out."""
+    counts = {key: [before.get(key), after.get(key)]
+              for key in ("loadedChunks", "heldTickets", "timedTickets", "ticketTypes", "ticketIdentities")}
     require(all(int(counts[key][0]) >= 0 and counts[key][0] == counts[key][1] for key in ("loadedChunks", "heldTickets")),
             f"{case}: {what} changed the loaded-chunk count or the tickets without a timeout: {counts}")
+    old, new = ticket_identities(before), ticket_identities(after)
+    require(old == new, f"{case}: {what} changed non-UNKNOWN tickets: removed={old - new}; added={new - old}")
     return counts
 
 

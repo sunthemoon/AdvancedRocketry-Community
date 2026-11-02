@@ -1,5 +1,6 @@
 """W254 native bay-exit cuts: the harness's checks accept the expected exit evidence and refuse every changed field."""
 from copy import deepcopy
+import base64
 import json
 from pathlib import Path
 import sys
@@ -15,6 +16,12 @@ import run_v180_bay_exit_cuts as runner
 SmokeError = runner.smoke.SmokeError
 LOGICAL = "11111111-1111-4111-8111-111111111111"
 TRANSFER = "22222222-2222-4222-8222-222222222222"
+TICKETS = [["0", "forced", 31, "[0, 0]", False], ["0", "player", 31, "", False],
+           ["1", "start", 22, "Unit", False]]
+
+
+def ticket_identities(rows) -> str:
+    return base64.urlsafe_b64encode(json.dumps(rows, separators=(",", ":")).encode()).decode().rstrip("=")
 
 
 def describe(**overrides) -> str:
@@ -23,7 +30,8 @@ def describe(**overrides) -> str:
                   accepted="false", history="issued", first="390", deadline="590", transfer="PREPARED", seat="0",
                   rocket="33333333-3333-4333-8333-333333333333", rocketY="50.0", rocketSeat="0", claim="OUTCOMES",
                   hold="NONE", reason="NONE", observer="true", landing="true", loadedChunks="2209", heldTickets="301",
-                  timedTickets="9", ticketTypes="forced:9,player:289,start:1,unknown:9")
+                  timedTickets="9", ticketTypes="forced:9,player:289,start:1,unknown:9",
+                  ticketIdentities=ticket_identities(TICKETS))
     values.update(overrides)
     return " ".join(f"{key}={value}" for key, value in values.items())
 
@@ -229,7 +237,7 @@ class SavedRiderAndCounts(unittest.TestCase):
     def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
         state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
         self.assertEqual(["2209", "2209"], runner.check_counts(state(), state(tick="600"), "X5_EXPIRY", "the wait")["loadedChunks"])
-        # Self-releasing timed tickets are recorded, not compared.
+        # Only vanilla UNKNOWN churn is excluded by the gated reporter; every other identity remains comparable.
         timed = runner.check_counts(state(), state(timedTickets="21", ticketTypes="forced:9,player:289,start:1,unknown:21"),
                                     "X5_EXPIRY", "the wait")
         self.assertEqual(["9", "21"], timed["timedTickets"])
@@ -238,6 +246,56 @@ class SavedRiderAndCounts(unittest.TestCase):
                 runner.check_counts(state(), state(**change), "X5_EXPIRY", "the wait")
         with self.assertRaises(SmokeError):
             runner.check_counts(state(heldTickets="-1"), state(heldTickets="-1"), "X2_DESCENT", "the descent")
+
+    def check_ticket_change_refused(self, rows, **diagnostics):
+        before = runner.fields("ARCE_RELEASE_BAY_EXIT_STATE " + describe(), "STATE")
+        after = dict(before, ticketIdentities=ticket_identities(rows), **diagnostics)
+        for case, phase in (("X2_DESCENT", "the descent"), ("X5_EXPIRY", "the wait")):
+            with self.subTest(case=case), self.assertRaises(SmokeError):
+                runner.check_counts(before, after, case, phase)
+
+    def test_an_added_portal_ticket_is_rejected(self):
+        self.check_ticket_change_refused(TICKETS + [["0", "portal", 30, "BlockPos{x=8,y=50,z=8}", False]],
+                                        timedTickets="10", ticketTypes="forced:9,player:289,portal:1,start:1,unknown:9")
+
+    def test_an_added_post_teleport_ticket_is_rejected(self):
+        self.check_ticket_change_refused(TICKETS + [["0", "post_teleport", 33, "42", False]], timedTickets="10")
+
+    def test_an_added_rocket_flight_ticket_is_rejected(self):
+        self.check_ticket_change_refused(TICKETS + [["0", "arce_rocket_flight", 31, LOGICAL, False]], timedTickets="10")
+
+    def test_an_added_custom_timed_ticket_is_rejected(self):
+        self.check_ticket_change_refused(TICKETS + [["0", "custom_timed", 31, "custom key", False]], timedTickets="10")
+
+    def test_a_same_total_type_replacement_is_rejected(self):
+        rows = deepcopy(TICKETS)
+        rows[1][1] = "forced"
+        self.check_ticket_change_refused(rows, ticketTypes="forced:10,player:288,start:1,unknown:9")
+
+    def test_a_changed_chunk_level_key_or_force_flag_is_rejected(self):
+        for index, value in ((0, "2"), (2, 32), (3, "another key"), (4, True)):
+            rows = deepcopy(TICKETS)
+            rows[0][index] = value
+            with self.subTest(index=index):
+                self.check_ticket_change_refused(rows)
+
+    def test_a_removed_or_duplicated_identity_is_rejected(self):
+        for rows in (TICKETS[1:], TICKETS + [TICKETS[0]]):
+            with self.subTest(rows=rows):
+                self.check_ticket_change_refused(rows)
+
+    def test_identity_order_does_not_matter(self):
+        before = runner.fields("ARCE_RELEASE_BAY_EXIT_STATE " + describe(), "STATE")
+        runner.check_counts(before, dict(before, ticketIdentities=ticket_identities(list(reversed(TICKETS)))),
+                            "X2_DESCENT", "the descent")
+
+    def test_missing_unavailable_or_malformed_identity_evidence_refuses(self):
+        before = runner.fields("ARCE_RELEASE_BAY_EXIT_STATE " + describe(), "STATE")
+        for encoded in (None, "unavailable", "!", ticket_identities({}), ticket_identities([["0", "player"]]),
+                        ticket_identities([["0", "player", True, "key", False]]),
+                        ticket_identities([["0", "player", 31, "key", "false"]])):
+            with self.subTest(encoded=encoded), self.assertRaises(SmokeError):
+                runner.check_counts(before, dict(before, ticketIdentities=encoded), "X5_EXPIRY", "the wait")
 
 
 class HoldAndControl(unittest.TestCase):
