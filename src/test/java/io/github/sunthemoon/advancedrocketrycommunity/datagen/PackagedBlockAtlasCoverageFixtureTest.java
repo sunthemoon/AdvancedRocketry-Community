@@ -87,6 +87,29 @@ class PackagedBlockAtlasCoverageFixtureTest {
         assertDoesNotThrow(this::check);
     }
 
+    @Test void generatedItemLayerIsStitchedFromItemDirectory() throws IOException {
+        generatedItemFixture();
+        assertDoesNotThrow(this::check);
+    }
+
+    @Test void generatedItemMissingLayerFails() throws IOException {
+        generatedItemFixture();
+        missing("textures/item/flat.png", NS + "item/flat");
+    }
+
+    @Test void generatedItemLayerOutsideAtlasFailsEvenWhenPresent() throws IOException {
+        generatedItemFixture();
+        sources.remove(sources.size() - 1);
+        rejected(NS + "item/flat");
+    }
+
+    private void generatedItemFixture() throws IOException {
+        sources.add(json("{\"type\":\"directory\",\"source\":\"item\",\"prefix\":\"item/\"}"));
+        write("models/item/fixture.json", "{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\""
+                + NS + "item/flat\"}}");
+        write("textures/item/flat.png", "fixture existence only; no PNG decoding in the atlas check");
+    }
+
     @Test void otherBuiltInNamesAreNotExempt() throws IOException {
         write("models/item/fixture.json", "{\"parent\":\"minecraft:builtin/not_a_real_model\"}");
         rejected("Missing classpath model minecraft:builtin/not_a_real_model");
@@ -193,6 +216,39 @@ class PackagedBlockAtlasCoverageFixtureTest {
     @Test void itemOverridesFailUntilModelled() throws IOException {
         write("models/item/fixture.json", "{\"parent\":\"" + NS + "block/first\",\"overrides\":[]}");
         rejected("overrides");
+    }
+
+    @Test void itemRootObjMaterialsAreStitched() throws IOException {
+        itemObjFixture("block/fixture");
+        assertDoesNotThrow(this::check);
+    }
+
+    @Test void itemRootMissingMeshFails() throws IOException {
+        itemObjFixture("block/fixture");
+        missing("models/block/fixture.obj", "fixture.obj");
+    }
+
+    @Test void itemRootMissingMaterialLibraryFails() throws IOException {
+        itemObjFixture("block/fixture");
+        missing("models/block/fixture.mtl", "fixture.mtl");
+    }
+
+    @Test void itemRootMaterialOutsideAtlasFails() throws IOException {
+        itemObjFixture("models/not_stitched");
+        write("textures/models/not_stitched.png", "present but not stitched");
+        rejected(NS + "models/not_stitched");
+    }
+
+    @Test void itemRootUnknownLoaderStillFails() throws IOException {
+        write("models/item/fixture.json", "{\"loader\":\"fixture:unknown\"}");
+        rejected("loader fixture:unknown");
+    }
+
+    private void itemObjFixture(String texture) throws IOException {
+        objFixture(texture);
+        String obj = Files.readString(root.resolve(ASSETS + "models/block/first.json"));
+        write("models/item/fixture.json", obj);
+        write("models/block/first.json", "{\"parent\":\"" + NS + "block/base\"}");
     }
 
     private void objFixture(String texture) throws IOException {

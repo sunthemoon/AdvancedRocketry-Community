@@ -268,7 +268,7 @@ order,pattern,handling,plan,units,reason
 267,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
 268,textures/items/jetpack.png,IMPORTED,v1.8.0,item:jetPack,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 269,textures/items/jackhammer.png,IMPORTED,v1.8.0,item:jackHammer,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
-270,textures/items/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,laser gun
+270,textures/items/basiclasergun.png,IMPORTED,v1.8.0,item:basicLaserGun,"W265-fix / R293: byte-identical flat icon at textures/item/basiclasergun.png; item/generated keeps upstream four hand transforms and vanilla defaults elsewhere. Name is free, no _classic suffix needed. Provenance PENDING_HUMAN_REVIEW."
 271,textures/items/hoverupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/0,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 272,textures/items/flightspeedupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 273,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
@@ -321,7 +321,7 @@ order,pattern,handling,plan,units,reason
 320,models/block/models/middletank.obj,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
 321,models/block/models/middletank.mtl,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
 322,models/block/models/*,IMPORT,C17a,block:fuelTank,"Remaining top/bottom/end tank OBJ/MTL only; P1 to P3 and P4 middle tank have exact imported rows (W258-R2, R286); no connected variants imported"
-323,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+323,models/item/models/basicLaserGun.*,EXCLUDE,-,-,upstream never rendered the laser gun mesh; the item used its flat icon (R293)
 324,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
 325,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
 326,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
@@ -354,7 +354,7 @@ order,pattern,handling,plan,units,reason
 353,textures/models/nuclearengine.png,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 real MTL image; byte-identical textures/block/nuclearengine.png; provenance v1.8.0-w258-nuclear-motor.json; human review pending
 354,textures/models/tank.png,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 shared middle-tank sprite; byte-identical textures/block/tank.png; provenance v1.8.0-w260-fuel-tanks.json; human review pending
 355,textures/models/cuttingmachine2.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; target textures/block/cuttingmachine2.png, the saw mesh's stitched texture; human provenance and V1 review pending"
-356,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+356,textures/models/basiclasergun.png,EXCLUDE,-,-,upstream never rendered the laser gun mesh; the item used its flat icon (R293)
 357,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
 358,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
 359,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"

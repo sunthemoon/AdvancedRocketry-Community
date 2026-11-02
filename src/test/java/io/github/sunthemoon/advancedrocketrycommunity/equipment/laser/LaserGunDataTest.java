@@ -31,15 +31,18 @@ class LaserGunDataTest {
         assertEquals("[[\"has_circuit\",\"has_the_recipe\"]]", advancement.get("requirements").toString());
         assertEquals("[\"advancedrocketrycommunity:basic_laser_gun\"]", advancement.getAsJsonObject("rewards").get("recipes").toString());
     }
-    @Test void originalIconIsDeterministicSixteenPixelRgbaAndModelOnlyReferencesResources() {
+    @Test void retainedOriginalIconIsDeterministicButModelUsesProvenanceRecordedFlatIcon() {
         byte[] png = V180LaserGunData.texture();
         assertArrayEquals(png, V180LaserGunData.texture()); assertTrue(png.length < 4096);
         var bytes = ByteBuffer.wrap(png); assertEquals(16, bytes.getInt(16)); assertEquals(16, bytes.getInt(20));
         assertEquals(6, png[25]);
         assertTrue(Arrays.stream(V180LaserGunData.grid()).allMatch(row -> row.length() == 16 && row.matches("[.56789]+")));
         var model = V180LaserGunData.clientFiles().values().iterator().next();
-        assertEquals("minecraft:item/handheld", model.get("parent").getAsString());
-        assertEquals("advancedrocketrycommunity:item/basic_laser_gun", model.getAsJsonObject("textures").get("layer0").getAsString());
+        assertEquals("minecraft:item/generated", model.get("parent").getAsString());
+        assertEquals("advancedrocketrycommunity:item/basiclasergun", model.getAsJsonObject("textures").get("layer0").getAsString());
+        assertFalse(model.has("loader"));
+        assertFalse(model.has("model"));
+        assertFalse(model.getAsJsonObject("textures").has("particle"));
     }
     @Test void bilingualKeysAreCompleteAndImmutable() {
         var en = V180LaserGunData.translations(false); var zh = V180LaserGunData.translations(true);
