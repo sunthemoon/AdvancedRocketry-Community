@@ -268,7 +268,7 @@ order,pattern,handling,plan,units,reason
 267,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
 268,textures/items/jetpack.png,IMPORTED,v1.8.0,item:jetPack,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 269,textures/items/jackhammer.png,IMPORTED,v1.8.0,item:jackHammer,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
-270,textures/items/basiclasergun.png,IMPORTED,v1.8.0,item:basicLaserGun,"W265-fix / R293: byte-identical flat icon at textures/item/basiclasergun.png; item/generated keeps upstream four hand transforms and vanilla defaults elsewhere. Name is free, no _classic suffix needed. Provenance PENDING_HUMAN_REVIEW."
+270,textures/items/basiclasergun.png,IMPORTED,v1.8.0,item:basicLaserGun,"W265-fix / R293: byte-identical flat icon at textures/item/basiclasergun.png; item/generated keeps upstream four hand transforms and vanilla defaults elsewhere. Name is free, no _classic suffix needed. docs/provenance/v1.8.0-w265-laser-gun.json; provenance PENDING_HUMAN_REVIEW."
 271,textures/items/hoverupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/0,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 272,textures/items/flightspeedupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 273,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
