@@ -9,7 +9,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Baked mono motor meshes shared by placed blocks, block items and assembled rockets (W249). */
+/** Baked chemical motor meshes shared by placed blocks, block items and assembled rockets (W249, W255). */
 public final class V180MotorModelData implements DataProvider {
     private static final String NS = ModIdentity.MOD_ID;
     private final PackOutput output;
@@ -20,9 +20,17 @@ public final class V180MotorModelData implements DataProvider {
         String legacy = switch (id) {
             case "rocket_motor" -> "rocketmotor";
             case "advanced_rocket_motor" -> "advrocketmotor";
-            default -> throw new IllegalArgumentException("Not a mono motor: " + id);
+            case "bipropellant_rocket_motor" -> "bipropellantrocketmotor";
+            case "advanced_bipropellant_rocket_motor" -> "advbipropellantrocketmotor";
+            default -> throw new IllegalArgumentException("Not a chemical motor: " + id);
         };
-        String texture = id.equals("rocket_motor") ? "combustion" : "advcombustion";
+        String texture = switch (id) {
+            case "rocket_motor" -> "combustion";
+            case "advanced_rocket_motor" -> "advcombustion";
+            case "bipropellant_rocket_motor" -> "bipropellantcombustion";
+            case "advanced_bipropellant_rocket_motor" -> "advbipropellantcombustion";
+            default -> throw new IllegalArgumentException("Not a chemical motor: " + id);
+        };
         JsonObject model = json("{\"loader\":\"forge:obj\",\"flip_v\":false,\"automatic_culling\":false}");
         model.addProperty("model", NS + ":models/block/models/" + legacy + ".obj");
         JsonObject textures = new JsonObject();
@@ -50,7 +58,7 @@ public final class V180MotorModelData implements DataProvider {
         return model;
     }
 
-    /** The advanced motor is emitted by its existing propulsion provider; only v0.5's basic models move here. */
+    /** Higher motor tiers use the existing propulsion provider; only v0.5's basic models move here. */
     public static Map<String, JsonObject> files() {
         String root = "assets/" + NS + "/models/";
         return Map.of(root + "block/rocket_motor.json", block("rocket_motor"),
@@ -63,7 +71,7 @@ public final class V180MotorModelData implements DataProvider {
                 .toArray(CompletableFuture[]::new));
     }
 
-    @Override public String getName() { return "v1.8 classic mono motor models"; }
+    @Override public String getName() { return "v1.8 classic chemical motor models"; }
 
     private static JsonObject json(String text) { return JsonParser.parseString(text).getAsJsonObject(); }
 }

@@ -21,7 +21,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * W249-R2: the mono motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
+ * W249-R2/W255: the chemical motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
  * {@code isOpaqueCube} returned false. Block light passes through a motor into the cell beneath it. Collision, the
  * sturdy top face and atmosphere sealing stay a full cube, and sky light is still attenuated by one level, so the
  * server rules that read those properties see no change.
@@ -39,6 +39,12 @@ public final class MonoMotorOcclusionGameTests {
     public static void monoMotorsDoNotOccludeAndPassLightToTheCellBeneath(GameTestHelper helper) {
         assertNonOccludingColumns(helper, List.of(ModBlocks.ROCKET_MOTOR.get().defaultBlockState(),
                 ModBlocks.ADVANCED_ROCKET_MOTOR.get().defaultBlockState()));
+    }
+
+    @GameTest(template = "empty", batch = "bipropellant_motor_occlusion", timeoutTicks = 100)
+    public static void bipropellantMotorsDoNotOccludeAndPassLightToTheCellBeneath(GameTestHelper helper) {
+        assertNonOccludingColumns(helper, List.of(ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get().defaultBlockState(),
+                ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get().defaultBlockState()));
     }
 
     /** Shared bounded fixture; each supplied state has its own enclosed light column and an opaque control. */
