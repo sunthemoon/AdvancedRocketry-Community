@@ -25,10 +25,10 @@ decided by Root (and the owner where it touches admission):
 Until one is decided, sections 1 to 6 cannot start. Record the decision (ID, date, channel) at the top of the
 campaign record.
 
-A second prerequisite comes from W254's native cuts: on a ticking connection, which every real client has, S2's fall
-offer ends two ticks after the exit, because the exit service samples the rider inside vanilla's server-side player
-tick and then sees vanilla restore the position (see [W254](W254.md), "The S2 finding"). Until Root resolves that,
-section 3's steps 3.2, 3.4 and 3.5 are expected to show an unprotected fall, and running them only records the defect.
+A second prerequisite is the source under test. Use a commit that contains W257's committed samples (R283) and W262's
+real-client landing rules (R288); record its SHA. On older sources the fall offer ends on a real client before it lands:
+two ticks after the exit before W257 ([W254](W254.md), "The S2 finding"), and one tick before the landing packet with
+W257 alone (W257-R1), so section 3's steps 3.2 and 3.5 would only record that defect. (Updated by W262, 2026-11-02.)
 
 ### 0.2 What to pin and record once
 
@@ -77,18 +77,27 @@ Build a 3x3 stone pad one block below the launch origin before the launch.
 
 Remove the pad (or start a fresh world without one). Do not do this on the owner's source world.
 
+Before 3.1, an operator places a 3x3 stone floor in the launch-origin column about ten blocks under B's seat, as the
+native X4 does. A fall of 48 blocks takes about 2.4 seconds, so the floor cannot be placed after the exit. Keep it more
+than one block above or below the launch origin's height: a floor in that column within one block of the origin's height
+is an anchor candidate (`BayExitCandidates.ordered`) and turns the exit into a safe placement. Record its coordinates.
+
 | Step | Do | See | Record |
 |---|---|---|---|
 | 3.1 | B sneaks at 48 blocks. | B detaches in place and starts to fall; B sees "No safe position found; detached in place. One limited ordinary-fall safeguard…". | B's exit position, the outcome line (`outcome=fall_offer code=NO_SAFE_EXIT candidate=0`), the time. |
-| 3.2 | Before about 10 seconds (200 ticks) pass, B lands on a stone floor placed below (by an operator) without moving sideways. | B takes no fall damage on that first landing. | B's health before and after, the time from exit to landing. |
+| 3.2 | B falls onto the floor placed before 3.1, without moving sideways. | B takes no fall damage on that first landing. Vanilla's server-side step reaches the floor one tick before B's landing packet arrives; since W262 (R288) that no longer ends the offer (W257-R1). | B's health before and after, the time from exit to landing, the server's `ARCE_BAY_EXIT` line. |
 | 3.3 | B climbs and falls again. | The second fall hurts: there is no second safeguard. | Health before and after. |
-| 3.4 | Repeat 3.1, but wait more than 10 seconds before landing. | The landing hurts: the safeguard expired. | Times and health. |
-| 3.5 | Repeat 3.1 in a new world, then move sideways more than one block in a tick, or let an operator teleport B a little. | The landing hurts: the offer ended. | What ended it, health. |
+| 3.4 | Not reachable by a real client: from 48 blocks a client lands in about 40 ticks, and fluid, levitation, flight and climbing all end the offer before the 200-tick deadline. | Mark it "not run; covered natively by X5" (W254's client that sends no moves). | Nothing. |
+| 3.5 | Repeat 3.1 in a new world, then, before B lands, let an operator teleport B a little (for example `/tp <B> ~0.1 ~ ~`) or let B throw an ender pearl. | The landing hurts: the offer ended. | Which of the two was used, what ended the offer (the server log), health. |
 | 3.6 | Repeat 3.1 onto pointed dripstone. | Dripstone damage is not prevented. | Health and the death or damage message. |
 
-W254 shows the packaged mechanism natively for a landing inside the exit's own tick (one cancelled FALL attempt, and
-none after two teleport steps), and shows that a longer descent loses the offer after two ticks. V2 shows what a real
-client sees. Record every early end with the time from the exit and the client's movement.
+W254 and W262 show the packaged mechanism natively: a landing in the exit's own tick (X9) and a ten-block landing with a
+real client's timing (X4: the landing packet one full server tick after the last airborne one) each cancel exactly one
+FALL attempt, and a teleport after the correction window (X7) or two teleport steps (X10) leave the landing unprotected.
+V2 shows what a real client sees. Record every early end with the time from the exit and the client's movement. Two
+residuals can end the offer early on a real client and are not checklist failures when the server log shows them: a
+last airborne position within 0.01 block of the floor (the next committed sample sees ordinary contact), and two move
+packets bunched into one server tick that together fall more than four blocks.
 
 ## 4. Disconnect, reconnect, death and portal
 
