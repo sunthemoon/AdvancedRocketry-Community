@@ -32,9 +32,10 @@ final class BayPassengerExitGameTestFixture {
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
         CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
-        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION, TRUSTED_TRAVEL }
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION, TRUSTED_TRAVEL, DESCENT, PACKET_LANDING, PACKET_PAIR, FALL_2_1, FALL_3_9 }
     final GameTestHelper helper;
     final Case scenario;
+    final boolean tickConnection;
     final List<ServerPlayer> players = new ArrayList<>();
     final List<EmbeddedChannel> channels = new ArrayList<>();
     final Set<Long> forcedColumns = new HashSet<>();
@@ -63,7 +64,10 @@ final class BayPassengerExitGameTestFixture {
     BayPassengerExitGameTestAudit.Mount probeMount;
     BayPassengerExitGameTestAudit.DispatchEnd probeDispatch;
 
-    BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
+    BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this(helper, scenario, false); }
+    BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario, boolean tickConnection) {
+        this.helper = helper; this.scenario = scenario; this.tickConnection = tickConnection;
+    }
     // W242-R9: GameTest-thread fixtures that have not cleaned up; each batch's @AfterBatch hook closes its leftovers.
     private static final Set<BayPassengerExitGameTestFixture> OPEN = Collections.newSetFromMap(new IdentityHashMap<>());
     void start() { OPEN.add(this); MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
@@ -83,6 +87,7 @@ final class BayPassengerExitGameTestFixture {
     public void beforeTick(TickEvent.ServerTickEvent event) { if (!closed) { pause(); } }
     @SubscribeEvent(priority = EventPriority.LOW)
     public void beforeDrain(TickEvent.ServerTickEvent event) {
+        if (!closed && tickConnection && event.phase == TickEvent.Phase.END) { BayPassengerExitTickedGameTests.pump(this); }
         if (!closed && stage == 5 && event.phase == TickEvent.Phase.END) {
             try { arbitrationLoaded = helper.getLevel().getChunkSource().getLoadedChunksCount(); arbitrationTickets = ticketSnapshot(); }
             catch (Exception error) { arbitrationAudit = error.toString(); }
@@ -169,7 +174,7 @@ final class BayPassengerExitGameTestFixture {
             }
         }
         if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
-        player = join(UUID.randomUUID());
+        player = join(BayPassengerExitTickedGameTests.drives(scenario) ? BayPassengerExitReleaseTest.RIDER : UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
         var pkg = dataPackage(owner);
         flight = transit(helper, origin, level.dimension().location(), position(helper.absolutePos(new BlockPos(12, 4, 3))),
@@ -318,6 +323,8 @@ final class BayPassengerExitGameTestFixture {
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
             case TELEPORT -> stage = 6;
+            case DESCENT -> stage = 7;
+            case PACKET_LANDING, PACKET_PAIR, FALL_2_1, FALL_3_9 -> { pad(origin); BayPassengerExitTickedGameTests.startPacketLanding(this); stage = 8; }
             case EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY -> { BayPassengerExitGameTestDescentAudit.correction(this); done(); }
             case UPWARD -> { player.setPos(player.getX(), player.getY() - 1, player.getZ()); exits.sample(player);
                 player.setPos(player.getX(), player.getY() + .1, player.getZ()); exits.sample(player); expectRevoked(); done(); }
@@ -458,6 +465,8 @@ final class BayPassengerExitGameTestFixture {
                 else { helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Newer teleport did not discard delayed placement"); }
                 done();
             } else if (stage == 4 && player.getServer().getTickCount() >= firstDeadline) { exits.sample(player); expectRevoked(); done(); }
+            else if (stage == 7 && player.getServer().getTickCount() - offer.descent.corrections.start >= 5) { done(); }
+            else if (stage == 8) { BayPassengerExitTickedGameTests.checkPacketLanding(this); }
             else if (stage == 5) { checkArbitration(); }
             else if (stage == 6 && player.getServer().getTickCount() - offer.descent.corrections.start > 2) {
                 var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10);

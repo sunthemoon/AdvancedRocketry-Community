@@ -318,82 +318,84 @@ order,pattern,handling,plan,units,reason
 317,models/block/models/bipropellantrocketmotor.obj,IMPORTED,v1.8.0,block:bipropellantrocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.obj
 318,textures/models/advbipropellantcombustion.png,IMPORTED,v1.8.0,block:advbipropellantRocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advbipropellantcombustion_classic.png
 319,textures/models/bipropellantcombustion.png,IMPORTED,v1.8.0,block:bipropellantrocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellantcombustion_classic.png
-320,models/block/models/*,IMPORT,C17a,block:nuclearrocketmotor block:fuelTank,"remaining nuclear engine and tank OBJ/MTL models; P1/P2 have exact imported rows (W249-R8, W255)"
-321,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
-322,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
-323,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
-324,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
-325,models/atmosphere.mtl,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-326,models/atmosphere.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-327,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-328,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
-329,models/areagravitycontroller.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-330,models/astrobodydataprocessor.obj,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-331,models/beacon.obj,IMPORTED,v1.8.0,block:beacon,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-332,models/blackholegenerator.obj,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-333,models/centrifuge.obj,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
-334,models/chemicalreactor.obj,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-335,models/crystalliser.obj,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-336,models/cuttingmachine.obj,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-337,models/electrolyser.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-338,models/lathe.obj,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-339,models/observatory.obj,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-340,models/orbitallaserdrill.obj,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-341,models/precisionassembler.obj,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-342,models/precisionlaseretcher.obj,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
-343,models/railgun.obj,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-344,models/rollingmachine.obj,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-345,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-346,models/spaceelevator.obj,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-347,models/warpcore.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-348,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
-349,textures/models/advcombustion.png,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advcombustion_classic.png
-350,textures/models/combustion.png,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_classic.png
-351,textures/models/nuclearengine.png,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 real MTL image; byte-identical textures/block/nuclearengine.png; provenance v1.8.0-w258-nuclear-motor.json; human review pending
-352,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-353,textures/models/cuttingmachine2.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; target textures/block/cuttingmachine2.png, the saw mesh's stitched texture; human provenance and V1 review pending"
-354,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
-355,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
-356,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
-357,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
-358,textures/models/astrobodydataprocessor.png,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-359,textures/models/blackholegenerator.png,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-360,textures/models/centrifuge.png,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
-361,textures/models/chemicalreactor.png,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-362,textures/models/crystalliser.png,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-363,textures/models/cuttingmachine.png,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-364,textures/models/diamondmetal.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-365,textures/models/electrolyser.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-366,textures/models/fan.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-367,textures/models/girder.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-368,textures/models/grid.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-369,textures/models/lathe.png,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-370,textures/models/metalplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-371,textures/models/observatory.png,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-372,textures/models/orbitallaserdrill.png,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-373,textures/models/precisionassembler.png,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-374,textures/models/precisionlaseretcher.png,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
-375,textures/models/railgun.png,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-376,textures/models/rollingmachine.png,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-377,textures/models/solararray.png,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
-378,textures/models/spaceelevator.png,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-379,textures/models/spaceelevatorcapsule.png,IMPORTED,v1.8.0,entity:ARSpaceElevatorCapsule,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
-380,textures/models/warpcore.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-381,textures/env/accretiondisk.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-382,textures/env/blackhole.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-383,textures/env/blackhole_icon.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-384,textures/env/sun3.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-385,textures/planets/lava.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-386,textures/planets/asteroid_a.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-387,textures/planets/asteroid_b.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-388,textures/planets/asteroid_c.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-389,textures/planets/asteroidleo.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-390,textures/planets/spoopy.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
-391,textures/particle/donut.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-392,textures/particle/hardsquare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-393,textures/particle/lightning.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-394,textures/particle/soft.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-395,textures/particle/softround.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-396,textures/particle/softrounddistorted.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-397,textures/entity/flare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-398,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it
+320,models/block/models/middletank.obj,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+321,models/block/models/middletank.mtl,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+322,models/block/models/*,IMPORT,C17a,block:fuelTank,"Remaining top/bottom/end tank OBJ/MTL only; P1 to P3 and P4 middle tank have exact imported rows (W258-R2, R286); no connected variants imported"
+323,models/item/models/basicLaserGun.*,IMPORT,C18b,item:basicLaserGun,laser gun OBJ/MTL
+324,models/item/models/sawBlade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+325,models/item/models/*,IMPORT,C17a,block:rocketmotor block:advRocketmotor block:fuelTank,rocket engine and tank item OBJ/MTL models
+326,models/jetpack.obj,IMPORT,C18b,item:jetPack,jetpack OBJ
+327,models/atmosphere.mtl,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+328,models/atmosphere.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+329,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+330,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
+331,models/areagravitycontroller.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+332,models/astrobodydataprocessor.obj,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+333,models/beacon.obj,IMPORTED,v1.8.0,block:beacon,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+334,models/blackholegenerator.obj,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+335,models/centrifuge.obj,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
+336,models/chemicalreactor.obj,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+337,models/crystalliser.obj,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+338,models/cuttingmachine.obj,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+339,models/electrolyser.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+340,models/lathe.obj,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+341,models/observatory.obj,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+342,models/orbitallaserdrill.obj,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+343,models/precisionassembler.obj,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+344,models/precisionlaseretcher.obj,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+345,models/railgun.obj,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+346,models/rollingmachine.obj,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+347,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+348,models/spaceelevator.obj,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+349,models/warpcore.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+350,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
+351,textures/models/advcombustion.png,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advcombustion_classic.png
+352,textures/models/combustion.png,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_classic.png
+353,textures/models/nuclearengine.png,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 real MTL image; byte-identical textures/block/nuclearengine.png; provenance v1.8.0-w258-nuclear-motor.json; human review pending
+354,textures/models/tank.png,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 shared middle-tank sprite; byte-identical textures/block/tank.png; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+355,textures/models/cuttingmachine2.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; target textures/block/cuttingmachine2.png, the saw mesh's stitched texture; human provenance and V1 review pending"
+356,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
+357,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
+358,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
+359,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
+360,textures/models/astrobodydataprocessor.png,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+361,textures/models/blackholegenerator.png,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+362,textures/models/centrifuge.png,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
+363,textures/models/chemicalreactor.png,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+364,textures/models/crystalliser.png,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+365,textures/models/cuttingmachine.png,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+366,textures/models/diamondmetal.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+367,textures/models/electrolyser.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+368,textures/models/fan.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+369,textures/models/girder.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+370,textures/models/grid.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+371,textures/models/lathe.png,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+372,textures/models/metalplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+373,textures/models/observatory.png,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+374,textures/models/orbitallaserdrill.png,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+375,textures/models/precisionassembler.png,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+376,textures/models/precisionlaseretcher.png,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+377,textures/models/railgun.png,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+378,textures/models/rollingmachine.png,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+379,textures/models/solararray.png,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+380,textures/models/spaceelevator.png,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+381,textures/models/spaceelevatorcapsule.png,IMPORTED,v1.8.0,entity:ARSpaceElevatorCapsule,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+382,textures/models/warpcore.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+383,textures/env/accretiondisk.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+384,textures/env/blackhole.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+385,textures/env/blackhole_icon.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+386,textures/env/sun3.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+387,textures/planets/lava.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+388,textures/planets/asteroid_a.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+389,textures/planets/asteroid_b.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+390,textures/planets/asteroid_c.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+391,textures/planets/asteroidleo.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+392,textures/planets/spoopy.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+393,textures/particle/donut.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+394,textures/particle/hardsquare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+395,textures/particle/lightning.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+396,textures/particle/soft.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+397,textures/particle/softround.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+398,textures/particle/softrounddistorted.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+399,textures/entity/flare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+400,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it

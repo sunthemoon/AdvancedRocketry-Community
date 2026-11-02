@@ -58,7 +58,7 @@ block:arcfurnace,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:arc_furnace,ADR-06
 block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanilla basalt replaces the legacy block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:beacon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:planetary_beacon,ADR-062 ADR-065,bounded navigation marker per body,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family,
-block:bipropellantfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:bipropellantfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_fuel_tank,ADR-062 ADR-065,propulsion tier; W260 P4 standalone middle-tank baked OBJ and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier; W255 P2 ordinary shared block/item/assembled OBJ model; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; human provenance and V1 review pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,,
 block:blastbrick,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blast_brick,ADR-062 ADR-064,arc furnace structure; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
@@ -80,7 +80,7 @@ block:enrichedLavaFluid,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:enriched_la
 block:forceField,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:force_field,ADR-062 ADR-065,technical block placed only by the projector,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:forceFieldProjector,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:force_field_projector,ADR-062 ADR-065,owner-protected bounded field through the protection chain,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:fuelingStation,REDESIGNED,v0.6.0,advancedrocketrycommunity:fuel_loader,V0.6.0 ADR-062,fuel loader; fluid fuels added in C17a,
-block:fuelTank,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_fuel_tank,ADR-026,,
+block:fuelTank,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_fuel_tank,ADR-026,W260 P4 standalone middle-tank baked OBJ and shared block item; human provenance/V1 pending,
 block:geode,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:geode_shell,ADR-063,geode world feature,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:gravityController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_gravity_controller,ADR-058 ADR-062 ADR-065,block front-end for the station gravity commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:gravityMachine,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:gravity_field_controller,ADR-058,,
@@ -105,7 +105,7 @@ block:nuclearfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_fuel_
 block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_rocket_motor,ADR-062 ADR-065,propulsion tier; W258 P3 baked OBJ nozzle and shared block item with six existing facings; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:observatory,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:observatory,ADR-051 ADR-062 ADR-066,ground survey creating ADR-051 asteroid instances,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 block:orientationController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_orientation_controller,ADR-062 ADR-065,station orientation (sky) through the checked station commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
-block:oxidizerfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxidizer_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:oxidizerfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxidizer_fuel_tank,ADR-062 ADR-065,propulsion tier; W260 P4 standalone middle-tank baked OBJ and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:oxygenCharger,PLANNED,C18a,gas charge pad,ADR-062,refills suit tanks,
 block:oxygenDetection,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:atmosphere_detector,ADR-062 ADR-066,redstone output by atmosphere state,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:oxygenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:oxygen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md

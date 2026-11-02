@@ -43,7 +43,7 @@ final class BayPassengerExitGameTestDescentAudit {
     static void enclose(BayPassengerExitGameTestFixture fixture) {
         if (!Set.of(ORDINARY, FIRST_TICK, DRIPSTONE, ZERO_LANDING, NON_FALL_LANDING, CANCELLED_FALL,
                 REENTRANT_DAMAGE, EXPIRY, TELEPORT, EARLY_CONTINUOUS, SECOND_CORRECTION,
-                EARLY_DISCONTINUITY, AMBIENT_FLUID).contains(fixture.scenario)) { return; }
+                EARLY_DISCONTINUITY, AMBIENT_FLUID, DESCENT, PACKET_LANDING, PACKET_PAIR, FALL_2_1, FALL_3_9).contains(fixture.scenario)) { return; }
         var level = fixture.helper.getLevel();
         if (fixture.scenario == AMBIENT_FLUID) {
             var source = fixture.origin.offset(4, 48, 0);
@@ -67,7 +67,8 @@ final class BayPassengerExitGameTestDescentAudit {
         if (fixture.offer == null || fixture.offer.descent == null) { return; }
         var descent = fixture.offer.descent;
         int tick = fixture.player.getServer().getTickCount();
-        if (fixture.stage != 2 && fixture.stage != 6 && (fixture.stage != 4 || tick >= fixture.firstDeadline)) { return; }
+        if (fixture.stage != 2 && fixture.stage != 6 && fixture.stage != 7
+                && (fixture.stage != 4 || tick >= fixture.firstDeadline)) { return; }
         // Observe vanilla's tracker correction before the embedded client supplies another movement.
         fixture.exits.sample(fixture.player);
         acknowledge(fixture);
