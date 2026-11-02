@@ -81,6 +81,18 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     private void offer(UUID logical) { if (!stopping) { queue.offer(logical); } }
 
+    /** Read-only identity lease, not a mount/flight permit; at most eight receipt observations. */
+    java.util.function.BooleanSupplier exitLease(RocketTransferRecord record) {
+        var claim = claims.get(record.logicalRocketId()).orElse(null);
+        if (stopping || claim == null || !claim.transfer().equals(record.transferId()) || session.unavailable()) { return () -> false; }
+        var stage = claim.stage(); var hold = claim.hold(); var refusal = claim.releaseRefusal();
+        var rows = claim.members().stream().flatMap(member -> member.receipt().stream()).toList();
+        return () -> !stopping && !session.unavailable() && claims.get(record.logicalRocketId()).orElse(null) == claim
+                && claim.stage() == stage && claim.hold() == hold && claim.releaseRefusal().equals(refusal)
+                && rows.equals(claim.members().stream().flatMap(member -> member.receipt().stream()).toList())
+                && rows.stream().allMatch(row -> session.current(row.op()).filter(row::equals).isPresent() && session.acknowledged(row.op()));
+    }
+
     /** ServerStartingEvent, after the receipt index: the session handle, the claim predicate, then the restart rows. */
     static BayTransferRecovery start(MinecraftServer server) {
         var session = EscrowRuntime.of(server).bayReceipts(server).session(server);
@@ -528,6 +540,12 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     void refuseCheckpointForTests(UUID logical) {
         EscrowTestEndpoints.requireEnabled(server);
         checkpointRefusedForTests.add(logical);
+    }
+
+    /** W242-R9: drops L's queued D0 step, so a bay-exit fixture can hold only its own rockets still; L's claim stays. */
+    void unqueueForTests(UUID logical) {
+        EscrowTestEndpoints.requireEnabled(server);
+        queue.remove(logical);
     }
 
     /** Cleanup of a claim that this slice holds until offline repair; it reports no handoff. */

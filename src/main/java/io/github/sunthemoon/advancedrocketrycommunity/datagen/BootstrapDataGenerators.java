@@ -20,6 +20,8 @@ public final class BootstrapDataGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
+        generator.addProvider(event.includeClient(), new V180BayExitLanguage(output, "en_us"));
+        generator.addProvider(event.includeClient(), new V180BayExitLanguage(output, "zh_cn"));
         generator.addProvider(event.includeClient() || event.includeServer(), new V180ResearchData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180ResearchArt(output));
         generator.addProvider(event.includeClient() || event.includeServer(),

@@ -79,20 +79,23 @@ public final class SafeCelestialTravel {
         return Destination.at(FIXED_FEET_POSITION);
     }
 
+    /** A trusted move (W230 section 5, W242-R3): detaching a bay-held rider here is never a voluntary bay exit. */
     public void teleport(ServerPlayer player, ServerLevel target, Destination destination) {
-        player.stopRiding();
-        player.setDeltaMovement(Vec3.ZERO);
-        player.fallDistance = 0.0F;
-        player.teleportTo(
-                target,
-                destination.x(),
-                destination.y(),
-                destination.z(),
-                player.getYRot(),
-                player.getXRot()
-        );
-        player.setDeltaMovement(Vec3.ZERO);
-        player.fallDistance = 0.0F;
+        try (var ignored = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.internalPassengerMove(player)) {
+            player.stopRiding();
+            player.setDeltaMovement(Vec3.ZERO);
+            player.fallDistance = 0.0F;
+            player.teleportTo(
+                    target,
+                    destination.x(),
+                    destination.y(),
+                    destination.z(),
+                    player.getYRot(),
+                    player.getXRot()
+            );
+            player.setDeltaMovement(Vec3.ZERO);
+            player.fallDistance = 0.0F;
+        }
     }
 
     public record Destination(double x, double y, double z) {
