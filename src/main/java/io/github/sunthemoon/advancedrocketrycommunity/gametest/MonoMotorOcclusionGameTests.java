@@ -37,12 +37,22 @@ public final class MonoMotorOcclusionGameTests {
 
     @GameTest(template = "empty", batch = "motor_occlusion", timeoutTicks = 100)
     public static void monoMotorsDoNotOccludeAndPassLightToTheCellBeneath(GameTestHelper helper) {
+        assertNonOccludingColumns(helper, List.of(ModBlocks.ROCKET_MOTOR.get().defaultBlockState(),
+                ModBlocks.ADVANCED_ROCKET_MOTOR.get().defaultBlockState()));
+    }
+
+    /** Shared bounded fixture; each supplied state has its own enclosed light column and an opaque control. */
+    static void assertNonOccludingColumns(GameTestHelper helper, List<BlockState> states) {
+        if (states.isEmpty() || states.size() > 6) {
+            throw new IllegalArgumentException("Expected one to six motor states");
+        }
         var driver = new GameTestTickDriver(helper);
         ServerLevel level = helper.getLevel();
-        List<Column> columns = List.of(
-                new Column(helper, ModBlocks.ROCKET_MOTOR.get(), -2, true),
-                new Column(helper, ModBlocks.ADVANCED_ROCKET_MOTOR.get(), 0, true),
-                new Column(helper, Blocks.IRON_BLOCK, 2, false));
+        List<Column> columns = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            columns.add(new Column(helper, states.get(i), i * 2 - 2, true));
+        }
+        columns.add(new Column(helper, Blocks.IRON_BLOCK.defaultBlockState(), states.size() * 2 - 2, false));
         Runnable clear = () -> columns.forEach(column -> column.clear(helper));
         try {
             for (Column column : columns) {
@@ -90,7 +100,7 @@ public final class MonoMotorOcclusionGameTests {
      * shows that the same light wave has arrived there.
      */
     private static final class Column {
-        private final Block block;
+        private final BlockState expectedState;
         private final boolean transmits;
         private final BlockPos tested;
         private final BlockPos beneath;
@@ -98,8 +108,8 @@ public final class MonoMotorOcclusionGameTests {
         private final BlockPos probe;
         private final List<BlockPos> placed = new ArrayList<>();
 
-        private Column(GameTestHelper helper, Block block, int z, boolean transmits) {
-            this.block = block;
+        private Column(GameTestHelper helper, BlockState expectedState, int z, boolean transmits) {
+            this.expectedState = expectedState;
             this.transmits = transmits;
             this.beneath = helper.absolutePos(new BlockPos(2, 2, z));
             this.tested = beneath.above();
@@ -108,7 +118,7 @@ public final class MonoMotorOcclusionGameTests {
         }
 
         private String name() {
-            return String.valueOf(ForgeRegistries.BLOCKS.getKey(block));
+            return ForgeRegistries.BLOCKS.getKey(expectedState.getBlock()) + " " + expectedState.getValues();
         }
 
         private void place(GameTestHelper helper) {
@@ -122,7 +132,7 @@ public final class MonoMotorOcclusionGameTests {
             }
             stone.forEach(pos -> set(level, pos, Blocks.STONE.defaultBlockState()));
             air.forEach(pos -> set(level, pos, Blocks.AIR.defaultBlockState()));
-            set(level, tested, block.defaultBlockState());
+            set(level, tested, expectedState);
             set(level, source, Blocks.GLOWSTONE.defaultBlockState());
         }
 
@@ -133,7 +143,7 @@ public final class MonoMotorOcclusionGameTests {
 
         private void assertProperties(GameTestHelper helper, ServerLevel level) {
             BlockState state = level.getBlockState(tested);
-            helper.assertTrue(state.is(block), "Fixture lost " + name());
+            helper.assertTrue(state.equals(expectedState), "Fixture lost " + name());
             if (!transmits) {
                 helper.assertTrue(state.canOcclude() && state.isSolidRender(level, tested)
                         && state.getLightBlock(level, tested) == 15, "Opaque control no longer blocks light");
