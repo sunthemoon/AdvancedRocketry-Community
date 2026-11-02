@@ -56,9 +56,9 @@ public final class MonoMotorOcclusionGameTests {
         ServerLevel level = helper.getLevel();
         List<Column> columns = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
-            columns.add(new Column(helper, states.get(i), i * 2 - 2, true));
+            columns.add(new Column(helper, states.get(i), columnBase(i), true));
         }
-        columns.add(new Column(helper, Blocks.IRON_BLOCK.defaultBlockState(), states.size() * 2 - 2, false));
+        columns.add(new Column(helper, Blocks.IRON_BLOCK.defaultBlockState(), columnBase(states.size()), false));
         Runnable clear = () -> columns.forEach(column -> column.clear(helper));
         try {
             for (Column column : columns) {
@@ -70,6 +70,11 @@ public final class MonoMotorOcclusionGameTests {
             clear.run();
             throw failure;
         }
+    }
+
+    static BlockPos columnBase(int index) {
+        if (index < 0 || index > 6) throw new IllegalArgumentException("Expected column index zero to six");
+        return new BlockPos(2, 2, index * 2 - 2);
     }
 
     private static void await(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, List<Column> columns,
@@ -114,13 +119,13 @@ public final class MonoMotorOcclusionGameTests {
         private final BlockPos probe;
         private final List<BlockPos> placed = new ArrayList<>();
 
-        private Column(GameTestHelper helper, BlockState expectedState, int z, boolean transmits) {
+        private Column(GameTestHelper helper, BlockState expectedState, BlockPos base, boolean transmits) {
             this.expectedState = expectedState;
             this.transmits = transmits;
-            this.beneath = helper.absolutePos(new BlockPos(2, 2, z));
+            this.beneath = helper.absolutePos(base);
             this.tested = beneath.above();
             this.source = tested.above();
-            this.probe = helper.absolutePos(new BlockPos(1, 3, z));
+            this.probe = helper.absolutePos(base.above().west());
         }
 
         private String name() {
