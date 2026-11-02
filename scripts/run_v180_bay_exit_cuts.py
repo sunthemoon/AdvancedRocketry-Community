@@ -166,12 +166,20 @@ def held(status: dict, fixture: dict) -> bool:
 
 
 def check_cut_status(status: dict, fixture: dict, case: str) -> None:
-    """At the cut: the in-session claim holds T in TRANSIT with its acknowledged INTENT, packages unchanged."""
+    """At the cut: the in-session claim waits for D2's registry proof with T in TRANSIT, its acknowledged INTENT and both
+    packages unchanged. D2's registration exists in RAM (owned 1) while its registry write is paused at STAGED."""
     data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
-    require(status["claim"] != "NONE" and status["transfer"] == "PREPARED" and status["state"] == "TRANSIT"
+    require(status["claim"] == "OUTCOMES" and status["reason"] == "BAY_REGISTRY_PROOF" and status["transfer"] == "PREPARED"
+            and status["state"] == "TRANSIT" and float(status["y"]) == float(bay.ORIGIN[1] + bay.ALTITUDE)
             and status["locked"] == "true" and len(data) == 1 and (data[0]["phase"], data[0]["reason"]) == HELD_RECEIPT
-            and data[0]["acknowledged"] and status["packages"] == fixture["packages"] and status["owned"] == 0,
+            and data[0]["acknowledged"] and data[0]["registered"] and len(status["receipts"]) == 1
+            and status["packages"] == fixture["packages"] and status["consumed"] == [None, None] and status["owned"] == 1,
             f"{case}: the in-session hold is not the expected INTENT hold: {status}")
+
+
+def check_status_unchanged(before: dict, after: dict, case: str) -> None:
+    """The exit and its phase changed nothing the bay status reports: claim, receipts, T, rocket, packages, lock."""
+    require(before == after, f"{case}: the bay status changed across the exit: {before} -> {after}")
 
 
 def summary(status: dict, state: dict, pending: dict) -> dict:
@@ -354,7 +362,7 @@ def first_start(run: Run, case: str, world: Path) -> tuple[dict, dict]:
     if CASES[case]["phase"] != "CORRECTION":  # a frozen server answers nothing more
         observed["at_cut"] = run.state(fixture["logical"])
         observed["at_cut_status_after"] = run.status(fixture["logical"])
-        check_cut_status(observed["at_cut_status_after"], fixture, case)
+        check_status_unchanged(observed["at_cut_status"], observed["at_cut_status_after"], case)
     require(not any(UNAVAILABLE in line for line in process.lines), f"{case}: a pinned observer was unavailable")
     run.end("kill", run.args.exit_timeout)
     return fixture, observed

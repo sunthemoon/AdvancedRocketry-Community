@@ -157,12 +157,22 @@ class HoldAndControl(unittest.TestCase):
                 status = deepcopy(self.status); status["receipts"][0][key] = value
                 self.assertFalse(runner.held(status, self.fixture))
 
-    def test_the_cut_status_needs_the_acknowledged_intent_hold(self):
-        cut = dict(self.status, claim="OUTCOMES", hold="NONE", reason="NONE")
+    def test_the_cut_status_is_the_paused_d2_registry_proof_hold(self):
+        cut = dict(self.status, claim="OUTCOMES", hold="OWNED_WAIT", reason="BAY_REGISTRY_PROOF", owned=1, consumed=[None, None],
+                   receipts=[dict(self.status["receipts"][0], registered=True)])
         runner.check_cut_status(cut, self.fixture, "X1_OFFER")
-        for key, value in dict(claim="NONE", transfer="NONE", locked="false", packages="c+b").items():
+        for key, value in dict(claim="NONE", reason="BAY_RECEIPT_WRITE", transfer="NONE", locked="false", packages="c+b",
+                               y="2.0", owned=0, consumed=["op", None]).items():
             with self.subTest(key=key), self.assertRaises(SmokeError):
                 runner.check_cut_status(dict(cut, **{key: value}), self.fixture, "X1_OFFER")
+        for key, value in dict(registered=False, acknowledged=False, phase="REGISTERED").items():
+            with self.subTest(receipt=key), self.assertRaises(SmokeError):
+                runner.check_cut_status(dict(cut, receipts=[dict(cut["receipts"][0], **{key: value})]), self.fixture, "X1_OFFER")
+
+    def test_the_exit_must_leave_the_bay_status_unchanged(self):
+        runner.check_status_unchanged(deepcopy(self.status), deepcopy(self.status), "X1_OFFER")
+        with self.assertRaises(SmokeError):
+            runner.check_status_unchanged(self.status, dict(self.status, y="49.0"), "X1_OFFER")
 
     def test_every_exit_case_must_restart_to_the_controls_outcome(self):
         row = lambda case, seat: dict(case=case, status="PASS", restarts=[dict(summary=dict(seat=seat, live="0"))] * 2)
