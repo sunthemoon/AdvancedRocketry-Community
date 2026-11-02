@@ -12,6 +12,22 @@
     "IMPORTED": 89,
     "REVIEW": 10
   },
+  "counts": {
+    "manifest": 898,
+    "changed_rules": 80,
+    "excluded": 85,
+    "allowlist_before": 247,
+    "allowlist_after": 162,
+    "planned": 16
+  },
+  "prepared_at": "2026-11-03",
+  "beacon_new_releases": [
+    "textures/blocks/controlpanel.png",
+    "textures/blocks/cuttingmachine.png",
+    "textures/blocks/cuttingmachine_active.png",
+    "textures/blocks/fuelingmachine.png",
+    "textures/blocks/machineprecisionlaseretcher.png"
+  ],
   "allowlist_before_sha256": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
   "allowlist_after_sha256": "aba84a60d93bf847e2a84ded5829c0447140d5a0902e6b69e13d41b0515e5f8d",
   "source_sha256": {

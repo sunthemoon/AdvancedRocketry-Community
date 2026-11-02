@@ -4488,7 +4488,7 @@
             "category": "Java (candidate; not necessarily a binding)"
           }
         ],
-        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:160-175 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
+        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:162-174 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
       },
       "all_matching_plan_rules": [
         {
@@ -4788,7 +4788,7 @@
             "category": "Java (candidate; not necessarily a binding)"
           }
         ],
-        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:160-175 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
+        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:162-174 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
       },
       "all_matching_plan_rules": [
         {
@@ -5143,7 +5143,7 @@
             "category": "Java (candidate; not necessarily a binding)"
           }
         ],
-        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:160-175 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
+        "note": "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:162-174 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
       },
       "all_matching_plan_rules": [
         {
@@ -5461,7 +5461,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -6179,7 +6179,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -6807,7 +6807,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -7683,7 +7683,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -8333,7 +8333,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -9185,7 +9185,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -9969,7 +9969,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -10970,7 +10970,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -12079,7 +12079,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -12271,7 +12271,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -12740,7 +12740,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -13601,7 +13601,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -14265,7 +14265,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -14587,7 +14587,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -15263,7 +15263,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -15854,7 +15854,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -16552,10 +16552,10 @@
               "notes": "no chips to insert",
               "evidence": ""
             },
-            "note": "The model is selected by loader.json:9,17 and ClientProxy.java:152 for loader variant 6 (guidance access hatch), not the guidance-computer block."
+            "note": "The model is selected by loader.json:9,17 and ClientProxy.java:152 for loader variant 6 (guidance access hatch); variant 14 is its state-bit counterpart. This is not the guidance-computer block."
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -19402,7 +19402,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -20167,7 +20167,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -20976,7 +20976,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -21586,7 +21586,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -22290,7 +22290,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -22967,7 +22967,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -23746,7 +23746,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -24772,7 +24772,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -25122,7 +25122,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -25751,7 +25751,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -26112,7 +26112,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -26385,7 +26385,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -26696,7 +26696,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -27220,7 +27220,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -27505,7 +27505,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -27757,7 +27757,7 @@
             "note": "The model is selected by loader.json:4,12 and ClientProxy.java:147 for loader variant 1 (satellite hatch); variant 9 is its state-bit counterpart."
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -27998,7 +27998,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -28290,7 +28290,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -28885,7 +28885,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -42050,7 +42050,7 @@
             "note": ""
           }
         ],
-        "note": "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
+        "note": "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
       },
       "source_hash_copies": [],
       "current_references": [
@@ -42424,6 +42424,6 @@
       }
     }
   ],
-  "full_scan_sha256": "c18f42192d6dae7f0eea4cf10efd54d5413721af1112817d8bb50940a5cdeb2c",
+  "full_scan_sha256": "0499601d956fcefc5643242b1b71e15f65f96589c5aefaa78f8c11cb8b18a8b8",
   "retention": "Path/hash candidates outside root-queue records, actual upstream consumers, sound event Java uses, and per-file/category scan counts; remaining lexical hits are in the external full scan."
 }

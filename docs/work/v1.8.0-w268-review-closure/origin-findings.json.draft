@@ -318,7 +318,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R017 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 2e4d6ba0bc4fa1fb2f86ee6bc62456a200a79a4a09c99de6a32ad81f15a721cd. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R017 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 2e4d6ba0bc4fa1fb2f86ee6bc62456a200a79a4a09c99de6a32ad81f15a721cd. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/atmospheredetector_active.png",
@@ -327,7 +327,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R018 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 fe52a855f30b124784f80d3e4a91d7e7acf4aa83d2c7cbdd3bf1cfeeba5b1e7b. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R018 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 fe52a855f30b124784f80d3e4a91d7e7acf4aa83d2c7cbdd3bf1cfeeba5b1e7b. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/beacon.png",
@@ -336,7 +336,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R019 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4925a6775061f753c3f140b2247fe718385c98f38e926eae73bcc66c0e346673. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
+      "basis": "DRAFT W268 R019 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4925a6775061f753c3f140b2247fe718385c98f38e926eae73bcc66c0e346673. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
     },
     {
       "asset": "textures/blocks/controlpanel.png",
@@ -345,7 +345,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R020 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 7eb980646afc6dea9b2110e003384a4b2e13b3245c39f338b4457f6b02c74da1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R020 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 7eb980646afc6dea9b2110e003384a4b2e13b3245c39f338b4457f6b02c74da1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/crystallizer.png",
@@ -354,7 +354,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R021 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 ac9f9ac3df4d64846d2f38bf614a4ffd1d203d6729d436347136dafa16f0d499. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R021 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 ac9f9ac3df4d64846d2f38bf614a4ffd1d203d6729d436347136dafa16f0d499. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/crystallizer_active.png",
@@ -363,7 +363,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R022 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 bbba5be3f386b0c96137098efa6b9b9efc1963ee48d665ed171c1f0d29b7a4ef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R022 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 bbba5be3f386b0c96137098efa6b9b9efc1963ee48d665ed171c1f0d29b7a4ef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/cuttingmachine.png",
@@ -372,7 +372,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R023 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 d4bf7f571d5d386befeae2e571e7ff0be2314829b78b175b35d4948c34f2da32. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R023 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 d4bf7f571d5d386befeae2e571e7ff0be2314829b78b175b35d4948c34f2da32. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/cuttingmachine_active.png",
@@ -381,7 +381,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R024 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 d15e5f55c7104b73e1200303b4d7a1b51f962157781f6cedd330471fd8632bef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R024 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 d15e5f55c7104b73e1200303b4d7a1b51f962157781f6cedd330471fd8632bef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/fluid/lava_flow.png",
@@ -426,7 +426,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R029 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 e3e8741da6ff8915903b873bd0871a016ff467170bdd25551c1020e2ba32f49c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
+      "basis": "DRAFT W268 R029 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 e3e8741da6ff8915903b873bd0871a016ff467170bdd25551c1020e2ba32f49c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
     },
     {
       "asset": "textures/blocks/forcefield.png.mcmeta",
@@ -435,7 +435,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R030 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a148f3e86c9bf40ad4587ee1f11d23b6296875a678a09a48e309371de00a8be0. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
+      "basis": "DRAFT W268 R030 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a148f3e86c9bf40ad4587ee1f11d23b6296875a678a09a48e309371de00a8be0. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The modern force field is not animated; its NEW sprite has no .mcmeta."
     },
     {
       "asset": "textures/blocks/forcefieldprojector.png",
@@ -444,7 +444,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R031 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 f4198630712704b190f8dcc53608e21559d99d7116c42921cd4d19b947021179. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R031 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 f4198630712704b190f8dcc53608e21559d99d7116c42921cd4d19b947021179. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/forcefieldprojector_off.png",
@@ -453,7 +453,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R032 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 f89cd2544369d59224bf0682af8d0a62e1ff6969b2cae5cf9f55a9fce9a20998. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R032 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 f89cd2544369d59224bf0682af8d0a62e1ff6969b2cae5cf9f55a9fce9a20998. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/forcefieldprojectorfront.png",
@@ -462,7 +462,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R033 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 714ffea57623c2481b91575f2d236727c527cc13cc41ba5bf12cf4cdc494030c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R033 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 714ffea57623c2481b91575f2d236727c527cc13cc41ba5bf12cf4cdc494030c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/fuelingmachine.png",
@@ -471,7 +471,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R034 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 6c01999e420211d1dcf1dd8f8a0a52560adf92c3ade9916ccd6abaf258a21b80. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R034 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 6c01999e420211d1dcf1dd8f8a0a52560adf92c3ade9916ccd6abaf258a21b80. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/gaschargertop.png",
@@ -480,7 +480,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R035 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 36e2001bcfd5a31770c8e156e1ce58d59027f669ea812fd56c7f4810dcd82c58. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R035 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 36e2001bcfd5a31770c8e156e1ce58d59027f669ea812fd56c7f4810dcd82c58. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/guidancecomputer.png",
@@ -489,7 +489,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R036 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 479bc4d9a880d14291b487ed9b28c5920a02b475922f749a3b873b633f6753bd. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R036 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 479bc4d9a880d14291b487ed9b28c5920a02b475922f749a3b873b633f6753bd. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/guidancecomputeraccesshatch.png",
@@ -498,7 +498,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R037 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 8cfe6f83c26c71ec8fe134560570145c3c3cc3b8f44f12def5ca08e5a19b2400. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R037 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 8cfe6f83c26c71ec8fe134560570145c3c3cc3b8f44f12def5ca08e5a19b2400. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/machinegeneric.png",
@@ -516,7 +516,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R039 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4c3e58810060d76b297e103392a8f3a87a8a2ec53dde43917fe5f41f66ebfad2. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R039 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4c3e58810060d76b297e103392a8f3a87a8a2ec53dde43917fe5f41f66ebfad2. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/machineorientationcontrol.png",
@@ -525,7 +525,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R040 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 e0fbe894ccb04ffc5e42257b8566000986d5444446081c2f42c80eda51e02c5e. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R040 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 e0fbe894ccb04ffc5e42257b8566000986d5444446081c2f42c80eda51e02c5e. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/machineprecisionlaseretcher.png",
@@ -534,7 +534,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R041 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 079d0773a6718a705c4d80e7ed65c100d9c98b144b060cb634d5809024c687e1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R041 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 079d0773a6718a705c4d80e7ed65c100d9c98b144b060cb634d5809024c687e1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/machinescrubber.png",
@@ -543,7 +543,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R042 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 2e25be8a1e92df5c36ad80602d01e6368c2f846c8afc04ce6cd31ee463d02b8c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R042 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 2e25be8a1e92df5c36ad80602d01e6368c2f846c8afc04ce6cd31ee463d02b8c. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/machinescrubber_active.png",
@@ -552,7 +552,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R043 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 fa1df5bc75f9de59963c68f33b778d7039169a666bdcc0e4b8410dcf32642ace. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R043 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 fa1df5bc75f9de59963c68f33b778d7039169a666bdcc0e4b8410dcf32642ace. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorfront.png",
@@ -561,7 +561,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R044 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 b3d52d7d3e80d1439050b2bcab238bb93d997e14d3ac0653e980c77989be0eef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R044 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 b3d52d7d3e80d1439050b2bcab238bb93d997e14d3ac0653e980c77989be0eef. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorfrontleft.png",
@@ -579,7 +579,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R046 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 6bb19da207cc674e0910fd02c51d71328cc9a5d22e141e01e55c1b96c26937ea. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R046 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 6bb19da207cc674e0910fd02c51d71328cc9a5d22e141e01e55c1b96c26937ea. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorfrontright.png",
@@ -606,7 +606,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R049 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 33c861c8ef6dc02dfc99e32959e2e1a8e88413d2fa81cc1e2d1745562187fe90. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R049 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 33c861c8ef6dc02dfc99e32959e2e1a8e88413d2fa81cc1e2d1745562187fe90. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorplanet_active.png",
@@ -615,7 +615,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R050 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 08c8f8b1c80b6202b1edd0a86baf7dfd1fb3acaf79806d4db924cc319f196f82. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R050 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 08c8f8b1c80b6202b1edd0a86baf7dfd1fb3acaf79806d4db924cc319f196f82. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorrear.png",
@@ -633,7 +633,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R052 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a962906ee9ea08e472a935669a5d8104cf0022e3ad4529d654204fd177dd9923. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R052 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a962906ee9ea08e472a935669a5d8104cf0022e3ad4529d654204fd177dd9923. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorsatellite.png",
@@ -642,7 +642,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R053 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 cf3ffbe147c7dcad7ea847701ef841aae8afb84442f4211636425580e8839e2b. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R053 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 cf3ffbe147c7dcad7ea847701ef841aae8afb84442f4211636425580e8839e2b. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/monitorside.png",
@@ -651,7 +651,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R054 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4ed301657f3cd4912136881b8c10cc9ea83fbfa1e078331a4ca2b64ddc73aa7f. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R054 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 4ed301657f3cd4912136881b8c10cc9ea83fbfa1e078331a4ca2b64ddc73aa7f. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/panelside.png",
@@ -660,7 +660,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R055 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 35feccca5bbfc540f65800fa3115e814d3f5fa8329cccaa115e33555b5803613. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R055 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 35feccca5bbfc540f65800fa3115e814d3f5fa8329cccaa115e33555b5803613. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/panelsideworkstation.png",
@@ -669,7 +669,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R056 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 50f6566c68a33131b8f52a9e3d02c2188ed88584a777e5bb7ad902292c2cd779. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R056 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 50f6566c68a33131b8f52a9e3d02c2188ed88584a777e5bb7ad902292c2cd779. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/qcrucible_top.png",
@@ -678,7 +678,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R057 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a78ce54a602e590db4babf78f3e71585a31cf34cd8314a69ba5cb7cc87ef3c6f. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R057 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 a78ce54a602e590db4babf78f3e71585a31cf34cd8314a69ba5cb7cc87ef3c6f. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/satellitebay.png",
@@ -687,7 +687,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R058 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 eb014fc79c1de0e9c74cf8d4c1cf855efd75f45f97b0bec72b71801726d92105. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R058 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 eb014fc79c1de0e9c74cf8d4c1cf855efd75f45f97b0bec72b71801726d92105. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/seal.png",
@@ -696,7 +696,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R059 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 8fe4afc846bc66bee33a77a339f8aef04bf94c0153ebce04523998ab52e9f0c0. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R059 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 8fe4afc846bc66bee33a77a339f8aef04bf94c0153ebce04523998ab52e9f0c0. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/solar.png",
@@ -705,7 +705,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R060 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 00cc30b275c27d07cc892b5067afb1d810e57208cfa52d4c2b181f0cb3dd43b3. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R060 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 00cc30b275c27d07cc892b5067afb1d810e57208cfa52d4c2b181f0cb3dd43b3. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/blocks/starshipcontrolpanel.png",
@@ -714,7 +714,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R061 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 c0b2ce6ff6f2c62b7083149d5f5278eace653bd980ae28d622ea8e3fd525461e. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+      "basis": "DRAFT W268 R061 / G1; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 c0b2ce6ff6f2c62b7083149d5f5278eace653bd980ae28d622ea8e3fd525461e. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
     },
     {
       "asset": "textures/gui/buttons/buttonautoeject.png",
@@ -1020,7 +1020,7 @@
       "reviewed_at": "2026-11-03",
       "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
       "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
-      "basis": "DRAFT W268 R095 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 70ba37771e7f0c5ff2a009b6f2ea875a52c3f71de7abb63268aded87b11c4ed1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
+      "basis": "DRAFT W268 R095 / G8; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 70ba37771e7f0c5ff2a009b6f2ea875a52c3f71de7abb63268aded87b11c4ed1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern replacements; formed geometry is a separate binding. The live imported K3 beacon mesh uses its NEW texture, not either legacy beacon PNG."
     }
   ]
 }

@@ -19,6 +19,7 @@ import subprocess
 import tarfile
 
 from consumer_routes import CONSUMER_NOTES, CONSUMER_UNITS, NAMED_TARGETS, PROVIDERS, REDESIGN_CLASSES
+from adoption_fixtures import BEACON, TEST as LEDGER_TEST, fixture_patch, new_releases
 
 REVIEW_IDENTITY_BASE = "a65465138adca914d61d492d940fca015b86c9c6"
 PIN = "c5cd5af62fc07cd4e0d24f06a16033f181c47c04"
@@ -31,9 +32,10 @@ PLAN = "docs/work/v1.8.0-asset-plan.csv"
 ALLOW = "docs/work/v1.8.0-asset-import-allowlist.txt"
 FINDINGS = "docs/provenance/v1.8.0-origin-findings.json"
 ADR = "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+PREPARED_AT = "2026-11-03"
 GROUPS = {
     "G1": ("Unbound machine and controller faces", "EXCLUDE",
-           "Keep the modern machine designs, giving up the old faces and their running-state faces (modern machines show none)?"),
+           "Keep the modern machine designs, giving up the old faces and their running-state faces (modern machines show none)? The old monitorfront also faced the rejected deployable rocket builder; guidancecomputer faced the deferred biome scanner and the planet selector, now a screen; guidancecomputeraccesshatch faced the guidance access hatch, now the star-map screen; panelside and satellitebay faced the holo selector and station marker, now commands. Any future block of those kinds would need NEW art unless its legacy file is reopened, including a future biome scanner."),
     "G2": ("Unbound item icons", "EXCLUDE",
            "Keep the NEW item icons, including distinct iron saw blade and pressure tiers, giving up the old icon artwork?"),
     "G3": ("GUI button sheets and warning", "EXCLUDE",
@@ -187,8 +189,9 @@ def replacement(asset: str, owners: list[dict], files: dict[str, bytes], routes:
         if not routes:
             note = "No consumer in 1.12; orphaned texture with no one-to-one modern replacement obligation. Inherited plan owners do not establish a binding."
         else:
-            note = "Modern targets follow every actual 1.12 consumer below, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
+            note = "Modern targets follow every actual 1.12 consumer in the preceding mapping, not the inherited plan owners. No running-state face is shown on these modern machines; formed geometry is a separate binding."
         if g == "G8":
+            note = note.replace("these modern machines", "these modern replacements")
             if "planetary_beacon" in targets:
                 classes += ["PlanetaryBeaconBlock", "ClassicObjModelRenderer", "ObjModelFixture"]
                 extra += [p for p in files if p.endswith(("/models/beacon.obj", "/models/beacon.mtl", "/textures/models/beacon_new.png"))]
@@ -257,7 +260,7 @@ def consumers(asset: str, references: list[dict], old: dict[str, bytes]) -> dict
             direct.append(ref)
     dynamic = ""
     if asset.startswith("textures/armor/"):
-        dynamic = "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:160-175 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
+        dynamic = "ItemSpaceArmor.getArmorTexture at armor/ItemSpaceArmor.java:162-174 selects the base/overlay paths by slot. AdvancedRocketry.java:513-516 uses LEATHER; ItemSpaceArmor.java:96-113 reads display.color; ClientProxy.java:130-136 tints base item layer 0, not overlays. Legacy layer numbers do not equal the modern 1/2 route."
     if asset.endswith(".mcmeta"):
         dynamic = "Minecraft animation metadata is implicitly paired with " + base + "; consumers of that sprite also select its sidecar."
     if asset.startswith("sounds/"):
@@ -381,21 +384,31 @@ def build(upstream: Path, base: str, full_scan: Path) -> None:
         if e["proposed"] != "EXCLUDE":
             continue
         findings["findings"].append(dict(asset=e["asset"], decision="EXCLUDED", reviewer="<OWNER_PENDING_DECISION>",
-            reviewed_at="2026-11-03", draft_status="PENDING_OWNER_NOT_A_REVIEW",
+            reviewed_at=PREPARED_AT, draft_status="PENDING_OWNER_NOT_A_REVIEW",
             review_record=ADR, basis=f"DRAFT W268 {e['id']} / {e['group']}; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 {e['source_sha256']}. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. " + e["replacement"]["note"]))
     dump("origin-findings.json.draft", findings)
     before = Counter(first(a, plan)["handling"] for a in manifest)
     after = Counter(first(a, after_plan)["handling"] for a in manifest)
-    dump("changes.json", dict(source_commit=base, before_counts=before, after_counts=after,
+    counts = dict(manifest=len(manifest), changed_rules=len(changes), excluded=len(excluded),
+                  allowlist_before=len(allow), allowlist_after=len(allow_data.splitlines()),
+                  planned=sum(r["disposition"] == "PLANNED" for r in ledger.values()))
+    releases = new_releases(derivation, excluded)
+    patch = fixture_patch(files[LEDGER_TEST].decode("utf-8"), first(BEACON, plan),
+                          files[ALLOW].decode().splitlines(), releases)
+    (HERE / "ledger-fixtures.patch.draft").write_text(patch, encoding="utf-8", newline="\n")
+    dump("changes.json", dict(source_commit=base, before_counts=before, after_counts=after, counts=counts, prepared_at=PREPARED_AT,
+         beacon_new_releases=releases,
          allowlist_before_sha256=digest(files[ALLOW]), allowlist_after_sha256=digest(allow_data),
          source_sha256={p: digest(files[p]) for p in (PLAN, ALLOW, FINDINGS, ADR)},
          asset_plan=changes, retained_review=[e["asset"] for e in evidence if e["proposed"] == "REVIEW"]))
-    lines = proposal(evidence, before, after, digest(allow_data), len(changes), base, full_hash)
+    lines = proposal(evidence, before, after, digest(allow_data), counts, base, full_hash, releases)
     (HERE / "PROPOSAL.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(dict(files=len(evidence), groups=Counter(e["group"] for e in evidence), changes=len(changes), before=before, after=after, allowlist_sha256=digest(allow_data)), indent=2))
 
 
-def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, rules: int, base: str, full_hash: str) -> list[str]:
+def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, counts: dict, base: str, full_hash: str,
+             releases: list[str]) -> list[str]:
+    released_files = ", ".join(f"`{asset}`" for asset in releases)
     lines = ["# W268 - REVIEW closure proposal", "", "**DRAFT - PENDING OWNER DECISION. Nothing here is applied or accepted.**", "",
              "## Eight questions for the owner", ""]
     lines += [f"- **{g}**: {question}" for g, (_, _, question) in GROUPS.items()]
@@ -413,17 +426,17 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, ru
               "### Draft handling, not a signature", "",
               "The origin draft deliberately keeps reviewer `<OWNER_PENDING_DECISION>` and `draft_status: PENDING_OWNER_NOT_A_REVIEW`. Its ISO date is the preparation date only, not a completed human review. The existing validator checks schema, not authenticity of an EXCLUDED reviewer; a structural PASS is not approval. Scratch ADR-062 has `status: PROPOSED`, `revision: 7`; revision 6's historical acceptance text is not revision 7 acceptance. Therefore accepted/closure checks must report their actual pending-ADR errors, never simulate owner approval.", "",
               "## Adoption steps (future owner-authorized work only)", "",
-              "1. Record the owner's actual group decisions, date, channel and scope in a committed decision record. The decision concerns exactly 85 files in 80 patterns, not permission to overwrite a later plan. Rebuild with `--base <adoption-head>` and recompute counts, rule numbers and hashes; the builder refuses a base that changes the expected 95-file REVIEW set or its rule semantics. Repeat independent review and scratch checks if inputs change.",
+              f"1. Record the owner's actual group decisions, date, channel and scope in a committed decision record. The decision concerns exactly {counts['excluded']} files in {counts['changed_rules']} patterns, not permission to overwrite a later plan. Rebuild with `--base <adoption-head>` and recompute counts, rule numbers and hashes; the builder refuses a base that changes the expected 95-file REVIEW set or its rule semantics. Repeat independent review and scratch checks if inputs change.",
               "2. Prepare a separate reviewed findings file. For each added finding, replace the reviewer placeholder only from the recorded owner decision, use the decision date for `reviewed_at`, remove `draft_status`, and cite the decision record in `basis` and `review_record`. Do not reinterpret the preparation date as a review. Preserve existing findings and all non-clearance boundaries.",
-              "3. Before installing any findings, run `adopt_findings.py --findings <reviewed-findings.json> --output <checkout>/docs/provenance/v1.8.0-origin-findings.json`. It refuses the entire write if ANY finding still has a placeholder/empty reviewer or `draft_status`; even an existing output is unchanged on refusal. `apply_scratch.py` intentionally bypasses this adoption operation only to inspect inert drafts in a disposable copy; it cannot adopt into a worktree.",
-              "4. Adoption also needs a separate change to `scripts/validate_v180_content_ledger.py`: reject placeholder reviewers and any `draft_status` on tracked findings, including EXCLUDED findings, with negative tests. This task does not change that validator. The helper's structural guard does not authenticate a reviewer; ADR-061's owner/recorded-reviewer commit and review controls still apply. Install the reviewed plan/allowlist and owner-accepted revision 7 only in that authorized change, with its matching pin.",
-              "5. Preserve the existing ledger assertions while updating exactly these fixture baselines, preferably using a helper that restores beacon's pre-exclusion REVIEW state rather than depending on sounds remaining REVIEW:", "",
+              f"3. Before installing any findings, run `adopt_findings.py --findings <reviewed-findings.json> --output <checkout>/docs/provenance/v1.8.0-origin-findings.json`. It refuses the entire write if ANY finding still has a placeholder/empty reviewer, `draft_status`, or draft basis wording (`DRAFT W268`, `not an owner decision`, `preparation date`). Added findings must cite a decision record rather than ADR-062 and must not reuse the preparation date `{PREPARED_AT}` as `reviewed_at`; even an existing output is unchanged on refusal. `apply_scratch.py` intentionally bypasses this adoption operation only to inspect inert drafts in a disposable copy; it cannot adopt into a worktree.",
+              "4. Adoption also needs a separate change to `scripts/validate_v180_content_ledger.py`: enforce the same reviewer, draft-status, draft-basis, preparation-date and decision-record checks on tracked findings, including EXCLUDED findings, with negative tests. This task does not change that validator. The helper's structural guard does not authenticate a reviewer; ADR-061's owner/recorded-reviewer commit and review controls still apply. Install the reviewed plan/allowlist and owner-accepted revision 7 only in that authorized change, with its matching pin.",
+              "5. Preserve the existing ledger assertions while updating exactly these fixture baselines. The generated inert `ledger-fixtures.patch.draft` implements this table; `test_proposal.py` applies it in a disposable draft copy and runs the whole ledger module with revision 7 simulated as accepted. That simulation is not acceptance. The patch restores beacon's pre-exclusion REVIEW state rather than depending on sounds remaining REVIEW:", "",
               "| Ledger test | Exact adoption fixture action |", "|---|---|",
               "| `test_excluded_finding_forces_exclusion` | Restore `textures/blocks/beacon.png` from its `changes.json` before row (handling REVIEW, plan C17c, units block:beacon, reason `same name as a vanilla texture; compare before import`) before writing its EXCLUDED test finding. Preserve the assertion `excluded by an origin finding but is REVIEW`. The still-REVIEW `sounds/lathe.ogg` is an alternative only while D5 is unresolved. |",
               "| `test_import_for_a_deferred_unit_fails` | Restore the same beacon REVIEW/C17c row and original reason before changing `units` to `block:terraformer` (or use the still-REVIEW `sounds/*.ogg` rule). Preserve `REVIEW for block:terraformer, which is DEFERRED`. |",
-              "| `test_review_needs_a_cleared_finding_to_import` | Restore the same beacon REVIEW/C17c row, units and original reason; restore its REVIEW allowlist entry and re-pin the fixture ADR-062; remove its EXCLUDED finding. Then exercise REVIEW -> IMPORT as before. Add `textures/blocks/controlpanel.png` to the CLEARED finding's existing `releases`, because it is HIT-related and now excluded by an origin finding. Preserve the REVIEW-ceiling and releases assertions. |",
+              f"| `test_review_needs_a_cleared_finding_to_import` | Restore the same beacon REVIEW/C17c row, units and original reason; restore its REVIEW allowlist entry and re-pin the fixture ADR-062; remove its EXCLUDED finding. Then exercise REVIEW -> IMPORT as before. Add {released_files} to the CLEARED finding's existing `releases`: these are all newly excluded HIT relations, computed from the derivation data in both directions and the draft findings. Preserve the REVIEW-ceiling and releases assertions. |",
               "| `test_require_accepted_reports_proposed_adrs` | No fixture change: it passes unchanged once the fixture baseline has owner-accepted revision 7. The draft-only scratch failure correctly reports the deliberately PROPOSED ADR. |", "",
-              "6. Rerun the complete proposal, importer, ledger, provenance and resource Python suites, every import verify, the repository validator and ledger normal/accepted/closure modes. Report the remaining 16 PLANNED and ten REVIEW holds until separately closed; no test/threshold waiver, D5/D7 or visual approval is implied.", "",
+              f"6. Rerun the complete proposal, importer, ledger, provenance and resource Python suites, every import verify, the repository validator and ledger normal/accepted/closure modes. Report the remaining {counts['planned']} PLANNED and {after['REVIEW']} REVIEW holds until separately closed; no test/threshold waiver, D5/D7 or visual approval is implied.", "",
               "## Revision 7 (draft; pending owner's decision)", "",
               "### Published language and appearance boundaries", "",
               "Retain the named modern machine faces, tier icons, code/native-widget GUI, NEW suit and enriched-lava sprites, project casing and NEW motor tiers, and modern beacon/field presentation. Modern machines show no running-state faces. The 1.12 leather-armour suit could be dyed (tinted base, untinted overlay files); the modern suit cannot, and accepting G4 accepts this loss. Restoring dyeing later needs NEW tintable layers, not these files. The old enriched lava and force field were animated; modern enriched lava and force field are not animated. The legacy GUI sheets and old artwork are not reproduced. No gameplay owner, inventory, recipe or registered ID is removed by these asset exclusions. G7 is intentionally not terminal yet.", "",
@@ -431,7 +444,7 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, ru
               "| Handling | Before | After (draft) |", "|---|---:|---:|"]
     for h in ("IMPORT", "REVIEW", "REGENERATE", "EXCLUDE", "IMPORTED"):
         lines.append(f"| {h} | {before[h]} | {after[h]} |")
-    lines += ["", f"Total 898 files. Exactly 85 REVIEW files in {rules} existing rules become EXCLUDE, with their plan set to `-` as the validator requires. No row order or owner is changed. Ten legacy OGGs remain REVIEW. The allowlist drops exactly 85 REVIEW entries, 247 -> 162; all other ceilings are unchanged. New draft allowlist SHA-256: `{pin}` (UTF-8, LF, final newline). These counts include W265/W267 at the named baseline and must be recomputed at adoption.", "",
+    lines += ["", f"Total {counts['manifest']} files. Exactly {counts['excluded']} REVIEW files in {counts['changed_rules']} existing rules become EXCLUDE, with their plan set to `-` as the validator requires. No row order or owner is changed. {after['REVIEW']} legacy OGGs remain REVIEW. The allowlist drops exactly {counts['allowlist_before'] - counts['allowlist_after']} REVIEW entries, {counts['allowlist_before']} -> {counts['allowlist_after']}; all other ceilings are unchanged. New draft allowlist SHA-256: `{pin}` (UTF-8, LF, final newline). These counts include W265/W267 at the named baseline and must be recomputed at adoption.", "",
               "W265/W267 have no REVIEW-row overlap. The scratch applicator refuses changed central input hashes; rebuild on any later adoption head before applying its previews. Their decisions and the 35 retained NEW textures are not altered or approved here. Several G1/G8 plan-owner lists are inherited and stale: the consumer-to-ledger mappings below correct the evidence, not those lists. A later owner-trim task may correct the ownership metadata independently.", "",
               "Each row below has an exact source identity and an evidence ID into `REVIEW-EVIDENCE.json`. It contains the current rule, ceiling, derivation, plan owners, actual G1/G8 consumer-to-ledger mappings, live files/classes, retained path/hash references and per-file scan counts. The four orphaned G1 textures have no consumer in 1.12 and no replacement obligation. Paths in this table are relative to `assets/advancedrocketry/`.", "",
               "| Legacy asset | Source SHA-256 | Group / proposed | Per-file evidence and disposition |", "|---|---|---|---|"]
@@ -441,16 +454,19 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, ru
         short = "; ".join(f"`{p}`" for p in named)
         origins = "; ".join(f"`{v['file']}:{v['line']}`" for v in e["upstream_consumers"]["direct"])
         owners = e["rule"]["units"]
-        routes = "; ".join(f"`{v['upstream_consumer']}` -> `{v['ledger_unit']['unit_id']}` ({v['ledger_unit']['disposition']}) -> `{v['ledger_unit']['target']}`. {v['note']}" for v in r["consumer_routes"])
-        mapping = (" Consumer-to-modern mapping: " + routes + ".") if routes else ""
-        detail = (f"{e['id']}; first rule {e['rule']['order']} `{e['rule']['pattern']}`; ceiling REVIEW; derivation {e['derivation']['verdict']}; owners `{owners}`; "
-                  f"no tracked src source-hash copy. Upstream consumer: {origins or 'no direct path binding found'}. {e['upstream_consumers']['note']}{mapping} Live replacement: {short or 'none; no consumer in 1.12'}. " + r["note"])
+        routes = "; ".join((f"`{v['upstream_consumer']}` -> `{v['ledger_unit']['unit_id']}` ({v['ledger_unit']['disposition']}) -> `{v['ledger_unit']['target']}`" +
+                            (". " + v["note"].rstrip(". ") if v["note"] else "")) for v in r["consumer_routes"])
+        parts = [f"{e['id']}; first rule {e['rule']['order']} `{e['rule']['pattern']}`; ceiling REVIEW; derivation {e['derivation']['verdict']}; owners `{owners}`; no tracked src source-hash copy.",
+                 f"Upstream consumer: {origins or 'no direct path binding found'}.", e["upstream_consumers"]["note"],
+                 "Consumer-to-modern mapping: " + routes + "." if routes else "",
+                 f"Live replacement: {short or 'none; no consumer in 1.12'}.", r["note"]]
+        detail = " ".join(part for part in parts if part)
         if e["proposed"] == "EXCLUDE":
             detail += " Proposed EXCLUDED finding does not clear authorship."
         lines.append(f"| `{e['asset']}` | `{e['source_sha256']}` | {e['group']} / {e['proposed']} | {detail} |")
     lines += ["", "## Reference audit method and limits", "",
               "The scan covers every tracked baseline file, not only Java: models, MTL, blockstates, JSON, import plans, provenance, records, data generators, tests and historical audit material are included. Exact path, basename, extensionless lexical tokens and source SHA-256 strings are searched case-insensitively. The committed JSON retains path/hash candidates outside root-queue records, actual consumers, sound event Java uses and per-file/category counts of omitted matches. Bare-stem hits such as `copy`, `motor`, `solar` and `beacon` are broad candidates, not proof of a runtime binding. Same-named modern resources are namespace/path-distinct. Source SHA-256 comparison separately checks every tracked src Git blob, including binary files, independently of Windows checkout line endings. Generated build outputs/untracked files are not the source of the delivery claim.",
-              f"The complete scan, including all non-binding lexical matches, is retained externally as `D:/GitHub/ARCE-Task-Evidence/root-queue/W268-fix/REVIEW-EVIDENCE-full.json`, SHA-256 `{full_hash}`. It is reproducible from the named Git base and pinned upstream with the builder; its destination does not affect any committed output bytes.",
+              f"The complete scan, including all non-binding lexical matches, is retained externally as `D:/GitHub/ARCE-Task-Evidence/root-queue/W268-fix2/REVIEW-EVIDENCE-full.json`, SHA-256 `{full_hash}`. It is reproducible from the named Git base and pinned upstream with the builder; its destination does not affect any committed output bytes.",
               "The upstream scan reads the pinned Git archive in memory, not the upstream working tree. It does not execute 1.12.2. Family-generated paths (numbered tanks, suit layers/overlays, lava animation and GUI state suffixes) require the explicit dynamic notes in the per-file table above in addition to literal hits. Namespace filtering separates AR's bundled machinegeneric from the other 73 LibVulpes consumer lines. No static scan proves a real-client render, provenance clearance or audio listen.", "",
               "## Draft files and reproduction", "",
               "`asset-plan.csv.draft`, `allowlist.txt.draft` and `origin-findings.json.draft` are separate inert full-file previews; `changes.json` records exact semantic operations and central input hashes. `build_proposal.py --base <commit> --upstream <pinned-clone> --full-scan <external-file>` rebuilds them and the evidence from that immutable baseline. It also checks that each REVIEW rule's handling, plan, units, pattern and reason match the original scoped set (renumbering is allowed). `apply_scratch.py --scratch <new-directory>` creates a new Git-backed LF export, verifies inputs, applies only these previews plus draft ADR metadata/pin/table there, and audits first-match changes. It refuses this worktree, another worktree, and any existing destination. It never creates acceptance or fills in the owner's name. The nested `.gitattributes` keeps draft bytes LF, including the allowlist pin.",

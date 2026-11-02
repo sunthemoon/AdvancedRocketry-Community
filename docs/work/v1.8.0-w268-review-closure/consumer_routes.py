@@ -91,6 +91,6 @@ REDESIGN_CLASSES = {
 }
 
 CONSUMER_NOTES = {
-    "guidancecomputeraccesshatch": "The model is selected by loader.json:9,17 and ClientProxy.java:152 for loader variant 6 (guidance access hatch), not the guidance-computer block.",
+    "guidancecomputeraccesshatch": "The model is selected by loader.json:9,17 and ClientProxy.java:152 for loader variant 6 (guidance access hatch); variant 14 is its state-bit counterpart. This is not the guidance-computer block.",
     "satellitehatch": "The model is selected by loader.json:4,12 and ClientProxy.java:147 for loader variant 1 (satellite hatch); variant 9 is its state-bit counterpart.",
 }

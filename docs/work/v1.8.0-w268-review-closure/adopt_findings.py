@@ -10,8 +10,13 @@ import json
 from pathlib import Path
 import re
 
+HERE = Path(__file__).resolve().parent
+ADR = "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+
 
 def check_findings(data: dict) -> None:
+    proposal = json.loads((HERE / "changes.json").read_bytes())
+    added = {a for change in proposal["asset_plan"] for a in change["assets"]}
     findings = data.get("findings")
     if not isinstance(findings, list) or not findings:
         raise ValueError("A non-empty findings list is required.")
@@ -24,6 +29,16 @@ def check_findings(data: dict) -> None:
             raise ValueError("Unresolved reviewer placeholder: " + str(finding.get("asset")))
         if "draft_status" in finding:
             raise ValueError("Remove draft_status after recorded review: " + str(finding.get("asset")))
+        basis = finding.get("basis", "")
+        if isinstance(basis, str) and re.search(r"DRAFT\s+W268|not\s+an\s+owner\s+decision|preparation\s+date", basis, re.I):
+            raise ValueError("Unresolved draft basis: " + str(finding.get("asset")))
+        if finding.get("asset") in added:
+            if finding.get("reviewed_at") == proposal["prepared_at"]:
+                raise ValueError("Preparation date is not a review date: " + str(finding.get("asset")))
+            record = finding.get("review_record")
+            if (not isinstance(record, str) or not record.strip() or
+                    (HERE.parents[2] / record).resolve() == (HERE.parents[2] / ADR).resolve()):
+                raise ValueError("Added finding needs its decision record, not ADR-062: " + str(finding.get("asset")))
 
 
 def adopt(source: Path, output: Path) -> None:

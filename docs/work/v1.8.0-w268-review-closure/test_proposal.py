@@ -1,16 +1,20 @@
 """Local draft invariants; no central files or scratch worlds are edited."""
 from collections import Counter
+import ast
 import copy
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
+import sys
 import tempfile
 import unittest
 
 from apply_scratch import apply, ROOT
 from adopt_findings import adopt, check_findings
 from build_proposal import check_review_base, consumers, trim_references
+from adoption_fixtures import BEACON, TEST as LEDGER_TEST, new_releases
 
 HERE = Path(__file__).resolve().parent
 
@@ -42,7 +46,7 @@ class ProposalTests(unittest.TestCase):
         data = (HERE / "allowlist.txt.draft").read_bytes()
         self.assertNotIn(b"\r", data)
         self.assertTrue(data.endswith(b"\n"))
-        self.assertEqual(162, len(data.splitlines()))
+        self.assertEqual(self.changes["counts"]["allowlist_after"], len(data.splitlines()))
         self.assertEqual(self.changes["allowlist_after_sha256"], hashlib.sha256(data).hexdigest())
 
     def test_no_new_human_attestation(self):
@@ -148,6 +152,9 @@ class ProposalTests(unittest.TestCase):
         for finding in draft["findings"]:
             finding["reviewer"] = "fixture-reviewer"
             finding.pop("draft_status", None)
+            finding["basis"] = "Synthetic fixture only; no real asset decision."
+            finding["reviewed_at"] = "2099-01-01"
+            finding["review_record"] = "docs/work/fixture-decision.md"
         check_findings(draft)
         draft["findings"][-1]["reviewer"] = "<OWNER_PENDING_DECISION>"
         with self.assertRaisesRegex(ValueError, "reviewer placeholder"):
@@ -166,6 +173,101 @@ class ProposalTests(unittest.TestCase):
             source.write_text(json.dumps({"findings": [{"reviewer": "fixture-reviewer", "asset": "fixture-only"}]}))
             adopt(source, output)
             self.assertEqual(source.read_bytes(), output.read_bytes())
+
+    def test_adoption_refuses_incomplete_review_before_writing(self):
+        draft = json.loads((HERE / "origin-findings.json.draft").read_bytes())
+        # A name and removed draft_status are not enough (the recheck's careless adoption).
+        for finding in draft["findings"]:
+            finding["reviewer"] = "fixture-reviewer"
+            finding.pop("draft_status", None)
+        with self.assertRaisesRegex(ValueError, "draft basis"):
+            check_findings(draft)
+        reviewed = dict(asset=BEACON, reviewer="fixture-reviewer", basis="Synthetic review only.",
+                        reviewed_at="2099-01-01", review_record="docs/work/fixture-decision.md")
+        cases = [(dict(reviewed, basis=word), "draft basis")
+                 for word in ("DRAFT W268 R001", "This is not an owner decision", "PREPARATION DATE only")]
+        cases += [(dict(reviewed, reviewed_at=self.changes["prepared_at"]), "Preparation date"),
+                  (dict(reviewed, review_record="docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"), "decision record"),
+                  (dict(reviewed, review_record=""), "decision record")]
+        with tempfile.TemporaryDirectory() as temporary:
+            source, output = (Path(temporary) / name for name in ("source.json", "output.json"))
+            for finding, message in cases:
+                with self.subTest(finding=finding):
+                    source.write_text(json.dumps({"findings": [finding]}), encoding="utf-8")
+                    output.write_bytes(b"unchanged output")
+                    with self.assertRaisesRegex(ValueError, message):
+                        adopt(source, output)
+                    self.assertEqual(b"unchanged output", output.read_bytes())
+                    output.unlink()
+                    with self.assertRaisesRegex(ValueError, message):
+                        adopt(source, output)
+                    self.assertFalse(output.exists())
+        # Existing reviewed findings must not be treated as new proposal findings.
+        baseline = json.loads(subprocess.check_output([
+            "git", "-C", str(ROOT), "show", self.changes["source_commit"] + ":docs/provenance/v1.8.0-origin-findings.json"]))
+        check_findings(baseline)
+
+    def test_releases_use_bidirectional_hit_relations(self):
+        data = {"assets": [dict(asset=BEACON, related=[dict(asset="direct", level="HIT"),
+                                                     dict(asset="suspect", level="SUSPECT")]),
+                           dict(asset="reverse", related=[dict(asset=BEACON, level="HIT")]),
+                           dict(asset="unexcluded", related=[dict(asset=BEACON, level="HIT")])]}
+        self.assertEqual(["direct", "reverse"], new_releases(data, {"direct", "reverse", "suspect"}))
+        base = self.changes["source_commit"]
+        derivation = json.loads(subprocess.check_output([
+            "git", "-C", str(ROOT), "show", base + ":docs/work/v1.8.0-vanilla-derivation.json"]))
+        excluded = {a for change in self.changes["asset_plan"] for a in change["assets"]}
+        self.assertEqual(new_releases(derivation, excluded), self.changes["beacon_new_releases"])
+        self.assertEqual(5, len(self.changes["beacon_new_releases"]))
+
+    def test_base_counts_and_generated_wording(self):
+        from build_proposal import ALLOW, proposal, rows, git
+        base = self.changes["source_commit"]
+        ledger = rows(git("show", base + ":docs/work/v1.8.0-content-ledger.csv"))
+        counts = self.changes["counts"]
+        self.assertEqual(sum(self.changes["before_counts"].values()), counts["manifest"])
+        self.assertEqual(sum(r["disposition"] == "PLANNED" for r in ledger), counts["planned"])
+        self.assertEqual(len(git("show", base + ":" + ALLOW).splitlines()), counts["allowlist_before"])
+        self.assertEqual(len(self.changes["asset_plan"]), counts["changed_rules"])
+        changed = dict(counts, manifest=1234, allowlist_before=300, allowlist_after=215, planned=99, changed_rules=79)
+        text = "\n".join(proposal([], Counter(self.changes["before_counts"]), Counter(self.changes["after_counts"]),
+                                  "fixture-pin", changed, "fixture-base", "fixture-scan", []))
+        for phrase in ("Total 1234 files", "300 -> 215", "99 PLANNED", "79 patterns", "79 existing rules"):
+            self.assertIn(phrase, text)
+        proposal_text = (HERE / "PROPOSAL.md").read_text(encoding="utf-8")
+        for phrase in ("..", ". .", ". ;", "  Live replacement", "consumer below"):
+            self.assertNotIn(phrase, proposal_text)
+        self.assertIn("Any future block of those kinds would need NEW art", proposal_text)
+
+    def test_adoption_fixtures_pass_entire_ledger_with_simulated_acceptance(self):
+        # A short external directory avoids Windows historical-evidence path limits.
+        with tempfile.TemporaryDirectory(prefix="w268-", dir=ROOT.parent) as temporary:
+            scratch = Path(temporary) / "s"
+            apply(scratch)
+            patch = HERE / "ledger-fixtures.patch.draft"
+            result = subprocess.run(["git", "apply", "--unidiff-zero", "--check", str(patch)], cwd=scratch, capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr.decode("utf-8", errors="replace"))
+            subprocess.run(["git", "apply", "--unidiff-zero", str(patch)], cwd=scratch, check=True)
+            # Prove the generated patch changes setup, not existing test assertions.
+            def assertions(path):
+                tree = ast.parse(path.read_text(encoding="utf-8"))
+                return [ast.dump(node) for node in ast.walk(tree) if isinstance(node, ast.Assert) or
+                        isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and
+                        node.func.attr.startswith("assert")]
+            self.assertEqual(assertions(ROOT / LEDGER_TEST), assertions(scratch / LEDGER_TEST))
+            # Only a fixture simulation; never run this on tracked ADRs.
+            adr = scratch / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+            text = adr.read_text(encoding="utf-8")
+            self.assertIn("status: PROPOSED", text)
+            adr.write_text(re.sub(r"^status: PROPOSED$", "status: ACCEPTED", text, count=1, flags=re.M),
+                           encoding="utf-8", newline="\n")
+            result = subprocess.run([sys.executable, "-X", "utf8", "-B", "-m", "unittest", "-v",
+                                     "tests.test_validate_v180_content_ledger"], cwd=scratch,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=1800)
+            self.assertEqual(0, result.returncode, result.stdout.decode("utf-8", errors="replace"))
+            self.assertIn(b"Ran 58 tests", result.stdout)
+            print("\nScratch-only revision-7 ACCEPTED simulation (not acceptance):\n" +
+                  result.stdout.decode("utf-8", errors="replace"), flush=True)
 
     def test_trim_preserves_scan_counts_and_strong_references(self):
         entry = dict(group="G1", current_references=[
