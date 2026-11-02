@@ -1,0 +1,285 @@
+{
+  "batch_id": "v1.8.0-w256-saw-model",
+  "copyright_notice": "Copyright (c) 2017",
+  "derivation_results_sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b",
+  "entries": [
+    {
+      "asset_coverage_row": 2,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR",
+          "target": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "Material"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:block/cuttingmachine2"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/block/models/sawblade.mtl",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "e7f48d5ea4e888c8c9e10d4a34822e8e9ea00bb134c37e6a89bf1bae5dfea2cb",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.mtl",
+      "target_sha256": "1f95f96faa588536df19c1d8f3704b22dec27750f33af39ac2794c4ec7de542c",
+      "transformation": [
+        "Byte copy to assets/advancedrocketrycommunity/models/block/models/sawblade.mtl, except the MTL references the plan rewrites; every other byte is unchanged.",
+        "Rewrite textures 'advancedrocketry:models/cuttingmachine2' -> 'advancedrocketrycommunity:block/cuttingmachine2'"
+      ],
+      "units": [
+        "block:sawBlade"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T21:54:51-04:00",
+          "commit": "41dab12abb088481e8f55953540073faab74d5c5",
+          "subject": "Fix sawblade model as well"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2018-02-25T06:45:16-05:00",
+          "commit": "48610953627a05adc10f4caba3b77f548b65e101",
+          "subject": "deprecating pipes, added wireless transciever, closes #1075 #1034 #771 #757"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2016-09-25T14:41:09-04:00",
+          "commit": "ee6c41d830300494948ee1af40571fb6553abc08",
+          "subject": "Nearly working 1.10.2 build"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 1,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR",
+          "target": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 720,
+        "faces": 180,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "sawblade.mtl",
+        "materials": [
+          "Material"
+        ],
+        "normals": 45,
+        "positions": 100,
+        "texture_coordinates": 208
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/block/models/sawblade.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "a6b5625bb572dd325018b20d904d768f97c75305a2f33961cff35a93486a5dd3",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.obj",
+      "target_sha256": "ed7f24cfad292a82eb481eadcafb503a964b6c0f37f13fd1864552982b5f0099",
+      "transformation": [
+        "Byte copy to assets/advancedrocketrycommunity/models/block/models/sawblade.obj, except the OBJ references the plan rewrites; every other byte is unchanged.",
+        "Rewrite mtllib 'sawBlade.mtl' -> 'sawblade.mtl'",
+        "Rewrite usemtl 'Material' -> 'Material'"
+      ],
+      "units": [
+        "block:sawBlade"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T21:54:51-04:00",
+          "commit": "41dab12abb088481e8f55953540073faab74d5c5",
+          "subject": "Fix sawblade model as well"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-25T10:25:31-04:00",
+          "commit": "2ebe168901467d62cc5d9f62184d1c15cb758151",
+          "subject": "Reduce log errors"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 3,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/cuttingmachine2.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "6d1ae75adb72e808ee83d04e253827f3110c73b950e5d6f8ee92e1156a5ddcb7",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/cuttingmachine2.png",
+      "target_sha256": "6d1ae75adb72e808ee83d04e253827f3110c73b950e5d6f8ee92e1156a5ddcb7",
+      "transformation": [
+        "Byte copy renamed from textures/models/cuttingmachine2.png to assets/advancedrocketrycommunity/textures/block/cuttingmachine2.png."
+      ],
+      "units": [
+        "block:sawBlade"
+      ],
+      "upstream_history": [
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 4,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/items/sawbladeassembly.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "ae2dc9225d8704f946d3a6900269fb9750e8a92c8bed86d51240880c3041e9f0",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/saw_blade_classic.png",
+      "target_sha256": "ae2dc9225d8704f946d3a6900269fb9750e8a92c8bed86d51240880c3041e9f0",
+      "transformation": [
+        "Byte copy renamed from textures/items/sawbladeassembly.png to assets/advancedrocketrycommunity/textures/item/saw_blade_classic.png."
+      ],
+      "units": [
+        "block:sawBlade"
+      ],
+      "upstream_history": [
+        {
+          "author": "zmaster587",
+          "authored_at": "2018-01-07T04:31:55-05:00",
+          "commit": "ae2e948760f1018d4c8da7b38f6eb1986fdebbe3",
+          "subject": "resolve #925"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        }
+      ]
+    }
+  ],
+  "generator": "tools/import/import_v180_assets.py",
+  "license": "MIT",
+  "model_set": {
+    "bytes": 15980,
+    "vertices": 720
+  },
+  "plan_sha256": "b019656d200e65565d4332fbe48e07679c84ae9986f9a33944dedc78f3c9b68f",
+  "review": {
+    "content_digest": "6bfbf8c69a9f7628ba42fb730abaaacaea4a0155bc30abefd3b63d02a86e9e65",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "sources": [
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "name": "ar",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    }
+  ],
+  "target_version": "v1.8.0",
+  "vanilla_client_sha256": {
+    "1.12.2": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f",
+    "1.20.1": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+  }
+}
