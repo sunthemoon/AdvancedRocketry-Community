@@ -63,8 +63,10 @@ each one with its evidence.
 Yours to schedule: real-GPU V1 checks, two-client V2 sessions (the bay exit's checklist is
 [W254-V2-CHECKLIST](W254-V2-CHECKLIST.md)), the full S1 restart campaign, the docs/17 reference-node workload and the
 joint four-hour soak. For information: under the delegation, Root chose the V2 gate (R298): a campaign-only release-test
-gate variant that admits two named real clients on a disposable world, with bay admission still off. W269 is building
-it now; it does not run any campaign.
+gate variant that admits two named real clients on a disposable, marked world. Production bay admission stays off
+everywhere; on that campaign world the full release-test gate, and with it the bay's gated admission (D0), opens for
+the two named clients, as it already does for the test facility's players (corrected after W269's review, W269-R1).
+W269 built it; its review fixes are in progress, and it runs no campaign.
 
 ## 6. The gas charge pad's automatic charging: v1.8 or v1.9?
 
