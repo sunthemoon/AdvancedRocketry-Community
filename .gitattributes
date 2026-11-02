@@ -68,3 +68,9 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevato
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precisionlaseretcher.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precision_laser_engraver.mtl -text
 LICENSE text eol=lf
+
+# W249 P1: preserve importer-written OBJ/MTL bytes on Windows.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.mtl -text

@@ -1,0 +1,9 @@
+{
+  "automatic_culling": false,
+  "flip_v": false,
+  "loader": "forge:obj",
+  "model": "advancedrocketrycommunity:models/block/models/rocketmotor.obj",
+  "textures": {
+    "particle": "advancedrocketrycommunity:block/combustion_classic"
+  }
+}

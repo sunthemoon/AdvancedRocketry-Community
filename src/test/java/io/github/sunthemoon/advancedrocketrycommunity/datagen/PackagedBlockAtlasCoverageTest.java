@@ -49,8 +49,8 @@ import org.junit.jupiter.api.Test;
  * superseded-file exclusions), matched by exact path as in the JAR. A texture of another namespace must be in a
  * dependency JAR. The 1.20.1 source types {@code directory}, {@code single}, {@code paletted_permutations} and
  * {@code unstitch} add sprites. A {@code filter} source removes sprites in pack order and an unknown type is not
- * modelled, so either fails this test until it is. OBJ materials are not checked: the mod's OBJ renderers bind their
- * {@code textures/models/} files directly ({@code ClassicObjModelRenderer}), not through the block atlas. Every check
+ * modelled, so either fails this test until it is. W249 follows ordinary {@code forge:obj} models through their OBJ
+ * and MTL to every atlas texture. Formed hull renderers that bind textures directly are a separate route. Every check
  * runs before the assertions, and the result is written to {@code build/reports/block-atlas-coverage.md}.
  *
  * <p>W246-fix3 (R270): blockstate model references, registered item models (the shared registration capture) and all
@@ -112,10 +112,10 @@ class PackagedBlockAtlasCoverageTest {
             }
         }
 
-        int requiredModels = requiredModels(root, requiredItemModels, problems);
+        Map<String, List<String>> sprites = new TreeMap<>();
+        int requiredModels = requiredModels(root, requiredItemModels, sprites, problems);
         Map<String, List<String>> uncovered = new TreeMap<>();
         int models = 0;
-        int references = 0;
         for (String path : packaged) {
             if (!MODEL.matcher(path).matches()) {
                 continue;
@@ -135,17 +135,18 @@ class PackagedBlockAtlasCoverageTest {
                 if (value.startsWith("#")) {
                     continue;
                 }
-                references++;
                 if (!LOCATION.matcher(value).matches()) {
                     problems.add(use + " names " + value + ", which is not a resource location");
                     continue;
                 }
                 String sprite = value.contains(":") ? value : "minecraft:" + value;
-                if (!stitched(sprite, sources)) {
-                    uncovered.computeIfAbsent(sprite, key -> new ArrayList<>()).add(use);
-                }
+                sprites.computeIfAbsent(sprite, key -> new ArrayList<>()).add(use);
             }
         }
+        int references = sprites.values().stream().mapToInt(List::size).sum();
+        sprites.forEach((sprite, uses) -> {
+            if (!stitched(sprite, sources)) { uncovered.put(sprite, uses); }
+        });
         writeReport(report, stack, models, requiredModels, references, uncovered, problems);
 
         assertTrue(models > 0 && references > 0, "No packaged model or texture reference was found under " + root);
@@ -159,7 +160,8 @@ class PackagedBlockAtlasCoverageTest {
     }
 
     /** Resolve roots and parents before the texture walk; missing roots cannot shrink the set being checked. */
-    private int requiredModels(Path root, Set<String> requiredItemModels, List<String> problems) throws IOException {
+    private int requiredModels(Path root, Set<String> requiredItemModels, Map<String, List<String>> sprites,
+            List<String> problems) throws IOException {
         Map<String, List<String>> expected = new TreeMap<>();
         for (String item : requiredItemModels) {
             expected.computeIfAbsent(item, key -> new ArrayList<>()).add("registered item");
@@ -198,6 +200,14 @@ class PackagedBlockAtlasCoverageTest {
                 }
                 definition = JsonParser.parseString(new String(read(url), StandardCharsets.UTF_8)).getAsJsonObject();
             }
+            PackagedObjAtlasReferences.collect(definition, model, location -> {
+                String resource = "assets/" + location.getNamespace() + "/" + location.getPath();
+                if (location.getNamespace().equals(NAMESPACE)) {
+                    return packaged.contains(resource) ? Files.readAllBytes(root.resolve(resource)) : null;
+                }
+                URL url = getClass().getClassLoader().getResource(resource);
+                return url == null ? null : read(url);
+            }, sprites, problems);
             if (definition.has("parent")) {
                 String parent = modelLocation(definition.get("parent"), model + "#parent", problems);
                 if (parent != null) {
@@ -355,7 +365,7 @@ class PackagedBlockAtlasCoverageTest {
             Map<String, List<String>> uncovered,
             List<String> problems) throws IOException {
         StringBuilder report = new StringBuilder("# Block atlas coverage\n\n")
-                .append("W246-fix2 (R268), fix3 (R270). Model references and the 1.20.1 block-atlas sources.\n\n")
+                .append("W246-fix2 (R268), fix3 (R270), W249 (R271). Model/OBJ/MTL references and block-atlas sources.\n\n")
                 .append("- Model files: ").append(models).append('\n')
                 .append("- Required/referenced models checked (including built-in marker): ").append(requiredModels).append('\n')
                 .append("- Texture references checked: ").append(references).append('\n')

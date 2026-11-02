@@ -16,6 +16,9 @@ MOD_ID = "advancedrocketrycommunity"
 MAX_RESOURCE_FILES = 10_000
 MAX_RESOURCE_BYTES = 128 * 1024 * 1024
 MAX_JSON_BYTES = 2 * 1024 * 1024
+# The top-level keys Forge 47.4.10's ObjLoader.read takes from a forge:obj model. They are loader metadata, not
+# texture slots (W249-R9).
+OBJ_LOADER_KEYS = frozenset({"model", "automatic_culling", "shade_quads", "flip_v", "emissive_ambient", "mtl_override"})
 PLACEHOLDER = re.compile(r"%(?:\d+\$)?[a-zA-Z%]")
 TRANSLATION_LITERAL = re.compile(
     rf"(?:block|item|itemGroup|menu|screen|tooltip|message|status|station|body|hud|flight)\."
@@ -213,7 +216,29 @@ def audit_resources(repository_root: Path = ROOT) -> tuple[dict[str, object], li
         if len(parts) < 3:
             continue
         namespace = parts[1]
-        for key, target in _walk_strings(value, ""):
+        is_model = "/models/" in relative
+        is_obj = is_model and isinstance(value, dict) and value.get("loader") == "forge:obj"
+        reference_value = value
+        if is_model and isinstance(value, dict) and "loader" in value:
+            # Remove only top-level metadata, not texture slots that happen to have these names.
+            reference_value = {key: child for key, child in value.items()
+                               if key != "loader" and not (is_obj and key in OBJ_LOADER_KEYS)}
+            if not is_obj:
+                errors.append(f"unsupported model loader {value['loader']!r} from {relative}")
+            elif "mtl_override" in value:
+                errors.append("forge:obj mtl_override is not supported; the atlas test does not follow it either, "
+                              f"from {relative}")
+            elif not isinstance(value.get("model"), str) or not re.fullmatch(
+                r"(?:[a-z0-9_.-]+:)?[a-z0-9/._-]+\.obj", value["model"]
+            ) or any(part in ("", ".", "..") for part in value["model"].split(":")[-1].split("/")):
+                errors.append(f"forge:obj requires an OBJ model resource location from {relative}")
+            else:
+                # The OBJ path already includes its directory and extension. Its MTL and atlas
+                # dependencies are checked by the importer and PackagedBlockAtlasCoverageTest.
+                obj_namespace, obj_path = _resource_location(value["model"], "minecraft")
+                references += 1
+                _required_asset(available, folded, f"assets/{obj_namespace}/{obj_path}", relative, errors)
+        for key, target in _walk_strings(reference_value, ""):
             required: str | None = None
             target_namespace = namespace
             target_path = target
