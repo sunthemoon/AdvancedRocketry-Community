@@ -79,11 +79,14 @@ public final class SawBladeOcclusionGameTests {
             ServerLevel level = helper.getLevel();
             List<BlockPos> stone = List.of(beneath.below(), beneath.north(), beneath.south(), beneath.east(), beneath.west());
             List<BlockPos> air = List.of(beneath, probe, probe.above());
-            placed.addAll(stone); placed.addAll(air); placed.add(tested); placed.add(source);
-            for (BlockPos pos : placed) {
+            var cells = new ArrayList<>(stone);
+            cells.addAll(air); cells.add(tested); cells.add(source);
+            for (BlockPos pos : cells) {
                 helper.assertTrue(level.hasChunkAt(pos) && level.getBlockEntity(pos) == null,
                         "Fixture cell is unloaded or contains a block entity: " + pos);
             }
+            // Only validated fixture cells may be cleared if setup fails.
+            placed.addAll(cells);
             stone.forEach(pos -> level.setBlock(pos, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL));
             air.forEach(pos -> level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL));
             var state = block.defaultBlockState();
