@@ -58,8 +58,10 @@ final class BayPassengerExitReleaseTest {
                 .then(logical("ready", (view, context) -> ready(view)))
                 .then(Commands.literal("leave").then(Commands.argument("logical", UuidArgument.uuid())
                         .then(Commands.argument("mode", StringArgumentType.word())
-                                .executes(context -> leave(context, false))
-                                .then(Commands.literal("freeze").executes(context -> leave(context, true))))))
+                                .executes(context -> leave(context, null))
+                                // freeze, or a stimulus at this tick's END: first, first-revoked or move.
+                                .then(Commands.argument("then", StringArgumentType.word())
+                                        .executes(context -> leave(context, StringArgumentType.getString(context, "then")))))))
                 .then(Commands.literal("pad").then(Commands.argument("logical", UuidArgument.uuid())
                         .then(Commands.argument("kind", StringArgumentType.word()).executes(context ->
                                 pad(view(context), StringArgumentType.getString(context, "kind"))))))
@@ -117,9 +119,14 @@ final class BayPassengerExitReleaseTest {
         return ready ? 1 : 0;
     }
 
-    private static int leave(CommandContext<CommandSourceStack> context, boolean freeze) {
+    /** Stimuli that run at the END of the exit's own tick, before vanilla's tracker correction and server-side player tick. */
+    static final java.util.Set<String> THEN = java.util.Set.of("first", "first-revoked", "move");
+
+    private static int leave(CommandContext<CommandSourceStack> context, String then) {
         View view = view(context);
         String mode = StringArgumentType.getString(context, "mode").toLowerCase(Locale.ROOT);
+        boolean freeze = "freeze".equals(then);
+        if (then != null && !freeze && !THEN.contains(then)) { throw new IllegalArgumentException("Unknown exit stimulus " + then); }
         ServerPlayer player = view.rider();
         RocketEntity rocket = view.rocket();
         if (player == null || rocket == null || player.getVehicle() != rocket) { throw new IllegalStateException("The rider is not aboard"); }
@@ -132,7 +139,7 @@ final class BayPassengerExitReleaseTest {
                         view.record().sourceFlightData().currentTarget().orElseThrow(), UUID.randomUUID());
             }
             case "input" -> {
-                if (freeze) { throw new IllegalArgumentException("The input exit happens later in this tick"); }
+                if (then != null) { throw new IllegalArgumentException("The input exit happens in the next tick"); }
                 // A riding client's sneak: the passenger tick of this server tick detaches it (Player.rideTick).
                 player.connection.handlePlayerInput(new ServerboundPlayerInputPacket(0.0F, 0.0F, false, true));
                 BayPassengerExitReleaseDrive.awaitInput(view, before);
@@ -142,6 +149,7 @@ final class BayPassengerExitReleaseTest {
         }
         var after = View.of(view.server(), view.logical());
         BayPassengerExitReleaseDrive.left(after, mode, before, BayPassengerExitReleaseDrive.Measure.take(after), freeze);
+        if (then != null && !freeze && player.getVehicle() == null) { BayPassengerExitReleaseDrive.then(player, view.logical(), then); }
         return 1;
     }
 
@@ -182,7 +190,7 @@ final class BayPassengerExitReleaseTest {
     }
 
     /** One real trusted passenger move toward the held source; the hold refuses it, after the move scope revoked the exit. */
-    private static int move(View view) {
+    static int move(View view) {
         ServerPlayer player = view.rider();
         if (player == null || view.rocket() == null || view.record() == null) { throw new IllegalStateException("No rider or source"); }
         int before = counter(view);

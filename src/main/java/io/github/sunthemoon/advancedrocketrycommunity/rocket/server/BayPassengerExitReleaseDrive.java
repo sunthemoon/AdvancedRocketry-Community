@@ -80,6 +80,7 @@ final class BayPassengerExitReleaseDrive {
         long inputTick;
         BayPassengerExitState.Slot tracked;
         int trace;
+        String then;
         float fall = -1;
         final List<String> attacks = new ArrayList<>();
         Drive(ServerPlayer player, UUID logical) { this.player = player; this.logical = logical; }
@@ -267,7 +268,51 @@ final class BayPassengerExitReleaseDrive {
             left(view, "input", before, Measure.take(view), false);
             return;
         }
+        if (drive.then != null) {
+            String then = drive.then;
+            drive.then = null;
+            if (then.equals("move")) { BayPassengerExitReleaseTest.move(view); } else { firstTick(drive, view, then.equals("first-revoked")); }
+            return;
+        }
         if (drive.descending) { step(drive, view); }
+    }
+
+    /** Arms one stimulus for this tick's END, which on a dedicated server follows the exit command directly. */
+    static void then(ServerPlayer player, UUID logical, String then) { drive(player, logical).then = then; }
+
+    /**
+     * W242's first-tick landing, by packets: a 3x3 pad three to four blocks under the rider, one airborne packet that
+     * falls more than three blocks, then the landing packet, all before vanilla's tracker correction and before the
+     * server-side player tick moves the rider. {@code revoke} first sends two same-Level teleports a tenth of a block
+     * east, two counter steps inside the correction window, which allows only one.
+     */
+    private static void firstTick(Drive drive, BayPassengerExitReleaseTest.View view, boolean revoke) {
+        var player = drive.player;
+        if (view.rider() != player || player.getVehicle() != null || view.exits() == null) {
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=rider sent=0 {}", drive.logical, view.describe());
+            return;
+        }
+        int top = (int) Math.floor(player.getY()) - 3;
+        double airborne = top + .05D;
+        if (player.getY() - airborne <= 3 || player.getY() - top > 4) { throw new IllegalStateException("No first-tick landing geometry"); }
+        var pad = net.minecraft.core.BlockPos.containing(player.getX(), top - 1, player.getZ());
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                view.server().overworld().setBlockAndUpdate(pad.offset(x, 0, z), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            }
+        }
+        if (revoke) {
+            int before = view.exits().motion.generation(player).counter();
+            for (int n = 0; n < 2; n++) {
+                player.connection.teleport(player.getX() + .1D, player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+            }
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_TELEPORTED logical={} counter={}>{} teleports=2 {}", drive.logical, before,
+                    view.exits().motion.generation(player).counter(), view.describe());
+        }
+        acknowledge(drive, view.exits());
+        player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), airborne, player.getZ(), false));
+        drive.landY = (double) top;
+        land(drive, view);
     }
 
     private static void step(Drive drive, BayPassengerExitReleaseTest.View view) {
