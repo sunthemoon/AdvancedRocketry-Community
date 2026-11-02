@@ -43,16 +43,20 @@ DEADLINE_TICKS = 200  # W230 section 4.2: the fixed first-exit deadline
 LANDING_DROP = 10  # BayPassengerExitReleaseTest.LANDING_DROP
 FALL_CASES = ("OFFER", "DESCENT", "CORRECTION", "LANDING", "EXPIRY", "TRUSTED", "REVOKED")
 # phase: the exit's state at the kill; mode: sneak (vanilla dismount), input (the sneak input packet) or menu (held LEAVE).
+# then: a stimulus the fixture applies at the END of the exit's own tick, before vanilla's tracker correction and before
+# the server-side player tick first moves the rider. X2, X4, X5 and X7 need the offer to survive later ticks.
 CASES = {
     "X0_CONTROL": dict(phase="NONE"),
     "X1_OFFER": dict(phase="OFFER", mode="input"),
     "X2_DESCENT": dict(phase="DESCENT", mode="sneak", steps=3),
     "X3_CORRECTION": dict(phase="CORRECTION", mode="sneak"),
-    "X4_LANDING": dict(phase="LANDING", mode="sneak", smoke="GRANTED"),
+    "X4_LANDING": dict(phase="LANDING", mode="sneak"),
     "X5_EXPIRY": dict(phase="EXPIRY", mode="sneak"),
-    "X6_TRUSTED": dict(phase="TRUSTED", mode="sneak"),
-    "X7_REVOKED": dict(phase="REVOKED", mode="sneak", smoke="REVOKED"),
+    "X6_TRUSTED": dict(phase="TRUSTED", mode="sneak", then="move"),
+    "X7_REVOKED": dict(phase="REVOKED", mode="sneak"),
     "X8_SAFE_MENU": dict(phase="SAFE", mode="menu"),
+    "X9_FIRST_TICK": dict(phase="FIRST_TICK", mode="sneak", then="first", smoke="GRANTED"),
+    "X10_FIRST_TICK_REVOKED": dict(phase="FIRST_TICK_REVOKED", mode="sneak", then="first-revoked", smoke="REVOKED"),
 }
 STARTS_PER_CASE = 3
 
@@ -290,12 +294,32 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         require(frozen["window"] == "open" and frozen["accepted"] == "false" and int(frozen["counter"]) == int(pair(left["counter"])[1]),
                 f"{case}: not frozen inside the correction window before vanilla's step: {frozen}")
         return dict(left=left, frozen=frozen)
-    left = run.exit(f"leave {logical} {spec['mode']}", "LEFT")
-    check_left(left, case, bay.ORIGIN[1])
-    observed["left"] = left
     assert run.process is not None
     lines = run.process.lines
-    if spec["phase"] == "DESCENT":
+    start = len(lines)
+    left = run.exit(f"leave {logical} {spec['mode']}" + (f" {spec['then']}" if "then" in spec else ""), "LEFT")
+    observed["left"] = left
+    check_left(left, case, bay.ORIGIN[1])
+    if spec["phase"] in ("FIRST_TICK", "FIRST_TICK_REVOKED"):
+        granted = spec["phase"] == "FIRST_TICK"
+        landed = fields(run.wait_after(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), start, 30), "LANDED")
+        observed["landed"] = landed
+        require(landed["tick"] == left["tick"], f"{case}: the landing was not in the exit's own tick: {landed['tick']} {left['tick']}")
+        check_landed(landed, case, granted)
+        observed["closing"] = await_closing(run, logical, case, int(landed["tick"]), "the landing")
+        if not granted:
+            teleported = fields(run.wait_after(re.compile(r"ARCE_RELEASE_BAY_EXIT_TELEPORTED "), start, 30), "TELEPORTED")
+            observed["teleported"] = teleported
+            exit_counter = int(pair(left["counter"])[1])
+            require(pair(teleported["counter"]) == (str(exit_counter), str(exit_counter + 2)),
+                    f"{case}: expected two teleport counter steps after the exit's own: {teleported}")
+            closing = observed["closing"]
+            require(closing["window"].split(":")[0] == str(exit_counter) and closing["window"].endswith(":true")
+                    and int(closing["counter"]) == exit_counter + 2,
+                    f"{case}: the counter observer did not revoke the two-step change: {closing}")
+        observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the landing's revocation", 10)
+        check_closed(observed["after"], case, left)
+    elif spec["phase"] == "DESCENT":
         descent = run.exit(f"descend {logical} {spec['steps']}", "DESCENT", 30)
         observed["descent"] = descent
         require(descent["stopped"] == "steps" and descent["sent"] == str(spec["steps"]) and descent["airborne"] == "true"
@@ -307,20 +331,22 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
         observed["landed"] = landed
         check_landed(landed, case, True)
-        observed["closing"] = check_closing(lines, logical, case, int(landed["tick"]), "the landing")
+        observed["closing"] = await_closing(run, logical, case, int(landed["tick"]), "the landing")
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the landing's revocation", 10)
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "EXPIRY":
         observed["after"] = run.poll(logical, lambda state: state["live"] == "0", "the deadline's revocation", 30)
-        observed["closing"] = check_closing(lines, logical, case, int(left["deadline"]), "the deadline")
+        observed["closing"] = await_closing(run, logical, case, int(left["deadline"]), "the deadline")
         check_closed(observed["after"], case, left)
     elif spec["phase"] == "TRUSTED":
-        observed["before"] = require_live(run, logical, case)
-        moved = run.exit(f"move {logical}", "MOVED")
+        # The move runs at the END of the exit's own tick, while the offer is live (LEFT shows it live).
+        moved = fields(run.wait_after(re.compile(r"ARCE_RELEASE_BAY_EXIT_MOVED "), start, 30), "MOVED")
         observed["moved"] = moved
+        require(moved["tick"] == left["tick"], f"{case}: the trusted move was not in the exit's own tick: {moved}")
         require(moved["remounted"] == "false" and moved["offer"] != "live" and moved["live"] == "0",
                 f"{case}: the trusted move did not revoke before its refusal: {moved}")
-        observed["closing"] = check_closing(lines, logical, case, int(moved["tick"]), "the trusted move")
+        observed["closing"] = await_closing(run, logical, case, int(moved["tick"]), "the trusted move")
+        require(observed["closing"]["slot"] == "removed", f"{case}: the move did not remove the live slot: {observed['closing']}")
         check_closed(moved, case, left)
     elif spec["phase"] == "REVOKED":
         time.sleep(0.5)  # beyond the correction window (start + 2 ticks): the teleport is a later counter step
@@ -331,7 +357,7 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         before, after = (int(value) for value in pair(teleported["counter"]))
         require(after == before + 1, f"{case}: the teleport did not step the counter once: {teleported}")
         observed["revoked"] = run.poll(logical, lambda state: state["live"] == "0", "the teleport's revocation", 10)
-        observed["closing"] = check_closing(lines, logical, case, int(teleported["tick"]), "the teleport")
+        observed["closing"] = await_closing(run, logical, case, int(teleported["tick"]), "the teleport")
         check_closed(observed["revoked"], case, left)
         observed["pad"] = run.exit(f"pad {logical} below", "PAD")
         run.exit(f"descend {logical} 0", "DESCEND")
@@ -356,6 +382,13 @@ def check_closing(lines: list[str], logical: str, case: str, earliest: int, stim
     require(len(found) == 1, f"{case}: expected one end of the offer, found {found}")
     require(int(found[0]["tick"]) >= earliest, f"{case}: the offer ended at tick {found[0]['tick']}, before {stimulus} at {earliest}: {found[0]}")
     return found[0]
+
+
+def await_closing(run: Run, logical: str, case: str, earliest: int, stimulus: str) -> dict:
+    """The fixture reports the end at the exit service's next observation point; wait for it, then check it."""
+    assert run.process is not None
+    run.wait_after(re.compile(rf"ARCE_RELEASE_BAY_EXIT_CLOSED logical={re.escape(logical)} "), 0, 15)
+    return check_closing(run.process.lines, logical, case, earliest, stimulus)
 
 
 def require_live(run: Run, logical: str, case: str) -> dict:
