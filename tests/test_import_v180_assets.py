@@ -585,6 +585,28 @@ class ImportV180AssetsTests(unittest.TestCase):
         self.save_plan()
         self.assertEqual("PENDING_HUMAN_REVIEW", self.generate()["review"]["status"])
 
+    def test_plan_with_a_cr_byte_is_refused(self) -> None:
+        # W249-R1: a CRLF working copy of an LF-committed plan hashes differently from every clean checkout.
+        self.plan_path.write_bytes(V010.pretty_json(self.plan).replace(b"\n", b"\r\n"))
+        self.assert_fails(r"import plan .* contains a CR byte \(line 1\)")
+        with self.assertRaisesRegex(ValueError, "contains a CR byte"):
+            self.verify()
+        batch = b'"v1.8.0-fixture-01"'
+        self.plan_path.write_bytes(V010.pretty_json(self.plan).replace(batch, batch + b"\r"))
+        self.assert_fails(r"import plan .* contains a CR byte \(line 3\)")
+
+    def test_record_with_a_cr_byte_is_refused(self) -> None:
+        self.generate()
+        crlf = self.record.read_bytes().replace(b"\n", b"\r\n")
+        self.record.write_bytes(crlf)
+        with self.assertRaisesRegex(ValueError, r"provenance record .* contains a CR byte \(line 1\)"):
+            self.verify()
+        before = self.tree()
+        with self.assertRaisesRegex(ValueError, r"provenance record .* contains a CR byte \(line 1\)"):
+            self.generate()
+        self.assertEqual(before, self.tree(), "a refused run must write nothing")
+        self.assertEqual(crlf, self.record.read_bytes())
+
     def test_dropped_entries_must_be_removed_deliberately(self) -> None:
         self.generate()
         del self.plan["entries"][3]

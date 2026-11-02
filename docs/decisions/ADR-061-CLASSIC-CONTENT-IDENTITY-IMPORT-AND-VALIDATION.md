@@ -244,6 +244,17 @@ must handle:
    script, and the record lists the change as a transformation. Only art drawn
    from scratch is `NEW`. Runtime tinting of byte-copied greyscale templates is
    preferred to recoloured copies.
+
+   **Ordinary baked OBJ block models (Root decision R271, 2026-11-02,
+   W249).** A block that has no formed state may bind an imported OBJ
+   through Forge's `forge:obj` block-model loader, so placed blocks, block
+   items and assembled rockets share one baked mesh. Its MTL textures are
+   block-atlas sprites under `textures/block/`, not the directly bound
+   `textures/models/` route of the formed hull renderers, and the importer
+   records each namespace and folder rewrite of a `map_Kd` reference. Exact
+   source rows take precedence over the broader wildcard rules they leave
+   unchanged. This adds no allowlist entry and is not human provenance
+   approval.
 5. **Review.** Records enter with review status `PENDING_HUMAN_REVIEW`. The
    maintainer's visual and license review sets `APPROVED`; G0 needs every
    record approved. The visual review compares every machine face and casing

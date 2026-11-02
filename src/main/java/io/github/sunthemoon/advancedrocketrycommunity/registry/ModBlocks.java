@@ -165,9 +165,9 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(SatelliteTerminalBlock.LIT) ? 7 : 0)
                     .sound(SoundType.METAL))
     );
-    public static final RegistryObject<Block> ROCKET_MOTOR = metalBlock("rocket_motor");
+    public static final RegistryObject<Block> ROCKET_MOTOR = monoMotor("rocket_motor");
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
-    public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = metalBlock("advanced_rocket_motor");
+    public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = monoMotor("advanced_rocket_motor");
     public static final RegistryObject<Block> BIPROPELLANT_ROCKET_MOTOR = metalBlock("bipropellant_rocket_motor");
     public static final RegistryObject<Block> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = metalBlock("advanced_bipropellant_rocket_motor");
     public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = metalBlock("bipropellant_fuel_tank");
@@ -241,6 +241,14 @@ public final class ModBlocks {
 
     private static RegistryObject<Block> metalBlock(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties()));
+    }
+
+    /**
+     * The mono motors' baked OBJ meshes do not fill the cube, and upstream's isOpaqueCube returned false, so these
+     * blocks do not occlude (W249-R2). Collision, support and sealing stay a full cube.
+     */
+    private static RegistryObject<Block> monoMotor(String name) {
+        return BLOCKS.register(name, () -> new Block(metalProperties().noOcclusion()));
     }
 
     private static RegistryObject<RollingMachinePortBlock> rollingPort(RollingMachinePortType type) {

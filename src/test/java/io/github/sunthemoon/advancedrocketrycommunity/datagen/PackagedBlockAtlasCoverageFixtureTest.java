@@ -123,6 +123,85 @@ class PackagedBlockAtlasCoverageFixtureTest {
         rejected(NS + "outside/not_stitched");
     }
 
+    @Test void objMaterialInBlockDirectoryPasses() throws IOException {
+        objFixture("block/fixture");
+        assertDoesNotThrow(this::check);
+    }
+
+    @Test void objMaterialOutsideAtlasFailsEvenWhenPngExists() throws IOException {
+        objFixture("models/not_stitched");
+        write("textures/models/not_stitched.png", "present but not stitched");
+        rejected(NS + "models/not_stitched");
+    }
+
+    @Test void objCannotFallBackToClasspathWhenMeshMissing() throws IOException {
+        objFixture("block/fixture");
+        missing("models/block/fixture.obj", "fixture.obj");
+    }
+
+    @Test void missingObjLibraryFails() throws IOException {
+        objFixture("block/fixture");
+        missing("models/block/fixture.mtl", "fixture.mtl");
+    }
+
+    @Test void missingObjTextureFails() throws IOException {
+        objFixture("block/absent");
+        rejected(NS + "block/absent");
+    }
+
+    @Test void everyLibraryMaterialAndMapIsChecked() throws IOException {
+        objFixture("block/fixture");
+        write("models/block/fixture.mtl", "newmtl Material\nmap_Kd " + NS + "block/fixture\n"
+                + "newmtl Unused\nmap_Kd " + NS + "block/fixture\nmap_Ks " + NS + "models/unstitched\n");
+        write("textures/models/unstitched.png", "present but not stitched");
+        rejected(NS + "models/unstitched");
+    }
+
+    @Test void objMaterialTheLibraryDoesNotDefineFails() throws IOException {
+        // W249-R7: Forge's ObjMaterialLibrary.getMaterial throws for a usemtl name that the MTL does not define.
+        objFixture("block/fixture");
+        write("models/block/fixture.obj", "mtllib fixture.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\n"
+                + "vt 0 0\nvt 1 0\nvt 0 1\nusemtl Absent\nf 1/1 2/2 3/3\n");
+        rejected("fixture.obj uses material Absent, which " + NS + "models/block/fixture.mtl does not define");
+    }
+
+    @Test void usedObjMaterialWithoutDiffuseMapFails() throws IOException {
+        objFixture("block/fixture");
+        write("models/block/fixture.mtl", "newmtl Material\nmap_Ks " + NS + "block/fixture\n");
+        rejected("fixture.obj material Material has no map_Kd in " + NS + "models/block/fixture.mtl");
+    }
+
+    @Test void malformedObjFails() throws IOException {
+        objFixture("block/fixture");
+        write("models/block/fixture.obj", "not_an_obj\n");
+        rejected("fixture.obj");
+    }
+
+    @Test void objMaterialOverrideFailsUntilModelled() throws IOException {
+        objFixture("block/fixture");
+        JsonObject model = json(Files.readString(root.resolve(ASSETS + "models/block/first.json")));
+        model.addProperty("mtl_override", NS + "models/block/other.mtl");
+        write("models/block/first.json", model.toString());
+        rejected("mtl_override");
+    }
+
+    @Test void unsupportedModelLoaderFails() throws IOException {
+        write("models/block/first.json", "{\"loader\":\"fixture:unknown\"}");
+        rejected("loader fixture:unknown");
+    }
+
+    @Test void itemOverridesFailUntilModelled() throws IOException {
+        write("models/item/fixture.json", "{\"parent\":\"" + NS + "block/first\",\"overrides\":[]}");
+        rejected("overrides");
+    }
+
+    private void objFixture(String texture) throws IOException {
+        write("models/block/first.json", "{\"loader\":\"forge:obj\",\"model\":\"" + NS + "models/block/fixture.obj\"}");
+        write("models/block/fixture.obj", "mtllib fixture.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\n"
+                + "vt 0 0\nvt 1 0\nvt 0 1\nusemtl Material\nf 1/1 2/2 3/3\n");
+        write("models/block/fixture.mtl", "newmtl Material\nmap_Kd " + NS + texture + "\n");
+    }
+
     private void missing(String file, String model) throws IOException {
         Files.delete(root.resolve(ASSETS + file));
         rejected(model);
