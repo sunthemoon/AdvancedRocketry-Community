@@ -13,7 +13,7 @@ Root chose option 1 on 2026-11-03 in [TASK-W269](../TASK-W269-V2-CAMPAIGN-GATE.m
 delegation for design points. Use the existing fully gated fixture on a disposable copy, with the two real client
 UUIDs selected as follows. Root corrected R298's original admission wording on 2026-11-03 in `TASK-W269-FIX.md`
 on the shared checkout: option 1 leaves production bay admission off everywhere outside GameTest and the full
-release-test gate (ADR-065 section 10), but opens that full gate and D0's bay deployment admission on the marked
+release-test gate (ADR-065 section 8, the W27d1 note), but opens that full gate and D0's bay deployment admission on the marked
 campaign world. A named client's ordinary bay-rocket launch can therefore start D0 there. This is not option 2
 (a production admission switch). Campaign execution and scheduling remain the owner's decision. Record R298's date,
 task source and this correction in the campaign record. [W269-DESIGN](W269-DESIGN.md) defines the boundary.
@@ -31,15 +31,19 @@ task source and this correction in the campaign record. [W269-DESIGN](W269-DESIG
   unreadability or different bytes leave the ordinary connection policy unchanged. The marker is an explicit operator
   acknowledgment, not proof of copying; archive its bytes and hash with the campaign configuration.
   The marker is 32 bytes, SHA-256 `e67124e2a697a32ccdafc384e672362f81c732e5e01872012a2e22c6e4590f98`.
-  Write it byte-exactly in PowerShell (set `$worldRoot` to the disposable copy):
+  Write it byte-exactly in PowerShell. `Resolve-Path` makes `$worldRoot` absolute; .NET resolves a relative path
+  against a different directory than PowerShell does, so a relative path can put the marker in the wrong folder
+  (W269-R6):
 
   ```powershell
+  $worldRoot = (Resolve-Path -LiteralPath '<disposable copy>').Path
   $path = Join-Path $worldRoot '.arce-bay-v2-campaign'
   [IO.File]::WriteAllBytes($path, [Text.Encoding]::ASCII.GetBytes("ARCE_BAY_V2_DISPOSABLE_WORLD_V1`n"))
   Get-FileHash -LiteralPath $path -Algorithm SHA256
   ```
 
-  Do not use `Set-Content` or `Out-File`, which can add CRLF or a BOM.
+  Do not use `Set-Content` or `Out-File`, which can add CRLF or a BOM. Before connecting clients, check that the
+  startup line names the copy's path with `marker=true`.
 - Require a dedicated server with `enable-rcon=false`, `online-mode=true`, `white-list=true` and
   `enforce-whitelist=true`. The whitelist contains exactly the two selected accounts, using their authenticated
   Mojang UUIDs. Restrict network access so nobody else can reach the server, and connect no other real clients.
@@ -64,8 +68,8 @@ GameTest are unchanged.
   those steps is a deviation to record with the rocket/transfer IDs and log times.
 
 Integrated/LAN servers ignore this property; it does not provide the LAN fixture route needed by section 5.
-The LAN procedure remains a separate campaign prerequisite for Root. Root must apply the drafted ADR-065 section 10
-note and finish review/integration before using the new selection; this checklist is not a V2 result or Gate approval.
+The LAN procedure remains a separate campaign prerequisite for Root. W269 is merged (`f85573938`) and its ADR-065
+section 10 note is applied ("R298 implementation note"); this checklist is not a V2 result or Gate approval.
 
 A second prerequisite is the source under test. Use a commit that contains W257's committed samples (R283) and W262's
 real-client landing rules (R288); record its SHA. On older sources the fall offer ends on a real client before it lands:

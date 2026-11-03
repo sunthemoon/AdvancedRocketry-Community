@@ -2258,6 +2258,46 @@ scope (`93659768`). It changes no decision status and accepts no risk.
 No saved format of a published world changes: the escrow root is unpublished under R-035. This is a
 development implementation note, not owner acceptance or a Gate result.
 
+### R298 implementation note: the campaign-only release-test gate for two named clients (W269, merged `f85573938`)
+
+This note records mechanics and Root decisions R298 and R299; it accepts no risk. It serves the owner's two-client V2
+campaign for the bay's safe exit ([W254-V2-CHECKLIST](../work/v1.8.0-root-queue/records/W254-V2-CHECKLIST.md) section 0.1).
+Root chose it under the owner's delegation of 2026-11-01 (R298, with the wording corrected after W269's review).
+
+- **The selection.** The JVM property `advancedrocketrycommunity.bayV2CampaignPlayers` names exactly two distinct,
+  full hyphenated UUIDs separated by one comma, without whitespace. On a dedicated server, the full
+  `EscrowTestEndpoints` release-test gate then also accepts those two connections beside exact facility-owned test
+  connections. The property never replaces the hooks property, the owner-thread check, the dedicated-server
+  requirement or `enable-rcon=false`; any other real connection closes the gate; the named clients never become
+  facility-owned. Unset keeps the previous policy. A malformed value refuses dedicated startup with a bounded format
+  error, even with hooks off; Forge still exits with status 0, so a refusal is judged from the error, the crash report
+  and the missing `Done` line. Integrated, LAN and GameTest servers ignore the property.
+- **The marker.** The selection counts only on a world whose root holds `.arce-bay-v2-campaign`, a regular file (not
+  a symbolic link) of exactly the 32 ASCII bytes `ARCE_BAY_V2_DISPOSABLE_WORLD_V1\n` (SHA-256
+  `e67124e2a697a32ccdafc384e672362f81c732e5e01872012a2e22c6e4590f98`). The operator writes it into a disposable
+  whole-world copy, never the source world; the mod never creates it. The marker and the selection are sampled once
+  at startup and held in server-lifetime memory that is cleared at stop. No saved schema, packet or persistence rule
+  changes.
+- **What the open gate reaches.** It is the single full release-test gate, so on the marked world it opens every
+  gated op-only release-test command family and D0's bay deployment admission (the W27d1 note in section 8): a bay
+  rocket that a named client launches in ordinary play starts D0 at ascent completion, as a facility rocket does.
+  Seams that need their own property, such as the loader admission switch, stay off without it. Production bay
+  admission stays off everywhere outside GameTest and the full release-test gate; no production switch changes.
+- **Campaign prerequisites.** `online-mode=true`, `white-list=true` and `enforce-whitelist=true`, a whitelist of
+  exactly the two accounts, and a server nobody else can reach, because offline mode does not authenticate UUIDs.
+  These are procedure, not runtime checks (Root decision R299: the scripted native harness runs offline peers, and
+  the campaign record archives the server configuration). The campaign launches only its prescribed held rockets and
+  records any other `ARCE_BAY_CLAIM` as a deviation.
+- **Logs.** A valid selection logs one INFO `ARCE_BAY_V2_CAMPAIGN startup` line and one `ARCE_BAY_V2_CAMPAIGN connect`
+  line per named login, each with the property, the sorted client list, the absolute world root and
+  `marker=true|false`. Unset logs neither. The lines describe the selection, not every gate condition.
+- **Reviews and evidence.** An independent Claude review (APPROVE-WITH-CHANGES), the W269-fix corrections and a Claude
+  recheck (APPROVE). The gate, D0 admission and marker unit tests, the full GameTest run, four native packaged-server
+  cases with scripted peers and hosted regression 41559401551 (second attempt) pass; see `records/W269.md`. Scripted
+  peers are not V2 evidence.
+
+This is a development implementation note, not owner acceptance, campaign evidence or a Gate result.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table

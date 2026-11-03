@@ -41,8 +41,8 @@ import org.slf4j.Logger;
 
 /**
  * W27d1's gated native fixture for {@code scripts/run_v180_bay_forced_stop.py} (W27A-DESIGN section 9): OP-only, and
- * only on a dedicated server passing the full release-test gate (facility-owned connections, or explicitly selected
- * clients on a marked campaign world). It builds and launches the neutral, hand-fuelled
+ * only on a dedicated server passing the full release-test gate (only facility-owned connections and, on a marked
+ * campaign world, the selected clients). It builds and launches the neutral, hand-fuelled
  * Earth-to-Moon rocket with one data bay and one solar bay, reports the claim, receipts, transfer and rocket, and fills
  * the shared pending capacity with inert INTENT receipts. The deployment itself runs only through the coordinator.
  */

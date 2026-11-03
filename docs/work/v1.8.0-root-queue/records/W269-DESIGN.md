@@ -32,7 +32,7 @@ This is the single full release-test gate behind the gated op-only command famil
 On the marked campaign world, with a valid selection, hooks on, RCON off and only named or facility-owned
 connections, D0's bay deployment admission is also open. A bay rocket that a named client builds and launches
 in ordinary play reaches D0 at ascent completion, just as a facility rocket does. Production bay admission stays
-off everywhere outside GameTest and the full release-test gate (ADR-065 section 10); no production switch changes.
+off everywhere outside GameTest and the full release-test gate (ADR-065 section 8, the W27d1 note); no production switch changes.
 Other release-test command families also accept those connections. Seams requiring their own property remain off
 without that property. The campaign launches only its prescribed held rockets and records any other
 `ARCE_BAY_CLAIM` as a deviation.
