@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightRetirementGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
@@ -55,6 +56,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class TauCetiPathGameTests {
     static final String BATCH = "tau_ceti_path";
     private static final int FLIGHT = 270;
+    // Preserve the original 590 setup/warp/readiness/cleanup ticks and three 270-tick flights; add two separately
+    // bounded predecessor retirements: 590 + 3 * 270 + 2 * 1,000 = 3,400 ticks, not a larger landing allowance.
+    private static final int PATH_TIMEOUT_TICKS = 590 + 3 * FLIGHT
+            + 2 * RocketFlightRetirementGameTestSupport.PREPARATION_TICKS;
     /** The fixed pads' centres (ADR-006, {@code RocketLandingPadSelector}). */
     private static final int[][] PADS = {{0, 0}, {64, 0}, {-64, 0}, {0, 64}, {0, -64}, {64, 64}, {-64, 64}, {64, -64}};
     /** Half the widest footprint a landing allows (16 chunks: 64 blocks around a pad on a chunk corner). */
@@ -65,7 +70,7 @@ public final class TauCetiPathGameTests {
     private static final ChunkPos FIRST_PAD = new ChunkPos(0, 0);
     /** The production flight ticket's radius: entity-ticking at the pad's chunk. */
     private static final int LANDING_TICKET_RADIUS = 2;
-    /** Paced attempts, at least ten seconds, within the test's unchanged 1,400-tick timeout. */
+    /** Paced attempts, at least ten seconds, within the original setup/warp/readiness allowance. */
     private static final int LANDING_READY_ATTEMPTS = 200;
     private static final TicketType<ChunkPos> LANDING_TICKET = TicketType.create("arce_gametest_tau_ceti_landing",
             Comparator.comparingLong(ChunkPos::toLong));
@@ -73,7 +78,7 @@ public final class TauCetiPathGameTests {
     private TauCetiPathGameTests() {
     }
 
-    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 1_400)
+    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = PATH_TIMEOUT_TICKS)
     public static void aDiscoveredTauCetiFIsReachedByWarpAndADockedRocketLandsAndReturns(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
@@ -143,10 +148,13 @@ public final class TauCetiPathGameTests {
                                     "The station did not warp to Tau Ceti f's orbit once");
                             RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
                             whenLandingReady(helper, driver, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
+                                UUID downId = UUID.randomUUID();
                                 RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
-                                        new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
+                                        new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), downId);
                                 RocketFlightGameTestFixtures.assertPendingLaunch(helper, down, docked);
-                                RocketFlightGameTestFixtures.awaitFlightState(helper, driver, surface, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                RocketFlightGameTestFixtures.awaitPreparedFlightState(helper, driver, surface, logical[0], downId,
+                                        RocketFlightState.LANDED, FLIGHT, prepared -> guarded(cleanup, () -> {
+                                    helper.assertTrue(prepared, "Tau Ceti descent did not prepare within its retirement budget");
                                     RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
                                     helper.assertTrue(onF.flightData().orElseThrow().currentBody()
                                             .equals(ExoplanetContent.TAU_CETI_F), "The rocket did not land on Tau Ceti f");
@@ -155,10 +163,12 @@ public final class TauCetiPathGameTests {
                                             "The rocket landed away from the first pad at " + onF.blockPosition());
                                     helper.assertTrue(findLogicalRocket(fixture.space, logical[0]) == null,
                                             "The station kept a copy of the rocket");
-                                    RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
-                                            UUID.randomUUID());
+                                    UUID upId = UUID.randomUUID();
+                                    RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(), upId);
                                     RocketFlightGameTestFixtures.assertPendingLaunch(helper, up, onF);
-                                    RocketFlightGameTestFixtures.awaitFlightState(helper, driver, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                    RocketFlightGameTestFixtures.awaitPreparedFlightState(helper, driver, fixture.space, logical[0], upId,
+                                            RocketFlightState.LANDED, FLIGHT, preparedReturn -> guarded(cleanup, () -> {
+                                        helper.assertTrue(preparedReturn, "Tau Ceti return did not prepare within its retirement budget");
                                         RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
                                                 observerJournal);
                                         helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),

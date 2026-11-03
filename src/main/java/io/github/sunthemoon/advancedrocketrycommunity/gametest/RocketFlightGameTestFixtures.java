@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -16,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightRetirementGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
@@ -159,6 +161,30 @@ final class RocketFlightGameTestFixtures {
             RocketFlightState state,
             int ticks, Runnable assertions) {
         awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state)
+                && RocketTransferSavedData.get(destination.getServer()).acknowledgedCurrent(), assertions);
+    }
+
+    /**
+     * A chained flight first retires its predecessor. That separately bounded preparation must not spend the next
+     * flight's landing ticks. Observe the exact requested transfer for this logical rocket, never its old COMMITTED
+     * record. On either deadline run the caller's assertions (including its preparation check and failure observer).
+     */
+    static void awaitPreparedFlight(GameTestHelper helper, GameTestTickDriver driver, UUID logical, UUID requested,
+            int landingTicks, BooleanSupplier landed, Consumer<Boolean> assertions) {
+        var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
+        var budget = new RocketFlightLegBudget(requested, helper.getTick(),
+                RocketFlightRetirementGameTestSupport.PREPARATION_TICKS, landingTicks);
+        awaitPaced(helper, driver, budget.latestDeadline(), () -> {
+            var record = journal.findByLogicalRocket(logical).orElse(null);
+            budget.observe(helper.getTick(), record != null && record.phase() == RocketTransferPhase.PREPARED
+                    ? record.transferId() : null);
+            return (budget.prepared() && landed.getAsBoolean()) || budget.expired(helper.getTick());
+        }, () -> assertions.accept(budget.prepared()));
+    }
+
+    static void awaitPreparedFlightState(GameTestHelper helper, GameTestTickDriver driver, ServerLevel destination,
+            UUID logical, UUID requested, RocketFlightState state, int landingTicks, Consumer<Boolean> assertions) {
+        awaitPreparedFlight(helper, driver, logical, requested, landingTicks, () -> hasFlightState(destination, logical, state)
                 && RocketTransferSavedData.get(destination.getServer()).acknowledgedCurrent(), assertions);
     }
 

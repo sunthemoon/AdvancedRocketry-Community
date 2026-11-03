@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightRetirementGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationCode;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.BeforeBatch;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -35,6 +38,12 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class PlanetaryWorldGameTests {
+    private static final int LANDING_TICKS = 270;
+    // Setup (20 + assembly 20), three separately bounded preparations/flights, then 20 cleanup/scheduling ticks:
+    // 40 + 3 * (1,000 + 270) + 20 = 3,870. PREPARATION_TICKS documents the retirement arithmetic.
+    private static final int ROUTE_TIMEOUT_TICKS = 20 + RocketFlightGameTestFixtures.ASSEMBLY_WAIT_TICKS
+            + 3 * (RocketFlightRetirementGameTestSupport.PREPARATION_TICKS + LANDING_TICKS) + 20;
+
     private PlanetaryWorldGameTests() {
     }
 
@@ -98,8 +107,25 @@ public final class PlanetaryWorldGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "rocket_test", batch = "planetary_surface_flight", timeoutTicks = 1000)
+    @GameTest(template = "rocket_test", batch = "planetary_surface_flight", timeoutTicks = ROUTE_TIMEOUT_TICKS)
     public static void earthMarsVenusEarthKeepsOneRocketAndExactFuelDebits(GameTestHelper helper) {
+        planetaryRoute(helper, null);
+    }
+
+    @GameTest(template = "rocket_test", batch = "planetary_surface_flight_supersession", timeoutTicks = ROUTE_TIMEOUT_TICKS)
+    public static void aSupersedingRetirementSaveDoesNotSpendTheNextLegsFlightBudget(GameTestHelper helper) {
+        var supersession = new RocketFlightRetirementGameTestSupport.Supersession(helper);
+        helper.onEachTick(supersession::tick);
+        planetaryRoute(helper, supersession);
+    }
+
+    @BeforeBatch(batch = "planetary_surface_flight_supersession")
+    public static void beforeSupersession(ServerLevel level) { EarthReturnPadFixture.beforePlanetary(level); }
+
+    @AfterBatch(batch = "planetary_surface_flight_supersession")
+    public static void afterSupersession(ServerLevel level) { EarthReturnPadFixture.afterPlanetary(level); }
+
+    private static void planetaryRoute(GameTestHelper helper, RocketFlightRetirementGameTestSupport.Supersession supersession) {
         var driver = new GameTestTickDriver(helper);
         driver.after(20, () -> {
             helper.setBlock(new BlockPos(4, 2, 3), io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.ROCKET_FUEL_TANK.get());
@@ -107,31 +133,34 @@ public final class PlanetaryWorldGameTests {
                 var logical = rocket.assemblyTransactionId().orElseThrow();
                 var original = rocket.snapshot().orElseThrow();
                 var route = List.of(PlanetaryContent.MARS, PlanetaryContent.VENUS, CelestialIds.EARTH_ID);
-                fly(helper, driver, rocket, logical, original.blocks(), route, 0);
+                fly(helper, driver, rocket, logical, original.blocks(), route, 0, supersession);
             });
         });
     }
 
     private static void fly(GameTestHelper helper, GameTestTickDriver driver, RocketEntity rocket, UUID logical,
             List<io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock> blocks,
-            List<net.minecraft.resources.ResourceLocation> route, int index) {
+            List<net.minecraft.resources.ResourceLocation> route, int index,
+            RocketFlightRetirementGameTestSupport.Supersession supersession) {
         var server = helper.getLevel().getServer();
         guarded(server, logical, () -> {
             var before = rocket.flightData().orElseThrow().fuel();
             // Each leg starts with the same tank contents left by the previous one.
             var destination = route.get(index);
-            var result = RocketRuntime.requestAdminFlight(rocket, new TravelTarget.BodySurface(destination), UUID.randomUUID());
+            if (supersession != null && index == 1) { supersession.arm(logical); }
+            var requested = UUID.randomUUID();
+            var result = RocketRuntime.requestAdminFlight(rocket, new TravelTarget.BodySurface(destination), requested);
             RocketFlightGameTestFixtures.assertPendingLaunch(helper, result, rocket);
             helper.assertTrue(result.requiredFuel() > 0, "Planetary flight omitted its fuel debit");
             // Successful native preparation has already initialized this server's journal.
             var journal = RocketTransferSavedData.get(server);
-            RocketFlightGameTestFixtures.awaitPaced(helper, driver, helper.getTick() + 270, () -> {
+            RocketFlightGameTestFixtures.awaitPreparedFlight(helper, driver, logical, requested, LANDING_TICKS, () -> {
                 var level = destination.equals(CelestialIds.EARTH_ID)
                         ? server.overworld() : server.getLevel(PlanetaryContent.level(destination));
                 var landed = level == null ? null : RocketFlightGameTestFixtures.loadedLogicalRocket(level, logical);
                 return landed != null && landed.flightData().map(data -> data.state() == RocketFlightState.LANDED
                         && data.currentBody().equals(destination)).orElse(false);
-            }, () -> guarded(server, logical, () -> {
+            }, prepared -> guarded(server, logical, () -> {
                 var matches = new ArrayList<RocketEntity>();
                 for (var level : server.getAllLevels()) {
                     for (var entity : level.getAllEntities()) {
@@ -143,6 +172,7 @@ public final class PlanetaryWorldGameTests {
                 RocketEntity landed;
                 RocketFlightData observedState = null;
                 try {
+                    helper.assertTrue(prepared, "Planetary transfer did not prepare within its retirement budget");
                     helper.assertTrue(matches.size() == 1, "Planetary transfer did not retain exactly one logical rocket");
                     landed = matches.get(0);
                     var state = landed.flightData().orElseThrow();
@@ -157,8 +187,9 @@ public final class PlanetaryWorldGameTests {
                     throw failure;
                 }
                 if (index + 1 < route.size()) {
-                    fly(helper, driver, landed, logical, blocks, route, index + 1);
+                    fly(helper, driver, landed, logical, blocks, route, index + 1, supersession);
                 } else {
+                    if (supersession != null) { supersession.assertRetried(); }
                     cleanRocket(server, logical);
                     helper.succeed();
                 }
