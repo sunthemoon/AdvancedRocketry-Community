@@ -33,8 +33,9 @@ import org.slf4j.Logger;
 
 /**
  * W254 (W230-S3) gated native fixture for {@code scripts/run_v180_bay_exit_cuts.py}: OP-only, behind the complete
- * release-test gate ({@link EscrowTestEndpoints#requireEnabled}) on a dedicated server whose players are all
- * facility-owned. A survival test rider boards the bay forced-stop fixture before its launch; these commands then make one
+ * release-test gate ({@link EscrowTestEndpoints#requireEnabled}) on a dedicated server with only facility-owned or
+ * explicitly selected, marked campaign connections. A facility-owned survival test rider boards the bay forced-stop
+ * fixture before its launch; these commands then make one
  * physical exit the way a player does (vanilla dismount, the sneak input packet or the held menu LEAVE), place a stone pad,
  * drive the client's move packets, make one same-Level teleport or one trusted passenger move, and report the exit state.
  * They change no exit decision, budget, deadline, admission property, receipt, journal or seat.

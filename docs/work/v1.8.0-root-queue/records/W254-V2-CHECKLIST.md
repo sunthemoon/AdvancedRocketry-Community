@@ -7,23 +7,65 @@ players, GameTests and Xvfb runs are not V2 evidence.
 
 ## 0. Before the campaign
 
-### 0.1 A decision Root must take first
+### 0.1 Dedicated campaign selection: Root decision R298
 
-The design says to test "through the existing fully gated fixture while admission is disabled". That fixture
-(`arce bay release-test fixture` and W254's `exit fixture`) passes only the complete release-test gate,
-`EscrowTestEndpoints.enabled`, which requires that **every connected player was created by the release-test facility**.
-A real client closes that gate, so the fixture cannot launch a held rocket with real clients aboard, and owner
-decision Q1 (R243) keeps bay admission off until the V2 evidence exists. The campaign therefore needs one of these,
-decided by Root (and the owner where it touches admission):
+Root chose option 1 on 2026-11-03 in [TASK-W269](../TASK-W269-V2-CAMPAIGN-GATE.md), under the owner's standing
+delegation for design points. Use the existing fully gated fixture on a disposable copy, with the two real client
+UUIDs selected as follows. Root corrected R298's original admission wording on 2026-11-03 in `TASK-W269-FIX.md`
+on the shared checkout: option 1 leaves production bay admission off everywhere outside GameTest and the full
+release-test gate (ADR-065 section 10), but opens that full gate and D0's bay deployment admission on the marked
+campaign world. A named client's ordinary bay-rocket launch can therefore start D0 there. This is not option 2
+(a production admission switch). Campaign execution and scheduling remain the owner's decision. Record R298's date,
+task source and this correction in the campaign record. [W269-DESIGN](W269-DESIGN.md) defines the boundary.
 
-1. **Recommended:** a campaign-only gate variant, on a disposable world only, that also admits the two named real
-   client UUIDs, with its own property, its own log line at startup and a test like `BayReleaseTestGateTest`. It needs
-   a short ADR note, because it widens a release-test gate.
-2. Enable bay admission on a disposable campaign world only. The design warns that changing an admission property is
-   not evidence of production approval; the record must say so.
+- Set both JVM properties before the Forge argument file:
+  `-Dadvancedrocketrycommunity.releaseTestHooks=true` and
+  `-Dadvancedrocketrycommunity.bayV2CampaignPlayers=<client-A-uuid>,<client-B-uuid>`.
+  Use exactly two distinct, full hyphenated UUIDs, with no spaces. Empty, duplicate, abbreviated, extra or malformed
+  values refuse dedicated-server startup, including with hooks off; the bounded error names the property and format.
+  A refused startup still exits with status 0: judge refusal from the format error, the crash report and the absence
+  of the server's `Done` readiness line, not from the process status.
+- After copying the world, create `<world-root>/.arce-bay-v2-campaign` with exactly the ASCII bytes
+  `ARCE_BAY_V2_DISPOSABLE_WORLD_V1\n` (LF, no BOM). Never create it in the source world. It must be a regular file,
+  not a symlink. Startup samples it once; changing the marker or selected clients requires a restart. Absence,
+  unreadability or different bytes leave the ordinary connection policy unchanged. The marker is an explicit operator
+  acknowledgment, not proof of copying; archive its bytes and hash with the campaign configuration.
+  The marker is 32 bytes, SHA-256 `e67124e2a697a32ccdafc384e672362f81c732e5e01872012a2e22c6e4590f98`.
+  Write it byte-exactly in PowerShell (set `$worldRoot` to the disposable copy):
 
-Until one is decided, sections 1 to 6 cannot start. Record the decision (ID, date, channel) at the top of the
-campaign record.
+  ```powershell
+  $path = Join-Path $worldRoot '.arce-bay-v2-campaign'
+  [IO.File]::WriteAllBytes($path, [Text.Encoding]::ASCII.GetBytes("ARCE_BAY_V2_DISPOSABLE_WORLD_V1`n"))
+  Get-FileHash -LiteralPath $path -Algorithm SHA256
+  ```
+
+  Do not use `Set-Content` or `Out-File`, which can add CRLF or a BOM.
+- Require a dedicated server with `enable-rcon=false`, `online-mode=true`, `white-list=true` and
+  `enforce-whitelist=true`. The whitelist contains exactly the two selected accounts, using their authenticated
+  Mojang UUIDs. Restrict network access so nobody else can reach the server, and connect no other real clients.
+  Offline mode does not authenticate UUIDs: an impersonator can select the same name and obtain its derived UUID.
+  These are campaign prerequisites, not additional runtime checks. The gate still checks the server thread,
+  hooks, RCON and every connection. Exact facility-owned test players may coexist with either or both named clients;
+  a third real client's connection closes it. Selection does not adopt clients into the test-player facility.
+- Check these exact INFO message shapes (the UUID list is lowercase and lexically sorted):
+  `ARCE_BAY_V2_CAMPAIGN startup property=advancedrocketrycommunity.bayV2CampaignPlayers clients=<uuid1>,<uuid2> world=<absolute-world-root> marker=true`
+  and, once for each named UUID login,
+  `ARCE_BAY_V2_CAMPAIGN connect property=advancedrocketrycommunity.bayV2CampaignPlayers clients=<uuid1>,<uuid2> world=<absolute-world-root> marker=true player=<uuid>`.
+  An unmarked selection logs `marker=false`; neither line appears when the property is unset. These lines describe
+  selection, not proof that all the other gate conditions hold. Unset preserves the existing facility-only policy.
+
+W269 changes the connection policy of the single full release-test gate behind all gated op-only command families,
+not only the bay exit fixture. On this world D0 admits bay rockets launched by named clients as well as facility
+rockets. Other gated command families and seams also accept these connections; seams needing a separate property
+stay off without it. Production admission switches, fixture command implementations, packets, saved data and
+GameTest are unchanged.
+
+- [ ] Launch no bay rocket outside the campaign's prescribed held-rocket steps. Any `ARCE_BAY_CLAIM` other than
+  those steps is a deviation to record with the rocket/transfer IDs and log times.
+
+Integrated/LAN servers ignore this property; it does not provide the LAN fixture route needed by section 5.
+The LAN procedure remains a separate campaign prerequisite for Root. Root must apply the drafted ADR-065 section 10
+note and finish review/integration before using the new selection; this checklist is not a V2 result or Gate approval.
 
 A second prerequisite is the source under test. Use a commit that contains W257's committed samples (R283) and W262's
 real-client landing rules (R288); record its SHA. On older sources the fall offer ends on a real client before it lands:
@@ -36,7 +78,7 @@ W257 alone (W257-R1), so section 3's steps 3.2 and 3.5 would only record that de
 |---|---|
 | Source | The tested commit SHA and the reobfuscated JAR's SHA-256, size and file name. The server and both clients use the same JAR. |
 | Forge and Java | The Forge version on the server and on each client, and each Java version. |
-| Configuration | `server.properties` (keep `difficulty`, `view-distance` and `simulation-distance` the same for every run), the mod's server configuration, and any campaign property from 0.1. |
+| Configuration | `server.properties`, explicitly `online-mode=true`, `white-list=true`, `enforce-whitelist=true` and `enable-rcon=false`; `whitelist.json` listing exactly the two accounts; the network access restriction; the mod's server configuration and campaign properties from 0.1. Keep `difficulty`, `view-distance` and `simulation-distance` the same for every run. |
 | Clients | For client A and client B: account name and UUID, role (owner or crew), OS, CPU, GPU, driver version, render distance, language (run one pass in English and one in Chinese). |
 | Clocks | UTC on all three machines, synchronized; every step below records its start and end time. |
 | World | A disposable copy, never the owner's source world. Record its folder name and the SHA-256 of `level.dat` before the campaign. |

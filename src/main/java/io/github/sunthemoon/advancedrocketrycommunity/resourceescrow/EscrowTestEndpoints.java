@@ -25,14 +25,15 @@ public final class EscrowTestEndpoints {
     private EscrowTestEndpoints() { }
     public static void requireEnabled(MinecraftServer server) {
         EscrowTags.require(enabled(server),
-                "Escrow fixture requires a GameTestServer or a gated release-test dedicated server with only test-owned players and no RCON");
+                "Escrow fixture requires a GameTestServer or a gated release-test dedicated server with only test-owned or marked campaign players and no RCON");
     }
     /** The same gate as {@link #requireEnabled}, as a query: false on every ordinary server. */
     public static boolean enabled(MinecraftServer server) {
         return enabled(server.isSameThread(), server instanceof GameTestServer,
                 Boolean.getBoolean(HOOKS), server.isDedicatedServer(),
                 () -> server instanceof net.minecraft.server.dedicated.DedicatedServer dedicated
-                        && !dedicated.getProperties().enableRcon && ReleaseTestPlayers.ownsAllConnectedPlayers(server));
+                        && !dedicated.getProperties().enableRcon
+                        && ReleaseTestPlayers.ownsAllConnectedPlayersOr(server, BayV2Campaign.allowedClients(server)));
     }
     static boolean enabled(boolean ownerThread, boolean gameTest, boolean hooks, boolean dedicated,
                            java.util.function.BooleanSupplier testConnections) {
