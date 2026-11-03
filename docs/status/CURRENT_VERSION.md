@@ -294,7 +294,7 @@ What is still open:
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
-  proof timeout above and the relogin, planetary flight, bay hold and adapter entries below.
+  proof timeout above and the relogin, planetary flight, bay hold and two adapter entries below.
 - **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
@@ -325,5 +325,10 @@ What is still open:
   resubmitted, but the fixture stops calling the submission's `advance` after the first admission and never sees the
   rejection. W272 (R302) fixes the fixture; this stays open until W272 merges and local and hosted runs show no
   recurrence.
+- **Adapter capture-throw GameTest stray button (2026-11-03).** In three of about 25 loaded focused runs of the
+  adapter batches during W272, `AdapterFaultGameTests.throwingCapturePreservesSource` failed with `Duplicate inventory
+  drops found: [1 stone_button ...]`: the same item, at the same x and age every time, landed just inside the test's
+  region. No adapter fixture places a button; full local runs and hosted runs have not failed this way. W273 (R303)
+  finds its source and fixes it; this stays open until W273 merges and loaded runs show no recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
