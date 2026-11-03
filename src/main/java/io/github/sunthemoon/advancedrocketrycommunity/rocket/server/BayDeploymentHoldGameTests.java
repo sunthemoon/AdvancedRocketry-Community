@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDe
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts;
@@ -63,6 +64,7 @@ public final class BayDeploymentHoldGameTests {
     private static final class Restart {
         final GameTestHelper helper;
         final Mode mode;
+        final GameTestTickPacer pacer;
         final UUID owner = UUID.randomUUID(), otherOwner = UUID.randomUUID();
         final ItemStack pkg;
         RocketTransferRecord record;
@@ -71,7 +73,10 @@ public final class BayDeploymentHoldGameTests {
         int stage, waits, quiet, pending;
         boolean closed;
 
-        Restart(GameTestHelper helper, Mode mode) { this.helper = helper; this.mode = mode; pkg = dataPackage(owner); }
+        Restart(GameTestHelper helper, Mode mode) {
+            this.helper = helper; this.mode = mode; pkg = dataPackage(owner);
+            pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        }
         void start() { helper.onEachTick(this::tick); }
 
         MinecraftServer server() { return helper.getLevel().getServer(); }
@@ -92,6 +97,7 @@ public final class BayDeploymentHoldGameTests {
                     default -> { }
                 }
             } catch (RuntimeException | Error failure) { close(); throw failure; }
+            finally { if (!closed) { pacer.pace(); } }
         }
 
         void setup() {
