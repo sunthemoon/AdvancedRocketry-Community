@@ -294,7 +294,7 @@ What is still open:
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
-  proof timeout above and the relogin, planetary flight and bay hold entries below.
+  proof timeout above and the relogin, planetary flight, bay hold and adapter entries below.
 - **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
@@ -317,5 +317,12 @@ What is still open:
   100-tick partial-census deadline about 0.3 seconds after the survivor became active, then proved on attempt 2.
   Hosted runs have not logged it. W271 (R301) paces the fixture; this stays open until W271 merges and hosted runs
   show no recurrence.
+- **Adapter component GameTest (2026-11-03).**
+  `RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly` timed out with `Original
+  component block not yet published` in two local full runs (W248 on 2026-11-02, W271 on 2026-11-03); no hosted
+  failure is recorded. Its pending disassembly was rejected together with three others in the batch, which
+  resubmitted, but the fixture stops calling the submission's `advance` after the first admission and never sees the
+  rejection. W272 (R302) fixes the fixture; this stays open until W272 merges and local and hosted runs show no
+  recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
