@@ -9,6 +9,7 @@ import java.util.UUID;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.FakePlayer;
@@ -92,6 +94,48 @@ public final class AdapterFaultGameTests {
 
     public static void mismatchedRestoreCleansPartialInventoryAndRetries(GameTestHelper helper) {
         restoreFailure(helper, FixtureAdapterFaults.Mode.RESTORE_MISMATCH);
+    }
+
+    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w273_adapter_start_button", timeoutTicks = 20)
+    public static void flowingWaterCannotDropFixtureStartButton(GameTestHelper helper) {
+        BlockPos button = helper.absolutePos(new BlockPos(1, 0, -2));
+        var level = helper.getLevel();
+        helper.assertTrue(level.getBlockState(button).is(Blocks.STONE_BUTTON)
+                        && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
+                "Framework start control was not placed at the expected position");
+        create(helper);
+        level.setBlockAndUpdate(button.below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(button.north().below(), Blocks.STONE.defaultBlockState());
+        level.setBlockAndUpdate(button.north(), Blocks.WATER.defaultBlockState());
+        helper.runAtTickTime(8, () -> {
+            helper.assertTrue(!level.getFluidState(button).isEmpty(), "Water did not reach the start-control position");
+            helper.assertTrue(level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
+                    "Water test removed the start control's support");
+            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(button).inflate(2)).isEmpty(),
+                    "Water dropped a fixture start button");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w273_adapter_start_button", timeoutTicks = 20)
+    public static void fixtureStillRejectsMemberAndCargoDrops(GameTestHelper helper) {
+        create(helper);
+        BlockPos origin = helper.absolutePos(ORIGIN);
+        for (var item : List.of(block("rocket_motor").asItem(), block("rocket_seat").asItem(),
+                block("guidance_computer").asItem(), Items.DIAMOND, Items.IRON_INGOT, Items.STONE_BUTTON)) {
+            var drop = new ItemEntity(helper.getLevel(), origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5,
+                    new ItemStack(item));
+            helper.assertTrue(helper.getLevel().addFreshEntity(drop), "Duplicate-drop control was not spawned");
+            boolean rejected = false;
+            try { noDrops(helper); }
+            catch (GameTestAssertException expected) {
+                rejected = expected.getMessage().contains("Duplicate inventory drops found: ")
+                        && expected.getMessage().contains(drop.getItem().toString());
+            } finally { drop.discard(); }
+            helper.assertTrue(rejected, "Duplicate-drop assertion accepted " + item);
+        }
+        noDrops(helper);
+        helper.succeed();
     }
 
     @GameTest(templateNamespace = HOST, template = "empty", timeoutTicks = 20)
@@ -283,6 +327,14 @@ public final class AdapterFaultGameTests {
     }
 
     private static Fixture create(GameTestHelper helper, Block cargo) {
+        // GameTestInfo.spawnStructure adds this start control outside the template, backed by a command block.
+        // Seed-0 cave water can wash the button into region(helper) long after setup. Retire only this fixture's
+        // control without drops before rocket operations; keep the full region and every item type in noDrops.
+        BlockPos startButton = helper.absolutePos(new BlockPos(1, 0, -2));
+        if (helper.getLevel().getBlockState(startButton).is(Blocks.STONE_BUTTON)
+                && helper.getLevel().getBlockState(startButton.south()).is(Blocks.COMMAND_BLOCK)) {
+            helper.assertTrue(helper.getLevel().removeBlock(startButton, false), "Could not retire fixture start button");
+        }
         // Structure placement can drop natural cave decorations before this test starts.
         // Clear only pre-operation items; every later inventory assertion still requires zero drops.
         for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper))) {
