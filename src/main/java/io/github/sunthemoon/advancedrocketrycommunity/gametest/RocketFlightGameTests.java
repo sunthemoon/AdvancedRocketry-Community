@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRo
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketFlightRetirementGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketDisassemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
@@ -40,10 +41,16 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class RocketFlightGameTests {
     private static final String TEMPLATE = "rocket_test";
+    // Station: 40 setup + 20 assembly + 270 outward + (1,000 preparation + 270 return) + 20 cleanup = 1,620.
+    private static final int STATION_ROUND_TRIP_TICKS = 40 + ASSEMBLY_WAIT_TICKS + 2 * 270
+            + RocketFlightRetirementGameTestSupport.PREPARATION_TICKS + 20;
+    // Moon: 80 setup + 100 loaded-pad wait + 20 assembly + 270 outward + (1,000 + 270 return) + 20 = 1,760.
+    private static final int MOON_ROUND_TRIP_TICKS = 80 + PAD_LOAD_TICKS + ASSEMBLY_WAIT_TICKS + 2 * 270
+            + RocketFlightRetirementGameTestSupport.PREPARATION_TICKS + 20;
     private RocketFlightGameTests() {
     }
 
-    @GameTest(template = TEMPLATE, batch = "station_flight", timeoutTicks = 800)
+    @GameTest(template = TEMPLATE, batch = "station_flight", timeoutTicks = STATION_ROUND_TRIP_TICKS)
     public static void earthStationEarthUsesApprovedPadAndPreservesNeighborSpace(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
@@ -106,14 +113,16 @@ public final class RocketFlightGameTests {
                             remaining,
                             space.getGameTime()
                     ));
+                    UUID returnId = UUID.randomUUID();
                     RocketFlightRequestResult returning = RocketRuntime.requestAdminFlight(
                             landedSpace,
                             RocketDestination.EARTH,
-                            UUID.randomUUID()
+                            returnId
                     );
                     assertPendingLaunch(helper, returning, landedSpace);
 
-                    awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
+                    awaitPreparedFlightState(helper, driver, earth, logical, returnId, RocketFlightState.LANDED, 270, prepared -> {
+                        helper.assertTrue(prepared, "Station return did not prepare within its retirement budget");
                         RocketEntity landedEarth = findLogicalRocket(earth, logical);
                         helper.assertTrue(landedEarth != null, "Station return did not create an Earth rocket");
                         helper.assertTrue(
@@ -149,7 +158,7 @@ public final class RocketFlightGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, batch = "flight", timeoutTicks = 1_000)
+    @GameTest(template = TEMPLATE, batch = "flight", timeoutTicks = MOON_ROUND_TRIP_TICKS)
     public static void earthMoonRoundTripConservesFuelAndBlockedPadReturnsSource(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
@@ -294,7 +303,8 @@ public final class RocketFlightGameTests {
                 );
                 assertPendingLaunch(helper, returning, landedMoon);
 
-                awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
+                awaitPreparedFlightState(helper, driver, earth, logical, returnId, RocketFlightState.LANDED, 270, prepared -> {
+                    helper.assertTrue(prepared, "Moon return did not prepare within its retirement budget");
                     RocketEntity landedEarth = findLogicalRocket(earth, logical);
                     helper.assertTrue(landedEarth != null, "Moon-to-Earth transfer did not create an Earth rocket");
                     helper.assertTrue(
