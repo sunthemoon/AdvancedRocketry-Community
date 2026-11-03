@@ -31,7 +31,9 @@ public final class RocketComponentGameTests {
     public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
         return java.util.List.of(
                 AdapterAsyncFixture.test("w164_adapter_success", "RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly",
-                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly));
+                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly),
+                AdapterAsyncFixture.test("w272_adapter_pending_rejection", "RocketComponentGameTests.externalComponentsRetryRejectedPendingDisassembly",
+                        5, 1, false, helper -> componentAssemblyAndDisassembly(helper, true)));
     }
     private static final String HOST = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET = ResourceLocation.tryParse(HOST + ":rocket");
@@ -55,6 +57,11 @@ public final class RocketComponentGameTests {
     }
 
     public static void externalComponentsDriveActualAssemblyAndZeroFuelDisassembly(GameTestHelper helper) {
+        componentAssemblyAndDisassembly(helper, false);
+    }
+
+    private static void componentAssemblyAndDisassembly(GameTestHelper helper, boolean rejectFirstPending) {
+        var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,
                 origin.above(), Blocks.OAK_PLANKS, origin.above(2), Blocks.GOLD_BLOCK, origin.east(), Blocks.QUARTZ_BLOCK);
@@ -99,10 +106,16 @@ public final class RocketComponentGameTests {
                     disassembly[0] = new AdapterAsyncFixture.Submission(owner, rocket);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Component disassembly admission is busy"))
+                .thenExecute(() -> { if (rejection != null) { rejection.arm(disassembly[0]); } })
                 // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED, including every non-container member.
-                .thenWaitUntil(() -> blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block),
-                        "Original component block not yet published")))
+                .thenWaitUntil(() -> {
+                    // Observe terminal rejection before a fresh request; never refresh accepted pending work.
+                    if (!authority[0].isRemoved()) { disassembly[0].advance(helper); }
+                    blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block),
+                            "Original component block not yet published"));
+                })
                 .thenExecute(() -> {
+                    if (rejection != null) { rejection.assertRejected(); }
                     Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(), "Zero-fuel disassembly failed");
                     blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block), "Original component block not restored"));

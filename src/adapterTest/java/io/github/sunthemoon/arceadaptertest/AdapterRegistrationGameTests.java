@@ -32,7 +32,9 @@ public final class AdapterRegistrationGameTests {
     public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
         return java.util.List.of(
                 AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
-                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory));
+                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory),
+                AdapterAsyncFixture.test("w272_adapter_registration_pending_rejection", "AdapterRegistrationGameTests.externalAdapterRetriesRejectedPendingDisassembly",
+                        4, 1, false, helper -> productionAssemblyPreservesInventory(helper, true)));
     }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
@@ -68,6 +70,11 @@ public final class AdapterRegistrationGameTests {
     }
 
     public static void externalAdapterProductionAssemblyPreservesInventory(GameTestHelper helper) {
+        productionAssemblyPreservesInventory(helper, false);
+    }
+
+    private static void productionAssemblyPreservesInventory(GameTestHelper helper, boolean rejectFirstPending) {
+        var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
         BlockPos origin = new BlockPos(3, 2, 3);
@@ -124,10 +131,16 @@ public final class AdapterRegistrationGameTests {
                     disassembly[0] = new AdapterAsyncFixture.Submission(owner, rocket);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Production disassembly admission is busy"))
+                .thenExecute(() -> { if (rejection != null) { rejection.arm(disassembly[0]); } })
                 // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED; no same-call completion promise.
-                .thenWaitUntil(() -> helper.assertTrue(helper.getBlockState(cargoPosition).is(AdapterTestMod.CONTAINER.get()),
-                        "Production disassembly has not published the inventory"))
+                .thenWaitUntil(() -> {
+                    // Observe terminal rejection before a fresh request; never refresh accepted pending work.
+                    if (!authority[0].isRemoved()) { disassembly[0].advance(helper); }
+                    helper.assertTrue(helper.getBlockState(cargoPosition).is(AdapterTestMod.CONTAINER.get()),
+                            "Production disassembly has not published the inventory");
+                })
                 .thenExecute(() -> {
+                    if (rejection != null) { rejection.assertRejected(); }
                     Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(),
                             "Owner interaction did not remove the assembled rocket exactly once");
