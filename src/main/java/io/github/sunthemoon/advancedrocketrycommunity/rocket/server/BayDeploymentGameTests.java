@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDe
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
@@ -53,6 +54,7 @@ public final class BayDeploymentGameTests {
     private static final class Checkpoint {
         final GameTestHelper helper;
         final boolean bound;
+        final GameTestTickPacer pacer;
         final UUID owner = UUID.randomUUID();
         final net.minecraft.world.item.ItemStack data, solar;
         Flight flight;
@@ -63,6 +65,7 @@ public final class BayDeploymentGameTests {
 
         Checkpoint(GameTestHelper helper, boolean bound) {
             this.helper = helper; this.bound = bound; data = dataPackage(owner); solar = solarPackage(owner);
+            pacer = new GameTestTickPacer(helper.getLevel().getServer());
         }
         void start() { helper.onEachTick(this::tick); }
 
@@ -130,6 +133,7 @@ public final class BayDeploymentGameTests {
                     }
                 }
             } catch (RuntimeException | Error failure) { close(); throw failure; }
+            finally { if (!closed) { pacer.pace(); } }
         }
 
         void finish(RocketTransferSavedData journal) { close(); helper.succeed(); }
