@@ -38,7 +38,8 @@ import org.slf4j.Logger;
  * W254's client stand-in for one facility-owned rider: what a real client sends after a held exit (teleport acceptance,
  * one move packet per tick, the landing packet), plus the read-only measurements the native harness checks. It runs only
  * for a drive that a gated {@link BayPassengerExitReleaseTest} command armed, on a release-test dedicated server whose
- * players are all facility-owned; it never touches the exit service's state, budgets or decisions.
+ * connections are facility-owned or explicitly selected for a marked campaign. The drive still acts only on its
+ * facility-owned rider; it never touches the exit service's state, budgets or decisions.
  */
 final class BayPassengerExitReleaseDrive {
     private static final Logger LOGGER = LogUtils.getLogger();

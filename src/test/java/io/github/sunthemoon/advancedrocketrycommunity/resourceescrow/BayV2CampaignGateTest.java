@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.ReleaseTestSer
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.io.TempDir;
 
 final class BayV2CampaignGateTest {
@@ -43,14 +45,64 @@ final class BayV2CampaignGateTest {
     }
 
     private MinecraftServer campaign(boolean rcon, String marker) throws Exception {
+        return campaignWithMarker(rcon, world -> {
+            if (marker != null) { Files.writeString(world.resolve(BayV2Campaign.MARKER), marker); }
+        });
+    }
+
+    @FunctionalInterface private interface MarkerSetup { void create(Path world) throws IOException; }
+
+    private MinecraftServer campaignWithMarker(boolean rcon, MarkerSetup setup) throws Exception {
         var server = servers.server(directory, rcon);
         var world = LevelStorageSource.createDefault(directory).createAccess("world-" + worlds.size());
         worlds.add(world); started.add(server);
         UnstartedServer.set(MinecraftServer.class, server, "storageSource", world);
-        if (marker != null) { Files.writeString(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
-                .resolve(BayV2Campaign.MARKER), marker); }
+        setup.create(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT));
         BayV2Campaign.starting(new ServerAboutToStartEvent(server));
         return server;
+    }
+
+    @Test void sameLengthWrongMarkerBytesCloseTheGateAndLogUnmarked() throws Exception {
+        String wrong = BayV2Campaign.MARKER_TEXT.replace("_V1", "_V2");
+        assertEquals(BayV2Campaign.MARKER_TEXT.length(), wrong.length());
+        assertUnmarked(world -> Files.writeString(world.resolve(BayV2Campaign.MARKER), wrong));
+    }
+
+    @Test void aDirectoryNamedAsTheMarkerClosesTheGateAndLogsUnmarked() throws Exception {
+        assertUnmarked(world -> Files.createDirectory(world.resolve(BayV2Campaign.MARKER)));
+    }
+
+    @Test void aSymbolicLinkToCorrectMarkerBytesClosesTheGateAndLogsUnmarked() throws Exception {
+        Path target = Files.writeString(directory.resolve("correct-marker"), BayV2Campaign.MARKER_TEXT);
+        Path probe = directory.resolve("symlink-capability-probe");
+        try { Files.createSymbolicLink(probe, target); }
+        catch (UnsupportedOperationException | IOException | SecurityException unsupported) {
+            Assumptions.abort("Platform cannot create symbolic links: " + unsupported);
+        }
+        Files.delete(probe);
+        assertUnmarked(world -> Files.createSymbolicLink(world.resolve(BayV2Campaign.MARKER), target));
+    }
+
+    private void assertUnmarked(MarkerSetup setup) throws Exception {
+        property(PROPERTY, CLIENTS); property(EscrowTestEndpoints.HOOKS, "true");
+        try (var logs = new AuditLines()) {
+            var server = campaignWithMarker(false, setup);
+            for (UUID id : List.of(A, B)) { connected(server, id); }
+            assertFalse(EscrowTestEndpoints.enabled(server));
+            String fields = "property=" + PROPERTY + " clients=" + CLIENTS + " world="
+                    + server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize() + " marker=false";
+            assertEquals(List.of("INFO ARCE_BAY_V2_CAMPAIGN startup " + fields,
+                    "INFO ARCE_BAY_V2_CAMPAIGN connect " + fields + " player=" + A,
+                    "INFO ARCE_BAY_V2_CAMPAIGN connect " + fields + " player=" + B), logs.lines);
+        }
+    }
+
+    private void connected(MinecraftServer server, UUID id) {
+        var player = servers.join(server, id);
+        var level = UnstartedServer.allocate(net.minecraft.server.level.ServerLevel.class);
+        UnstartedServer.set(net.minecraft.server.level.ServerLevel.class, level, "server", server);
+        UnstartedServer.set(net.minecraft.world.entity.Entity.class, player, "level", level);
+        BayV2Campaign.connected(new PlayerEvent.PlayerLoggedInEvent(player));
     }
 
     private void named(MinecraftServer server) {
@@ -90,6 +142,14 @@ final class BayV2CampaignGateTest {
         BayV2Campaign.starting(new ServerAboutToStartEvent(server));
         assertTrue(EscrowTestEndpoints.enabled(server));
         named(server); assertFalse(EscrowTestEndpoints.enabled(server));
+    }
+
+    @Test void theStrictPolicyDoesNotInspectCampaignMembershipForAnUnownedPlayerWithNoUuid() throws Exception {
+        property(PROPERTY, null); property(EscrowTestEndpoints.HOOKS, "true");
+        var server = servers.server(directory, false);
+        var player = servers.join(server, UUID.randomUUID());
+        UnstartedServer.set(net.minecraft.world.entity.Entity.class, player, "uuid", null);
+        assertFalse(io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ReleaseTestPlayers.ownsAllConnectedPlayers(server));
     }
 
     @Test void hooksRconMarkerAndOwnerThreadAreAllRequiredForNamedClients() throws Exception {
@@ -151,11 +211,7 @@ final class BayV2CampaignGateTest {
                     + server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize() + " marker=true";
             assertEquals(List.of("INFO ARCE_BAY_V2_CAMPAIGN startup " + fields), logs.lines);
             for (UUID id : List.of(A, B, UUID.randomUUID())) {
-                var player = servers.join(server, id);
-                var level = UnstartedServer.allocate(net.minecraft.server.level.ServerLevel.class);
-                UnstartedServer.set(net.minecraft.server.level.ServerLevel.class, level, "server", server);
-                UnstartedServer.set(net.minecraft.world.entity.Entity.class, player, "level", level);
-                BayV2Campaign.connected(new PlayerEvent.PlayerLoggedInEvent(player));
+                connected(server, id);
             }
             assertEquals(List.of("INFO ARCE_BAY_V2_CAMPAIGN startup " + fields,
                     "INFO ARCE_BAY_V2_CAMPAIGN connect " + fields + " player=" + A,

@@ -109,12 +109,16 @@ public final class ReleaseTestPlayers {
         return ownsAllConnectedPlayersOr(server, java.util.Set.of());
     }
 
-    /** Connection policy only: selected campaign UUIDs do not become facility-owned players or channels. */
+    /**
+     * Connection policy only: selected campaign UUIDs do not become facility-owned players or channels.
+     * Callers extending the strict policy must pass only the startup-validated BayV2Campaign.allowedClients selection.
+     */
     public static boolean ownsAllConnectedPlayersOr(MinecraftServer server, java.util.Set<UUID> campaignClients) {
         if (!Boolean.getBoolean(HOOKS) || !server.isSameThread()) { return false; }
         var channels = CHANNELS.get(server);
         return server.getPlayerList().getPlayers().stream().allMatch(player ->
-                campaignClients.contains(player.getUUID()) || owned(channels, player, player.connection));
+                owned(channels, player, player.connection)
+                        || !campaignClients.isEmpty() && campaignClients.contains(player.getUUID()));
     }
 
     /** Records the exact player, connection and channel that {@link #place} created; the wiring test uses it too. */

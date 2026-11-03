@@ -38,7 +38,8 @@ public final class EscrowLoaderAdmission {
 
     /**
      * The gated switch. Production admission stays disabled; a GameTestServer opens it for a device that a test hook
-     * named, and a gated release dedicated server (hooks, no RCON, only test-owned players) opens it by {@link #SWITCH}.
+     * named, and a gated release dedicated server (hooks, no RCON, only facility-owned or explicitly selected marked
+     * campaign connections) opens it by {@link #SWITCH}. The campaign gate alone does not enable this switch.
      */
     public static boolean enabled(MinecraftServer server, UUID device) {
         return switchOpen(EscrowCoordinator.PRODUCTION_ADMISSION, server.isSameThread(), () -> EscrowTestEndpoints.enabled(server),

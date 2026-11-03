@@ -90,7 +90,8 @@ final class BayDeploymentCuts {
 
     /**
      * The operator decommission below can remove any idle satellite, so the complete release-test gate
-     * ({@link EscrowTestEndpoints#enabled}: the owner thread, no RCON and only test-owned connections) decides before the
+     * ({@link EscrowTestEndpoints#enabled}: the owner thread, hooks, no RCON and only facility-owned or explicitly
+     * selected marked campaign connections) decides before the
      * UUID is parsed or the registry is reached (W128R-R1).
      */
     static void firstTick(MinecraftServer server, Supplier<SatelliteMissionSavedData> registries) {

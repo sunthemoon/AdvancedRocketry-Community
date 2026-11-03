@@ -3,6 +3,8 @@
 Date: 2026-11-03. Implementer: Codex worker. Base: `2f24c7542ecf8a73a6e30228f02088b18dea67d2`.
 Authority: Root decision R298 in [TASK-W269](../TASK-W269-V2-CAMPAIGN-GATE.md), choosing W254 section 0.1 option 1.
 This note precedes implementation; it is not an ADR amendment or a V2 result.
+The boundary below incorporates Root's 2026-11-03 correction in `TASK-W269-FIX.md` on the shared checkout,
+superseding the original wording about campaign-world admission.
 
 ## Selection and boundary
 
@@ -25,6 +27,19 @@ exact facility-owned player/connection pairs. Any other connected player closes 
 GameTest checks remain. Selection is immutable per server start in a lifecycle-cleared server-keyed map; it holds
 no Levels or players. No selection means no marker I/O in gate queries. Facility ownership is never conferred on
 the named clients: test-player login/respawn/pumping retains its existing identity checks.
+
+This is the single full release-test gate behind the gated op-only command families, not a bay-exit-only gate.
+On the marked campaign world, with a valid selection, hooks on, RCON off and only named or facility-owned
+connections, D0's bay deployment admission is also open. A bay rocket that a named client builds and launches
+in ordinary play reaches D0 at ascent completion, just as a facility rocket does. Production bay admission stays
+off everywhere outside GameTest and the full release-test gate (ADR-065 section 10); no production switch changes.
+Other release-test command families also accept those connections. Seams requiring their own property remain off
+without that property. The campaign launches only its prescribed held rockets and records any other
+`ARCE_BAY_CLAIM` as a deviation.
+
+The campaign requires `online-mode=true`, `white-list=true`, `enforce-whitelist=true`, a whitelist containing
+exactly the two selected accounts with their authenticated UUIDs, and a server nobody else can reach. Offline mode
+derives UUIDs from unauthenticated names and cannot establish the selected account's identity.
 
 ## Visibility
 
@@ -50,5 +65,6 @@ unmarked selection with a named test connection refuses the fixture. Test connec
 Run the strict repository validator and diff checks. Keep command results, source SHA and JAR hash outside Git;
 commit a short record. Root arranges the other-engine review, integration and hosted regression.
 
-Non-goals: real clients, the V2 campaign, LAN gate changes, fixture behavior/commands, bay/cargo admission, owner risk
-decisions, other release-test gates and ADR decision text. Draft the section 10 note for Root without applying it.
+Non-goals: real clients, the V2 campaign, LAN gate changes, changes to fixture behavior/commands, production bay/cargo
+admission switches, owner risk decisions, separate gates and ADR decision text. Opening the existing full gate,
+including its D0 consequence above, is in scope. Draft the section 10 note for Root without applying it.
