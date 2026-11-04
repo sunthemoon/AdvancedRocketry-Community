@@ -92,20 +92,30 @@ public final class AtmosphereBoundaryRegistry implements AutoCloseable {
             resolved.put(blockId, block);
         }
         Map<BlockState, AtmosphereBoundary> compiled = new HashMap<>();
+        // This final immutable rule contains no extension code. State caps bound its expansion,
+        // so host startup need not depend on class loading, JIT or scheduler wall-clock delays.
+        AtmosphereBoundary constant = provider instanceof ConstantAtmosphereBoundaryProvider rule
+                ? rule.boundary() : null;
         long totalNanos = 0L;
         for (Map.Entry<ResourceLocation, Block> entry : resolved.entrySet()) {
             for (BlockState state : entry.getValue().getStateDefinition().getPossibleStates()) {
                 AtmosphereBoundary result;
-                long start = nanoTime.getAsLong();
-                try {
-                    result = provider.classify(state);
-                } catch (RuntimeException exception) {
-                    throw failure(id, entry.getKey());
+                if (constant != null) {
+                    result = constant;
+                } else {
+                    long start = nanoTime.getAsLong();
+                    try {
+                        result = provider.classify(state);
+                    } catch (RuntimeException exception) {
+                        throw failure(id, entry.getKey());
+                    }
+                    long elapsed = nanoTime.getAsLong() - start;
+                    totalNanos += elapsed;
+                    if (elapsed > MAX_CALLBACK_NANOS || totalNanos > MAX_REGISTRATION_NANOS) {
+                        throw failure(id, entry.getKey());
+                    }
                 }
-                long elapsed = nanoTime.getAsLong() - start;
-                totalNanos += elapsed;
-                if (result == null || elapsed > MAX_CALLBACK_NANOS || totalNanos > MAX_REGISTRATION_NANOS
-                        || states.containsKey(state) || compiled.putIfAbsent(state, result) != null) {
+                if (result == null || states.containsKey(state) || compiled.putIfAbsent(state, result) != null) {
                     throw failure(id, entry.getKey());
                 }
             }
