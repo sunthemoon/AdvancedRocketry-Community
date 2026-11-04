@@ -531,8 +531,12 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
                 r"DRAFT\s+W268|not\s+an\s+owner\s+decision|preparation\s+date", basis, re.I):
             errors.append(f"{ORIGIN_FINDINGS.name}: unresolved draft basis: {asset}")
             continue
+        reviewed_at = finding.get("reviewed_at")
+        if not isinstance(reviewed_at, str) or not DATE.fullmatch(reviewed_at):
+            errors.append(f"{ORIGIN_FINDINGS.name}: invalid review date: {asset}")
+            continue
         if isinstance(asset, str) and asset in ORIGIN_ADOPTION_ASSETS:
-            if finding.get("reviewed_at") == ORIGIN_ADOPTION_PREPARED_AT:
+            if reviewed_at == ORIGIN_ADOPTION_PREPARED_AT:
                 errors.append(f"{ORIGIN_FINDINGS.name}: preparation date is not a review date: {asset}")
                 continue
             record = finding.get("review_record")
@@ -541,7 +545,7 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
                 errors.append(f"{ORIGIN_FINDINGS.name}: {asset} needs its decision record, not ADR-062")
                 continue
         if (finding.get("decision") not in ("CLEARED", "EXCLUDED") or not finding.get("reviewer")
-                or not DATE.match(str(finding.get("reviewed_at", ""))) or not finding.get("basis")
+                or not finding.get("basis")
                 or not asset or asset in findings):
             errors.append(f"{ORIGIN_FINDINGS.name}: invalid or duplicate finding {asset!r}")
             continue
