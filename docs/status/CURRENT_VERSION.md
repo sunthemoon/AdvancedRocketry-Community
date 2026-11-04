@@ -196,9 +196,10 @@ What is still open:
   its controls, an interstellar warp, Mars, Venus, Tau Ceti f and g, a restart) passed with findings, among them a
   kick on a zero-gravity station and a landing on the sea; round 4 (the laser drill in both modes, the railgun, the
   space elevator, the black-hole generator at Cygnus X-1, the gravity field, force field, beacon and microwave
-  receiver, two restarts) passed with findings, among them a config switch that did not apply until a restart.
-  Findings are queued as W280 to W282 and W284 to W295; the report is
-  `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
+  receiver, two restarts) passed with findings, among them a config switch that did not apply until a restart; round
+  5, on the JAR of `21757171d`, ran an integrated single-player world (gas pad, a Moon round trip, Save and Quit) and
+  upgraded round 4's world, and confirmed round 1's findings 1 to 4 fixed by W280 and W281. Findings are queued as
+  W280 to W282 and W284 to W296; the report is `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
   R32-03 tests (W61), and the v1.8 import root (W52F). Hosted governance run 38671573901 passed
