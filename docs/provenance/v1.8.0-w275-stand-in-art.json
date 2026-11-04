@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-w275-stand-in-art",
+  "target_version": "v1.8.0",
+  "recorded_at": "2026-11-04",
+  "declaration": "Pre-authoring NEW-art registration. Committed before the W275 generators or textures exist. Final hashes and screening evidence will be appended after generation; this is not an approval.",
+  "authority": "docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w275",
+  "source_commit": "5c7ed00a9789fc7defd494d8c93aea53a66b62a4",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "method": "Original deterministic integer pixel geometry in Java, without bitmap inputs. Use the existing hatch palette and arrow convention for ports. Metal gas cylinders have rounded shoulders, shaded walls, a top valve and gas/tier bands. No Minecraft, upstream, LibVulpes or third-party bitmap is copied, traced, sampled or transformed. Vanilla clients are read only for screening and external before/after evidence.",
+  "planned_scope": [
+    "Rolling-machine roller-and-sheet front and plain panelled sides for both v1.2 machines and all seven ports.",
+    "Four dark framed port panels: item input/output arrows, fluid droplet and energy bolt.",
+    "Three canister icons and four pressure-tier cylinder icons, with separate new texture names so earlier art and its reviews remain immutable.",
+    "Texture-only model bindings in v1.8; no model shape, ID, behaviour, recipe, loot, historical resource, baseline casing or approved review changes."
+  ],
+  "entries": [],
+  "human_visual_and_originality_gate": "OPEN",
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": null,
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": []
+  }
+}
