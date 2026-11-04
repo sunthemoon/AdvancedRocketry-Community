@@ -71,3 +71,14 @@ and the NEW-art records `v1.8.0-c16d-acquisition`, `v1.8.0-c17a-fluid-fuel-loade
 Root also keeps the following. The risk decisions (the brief's item 4) wait for evidence, now from the single-player
 test rather than the campaign. The five loader variants stay PLANNED until their admission. No Gate, version or
 release is marked passed.
+
+## Who runs the single-player test
+
+After recording the answers above, Root asked in the session whether the owner or Root's scripted real client on drive
+D: should run the single-player step-by-step test. At about 11:15 the owner replied, verbatim:
+
+> 用脚本跑一遍吧
+
+| ID | Decision | Reasons |
+|---|---|---|
+| R309 | **Root runs the single-player step-by-step test with the real-client scripts on drive D:**, on the hosted JAR of run 41630143345 (artifact `v180-build-6f3bd461bf95b16291cf766b6869f9c15d06bd82-1`, `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256 `3220986176d9e488409cbe7fb1067aeda6ada1c2222b3cd494daa7c5ae637115`), with one real-GPU client: the technology flow from basic materials to the endgame, a server restart, and a short integrated single-player world. Evidence goes to `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/`; Root gives the owner a report with screenshots to confirm, and each finding becomes a QUEUE task. | The owner asked for it. It is development evidence from one GPU and one player: it does not pass V1, V2, S1 or any Gate, and it does not replace the multiplayer and performance work the owner put last. |

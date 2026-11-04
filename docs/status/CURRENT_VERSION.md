@@ -187,7 +187,8 @@ What is still open:
   gate the bay exit's two-client V2 session needs (W254-V2-CHECKLIST section 0.1); it runs no campaign. On 2026-11-04
   the owner suspended the final campaign: for now a complete step-by-step test in single-player is enough, and
   multiplayer and performance (the two-client V2 sessions, the docs/17 reference node and the joint four-hour soak)
-  come last. Nothing is marked passed or waived by this.
+  come last. Nothing is marked passed or waived by this. At the owner's request Root runs that single-player test with
+  the real-client scripts on drive D: (R309), on the hosted JAR of run 41630143345.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
   R32-03 tests (W61), and the v1.8 import root (W52F). Hosted governance run 38671573901 passed
