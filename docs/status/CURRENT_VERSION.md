@@ -322,7 +322,7 @@ What is still open:
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
-  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04 and one 2026-11-05 entries below.
+  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04 and two 2026-11-05 entries below.
 - **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
@@ -387,5 +387,10 @@ What is still open:
   destination is missing from the loaded fixture` in shard 3 of the second attempt of run 41870324437 (W285 on top of
   `e8bbbc7f7`), a change that does not touch bays. W298 (R336) investigates; this stays open until it is fixed and
   runs show no recurrence.
+- **Adapter registration GameTest (2026-11-05).**
+  `AdapterRegistrationGameTests.externalAdapterRetriesRejectedPendingDisassembly` failed with `Disassembly dropped
+  duplicate inventory items` in shard 3 of W290's branch run 41891733393, a change that does not touch adapters. W299
+  (R337) checks whether W273's start-button cause applies here too; this stays open until it is fixed and runs show no
+  recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
