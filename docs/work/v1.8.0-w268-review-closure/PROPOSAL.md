@@ -1,6 +1,6 @@
 # W268 - REVIEW closure proposal, adopted by W274
 
-**Adopted on 2026-11-04 under [the owner decision](../v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md), R304.** G1-G6/G8 are adopted as drafted; G7 is amended to exclude all ten legacy OGGs after the owner accepted all ten NEW sounds under D5. The separate findings draft remains inert and unsigned; the tracked findings carry the recorded review.
+**Adopted on 2026-11-04 under the owner decision in `docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md`, R304.** G1-G6/G8 are adopted as drafted; G7 is amended to exclude all ten legacy OGGs after the owner accepted all ten NEW sounds under D5. The separate findings draft remains inert and unsigned; the tracked findings carry the recorded review.
 
 ## Eight decision groups
 

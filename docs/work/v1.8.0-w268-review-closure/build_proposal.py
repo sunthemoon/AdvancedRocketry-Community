@@ -413,7 +413,7 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, co
              releases: list[str]) -> list[str]:
     released_files = ", ".join(f"`{asset}`" for asset in releases)
     lines = ["# W268 - REVIEW closure proposal, adopted by W274", "",
-             f"**Adopted on 2026-11-04 under [the owner decision](../v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md), R304.** G1-G6/G8 are adopted as drafted; G7 is amended to exclude all ten legacy OGGs after the owner accepted all ten NEW sounds under D5. The separate findings draft remains inert and unsigned; the tracked findings carry the recorded review.", "",
+             f"**Adopted on 2026-11-04 under the owner decision in `{DECISION}`, R304.** G1-G6/G8 are adopted as drafted; G7 is amended to exclude all ten legacy OGGs after the owner accepted all ten NEW sounds under D5. The separate findings draft remains inert and unsigned; the tracked findings carry the recorded review.", "",
              "## Eight decision groups", ""]
     lines += [f"- **{g}**: {question}" for g, (_, _, question) in GROUPS.items()]
     lines += ["", f"Baseline: `{base}`; original AR 1.12 source pin: `{PIN}`.",
