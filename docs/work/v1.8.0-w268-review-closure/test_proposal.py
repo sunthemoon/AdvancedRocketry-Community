@@ -174,7 +174,8 @@ class ProposalTests(unittest.TestCase):
         # Synthetic fixture only; this does not attest to a real asset decision.
         with tempfile.TemporaryDirectory() as temporary:
             source, output = (Path(temporary) / name for name in ("source.json", "output.json"))
-            source.write_text(json.dumps({"findings": [{"reviewer": "fixture-reviewer", "asset": "fixture-only"}]}))
+            source.write_text(json.dumps({"findings": [{"reviewer": "fixture-reviewer", "asset": "fixture-only",
+                                                       "reviewed_at": "2099-01-01"}]}))
             adopt(source, output)
             self.assertEqual(source.read_bytes(), output.read_bytes())
 
@@ -191,6 +192,8 @@ class ProposalTests(unittest.TestCase):
         cases = [(dict(reviewed, basis=word), "draft basis")
                  for word in ("DRAFT W268 R001", "This is not an owner decision", "PREPARATION DATE only")]
         cases += [(dict(reviewed, reviewed_at=self.changes["prepared_at"]), "Preparation date"),
+                  (dict(reviewed, reviewed_at=self.changes["prepared_at"] + "\n"), "Invalid review date"),
+                  (dict(reviewed, reviewed_at="2099-01-01\n"), "Invalid review date"),
                   (dict(reviewed, review_record="docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"), "decision record"),
                   (dict(reviewed, review_record=""), "decision record")]
         with tempfile.TemporaryDirectory() as temporary:
