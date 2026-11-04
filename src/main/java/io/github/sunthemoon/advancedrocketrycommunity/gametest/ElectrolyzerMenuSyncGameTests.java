@@ -32,7 +32,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class ElectrolyzerMenuSyncGameTests {
     private ElectrolyzerMenuSyncGameTests() { }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = "empty", batch = "w280_electrolyzer_menu", timeoutTicks = 20)
     public static void consumedChargeSynchronizesAndReopeningClearsStaleSlots(GameTestHelper helper) {
         ElectrolyzerBlockEntity machine = place(helper, BlockPos.ZERO);
         // A separate BE stands in for the client's loaded BE, never sharing the server's storage.
@@ -74,7 +74,7 @@ public final class ElectrolyzerMenuSyncGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "empty", timeoutTicks = 20)
+    @GameTest(template = "empty", batch = "w280_electrolyzer_menu", timeoutTicks = 20)
     public static void producedOutputsSynchronizeInitiallyIncrementallyAndAfterPickup(GameTestHelper helper) {
         ElectrolyzerBlockEntity machine = place(helper, BlockPos.ZERO);
         ElectrolyzerBlockEntity clientMachine = place(helper, new BlockPos(2, 0, 0));
