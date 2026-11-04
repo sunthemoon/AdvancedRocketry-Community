@@ -255,6 +255,9 @@ public final class RocketLandingPadSelector {
             int loaded = loadTerrain ? loadChunks(target, chunks) : 0;
             String refusal = reservations.stream().anyMatch(region::overlaps)
                     ? UNSAFE : unavailable(target, relocated, null, false, loadTerrain, false);
+            if (refusal == null && !dryStationColumns(target, relocated)) {
+                refusal = UNSAFE;
+            }
             if (refusal != null) {
                 return RocketLandingPadSelection.failure(1, loaded,
                         refusal.equals(UNSAFE) ? "station pad is occupied or unsafe" : refusal);
@@ -447,7 +450,13 @@ public final class RocketLandingPadSelector {
                     if (heights.size() >= RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
                         return null;
                     }
-                    heights.add(target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z));
+                    int height = target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                    // W290: fluid safety applies to every footprint column, independently of sturdy support.
+                    // Reading the column's own top also catches fluid below an overhang or an upper-only column.
+                    if (!target.getFluidState(new BlockPos(x, height - 1, z)).isEmpty()) {
+                        return null;
+                    }
+                    heights.add(height);
                 }
             }
             // ADR-075: no Moon floor; every surface lands on its highest footprint column.
@@ -497,6 +506,30 @@ public final class RocketLandingPadSelector {
     private static boolean withinBorder(ServerLevel target, RocketRegion region) {
         return target.getWorldBorder().isWithinBounds(new BlockPos(region.minimum().x(), 0, region.minimum().z()))
                 && target.getWorldBorder().isWithinBounds(new BlockPos(region.maximum().x(), 0, region.maximum().z()));
+    }
+
+    /** New unnamed Space arrivals keep their fixed height and support exemption, but not a fluid exemption. */
+    private static boolean dryStationColumns(ServerLevel target, RocketStructureSnapshot snapshot) {
+        Set<Long> columns = new HashSet<>();
+        int inspected = 0;
+        int belowY = Math.addExact(snapshot.sourceOrigin().y(), snapshot.bounds().minimum().y()) - 1;
+        for (RocketBlock block : snapshot.blocks()) {
+            var absolute = snapshot.sourceOrigin().add(block.position());
+            if (!columns.add(BlockPos.asLong(absolute.x(), 0, absolute.z()))) {
+                continue;
+            }
+            // Count both fluid reads before either world access. Only already-admitted footprint chunks are used.
+            if (inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS - 2) {
+                return false;
+            }
+            inspected += 2;
+            int surface = target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, absolute.x(), absolute.z());
+            if (!target.getFluidState(new BlockPos(absolute.x(), surface - 1, absolute.z())).isEmpty()
+                    || !target.getFluidState(new BlockPos(absolute.x(), belowY, absolute.z())).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean supported(ServerLevel target, RocketStructureSnapshot snapshot) {

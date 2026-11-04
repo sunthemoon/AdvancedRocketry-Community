@@ -48,7 +48,10 @@ public final class SurfaceLandingRule {
         return !below.contains(Below.FLUID) && below.contains(Below.STURDY);
     }
 
-    /** Selection checks support on every surface except Earth (spawn-based, ADR-033) and shared Space. */
+    /**
+     * Selection checks sturdy support on every surface except Earth (spawn-based, ADR-033) and shared Space.
+     * The selector checks fluid safety separately for every new selection, including these exempt destinations.
+     */
     public static boolean supportAtSelection(ResourceKey<Level> dimension) {
         Objects.requireNonNull(dimension, "dimension");
         return !dimension.equals(Level.OVERWORLD) && !dimension.equals(CelestialIds.SPACE_LEVEL);

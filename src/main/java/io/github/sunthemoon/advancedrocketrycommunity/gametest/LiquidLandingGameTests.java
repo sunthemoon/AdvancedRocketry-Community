@@ -151,6 +151,16 @@ public final class LiquidLandingGameTests {
             helper.assertTrue(!wet.success() && wet.detail().equals("station pad is occupied or unsafe"),
                     "The unnamed Space pad admitted fluid: " + wet);
             f.set(pad.below(), Blocks.AIR.defaultBlockState());
+            f.set(pad.east(), Blocks.WATER.defaultBlockState());
+            helper.assertTrue(!f.selector.selectStation(space, f.source, UUID.randomUUID(), station, List.of(),
+                    space.getGameTime()).success(), "Fluid under the upper-only Space column was admitted");
+            f.set(pad.east(), Blocks.AIR.defaultBlockState());
+            // A higher dry roof must not hide fluid directly beneath the fixed landing plane.
+            f.set(pad.above(8), Blocks.STONE.defaultBlockState());
+            f.set(pad.below(), Blocks.WATER.defaultBlockState());
+            helper.assertTrue(!f.selector.selectStation(space, f.source, UUID.randomUUID(), station, List.of(),
+                    space.getGameTime()).success(), "A dry roof hid fluid at the Space landing plane");
+            f.set(pad.below(), Blocks.AIR.defaultBlockState());
             var dry = f.selector.selectStation(space, f.source, UUID.randomUUID(), station, List.of(), space.getGameTime());
             helper.assertTrue(dry.success(), "Dry legacy Space pad acquired a support requirement: " + dry);
         }
