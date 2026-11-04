@@ -81,6 +81,20 @@ public final class LowGravityFlightGameTests {
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
     public static void zeroGravityStationDriftReturnsBeforeVanillaCanKick(GameTestHelper helper) {
+        stationCase(helper, false, false);
+    }
+
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
+    public static void loggingBackIntoZeroGravityDriftStillReturnsBeforeAKick(GameTestHelper helper) {
+        stationCase(helper, true, false);
+    }
+
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
+    public static void aSupportedZeroGravityPlayerIsNotReturned(GameTestHelper helper) {
+        stationCase(helper, false, true);
+    }
+
+    private static void stationCase(GameTestHelper helper, boolean reconnect, boolean supported) {
         try (Fixture f = new Fixture(helper, CelestialIds.SPACE_LEVEL, "gravityStation")) {
             StationRegistrySavedData data = StationRegistrySavedData.get(f.player.server);
             UUID id = UUID.randomUUID();
@@ -97,9 +111,18 @@ public final class LowGravityFlightGameTests {
                 f.level.setBlockAndUpdate(pad, Blocks.AIR.defaultBlockState());
                 f.level.setBlockAndUpdate(pad.above(), Blocks.AIR.defaultBlockState());
                 // The initial platform ends at z+8. This is inside the region, but unsupported at z+10.
-                f.player.teleportTo(f.level, pad.getX() + 0.5D, pad.getY(), pad.getZ() + 10.5D, 0, 0);
-                f.level.getChunkAt(f.player.blockPosition());
+                f.player.teleportTo(f.level, pad.getX() + 0.5D, pad.getY(), pad.getZ() + (supported ? 0.5D : 10.5D), 0, 0);
+                for (int x = -1; x <= 1; x++) {
+                    for (int z = -1; z <= 1; z++) { f.level.getChunkAt(f.player.blockPosition().offset(x * 16, 0, z * 16)); }
+                }
                 f.acknowledge();
+                if (reconnect) {
+                    Vec3 saved = f.player.position();
+                    f.rejoin();
+                    f.player.setGameMode(GameType.ADVENTURE);
+                    helper.assertTrue(f.player.position().distanceToSqr(saved) < 0.01D,
+                            "Login did not restore the saved adrift position");
+                }
                 helper.assertTrue(data.findAt(f.player.getBlockX(), f.player.getBlockZ()).isPresent(),
                         "The drift fixture must be inside the station region");
                 for (int tick = 1; tick < 80 && f.tokens.isEmpty(); tick++) {
@@ -109,8 +132,12 @@ public final class LowGravityFlightGameTests {
                             .orElseThrow().tickServer(f.player.server);
                     helper.assertTrue(f.connected(), "Station drift disconnected before recovery at " + tick);
                 }
-                helper.assertTrue(f.tokens.contains(SpaceSafetyReturnService.ARRIVED_STATION + "(Gravity rescue)"),
-                        "No station safety-return message: " + f.tokens);
+                if (supported) {
+                    helper.assertTrue(f.tokens.isEmpty() && f.connected(), "A supported player was returned: " + f.tokens);
+                } else {
+                    helper.assertTrue(f.tokens.contains(SpaceSafetyReturnService.ARRIVED_STATION + "(Gravity rescue)"),
+                            "No station safety-return message: " + f.tokens);
+                }
                 helper.assertTrue(f.player.position().distanceToSqr(pad.getX() + 0.5D, pad.getY(), pad.getZ() + 0.5D) < 1,
                         "The player was not returned to the station's safe point");
             } finally {
@@ -126,9 +153,9 @@ public final class LowGravityFlightGameTests {
     /** Each tick is a real admitted airborne packet followed by ServerGamePacketListenerImpl.tick(). */
     private static final class Fixture implements AutoCloseable {
         final ServerLevel level;
-        final ServerPlayer player;
+        ServerPlayer player;
         final List<String> tokens = new ArrayList<>();
-        final EmbeddedChannel channel;
+        EmbeddedChannel channel;
         final boolean allowed;
         final double startY;
 
@@ -139,17 +166,32 @@ public final class LowGravityFlightGameTests {
             server.setFlightAllowed(false);
             level = server.getLevel(key);
             helper.assertTrue(level != null, "Missing fixture Level");
-            player = new ServerPlayer(server, level, new GameProfile(UUID.randomUUID(), name)) {
-                @Override public void sendSystemMessage(Component message) { tokens.add(ConnectedTestPlayers.token(message)); }
-            };
-            Connection connection = new Connection(PacketFlow.SERVERBOUND);
-            channel = new EmbeddedChannel(connection);
-            server.getPlayerList().placeNewPlayer(connection, player);
+            join(UUID.randomUUID(), name);
             player.setGameMode(GameType.SURVIVAL);
             BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
             startY = 220;
             level.getChunkAt(at);
             player.teleportTo(level, at.getX() + 0.5D, startY, at.getZ() + 0.5D, 0, 0);
+            acknowledge();
+            tokens.clear();
+        }
+
+        void join(UUID id, String name) {
+            var server = level.getServer();
+            player = new ServerPlayer(server, level, new GameProfile(id, name)) {
+                @Override public void sendSystemMessage(Component message) { tokens.add(ConnectedTestPlayers.token(message)); }
+            };
+            Connection connection = new Connection(PacketFlow.SERVERBOUND);
+            channel = new EmbeddedChannel(connection);
+            server.getPlayerList().placeNewPlayer(connection, player);
+        }
+
+        void rejoin() {
+            UUID id = player.getUUID();
+            String name = player.getGameProfile().getName();
+            player.server.getPlayerList().remove(player);
+            channel.finishAndReleaseAll();
+            join(id, name);
             acknowledge();
             tokens.clear();
         }
