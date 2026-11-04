@@ -104,9 +104,7 @@ public final class AdapterFaultGameTests {
                         && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                 "Framework start control was not placed at the expected position");
         create(helper);
-        level.setBlockAndUpdate(button.below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north().below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north(), Blocks.WATER.defaultBlockState());
+        AdapterDropFixture.flowAcrossStartControl(helper, button);
         helper.runAtTickTime(8, () -> {
             helper.assertTrue(!level.getFluidState(button).isEmpty(), "Water did not reach the start-control position");
             helper.assertTrue(level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),

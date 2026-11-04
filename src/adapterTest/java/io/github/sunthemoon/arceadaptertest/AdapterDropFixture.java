@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Unfiltered item observations for the adapter fixtures' original assertion regions. */
+/** Fixture-only control retirement and unfiltered item observations in the original assertion regions. */
 final class AdapterDropFixture {
     static void retireStartControl(GameTestHelper helper) {
         // GameTestInfo places this control outside the template. Water can destroy it while its
@@ -26,15 +26,26 @@ final class AdapterDropFixture {
                         && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                 "Framework start control was not placed at the expected position");
         setupAndOperation.run();
-        level.setBlockAndUpdate(button.below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north().below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north(), Blocks.WATER.defaultBlockState());
+        flowAcrossStartControl(helper, button);
         helper.runAtTickTime(8, () -> {
             helper.assertTrue(!level.getFluidState(button).isEmpty(), "Water did not reach the start-control position");
             helper.assertTrue(level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                     "Water test removed the start control's support");
             assertNoDrops(helper, new AABB(button).inflate(2), "Water dropped a fixture start button");
         });
+    }
+
+    static void flowAcrossStartControl(GameTestHelper helper, BlockPos button) {
+        var level = helper.getLevel();
+        BlockPos source = button.north();
+        // A bounded channel removes terrain-dependent downhill alternatives. Reset the source so
+        // an already-present water block also gets a fresh fluid tick; never replace the button.
+        level.setBlockAndUpdate(source, Blocks.STONE.defaultBlockState());
+        for (BlockPos wall : java.util.List.of(button.below(), source.below(), button.east(), button.west(),
+                source.east(), source.west(), source.north())) {
+            level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
+        }
+        level.setBlockAndUpdate(source, Blocks.WATER.defaultBlockState());
     }
 
     static void assertNoDrops(GameTestHelper helper, AABB region, String message) {
