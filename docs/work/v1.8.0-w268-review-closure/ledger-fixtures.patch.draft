@@ -1,0 +1,30 @@
+--- a/tests/test_validate_v180_content_ledger.py
++++ b/tests/test_validate_v180_content_ledger.py
+@@ -224,0 +225 @@
++        self._restore_beacon_review_fixture(allowlist=True)
+@@ -231,0 +233 @@
++        released += ["textures/blocks/controlpanel.png", "textures/blocks/cuttingmachine.png", "textures/blocks/cuttingmachine_active.png", "textures/blocks/fuelingmachine.png", "textures/blocks/machineprecisionlaseretcher.png"]
+@@ -268,0 +271,19 @@
++    def _restore_beacon_review_fixture(self, allowlist: bool = False) -> None:
++        # W268 adoption: restore the original row; all test assertions stay unchanged.
++        before = {'order': '256', 'pattern': 'textures/blocks/beacon.png', 'handling': 'REVIEW', 'plan': 'C17c', 'units': 'block:beacon', 'reason': 'same name as a vanilla texture; compare before import'}
++        self._set_rule(before["pattern"], **{k: v for k, v in before.items() if k != "pattern"})
++        if allowlist:
++            path = self.root / ALLOWLIST
++            kept = set(path.read_text(encoding="utf-8").splitlines())
++            kept.add("textures/blocks/beacon.png\tREVIEW")
++            raw = "".join(line + "\n" for line in sorted(kept)).encode("utf-8")
++            path.write_bytes(raw)
++            adr = self.root / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
++            adr.write_text(re.sub(r"^import_allowlist_sha256:.*$",
++                                 "import_allowlist_sha256: " + hashlib.sha256(raw).hexdigest(),
++                                 adr.read_text(encoding="utf-8"), count=1, flags=re.M), encoding="utf-8")
++            findings = self.root / ORIGIN_FINDINGS
++            data = json.loads(findings.read_text(encoding="utf-8"))
++            data["findings"] = [f for f in data["findings"] if f["asset"] != "textures/blocks/beacon.png"]
++            findings.write_text(json.dumps(data), encoding="utf-8")
++
+@@ -269,0 +291 @@
++        self._restore_beacon_review_fixture()
+@@ -275,0 +298 @@
++        self._restore_beacon_review_fixture()

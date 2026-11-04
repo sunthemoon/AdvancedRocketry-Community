@@ -1,0 +1,423 @@
+order,pattern,handling,plan,units,reason
+1,textures/armor/spacesuit_layer1.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+2,textures/armor/spacesuit_layer2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png, orientation 0 (overlap 0.32 over 42 colours, mask 0.61, rank 0.00)"
+3,textures/blocks/atmospheredetector.png,EXCLUDE,-,block:oxygenDetection,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+4,textures/blocks/atmospheredetector_active.png,EXCLUDE,-,block:oxygenDetection,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+5,textures/blocks/controlpanel.png,EXCLUDE,-,block:altitudeController block:gravityController,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+6,textures/blocks/crystallizer.png,EXCLUDE,-,block:crystallizer,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+7,textures/blocks/crystallizer_active.png,EXCLUDE,-,block:crystallizer,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+8,textures/blocks/cuttingmachine.png,EXCLUDE,-,block:cuttingMachine,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+9,textures/blocks/cuttingmachine_active.png,EXCLUDE,-,block:cuttingMachine,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+10,textures/blocks/fluid/oxygen_flow.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_flow.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.94)"
+11,textures/blocks/fluid/oxygen_still.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_still.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
+12,textures/blocks/forcefieldprojector.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+13,textures/blocks/forcefieldprojector_off.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+14,textures/blocks/forcefieldprojectorfront.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+15,textures/blocks/gaschargertop.png,EXCLUDE,-,block:oxygenCharger,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+16,textures/blocks/guidancecomputeraccesshatch.png,EXCLUDE,-,block:guidanceComputer,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+17,textures/blocks/hotdry_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+18,textures/blocks/laserbottom.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_bottom.png; no authorship clearance or NEW art approval."
+19,textures/blocks/laserfront.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_front.png; no authorship clearance or NEW art approval."
+20,textures/blocks/leaves_alien.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/leaves_acacia.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+21,textures/blocks/log_blue.png,REGENERATE,C15c,block:alienWood,C15c draws the lightwood log new instead of seeking an authorship finding for the AR 16x set (#1889); a batch may import fewer files (ADR-061 section 4.2)
+22,textures/blocks/log_blue_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_big_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
+23,textures/blocks/log_charcoal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+24,textures/blocks/log_charcoal_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+25,textures/blocks/machineelectrolyzer.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front.png; no authorship clearance or NEW art approval."
+26,textures/blocks/machineelectrolyzer_active.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front_active.png; no authorship clearance or NEW art approval."
+27,textures/blocks/machineorientationcontrol.png,EXCLUDE,-,block:orientationController,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+28,textures/blocks/machinescrubber.png,EXCLUDE,-,block:oxygenScrubber,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+29,textures/blocks/machinescrubber_active.png,EXCLUDE,-,block:oxygenScrubber,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+30,textures/blocks/monitorfrontleft.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+31,textures/blocks/monitorfrontmid.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+32,textures/blocks/monitorfrontright.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+33,textures/blocks/monitormoon.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+34,textures/blocks/monitorplanet.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+35,textures/blocks/monitorplanet_active.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+36,textures/blocks/monitorside.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+37,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+38,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+39,textures/blocks/panelside.png,EXCLUDE,-,block:suitWorkStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+40,textures/blocks/plank_blue.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+41,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+42,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+43,textures/blocks/platepresser_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
+44,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
+45,textures/blocks/precisionassemblerfront.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/precision_assembler_front.png; no authorship clearance or NEW art approval."
+46,textures/blocks/precisionassemblerfront_active.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved."
+47,textures/blocks/pumpbottom.png,REGENERATE,C16a,block:blockPump,NEW community pump faces under ADR-064 section 12; legacy bitmap not imported
+48,textures/blocks/pumpside.png,REGENERATE,C16a,block:blockPump,NEW community pump faces under ADR-064 section 12; legacy bitmap not imported
+49,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+50,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
+51,textures/blocks/qcrucible_top.png,EXCLUDE,-,block:quartzcrucible,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+52,textures/blocks/railgun.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/railgun_front.png; no authorship clearance or NEW art approval."
+53,textures/blocks/satelliteassembler.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/satellite_builder_front.png; no authorship clearance or NEW art approval."
+54,textures/blocks/satellitebay.png,EXCLUDE,-,block_variant:loader/1,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+55,textures/blocks/seal.png,EXCLUDE,-,block:pipeSealer,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+56,textures/blocks/solar.png,EXCLUDE,-,block:solarGenerator,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+57,textures/blocks/starshipcontrolpanel.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+58,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
+59,textures/blocks/warpcore.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/warp_core_side.png; no authorship clearance or NEW art approval."
+60,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png, orientation 0 (overlap 0.95 over 42 colours, mask 1.00, rank 1.00)"
+61,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale 4 (overlap 0.00 over 0 colours, mask 0.90, rank 0.98)"
+62,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/brewing_stand.png, orientation 0 (overlap 0.56 over 4 colours, mask 0.94, rank 0.39)"
+63,textures/gui/buttons/buttonautoeject.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+64,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.48 over 3 colours, mask 0.82, rank 0.00)"
+65,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.77 over 5 colours, near 0.00, mapped 0.00)"
+66,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.78 over 5 colours, near 0.00, mapped 0.00)"
+67,textures/gui/genericneibackground.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_side.png, region of 256 px at offset (-176, -198) (orientation 6, scale 1/1; exact 1.00 over 94 colours, near 0.00, mapped 0.00)"
+68,textures/gui/lasertile.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 24111 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.87 over 5 colours, near 0.00, mapped 0.00)"
+69,textures/gui/precisionassembler.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/smithing.png, orientation 0 (overlap 0.56 over 3 colours, mask 0.93, rank 0.47)"
+70,textures/gui/progressbars/progressbars.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/obsidian.png, region of 256 px at offset (0, -140) (orientation 0, scale 1/1; exact 1.00 over 72 colours, near 0.00, mapped 0.00)"
+71,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.39 over 4 colours, mask 0.90, rank 0.28)"
+72,textures/items/advancedsolarpanel.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/advanced_solar_panel.png; no authorship clearance or NEW art approval."
+73,textures/items/antifogvisor.png,EXCLUDE,-,item_variant:itemUpgrade/4,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+74,textures/items/atmanalyzer.png,EXCLUDE,-,item:atmAnalyser,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+75,textures/items/basicsolarpanel.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_solar_module.png; no authorship clearance or NEW art approval."
+76,textures/items/beaconfinder.png,EXCLUDE,-,item:beaconFinder,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+77,textures/items/bioniclegs.png,EXCLUDE,-,item_variant:itemUpgrade/2,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+78,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+79,textures/items/earthbrightvisor.png,EXCLUDE,-,item_variant:itemUpgrade/5,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+80,textures/items/landingboots.png,EXCLUDE,-,item_variant:itemUpgrade/3,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+81,textures/items/pressuretank0.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+82,textures/items/pressuretank1.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+83,textures/items/pressuretank2.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+84,textures/items/pressuretank3.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+85,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
+86,textures/items/satellitepowersource0.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved."
+87,textures/items/satellitepowersource1.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved."
+88,textures/items/sawbladeiron.png,EXCLUDE,-,item_variant:sawBladeIron/0 block:sawBlade,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+89,textures/items/space_boots.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+90,textures/items/space_chestplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+91,textures/items/space_helmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+92,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+93,textures/items/spaceboots.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+94,textures/items/spacechestplate.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+95,textures/items/spacehelmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
+96,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
+97,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png, orientation 6 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
+98,textures/planets/asteroid.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+99,textures/planets/atmglow.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+100,textures/planets/atmosphere.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+101,textures/planets/atmosphere2.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+102,textures/planets/carbonworld.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+103,textures/planets/desertworld.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+104,textures/planets/earthlike.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+105,textures/planets/gasgiantblue.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+106,textures/planets/gasgiantbrown.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+107,textures/planets/gasgiantred.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+108,textures/planets/iceworld.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+109,textures/planets/marslike.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+110,textures/planets/moon.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+111,textures/planets/rings.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+112,textures/planets/ringshadow.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+113,textures/planets/shadow3.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+114,textures/planets/venusian.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+115,textures/planets/waterworld.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+116,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,excluded by an origin finding (docs/provenance/v1.8.0-origin-findings.json)
+117,textures/armor/spacesuit_layer2_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+118,textures/blocks/fuelingmachine.png,EXCLUDE,-,block:fuelingStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+119,textures/blocks/guidancecomputer.png,EXCLUDE,-,block:guidanceComputer,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+120,textures/blocks/machinenuclear.png,EXCLUDE,-,block:nuclearcore,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+121,textures/blocks/machineprecisionlaseretcher.png,EXCLUDE,-,block:precisionlaseretcher,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+122,textures/blocks/monitorfront.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+123,textures/blocks/monitorrear.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+124,textures/blocks/monitorrocket.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+125,textures/blocks/monitorsatellite.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+126,textures/blocks/panelsideworkstation.png,EXCLUDE,-,block:suitWorkStation,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+127,textures/blocks/vacuumlaserfront.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+128,textures/gui/buttons/buttonautoeject_hover.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+129,textures/gui/buttons/buttonautoeject_pressed.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+130,textures/gui/buttons/buttonredstoneinverted.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+131,textures/gui/buttons/copy.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+132,textures/gui/buttons/copy_hover.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+133,textures/gui/buttons/kill.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+134,textures/gui/buttons/kill_hover.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+135,textures/gui/buttons/tabdata.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+136,textures/gui/buttons/tabdata_hover.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+137,textures/gui/buttons/tabguidance.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+138,textures/gui/buttons/tabguidance_hover.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+139,textures/gui/buttons/tabplanet.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+140,textures/gui/buttons/tabplanet_hover.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+141,textures/gui/buttons/tabwarp.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+142,textures/gui/buttons/tabwarp_hover.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+143,textures/gui/warning.png,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+144,textures/items/spaceboots_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+145,textures/items/spacechestplate_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+146,textures/items/spacehelmet_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+147,textures/models/areagravitycontroller.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+148,textures/armor/spacesuit_layer1_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+149,textures/blocks/fluid/oxygen_flow.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_flow.png, which is EXCLUDE for its pixels"
+150,textures/blocks/fluid/oxygen_still.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_still.png, which is EXCLUDE for its pixels"
+151,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+152,textures/blocks/machinevent.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+153,textures/blocks/machinewarning.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+154,textures/items/advancedcircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+155,textures/items/basiccircuit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+156,textures/items/datastorageunit.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+157,textures/items/siliconwafer.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+158,sounds/buttonblipa.ogg,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
+159,lang/en_US.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+160,lang/zh_CN.lang,IMPORTED,v0.1.0,-,reviewed keys extracted in v0.1.0; each batch extracts its own keys under its own record
+161,lang/de_DE.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+162,lang/es_ES.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+163,lang/fi_FI.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+164,lang/fr_FR.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+165,lang/pt_br.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+166,lang/ru_RU.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+167,lang/ua_UA.lang,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D2; AUDIT-01.csv F; Owner D2: v1.8 supports English and Simplified Chinese only; exclude this legacy translation, without resolving its authorship. v1.9 may reopen translations."
+168,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
+169,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
+170,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
+171,textures/blocks/fluid/lava_*,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+172,textures/font.png,EXCLUDE,-,-,no planned consumer
+173,textures/env/sun.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+174,textures/planets/shadow.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+175,textures/gui/eyecandy/earth.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+176,textures/blocks/test_*,EXCLUDE,-,-,legacy test textures
+177,textures/blocks/oopsididitagain.png,EXCLUDE,-,-,legacy test texture
+178,textures/blocks/clear.png,EXCLUDE,-,-,technical transparent texture
+179,sounds/dummy.ogg,EXCLUDE,-,-,silent placeholder; five sound events point to identical files
+180,sounds/crystallizer.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+181,sounds/cuttingmachine.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+182,sounds/electricarcfurnace.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+183,sounds/electrolyser.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+184,sounds/precass.ogg,EXCLUDE,-,-,byte-identical to the silent placeholder
+185,textures/blocks/pipe*.png,EXCLUDE,-,-,deprecated pipes were never registered
+186,textures/blocks/wirelesstransciever_*,EXCLUDE,-,-,wireless transceiver rejected (ADR-062)
+187,textures/items/biomechanger*.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+188,textures/items/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+189,textures/items/elevatorchip.png,EXCLUDE,-,-,elevator chip rejected (ADR-059)
+190,textures/items/planetidchip.png,EXCLUDE,-,-,redesigned into the flight star map (ADR-035)
+191,textures/items/stationidchip.png,EXCLUDE,-,-,redesigned into station commands (ADR-046)
+192,textures/items/asteroididchip.png,EXCLUDE,-,-,redesigned into terminal selection (ADR-051)
+193,textures/items/spacestationcontainer.png,EXCLUDE,-,-,redesigned into the station deployment kit
+194,textures/models/hovercraft.png,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+195,models/hovercraft.obj,EXCLUDE,-,-,hovercraft deferred (ADR-062)
+196,models/biomescanner.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+197,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+198,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
+199,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
+200,textures/blocks/machinegeneric.png,EXCLUDE,-,libvulpes:java/blockAdvStructureBlock,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+201,models/item/models/motor.*,EXCLUDE,-,libvulpes:java/blockMotor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+202,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
+203,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+204,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
+205,recipes/jackhammer.json,IMPORTED,v1.8.0,item:jackHammer,MIT-derived DataGen conversion recorded in docs/provenance/v1.8.0-c18b-jackhammer.json; human review pending; not item or bitmap delivery
+206,recipes/*.json,REGENERATE,batch of the output,-,values only; DataGen writes modern recipes
+207,advancements/normal/*.json,REGENERATE,C18c,-,rebuilt with modern triggers
+208,sounds.json,REGENERATE,C18d,-,DataGen sound definitions
+209,sounds/*.ogg,EXCLUDE,-,sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+210,textures/planets/carbonworldleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+211,textures/planets/desertworldleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+212,textures/planets/earthlikeleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+213,textures/planets/gasgiantblueleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+214,textures/planets/gasgiantbrownleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+215,textures/planets/gasgiantredleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+216,textures/planets/iceworldleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+217,textures/planets/lavaleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+218,textures/planets/marslikeleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+219,textures/planets/moonleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+220,textures/planets/venusianleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+221,textures/planets/waterworldleo.jpg,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+222,textures/planets/atmosphereleo.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+223,textures/blocks/geode*.png,REGENERATE,C15b,block:geode,C15b draws the geode shell new (V180SurfaceArt); a batch may import fewer files (ADR-061 section 4.2)
+224,textures/blocks/crystal.png,REGENERATE,C15c,block:crystal,C15c draws the crystal block new; a batch may import fewer files (ADR-061 section 4.2)
+225,textures/blocks/basalt.png,EXCLUDE,-,-,vanilla basalt replaces the block (ADR-062)
+226,textures/blocks/vitrifiedsand.png,EXCLUDE,-,-,vitrified sand rejected (ADR-062)
+227,textures/blocks/sapling_bluetree.png,REGENERATE,C15c,block:alienSapling,C15c draws the lightwood sapling new; a batch may import fewer files (ADR-061 section 4.2)
+228,textures/blocks/mushroom_electric.png,REGENERATE,C15c,block:electricMushroom,C15c draws the electric mushroom new; a batch may import fewer files (ADR-061 section 4.2)
+229,textures/blocks/blastbrick.png,IMPORTED,v1.8.0,block:blastbrick block:arcfurnace,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; static face; human review and V1 pending
+230,textures/blocks/blastbrickfront.png,IMPORTED,v1.8.0,block:blastbrick block:arcfurnace,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; static face; human review and V1 pending
+231,textures/blocks/blastbrickfront_active.png,EXCLUDE,-,block:arcfurnace,R295 W267 exclusion: the arc furnace keeps its static idle front block/blastbrickfront (W246); ClassicControllerBlock has FACING only and no active blockstate is added for art
+232,textures/blocks/qcrucible_bottom.png,IMPORTED,v1.8.0,block:quartzcrucible,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+233,textures/blocks/liquidtank.png,REGENERATE,C16a,block:liquidTank,NEW community tank faces under ADR-064 section 12
+234,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
+235,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
+236,textures/blocks/combustion.png,EXCLUDE,-,block:rocketmotor,R295 W267 exclusion: no model or code binds this block sprite; the P1 rocket_motor OBJ draws the separate imported model texture block/combustion_classic through rocketmotor.mtl (W249)
+237,textures/blocks/datahatch.png,EXCLUDE,-,-,data bus redesigned (ADR-062)
+238,textures/blocks/rocketpad_.png,IMPORTED,v1.8.0,block:landingPad,W261-fix R289 landing pad own tile; docs/provenance/v1.8.0-w261-landing-pad.json; human review and V1 pending
+239,textures/blocks/rocketpad_blcorner.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+240,textures/blocks/rocketpad_bottomedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+241,textures/blocks/rocketpad_brcorner.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+242,textures/blocks/rocketpad_leftedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+243,textures/blocks/rocketpad_nbedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+244,textures/blocks/rocketpad_nledge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+245,textures/blocks/rocketpad_noedge.png,EXCLUDE,-,block:launchpad block:concrete,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289); also the legacy concrete block's texture; block:concrete was redesigned to vanilla concrete (R289)
+246,textures/blocks/rocketpad_nredge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+247,textures/blocks/rocketpad_ntedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+248,textures/blocks/rocketpad_rightedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+249,textures/blocks/rocketpad_tlcorner.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+250,textures/blocks/rocketpad_topedge.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+251,textures/blocks/rocketpad_trcorner.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+252,textures/blocks/rocketpad_xcross.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+253,textures/blocks/rocketpad_ycross.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
+254,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
+255,textures/blocks/forcefield.png*,EXCLUDE,-,-,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+256,textures/blocks/beacon.png,EXCLUDE,-,block:beacon,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+257,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+258,textures/blocks/suitworkstation.png,IMPORTED,v1.8.0,block:suitWorkStation,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+259,textures/blocks/smallconnector.png,EXCLUDE,-,block:solararray,R295 W267 exclusion: the formed solar array draws the K3 solar_array.obj with NEW solar_array_front; the NEW solar_array_panel and power_output_plug models replace the legacy panel support texture
+260,textures/blocks/smallairlockdoor_*.png,IMPORTED,v1.8.0,block:airlock_door,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+261,textures/blocks/thermitetorch.png,IMPORTED,v1.8.0,block:thermiteTorch,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+262,textures/blocks/lens1.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+263,textures/items/carbonscrubbercartrige.png,IMPORTED,v1.8.0,item:carbonScrubberCartridge,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+264,textures/items/thermite.png,IMPORTED,v1.8.0,item:thermite,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+265,textures/items/smallairlock.png,IMPORTED,v1.8.0,item:smallAirlockDoor,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+266,textures/items/sealdetector.png,IMPORTED,v1.8.0,item:sealDetector,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+267,textures/items/orescanner.png,EXCLUDE,-,-,ore scanner redesigned into the terminal survey view (ADR-049)
+268,textures/items/jetpack.png,IMPORTED,v1.8.0,item:jetPack,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+269,textures/items/jackhammer.png,IMPORTED,v1.8.0,item:jackHammer,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+270,textures/items/basiclasergun.png,IMPORTED,v1.8.0,item:basicLaserGun,"W265-fix / R293: byte-identical flat icon at textures/item/basiclasergun.png; item/generated keeps upstream four hand transforms and vanilla defaults elsewhere. Name is free, no _classic suffix needed. docs/provenance/v1.8.0-w265-laser-gun.json; provenance PENDING_HUMAN_REVIEW."
+271,textures/items/hoverupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/0,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+272,textures/items/flightspeedupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+273,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+274,textures/items/basiclens.png,IMPORTED,v1.8.0,item_variant:lens/0,recorded in docs/provenance/v1.8.0-c18d-k6.json
+275,textures/items/sawbladeassembly.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282 R285; docs/provenance/v1.8.0-w256-saw-model.json; target textures/item/saw_blade_classic.png, bound only as the shared saw item model's particle (the legacy flat item look is replaced on purpose, as in P1); human provenance review pending"
+276,textures/items/*circuitplate.png,REGENERATE,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+277,textures/items/trackingcircuit.png,IMPORTED,v1.8.0,item_variant:ic/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
+278,textures/items/controliocircuit.png,REGENERATE,C16d,item_variant:ic/3,components
+279,textures/items/itemiocircuit.png,REGENERATE,C16d,item_variant:ic/4,components
+280,textures/items/liquidiocircuit.png,REGENERATE,C16d,item_variant:ic/5,components
+281,textures/items/userinterface.png,REGENERATE,C16d,item_variant:misc/0,NEW component icon under ADR-064 section 12
+282,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
+283,textures/items/satellite.png,IMPORTED,v1.8.0,item:satellite,recorded in docs/provenance/v1.8.0-c18d-k6.json
+284,textures/items/satelliteidchip.png,IMPORTED,v1.8.0,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,recorded in docs/provenance/v1.8.0-c18d-k6.json
+285,textures/items/satelliteprimaryfunction0.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+286,textures/items/satelliteprimaryfunction1.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+287,textures/items/satelliteprimaryfunction2.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+288,textures/items/satelliteprimaryfunction3.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+289,textures/items/satelliteprimaryfunction4.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+290,textures/items/satelliteprimaryfunction5.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+291,textures/items/compositionsensor.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+292,textures/items/massdetector.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+293,textures/items/microwavetransmitter.png,IMPORTED,v1.8.0,item_variant:satellitePrimaryFunction/3,recorded in docs/provenance/v1.8.0-c18d-k6.json
+294,textures/items/opticalsensor.png,IMPORTED,v1.8.0,item_variant:satellitePrimaryFunction/0,recorded in docs/provenance/v1.8.0-c18d-k6.json
+295,textures/items/oremapper.png,IMPORTED,v1.8.0,item_variant:satellitePrimaryFunction/4,recorded in docs/provenance/v1.8.0-c18d-k6.json
+296,textures/gui/space_*.png,EXCLUDE,-,block:suitWorkStation,"R295 W267 exclusion: SuitWorkstationScreen has one labelled armor slot and one module slot drawn in code (R292, W264); LifeSupportHud lists installed suit modules as text where the legacy HUD drew these slot icons"
+297,textures/gui/jetpack*.png,EXCLUDE,-,item:jetPack,"R295 W267 exclusion: LifeSupportHud draws the hydrogen and suit panels from SuitHudClient in code; jetpack on, off and hover states are action-bar text (SuitMotionService.Reply)"
+298,textures/gui/rockethud.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+299,textures/gui/genericstation.png,EXCLUDE,-,block:warpMonitor,R295 W267 exclusion: StationControllerScreen draws the station controller panel in code with native buttons
+300,textures/gui/videosatallite.png,EXCLUDE,-,-,spy telescope satellite rejected (ADR-062)
+301,textures/gui/planetuioverlay*.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
+302,textures/gui/eyecandy/spinnything.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+303,textures/gui/progressbars/planetselectorbars.png,EXCLUDE,-,-,planet selector redesigned (ADR-035)
+304,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
+305,textures/gui/buttons/buttongeneric.png,EXCLUDE,-,-,R295 W267 exclusion: screens use native Button widgets drawn in code
+306,textures/gui/buttons/buttongeneric_hover.png,EXCLUDE,-,-,R295 W267 exclusion: screens use native Button widgets drawn in code
+307,textures/gui/borderhorizontal.png,EXCLUDE,-,-,"R295 W267 exclusion: modern screens draw their panels in code (ClassicControllerScreen, StationControllerScreen); frames are code fills"
+308,textures/gui/bordervertical.png,EXCLUDE,-,-,"R295 W267 exclusion: modern screens draw their panels in code (ClassicControllerScreen, StationControllerScreen); frames are code fills"
+309,textures/gui/framebg.png,EXCLUDE,-,-,R295 W267 exclusion: LifeSupportHud draws its HUD panels with code fills
+310,textures/gui/guibuttonbluefuture.png,EXCLUDE,-,-,R295 W267 exclusion: screens use native Button widgets drawn in code
+311,textures/gui/guibuttonbluefuture_hover.png,EXCLUDE,-,-,R295 W267 exclusion: screens use native Button widgets drawn in code
+312,textures/gui/recticle.png,EXCLUDE,-,-,R295 W267 exclusion: destinations are chosen on the code-drawn RocketStarMap and shown in the LifeSupportHud rocket panel; no sky reticle is drawn
+313,textures/gui/selection.png,EXCLUDE,-,-,R295 W267 exclusion: the code-drawn RocketStarMap marks the selected body (ADR-035 selector redesign)
+314,textures/gui/starrybg.png,EXCLUDE,-,-,R295 W267 exclusion: RocketStarMap and StationControllerScreen draw their backgrounds in code
+315,models/block/models/sawblade.*,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; targets models/block/models/sawblade.obj and .mtl, the ordinary shared saw block/item mesh; human provenance and V1 review pending"
+316,models/block/models/advrocketmotor.mtl,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.mtl
+317,models/block/models/advrocketmotor.obj,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.obj
+318,models/block/models/rocketmotor.mtl,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.mtl
+319,models/block/models/rocketmotor.obj,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.obj
+320,models/block/models/nuclearrocketmotor.obj,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 baked nuclear nozzle; provenance v1.8.0-w258-nuclear-motor.json; human review pending
+321,models/block/models/nuclearrocketmotor.mtl,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 baked nuclear nozzle; provenance v1.8.0-w258-nuclear-motor.json; human review pending
+322,models/block/models/advbipropellantrocketmotor.mtl,IMPORTED,v1.8.0,block:advbipropellantRocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.mtl
+323,models/block/models/advbipropellantrocketmotor.obj,IMPORTED,v1.8.0,block:advbipropellantRocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.obj
+324,models/block/models/bipropellantrocketmotor.mtl,IMPORTED,v1.8.0,block:bipropellantrocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.mtl
+325,models/block/models/bipropellantrocketmotor.obj,IMPORTED,v1.8.0,block:bipropellantrocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.obj
+326,textures/models/advbipropellantcombustion.png,IMPORTED,v1.8.0,block:advbipropellantRocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advbipropellantcombustion_classic.png
+327,textures/models/bipropellantcombustion.png,IMPORTED,v1.8.0,block:bipropellantrocketmotor,W255 P2; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellantcombustion_classic.png
+328,models/block/models/middletank.obj,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+329,models/block/models/middletank.mtl,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 standalone middle tank; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+330,models/block/models/bottomtank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no connected tank variant; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+331,models/block/models/bottomtank.obj,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no connected tank variant; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+332,models/block/models/endtank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no matching OBJ exists; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+333,models/block/models/toptank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no connected tank variant; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+334,models/block/models/toptank.obj,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no connected tank variant; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+335,models/item/models/basicLaserGun.*,EXCLUDE,-,-,upstream never rendered the laser gun mesh; the item used its flat icon (R293)
+336,models/item/models/sawBlade.*,EXCLUDE,-,block:sawBlade,R295 W267 exclusion: redundant item export; the saw_blade block item inherits the S1 block mesh models/block/models/sawblade.obj (W256)
+337,models/item/models/advRocketmotor.mtl,EXCLUDE,-,block:advRocketmotor,R295 W267 exclusion: redundant item export; the advanced_rocket_motor block item inherits the P1 block mesh models/block/models/advrocketmotor.obj (W249)
+338,models/item/models/advRocketmotor.obj,EXCLUDE,-,block:advRocketmotor,R295 W267 exclusion: redundant item export; the advanced_rocket_motor block item inherits the P1 block mesh models/block/models/advrocketmotor.obj (W249)
+339,models/item/models/bottomTank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+340,models/item/models/bottomTank.obj,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+341,models/item/models/endTank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: no matching OBJ exists; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+342,models/item/models/middleTank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+343,models/item/models/middleTank.obj,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+344,models/item/models/rocketmotor.mtl,EXCLUDE,-,block:rocketmotor,R295 W267 exclusion: redundant item export; the rocket_motor block item inherits the P1 block mesh models/block/models/rocketmotor.obj (W249)
+345,models/item/models/rocketmotor.obj,EXCLUDE,-,block:rocketmotor,R295 W267 exclusion: redundant item export; the rocket_motor block item inherits the P1 block mesh models/block/models/rocketmotor.obj (W249)
+346,models/item/models/topTank.mtl,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+347,models/item/models/topTank.obj,EXCLUDE,-,block:fuelTank,"R295 W267 exclusion: redundant item export; tanks are standalone (R286); the rocket, bipropellant and oxidizer fuel tanks and their block items use the P4 mesh models/block/models/middletank.obj"
+348,models/jetpack.obj,EXCLUDE,-,item:jetPack,R295 W267 exclusion: SuitComponentLayer draws the NEW worn jetpack from code boxes and textures/entity/suit_components.png; this legacy OBJ has faces without material statements
+349,models/atmosphere.mtl,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+350,models/atmosphere.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+351,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
+352,models/motor.obj,EXCLUDE,-,libvulpes:java/blockMotor,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+353,models/areagravitycontroller.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+354,models/astrobodydataprocessor.obj,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+355,models/beacon.obj,IMPORTED,v1.8.0,block:beacon,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+356,models/blackholegenerator.obj,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+357,models/centrifuge.obj,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
+358,models/chemicalreactor.obj,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+359,models/crystalliser.obj,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+360,models/cuttingmachine.obj,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+361,models/electrolyser.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+362,models/lathe.obj,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+363,models/observatory.obj,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+364,models/orbitallaserdrill.obj,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+365,models/precisionassembler.obj,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+366,models/precisionlaseretcher.obj,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+367,models/railgun.obj,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+368,models/rollingmachine.obj,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+369,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+370,models/spaceelevator.obj,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+371,models/warpcore.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+372,textures/models/beacon.png,EXCLUDE,-,block:beacon,excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)
+373,textures/models/advcombustion.png,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advcombustion_classic.png
+374,textures/models/combustion.png,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_classic.png
+375,textures/models/nuclearengine.png,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 real MTL image; byte-identical textures/block/nuclearengine.png; provenance v1.8.0-w258-nuclear-motor.json; human review pending
+376,textures/models/tank.png,IMPORTED,v1.8.0,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,W260 P4 shared middle-tank sprite; byte-identical textures/block/tank.png; provenance v1.8.0-w260-fuel-tanks.json; human review pending
+377,textures/models/cuttingmachine2.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; target textures/block/cuttingmachine2.png, the saw mesh's stitched texture; human provenance and V1 review pending"
+378,textures/models/basiclasergun.png,EXCLUDE,-,-,upstream never rendered the laser gun mesh; the item used its flat icon (R293)
+379,textures/models/jetpack.png,EXCLUDE,-,item:jetPack,R295 W267 exclusion: excluded with models/jetpack.obj; the NEW worn jetpack uses textures/entity/suit_components.png (SuitComponentLayer)
+380,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
+381,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
+382,textures/models/astrobodydataprocessor.png,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+383,textures/models/blackholegenerator.png,IMPORTED,v1.8.0,block:blackholegenerator,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+384,textures/models/centrifuge.png,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
+385,textures/models/chemicalreactor.png,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+386,textures/models/crystalliser.png,IMPORTED,v1.8.0,block:crystallizer,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+387,textures/models/cuttingmachine.png,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+388,textures/models/diamondmetal.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+389,textures/models/electrolyser.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+390,textures/models/fan.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+391,textures/models/girder.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+392,textures/models/grid.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+393,textures/models/lathe.png,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
+394,textures/models/metalplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+395,textures/models/observatory.png,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+396,textures/models/orbitallaserdrill.png,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+397,textures/models/precisionassembler.png,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+398,textures/models/precisionlaseretcher.png,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+399,textures/models/railgun.png,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+400,textures/models/rollingmachine.png,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+401,textures/models/solararray.png,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+402,textures/models/spaceelevator.png,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
+403,textures/models/spaceelevatorcapsule.png,IMPORTED,v1.8.0,entity:ARSpaceElevatorCapsule,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
+404,textures/models/warpcore.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+405,textures/env/accretiondisk.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+406,textures/env/blackhole.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+407,textures/env/blackhole_icon.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+408,textures/env/sun3.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+409,textures/planets/lava.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+410,textures/planets/asteroid_a.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+411,textures/planets/asteroid_b.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+412,textures/planets/asteroid_c.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+413,textures/planets/asteroidleo.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+414,textures/planets/spoopy.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
+415,textures/particle/donut.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+416,textures/particle/hardsquare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+417,textures/particle/lightning.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+418,textures/particle/soft.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+419,textures/particle/softround.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+420,textures/particle/softrounddistorted.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+421,textures/entity/flare.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
+422,textures/tile/RemoteConnector.png,EXCLUDE,-,-,no registered legacy block uses it

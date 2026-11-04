@@ -1,0 +1,1838 @@
+{
+  "source_commit": "068a4d2c945d44eeb638b5ef2e1c18394f97adce",
+  "before_counts": {
+    "REGENERATE": 444,
+    "EXCLUDE": 270,
+    "IMPORTED": 89,
+    "REVIEW": 95
+  },
+  "after_counts": {
+    "REGENERATE": 444,
+    "EXCLUDE": 365,
+    "IMPORTED": 89,
+    "REVIEW": 0
+  },
+  "counts": {
+    "manifest": 898,
+    "changed_rules": 81,
+    "excluded": 95,
+    "allowlist_before": 247,
+    "allowlist_after": 152,
+    "planned": 16
+  },
+  "prepared_at": "2026-11-03",
+  "beacon_new_releases": [
+    "textures/blocks/controlpanel.png",
+    "textures/blocks/cuttingmachine.png",
+    "textures/blocks/cuttingmachine_active.png",
+    "textures/blocks/fuelingmachine.png",
+    "textures/blocks/machineprecisionlaseretcher.png"
+  ],
+  "allowlist_before_sha256": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
+  "allowlist_after_sha256": "33cd7effde14451527d3cac69f8dec13da390474459c9b37b19b67ace72a72d9",
+  "source_sha256": {
+    "docs/work/v1.8.0-asset-plan.csv": "7505a4c4962f6bfaa29f3cdaa63c97f4b2678a2ae35f5b0e14388f329cdb0973",
+    "docs/work/v1.8.0-asset-import-allowlist.txt": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
+    "docs/provenance/v1.8.0-origin-findings.json": "bbfdf27b7c74ad89206ae063eaa6cd3f9225683e59c70a65e1a589a7a2fdce5c",
+    "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md": "c07e0a5057729530db6e670052f92869020b7f923cf296018a42d3c3df230963"
+  },
+  "asset_plan": [
+    {
+      "pattern": "textures/armor/spacesuit_layer1.png",
+      "before": {
+        "order": "1",
+        "pattern": "textures/armor/spacesuit_layer1.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png, orientation 0 (overlap 0.16 over 36 colours, mask 0.26, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "1",
+        "pattern": "textures/armor/spacesuit_layer1.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/armor/spacesuit_layer1.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/atmospheredetector.png",
+      "before": {
+        "order": "3",
+        "pattern": "textures/blocks/atmospheredetector.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:oxygenDetection",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "3",
+        "pattern": "textures/blocks/atmospheredetector.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:oxygenDetection",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/atmospheredetector.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/atmospheredetector_active.png",
+      "before": {
+        "order": "4",
+        "pattern": "textures/blocks/atmospheredetector_active.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:oxygenDetection",
+        "reason": "AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "4",
+        "pattern": "textures/blocks/atmospheredetector_active.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:oxygenDetection",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/atmospheredetector_active.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/controlpanel.png",
+      "before": {
+        "order": "5",
+        "pattern": "textures/blocks/controlpanel.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:altitudeController block:gravityController",
+        "reason": "AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "5",
+        "pattern": "textures/blocks/controlpanel.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:altitudeController block:gravityController",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/controlpanel.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/crystallizer.png",
+      "before": {
+        "order": "6",
+        "pattern": "textures/blocks/crystallizer.png",
+        "handling": "REVIEW",
+        "plan": "C16c",
+        "units": "block:crystallizer",
+        "reason": "AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "6",
+        "pattern": "textures/blocks/crystallizer.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:crystallizer",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/crystallizer.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/crystallizer_active.png",
+      "before": {
+        "order": "7",
+        "pattern": "textures/blocks/crystallizer_active.png",
+        "handling": "REVIEW",
+        "plan": "C16c",
+        "units": "block:crystallizer",
+        "reason": "AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "7",
+        "pattern": "textures/blocks/crystallizer_active.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:crystallizer",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/crystallizer_active.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/cuttingmachine.png",
+      "before": {
+        "order": "8",
+        "pattern": "textures/blocks/cuttingmachine.png",
+        "handling": "REVIEW",
+        "plan": "C16b",
+        "units": "block:cuttingMachine",
+        "reason": "AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "8",
+        "pattern": "textures/blocks/cuttingmachine.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:cuttingMachine",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/cuttingmachine.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/cuttingmachine_active.png",
+      "before": {
+        "order": "9",
+        "pattern": "textures/blocks/cuttingmachine_active.png",
+        "handling": "REVIEW",
+        "plan": "C16b",
+        "units": "block:cuttingMachine",
+        "reason": "AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "9",
+        "pattern": "textures/blocks/cuttingmachine_active.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:cuttingMachine",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/cuttingmachine_active.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/forcefieldprojector.png",
+      "before": {
+        "order": "12",
+        "pattern": "textures/blocks/forcefieldprojector.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "12",
+        "pattern": "textures/blocks/forcefieldprojector.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/forcefieldprojector.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/forcefieldprojector_off.png",
+      "before": {
+        "order": "13",
+        "pattern": "textures/blocks/forcefieldprojector_off.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "13",
+        "pattern": "textures/blocks/forcefieldprojector_off.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/forcefieldprojector_off.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/forcefieldprojectorfront.png",
+      "before": {
+        "order": "14",
+        "pattern": "textures/blocks/forcefieldprojectorfront.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.87); origin review"
+      },
+      "after": {
+        "order": "14",
+        "pattern": "textures/blocks/forcefieldprojectorfront.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:forceField block:forceFieldProjector",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/forcefieldprojectorfront.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/gaschargertop.png",
+      "before": {
+        "order": "15",
+        "pattern": "textures/blocks/gaschargertop.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:oxygenCharger",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "15",
+        "pattern": "textures/blocks/gaschargertop.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:oxygenCharger",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/gaschargertop.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/guidancecomputeraccesshatch.png",
+      "before": {
+        "order": "16",
+        "pattern": "textures/blocks/guidancecomputeraccesshatch.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:guidanceComputer",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "16",
+        "pattern": "textures/blocks/guidancecomputeraccesshatch.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:guidanceComputer",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/guidancecomputeraccesshatch.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machineorientationcontrol.png",
+      "before": {
+        "order": "27",
+        "pattern": "textures/blocks/machineorientationcontrol.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:orientationController",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "27",
+        "pattern": "textures/blocks/machineorientationcontrol.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:orientationController",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machineorientationcontrol.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machinescrubber.png",
+      "before": {
+        "order": "28",
+        "pattern": "textures/blocks/machinescrubber.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:oxygenScrubber",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "28",
+        "pattern": "textures/blocks/machinescrubber.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:oxygenScrubber",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machinescrubber.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machinescrubber_active.png",
+      "before": {
+        "order": "29",
+        "pattern": "textures/blocks/machinescrubber_active.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:oxygenScrubber",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "29",
+        "pattern": "textures/blocks/machinescrubber_active.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:oxygenScrubber",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machinescrubber_active.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorfrontleft.png",
+      "before": {
+        "order": "30",
+        "pattern": "textures/blocks/monitorfrontleft.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.32 over 2 colours, mask 0.47, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "30",
+        "pattern": "textures/blocks/monitorfrontleft.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorfrontleft.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorfrontmid.png",
+      "before": {
+        "order": "31",
+        "pattern": "textures/blocks/monitorfrontmid.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/straight_cross.png, scale -4 (overlap 0.32 over 2 colours, mask 0.47, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "31",
+        "pattern": "textures/blocks/monitorfrontmid.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorfrontmid.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorfrontright.png",
+      "before": {
+        "order": "32",
+        "pattern": "textures/blocks/monitorfrontright.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/cross.png, region of 80 px at offset (24, -11) (orientation 7, scale 1/1; exact 0.90 over 2 colours, near 0.90, mapped 0.92); origin review"
+      },
+      "after": {
+        "order": "32",
+        "pattern": "textures/blocks/monitorfrontright.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorfrontright.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitormoon.png",
+      "before": {
+        "order": "33",
+        "pattern": "textures/blocks/monitormoon.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.89); origin review"
+      },
+      "after": {
+        "order": "33",
+        "pattern": "textures/blocks/monitormoon.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitormoon.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorplanet.png",
+      "before": {
+        "order": "34",
+        "pattern": "textures/blocks/monitorplanet.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 7 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+      },
+      "after": {
+        "order": "34",
+        "pattern": "textures/blocks/monitorplanet.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorplanet.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorplanet_active.png",
+      "before": {
+        "order": "35",
+        "pattern": "textures/blocks/monitorplanet_active.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/beacon.png, orientation 7 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+      },
+      "after": {
+        "order": "35",
+        "pattern": "textures/blocks/monitorplanet_active.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorplanet_active.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorside.png",
+      "before": {
+        "order": "36",
+        "pattern": "textures/blocks/monitorside.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "36",
+        "pattern": "textures/blocks/monitorside.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorside.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/panelside.png",
+      "before": {
+        "order": "39",
+        "pattern": "textures/blocks/panelside.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "block:suitWorkStation",
+        "reason": "possible vanilla derivation: 1.20.1:assets/minecraft/textures/entity/decorated_pot/decorated_pot_side.png, orientation 4 (overlap 0.00 over 0 colours, mask 0.88, rank 0.83); origin review"
+      },
+      "after": {
+        "order": "39",
+        "pattern": "textures/blocks/panelside.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:suitWorkStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/panelside.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/qcrucible_top.png",
+      "before": {
+        "order": "51",
+        "pattern": "textures/blocks/qcrucible_top.png",
+        "handling": "REVIEW",
+        "plan": "C16c",
+        "units": "block:quartzcrucible",
+        "reason": "possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.78); origin review"
+      },
+      "after": {
+        "order": "51",
+        "pattern": "textures/blocks/qcrucible_top.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:quartzcrucible",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/qcrucible_top.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/satellitebay.png",
+      "before": {
+        "order": "54",
+        "pattern": "textures/blocks/satellitebay.png",
+        "handling": "REVIEW",
+        "plan": "C17c",
+        "units": "block_variant:loader/1",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "54",
+        "pattern": "textures/blocks/satellitebay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block_variant:loader/1",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/satellitebay.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/seal.png",
+      "before": {
+        "order": "55",
+        "pattern": "textures/blocks/seal.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "block:pipeSealer",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/blocks/diamond_block.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.77); origin review"
+      },
+      "after": {
+        "order": "55",
+        "pattern": "textures/blocks/seal.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:pipeSealer",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/seal.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/solar.png",
+      "before": {
+        "order": "56",
+        "pattern": "textures/blocks/solar.png",
+        "handling": "REVIEW",
+        "plan": "C17c",
+        "units": "block:solarGenerator",
+        "reason": "AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "56",
+        "pattern": "textures/blocks/solar.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:solarGenerator",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/solar.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/starshipcontrolpanel.png",
+      "before": {
+        "order": "57",
+        "pattern": "textures/blocks/starshipcontrolpanel.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:warpMonitor",
+        "reason": "AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "57",
+        "pattern": "textures/blocks/starshipcontrolpanel.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:warpMonitor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/starshipcontrolpanel.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/buttonautoeject.png",
+      "before": {
+        "order": "63",
+        "pattern": "textures/gui/buttons/buttonautoeject.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/gui/container/creative_inventory/tab_item_search.png, region of 576 px at offset (73, 2) (orientation 7, scale 1/1; exact 0.50 over 3 colours, near 0.50, mapped 0.59); origin review"
+      },
+      "after": {
+        "order": "63",
+        "pattern": "textures/gui/buttons/buttonautoeject.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/buttonautoeject.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/antifogvisor.png",
+      "before": {
+        "order": "73",
+        "pattern": "textures/items/antifogvisor.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:itemUpgrade/4",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.15 over 3 colours, mask 0.51, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "73",
+        "pattern": "textures/items/antifogvisor.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:itemUpgrade/4",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/antifogvisor.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/atmanalyzer.png",
+      "before": {
+        "order": "74",
+        "pattern": "textures/items/atmanalyzer.png",
+        "handling": "REVIEW",
+        "plan": "C18a",
+        "units": "item:atmAnalyser",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "74",
+        "pattern": "textures/items/atmanalyzer.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:atmAnalyser",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/atmanalyzer.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/beaconfinder.png",
+      "before": {
+        "order": "76",
+        "pattern": "textures/items/beaconfinder.png",
+        "handling": "REVIEW",
+        "plan": "C17c",
+        "units": "item:beaconFinder",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.17 over 3 colours, mask 0.54, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "76",
+        "pattern": "textures/items/beaconfinder.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:beaconFinder",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/beaconfinder.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/bioniclegs.png",
+      "before": {
+        "order": "77",
+        "pattern": "textures/items/bioniclegs.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:itemUpgrade/2",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "77",
+        "pattern": "textures/items/bioniclegs.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:itemUpgrade/2",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/bioniclegs.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/earthbrightvisor.png",
+      "before": {
+        "order": "79",
+        "pattern": "textures/items/earthbrightvisor.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:itemUpgrade/5",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/entity/banner/half_vertical_right.png, scale -4 (overlap 0.17 over 3 colours, mask 0.54, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "79",
+        "pattern": "textures/items/earthbrightvisor.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:itemUpgrade/5",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/earthbrightvisor.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/landingboots.png",
+      "before": {
+        "order": "80",
+        "pattern": "textures/items/landingboots.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:itemUpgrade/3",
+        "reason": "AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "80",
+        "pattern": "textures/items/landingboots.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:itemUpgrade/3",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/landingboots.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/pressuretank0.png",
+      "before": {
+        "order": "81",
+        "pattern": "textures/items/pressuretank0.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "81",
+        "pattern": "textures/items/pressuretank0.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/pressuretank0.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/pressuretank1.png",
+      "before": {
+        "order": "82",
+        "pattern": "textures/items/pressuretank1.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "82",
+        "pattern": "textures/items/pressuretank1.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/pressuretank1.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/pressuretank2.png",
+      "before": {
+        "order": "83",
+        "pattern": "textures/items/pressuretank2.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "83",
+        "pattern": "textures/items/pressuretank2.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/pressuretank2.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/pressuretank3.png",
+      "before": {
+        "order": "84",
+        "pattern": "textures/items/pressuretank3.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "84",
+        "pattern": "textures/items/pressuretank3.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/pressuretank3.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/sawbladeiron.png",
+      "before": {
+        "order": "88",
+        "pattern": "textures/items/sawbladeiron.png",
+        "handling": "REVIEW",
+        "plan": "C16b",
+        "units": "item_variant:sawBladeIron/0 block:sawBlade",
+        "reason": "AR 16x texture set (#1889), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+      },
+      "after": {
+        "order": "88",
+        "pattern": "textures/items/sawbladeiron.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item_variant:sawBladeIron/0 block:sawBlade",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/sawbladeiron.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/spaceboots.png",
+      "before": {
+        "order": "93",
+        "pattern": "textures/items/spaceboots.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "possible vanilla derivation: 1.20.1:assets/minecraft/textures/item/chainmail_boots.png, orientation 0 (overlap 0.27 over 3 colours, mask 1.00, rank 0.64); origin review"
+      },
+      "after": {
+        "order": "93",
+        "pattern": "textures/items/spaceboots.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/spaceboots.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/spacechestplate.png",
+      "before": {
+        "order": "94",
+        "pattern": "textures/items/spacechestplate.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "possible vanilla derivation: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.28 over 3 colours, mask 0.61, rank 0.00); origin review"
+      },
+      "after": {
+        "order": "94",
+        "pattern": "textures/items/spacechestplate.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/spacechestplate.png"
+      ]
+    },
+    {
+      "pattern": "textures/armor/spacesuit_layer2_overlay.png",
+      "before": {
+        "order": "117",
+        "pattern": "textures/armor/spacesuit_layer2_overlay.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "shares pixels with textures/armor/spacesuit_layer2.png (SUSPECT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "117",
+        "pattern": "textures/armor/spacesuit_layer2_overlay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/armor/spacesuit_layer2_overlay.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/fuelingmachine.png",
+      "before": {
+        "order": "118",
+        "pattern": "textures/blocks/fuelingmachine.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:fuelingStation",
+        "reason": "shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "118",
+        "pattern": "textures/blocks/fuelingmachine.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:fuelingStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/fuelingmachine.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/guidancecomputer.png",
+      "before": {
+        "order": "119",
+        "pattern": "textures/blocks/guidancecomputer.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:guidanceComputer",
+        "reason": "shares pixels with textures/blocks/fuelingmachine.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "119",
+        "pattern": "textures/blocks/guidancecomputer.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:guidanceComputer",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/guidancecomputer.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machinenuclear.png",
+      "before": {
+        "order": "120",
+        "pattern": "textures/blocks/machinenuclear.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:nuclearcore",
+        "reason": "shares pixels with textures/blocks/atmospheredetector.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "120",
+        "pattern": "textures/blocks/machinenuclear.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:nuclearcore",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machinenuclear.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machineprecisionlaseretcher.png",
+      "before": {
+        "order": "121",
+        "pattern": "textures/blocks/machineprecisionlaseretcher.png",
+        "handling": "REVIEW",
+        "plan": "C16c",
+        "units": "block:precisionlaseretcher",
+        "reason": "shares pixels with textures/blocks/beacon.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "121",
+        "pattern": "textures/blocks/machineprecisionlaseretcher.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:precisionlaseretcher",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machineprecisionlaseretcher.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorfront.png",
+      "before": {
+        "order": "122",
+        "pattern": "textures/blocks/monitorfront.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "shares pixels with textures/blocks/laserfront.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "122",
+        "pattern": "textures/blocks/monitorfront.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorfront.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorrear.png",
+      "before": {
+        "order": "123",
+        "pattern": "textures/blocks/monitorrear.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "shares pixels with textures/blocks/crystallizer_active.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "123",
+        "pattern": "textures/blocks/monitorrear.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorrear.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorrocket.png",
+      "before": {
+        "order": "124",
+        "pattern": "textures/blocks/monitorrocket.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "shares pixels with textures/blocks/monitorfrontright.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "124",
+        "pattern": "textures/blocks/monitorrocket.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorrocket.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/monitorsatellite.png",
+      "before": {
+        "order": "125",
+        "pattern": "textures/blocks/monitorsatellite.png",
+        "handling": "REVIEW",
+        "plan": "C17a",
+        "units": "block:monitoringStation",
+        "reason": "shares pixels with textures/blocks/monitorfrontright.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "125",
+        "pattern": "textures/blocks/monitorsatellite.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:monitoringStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/monitorsatellite.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/panelsideworkstation.png",
+      "before": {
+        "order": "126",
+        "pattern": "textures/blocks/panelsideworkstation.png",
+        "handling": "REVIEW",
+        "plan": "C18b",
+        "units": "block:suitWorkStation",
+        "reason": "shares pixels with textures/blocks/panelside.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "126",
+        "pattern": "textures/blocks/panelsideworkstation.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:suitWorkStation",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/panelsideworkstation.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/buttonautoeject_hover.png",
+      "before": {
+        "order": "128",
+        "pattern": "textures/gui/buttons/buttonautoeject_hover.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "128",
+        "pattern": "textures/gui/buttons/buttonautoeject_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/buttonautoeject_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/buttonautoeject_pressed.png",
+      "before": {
+        "order": "129",
+        "pattern": "textures/gui/buttons/buttonautoeject_pressed.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "129",
+        "pattern": "textures/gui/buttons/buttonautoeject_pressed.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/buttonautoeject_pressed.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/buttonredstoneinverted.png",
+      "before": {
+        "order": "130",
+        "pattern": "textures/gui/buttons/buttonredstoneinverted.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/tabtemplate.png (SUSPECT, same), whose origin finding EXCLUDED; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "130",
+        "pattern": "textures/gui/buttons/buttonredstoneinverted.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/buttonredstoneinverted.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/copy.png",
+      "before": {
+        "order": "131",
+        "pattern": "textures/gui/buttons/copy.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonredstoneinverted.png (SUSPECT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "131",
+        "pattern": "textures/gui/buttons/copy.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/copy.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/copy_hover.png",
+      "before": {
+        "order": "132",
+        "pattern": "textures/gui/buttons/copy_hover.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/copy.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "132",
+        "pattern": "textures/gui/buttons/copy_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/copy_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/kill.png",
+      "before": {
+        "order": "133",
+        "pattern": "textures/gui/buttons/kill.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "133",
+        "pattern": "textures/gui/buttons/kill.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/kill.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/kill_hover.png",
+      "before": {
+        "order": "134",
+        "pattern": "textures/gui/buttons/kill_hover.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonredstoneinverted.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "134",
+        "pattern": "textures/gui/buttons/kill_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/kill_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabdata.png",
+      "before": {
+        "order": "135",
+        "pattern": "textures/gui/buttons/tabdata.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "135",
+        "pattern": "textures/gui/buttons/tabdata.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabdata.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabdata_hover.png",
+      "before": {
+        "order": "136",
+        "pattern": "textures/gui/buttons/tabdata_hover.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "136",
+        "pattern": "textures/gui/buttons/tabdata_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabdata_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabguidance.png",
+      "before": {
+        "order": "137",
+        "pattern": "textures/gui/buttons/tabguidance.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/tabdata_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "137",
+        "pattern": "textures/gui/buttons/tabguidance.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabguidance.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabguidance_hover.png",
+      "before": {
+        "order": "138",
+        "pattern": "textures/gui/buttons/tabguidance_hover.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/buttons/tabdata_hover.png (HIT, same), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "138",
+        "pattern": "textures/gui/buttons/tabguidance_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabguidance_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabplanet.png",
+      "before": {
+        "order": "139",
+        "pattern": "textures/gui/buttons/tabplanet.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:warpMonitor",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "139",
+        "pattern": "textures/gui/buttons/tabplanet.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:warpMonitor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabplanet.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabplanet_hover.png",
+      "before": {
+        "order": "140",
+        "pattern": "textures/gui/buttons/tabplanet_hover.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:warpMonitor",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "140",
+        "pattern": "textures/gui/buttons/tabplanet_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:warpMonitor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabplanet_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabwarp.png",
+      "before": {
+        "order": "141",
+        "pattern": "textures/gui/buttons/tabwarp.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:warpMonitor",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "141",
+        "pattern": "textures/gui/buttons/tabwarp.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:warpMonitor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabwarp.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/buttons/tabwarp_hover.png",
+      "before": {
+        "order": "142",
+        "pattern": "textures/gui/buttons/tabwarp_hover.png",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "block:warpMonitor",
+        "reason": "shares pixels with textures/gui/buttons/buttonautoeject.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "142",
+        "pattern": "textures/gui/buttons/tabwarp_hover.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:warpMonitor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/buttons/tabwarp_hover.png"
+      ]
+    },
+    {
+      "pattern": "textures/gui/warning.png",
+      "before": {
+        "order": "143",
+        "pattern": "textures/gui/warning.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares pixels with textures/gui/progressbars/progressbars.png (HIT, region), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "143",
+        "pattern": "textures/gui/warning.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/gui/warning.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/spaceboots_overlay.png",
+      "before": {
+        "order": "144",
+        "pattern": "textures/items/spaceboots_overlay.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "shares pixels with textures/items/space_boots.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "144",
+        "pattern": "textures/items/spaceboots_overlay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/spaceboots_overlay.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/spacechestplate_overlay.png",
+      "before": {
+        "order": "145",
+        "pattern": "textures/items/spacechestplate_overlay.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "shares pixels with textures/items/space_chestplate.png (HIT, same), whose derivation verdict SUSPECT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "145",
+        "pattern": "textures/items/spacechestplate_overlay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/spacechestplate_overlay.png"
+      ]
+    },
+    {
+      "pattern": "textures/items/spacehelmet_overlay.png",
+      "before": {
+        "order": "146",
+        "pattern": "textures/items/spacehelmet_overlay.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "shares pixels with textures/items/space_helmet.png (HIT, same), whose derivation verdict HIT; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "146",
+        "pattern": "textures/items/spacehelmet_overlay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/items/spacehelmet_overlay.png"
+      ]
+    },
+    {
+      "pattern": "textures/armor/spacesuit_layer1_overlay.png",
+      "before": {
+        "order": "148",
+        "pattern": "textures/armor/spacesuit_layer1_overlay.png",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "shares pixels with textures/armor/spacesuit_layer2_overlay.png (SUSPECT, region), whose handling is REVIEW; origin review inherited (ADR-061 section 4.8)"
+      },
+      "after": {
+        "order": "148",
+        "pattern": "textures/armor/spacesuit_layer1_overlay.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/armor/spacesuit_layer1_overlay.png"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/fluid/lava_*",
+      "before": {
+        "order": "171",
+        "pattern": "textures/blocks/fluid/lava_*",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "-",
+        "reason": "shares the vanilla lava file names; origin review"
+      },
+      "after": {
+        "order": "171",
+        "pattern": "textures/blocks/fluid/lava_*",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/fluid/lava_flow.png",
+        "textures/blocks/fluid/lava_flow.png.mcmeta",
+        "textures/blocks/fluid/lava_still.png",
+        "textures/blocks/fluid/lava_still.png.mcmeta"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/machinegeneric.png",
+      "before": {
+        "order": "200",
+        "pattern": "textures/blocks/machinegeneric.png",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "libvulpes:java/blockAdvStructureBlock",
+        "reason": "byte-identical to the LibVulpes casing taken from an unmerged third-party pull request (984d6747); authorship review"
+      },
+      "after": {
+        "order": "200",
+        "pattern": "textures/blocks/machinegeneric.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "libvulpes:java/blockAdvStructureBlock",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/machinegeneric.png"
+      ]
+    },
+    {
+      "pattern": "models/item/models/motor.*",
+      "before": {
+        "order": "201",
+        "pattern": "models/item/models/motor.*",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "libvulpes:java/blockMotor",
+        "reason": "motor model shared with LibVulpes; its MTL names a texture Advanced Rocketry does not ship; source not established"
+      },
+      "after": {
+        "order": "201",
+        "pattern": "models/item/models/motor.*",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "libvulpes:java/blockMotor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "models/item/models/motor.mtl",
+        "models/item/models/motor.obj"
+      ]
+    },
+    {
+      "pattern": "sounds/*.ogg",
+      "before": {
+        "order": "209",
+        "pattern": "sounds/*.ogg",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine",
+        "reason": "no embedded attribution; confirm authorship before import"
+      },
+      "after": {
+        "order": "209",
+        "pattern": "sounds/*.ogg",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "sounds/airhissloop.ogg",
+        "sounds/basiclasergun.ogg",
+        "sounds/combustionrocket.ogg",
+        "sounds/electricshocksmall.ogg",
+        "sounds/gravityohhh.ogg",
+        "sounds/laserdrill.ogg",
+        "sounds/lathe.ogg",
+        "sounds/machinelarge.ogg",
+        "sounds/railgunbang.ogg",
+        "sounds/rollingmachine.ogg"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/forcefield.png*",
+      "before": {
+        "order": "255",
+        "pattern": "textures/blocks/forcefield.png*",
+        "handling": "REVIEW",
+        "plan": "C17b",
+        "units": "-",
+        "reason": "shares a vanilla file name; origin review"
+      },
+      "after": {
+        "order": "255",
+        "pattern": "textures/blocks/forcefield.png*",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "-",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/forcefield.png",
+        "textures/blocks/forcefield.png.mcmeta"
+      ]
+    },
+    {
+      "pattern": "textures/blocks/beacon.png",
+      "before": {
+        "order": "256",
+        "pattern": "textures/blocks/beacon.png",
+        "handling": "REVIEW",
+        "plan": "C17c",
+        "units": "block:beacon",
+        "reason": "same name as a vanilla texture; compare before import"
+      },
+      "after": {
+        "order": "256",
+        "pattern": "textures/blocks/beacon.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:beacon",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/blocks/beacon.png"
+      ]
+    },
+    {
+      "pattern": "models/motor.obj",
+      "before": {
+        "order": "352",
+        "pattern": "models/motor.obj",
+        "handling": "REVIEW",
+        "plan": "C16a",
+        "units": "libvulpes:java/blockMotor",
+        "reason": "motor model resembling the LibVulpes motor; source not established"
+      },
+      "after": {
+        "order": "352",
+        "pattern": "models/motor.obj",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "libvulpes:java/blockMotor",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "models/motor.obj"
+      ]
+    },
+    {
+      "pattern": "textures/models/beacon.png",
+      "before": {
+        "order": "372",
+        "pattern": "textures/models/beacon.png",
+        "handling": "REVIEW",
+        "plan": "C17c",
+        "units": "block:beacon",
+        "reason": "shares a vanilla file name; origin review"
+      },
+      "after": {
+        "order": "372",
+        "pattern": "textures/models/beacon.png",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "block:beacon",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "textures/models/beacon.png"
+      ]
+    }
+  ],
+  "retained_review": []
+}

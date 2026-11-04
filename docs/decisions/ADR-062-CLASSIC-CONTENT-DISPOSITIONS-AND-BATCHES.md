@@ -2,8 +2,10 @@
 
 ```yaml
 status: ACCEPTED
-revision: 6
+revision: 7
 date: 2026-10-02
+revision_7_date: 2026-11-04
+revision_7_basis: owner G1-G8 and D5 decisions, R304, in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md
 revision_6_date: 2026-10-31
 revision_6_basis: owner scope decisions D2, D3, D4 and D6 recorded on 2026-10-31
 deciders: [sunthemoon]
@@ -15,7 +17,7 @@ target_version: v1.8.0
 development_dependency: ADR-060, ADR-061
 revisits: ADR-018 (campaign trigger, proposal for the owner in section 8), ADR-046 (station screens), ADR-049 (satellite bay, spy telescope, star-map overlay), ADR-051 (physical asteroid fields, observatory, rocket mining), ADR-055 (line and spiral modes), ADR-056 (cross-system cargo), ADR-057 (black-hole sky), ADR-058 (station gravity block, non-player fields, legacy gravity API), ADR-059 (capsule visuals)
 supersedes: ""
-import_allowlist_sha256: c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe
+import_allowlist_sha256: 33cd7effde14451527d3cac69f8dec13da390474459c9b37b19b67ace72a72d9
 ```
 
 ## Context
@@ -405,6 +407,42 @@ for the corresponding origin findings and asset-plan rules.
 | `textures/planets/waterworld.png` | `9826c8d0573ceacb2a1bda39cf5205e1d1243ce23981fb6ed7015b3339147c6c` | E | D3 D4 D6 | AUDIT-01.csv line 155: plan rule 115 textures/planets/waterworld.png REVIEW (coverage rule_order 115); allowlist REVIEW; derivation CLEAR related 3; no file under src/ has the source SHA-256; legacy consumers: DimensionProperties and the 1.12.2 sky renderers; runtime: nothing; the planetary and station sky are six fixed code meshes with no textures (client/sky/PlanetarySkyRenderer.java), the black-hole sky and accretion disc are drawn from code (client/sky/SingularitySkyGeometry.java, client/AccretionDiscRenderer.java) Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. |
 | `textures/planets/waterworldleo.jpg` | `80eb16178e76030109c1201ada339963a2a0aef328cbd3fda8307fe9da5694e2` | E | D4 D6 | AUDIT-01.csv line 156: plan rule 204 textures/planets/*leo.jpg REVIEW (coverage rule_order 203); allowlist REVIEW; derivation UNSUPPORTED; no file under src/ has the source SHA-256; legacy consumer DimensionProperties (low-orbit image); runtime: nothing; the planetary and station sky are six fixed code meshes with no textures (client/sky/PlanetarySkyRenderer.java), the black-hole sky and accretion disc are drawn from code (client/sky/SingularitySkyGeometry.java, client/AccretionDiscRenderer.java) Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. |
 
+## Revision 7 — remaining REVIEW assets excluded (2026-11-04)
+
+The [owner's decision record](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md),
+G1-G8 and R304, accepts [W268's per-file proposal](../work/v1.8.0-w268-review-closure/PROPOSAL.md)
+with one amendment: G7 excludes all ten legacy OGGs because the owner accepted all ten NEW sounds under D5 and
+chose to keep them. The superseded G7 REVIEW proposal remains visible in that proposal. Both
+`sounds/lathe.ogg` and `sounds/rollingmachine.ogg` are excluded, although they contain the same recording.
+
+All 95 remaining REVIEW files in 81 rules become EXCLUDE, and their plan becomes `-`. Their owning units and
+rule order stay unchanged. The allowlist loses exactly those 95 REVIEW entries (247 to 152); every remaining
+ceiling is unchanged. The current handling below supersedes earlier asset totals, which remain historical.
+
+| Handling | Before revision 7 | After revision 7 |
+|---|---:|---:|
+| IMPORT | 0 | 0 |
+| REVIEW | 95 | 0 |
+| REGENERATE | 444 | 444 |
+| EXCLUDE | 270 | 365 |
+| IMPORTED | 89 | 89 |
+
+The manifest still contains 898 assets. The proposal's rebuilt evidence identifies the exact files, source
+hashes, first-match rules, consumers and retained replacements. The findings name `sunthemoon`, the review date
+2026-11-04 and the owner decision record; they are EXCLUDED decisions, never CLEARED authorship findings.
+LibVulpes's casing/motor authorship chain remains unresolved under ADR-061 section 4.1.
+
+The accepted appearance boundaries retain modern machine faces without running-state faces, NEW tier icons,
+code/native-widget screens, the NEW non-dyeable suit, static enriched-lava sprites, project casing and NEW motor
+tiers, modern beacon/field presentation and NEW sounds. The old lava/force-field animations, dyeable leather
+suit layers and legacy GUI artwork are not reproduced. A later restoration needs NEW art or a separately
+authorized reopening of the excluded file. No gameplay unit, inventory, recipe or registered ID is removed.
+
+This revision adopts asset dispositions only. Root closes the ten `sound_event` ledger rows separately under
+R305. D7 record approval remains a separate task, as do V1/V2 and all version Required Gates. No Gate or release
+is approved here. The validator rejects unresolved reviewers, draft markers, draft basis wording and reuse of
+the proposal preparation date, and requires the added findings to cite a decision record rather than this ADR.
+
 ## Alternatives
 
 ### A. One ADR per deferred or rejected item
@@ -456,6 +494,11 @@ runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
 
 ## Review history
+
+- Revision 7: accepted by `sunthemoon` on 2026-11-04 through the
+  [recorded G1-G8/D5 decisions](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md), R304.
+  W274 adopts the reviewed W268 proposal with all 95 formerly REVIEW files excluded. Independent adoption
+  review is required before Root merges; this is not a claim that that review or any version Gate has passed.
 
 - Revision 1 (`f05eec2`): proposed with the C14 audit.
 - Revision 2: answers review round 1 (0 Critical, 2 High, 12 Medium, 7 Low,

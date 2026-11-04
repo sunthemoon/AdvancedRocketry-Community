@@ -10,7 +10,9 @@ import unittest
 from pathlib import Path
 
 from scripts.validate_v180_content_ledger import (ALLOWLIST, ASSET_PLAN, DERIVATION, INVENTORY, LEDGER,
-                                                  ORIGIN_FINDINGS, ROOT, validate)
+                                                  ORIGIN_ADOPTION_ASSETS, ORIGIN_ADOPTION_PREPARED_AT,
+                                                  ORIGIN_FINDINGS, PLAYER_IMPACT_PATH, ROOT,
+                                                  load_origin_findings, validate)
 from tools.audit.inventory_v180_content import (command_names, conditional, config_keys, lang_names,
                                                 registered_packets, strip_java_comments, unlocalized, variants)
 
@@ -27,6 +29,100 @@ COPIED = (
 )
 
 
+class OriginFindingAdoptionTests(unittest.TestCase):
+    """Exercise the tracked validator directly, including non-import EXCLUDED decisions."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        (self.root / PLAYER_IMPACT_PATH).parent.mkdir(parents=True)
+        (self.root / PLAYER_IMPACT_PATH).write_text("owner: sunthemoon\n", encoding="utf-8")
+        (self.root / ORIGIN_FINDINGS).parent.mkdir(parents=True)
+        self.record = "docs/fixture-decision.md"
+        (self.root / self.record).write_text("Synthetic decision: textures/blocks/beacon.png\n", encoding="utf-8")
+        self.reviewed = dict(asset="textures/blocks/beacon.png", decision="EXCLUDED", reviewer="sunthemoon",
+                             reviewed_at="2026-11-04", basis="Synthetic decision, not a real attestation.",
+                             review_record=self.record)
+
+    def _load(self, *findings):
+        (self.root / ORIGIN_FINDINGS).write_text(json.dumps(dict(schema_version=1, findings=findings)),
+                                               encoding="utf-8")
+        errors = []
+        decisions, _, _ = load_origin_findings(self.root, errors)
+        return decisions, errors
+
+    def test_cohort_matches_all_95_rebuilt_assets(self) -> None:
+        evidence = json.loads((ROOT / "docs/work/v1.8.0-w268-review-closure/REVIEW-EVIDENCE.json").read_bytes())
+        self.assertEqual(95, len(ORIGIN_ADOPTION_ASSETS))
+        self.assertEqual({entry["asset"] for entry in evidence["files"]}, ORIGIN_ADOPTION_ASSETS)
+
+    def test_reviewed_exclusion_and_historical_finding_pass(self) -> None:
+        historical = dict(asset="textures/blocks/laserbottom.png", decision="EXCLUDED", reviewer="sunthemoon",
+                          reviewed_at="2026-10-31", basis="Synthetic historical decision.",
+                          review_record=PLAYER_IMPACT_PATH.as_posix())
+        (self.root / PLAYER_IMPACT_PATH).write_text("owner: sunthemoon\ntextures/blocks/laserbottom.png\n",
+                                                  encoding="utf-8")
+        decisions, errors = self._load(historical, self.reviewed)
+        self.assertEqual([], errors)
+        self.assertEqual({historical["asset"]: "EXCLUDED", self.reviewed["asset"]: "EXCLUDED"}, decisions)
+
+    def test_placeholder_reviewers_fail_for_both_decisions(self) -> None:
+        for decision in ("CLEARED", "EXCLUDED"):
+            for reviewer in (None, 42, "", " ", "<OWNER_PENDING_DECISION>", "pending owner", "placeholder", "TODO", "TBD"):
+                with self.subTest(decision=decision, reviewer=reviewer):
+                    decisions, errors = self._load(dict(self.reviewed, decision=decision, reviewer=reviewer))
+                    self.assertEqual({}, decisions)
+                    self.assertTrue(any("reviewer placeholder" in error for error in errors), errors)
+
+    def test_draft_status_is_rejected_even_when_empty(self) -> None:
+        for status in (None, "", "PENDING_OWNER_NOT_A_REVIEW"):
+            with self.subTest(status=status):
+                decisions, errors = self._load(dict(self.reviewed, draft_status=status))
+                self.assertEqual({}, decisions)
+                self.assertTrue(any("draft_status" in error for error in errors), errors)
+
+    def test_draft_basis_wording_is_rejected(self) -> None:
+        for basis in ("DRAFT W268 R001", "not an owner decision", "PREPARATION  DATE only"):
+            with self.subTest(basis=basis):
+                decisions, errors = self._load(dict(self.reviewed, basis=basis))
+                self.assertEqual({}, decisions)
+                self.assertTrue(any("draft basis" in error for error in errors), errors)
+
+    def test_preparation_date_cannot_be_reused(self) -> None:
+        decisions, errors = self._load(dict(self.reviewed, reviewed_at=ORIGIN_ADOPTION_PREPARED_AT))
+        self.assertEqual({}, decisions)
+        self.assertTrue(any("preparation date is not a review date" in error for error in errors), errors)
+
+    def test_decision_record_required_instead_of_adr(self) -> None:
+        for record in (None, "", " ", PLAYER_IMPACT_PATH.as_posix(),
+                       "docs/../" + PLAYER_IMPACT_PATH.as_posix()):
+            with self.subTest(record=record):
+                decisions, errors = self._load(dict(self.reviewed, review_record=record))
+                self.assertEqual({}, decisions)
+                self.assertTrue(any("needs its decision record" in error for error in errors), errors)
+        missing = dict(self.reviewed)
+        del missing["review_record"]
+        self.assertTrue(any("needs its decision record" in error for error in self._load(missing)[1]))
+
+    def test_record_must_exist_name_asset_and_stay_under_docs(self) -> None:
+        (self.root / "docs/unrelated.md").write_text("No asset decision.\n", encoding="utf-8")
+        (self.root / "outside.md").write_text(self.reviewed["asset"], encoding="utf-8")
+        for record in ("docs/missing.md", "docs/unrelated.md", ORIGIN_FINDINGS.as_posix(),
+                       "docs/../docs/" + ORIGIN_FINDINGS.relative_to("docs").as_posix(), "outside.md"):
+            with self.subTest(record=record):
+                decisions, errors = self._load(dict(self.reviewed, review_record=record))
+                self.assertEqual({}, decisions)
+                self.assertTrue(any("cites a review record" in error for error in errors), errors)
+
+    def test_guard_checks_every_finding_and_non_objects(self) -> None:
+        valid = dict(asset="fixture-only", decision="EXCLUDED", reviewer="fixture-reviewer",
+                     reviewed_at="2099-01-01", basis="Synthetic fixture only.")
+        decisions, errors = self._load(valid, dict(self.reviewed, reviewer="TODO"), None)
+        self.assertEqual({"fixture-only": "EXCLUDED"}, decisions)
+        self.assertEqual(2, len(errors))
+
+
 class V180ContentLedgerTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -39,6 +135,10 @@ class V180ContentLedgerTests(unittest.TestCase):
         for relative in (INVENTORY, LEDGER, ASSET_PLAN, ALLOWLIST, DERIVATION):
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, self.root / relative)
+        # W274 findings cite the owner's group decision, including its file-scope annex.
+        decision = Path("docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md")
+        (self.root / decision).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / decision, self.root / decision)
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -73,6 +173,11 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def _write_findings(self, findings: list[dict[str, str]]) -> None:
         """Add findings to the repository's own (replacing any for the same asset)."""
+        # Synthetic decisions are local to this disposable fixture, not owner attestations.
+        record = "docs/work/v1.8.0-preparation/origin-fixture-decision.md"
+        (self.root / record).write_text("Synthetic fixture decisions only:\n" +
+                                       "\n".join(finding["asset"] for finding in findings), encoding="utf-8")
+        findings = [dict(finding, review_record=finding.get("review_record", record)) for finding in findings]
         existing = json.loads((ROOT / ORIGIN_FINDINGS).read_text(encoding="utf-8"))["findings"]
         assets = {finding["asset"] for finding in findings}
         merged = [finding for finding in existing if finding["asset"] not in assets] + findings
@@ -222,6 +327,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("asset plan: textures/font.png is IMPORT beyond its allowlist ceiling none", self._errors())
 
     def test_review_needs_a_cleared_finding_to_import(self) -> None:
+        self._restore_beacon_review_fixture(allowlist=True)
         self._set_rule("textures/blocks/beacon.png", handling="IMPORT")
         self.assertIn("asset plan: textures/blocks/beacon.png is IMPORT beyond its allowlist ceiling REVIEW",
                       self._errors())
@@ -229,6 +335,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         released = [f"textures/blocks/{name}.png" for name in (
             "laserfront", "machineelectrolyzer", "machineelectrolyzer_active", "precisionassemblerfront",
             "precisionassemblerfront_active", "railgun", "satelliteassembler")]
+        released += ["textures/blocks/controlpanel.png", "textures/blocks/cuttingmachine.png", "textures/blocks/cuttingmachine_active.png", "textures/blocks/fuelingmachine.png", "textures/blocks/machineprecisionlaseretcher.png"]
         self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "sunthemoon",
                                "reviewed_at": "2026-10-02", "basis": "compared with vanilla", "releases": released}])
         self.assertEqual([], self._errors())
@@ -266,13 +373,34 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any(error.endswith("model texture for block:nuclearrocketmotor lands in C18d, after its "
                                            "model (C17a)") for error in self._errors()))
 
+    def _restore_beacon_review_fixture(self, allowlist: bool = False) -> None:
+        # W268 adoption: restore the original row; all test assertions stay unchanged.
+        before = {'order': '256', 'pattern': 'textures/blocks/beacon.png', 'handling': 'REVIEW', 'plan': 'C17c', 'units': 'block:beacon', 'reason': 'same name as a vanilla texture; compare before import'}
+        self._set_rule(before["pattern"], **{k: v for k, v in before.items() if k != "pattern"})
+        if allowlist:
+            path = self.root / ALLOWLIST
+            kept = set(path.read_text(encoding="utf-8").splitlines())
+            kept.add("textures/blocks/beacon.png\tREVIEW")
+            raw = "".join(line + "\n" for line in sorted(kept)).encode("utf-8")
+            path.write_bytes(raw)
+            adr = self.root / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+            adr.write_text(re.sub(r"^import_allowlist_sha256:.*$",
+                                 "import_allowlist_sha256: " + hashlib.sha256(raw).hexdigest(),
+                                 adr.read_text(encoding="utf-8"), count=1, flags=re.M), encoding="utf-8")
+            findings = self.root / ORIGIN_FINDINGS
+            data = json.loads(findings.read_text(encoding="utf-8"))
+            data["findings"] = [f for f in data["findings"] if f["asset"] != "textures/blocks/beacon.png"]
+            findings.write_text(json.dumps(data), encoding="utf-8")
+
     def test_excluded_finding_forces_exclusion(self) -> None:
+        self._restore_beacon_review_fixture()
         self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "EXCLUDED", "reviewer": "maintainer",
                                "reviewed_at": "2026-10-02", "basis": "vanilla-derived"}])
         self.assertIn("asset plan: textures/blocks/beacon.png was excluded by an origin finding but is REVIEW",
                       self._errors())
 
     def test_import_for_a_deferred_unit_fails(self) -> None:
+        self._restore_beacon_review_fixture()
         self._set_rule("textures/blocks/beacon.png", units="block:terraformer")
         self.assertTrue(any("REVIEW for block:terraformer, which is DEFERRED" in error for error in self._errors()))
 
