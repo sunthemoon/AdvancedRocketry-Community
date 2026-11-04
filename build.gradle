@@ -203,11 +203,23 @@ def supersededW49Models = [
                                        // W260 (R286): preserve the v0.5 tank models, package their v1.8 replacements.
                                        'assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json',
                                        'assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json'] as Set,
-        'src/generated/v0.2/resources': ['assets/advancedrocketrycommunity/models/block/electrolyzer.json', 'assets/advancedrocketrycommunity/models/block/electrolyzer_active.json'] as Set,
+        'src/generated/v0.2/resources': ['assets/advancedrocketrycommunity/models/block/electrolyzer.json', 'assets/advancedrocketrycommunity/models/block/electrolyzer_active.json',
+                                         // W275 (R308): the v1.8 canister models bind NEW cylinder icons.
+                                         'assets/advancedrocketrycommunity/models/item/empty_canister.json', 'assets/advancedrocketrycommunity/models/item/oxygen_canister.json',
+                                         'assets/advancedrocketrycommunity/models/item/hydrogen_canister.json'] as Set,
         'src/generated/v0.4/resources': ['assets/advancedrocketrycommunity/models/item/space_suit_boots.json', 'assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json',
                                          'assets/advancedrocketrycommunity/models/item/space_suit_helmet.json', 'assets/advancedrocketrycommunity/models/item/space_suit_leggings.json'] as Set,
         'src/generated/v0.8/resources': ['assets/advancedrocketrycommunity/models/item/satellite_solar_module.json'] as Set,
-        'src/generated/v1.2/resources': ['assets/advancedrocketrycommunity/models/block/precision_assembler.json'] as Set,
+        'src/generated/v1.2/resources': ['assets/advancedrocketrycommunity/models/block/precision_assembler.json',
+                                         // W275 (R308): the v1.8 rolling machine, port and side models bind NEW art.
+                                         'assets/advancedrocketrycommunity/models/block/rolling_machine.json',
+                                         'assets/advancedrocketrycommunity/models/block/rolling_machine_item_input_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/rolling_machine_item_output_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/rolling_machine_fluid_input_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/rolling_machine_energy_input_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/precision_assembler_item_input_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json',
+                                         'assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json'] as Set,
         'src/generated/v1.5/resources': ['assets/advancedrocketrycommunity/models/block/warp_core.json'] as Set,
         'src/generated/v1.6/resources': ['assets/advancedrocketrycommunity/models/block/satellite_builder.json', 'assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json'] as Set,
         'src/generated/v1.7/resources': ['assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json', 'assets/advancedrocketrycommunity/models/block/railgun.json'] as Set
