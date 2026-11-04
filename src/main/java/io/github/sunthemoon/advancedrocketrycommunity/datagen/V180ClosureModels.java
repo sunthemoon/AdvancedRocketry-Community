@@ -24,7 +24,9 @@ public final class V180ClosureModels implements DataProvider {
         Map<String, JsonObject> files = new LinkedHashMap<>();
         files.put(MODELS + "block/electrolyzer.json", orientable("electrolyzer_front", null));
         files.put(MODELS + "block/electrolyzer_active.json", orientable("electrolyzer_front_active", null));
-        files.put(MODELS + "block/precision_assembler.json", orientable("precision_assembler_front", null));
+        JsonObject assembler = orientable("precision_assembler_front", null);
+        assembler.getAsJsonObject("textures").addProperty("side", texture("block/machine_panel_side"));
+        files.put(MODELS + "block/precision_assembler.json", assembler);
         JsonObject drill = orientable("orbital_laser_front", "orbital_laser_bottom");
         drill.getAsJsonObject("textures").addProperty("top", "minecraft:block/obsidian");
         files.put(MODELS + "block/orbital_laser_drill.json", drill);

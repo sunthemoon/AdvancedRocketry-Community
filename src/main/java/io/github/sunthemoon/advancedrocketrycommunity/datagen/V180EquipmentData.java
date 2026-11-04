@@ -19,7 +19,8 @@ import net.minecraft.data.PackOutput;
 /**
  * Original art and community recipes. The jetpack, hover upgrade, flight speed upgrade and workstation-top models name
  * provenance-bound imported textures; the retained NEW art they replaced is still generated but not referenced at
- * runtime, and its disposition is pending.
+ * runtime, and its disposition is pending. Pressure-tank models bind W275's separately generated cylinder icons;
+ * the earlier NEW tank PNGs remain byte-identical historical art.
  */
 public final class V180EquipmentData implements DataProvider {
     private static final String NS = "advancedrocketrycommunity";
@@ -40,6 +41,7 @@ public final class V180EquipmentData implements DataProvider {
                 case "jetpack" -> "item/jetpack_classic";
                 case "hover_upgrade" -> "item/hoverupgrade";
                 case "flight_speed_upgrade" -> "item/flightspeedupgrade";
+                case "low_pressure_tank", "pressure_tank", "high_pressure_tank", "super_high_pressure_tank" -> "item/" + id + "_cylinder";
                 default -> "item/" + id;
             };
             files.put(ASSETS + "models/item/" + id + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":" + texture + "\"}}"));
