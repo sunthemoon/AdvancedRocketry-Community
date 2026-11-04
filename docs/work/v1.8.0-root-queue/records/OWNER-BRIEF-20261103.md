@@ -4,6 +4,9 @@ Root: Claude. This brief collects every open v1.8 decision that the standing del
 ([OWNER-DECISIONS-20261101](OWNER-DECISIONS-20261101.md)) leaves with the owner. It is a summary for one sitting; the
 linked records hold the evidence. Nothing here is decided, and no Gate, version or release is marked passed.
 
+**Answered on 2026-11-04.** The owner's answers and Root's follow-up decisions are in
+[OWNER-DECISIONS-20261104](OWNER-DECISIONS-20261104.md). This brief is kept as it was sent.
+
 ## Where v1.8 stands
 
 - **Content.** Every ledger unit that does not wait on the owner is implemented. 16 units are still PLANNED: the five

@@ -101,12 +101,19 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 16 units are still PLANNED: C17a 4 and C17c 1
-  (the five loader variants, which wait for the escrow chain's admission and the bay; W153 delivered
-  the monitoring station and the linker), C18a 1 (the oxygen charger, owner decision D4) and C18d 10 (the ten sounds,
-  which wait for the owner's listen). `modelBakeEvent` is REDESIGNED since the K1 to K4 imports. The
-  backlog is in QUEUE.md.
-- **Assets.** 95 legacy assets are still under REVIEW (ADR-066 section 7.3), and no IMPORT file remains: the asset plan has 89 IMPORTED, 270 EXCLUDE and 444 REGENERATE files. W268 proposes closing 85 of the 95 as exclusions in an ADR-062 revision 7 draft and keeping the ten legacy sounds under REVIEW until D5; the owner decides, and D7 stays the owner's.
+- **Ledger.** 16 units are still PLANNED: C17a 4 and C17c 1 (the five loader variants, which wait for the escrow
+  chain's admission and the bay; W153 delivered the monitoring station and the linker), C18a 1 (the gas charge pad: on
+  2026-11-04 the owner chose option A, so the row closes on O1's evidence and W174's automatic charging moves to v1.9,
+  R307) and C18d 10 (the ten sounds, which passed the owner's listen on 2026-11-04 and close after W274's merge,
+  R305). `modelBakeEvent` is REDESIGNED since the K1 to K4 imports. The backlog is in QUEUE.md.
+- **Assets.** 95 legacy assets are still under REVIEW (ADR-066 section 7.3), and no IMPORT file remains: the asset
+  plan has 89 IMPORTED, 270 EXCLUDE and 444 REGENERATE files. On 2026-11-04 the owner accepted all eight groups of
+  W268's proposal, G7 by choosing the NEW audio
+  ([OWNER-DECISIONS-20261104](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md)); W274 (R304) adopts
+  ADR-062 revision 7 with all 95 files as EXCLUDE. The owner's D7 review passed the 30 pending v1.8 provenance
+  records, which W276 (R306) sets to APPROVED after W274. The owner also reported stand-in art (vanilla textures on
+  machine and port faces, drawer-like port sides, glass-bottle canisters); W275 and W277 (R308) replace it with NEW
+  art, which the owner then looks at in game.
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   [W176](../work/v1.8.0-root-queue/records/W176.md), merged at `7c9e5f7e9`, also ran nine B3-D
   S1 rows: six passed and three historical-JAR downgrade rows failed. Those downgrade rows rewrote
@@ -177,7 +184,10 @@ What is still open:
   (three O3J allowlist names; one journal-policy link). R202's three persisted-phase rows use fixture-owned stores and
   claim nothing about when production writes those phases. W176's three failed downgrade rows retain their recorded status.
 - **V1 and V2.** No slice has real-GPU or two-client evidence. W269 (merged `f85573938`) provides the campaign-only
-  gate the bay exit's two-client V2 session needs (W254-V2-CHECKLIST section 0.1); it runs no campaign.
+  gate the bay exit's two-client V2 session needs (W254-V2-CHECKLIST section 0.1); it runs no campaign. On 2026-11-04
+  the owner suspended the final campaign: for now a complete step-by-step test in single-player is enough, and
+  multiplayer and performance (the two-client V2 sessions, the docs/17 reference node and the joint four-hour soak)
+  come last. Nothing is marked passed or waived by this.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
   R32-03 tests (W61), and the v1.8 import root (W52F). Hosted governance run 38671573901 passed
@@ -193,6 +203,11 @@ What is still open:
   merged (`5586e19e6`), so its old “acceptance before code” wording is superseded.
   On 2026-10-30 Root added a fifteenth row: the risk scope to accept, or keep disabled, before each
   admission switch (W203's question 4).
+  On 2026-11-04 the owner answered the brief of 2026-11-03
+  ([OWNER-DECISIONS-20261104](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md)): D5 and D7 passed, all
+  eight W268 groups are accepted, the gas charge pad's automatic charging moves to v1.9 (option A), sleeping off-world
+  keeps the existing respawn point, and the campaign is suspended in favour of a single-player step-by-step test. The
+  risk decisions (W203-Q4 and D14) remain open.
 - **Performance at the bounds.** W128's 2026-10-21 synchronous baseline remains historical evidence:
   on the development host, the satellite registry's checkpoint, coalesced flush and autosave at a
   16.7 MB root took about 450 to 900 ms at P95 and P99, and the rocket transaction journal's

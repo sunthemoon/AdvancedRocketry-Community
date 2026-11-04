@@ -35,3 +35,8 @@ Not decided in this sitting (still open): D5 (the listen of the ten NEW sounds),
 review of the fourteen pending records), W203-Q4 and D14 (the per-interaction and release risk dispositions, after
 their evidence exists), D13 (a log sweep Root does first), D14-log (at release review), the final unified campaign
 and the release itself.
+
+**Superseded in part on 2026-11-04.** The owner moved the gas charge pad's automatic charging to v1.9
+([OWNER-DECISIONS-20261104](OWNER-DECISIONS-20261104.md), option A): v1.8 ships PAD-D4's O1 exchange for every player,
+so the part of PAD-D4 that kept automatic charging for dedicated servers and LAN guests in v1.8 no longer applies. The
+same record closes D5 and D7.
