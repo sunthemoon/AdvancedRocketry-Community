@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 
 /** Two detached slot views and fixed vanilla menu button intents. */
 public final class SuitWorkstationMenu extends AbstractContainerMenu {
+    public static final int INVENTORY_Y = 120;
+    public static final int HOTBAR_Y = 178;
     private final SuitWorkstationBlockEntity owner;
     private final Player viewer;
     private long lastIntent = Long.MIN_VALUE;
@@ -27,9 +29,9 @@ public final class SuitWorkstationMenu extends AbstractContainerMenu {
         SimpleContainer client = new SimpleContainer(2);
         addSlot(new HeldSlot(client, 0, 26, 30)); addSlot(new HeldSlot(client, 1, 134, 30));
         for (int row = 0; row < 3; row++) { for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, 9 + row * 9 + column, 8 + column * 18, 108 + row * 18));
+            addSlot(new Slot(inventory, 9 + row * 9 + column, 8 + column * 18, INVENTORY_Y + row * 18));
         } }
-        for (int column = 0; column < 9; column++) { addSlot(new Slot(inventory, column, 8 + column * 18, 166)); }
+        for (int column = 0; column < 9; column++) { addSlot(new Slot(inventory, column, 8 + column * 18, HOTBAR_Y)); }
     }
     public SuitWorkstationBlockEntity owner() { return owner; }
     @Override public boolean stillValid(Player player) { return player == viewer && (owner == null || owner.admitted(player)); }

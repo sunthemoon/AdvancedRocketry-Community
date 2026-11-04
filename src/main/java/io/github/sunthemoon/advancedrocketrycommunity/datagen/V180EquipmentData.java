@@ -95,7 +95,7 @@ public final class V180EquipmentData implements DataProvider {
         names.put("block." + NS + ".suit_workstation", chinese ? "宇航服工作站" : "Suit Workstation");
         names.put("enchantment." + NS + ".space_breathing", chinese ? "太空呼吸" : "Space Breathing");
         names.put("screen." + NS + ".suit.install", chinese ? "安装" : "Install");
-        names.put("screen." + NS + ".suit.remove_hint", chinese ? "−：取出；Shift：移入背包" : "-: remove; Shift: move to inventory");
+        names.put("screen." + NS + ".suit.remove_hint", chinese ? "−：取出；Shift+−：存入背包" : "-: remove; Shift+-: stow");
         return Map.copyOf(names);
     }
     /** Distinct silhouettes for tanks, harness, arrows, brace, sole and visors, all drawn here. */

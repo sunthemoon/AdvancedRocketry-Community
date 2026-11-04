@@ -18,6 +18,15 @@ import net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper;
 public final class TankContainerExchange {
     public record Plan(FluidStack fluid, CanisterStackSwap.Plan slots) { }
 
+    /** Capability presence distinguishes inspection from a failed container exchange, not transfer eligibility. */
+    public static boolean isFluidContainer(ItemStack held) {
+        return isFluidContainer(held, stack -> stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve().orElse(null));
+    }
+
+    static boolean isFluidContainer(ItemStack held, Function<ItemStack, IFluidHandlerItem> factory) {
+        return !held.isEmpty() && factory.apply(held) != null;
+    }
+
     public static Optional<Plan> plan(ItemStack held, List<ItemStack> storage, FluidStack fluid, int capacity) {
         return plan(held, storage, fluid, capacity, unit ->
                 unit.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve().orElse(null));

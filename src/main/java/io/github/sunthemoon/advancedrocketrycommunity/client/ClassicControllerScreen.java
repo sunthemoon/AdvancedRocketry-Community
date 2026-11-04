@@ -15,6 +15,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 /** Original drawn panel. The client projects server scalars and sends no machine actions. */
 public final class ClassicControllerScreen extends AbstractContainerScreen<ClassicControllerMenu> {
+    public static final String ENERGY_TEXT_KEY = "screen.advancedrocketrycommunity.classic.stored_energy";
     public ClassicControllerScreen(ClassicControllerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title); imageWidth = 220; imageHeight = 128;
     }
@@ -29,7 +30,7 @@ public final class ClassicControllerScreen extends AbstractContainerScreen<Class
         graphics.drawString(font, title, 12, 12, 0x253C40, false);
         graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.classic.formed", menu.formed()), 12, 32, 0x253C40, false);
         graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.classic.progress", menu.progress(), menu.duration()), 12, 73, 0x253C40, false);
-        graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.classic.energy", menu.energy()), 12, 88, 0x253C40, false);
+        graphics.drawString(font, Component.translatable(ENERGY_TEXT_KEY, menu.energy()), 12, 88, 0x253C40, false);
         graphics.drawString(font, Component.translatable(menu.reason().key()), 12, 105, 0x253C40, false);
     }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partial) {

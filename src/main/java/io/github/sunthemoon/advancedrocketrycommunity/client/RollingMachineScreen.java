@@ -89,8 +89,7 @@ public final class RollingMachineScreen extends AbstractContainerScreen<RollingM
         graphics.fill(x + 4, y + 17, x + imageWidth - 4, y + 113, 0xB5091014);
         graphics.renderOutline(x + 4, y + 17, imageWidth - 8, 96, 0xFF53676E);
 
-        drawSlot(graphics, x + 26, y + 38);
-        drawSlot(graphics, x + 150, y + 38);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, SLOT_EDGE, RECESS);
         drawVerticalGauge(
                 graphics,
                 x + 58,
@@ -211,11 +210,6 @@ public final class RollingMachineScreen extends AbstractContainerScreen<RollingM
         graphics.pose().scale(scale, scale, 1.0F);
         graphics.drawCenteredString(font, text, 0, 0, color);
         graphics.pose().popPose();
-    }
-
-    private static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, SLOT_EDGE);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, RECESS);
     }
 
     private static void drawVerticalGauge(

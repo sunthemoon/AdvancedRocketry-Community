@@ -73,7 +73,7 @@ public final class PressurizedTankBlock extends BaseEntityBlock {
             player.displayClientMessage(Component.translatable("message.advancedrocketrycommunity.tank.repair"), true);
             return InteractionResult.FAIL;
         }
-        if (player.getItemInHand(hand).isEmpty()) {
+        if (!TankContainerExchange.isFluidContainer(player.getItemInHand(hand))) {
             var fluid = tank.fluidState();
             player.displayClientMessage(Component.translatable("message.advancedrocketrycommunity.tank.contents",
                     fluid.isEmpty() ? Component.translatable("message.advancedrocketrycommunity.tank.empty")

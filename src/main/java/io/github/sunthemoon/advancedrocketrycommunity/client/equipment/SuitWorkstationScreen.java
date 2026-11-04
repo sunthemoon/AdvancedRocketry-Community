@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client.equipment;
 
+import io.github.sunthemoon.advancedrocketrycommunity.client.ContainerSlotBackground;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.workstation.SuitWorkstationMenu;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,9 +12,12 @@ import net.minecraft.world.item.ItemStack;
 
 /** Physical-client presentation only. Fixed intents never carry item data. */
 public final class SuitWorkstationScreen extends AbstractContainerScreen<SuitWorkstationMenu> {
+    public static final int PANEL_HEIGHT = 202;
+    public static final int HINT_Y = 94;
+    public static final int INVENTORY_TITLE_Y = 108;
     private final Button[] removeButtons = new Button[3];
     public SuitWorkstationScreen(SuitWorkstationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title); imageHeight = 190; inventoryLabelY = 96;
+        super(menu, inventory, title); imageHeight = PANEL_HEIGHT; inventoryLabelY = INVENTORY_TITLE_Y;
     }
     @Override protected void init() {
         super.init();
@@ -36,20 +40,23 @@ public final class SuitWorkstationScreen extends AbstractContainerScreen<SuitWor
     }
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         super.renderLabels(g, mouseX, mouseY);
-        g.drawString(font, Component.translatable("screen.advancedrocketrycommunity.suit.remove_hint"), 8, 88, 0xff243440, false);
+        g.drawString(font, Component.translatable("screen.advancedrocketrycommunity.suit.remove_hint"), 8, HINT_Y, 0xff243440, false);
     }
     @Override protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xff243440);
         g.fill(leftPos + 3, topPos + 3, leftPos + imageWidth - 3, topPos + imageHeight - 3, 0xffd2d8cf);
-        for (var slot : menu.slots) { g.fill(leftPos + slot.x - 1, topPos + slot.y - 1,
-                leftPos + slot.x + 17, topPos + slot.y + 17, 0xff667c7b); }
+        ContainerSlotBackground.draw(g, menu.slots, leftPos, topPos, 0xff667c7b, 0xff243440);
         var modules = ArmorEquipment.modules(menu.getSlot(0).getItem());
         var part = ArmorEquipment.part(menu.getSlot(0).getItem());
         for (int i = 0; part != null && i < part.positions(); i++) {
-            g.fill(leftPos + 44 + i * 40, topPos + 55, leftPos + 62 + i * 40, topPos + 73, 0xff667c7b);
+            drawSlot(g, leftPos + 44 + i * 40, topPos + 55);
         }
         if (modules != null) { for (var module : modules) {
             g.renderItem(ItemStack.of(module.stack()), leftPos + 45 + module.position() * 40, topPos + 56);
         } }
+    }
+    private static void drawSlot(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 18, 0xff667c7b);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xff243440);
     }
 }
