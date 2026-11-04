@@ -133,7 +133,7 @@ class V180StandInArtTest {
             assertEquals("NEW", entry.get("status").getAsString());
             assertEquals("MIT", entry.get("license").getAsString());
             assertEquals(sha(Files.readAllBytes(Path.of(path))), entry.get("target_sha256").getAsString(), path);
-            assertEquals(sha(Files.readAllBytes(Path.of(entry.get("source_path").getAsString()))), entry.get("source_sha256").getAsString(), path);
+            assertEquals(sourceHash(entry), entry.get("source_sha256").getAsString(), path);
         }
         assertEquals(expected, actual);
         String status = record.getAsJsonObject("review").get("status").getAsString();
@@ -178,5 +178,18 @@ class V180StandInArtTest {
 
     private static String sha(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+
+    private static String sourceHash(JsonObject entry) throws Exception {
+        String path = entry.get("source_path").getAsString();
+        // Shared providers may change for a later slice; their recorded revision remains auditable.
+        assertTrue(entry.has("authoring_commit"), path);
+        String revision = entry.get("authoring_commit").getAsString();
+        assertTrue(revision.matches("[0-9a-f]{40}"), path);
+        Process git = new ProcessBuilder("git", "show", revision + ":" + path).start();
+        byte[] bytes = git.getInputStream().readAllBytes();
+        assertTrue(git.waitFor(10, TimeUnit.SECONDS));
+        assertEquals(0, git.exitValue(), path);
+        return sha(bytes);
     }
 }
