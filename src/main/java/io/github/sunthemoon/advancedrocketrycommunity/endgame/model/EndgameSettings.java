@@ -3,8 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.model;
 import java.util.Objects;
 
 /**
- * ADR-054 sections 1, 4, 6 and 9: the framework switches and limits, read at each use so a config reload applies on
- * the next tick. Limits can only be lowered below their {@link EndgameLimits} maxima.
+ * ADR-054 sections 1, 4, 6 and 9: the framework switches and limits, read from Forge's loaded configuration at each
+ * use. File edits require a restart for reliable application; reading these settings does not reload the file.
+ * Limits can only be lowered below their {@link EndgameLimits} maxima.
  */
 public record EndgameSettings(boolean laserDrill, boolean laserPhysicalMining, boolean railgun,
                               boolean blackHoleGenerator, boolean gravityField, boolean spaceElevator,
