@@ -146,12 +146,11 @@
     }
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "405f659a116d4292bc7cb8706e075b8243055d8cb7e9badeab19dbf3b4110b34",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": [
-      "Development icon only; legacy IMPORT asset and real-client V1/V2 remain open."
-    ]
+    "findings": [],
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   }
 }

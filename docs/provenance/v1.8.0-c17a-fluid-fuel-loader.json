@@ -353,11 +353,12 @@
   "license": "MIT",
   "preauthoring_record": "docs/provenance/v1.8.0-c17a-fluid-fuel-loader-preauthoring.md",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "40ad8336db0d8f4f055bf8297070eabfb3f9722d7f9eec543523bcfbf13a449b",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 2,
   "screening": {

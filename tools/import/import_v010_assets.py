@@ -224,20 +224,23 @@ def pending_review(digest: str) -> dict[str, Any]:
 
 
 def validate_review(value: object, digest: str) -> dict[str, Any]:
-    if not isinstance(value, dict) or set(value) != {
+    required = {
         "status",
         "content_digest",
         "reviewer",
         "reviewed_at",
         "findings",
-    }:
+    }
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - {"basis"}:
         raise ValueError("provenance review object is malformed")
+    if "basis" in value and (not isinstance(value["basis"], str) or not value["basis"].strip()):
+        raise ValueError("provenance review basis must be a non-empty string")
     if value["content_digest"] != digest:
         raise ValueError("provenance review digest does not bind the current record")
     if not isinstance(value["findings"], list) or not all(isinstance(item, str) for item in value["findings"]):
         raise ValueError("provenance findings must be a string list")
     if value["status"] == "PENDING_HUMAN_REVIEW":
-        if value["reviewer"] is not None or value["reviewed_at"] is not None or value["findings"]:
+        if value["reviewer"] is not None or value["reviewed_at"] is not None or value["findings"] or "basis" in value:
             raise ValueError("pending provenance review must not prefill a decision")
     elif value["status"] in {"APPROVED", "CHANGES_REQUIRED"}:
         if not isinstance(value["reviewer"], str) or not value["reviewer"]:

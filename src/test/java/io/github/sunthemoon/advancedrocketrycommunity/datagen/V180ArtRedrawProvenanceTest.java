@@ -127,9 +127,7 @@ class V180ArtRedrawProvenanceTest {
         assertEquals("HIT", earlier.getAsJsonObject("files").getAsJsonObject(V180ArtRedrawTest.STATION_LIGHT)
                 .get("verdict").getAsString());
         JsonObject review = json(RECORD).getAsJsonObject("review");
-        assertEquals("PENDING_HUMAN_REVIEW", review.get("status").getAsString());
-        assertTrue(review.get("reviewer").isJsonNull());
-        assertEquals(0, review.getAsJsonArray("findings").size());
+        V180OwnerReviewAssertions.assertD7Approval(review);
     }
 
     private static void assertDigest(JsonObject record) {

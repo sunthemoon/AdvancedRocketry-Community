@@ -295,13 +295,11 @@
     }
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "b5208bfcbaab58116d83d8d232fdc3743e1190f282cb5fe827f9795a46fe9ff3",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": [
-      "NEW code-synthesized audio and code-drawn texture; a manual listen, real-GPU V1 and two-client V2 remain open.",
-      "No OGG screening tool exists; the audio origin evidence is the pre-authoring record and the generator source."
-    ]
+    "findings": [],
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   }
 }

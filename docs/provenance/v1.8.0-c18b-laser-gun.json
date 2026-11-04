@@ -122,12 +122,11 @@
     }
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": [
-      "Original icon/model and recipe need maintainer review; real-client V1/V2 and audio listening remain open. Existing W16 sound assets are reused unchanged."
-    ],
-    "content_digest": "4cd09682e649c90ead40c405bf2f05768fd1b21ec095cde372575f3479aeae21"
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
+    "content_digest": "ecf1b8a7403960173e8c86ce5c430814bb28bd188c2bef7eb695163424bc1e02",
+    "findings": [],
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   }
 }
