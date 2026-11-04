@@ -236,7 +236,7 @@ public final class SpaceSafetyReturnService {
         if (!registry.operational()) { return 0; }
         if (registry.findAt(player.getBlockX(), player.getBlockZ()).isEmpty()) { return SafetyReturnPhase.ADRIFT_TICKS; }
         if (player.isCreative() || player.getAbilities().mayfly || player.onGround() || player.isFallFlying()
-                || player.isInWaterOrBubble() || player.isInLava() || player.onClimbable()
+                || player.isInWaterOrBubble() || player.isInLava()
                 || CelestialGravityController.appliedMultiplier(player) != 0.0D) { return 0; }
         // Paid suit corrections already reset the native counter at server START. An unpaid intent cannot keep
         // this exemption once vanilla counts its first floating tick; it still receives only the finite allowance.
@@ -251,6 +251,7 @@ public final class SpaceSafetyReturnService {
         ServerLevel level = player.serverLevel();
         if (!level.hasChunksAt(BlockPos.containing(support.minX - 1, support.minY - 1, support.minZ - 1),
                 BlockPos.containing(support.maxX + 1, support.maxY + 1, support.maxZ + 1))) { return 0; }
+        if (player.onClimbable()) { return 0; } // This block lookup must also follow the loaded-chunk check.
         return level.getBlockCollisions(player, support).iterator().hasNext() ? 0 : STATION_DRIFT_TICKS;
     }
 
