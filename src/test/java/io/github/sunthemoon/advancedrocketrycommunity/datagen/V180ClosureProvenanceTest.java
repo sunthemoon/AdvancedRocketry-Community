@@ -101,7 +101,7 @@ class V180ClosureProvenanceTest {
         assertEquals(15, images.size()); // three merged overlay/base pairs; leggings is the companion icon
     }
 
-    @Test void everyNewImageHasAClearScreenAgainstBothPinnedClientsAndHumanReviewStaysOpen() throws IOException {
+    @Test void everyNewImageHasAClearScreenAgainstBothPinnedClientsAndOwnerD7Approval() throws IOException {
         JsonObject record = record();
         JsonObject screening = record.getAsJsonObject("screening");
         assertEquals(sha256(Path.of(screening.get("tool_path").getAsString())), screening.get("tool_sha256").getAsString());
