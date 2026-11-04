@@ -80,6 +80,108 @@ ADR_TOKEN = re.compile(r"^ADR-(\d{3})$")
 VERSION_TOKEN = re.compile(r"^V(\d+\.\d+\.\d+)$")
 MODERN_ID = re.compile(MOD_ID + r":([a-z0-9_]+)")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# The immutable 95-file W268/W274 cohort. Its draft preparation date and
+# ADR-062 are not a review date or an independent decision record. Keep this
+# scope explicit: changing a finding's date/record must not bypass the guard,
+# and historical findings outside this cohort retain their existing contract.
+ORIGIN_ADOPTION_PREPARED_AT = "2026-11-03"
+ORIGIN_ADOPTION_ASSETS = frozenset((
+    "models/item/models/motor.mtl",
+    "models/item/models/motor.obj",
+    "models/motor.obj",
+    "sounds/airhissloop.ogg",
+    "sounds/basiclasergun.ogg",
+    "sounds/combustionrocket.ogg",
+    "sounds/electricshocksmall.ogg",
+    "sounds/gravityohhh.ogg",
+    "sounds/laserdrill.ogg",
+    "sounds/lathe.ogg",
+    "sounds/machinelarge.ogg",
+    "sounds/railgunbang.ogg",
+    "sounds/rollingmachine.ogg",
+    "textures/armor/spacesuit_layer1.png",
+    "textures/armor/spacesuit_layer1_overlay.png",
+    "textures/armor/spacesuit_layer2_overlay.png",
+    "textures/blocks/atmospheredetector.png",
+    "textures/blocks/atmospheredetector_active.png",
+    "textures/blocks/beacon.png",
+    "textures/blocks/controlpanel.png",
+    "textures/blocks/crystallizer.png",
+    "textures/blocks/crystallizer_active.png",
+    "textures/blocks/cuttingmachine.png",
+    "textures/blocks/cuttingmachine_active.png",
+    "textures/blocks/fluid/lava_flow.png",
+    "textures/blocks/fluid/lava_flow.png.mcmeta",
+    "textures/blocks/fluid/lava_still.png",
+    "textures/blocks/fluid/lava_still.png.mcmeta",
+    "textures/blocks/forcefield.png",
+    "textures/blocks/forcefield.png.mcmeta",
+    "textures/blocks/forcefieldprojector.png",
+    "textures/blocks/forcefieldprojector_off.png",
+    "textures/blocks/forcefieldprojectorfront.png",
+    "textures/blocks/fuelingmachine.png",
+    "textures/blocks/gaschargertop.png",
+    "textures/blocks/guidancecomputer.png",
+    "textures/blocks/guidancecomputeraccesshatch.png",
+    "textures/blocks/machinegeneric.png",
+    "textures/blocks/machinenuclear.png",
+    "textures/blocks/machineorientationcontrol.png",
+    "textures/blocks/machineprecisionlaseretcher.png",
+    "textures/blocks/machinescrubber.png",
+    "textures/blocks/machinescrubber_active.png",
+    "textures/blocks/monitorfront.png",
+    "textures/blocks/monitorfrontleft.png",
+    "textures/blocks/monitorfrontmid.png",
+    "textures/blocks/monitorfrontright.png",
+    "textures/blocks/monitormoon.png",
+    "textures/blocks/monitorplanet.png",
+    "textures/blocks/monitorplanet_active.png",
+    "textures/blocks/monitorrear.png",
+    "textures/blocks/monitorrocket.png",
+    "textures/blocks/monitorsatellite.png",
+    "textures/blocks/monitorside.png",
+    "textures/blocks/panelside.png",
+    "textures/blocks/panelsideworkstation.png",
+    "textures/blocks/qcrucible_top.png",
+    "textures/blocks/satellitebay.png",
+    "textures/blocks/seal.png",
+    "textures/blocks/solar.png",
+    "textures/blocks/starshipcontrolpanel.png",
+    "textures/gui/buttons/buttonautoeject.png",
+    "textures/gui/buttons/buttonautoeject_hover.png",
+    "textures/gui/buttons/buttonautoeject_pressed.png",
+    "textures/gui/buttons/buttonredstoneinverted.png",
+    "textures/gui/buttons/copy.png",
+    "textures/gui/buttons/copy_hover.png",
+    "textures/gui/buttons/kill.png",
+    "textures/gui/buttons/kill_hover.png",
+    "textures/gui/buttons/tabdata.png",
+    "textures/gui/buttons/tabdata_hover.png",
+    "textures/gui/buttons/tabguidance.png",
+    "textures/gui/buttons/tabguidance_hover.png",
+    "textures/gui/buttons/tabplanet.png",
+    "textures/gui/buttons/tabplanet_hover.png",
+    "textures/gui/buttons/tabwarp.png",
+    "textures/gui/buttons/tabwarp_hover.png",
+    "textures/gui/warning.png",
+    "textures/items/antifogvisor.png",
+    "textures/items/atmanalyzer.png",
+    "textures/items/beaconfinder.png",
+    "textures/items/bioniclegs.png",
+    "textures/items/earthbrightvisor.png",
+    "textures/items/landingboots.png",
+    "textures/items/pressuretank0.png",
+    "textures/items/pressuretank1.png",
+    "textures/items/pressuretank2.png",
+    "textures/items/pressuretank3.png",
+    "textures/items/sawbladeiron.png",
+    "textures/items/spaceboots.png",
+    "textures/items/spaceboots_overlay.png",
+    "textures/items/spacechestplate.png",
+    "textures/items/spacechestplate_overlay.png",
+    "textures/items/spacehelmet_overlay.png",
+    "textures/models/beacon.png",
+))
 # Kinds whose IMPLEMENTED rows must name a modern ID registered in the matching family.
 ID_FAMILIES = {
     "block": ("block", "item"), "block_variant": ("block", "item"), "item": ("item",), "item_variant": ("item",),
@@ -412,7 +514,32 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
         errors.append(f"{ORIGIN_FINDINGS.name}: schema_version 1 with a findings list required")
         return findings, overturned, releases
     for finding in data["findings"]:
+        if not isinstance(finding, dict):
+            errors.append(f"{ORIGIN_FINDINGS.name}: each finding must be an object")
+            continue
         asset = finding.get("asset")
+        reviewer = finding.get("reviewer")
+        if (not isinstance(reviewer, str) or not reviewer.strip() or
+                re.search(r"[<>]|PENDING|PLACEHOLDER|\bTODO\b|\bTBD\b", reviewer, re.I)):
+            errors.append(f"{ORIGIN_FINDINGS.name}: unresolved reviewer placeholder: {asset}")
+            continue
+        if "draft_status" in finding:
+            errors.append(f"{ORIGIN_FINDINGS.name}: remove draft_status after recorded review: {asset}")
+            continue
+        basis = finding.get("basis")
+        if isinstance(basis, str) and re.search(
+                r"DRAFT\s+W268|not\s+an\s+owner\s+decision|preparation\s+date", basis, re.I):
+            errors.append(f"{ORIGIN_FINDINGS.name}: unresolved draft basis: {asset}")
+            continue
+        if isinstance(asset, str) and asset in ORIGIN_ADOPTION_ASSETS:
+            if finding.get("reviewed_at") == ORIGIN_ADOPTION_PREPARED_AT:
+                errors.append(f"{ORIGIN_FINDINGS.name}: preparation date is not a review date: {asset}")
+                continue
+            record = finding.get("review_record")
+            if (not isinstance(record, str) or not record.strip() or
+                    (root / record).resolve() == (root / PLAYER_IMPACT_PATH).resolve()):
+                errors.append(f"{ORIGIN_FINDINGS.name}: {asset} needs its decision record, not ADR-062")
+                continue
         if (finding.get("decision") not in ("CLEARED", "EXCLUDED") or not finding.get("reviewer")
                 or not DATE.match(str(finding.get("reviewed_at", ""))) or not finding.get("basis")
                 or not asset or asset in findings):

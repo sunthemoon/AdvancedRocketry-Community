@@ -49,16 +49,6 @@ models/railgun.obj	IMPORT
 models/rollingmachine.obj	IMPORT
 models/solar_array.obj	IMPORT
 models/spaceelevator.obj	IMPORT
-sounds/airhissloop.ogg	REVIEW
-sounds/basiclasergun.ogg	REVIEW
-sounds/combustionrocket.ogg	REVIEW
-sounds/electricshocksmall.ogg	REVIEW
-sounds/gravityohhh.ogg	REVIEW
-sounds/laserdrill.ogg	REVIEW
-sounds/lathe.ogg	REVIEW
-sounds/machinelarge.ogg	REVIEW
-sounds/railgunbang.ogg	REVIEW
-sounds/rollingmachine.ogg	REVIEW
 textures/blocks/blastbrick.png	IMPORT
 textures/blocks/blastbrickfront.png	IMPORT
 textures/blocks/blastbrickfront_active.png	IMPORT

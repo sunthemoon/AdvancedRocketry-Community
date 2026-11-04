@@ -28,7 +28,7 @@ class ProposalTests(unittest.TestCase):
     def test_complete_partition(self):
         self.assertEqual(95, len(self.evidence))
         self.assertEqual(95, len({e["asset"] for e in self.evidence}))
-        self.assertEqual({"EXCLUDE": 85, "REVIEW": 10}, Counter(e["proposed"] for e in self.evidence))
+        self.assertEqual({"EXCLUDE": 95}, Counter(e["proposed"] for e in self.evidence))
         self.assertEqual(8, len({e["group"] for e in self.evidence}))
 
     def test_terminal_rules_and_exact_scope(self):
@@ -56,7 +56,7 @@ class ProposalTests(unittest.TestCase):
         draft = json.loads((HERE / "origin-findings.json.draft").read_bytes())
         self.assertEqual(baseline["findings"], draft["findings"][:len(baseline["findings"])])
         added = draft["findings"][len(baseline["findings"]):]
-        self.assertEqual(85, len(added))
+        self.assertEqual(95, len(added))
         for finding in added:
             self.assertEqual("<OWNER_PENDING_DECISION>", finding["reviewer"])
             self.assertEqual("PENDING_OWNER_NOT_A_REVIEW", finding["draft_status"])
@@ -102,6 +102,10 @@ class ProposalTests(unittest.TestCase):
     def test_duplicate_recording_and_appearance_boundaries(self):
         by_asset = {e["asset"]: e for e in self.evidence}
         self.assertEqual(by_asset["sounds/lathe.ogg"]["source_sha256"], by_asset["sounds/rollingmachine.ogg"]["source_sha256"])
+        sounds = [e for e in self.evidence if e["group"] == "G7"]
+        self.assertEqual(10, len(sounds))
+        self.assertTrue(all(e["proposed"] == "EXCLUDE" for e in sounds))
+        self.assertEqual([], self.changes["retained_review"])
         for e in self.evidence:
             if e["group"] == "G4":
                 self.assertIn("could be dyed", e["replacement"]["note"])
@@ -254,7 +258,10 @@ class ProposalTests(unittest.TestCase):
                 return [ast.dump(node) for node in ast.walk(tree) if isinstance(node, ast.Assert) or
                         isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and
                         node.func.attr.startswith("assert")]
-            self.assertEqual(assertions(ROOT / LEDGER_TEST), assertions(scratch / LEDGER_TEST))
+            baseline_test = Path(temporary) / "baseline_ledger_test.py"
+            baseline_test.write_bytes(subprocess.check_output([
+                "git", "-C", str(ROOT), "show", self.changes["source_commit"] + ":" + LEDGER_TEST]))
+            self.assertEqual(assertions(baseline_test), assertions(scratch / LEDGER_TEST))
             # Only a fixture simulation; never run this on tracked ADRs.
             adr = scratch / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
             text = adr.read_text(encoding="utf-8")

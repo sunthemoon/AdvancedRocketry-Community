@@ -34,8 +34,7 @@ def fixture_patch(original: str, before: dict, allow_lines: list[str], releases:
             path = self.root / ALLOWLIST
             kept = set(path.read_text(encoding="utf-8").splitlines())
             kept.add("textures/blocks/beacon.png\\tREVIEW")
-            base = __ALLOW__
-            raw = "".join(line + "\\n" for line in base if line in kept).encode("utf-8")
+            raw = "".join(line + "\\n" for line in sorted(kept)).encode("utf-8")
             path.write_bytes(raw)
             adr = self.root / "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
             adr.write_text(re.sub(r"^import_allowlist_sha256:.*$",
@@ -46,7 +45,7 @@ def fixture_patch(original: str, before: dict, allow_lines: list[str], releases:
             data["findings"] = [f for f in data["findings"] if f["asset"] != "textures/blocks/beacon.png"]
             findings.write_text(json.dumps(data), encoding="utf-8")
 
-'''.replace("__BEFORE__", repr(before)).replace("__ALLOW__", repr(allow_lines))
+'''.replace("__BEFORE__", repr(before))
     updated = original
     for name, call in (("test_excluded_finding_forces_exclusion", "()"),
                        ("test_import_for_a_deferred_unit_fails", "()"),

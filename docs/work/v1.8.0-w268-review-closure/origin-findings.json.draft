@@ -285,6 +285,96 @@
       "basis": "DRAFT W268 R003 / G6; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 02c727b9eb66fc5ece70576845e38e8d9c03bf176c2e114fa14ab84b4fe07046. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Keep project casing and NEW four-tier motor models. Exclusion would NOT resolve the shared LibVulpes authorship chain; reopening import needs ADR-061 section 4.1 per-file history and authorship evidence."
     },
     {
+      "asset": "sounds/airhissloop.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R004 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 f22364b53b66314e5377aee1d85bdfdc883dea76bfa67fba0c27ba2bea912f72. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/basiclasergun.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R005 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 00c97b7f80b8a6204cb999cb68516a67b286350be06a4fa901d0b6819395efc2. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/combustionrocket.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R006 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 18a34e864d1b56bd937f04498d8e21cf4f82d12147d892fbe9a6e2a0efcab01f. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/electricshocksmall.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R007 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 004051efb25324f970a607de71b02379131027c461625fa160847200880a384b. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/gravityohhh.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R008 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 0d70f4fd0d43d94d9c2ec92367cb5334f7f484ba7aeb896a4ce3a79cd96dde64. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/laserdrill.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R009 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 dbe75ef85cd9191a024e2bffaa0a13a691a8d9d0cc8d5ca311d063ebab4a64e5. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/lathe.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R010 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio. lathe.ogg and rollingmachine.ogg are the same recording (identical source SHA-256); both legacy files are excluded, without an origin finding that clears either."
+    },
+    {
+      "asset": "sounds/machinelarge.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R011 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 05308c20260a3e6fdd995f620a06d7cdb5e709a274dcf88e7598fc84c0c637e1. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/railgunbang.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R012 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 5b63dfc455678bd85237c64cd2d029dcd03997015be8c12b0197ae5f6004e002. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio."
+    },
+    {
+      "asset": "sounds/rollingmachine.ogg",
+      "decision": "EXCLUDED",
+      "reviewer": "<OWNER_PENDING_DECISION>",
+      "reviewed_at": "2026-11-03",
+      "draft_status": "PENDING_OWNER_NOT_A_REVIEW",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "basis": "DRAFT W268 R013 / G7; not an owner decision. Date is preparation date only, not an attestation. Source SHA-256 673d70feacea2d3a1031ae13d960879ef79b7eca3539e75a2322fb1190d75a32. Proposed non-shipment of the old file; does not clear authorship, approve NEW art, or satisfy D7/V1. Owner decision 2026-11-04 (D5/G7) keeps all ten NEW sounds and excludes all ten legacy OGGs. This supersedes W268's proposed REVIEW hold. No OGG origin clearance is inferred from the PNG detector's CLEAR or the owner's choice of NEW audio. lathe.ogg and rollingmachine.ogg are the same recording (identical source SHA-256); both legacy files are excluded, without an origin finding that clears either."
+    },
+    {
       "asset": "textures/armor/spacesuit_layer1.png",
       "decision": "EXCLUDED",
       "reviewer": "<OWNER_PENDING_DECISION>",

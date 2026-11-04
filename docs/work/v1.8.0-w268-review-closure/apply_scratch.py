@@ -76,14 +76,18 @@ def apply(scratch: Path) -> dict:
             if scratch.is_relative_to(worktree):
                 raise ValueError("Scratch must not be inside ANY worktree.")
     changes = json.loads((HERE / "changes.json").read_text())
+    # Keep the original draft simulation reproducible after the real adoption.
+    # This immutable export is not an installer for a later working tree.
+    base = changes["source_commit"]
     for path, expected in changes["source_sha256"].items():
-        if sha((ROOT / path).read_bytes()) != expected:
+        if sha(git("show", base + ":" + path)) != expected:
             raise ValueError("Central baseline changed: " + path)
-    source_head = git("rev-parse", "HEAD").decode().strip()
-    before = csv_rows(ROOT / PLAN)
+    source_head = git("rev-parse", base).decode().strip()
+    before = list(csv.DictReader(io.StringIO(git("show", base + ":" + PLAN).decode())))
     subprocess.run(["git", "clone", "--shared", "--no-checkout", "--quiet", str(ROOT), str(scratch)], check=True)
-    git("read-tree", "HEAD", cwd=scratch)
-    data = git("archive", "--format=tar", "HEAD")
+    git("update-ref", "HEAD", base, cwd=scratch)
+    git("read-tree", base, cwd=scratch)
+    data = git("archive", "--format=tar", base)
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
         tar.extractall(scratch, filter="data")
     assert not git("status", "--porcelain", cwd=scratch).strip(), "Raw LF export must be clean."
@@ -102,7 +106,7 @@ def apply(scratch: Path) -> dict:
     # Historical revision-6 acceptance remains explicitly historical; no new owner signature.
     adr += "\n## Revision 7 draft - W268 (NOT ACCEPTED)\n\nHistorical acceptance fields above describe revision 6 and earlier, not this draft.\n\n"
     proposal = (HERE / "PROPOSAL.md").read_text(encoding="utf-8")
-    start = proposal.index("## Revision 7 (draft;")
+    start = proposal.index("## Revision 7 (")
     end = proposal.index("## Reference audit method")
     adr += proposal[start:end]
     (scratch / ADR).write_text(adr, encoding="utf-8", newline="\n")

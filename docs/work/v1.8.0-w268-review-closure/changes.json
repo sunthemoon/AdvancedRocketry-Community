@@ -1,5 +1,5 @@
 {
-  "source_commit": "0cae612d2ec986bfb67d8f6ac3bbe547a0e6d54d",
+  "source_commit": "068a4d2c945d44eeb638b5ef2e1c18394f97adce",
   "before_counts": {
     "REGENERATE": 444,
     "EXCLUDE": 270,
@@ -8,16 +8,16 @@
   },
   "after_counts": {
     "REGENERATE": 444,
-    "EXCLUDE": 355,
+    "EXCLUDE": 365,
     "IMPORTED": 89,
-    "REVIEW": 10
+    "REVIEW": 0
   },
   "counts": {
     "manifest": 898,
-    "changed_rules": 80,
-    "excluded": 85,
+    "changed_rules": 81,
+    "excluded": 95,
     "allowlist_before": 247,
-    "allowlist_after": 162,
+    "allowlist_after": 152,
     "planned": 16
   },
   "prepared_at": "2026-11-03",
@@ -29,7 +29,7 @@
     "textures/blocks/machineprecisionlaseretcher.png"
   ],
   "allowlist_before_sha256": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
-  "allowlist_after_sha256": "aba84a60d93bf847e2a84ded5829c0447140d5a0902e6b69e13d41b0515e5f8d",
+  "allowlist_after_sha256": "33cd7effde14451527d3cac69f8dec13da390474459c9b37b19b67ace72a72d9",
   "source_sha256": {
     "docs/work/v1.8.0-asset-plan.csv": "7505a4c4962f6bfaa29f3cdaa63c97f4b2678a2ae35f5b0e14388f329cdb0973",
     "docs/work/v1.8.0-asset-import-allowlist.txt": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
@@ -53,7 +53,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/armor/spacesuit_layer1.png"
@@ -75,7 +75,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:oxygenDetection",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/atmospheredetector.png"
@@ -97,7 +97,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:oxygenDetection",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/atmospheredetector_active.png"
@@ -119,7 +119,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:altitudeController block:gravityController",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/controlpanel.png"
@@ -141,7 +141,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:crystallizer",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/crystallizer.png"
@@ -163,7 +163,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:crystallizer",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/crystallizer_active.png"
@@ -185,7 +185,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:cuttingMachine",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/cuttingmachine.png"
@@ -207,7 +207,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:cuttingMachine",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/cuttingmachine_active.png"
@@ -229,7 +229,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:forceField block:forceFieldProjector",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/forcefieldprojector.png"
@@ -251,7 +251,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:forceField block:forceFieldProjector",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/forcefieldprojector_off.png"
@@ -273,7 +273,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:forceField block:forceFieldProjector",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/forcefieldprojectorfront.png"
@@ -295,7 +295,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:oxygenCharger",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/gaschargertop.png"
@@ -317,7 +317,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:guidanceComputer",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/guidancecomputeraccesshatch.png"
@@ -339,7 +339,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:orientationController",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machineorientationcontrol.png"
@@ -361,7 +361,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:oxygenScrubber",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machinescrubber.png"
@@ -383,7 +383,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:oxygenScrubber",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machinescrubber_active.png"
@@ -405,7 +405,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorfrontleft.png"
@@ -427,7 +427,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorfrontmid.png"
@@ -449,7 +449,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorfrontright.png"
@@ -471,7 +471,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitormoon.png"
@@ -493,7 +493,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorplanet.png"
@@ -515,7 +515,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorplanet_active.png"
@@ -537,7 +537,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorside.png"
@@ -559,7 +559,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:suitWorkStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/panelside.png"
@@ -581,7 +581,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:quartzcrucible",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/qcrucible_top.png"
@@ -603,7 +603,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block_variant:loader/1",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/satellitebay.png"
@@ -625,7 +625,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:pipeSealer",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/seal.png"
@@ -647,7 +647,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:solarGenerator",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/solar.png"
@@ -669,7 +669,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:warpMonitor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/starshipcontrolpanel.png"
@@ -691,7 +691,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/buttonautoeject.png"
@@ -713,7 +713,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:itemUpgrade/4",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/antifogvisor.png"
@@ -735,7 +735,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:atmAnalyser",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/atmanalyzer.png"
@@ -757,7 +757,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:beaconFinder",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/beaconfinder.png"
@@ -779,7 +779,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:itemUpgrade/2",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/bioniclegs.png"
@@ -801,7 +801,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:itemUpgrade/5",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/earthbrightvisor.png"
@@ -823,7 +823,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:itemUpgrade/3",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/landingboots.png"
@@ -845,7 +845,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/pressuretank0.png"
@@ -867,7 +867,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/pressuretank1.png"
@@ -889,7 +889,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/pressuretank2.png"
@@ -911,7 +911,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/pressuretank3.png"
@@ -933,7 +933,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item_variant:sawBladeIron/0 block:sawBlade",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/sawbladeiron.png"
@@ -955,7 +955,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/spaceboots.png"
@@ -977,7 +977,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/spacechestplate.png"
@@ -999,7 +999,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/armor/spacesuit_layer2_overlay.png"
@@ -1021,7 +1021,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:fuelingStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/fuelingmachine.png"
@@ -1043,7 +1043,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:guidanceComputer",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/guidancecomputer.png"
@@ -1065,7 +1065,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:nuclearcore",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machinenuclear.png"
@@ -1087,7 +1087,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:precisionlaseretcher",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machineprecisionlaseretcher.png"
@@ -1109,7 +1109,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorfront.png"
@@ -1131,7 +1131,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorrear.png"
@@ -1153,7 +1153,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorrocket.png"
@@ -1175,7 +1175,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:monitoringStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/monitorsatellite.png"
@@ -1197,7 +1197,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:suitWorkStation",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/panelsideworkstation.png"
@@ -1219,7 +1219,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/buttonautoeject_hover.png"
@@ -1241,7 +1241,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/buttonautoeject_pressed.png"
@@ -1263,7 +1263,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/buttonredstoneinverted.png"
@@ -1285,7 +1285,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/copy.png"
@@ -1307,7 +1307,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/copy_hover.png"
@@ -1329,7 +1329,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/kill.png"
@@ -1351,7 +1351,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/kill_hover.png"
@@ -1373,7 +1373,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabdata.png"
@@ -1395,7 +1395,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabdata_hover.png"
@@ -1417,7 +1417,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabguidance.png"
@@ -1439,7 +1439,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabguidance_hover.png"
@@ -1461,7 +1461,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:warpMonitor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabplanet.png"
@@ -1483,7 +1483,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:warpMonitor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabplanet_hover.png"
@@ -1505,7 +1505,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:warpMonitor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabwarp.png"
@@ -1527,7 +1527,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:warpMonitor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/buttons/tabwarp_hover.png"
@@ -1549,7 +1549,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/gui/warning.png"
@@ -1571,7 +1571,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/spaceboots_overlay.png"
@@ -1593,7 +1593,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/spacechestplate_overlay.png"
@@ -1615,7 +1615,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/items/spacehelmet_overlay.png"
@@ -1637,7 +1637,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/armor/spacesuit_layer1_overlay.png"
@@ -1659,7 +1659,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/fluid/lava_flow.png",
@@ -1684,7 +1684,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "libvulpes:java/blockAdvStructureBlock",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/machinegeneric.png"
@@ -1706,11 +1706,42 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "libvulpes:java/blockMotor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "models/item/models/motor.mtl",
         "models/item/models/motor.obj"
+      ]
+    },
+    {
+      "pattern": "sounds/*.ogg",
+      "before": {
+        "order": "209",
+        "pattern": "sounds/*.ogg",
+        "handling": "REVIEW",
+        "plan": "C18d",
+        "units": "sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine",
+        "reason": "no embedded attribution; confirm authorship before import"
+      },
+      "after": {
+        "order": "209",
+        "pattern": "sounds/*.ogg",
+        "handling": "EXCLUDE",
+        "plan": "-",
+        "units": "sound_event:airHissLoop sound_event:basicLaserGun sound_event:combustionRocket sound_event:ElectricShockSmall sound_event:gravityOhhh sound_event:laserDrill sound_event:lathe sound_event:MachineLarge sound_event:railgunBang sound_event:rollingMachine",
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
+      },
+      "assets": [
+        "sounds/airhissloop.ogg",
+        "sounds/basiclasergun.ogg",
+        "sounds/combustionrocket.ogg",
+        "sounds/electricshocksmall.ogg",
+        "sounds/gravityohhh.ogg",
+        "sounds/laserdrill.ogg",
+        "sounds/lathe.ogg",
+        "sounds/machinelarge.ogg",
+        "sounds/railgunbang.ogg",
+        "sounds/rollingmachine.ogg"
       ]
     },
     {
@@ -1729,7 +1760,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "-",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/forcefield.png",
@@ -1752,7 +1783,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:beacon",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/blocks/beacon.png"
@@ -1774,7 +1805,7 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "libvulpes:java/blockMotor",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "models/motor.obj"
@@ -1796,23 +1827,12 @@
         "handling": "EXCLUDE",
         "plan": "-",
         "units": "block:beacon",
-        "reason": "excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)"
+        "reason": "excluded by an origin finding (owner decision 2026-11-04 / ADR-062 revision 7; not authorship clearance)"
       },
       "assets": [
         "textures/models/beacon.png"
       ]
     }
   ],
-  "retained_review": [
-    "sounds/airhissloop.ogg",
-    "sounds/basiclasergun.ogg",
-    "sounds/combustionrocket.ogg",
-    "sounds/electricshocksmall.ogg",
-    "sounds/gravityohhh.ogg",
-    "sounds/laserdrill.ogg",
-    "sounds/lathe.ogg",
-    "sounds/machinelarge.ogg",
-    "sounds/railgunbang.ogg",
-    "sounds/rollingmachine.ogg"
-  ]
+  "retained_review": []
 }
