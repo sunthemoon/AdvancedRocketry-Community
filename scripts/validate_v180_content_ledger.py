@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from datetime import date
 import fnmatch
 import hashlib
 import importlib.util
@@ -79,7 +80,7 @@ EVIDENCE_PATH = re.compile(r"^docs/work/v1\.8\.0-(c1[5-8][a-d])-[a-z0-9-]+/[A-Za
 ADR_TOKEN = re.compile(r"^ADR-(\d{3})$")
 VERSION_TOKEN = re.compile(r"^V(\d+\.\d+\.\d+)$")
 MODERN_ID = re.compile(MOD_ID + r":([a-z0-9_]+)")
-DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 # The immutable 95-file W268/W274 cohort. Its draft preparation date and
 # ADR-062 are not a review date or an independent decision record. Keep this
 # scope explicit: changing a finding's date/record must not bypass the guard,
@@ -486,6 +487,15 @@ def load_allowlist(root: Path, errors: list[str]) -> dict[str, str]:
     return allowed
 
 
+def _valid_date(value: object) -> bool:
+    if not isinstance(value, str) or not DATE.fullmatch(value):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def adr_owner(root: Path) -> str | None:
     match = re.search(r"^owner:\s*(\S+)\s*$", (root / PLAYER_IMPACT_PATH).read_text(encoding="utf-8"), re.M)
     return match.group(1) if match else None
@@ -532,7 +542,7 @@ def load_origin_findings(root: Path, errors: list[str]) -> tuple[dict[str, str],
             errors.append(f"{ORIGIN_FINDINGS.name}: unresolved draft basis: {asset}")
             continue
         reviewed_at = finding.get("reviewed_at")
-        if not isinstance(reviewed_at, str) or not DATE.fullmatch(reviewed_at):
+        if not _valid_date(reviewed_at):
             errors.append(f"{ORIGIN_FINDINGS.name}: invalid review date: {asset}")
             continue
         if isinstance(asset, str) and asset in ORIGIN_ADOPTION_ASSETS:

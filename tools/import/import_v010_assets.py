@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import hashlib
 import json
 import os
@@ -223,6 +224,15 @@ def pending_review(digest: str) -> dict[str, Any]:
     }
 
 
+def _valid_date(value: object) -> bool:
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def validate_review(value: object, digest: str) -> dict[str, Any]:
     required = {
         "status",
@@ -245,7 +255,7 @@ def validate_review(value: object, digest: str) -> dict[str, Any]:
     elif value["status"] in {"APPROVED", "CHANGES_REQUIRED"}:
         if not isinstance(value["reviewer"], str) or not value["reviewer"]:
             raise ValueError("completed provenance review requires a reviewer")
-        if not isinstance(value["reviewed_at"], str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value["reviewed_at"]):
+        if not _valid_date(value["reviewed_at"]):
             raise ValueError("completed provenance review requires an ISO date")
         if value["status"] == "APPROVED" and value["findings"]:
             raise ValueError("approved provenance review cannot retain findings")

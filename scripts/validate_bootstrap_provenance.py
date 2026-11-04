@@ -3340,13 +3340,12 @@ def _validate_record_yaml_structure(record_text: str, errors: list[str]) -> None
 
 
 def _valid_iso_date(value: object) -> bool:
-    if not isinstance(value, str):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return False
     try:
-        date.fromisoformat(value)
+        return date.fromisoformat(value).isoformat() == value
     except ValueError:
         return False
-    return True
 
 
 def _canonical_review_document(document: dict[str, Any]) -> bytes:

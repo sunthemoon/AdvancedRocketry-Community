@@ -6,12 +6,22 @@ It is never called by the draft-only scratch verifier.
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import json
 from pathlib import Path
 import re
 
 HERE = Path(__file__).resolve().parent
 ADR = "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"
+
+
+def _valid_date(value: object) -> bool:
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+        return False
+    try:
+        return date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
 
 
 def check_findings(data: dict) -> None:
@@ -33,7 +43,7 @@ def check_findings(data: dict) -> None:
         if isinstance(basis, str) and re.search(r"DRAFT\s+W268|not\s+an\s+owner\s+decision|preparation\s+date", basis, re.I):
             raise ValueError("Unresolved draft basis: " + str(finding.get("asset")))
         reviewed_at = finding.get("reviewed_at")
-        if not isinstance(reviewed_at, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", reviewed_at):
+        if not _valid_date(reviewed_at):
             raise ValueError("Invalid review date: " + str(finding.get("asset")))
         if finding.get("asset") in added:
             if reviewed_at == proposal["prepared_at"]:
