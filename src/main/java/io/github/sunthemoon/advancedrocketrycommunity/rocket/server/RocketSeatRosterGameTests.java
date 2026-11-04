@@ -199,7 +199,8 @@ public final class RocketSeatRosterGameTests {
             helper.assertTrue(player.startRiding(rocket, true), "Player did not mount the ground rocket");
         }
 
-        void confirm() { RocketJournalGameTestSupport.confirmDetached(helper, journal, directory.resolve("transfers.dat")); }
+        void confirm() { RocketJournalGameTestSupport.confirmDetached(helper, journal, directory.resolve(
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName())); }
         ServerPlayer join() { return FirstEventGameTestPlayers.join(helper.getLevel().getServer(), playerId,
                 "W287Passenger", helper.getLevel(), helper.absolutePos(ARRIVAL)); }
         void sneakTick() {
