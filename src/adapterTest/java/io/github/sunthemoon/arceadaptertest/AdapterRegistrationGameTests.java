@@ -14,7 +14,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -124,7 +123,7 @@ public final class AdapterRegistrationGameTests {
                     helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(cargoPosition)) == null,
                             "Assembly left the source inventory BlockEntity behind");
                     assertSavedPayload(helper, rocket, owner.getUUID(), expectedInventory);
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(),
+                    AdapterDropFixture.assertNoDrops(helper, region,
                             "Assembly dropped duplicate inventory items");
 
                     // Normal player interaction dispatches into the installed production RocketRuntime.
@@ -159,7 +158,7 @@ public final class AdapterRegistrationGameTests {
                     savedContainer.remove("schema_version");
                     helper.assertTrue(expectedInventory.equals(savedContainer),
                             "Restored BlockEntity persistence changed the recovered items");
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(),
+                    AdapterDropFixture.assertNoDrops(helper, region,
                             "Disassembly dropped duplicate inventory items");
                 })
                 .thenSucceed();

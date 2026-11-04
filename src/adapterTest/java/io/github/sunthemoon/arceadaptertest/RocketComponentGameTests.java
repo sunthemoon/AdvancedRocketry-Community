@@ -14,7 +14,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -119,7 +118,7 @@ public final class RocketComponentGameTests {
                     Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(), "Zero-fuel disassembly failed");
                     blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block), "Original component block not restored"));
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(), "Component operation dropped duplicates");
+                    AdapterDropFixture.assertNoDrops(helper, region, "Component operation dropped duplicates");
                 }).thenSucceed();
     }
 

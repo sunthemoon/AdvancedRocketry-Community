@@ -111,7 +111,7 @@ public final class AdapterFaultGameTests {
             helper.assertTrue(!level.getFluidState(button).isEmpty(), "Water did not reach the start-control position");
             helper.assertTrue(level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                     "Water test removed the start control's support");
-            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(button).inflate(2)).isEmpty(),
+            AdapterDropFixture.assertNoDrops(helper, new AABB(button).inflate(2),
                     "Water dropped a fixture start button");
             helper.succeed();
         });
@@ -431,9 +431,7 @@ public final class AdapterFaultGameTests {
 
     private static AABB region(GameTestHelper helper) { return new AABB(helper.absolutePos(ORIGIN)).inflate(3); }
     private static void noDrops(GameTestHelper helper) {
-        var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper));
-        helper.assertTrue(drops.isEmpty(), "Duplicate inventory drops found: " + drops.stream()
-                .map(item -> item.getItem() + " at " + item.position() + " age=" + item.getAge()).toList());
+        AdapterDropFixture.assertNoDrops(helper, region(helper), "Duplicate inventory drops found");
     }
     private static Block block(String id) { return ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(HOST + ":" + id)); }
     private record Fixture(FakePlayer owner, FixtureContainerBlockEntity source, CompoundTag inventory) { }
