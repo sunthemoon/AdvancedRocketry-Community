@@ -190,10 +190,12 @@ What is still open:
   multiplayer and performance (the two-client V2 sessions, the docs/17 reference node and the joint four-hour soak)
   come last. Nothing is marked passed or waived by this. At the owner's request Root runs that single-player test with
   the real-client scripts on drive D: (R309), on the hosted JAR of run 41630143345. The scripted single-player test so
-  far: round 1 (setup, materials, power, fluids, nine processing machines, equipment) passed all six steps, and round
-  2 (restart persistence, life support, a rocket to the Moon and back, the monitoring station) passed with findings,
-  among them an intermittent client start failure. Findings are queued as W280 to W282 and W284 to W289; the report is
-  `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
+  far: round 1 (setup, materials, power, fluids, nine processing machines, equipment) passed all six steps; round 2
+  (restart persistence, life support, a rocket to the Moon and back, the monitoring station) passed with findings,
+  among them an intermittent client start failure; round 3 (satellites and discovery, the observatory, the station and
+  its controls, an interstellar warp, Mars, Venus, Tau Ceti f and g, a restart) passed with findings, among them a
+  kick on a zero-gravity station and a landing on the sea. Findings are queued as W280 to W282 and W284 to W294; the
+  report is `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
   R32-03 tests (W61), and the v1.8 import root (W52F). Hosted governance run 38671573901 passed
