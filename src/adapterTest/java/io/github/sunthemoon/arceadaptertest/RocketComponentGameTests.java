@@ -32,7 +32,10 @@ public final class RocketComponentGameTests {
                 AdapterAsyncFixture.test("w164_adapter_success", "RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly",
                         5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly),
                 AdapterAsyncFixture.test("w272_adapter_pending_rejection", "RocketComponentGameTests.externalComponentsRetryRejectedPendingDisassembly",
-                        5, 1, false, helper -> componentAssemblyAndDisassembly(helper, true)));
+                        5, 1, false, helper -> componentAssemblyAndDisassembly(helper, true)),
+                AdapterAsyncFixture.test("w299_adapter_start_button", "RocketComponentGameTests.flowingWaterCannotDropComponentStartButton",
+                        5, 1, false, helper -> AdapterDropFixture.withFlowingStartControlWater(helper,
+                                () -> componentAssemblyAndDisassembly(helper, true))));
     }
     private static final String HOST = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET = ResourceLocation.tryParse(HOST + ":rocket");
@@ -60,6 +63,7 @@ public final class RocketComponentGameTests {
     }
 
     private static void componentAssemblyAndDisassembly(GameTestHelper helper, boolean rejectFirstPending) {
+        AdapterDropFixture.retireStartControl(helper);
         var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,

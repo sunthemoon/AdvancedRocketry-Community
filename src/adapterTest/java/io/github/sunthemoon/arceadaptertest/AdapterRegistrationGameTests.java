@@ -33,7 +33,10 @@ public final class AdapterRegistrationGameTests {
                 AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
                         4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory),
                 AdapterAsyncFixture.test("w272_adapter_registration_pending_rejection", "AdapterRegistrationGameTests.externalAdapterRetriesRejectedPendingDisassembly",
-                        4, 1, false, helper -> productionAssemblyPreservesInventory(helper, true)));
+                        4, 1, false, helper -> productionAssemblyPreservesInventory(helper, true)),
+                AdapterAsyncFixture.test("w299_adapter_start_button", "AdapterRegistrationGameTests.flowingWaterCannotDropRegistrationStartButton",
+                        4, 1, false, helper -> AdapterDropFixture.withFlowingStartControlWater(helper,
+                                () -> productionAssemblyPreservesInventory(helper, true))));
     }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
@@ -73,6 +76,7 @@ public final class AdapterRegistrationGameTests {
     }
 
     private static void productionAssemblyPreservesInventory(GameTestHelper helper, boolean rejectFirstPending) {
+        AdapterDropFixture.retireStartControl(helper);
         var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
