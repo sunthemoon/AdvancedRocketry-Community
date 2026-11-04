@@ -47,6 +47,47 @@ class EscrowTerminalRetryCutTest {
         }
     }
 
+    @Test void writeFailurePreservesAnEarlierProofFailure() {
+        var lines = new ArrayList<EscrowSuccessorRetry.Hold>();
+        var history = new EscrowSuccessorRetry(lines::add);
+        fail(history, 50, "F6_PROOF", "SUPERSEDING_SAVE");
+        try (var failure = new EscrowTerminalRetryCut.WriteFailure(history, () -> 152)) {
+            assertFalse(failure.matches(history));
+            fail(history, 152, "F7_WRITE", "LEDGER_WRITE_FAILED");
+            assertEquals(2, history.failures());
+            assertEquals(552, history.nextTick());
+            assertTrue(failure.matches(history));
+            assertEquals(2, lines.size());
+        }
+    }
+
+    @Test void writeFailurePreservesSaturatedHistory() {
+        var history = new EscrowSuccessorRetry(hold -> { });
+        for (int tick = 0; tick < 4; tick++) { fail(history, tick, "F6_PROOF", "SUPERSEDING_SAVE"); }
+        try (var failure = new EscrowTerminalRetryCut.WriteFailure(history, () -> 2_000)) {
+            fail(history, 2_000, "F7_WRITE", "LEDGER_WRITE_FAILED");
+            assertEquals(3, history.failures());
+            assertEquals(3_200, history.nextTick());
+            assertTrue(failure.matches(history));
+        }
+    }
+
+    @Test void earlierProofFailureDoesNotExcuseAnIncorrectWriteDeadlineOrDuplicateCallback() {
+        var history = new EscrowSuccessorRetry(hold -> { });
+        fail(history, 50, "F6_PROOF", "SUPERSEDING_SAVE");
+        try (var failure = new EscrowTerminalRetryCut.WriteFailure(history, () -> 152)) {
+            fail(history, 153, "F7_WRITE", "LEDGER_WRITE_FAILED");
+            assertFalse(failure.matches(history));
+        }
+        var duplicateHistory = new EscrowSuccessorRetry(hold -> { });
+        fail(duplicateHistory, 50, "F6_PROOF", "SUPERSEDING_SAVE");
+        try (var failure = new EscrowTerminalRetryCut.WriteFailure(duplicateHistory, () -> 2_000)) {
+            fail(duplicateHistory, 2_000, "F7_WRITE", "LEDGER_WRITE_FAILED");
+            fail(duplicateHistory, 2_000, "F7_WRITE", "LEDGER_WRITE_FAILED");
+            assertFalse(failure.matches(history));
+        }
+    }
+
     @Test void rejectsProofFailureAndQueueRefusalEvenWithTheSameDeadline() {
         for (String[] cause : new String[][] {{"F6_PROOF", "SUPERSEDING_SAVE"}, {"F7_WRITE", "LEDGER_QUEUE_WAIT"}}) {
             var history = new EscrowSuccessorRetry(hold -> { });

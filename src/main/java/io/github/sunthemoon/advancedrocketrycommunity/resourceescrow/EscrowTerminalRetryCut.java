@@ -39,7 +39,7 @@ final class EscrowTerminalRetryCut {
         var histories = (EscrowTerminalRetries) field(EscrowRuntime.of(server).terminal(), "retries");
         var history = histories.history(record.logicalRocketId());
         helper.assertTrue(failure.matches(history),
-                "Definite F7 callback lost the first retry backoff: failures=" + history.failures()
+                "Definite F7 callback lost its retry backoff: previous=" + failure.previousFailures + ", failures=" + history.failures()
                         + ", next=" + history.nextTick() + ", recorded=" + failure.tick
                         + ", observed=" + server.getTickCount() + ", callbacks=" + failure.callbacks);
     }
@@ -47,6 +47,7 @@ final class EscrowTerminalRetryCut {
     /** Records the owner tick inside failed(), without replacing its history or changing its logging. */
     static final class WriteFailure implements AutoCloseable {
         private final EscrowSuccessorRetry history;
+        private final int previousFailures;
         private final Field logger;
         private final Consumer<EscrowSuccessorRetry.Hold> original, observer;
         private long tick = -1;
@@ -55,6 +56,7 @@ final class EscrowTerminalRetryCut {
         @SuppressWarnings("unchecked")
         WriteFailure(EscrowSuccessorRetry history, LongSupplier clock) {
             this.history = history;
+            previousFailures = history.failures();
             try {
                 logger = EscrowSuccessorRetry.class.getDeclaredField("logger"); logger.setAccessible(true);
                 original = (Consumer<EscrowSuccessorRetry.Hold>) logger.get(history);
@@ -69,8 +71,11 @@ final class EscrowTerminalRetryCut {
         }
 
         boolean matches(EscrowSuccessorRetry observed) {
-            return observed == history && callbacks == 1 && tick >= 0 && history.failures() == 1
-                    && history.nextTick() == tick + EscrowReason.backoff(1);
+            // Native F6 proofs can legitimately retry before this F7 cut is reached. The write failure
+            // must advance that same history exactly once, rather than restart at the first backoff.
+            int failures = Math.min(3, previousFailures + 1);
+            return observed == history && callbacks == 1 && tick >= 0 && history.failures() == failures
+                    && history.nextTick() == tick + EscrowReason.backoff(failures);
         }
 
         @Override public void close() {
