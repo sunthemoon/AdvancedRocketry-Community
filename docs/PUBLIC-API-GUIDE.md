@@ -170,6 +170,12 @@ return a non-null value within 5 ms; accumulated callback time is capped at 1 se
 per registration. A failure rejects the entire registration. Returned-time checks
 cannot interrupt a hung callback or sandbox arbitrary same-JVM mod side effects.
 
+The host's constant force-field boundary is expanded directly from an immutable
+value, without invoking or timing a provider callback. It still obeys all ownership,
+claim and state limits. This internal optimization is not an API registration mode
+or a namespace exemption; extension callbacks keep the limits above, even when
+registering host-owned blocks.
+
 Tag reload revokes cached room authority and pending scans, then rescans under the
 existing budgets. Removing only the provider restores legacy classification after
 restart; removing its blocks also invokes normal Forge missing-registry behavior.

@@ -1,8 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere;
 
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundary;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.AtmosphereBoundaryRegistrar;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBoundaries;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +33,68 @@ class AtmosphereBoundaryRegistryTest {
     @BeforeAll
     static void bootstrap() {
         MinecraftBootstrap.initialize();
+    }
+
+    @Test
+    void builtInForceFieldRegistrationDoesNotDependOnWallClockSpeed() {
+        Block block = new ForceFieldBlock(BlockBehaviour.Properties.of());
+        for (long delay : List.of(5_000_001L, 1_000_000_001L)) {
+            AtomicInteger clockReads = new AtomicInteger();
+            try (AtmosphereBoundaryRegistry registry = new AtmosphereBoundaryRegistry(
+                    Map.of(ModIdentity.id("force_field"), block)::get,
+                    () -> clockReads.getAndIncrement() == 0 ? 0L : delay)) {
+                ForceFieldBoundaries.register(new RegisterAtmosphereBoundariesEvent(
+                        registry.forOwner(ModIdentity.MOD_ID)));
+                AtmosphereBoundaryCatalog catalog = registry.freeze();
+                assertEquals(block.getStateDefinition().getPossibleStates().size(), catalog.stateCount());
+                assertEquals(AtmosphereBoundary.SEALED, catalog.classify(block.defaultBlockState()));
+                assertEquals(0, clockReads.get(), "Constant built-in rules must not consult the wall clock");
+            }
+        }
+    }
+
+    @Test
+    void constantRulesRetainPreflightStateCapsAndAtomicClaims() {
+        Block a = new ManyStatesBlock();
+        Block b = new ManyStatesBlock();
+        AtmosphereBoundaryRegistry registry = new AtmosphereBoundaryRegistry(
+                Map.of(id("a"), a, id("b"), b)::get,
+                () -> { fail("Constant rules do not execute timed callbacks"); return 0L; });
+        AtmosphereBoundaryRegistrar handle = registry.forOwner("fixture");
+        ConstantAtmosphereBoundaryProvider sealed = new ConstantAtmosphereBoundaryProvider(AtmosphereBoundary.SEALED);
+        assertThrows(IllegalArgumentException.class,
+                () -> handle.register(id("rule"), Set.of(id("a"), id("b")), sealed));
+        handle.register(id("rule"), Set.of(id("a")), sealed);
+        assertThrows(IllegalArgumentException.class, () -> handle.register(id("rule"), Set.of(id("b")), sealed));
+        assertThrows(IllegalArgumentException.class, () -> handle.register(id("other"), Set.of(id("a")), sealed));
+        handle.register(id("other"), Set.of(id("b")), new ConstantAtmosphereBoundaryProvider(AtmosphereBoundary.DEFAULT));
+        AtmosphereBoundaryCatalog catalog = registry.freeze();
+        assertEquals(8192, catalog.stateCount());
+        for (BlockState state : a.getStateDefinition().getPossibleStates()) {
+            assertEquals(AtmosphereBoundary.SEALED, catalog.classify(state));
+        }
+        for (BlockState state : b.getStateDefinition().getPossibleStates()) {
+            assertTrue(catalog.isRegistered(state));
+            assertEquals(AtmosphereBoundary.DEFAULT, catalog.classify(state));
+        }
+        assertThrows(NullPointerException.class, () -> new ConstantAtmosphereBoundaryProvider(null));
+    }
+
+    @Test
+    void hostNamespaceDoesNotExemptArbitraryCallbacksFromTimingChecks() {
+        AtomicLong time = new AtomicLong();
+        AtmosphereBoundaryRegistry registry = new AtmosphereBoundaryRegistry(
+                Map.of(ModIdentity.id("force_field"), Blocks.STONE)::get, time::get);
+        AtmosphereBoundaryRegistrar handle = registry.forOwner(ModIdentity.MOD_ID);
+        assertThrows(IllegalArgumentException.class, () -> handle.register(ModIdentity.id("force_field_boundary"),
+                Set.of(ModIdentity.id("force_field")), state -> {
+                    time.addAndGet(5_000_001L);
+                    return AtmosphereBoundary.SEALED;
+                }));
+        ForceFieldBoundaries.register(new RegisterAtmosphereBoundariesEvent(handle));
+        AtmosphereBoundaryCatalog catalog = registry.freeze();
+        assertEquals(1, catalog.stateCount());
+        assertEquals(AtmosphereBoundary.SEALED, catalog.classify(Blocks.STONE.defaultBlockState()));
     }
 
     @Test
