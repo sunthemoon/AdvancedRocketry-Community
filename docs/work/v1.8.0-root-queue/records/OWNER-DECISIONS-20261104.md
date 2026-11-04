@@ -82,3 +82,23 @@ D: should run the single-player step-by-step test. At about 11:15 the owner repl
 | ID | Decision | Reasons |
 |---|---|---|
 | R309 | **Root runs the single-player step-by-step test with the real-client scripts on drive D:**, on the hosted JAR of run 41630143345 (artifact `v180-build-6f3bd461bf95b16291cf766b6869f9c15d06bd82-1`, `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256 `3220986176d9e488409cbe7fb1067aeda6ada1c2222b3cd494daa7c5ae637115`), with one real-GPU client: the technology flow from basic materials to the endgame, a server restart, and a short integrated single-player world. Evidence goes to `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/`; Root gives the owner a report with screenshots to confirm, and each finding becomes a QUEUE task. | The owner asked for it. It is development evidence from one GPU and one player: it does not pass V1, V2, S1 or any Gate, and it does not replace the multiplayer and performance work the owner put last. |
+
+## The original art's authorship
+
+Root's answer about the tank icons said that AR 1.12's originals are excluded because their authorship is not cleared.
+Between 11:17 and 11:23 the owner wrote, verbatim, in order:
+
+> 由于作者归属不明所以不能用原作者的贴图吗， 可以确定的是我并不打算拥有这份代码的所属，这个mod的制定是定义为社区版的，这种情况下也不能用吗?
+
+Root answered that the right to redistribute comes from whoever drew a file, not from who owns this project, and
+offered to trace the AR 16x texture set's source chain. The owner replied:
+
+> 查一下吧
+
+> 我原打算做出一些东西能基本玩起来再去找作者授权的，避免中途没做完或者耽搁了，纯耽误作者时间或者说让他白激动
+
+> 先查查看吧，不行就先用自己画的先顶上
+
+| ID | Decision | Reasons |
+|---|---|---|
+| R310 | **Root traced the chain itself ([W279](W279.md))**: the public record does not settle authorship, so, as the owner said, the NEW art of W275 stands in. The owner plans to ask the authors for permission once the mod is basically playable; W279 lists whom to ask and what statement would let a later ADR-062 revision import the named files. No one is contacted now. | The owner's instruction. W279 took a few read-only requests to public GitHub, so no worker was needed. |
