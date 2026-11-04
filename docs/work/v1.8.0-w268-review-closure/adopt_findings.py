@@ -32,8 +32,11 @@ def check_findings(data: dict) -> None:
         basis = finding.get("basis", "")
         if isinstance(basis, str) and re.search(r"DRAFT\s+W268|not\s+an\s+owner\s+decision|preparation\s+date", basis, re.I):
             raise ValueError("Unresolved draft basis: " + str(finding.get("asset")))
+        reviewed_at = finding.get("reviewed_at")
+        if not isinstance(reviewed_at, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", reviewed_at):
+            raise ValueError("Invalid review date: " + str(finding.get("asset")))
         if finding.get("asset") in added:
-            if finding.get("reviewed_at") == proposal["prepared_at"]:
+            if reviewed_at == proposal["prepared_at"]:
                 raise ValueError("Preparation date is not a review date: " + str(finding.get("asset")))
             record = finding.get("review_record")
             if (not isinstance(record, str) or not record.strip() or

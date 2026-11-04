@@ -101,7 +101,7 @@ class V180ClosureProvenanceTest {
         assertEquals(15, images.size()); // three merged overlay/base pairs; leggings is the companion icon
     }
 
-    @Test void everyNewImageHasAClearScreenAgainstBothPinnedClientsAndHumanReviewStaysOpen() throws IOException {
+    @Test void everyNewImageHasAClearScreenAgainstBothPinnedClientsAndOwnerD7Approval() throws IOException {
         JsonObject record = record();
         JsonObject screening = record.getAsJsonObject("screening");
         assertEquals(sha256(Path.of(screening.get("tool_path").getAsString())), screening.get("tool_sha256").getAsString());
@@ -126,10 +126,7 @@ class V180ClosureProvenanceTest {
             assertEquals("CLEAR", file.get("verdict").getAsString(), texture);
         }
         JsonObject review = record.getAsJsonObject("review");
-        assertEquals("PENDING_HUMAN_REVIEW", review.get("status").getAsString());
-        assertTrue(review.get("reviewer").isJsonNull());
-        assertTrue(review.get("reviewed_at").isJsonNull());
-        assertEquals(0, review.getAsJsonArray("findings").size());
+        V180OwnerReviewAssertions.assertD7Approval(review);
         JsonObject core = record.deepCopy();
         core.remove("review");
         byte[] canonical = (new GsonBuilder().disableHtmlEscaping().create().toJson(core) + "\n")

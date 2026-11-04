@@ -585,6 +585,27 @@ class ImportV180AssetsTests(unittest.TestCase):
         self.save_plan()
         self.assertEqual("PENDING_HUMAN_REVIEW", self.generate()["review"]["status"])
 
+    def test_approval_basis_reproduces_without_ignoring_core_or_format_changes(self) -> None:
+        record = self.generate()
+        record["review"].update(status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01",
+                                basis="Synthetic review: docs/fixture-decision.md")
+        raw = V010.pretty_json(record)
+        self.record.write_bytes(raw)
+        self.assertEqual([], self.verify())
+        self.assertEqual(record, self.generate())
+        self.assertEqual(raw, self.record.read_bytes())
+        self.record.write_bytes(raw.replace(b'"status": "APPROVED"', b'"status":  "APPROVED"'))
+        self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets",
+                      self.verify())
+        self.record.write_bytes(raw)
+        self.plan["batch_id"] = "v1.8.0-fixture-02"
+        self.save_plan()
+        self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets",
+                      self.verify())
+        reset = self.generate()["review"]
+        self.assertEqual("PENDING_HUMAN_REVIEW", reset["status"])
+        self.assertNotIn("basis", reset)
+
     def test_plan_with_a_cr_byte_is_refused(self) -> None:
         # W249-R1: a CRLF working copy of an LF-committed plan hashes differently from every clean checkout.
         self.plan_path.write_bytes(V010.pretty_json(self.plan).replace(b"\n", b"\r\n"))

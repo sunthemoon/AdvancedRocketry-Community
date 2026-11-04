@@ -67,7 +67,7 @@ class V180LandingPadTextureImportTest {
         assertEquals(JsonParser.parseString("[\"block:landingPad\"]"), planned.get("units"));
         var record = read(Path.of("docs/provenance/v1.8.0-w261-landing-pad.json"));
         assertEquals(2, record.get("schema_version").getAsInt());
-        assertEquals("PENDING_HUMAN_REVIEW", record.getAsJsonObject("review").get("status").getAsString());
+        V180OwnerReviewAssertions.assertD7Approval(record.getAsJsonObject("review"));
         assertEquals(sha256(Files.readAllBytes(planPath)), record.get("plan_sha256").getAsString());
         assertEquals(1, record.getAsJsonArray("entries").size());
         var entry = record.getAsJsonArray("entries").get(0).getAsJsonObject();

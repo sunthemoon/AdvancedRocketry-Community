@@ -43,7 +43,10 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
             Inventory playerInventory,
             ElectrolyzerBlockEntity machine
     ) {
-        this(containerId, playerInventory, machine, new SimpleContainerData(ElectrolyzerBlockEntity.MENU_DATA_COUNT));
+        // Received slot snapshots are display state, not mutations through the machine's restricted ports.
+        this(containerId, playerInventory, machine, new ItemStackHandler(MACHINE_SLOT_COUNT),
+                new SimpleContainerData(ElectrolyzerBlockEntity.MENU_DATA_COUNT),
+                ContainerLevelAccess.create(machine.getLevel(), machine.getBlockPos()));
     }
 
     public ElectrolyzerMenu(
