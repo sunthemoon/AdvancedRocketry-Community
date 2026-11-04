@@ -453,7 +453,7 @@ public final class RocketLandingPadSelector {
                     int height = target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
                     // W290: fluid safety applies to every footprint column, independently of sturdy support.
                     // Reading the column's own top also catches fluid below an overhang or an upper-only column.
-                    if (!target.getFluidState(new BlockPos(x, height - 1, z)).isEmpty()) {
+                    if (!target.getBlockState(new BlockPos(x, height - 1, z)).getFluidState().isEmpty()) {
                         return null;
                     }
                     heights.add(height);
@@ -524,8 +524,8 @@ public final class RocketLandingPadSelector {
             }
             inspected += 2;
             int surface = target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, absolute.x(), absolute.z());
-            if (!target.getFluidState(new BlockPos(absolute.x(), surface - 1, absolute.z())).isEmpty()
-                    || !target.getFluidState(new BlockPos(absolute.x(), belowY, absolute.z())).isEmpty()) {
+            if (!target.getBlockState(new BlockPos(absolute.x(), surface - 1, absolute.z())).getFluidState().isEmpty()
+                    || !target.getBlockState(new BlockPos(absolute.x(), belowY, absolute.z())).getFluidState().isEmpty()) {
                 return false;
             }
         }
