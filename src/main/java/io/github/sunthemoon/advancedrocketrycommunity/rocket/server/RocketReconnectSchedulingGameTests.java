@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -31,6 +34,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketReconnectSchedulingGameTests {
+    private static final TicketType<UUID> FIXTURE = TicketType.create("arce_reconnect_schedule_fixture", Comparator.<UUID>naturalOrder());
     private RocketReconnectSchedulingGameTests() { }
     @GameTest(template = "rocket_test", batch = "journal_concurrent_flight", timeoutTicks = 250)
     public static void acknowledgedArrivalRecoversAndReconnectsWhileADisjointWriteIsHeld(GameTestHelper helper) {
@@ -41,9 +45,17 @@ public final class RocketReconnectSchedulingGameTests {
         new Scenario(helper, true).start();
     }
 
+    @GameTest(template = "rocket_test", batch = "journal_concurrent_flight", timeoutTicks = 250)
+    public static void reconnectQueuesAfterAnInitiallyUnloadedOccupancyColumnBecomesReady(GameTestHelper helper) {
+        new Scenario(helper, true, true).start();
+    }
+
     private static final class Scenario {
         final GameTestHelper helper;
         final boolean pending;
+        final boolean wide;
+        final UUID fixtureTicket = UUID.randomUUID();
+        final HashSet<ChunkPos> fixtureColumns = new HashSet<>();
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketTransferService service = new RocketTransferService();
         final HashSet<UUID> live = new HashSet<>(), settled = new HashSet<>();
@@ -55,9 +67,13 @@ public final class RocketReconnectSchedulingGameTests {
         ServerPlayer player;
         Path directory, file;
         int stage, waits, heldTicks;
-        boolean closed;
+        boolean closed, sawUnreadyFootprint;
         Scenario(GameTestHelper helper, boolean pending) {
-            this.helper = helper; this.pending = pending; pacer = new GameTestTickPacer(helper.getLevel().getServer());
+            this(helper, pending, false);
+        }
+        Scenario(GameTestHelper helper, boolean pending, boolean wide) {
+            this.helper = helper; this.pending = pending; this.wide = wide;
+            pacer = new GameTestTickPacer(helper.getLevel().getServer());
         }
         void start() { helper.onEachTick(this::tick); }
         void tick() {
@@ -68,6 +84,20 @@ public final class RocketReconnectSchedulingGameTests {
                 if (stage == 0) { setup(); }
                 else if (stage == 1 && held.entered()) {
                     if (pending) {
+                        // The service waits for the entire occupancy census, not only the origin column.
+                        // Own those fixture loads without granting an unacknowledged record flight tickets.
+                        var columns = RocketTransferEntities.destinationTicketSet(record.destinationSnapshot());
+                        boolean originReady = RocketTransferEntities.destinationEntityChunkReady(helper.getLevel(), record.destinationSnapshot());
+                        boolean footprintReady = RocketTransferEntities.entitiesLoadedColumns(columns, helper.getLevel()::areEntitiesLoaded) == columns.size();
+                        if (!originReady || !footprintReady) {
+                            sawUnreadyFootprint |= originReady && !footprintReady;
+                            columns.forEach(this::ticket);
+                            pacer.pace(); return;
+                        }
+                        if (wide) {
+                            helper.assertTrue(sawUnreadyFootprint,
+                                    "Remote reconnect fixture did not expose an unloaded occupancy column");
+                        }
                         service.spawnDestination(server, journal, record, source);
                         helper.assertTrue(journal.find(record.transferId()).orElseThrow().phase() == RocketTransferPhase.DESTINATION_SPAWNED,
                                 "Own spawn did not queue");
@@ -112,16 +142,20 @@ public final class RocketReconnectSchedulingGameTests {
         }
         void setup() throws IOException {
             var level = helper.getLevel(); var origin = helper.absolutePos(new BlockPos(3, 2, 3));
-            var target = helper.absolutePos(new BlockPos(14, 2, 3));
+            var target = wide ? new BlockPos(742_008, 200, 742_008) : helper.absolutePos(new BlockPos(14, 2, 3));
+            if (wide) { ticket(new ChunkPos(target)); }
             if (!level.isPositionEntityTicking(origin) || !level.isPositionEntityTicking(target)) { return; }
+            if (wide && !level.areEntitiesLoaded(new ChunkPos(target).toLong())) { return; }
             directory = Files.createTempDirectory("arce-reconnect-schedule-");
             file = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
             player = FirstEventGameTestPlayers.join(level.getServer(), UUID.randomUUID(), "JournalLogin", level, origin.above(2));
             long now = level.getGameTime(); UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID(), owner = UUID.randomUUID();
             var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
-            var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin),
-                    List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of()))),
-                    List.of(new RocketPosition(0, 0, 0)), new RocketStats(1, 100, 1_000, 1_000, 1, 1, 1, 0), now, propulsion);
+            var block = new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of());
+            var blocks = wide ? List.of(new RocketBlock(new RocketPosition(0, 0, 0), block),
+                    new RocketBlock(new RocketPosition(44, 0, 0), block)) : List.of(new RocketBlock(new RocketPosition(0, 0, 0), block));
+            var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin), blocks,
+                    List.of(new RocketPosition(0, 0, 0)), new RocketStats(blocks.size(), 100, 1_000, 1_000, 1, 1, 1, 0), now, propulsion);
             var arrivalSnapshot = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), position(target), now);
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     level.dimension().location(), level.dimension().location(), 500, now);
@@ -149,6 +183,12 @@ public final class RocketReconnectSchedulingGameTests {
             held = RocketJournalSchedulingGameTestSupport.hold(helper, journal, file); stage = 1;
         }
         static RocketPosition position(BlockPos pos) { return new RocketPosition(pos.getX(), pos.getY(), pos.getZ()); }
+        void ticket(ChunkPos column) {
+            if (fixtureColumns.add(column)) {
+                helper.getLevel().getChunkSource().addRegionTicket(FIXTURE, column, 2, fixtureTicket);
+                helper.getLevel().getChunk(column.x, column.z);
+            }
+        }
         void close() {
             if (closed) { return; } closed = true; if (held != null) { held.close(); }
             journal.abort(); service.clear(); recovery.clear();
@@ -157,6 +197,9 @@ public final class RocketReconnectSchedulingGameTests {
             for (var entry : journal.entries()) {
                 entry.destinationEntityId().map(helper.getLevel()::getEntity).ifPresent(net.minecraft.world.entity.Entity::discard);
                 RocketTransferEntities.releaseFlightTickets(helper.getLevel().getServer(), entry);
+            }
+            for (var column : fixtureColumns) {
+                helper.getLevel().getChunkSource().removeRegionTicket(FIXTURE, column, 2, fixtureTicket);
             }
             if (directory != null) {
                 try (var paths = Files.walk(directory)) {
