@@ -212,3 +212,18 @@ The record is `records/W37B.md`.
 | `event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent)` | REDESIGNED | With the six off-world types natural, W37's admission refuses an off-world bed on unbreathable, PENDING or incomplete cells and without station VISIT; an admitted bed keeps the player's existing saved point (D1 outcome 3, R-036) |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release. Real-client and packaged-restart D1-V rows remain for the final campaign.
+
+## Addendum (Root, 2026-11-04): the gas charge pad on O1 (R307)
+
+On 2026-11-04 the owner chose option A for the gas charge pad ("充气台可以放到1.9", see
+[OWNER-DECISIONS-20261104](../v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md)): v1.8 ships O1, W226's finite canister exchange, for every player on every
+server, and W174's automatic charging moves to v1.9 with its design kept. W226 merged O1 at `5e79ee979` (branch run
+41211653377). W278's scripted real-client round 1 on the hosted JAR of `6f3bd461b` filled an oxygen canister at the
+pad and refilled a worn suit to 1000 units from it; round 2 took an empty canister back out after a restart.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `block:oxygenCharger` | IMPLEMENTED | `advancedrocketrycommunity:gas_charge_pad`: the O1 canister exchange for every player; automatic charging in v1.9 (W174) |
+
+`block_entity:AROxygenCharger` stays MERGED into `block:oxygenCharger`. The pad's NEW-art record stays pending the
+owner's look. This addendum is development evidence only. It approves no Required Gate, candidate, version or release.

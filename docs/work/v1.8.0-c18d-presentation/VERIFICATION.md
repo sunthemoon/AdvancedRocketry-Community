@@ -144,3 +144,28 @@ The record is `records/W46.md`; the review is kept in `D:/GitHub/ARCE-Task-Evide
 | `entity:ARSpaceElevatorCapsule` | REDESIGNED | A client-only `elevator_capsule` effect replaces the legacy capsule entity. The departure endpoint's update tag projects at most eight pending rides (entity network ID and remaining countdown), sent on ride request and release only; the client counts down with a 300-tick lease and clears on removal, unload and a null packet. Ride rules, timing and the teleport stay server-side and unchanged |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release. V1 and V2 remain for the final campaign.
+
+## Addendum (Root, 2026-11-04): the ten sounds after the owner's listen (D5, R305)
+
+The ten `sound_event` rows that this file left PLANNED are delivered. W16 (`6a20a674`) registered the ten events
+with NEW code-synthesized audio; the mod namespace's one `sounds.json`, written by the v1.8 DataGen, now defines them
+(`sound/ClassicSound.java`), so the ledger validator reads them. On 2026-11-04 the owner listened to all ten in game
+and kept every one ("音效都通过了", D5), and chose the NEW audio over the ten legacy OGGs (G7), which ADR-062
+revision 7 (W274, merged at `f14e2f178`) excludes; see [OWNER-DECISIONS-20261104](../v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md).
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `sound_event:airHissLoop` | IMPLEMENTED | `advancedrocketrycommunity:air_hiss_loop` (oxygen vent) |
+| `sound_event:basicLaserGun` | IMPLEMENTED | `advancedrocketrycommunity:basic_laser_gun` (laser gun) |
+| `sound_event:combustionRocket` | IMPLEMENTED | `advancedrocketrycommunity:combustion_rocket` (rocket engine) |
+| `sound_event:ElectricShockSmall` | IMPLEMENTED | `advancedrocketrycommunity:electric_shock_small` (electric mushroom and arcs) |
+| `sound_event:gravityOhhh` | IMPLEMENTED | `advancedrocketrycommunity:gravity_controller` (gravity controller) |
+| `sound_event:laserDrill` | IMPLEMENTED | `advancedrocketrycommunity:laser_drill` (laser drill) |
+| `sound_event:lathe` | IMPLEMENTED | `advancedrocketrycommunity:lathe` (lathe and precision laser etcher) |
+| `sound_event:MachineLarge` | IMPLEMENTED | `advancedrocketrycommunity:machine_large` (large machine; no block plays it in v1.8) |
+| `sound_event:railgunBang` | IMPLEMENTED | `advancedrocketrycommunity:railgun_bang` (railgun) |
+| `sound_event:rollingMachine` | IMPLEMENTED | `advancedrocketrycommunity:rolling_machine` (rolling machine and chemical reactor) |
+
+`advancedrocketrycommunity:machine_large` has no in-game source in v1.8: no block maps to it, and it plays only by
+command. The legacy OGGs are excluded, not cleared. This addendum is development evidence only. It approves no
+Required Gate, candidate, version or release.

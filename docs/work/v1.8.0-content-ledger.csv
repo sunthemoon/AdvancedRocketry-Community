@@ -106,7 +106,7 @@ block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_ro
 block:observatory,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:observatory,ADR-051 ADR-062 ADR-066,ground survey creating ADR-051 asteroid instances,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 block:orientationController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_orientation_controller,ADR-062 ADR-065,station orientation (sky) through the checked station commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:oxidizerfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxidizer_fuel_tank,ADR-062 ADR-065,propulsion tier; W260 P4 standalone middle-tank baked OBJ and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:oxygenCharger,PLANNED,C18a,gas charge pad,ADR-062,refills suit tanks,
+block:oxygenCharger,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:gas_charge_pad,ADR-062 ADR-066,O1 finite canister exchange for every player (W226; owner option A on 2026-11-04; R307); automatic charging moves to v1.9 (W174); NEW-art record pending the owner,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:oxygenDetection,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:atmosphere_detector,ADR-062 ADR-066,redstone output by atmosphere state,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:oxygenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:oxygen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:oxygenScrubber,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:co2_scrubber,ADR-062 ADR-066,cartridge-based vent support with a finite fourth debit,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
@@ -603,21 +603,21 @@ satellite:solarEnergy,IMPLEMENTED,v1.6.0,solar satellite kind,ADR-049,,
 satellite_unregistered:SatelliteData,MERGED,-,satellite:optical,ADR-062,base class of data satellites,
 satellite_unregistered:SatelliteDefunct,REDESIGNED,v1.6.0,retired satellite state,ADR-049,,
 satellite_unregistered:SatelliteSpyTelescope,REJECTED,-,-,ADR-049 ADR-062,never registered; remote viewing,
-sound_event:airHissLoop,PLANNED,C18d,air hiss sound,ADR-062,oxygen vent,
-sound_event:basicLaserGun,PLANNED,C18d,laser gun sound,ADR-062,,
-sound_event:combustionRocket,PLANNED,C18d,rocket engine sound,ADR-062,,
+sound_event:airHissLoop,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:air_hiss_loop,ADR-062 ADR-066,oxygen vent; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:basicLaserGun,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:basic_laser_gun,ADR-062 ADR-066,laser gun; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:combustionRocket,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:combustion_rocket,ADR-062 ADR-066,rocket engine; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 sound_event:crystallizer,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder,
 sound_event:cuttingMachine,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder,
 sound_event:electricArcFurnace,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder,
-sound_event:ElectricShockSmall,PLANNED,C18d,electric shock sound,ADR-062,electric mushroom and arcs,
+sound_event:ElectricShockSmall,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:electric_shock_small,ADR-062 ADR-066,electric mushroom and arcs; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 sound_event:electrolyser,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder,
-sound_event:gravityOhhh,PLANNED,C18d,gravity controller sound,ADR-062,,
-sound_event:laserDrill,PLANNED,C18d,laser drill sound,ADR-062,,
-sound_event:lathe,PLANNED,C18d,lathe sound,ADR-062,same file as the rolling machine sound,
-sound_event:MachineLarge,PLANNED,C18d,large machine sound,ADR-062,,
+sound_event:gravityOhhh,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:gravity_controller,ADR-062 ADR-066,gravity controller; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:laserDrill,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:laser_drill,ADR-062 ADR-066,laser drill; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:lathe,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lathe,ADR-062 ADR-066,lathe and precision laser etcher; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:MachineLarge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:machine_large,ADR-062 ADR-066,large machine; no block plays it in v1.8; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 sound_event:precAss,REJECTED,-,-,ADR-062,legacy file is the shared silent placeholder,
-sound_event:railgunBang,PLANNED,C18d,railgun sound,ADR-062,,
-sound_event:rollingMachine,PLANNED,C18d,rolling machine sound,ADR-062,,
+sound_event:railgunBang,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:railgun_bang,ADR-062 ADR-066,railgun; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
+sound_event:rollingMachine,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rolling_machine,ADR-062 ADR-066,rolling machine and chemical reactor; NEW synthesized audio kept by the owner's D5 listen on 2026-11-04 (R305); legacy OGG excluded by ADR-062 revision 7,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 worldgen:ChunkManagerPlanet,REDESIGNED,v1.4.0,datapack biome sources,ADR-033,,
 worldgen:ChunkProviderAsteroids,REJECTED,-,-,ADR-051 ADR-062,temporary asteroid dimensions,
 worldgen:ChunkProviderCavePlanet,DEFERRED,post-2.0,-,ADR-062,cave planet terrain type,

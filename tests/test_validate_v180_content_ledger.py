@@ -224,8 +224,8 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("block:centrifuge: decision token 'later'" in error for error in errors))
 
     def test_planned_needs_a_v18_batch(self) -> None:
-        self._edit_ledger("block:oxygenCharger", plan="C20a")
-        self.assertIn("ledger: block:oxygenCharger: PLANNED plan 'C20a' is not a v1.8 batch", self._errors())
+        self._edit_ledger("block_variant:loader/2", plan="C20a")
+        self.assertIn("ledger: block_variant:loader/2: PLANNED plan 'C20a' is not a v1.8 batch", self._errors())
 
     def test_implemented_plan_must_not_be_future(self) -> None:
         self._edit_ledger("block:railgun", plan="v1.9.0")
@@ -282,8 +282,8 @@ class V180ContentLedgerTests(unittest.TestCase):
                       self._errors())
 
     def test_planned_row_cannot_carry_evidence(self) -> None:
-        self._edit_ledger("block:oxygenCharger", evidence="docs/work/v1.8.0-content-audit.md")
-        self.assertIn("ledger: block:oxygenCharger: evidence is recorded only for rows delivered in v1.8.0",
+        self._edit_ledger("block_variant:loader/2", evidence="docs/work/v1.8.0-content-audit.md")
+        self.assertIn("ledger: block_variant:loader/2: evidence is recorded only for rows delivered in v1.8.0",
                       self._errors())
 
     def test_unknown_disposition_fails(self) -> None:
