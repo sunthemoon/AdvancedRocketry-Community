@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterHandler;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,6 +19,17 @@ import org.junit.jupiter.api.Test;
 
 class TankContainerExchangeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void onlyFluidCapabilityItemsAttemptAnExchange() {
+        // Plain JUnit has no Forge CapabilityToken transformation; A1 checks the registered item capabilities.
+        Function<ItemStack, IFluidHandlerItem> capabilities = stack -> stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET)
+                ? new FluidBucketWrapper(stack) : stack.is(Items.PAPER) ? gas(stack) : null;
+        assertFalse(TankContainerExchange.isFluidContainer(ItemStack.EMPTY, stack -> { fail("Empty hand queried a capability"); return null; }));
+        assertFalse(TankContainerExchange.isFluidContainer(new ItemStack(Items.IRON_NUGGET, 16), capabilities));
+        assertFalse(TankContainerExchange.isFluidContainer(new ItemStack(Items.STONE), capabilities));
+        assertTrue(TankContainerExchange.isFluidContainer(new ItemStack(Items.BUCKET), capabilities));
+        assertTrue(TankContainerExchange.isFluidContainer(new ItemStack(Items.WATER_BUCKET), capabilities));
+        assertTrue(TankContainerExchange.isFluidContainer(new ItemStack(Items.PAPER), capabilities));
+    }
     private static IFluidHandlerItem gas(ItemStack unit) {
         return new GasCanisterHandler(unit, () -> new GasCanisterCatalog(Items.GLASS_BOTTLE,
                 List.of(new GasCanisterCatalog.Entry(Items.PAPER, Fluids.WATER))));

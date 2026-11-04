@@ -105,7 +105,7 @@ public final class V180ClassicMachineData implements DataProvider {
         for (int i = 0; i < BLOCKS.size(); i++) { result.put("block." + NS + "." + BLOCKS.get(i), chinese ? zh[i] : en[i]); }
         result.put("screen." + NS + ".classic.formed", chinese ? "结构完整：%s" : "Formed: %s");
         result.put("screen." + NS + ".classic.progress", chinese ? "进度：%s / %s tick" : "Progress: %s / %s ticks");
-        result.put("screen." + NS + ".classic.energy", chinese ? "电量：%s FE" : "Energy: %s FE");
+        result.put("screen." + NS + ".classic.stored_energy", chinese ? "电量：%s FE" : "Energy: %s FE");
         String[] english = {"Structure incomplete", "Checking recipes", "Waiting for inputs", "Output full", "Waiting for power",
                 "Paused by redstone", "Waiting for loaded parts", "Hatch binding conflict", "Recipe missing", "Recipe changed",
                 "Recipe tags unavailable", "Data needs administrator repair", "Resource or catalog limit", "Running", "Disabled by configuration", "Gravity above machine limit",

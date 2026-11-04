@@ -52,6 +52,20 @@ public final class SuitWorkstationGameTests {
         f.helper.assertTrue(armor.equals(f.station.stack(0).serializeNBT()) && transfer.equals(f.station.stack(1).serializeNBT()), "Refusal changed a held stack");
     }
     @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
+    public static void menuInventoryLeavesRoomForTheRemovalHintAndTitle(GameTestHelper helper) {
+        try (var f = new EquipmentFixture(helper)) {
+            helper.assertTrue(f.menu.slots.size() == 38, "Expected two workstation and 36 player slots");
+            for (int index = 0; index < 36; index++) {
+                var slot = f.menu.getSlot(index + 2);
+                int row = index / 9, column = index % 9;
+                helper.assertTrue(slot.x == 8 + column * 18
+                        && slot.y == (row == 3 ? SuitWorkstationMenu.HOTBAR_Y : SuitWorkstationMenu.INVENTORY_Y + row * 18),
+                        "Player slot moved away from its screen frame: " + index);
+            }
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
     public static void everyRegisteredModuleInstallsAndRemovesLosslessly(GameTestHelper helper) {
         try (var f = new EquipmentFixture(helper)) {
             for (ModuleKind kind : ModuleKind.values()) {

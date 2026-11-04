@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import io.github.sunthemoon.advancedrocketrycommunity.client.ClassicControllerScreen;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClassicMachineArt;
 import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClassicMachineData;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicRecipeCodec;
@@ -11,6 +12,16 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 class ClassicMachineDataTest {
+    @Test void energyAmountAndWaitReasonHaveSeparateBilingualKeys() {
+        assertNotEquals(ClassicWait.ENERGY.key(), ClassicControllerScreen.ENERGY_TEXT_KEY);
+        for (boolean chinese : new boolean[]{false, true}) {
+            var language = V180ClassicMachineData.language(chinese);
+            assertEquals(chinese ? "等待电力" : "Waiting for power", language.get(ClassicWait.ENERGY.key()));
+            String energy = language.get(ClassicControllerScreen.ENERGY_TEXT_KEY);
+            assertEquals(chinese ? "电量：123456 FE" : "Energy: 123456 FE", energy.formatted(123456));
+            assertEquals(1, energy.split("%s", -1).length - 1);
+        }
+    }
     @Test void patternHasTheLegacyRowsAndAllRotationsWithoutMirrors() {
         var pattern = MultiblockPatternJsonCodec.decode(V180ClassicMachineData.lathePattern().toString().getBytes(StandardCharsets.UTF_8));
         assertEquals(new PatternSize(4, 2, 1), pattern.size()); assertEquals(new PatternPosition(0, 1, 0), pattern.controllerAnchor());

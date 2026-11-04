@@ -8,13 +8,20 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTa
 import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankSave;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
+import com.mojang.authlib.GameProfile;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,6 +30,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -50,6 +58,47 @@ public final class TankGameTests {
         Player player = helper.makeMockPlayer();
         player.setPos(tank.getBlockPos().getX() + 0.5, tank.getBlockPos().getY(), tank.getBlockPos().getZ() + 0.5);
         return player;
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void unrelatedHeldItemsInspectAndRealContainerFailuresKeepTheirHint(GameTestHelper helper) {
+        var tank = place(helper, POSITION);
+        Component[] message = {null};
+        ServerPlayer player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(),
+                new GameProfile(UUID.randomUUID(), "ARCETankHint")) {
+            @Override public void displayClientMessage(Component text, boolean actionBar) { message[0] = text; }
+            @Override public void sendSystemMessage(Component text) { }
+        };
+        player.setPos(tank.getBlockPos().getX() + 0.5, tank.getBlockPos().getY(), tank.getBlockPos().getZ() + 0.5);
+        var hit = new BlockHitResult(Vec3.atCenterOf(tank.getBlockPos()), Direction.UP, tank.getBlockPos(), false);
+        var state = tank.getBlockState();
+        for (InteractionHand hand : InteractionHand.values()) {
+            for (ItemStack held : new ItemStack[]{ItemStack.EMPTY, new ItemStack(MaterialContent.item("tin_nugget"), 16),
+                    new ItemStack(Items.STONE)}) {
+                player.setItemInHand(hand, held);
+                CompoundTag before = held.save(new CompoundTag());
+                var result = state.use(helper.getLevel(), player, hand, hit);
+                helper.assertTrue(result == InteractionResult.CONSUME && tank.fluidState().isEmpty()
+                        && before.equals(player.getItemInHand(hand).save(new CompoundTag())), "Inspection mutated resources");
+                helper.assertTrue(message[0].getContents() instanceof TranslatableContents text
+                        && text.getKey().equals("message.advancedrocketrycommunity.tank.contents")
+                        && (int) text.getArgs()[1] == 0 && (int) text.getArgs()[2] == tank.capacity(),
+                        "Unrelated item did not receive the empty-hand contents hint");
+            }
+            for (ItemStack held : new ItemStack[]{new ItemStack(Items.BUCKET), new ItemStack(ModItems.EMPTY_CANISTER.get())}) {
+                player.setItemInHand(hand, held);
+                helper.assertTrue(state.use(helper.getLevel(), player, hand, hit) == InteractionResult.FAIL
+                        && message[0].getContents() instanceof TranslatableContents text
+                        && text.getKey().equals("message.advancedrocketrycommunity.tank.refused"),
+                        "Real container lost its failure hint");
+            }
+        }
+        port(tank).fill(new FluidStack(Fluids.WATER, 1_000), FluidAction.EXECUTE);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MaterialContent.item("tin_nugget")));
+        helper.assertTrue(state.use(helper.getLevel(), player, InteractionHand.MAIN_HAND, hit) == InteractionResult.CONSUME
+                && message[0].getContents() instanceof TranslatableContents text && (int) text.getArgs()[1] == 1_000
+                && tank.fluidState().getAmount() == 1_000, "Filled-tank inspection lost its contents");
+        helper.succeed();
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)

@@ -15,6 +15,10 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Code-drawn panel; only the server menu supplies machine state and resources. */
 public final class PrecisionAssemblerScreen extends AbstractContainerScreen<PrecisionAssemblerMenu> {
+    public static final int RESOURCE_LABEL_Y = 23;
+    public static final int OUTPUT_LABEL_RIGHT = 230;
+    public static final int ENERGY_GAUGE_Y = 34;
+    public static final int ENERGY_GAUGE_HEIGHT = 37;
     private static final int PANEL_TOP = 0xFF253541;
     private static final int PANEL_BOTTOM = 0xFF111A22;
     private static final int PANEL_EDGE = 0xFF91AEB9;
@@ -42,7 +46,7 @@ public final class PrecisionAssemblerScreen extends AbstractContainerScreen<Prec
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
 
-        if (isHovering(151, 28, 14, 43, mouseX, mouseY)) {
+        if (isHovering(151, ENERGY_GAUGE_Y, 14, ENERGY_GAUGE_HEIGHT, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.translatable(
                     "tooltip.advancedrocketrycommunity.energy",
                     menu.energyStored(), menu.energyCapacity()), mouseX, mouseY);
@@ -65,13 +69,8 @@ public final class PrecisionAssemblerScreen extends AbstractContainerScreen<Prec
         graphics.fill(x + 4, y + 18, x + imageWidth - 4, y + 131, 0xB508141B);
         graphics.renderOutline(x + 4, y + 18, imageWidth - 8, 113, 0xFF536F79);
 
-        for (int slot = 0; slot < 5; slot++) {
-            drawSlot(graphics, x + 17 + slot * 22, y + 35);
-        }
-        for (int slot = 0; slot < 2; slot++) {
-            drawSlot(graphics, x + 186 + slot * 22, y + 35);
-        }
-        drawVerticalGauge(graphics, x + 151, y + 28, 14, 43,
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, SLOT_EDGE, RECESS);
+        drawVerticalGauge(graphics, x + 151, y + ENERGY_GAUGE_Y, 14, ENERGY_GAUGE_HEIGHT,
                 menu.energyStored(), menu.energyCapacity(), ENERGY);
 
         graphics.fill(x + 18, y + 71, x + 230, y + 82, SLOT_EDGE);
@@ -87,10 +86,10 @@ public final class PrecisionAssemblerScreen extends AbstractContainerScreen<Prec
         graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
         graphics.drawString(font, Component.translatable(
-                "screen.advancedrocketrycommunity.precision_assembler.inputs"), 18, 23, MUTED, false);
-        graphics.drawString(font, Component.translatable(
-                "screen.advancedrocketrycommunity.precision_assembler.outputs"), 181, 23, MUTED, false);
-        graphics.drawString(font, "FE", 151, 17, MUTED, false);
+                "screen.advancedrocketrycommunity.precision_assembler.inputs"), 18, RESOURCE_LABEL_Y, MUTED, false);
+        Component outputs = Component.translatable("screen.advancedrocketrycommunity.precision_assembler.outputs");
+        graphics.drawString(font, outputs, OUTPUT_LABEL_RIGHT - font.width(outputs), RESOURCE_LABEL_Y, MUTED, false);
+        graphics.drawString(font, "FE", 151, RESOURCE_LABEL_Y, MUTED, false);
         for (int slot = 0; slot < 5; slot++) {
             graphics.drawCenteredString(font, Integer.toString(slot), 26 + slot * 22, 56, MUTED);
         }
@@ -161,11 +160,6 @@ public final class PrecisionAssemblerScreen extends AbstractContainerScreen<Prec
         graphics.pose().scale(factor, factor, 1.0F);
         graphics.drawCenteredString(font, value, 0, 0, color);
         graphics.pose().popPose();
-    }
-
-    private static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, SLOT_EDGE);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, RECESS);
     }
 
     private static void drawVerticalGauge(
