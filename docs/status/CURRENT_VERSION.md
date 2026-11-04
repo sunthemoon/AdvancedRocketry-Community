@@ -199,8 +199,11 @@ What is still open:
   space elevator, the black-hole generator at Cygnus X-1, the gravity field, force field, beacon and microwave
   receiver, two restarts) passed with findings, among them a config switch that did not apply until a restart; round
   5, on the JAR of `21757171d`, ran an integrated single-player world (gas pad, a Moon round trip, Save and Quit) and
-  upgraded round 4's world, and confirmed round 1's findings 1 to 4 fixed by W280 and W281. Findings are queued as
-  W280 to W282 and W284 to W296; the report is `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
+  upgraded round 4's world, and confirmed round 1's findings 1 to 4 fixed by W280 and W281; round 6, on the JAR of
+  `6b3925c45`, confirmed W284 (13 clean starts) and W285 (no kick after Moon falls or off a 0 % station platform) and
+  found that a 0 g player returned to the Overworld from outside every station region is kicked on arrival. Findings
+  are queued as W280 to W282, W284 to W296 and W301; the report is
+  `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
   R32-03 tests (W61), and the v1.8 import root (W52F). Hosted governance run 38671573901 passed
