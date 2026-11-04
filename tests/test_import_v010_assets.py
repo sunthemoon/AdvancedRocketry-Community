@@ -131,6 +131,24 @@ class ImportV010AssetsTests(unittest.TestCase):
         reset = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
         self.assertEqual("PENDING_HUMAN_REVIEW", reset["review"]["status"])
 
+    def test_completed_review_requires_a_canonical_real_ascii_date(self) -> None:
+        digest = "a" * 64
+        for status in ("APPROVED", "CHANGES_REQUIRED"):
+            review = dict(MODULE.pending_review(digest), status=status, reviewer="fixture-reviewer",
+                          findings=[] if status == "APPROVED" else ["Synthetic finding."])
+            for reviewed_at in ("2026-11-04", "2026-11-03", "2024-02-29", "2000-02-29",
+                                "0001-01-01", "9999-12-31"):
+                with self.subTest(status=status, reviewed_at=reviewed_at):
+                    candidate = dict(review, reviewed_at=reviewed_at)
+                    self.assertEqual(candidate, MODULE.validate_review(candidate, digest))
+            for reviewed_at in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                                "2026-13-45", "2026-02-30", "2026-02-29", "0000-01-01",
+                                "2026-11-03\n", "2026-11-04\n", "2026-11-04\r\n",
+                                " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104):
+                with self.subTest(status=status, reviewed_at=reviewed_at):
+                    with self.assertRaisesRegex(ValueError, "requires an ISO date"):
+                        MODULE.validate_review(dict(review, reviewed_at=reviewed_at), digest)
+
     def test_pending_review_cannot_prefill_reviewer(self) -> None:
         record = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
         record["review"]["reviewer"] = "not-allowed"

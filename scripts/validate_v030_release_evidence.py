@@ -75,13 +75,12 @@ MAX_SCREENSHOT_BYTES = 8 * 1024 * 1024
 
 
 def _valid_date(value: object) -> bool:
-    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return False
     try:
-        dt.date.fromisoformat(value)
+        return dt.date.fromisoformat(value).isoformat() == value
     except ValueError:
         return False
-    return True
 
 
 def _validate_provenance(repository_root: Path, errors: list[str]) -> bool:

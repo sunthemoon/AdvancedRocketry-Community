@@ -171,7 +171,7 @@ def _exact_keys(
 
 
 def _valid_date(value: Any) -> bool:
-    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return False
     try:
         return dt.date.fromisoformat(value).isoformat() == value

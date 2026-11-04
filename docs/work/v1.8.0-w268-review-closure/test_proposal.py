@@ -196,6 +196,9 @@ class ProposalTests(unittest.TestCase):
                   (dict(reviewed, reviewed_at="2099-01-01\n"), "Invalid review date"),
                   (dict(reviewed, review_record="docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md"), "decision record"),
                   (dict(reviewed, review_record=""), "decision record")]
+        cases += [(dict(reviewed, reviewed_at=value), "Invalid review date") for value in (
+            "\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663", "2026-13-45", "2026-02-30",
+            "2026-11-04\r\n", " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104)]
         with tempfile.TemporaryDirectory() as temporary:
             source, output = (Path(temporary) / name for name in ("source.json", "output.json"))
             for finding, message in cases:

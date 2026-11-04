@@ -424,6 +424,20 @@ class PendingAndSchemaTests(unittest.TestCase):
         self.assertIn("not a real date", date_errors[0])
         self.assertIn("at least one finding", finding_errors[0])
 
+    def test_review_date_requires_a_canonical_real_ascii_date(self) -> None:
+        fixture = GitFixture(self)
+        document = fixture.pending_document()
+        fixture.bind_source(document, fixture.report(), outcome=TOOL.CHANGES_REQUIRED)
+        source = document["final_g0_source_resource_review"]
+        for value in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                      "2026-13-45", "2026-02-30", "2026-11-03\n", "2026-11-04\r\n",
+                      " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104):
+            with self.subTest(value=value):
+                source["reviewed_at"] = value
+                fixture.write_record(document)
+                errors, _ = TOOL.validate_final_g0_review_records(fixture.root)
+                self.assertTrue(any("reviewed_at" in error for error in errors), errors)
+
 
 class BoundReviewTests(unittest.TestCase):
     def test_both_approved_records_pass_exact_git_validation(self) -> None:

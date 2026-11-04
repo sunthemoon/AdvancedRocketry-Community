@@ -20,7 +20,9 @@ class AdoptOriginFindingsTests(unittest.TestCase):
                     review_record="docs/fixture-decision.md")
 
     def test_canonical_review_date_passes(self):
-        MODULE.check_findings(dict(findings=[self.finding("2026-11-04")]))
+        for reviewed_at in ("2026-11-04", "2024-02-29", "2000-02-29", "0001-01-01", "9999-12-31"):
+            with self.subTest(reviewed_at=reviewed_at):
+                MODULE.check_findings(dict(findings=[self.finding(reviewed_at)]))
 
     def test_preparation_date_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "Preparation date is not a review date"):
@@ -33,7 +35,9 @@ class AdoptOriginFindingsTests(unittest.TestCase):
             absent = Path(temporary) / "absent.json"
             output.write_bytes(b"unchanged output")
             for reviewed_at in ("2026-11-03\n", "2026-11-04\n", "2026-11-04\r\n", " 2026-11-04",
-                                "2026-11-04 ", "2026-11-4", None, 20261104):
+                                "2026-11-04 ", "2026-11-4", None, 20261104,
+                                "\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                                "2026-13-45", "2026-02-30", "2026-02-29", "0000-01-01"):
                 with self.subTest(reviewed_at=reviewed_at):
                     source.write_text(json.dumps(dict(findings=[self.finding(reviewed_at)])), encoding="utf-8")
                     for target in (output, absent):

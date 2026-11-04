@@ -74,13 +74,12 @@ MAX_EVIDENCE_BYTES = 8 * 1024 * 1024
 
 
 def _valid_date(value: object) -> bool:
-    if not isinstance(value, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}", value) is None:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value) is None:
         return False
     try:
-        dt.date.fromisoformat(value)
+        return dt.date.fromisoformat(value).isoformat() == value
     except ValueError:
         return False
-    return True
 
 
 def _identity(
