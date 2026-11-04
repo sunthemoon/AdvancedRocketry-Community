@@ -204,9 +204,9 @@ public final class RocketSeatRosterGameTests {
                 "W287Passenger", helper.getLevel(), helper.absolutePos(ARRIVAL)); }
         void sneakTick() {
             player.setShiftKeyDown(true);
-            rocket.tick(); // The native Level ticks the vehicle before Player.rideTick consumes sneak input.
-            player.rideTick();
-            player.setShiftKeyDown(false);
+            // Exercise the native vehicle/passenger ordering, not a synthetic mount event.
+            helper.getLevel().tickNonPassenger(rocket);
+            helper.assertTrue(!player.isShiftKeyDown(), "Native passenger tick did not consume sneak input");
         }
         void disconnect() {
             helper.getLevel().getServer().getPlayerList().remove(player); recovery.onPlayerLoggedOut(playerId); player = null;
