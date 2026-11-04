@@ -559,7 +559,31 @@ final class RocketFlightService {
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
     }
 
-    private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
+    /**
+     * Only native player input authorizes a ground LEAVE. EntityMountEvent has no cause field: observing an
+     * arbitrary detach, even with sneak held, would discard seats during logout, teleport or recovery.
+     */
+    static void dismountSneakingPassengers(RocketEntity rocket) {
+        if (!rocket.operational() || !rocket.isAlive() || !RocketTransferEntities.loadedEntity(rocket)) { return; }
+        var flight = rocket.flightData().orElseThrow();
+        if (!stationary(flight.state()) || flight.activeTransferId().isPresent()) { return; }
+        var exits = RocketRuntime.passengerExits().orElse(null);
+        // The actual passenger list is immutable during iteration and bounded by the existing seat limit.
+        for (var passenger : rocket.getPassengers()) {
+            if (passenger instanceof ServerPlayer player && player.getVehicle() == rocket
+                    && player.level() == rocket.level() && player.isShiftKeyDown()
+                    && BayPassengerExitPermit.online(player) && !player.hasDisconnected() && !player.isSpectator()
+                    && !(player instanceof net.minecraftforge.common.util.FakePlayer)
+                    && !BayPassengerExitPermit.guarded(player) && (exits == null || !exits.state.internal(player))) {
+                if (leave(player, rocket).success() && player.getVehicle() != rocket) {
+                    // Player.rideTick would reset this after consuming the same native input.
+                    player.setShiftKeyDown(false);
+                }
+            }
+        }
+    }
+
+    private static RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
         var physicalExit = RocketRuntime.passengerExits().map(exits -> exits.heldLeave(player, rocket)).orElse(null);
         if (physicalExit != null) { return physicalExit; }
         if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, player.getUUID())
@@ -574,6 +598,9 @@ final class RocketFlightService {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.NOT_BOARDED);
         }
         player.stopRiding();
+        if (player.getVehicle() == rocket) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+        }
         rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
     }
