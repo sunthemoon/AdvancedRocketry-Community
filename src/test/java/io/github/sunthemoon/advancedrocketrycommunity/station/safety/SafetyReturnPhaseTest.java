@@ -9,6 +9,19 @@ import org.junit.jupiter.api.Test;
 /** ADR-066 section 3.3: 100 consecutive adrift ticks, one attempt per 200 ticks, and the clearing rules. */
 final class SafetyReturnPhaseTest {
     @Test
+    void zeroGravityStationThresholdKeepsTheExistingRetrySpacingAndClearRules() {
+        SafetyReturnPhase phase = new SafetyReturnPhase();
+        for (int tick = 1; tick < 40; tick++) { assertFalse(phase.tick(true, tick, 40)); }
+        assertTrue(phase.tick(true, 40, 40));
+        phase.attempted(40);
+        for (int tick = 41; tick < 240; tick++) { assertFalse(phase.tick(true, tick, 40)); }
+        assertTrue(phase.tick(true, 240, 40));
+        phase.clear();
+        assertFalse(phase.tick(true, 241, 40));
+        assertEquals(1, phase.adriftTicks());
+    }
+
+    @Test
     void anAttemptNeedsOneHundredConsecutiveAdriftTicks() {
         SafetyReturnPhase phase = new SafetyReturnPhase();
         for (int tick = 1; tick < SafetyReturnPhase.ADRIFT_TICKS; tick++) {
