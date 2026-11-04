@@ -84,7 +84,7 @@ class EscrowTerminalRetryCutTest {
         try (var failure = new EscrowTerminalRetryCut.WriteFailure(duplicateHistory, () -> 2_000)) {
             fail(duplicateHistory, 2_000, "F7_WRITE", "LEDGER_WRITE_FAILED");
             fail(duplicateHistory, 2_000, "F7_WRITE", "LEDGER_WRITE_FAILED");
-            assertFalse(failure.matches(history));
+            assertFalse(failure.matches(duplicateHistory));
         }
     }
 
