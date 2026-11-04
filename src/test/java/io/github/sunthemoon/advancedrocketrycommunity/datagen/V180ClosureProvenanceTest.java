@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -39,8 +40,30 @@ class V180ClosureProvenanceTest {
             assertTrue(entries.put(target, entry) == null, "duplicate target " + target);
             assertEquals("NEW", entry.get("status").getAsString(), target);
             assertEquals("MIT", entry.get("license").getAsString(), target);
-            assertEquals(sha256(Path.of(target)), entry.get("target_sha256").getAsString(), target);
-            assertEquals(sha256(Path.of(entry.get("source_path").getAsString())), entry.get("source_sha256").getAsString(), target);
+            if (target.endsWith("models/block/precision_assembler.json")) {
+                // W275 preserves this approved record and explicitly supersedes only its model binding.
+                JsonObject replacement = JsonParser.parseString(Files.readString(Path.of(
+                        "docs/provenance/v1.8.0-w275-stand-in-art.json"))).getAsJsonObject()
+                        .getAsJsonArray("entries").asList().stream().map(JsonElement::getAsJsonObject)
+                        .filter(value2 -> target.equals(value2.get("target_path").getAsString())).findFirst().orElseThrow();
+                assertEquals(entry.get("target_sha256"), replacement.get("supersedes_target_sha256"));
+                assertEquals(sha256(Path.of(target)), replacement.get("target_sha256").getAsString(), target);
+            } else {
+                assertEquals(sha256(Path.of(target)), entry.get("target_sha256").getAsString(), target);
+            }
+            String source = entry.get("source_path").getAsString();
+            if (source.endsWith("/V180ClosureModels.java")) {
+                // A historical source hash describes the recorded authoring commit, not later provider edits.
+                Process git = new ProcessBuilder("git", "show", entry.get("authoring_commit").getAsString() + ":" + source).start();
+                byte[] bytes = git.getInputStream().readAllBytes();
+                try { assertTrue(git.waitFor(10, TimeUnit.SECONDS)); }
+                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IOException(interrupted); }
+                assertEquals(0, git.exitValue());
+                try { assertEquals(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)), entry.get("source_sha256").getAsString(), source); }
+                catch (NoSuchAlgorithmException failure) { throw new IllegalStateException(failure); }
+            } else {
+                assertEquals(sha256(Path.of(source)), entry.get("source_sha256").getAsString(), target);
+            }
             assertTrue(entry.get("authoring_commit").getAsString().matches("[0-9a-f]{40}"));
             assertTrue(entry.get("source_commit").getAsString().matches("[0-9a-f]{40}"));
             assertTrue(entry.get("generator_class").getAsString().startsWith(

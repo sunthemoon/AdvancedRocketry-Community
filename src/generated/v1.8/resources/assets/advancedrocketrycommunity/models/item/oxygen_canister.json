@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "advancedrocketrycommunity:item/oxygen_canister_cylinder"
+  }
+}
