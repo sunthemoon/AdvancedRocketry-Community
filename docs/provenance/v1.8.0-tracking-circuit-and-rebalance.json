@@ -130,11 +130,12 @@
   ],
   "license": "MIT",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "81d7ecb0005a9d163cee5cd153970160c7a18072ba5d009ca66f41310d248300",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 2,
   "source_branch": "codex/v1.8.0-w35-c16d",

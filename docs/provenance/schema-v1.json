@@ -46,7 +46,8 @@
         "content_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "reviewer": {"type": ["string", "null"]},
         "reviewed_at": {"type": ["string", "null"]},
-        "findings": {"type": "array", "items": {"type": "string"}}
+        "findings": {"type": "array", "items": {"type": "string"}},
+        "basis": {"type": "string", "minLength": 1}
       }
     }
   }

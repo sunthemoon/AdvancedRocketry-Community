@@ -73,11 +73,9 @@ class V180PresentationProvenanceTest {
     }
 
     @Test
-    void theReviewStaysPendingWithoutAPrefilledDecision() throws IOException {
+    void theReviewRecordsTheOwnersBoundD7Approval() throws IOException {
         JsonObject review = record().getAsJsonObject("review");
-        assertEquals("PENDING_HUMAN_REVIEW", review.get("status").getAsString());
-        assertTrue(review.get("reviewer").isJsonNull());
-        assertTrue(review.get("reviewed_at").isJsonNull());
+        V180OwnerReviewAssertions.assertD7Approval(review);
         assertEquals(64, review.get("content_digest").getAsString().length());
     }
 

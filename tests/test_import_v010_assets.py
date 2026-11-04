@@ -138,6 +138,32 @@ class ImportV010AssetsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must not prefill"):
             MODULE.verify(self.repository, self.upstream, self.plan, self.record)
 
+    def test_review_basis_is_preserved_only_for_the_bound_core(self) -> None:
+        record = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
+        record["review"].update(status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01",
+                                basis="Synthetic decision record: docs/fixture.md")
+        self.record.write_bytes(MODULE.pretty_json(record))
+        self.assertEqual([], MODULE.verify(self.repository, self.upstream, self.plan, self.record))
+        self.assertEqual(record, MODULE.generate(self.repository, self.upstream, self.plan, self.record))
+        changed = MODULE.record_for(dict(batch_id="different core"), record)
+        self.assertEqual("PENDING_HUMAN_REVIEW", changed["review"]["status"])
+        self.assertNotIn("basis", changed["review"])
+
+    def test_review_basis_does_not_relax_decision_validation(self) -> None:
+        pending = MODULE.pending_review("a" * 64)
+        approved = dict(pending, status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01")
+        for basis in (None, 42, "", " "):
+            with self.subTest(basis=basis), self.assertRaisesRegex(ValueError, "basis must be a non-empty string"):
+                MODULE.validate_review(dict(approved, basis=basis), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "must not prefill"):
+            MODULE.validate_review(dict(pending, basis="docs/fixture.md"), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "malformed"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md", extra=True), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "cannot retain findings"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md", findings=["unresolved"]), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "bind the current record"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md"), "b" * 64)
+
     def test_duplicate_casefolded_target_is_rejected(self) -> None:
         plan = json.loads(self.plan.read_text(encoding="utf-8"))
         duplicate = dict(plan["entries"][0])

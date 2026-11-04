@@ -378,11 +378,12 @@
   },
   "plan_sha256": "d8359787d7b6728905597c7e823fb2a25983a9e9abe2d8a9157f05fd0ba411dc",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "55a0fc311c853877fc859cbc58fc0194c9f4c528f9f7cec374f08970e449142e",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 2,
   "sources": [
