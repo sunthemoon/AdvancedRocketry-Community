@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.*;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import net.minecraft.nbt.CompoundTag;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.*;
@@ -103,8 +104,8 @@ final class RocketStaleSeatFixture implements AutoCloseable {
                 // The older shared mock overrides isSpectator(). Use vanilla ServerPlayer for this stimulus.
                 f.disconnect(); f.player = nativeJoin();
                 helper.assertTrue(f.player.startRiding(f.rocket, true), "Native spectator control did not board");
-                helper.assertTrue(command("gamemode spectator " + f.playerId) == 1 && f.player.isSpectator()
-                        && !f.player.isPassenger(), "Spectator command did not detach a real spectator");
+                helper.assertTrue(f.player.setGameMode(GameType.SPECTATOR) && f.player.isSpectator()
+                        && !f.player.isPassenger(), "Native game-mode switch did not detach a real spectator");
             }
             case DISMOUNT -> helper.assertTrue(command("ride " + f.playerId + " dismount") == 1 && !f.player.isPassenger(), "Ride dismount command failed");
             case PEARL -> {
@@ -185,19 +186,43 @@ final class RocketStaleSeatFixture implements AutoCloseable {
         f.inFlight(); text = seatCommand(f.playerId.toString());
         helper.assertTrue(command(text) == 0 && replies.stream().anyMatch(message -> message.contains("INVALID_STATE")),
                 "In-flight release was not refused for its state"); kept("in-flight refusal changed seat");
-        f.rocket.updateFlightData(f.rocket.flightData().orElseThrow().markFailed(helper.getLevel().getGameTime()).recover(true, helper.getLevel().getGameTime()));
+        landAfterFlight(); text = seatCommand(f.playerId.toString());
         var data = RocketTransactionSavedData.get(helper.getLevel().getServer()); var unreadable = replaceField(data, "unreadable", true);
         try { helper.assertTrue(command(text) == 0, "Frozen root accepted operator release"); kept("frozen refusal changed seat"); }
         finally { replaceField(data, "unreadable", unreadable); }
         try (var ignored = RocketRuntime.internalPassengerMove(f.player)) {
             helper.assertTrue(command(text) == 0, "Internal move accepted operator release"); kept("internal refusal changed seat");
         }
-        var profile = f.player.getGameProfile(); helper.getLevel().getServer().getProfileCache().add(profile); f.disconnect();
-        helper.assertTrue(command(seatCommand(profile.getName())) == 1, "Operator could not release an offline cached name");
-        helper.assertTrue(replies.stream().anyMatch(message -> message.contains("Released rocket seat:")), "Operator received no success report");
-        helper.assertTrue(!assigned() && command(seatCommand(f.playerId.toString())) == 0, "Repeated release succeeded");
-        f.reload(); f.login(); helper.assertTrue(!assigned() && f.player.getVehicle() == null, "Operator release was not persisted");
+        // GameTestServer supplies no profile cache. Install the normal cache for this synchronous command only.
+        var server = helper.getLevel().getServer();
+        var servicesField = net.minecraft.server.MinecraftServer.class.getDeclaredField("services"); servicesField.setAccessible(true);
+        var services = (net.minecraft.server.Services) servicesField.get(server);
+        try {
+            var cache = server.getProfileCache();
+            if (cache == null) {
+                cache = new net.minecraft.server.players.GameProfileCache(services.profileRepository(), f.directory.resolve("usercache.json").toFile());
+                servicesField.set(server, new net.minecraft.server.Services(services.sessionService(), services.servicesKeySet(), services.profileRepository(), cache));
+            }
+            var profile = f.player.getGameProfile(); cache.add(profile); f.disconnect();
+            helper.assertTrue(command(seatCommand(profile.getName())) == 1, "Operator could not release an offline cached name");
+            helper.assertTrue(replies.stream().anyMatch(message -> message.contains("Released rocket seat:")), "Operator received no success report");
+            helper.assertTrue(!assigned() && command(seatCommand(f.playerId.toString())) == 0, "Repeated release succeeded");
+            f.reload(); f.login(); helper.assertTrue(!assigned() && f.player.getVehicle() == null, "Operator release was not persisted");
+        } finally { servicesField.set(server, services); }
         done();
+    }
+
+    private void landAfterFlight() {
+        f.player.stopRiding(); f.rocket.discard();
+        var record = f.flight.record();
+        f.rocket = ModEntities.ROCKET.get().create(helper.getLevel());
+        f.rocket.initializeTransferred(record.destinationSnapshot(), record.logicalRocketId(), record.ownerId(),
+                record.destinationFlightData().land(helper.getLevel().getGameTime()));
+        RocketTransferEntities.positionAtOrigin(f.rocket, record.destinationSnapshot().sourceOrigin());
+        helper.assertTrue(helper.getLevel().addFreshEntity(f.rocket), "Landed authority was not published");
+        f.record = record.destinationSpawned(f.rocket.getUUID()).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
+                .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
+        f.journal.remove(record.transferId()); f.journal.put(f.record); f.live.clear(); f.settled.add(record.transferId()); f.confirm();
     }
 
     private ServerPlayer nativeJoin() {
@@ -242,7 +267,7 @@ final class RocketStaleSeatFixture implements AutoCloseable {
                 if (transactions != null) { replaceField(transactions, "unreadable", previousFrozen); transactions = null; }
                 if (scenario == Case.ACTIVE_TRANSFER) { replaceField(f.rocket.flightData().orElseThrow(), "activeTransferId", previousTransfer); }
                 if (scenario == Case.IN_FLIGHT) {
-                    f.rocket.updateFlightData(f.rocket.flightData().orElseThrow().markFailed(helper.getLevel().getGameTime()).recover(true, helper.getLevel().getGameTime()));
+                    landAfterFlight();
                 }
                 if (claims != null) { claims.remove(f.record.logicalRocketId()); claims = null; helper.assertTrue(!RocketEscrowGate.bayHeld(f.rocket), "Bay hold did not end"); }
             }

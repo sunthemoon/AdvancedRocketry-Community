@@ -20,7 +20,7 @@ public final class RocketStaleSeatGameTests {
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
     public static void teleportCommandReleasesTheStationarySeat(GameTestHelper h) { new RocketStaleSeatFixture(h, TELEPORT).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
-    public static void spectatorCommandReleasesTheStationarySeat(GameTestHelper h) { new RocketStaleSeatFixture(h, SPECTATOR).start(); }
+    public static void switchingToSpectatorReleasesTheStationarySeat(GameTestHelper h) { new RocketStaleSeatFixture(h, SPECTATOR).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
     public static void rideDismountCommandReleasesTheStationarySeat(GameTestHelper h) { new RocketStaleSeatFixture(h, DISMOUNT).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
