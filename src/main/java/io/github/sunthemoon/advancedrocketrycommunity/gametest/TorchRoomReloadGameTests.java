@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -55,6 +56,7 @@ public final class TorchRoomReloadGameTests {
                 new AABB(area.getMinBlockX(), 176, area.getMinBlockZ(), area.getMaxBlockX() + 1, 186,
                         area.getMaxBlockZ() + 1), true);
         BlockPos vent = f.origin, torch = vent.offset(1, 1, 0);
+        BlockPos outside = vent.offset(7, 1, 0);
         ChunkPos centre = new ChunkPos(vent);
         List<ChunkPos> tickets = new ArrayList<>();
         f.onClose(() -> tickets.forEach(chunk ->
@@ -103,6 +105,10 @@ public final class TorchRoomReloadGameTests {
                             "Saved torch was not lit, or a player is present");
                     // Native neighbor notification queues the restored torch without a player placement.
                     f.level.updateNeighborsAt(torch.below(), Blocks.IRON_BLOCK);
+                    if (ending == Ending.SUPPLIED) {
+                        f.set(outside.below(), Blocks.IRON_BLOCK.defaultBlockState());
+                        f.set(outside, Blocks.TORCH.defaultBlockState());
+                    }
                     ticks[0] = 0;
                     phase[0] = 3;
                 }
@@ -112,6 +118,12 @@ public final class TorchRoomReloadGameTests {
                     if (++ticks[0] < 10) { return false; }
                     helper.assertTrue(!supplied(f, torch) && CombustionTorches.metrics(f.level).orElseThrow().deferrals() > 0,
                             "Fixture did not exercise the unknown atmosphere interval");
+                    helper.assertTrue(!f.level.getChunkSource().getChunkNow(centre.x, centre.z).getFullStatus()
+                                    .isOrAfter(FullChunkStatus.BLOCK_TICKING), "Reloaded room unexpectedly became ticking");
+                    if (ending == Ending.SUPPLIED) {
+                        helper.assertTrue(f.level.getBlockState(outside).is(ModBlocks.UNLIT_TORCH.get()),
+                                "Known vacuum column did not extinguish its torch while the room was unknown");
+                    }
                     phase[0] = 4;
                 }
                 case 4 -> {
@@ -119,6 +131,17 @@ public final class TorchRoomReloadGameTests {
                     if (!supplied(f, torch)) { return false; }
                     helper.assertTrue(f.level.getBlockState(torch).is(Blocks.TORCH), "Rebuilt room did not retain its lit torch");
                     if (ending == Ending.SUPPLIED) { return true; }
+                    // Resume native room operation, still without players, before testing a subsequent supply loss.
+                    f.level.setChunkForced(centre.x, centre.z, true);
+                    phase[0] = 5;
+                }
+                case 5 -> {
+                    if (!f.level.shouldTickBlocksAt(centre.toLong()) || !f.level.areEntitiesLoaded(centre.toLong())
+                            || !f.level.getChunkSource().getChunkNow(centre.x, centre.z).getFullStatus()
+                                    .isOrAfter(FullChunkStatus.BLOCK_TICKING)) {
+                        pacer.pace();
+                        return false;
+                    }
                     if (ending == Ending.OPEN) {
                         f.set(vent.offset(-2, 1, 0), Blocks.AIR.defaultBlockState());
                     } else {
@@ -127,9 +150,9 @@ public final class TorchRoomReloadGameTests {
                     }
                     // Direct fixture edits notify the same authority that player edits invalidate.
                     AtmosphereRuntime.invalidateDoorBoundary(f.level, vent.offset(-2, 1, 0), vent);
-                    phase[0] = 5;
+                    phase[0] = 6;
                 }
-                case 5 -> {
+                case 6 -> {
                     if (ending == Ending.OPEN) { tickVent(f, entity[0]); }
                     return f.level.getBlockState(torch).is(ModBlocks.UNLIT_TORCH.get());
                 }

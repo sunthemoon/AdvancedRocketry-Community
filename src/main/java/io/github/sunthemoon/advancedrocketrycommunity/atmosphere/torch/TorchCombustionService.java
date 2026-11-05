@@ -143,7 +143,7 @@ final class TorchCombustionService {
             case COMBUSTIBLE, UNMANAGED -> TorchQueue.Outcome.DONE;
             case PENDING -> TorchQueue.Outcome.DEFER;
             case NONCOMBUSTIBLE -> {
-                if (!CombustionAir.settled(level)) {
+                if (!CombustionAir.settled(level, pos)) {
                     yield TorchQueue.Outcome.DEFER;
                 }
                 TorchWorldChanges.Result result = TorchWorldChanges.extinguish(level, pos, state, pair.get(),
