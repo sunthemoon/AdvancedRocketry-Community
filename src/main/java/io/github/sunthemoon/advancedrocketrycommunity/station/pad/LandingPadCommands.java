@@ -102,15 +102,33 @@ public final class LandingPadCommands {
         ServerPlayer player = context.getSource().getPlayerOrException();
         var stationId = UuidArgument.getUuid(context, "station");
         var reference = new LandingPadReference(UuidArgument.getUuid(context, "pad"), LongArgumentType.getLong(context, "epoch"));
-        var station = StationRegistrySavedData.get(player.getServer()).find(stationId).orElse(null);
-        var entry = LandingPadService.resolve(player.getServer(), stationId, reference);
-        if (!valid(player) || station == null || entry == null || !new StationAccessService().allowed(station,
-                player.getUUID(), player.hasPermissions(2), StationAccessAction.VISIT)
-                || !LandingPadIndex.get(player.getServer()).choose(player.getUUID(), stationId, reference)) {
-            player.sendSystemMessage(text("refused")); return 0;
+        if (!valid(player)) { return refuseSelection(player, "select_invalid"); }
+        var server = player.getServer();
+        var registry = StationRegistrySavedData.get(server);
+        var index = LandingPadIndex.get(server);
+        if (!registry.operational() || !index.operational()) { return refuseSelection(player, "select_unavailable"); }
+        var station = registry.find(stationId).orElse(null);
+        if (station == null) { return refuseSelection(player, "select_unknown"); }
+        if (!new StationAccessService().allowed(station, player.getUUID(), player.hasPermissions(2), StationAccessAction.VISIT)) {
+            return refuseSelection(player, "select_permission");
         }
-        player.sendSystemMessage(text("selected", entry.name()));
+        var entry = LandingPadService.registered(server, stationId, reference);
+        if (entry == null) { return refuseSelection(player, "select_unknown"); }
+        var space = server.getLevel(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.SPACE_LEVEL);
+        if (space == null) { return refuseSelection(player, "select_unavailable"); }
+        BlockPos position = entry.position(station);
+        boolean loaded = space.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4) != null;
+        if (loaded && LandingPadService.resolve(server, stationId, reference) == null) {
+            return refuseSelection(player, "select_stale");
+        }
+        // A bounded transient choice is not a claim. Staging still requires a loaded, matching BE.
+        if (!index.choose(player.getUUID(), stationId, reference)) { return refuseSelection(player, "select_full"); }
+        player.sendSystemMessage(text(loaded ? "selected" : "selected_unloaded", entry.name()));
         return 1;
+    }
+
+    private static int refuseSelection(ServerPlayer player, String reason) {
+        player.sendSystemMessage(text(reason)); return 0;
     }
 
     @SubscribeEvent public static void logout(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {

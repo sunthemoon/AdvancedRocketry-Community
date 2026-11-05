@@ -6,6 +6,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightPlanSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightRoute;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFlightNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
@@ -255,6 +257,10 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        if (!mapMode && mouseX >= leftPos + 22 && mouseX < leftPos + 226
+                && mouseY >= topPos + 33 && mouseY < topPos + 43) {
+            graphics.renderTooltip(font, font.split(routeLabel(), 300), mouseX, mouseY);
+        }
     }
 
     @Override
@@ -287,11 +293,8 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         if (mapMode) { return; }
         graphics.drawString(font, font.plainSubstrByWidth(title.getString(), imageWidth - 94), titleLabelX, titleLabelY, 0xFFE7F0F2, false);
-        TravelTarget current = menu.currentTarget();
         TravelTarget selected = displayedTarget();
-        Component route = Component.translatable("screen.advancedrocketrycommunity.rocket.route",
-                current == null ? Component.literal("?") : targetLabel(current),
-                selected == null ? Component.literal("?") : targetLabel(selected));
+        Component route = routeLabel();
         graphics.drawString(font, font.plainSubstrByWidth(route.getString(), 204), 22, 33, 0xFFD6E2E5, false);
         graphics.drawString(
                 font,
@@ -347,6 +350,15 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
 
     private TravelTarget displayedTarget() {
         return selection.displayedTarget(menu.state(), menu.activePlan());
+    }
+
+    private Component routeLabel() {
+        TravelTarget current = menu.currentTarget();
+        TravelTarget selected = displayedTarget();
+        var pad = selection.displayedPad(menu.state(), menu.activePlan());
+        var plan = new RocketFlightPlanSnapshot(selected, pad);
+        return RocketFlightRoute.label(current == null ? Component.literal("?") : targetLabel(current),
+                selected == null ? Component.literal("?") : targetLabel(selected), pad, menu.padName(plan));
     }
 
     private Component targetLabel(TravelTarget target) {

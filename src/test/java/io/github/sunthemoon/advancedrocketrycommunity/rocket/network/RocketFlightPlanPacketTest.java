@@ -124,7 +124,7 @@ class RocketFlightPlanPacketTest {
 
     @Test
     void protocolRevisionCarriesTypedTargetsAndVariableQuoteCounts() {
-        assertEquals("9", RocketFlightNetwork.protocolVersion());
+        assertEquals("10", RocketFlightNetwork.protocolVersion());
         withBuffer(buffer -> {
             var empty = new RocketFlightPlanPacket(
                     Integer.MAX_VALUE,

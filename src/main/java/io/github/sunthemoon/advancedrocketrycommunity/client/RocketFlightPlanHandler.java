@@ -13,7 +13,7 @@ public final class RocketFlightPlanHandler {
         var player = Minecraft.getInstance().player;
         if (player != null && player.containerMenu instanceof RocketFlightMenu menu
                 && packet.targets(menu.containerId, menu.rocketEntityId())) {
-            menu.acceptPlanSnapshot(packet.plan(), packet.navigation());
+            menu.acceptPlanSnapshot(packet.plan(), packet.navigation(), packet.padName());
         }
     }
 }

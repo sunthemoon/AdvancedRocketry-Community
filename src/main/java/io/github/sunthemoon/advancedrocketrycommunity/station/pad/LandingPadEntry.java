@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 /** Immutable index identity; x/z are relative to the station's invariant cell landing position. */
 public record LandingPadEntry(UUID stationId, UUID padId, UUID physicalId, UUID ownerId,
                               String name, StationPosition localPosition, long epoch, UUID claim) {
+    public static final int MAX_NAME_LENGTH = 32;
     public LandingPadEntry {
         Objects.requireNonNull(stationId); Objects.requireNonNull(padId);
         Objects.requireNonNull(physicalId); Objects.requireNonNull(ownerId); Objects.requireNonNull(localPosition);
@@ -21,7 +22,7 @@ public record LandingPadEntry(UUID stationId, UUID padId, UUID physicalId, UUID 
 
     public static String checkedName(String name) {
         Objects.requireNonNull(name);
-        if (name.isBlank() || name.length() > 32 || !name.equals(name.strip())
+        if (name.isBlank() || name.length() > MAX_NAME_LENGTH || !name.equals(name.strip())
                 || name.chars().anyMatch(Character::isISOControl)) {
             throw new IllegalArgumentException("Landing-pad name must contain 1..32 printable characters");
         }
