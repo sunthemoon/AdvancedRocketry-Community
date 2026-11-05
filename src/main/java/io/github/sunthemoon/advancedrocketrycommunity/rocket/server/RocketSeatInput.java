@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
-import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +42,8 @@ public final class RocketSeatInput {
             boolean sneak = riding && player.level() == rocket.level() && player.isShiftKeyDown() && !player.isSpectator();
             if (riding) { absent.remove(id); }
             else {
-                if (RocketEscrowGate.bayHeld(rocket)) { absent.remove(id); continue; }
+                // F6/F7 may already look stationary before F8 releases the manifest. Only eligible ticks count.
+                if (!RocketSeatRelease.mutationAllowed(rocket, id)) { absent.remove(id); continue; }
                 var previous = absent.get(id);
                 int ticks = previous != null && previous.player() == player && previous.tick() == tick - 1
                         ? Math.min(ABSENCE_GRACE_TICKS, previous.ticks() + 1) : 1;

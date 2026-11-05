@@ -23,8 +23,7 @@ public final class RocketSeatRelease {
     }
 
     private static RocketFlightRequestResult release(RocketEntity rocket, UUID playerId, ServerPlayer player) {
-        if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, playerId)
-                : !RocketFlightService.passengerMutationAllowed(rocket)) {
+        if (!mutationAllowed(rocket, playerId)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         var flight = rocket.flightData().orElseThrow();
@@ -49,6 +48,11 @@ public final class RocketSeatRelease {
         }
         rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(playerId)));
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
+    }
+
+    static boolean mutationAllowed(RocketEntity rocket, UUID playerId) {
+        return RocketReleaseAccess.fenced(rocket) ? RocketReleaseAccess.retainedRiderMayLeave(rocket, playerId)
+                : RocketFlightService.passengerMutationAllowed(rocket);
     }
 
     /** Permission belongs to the command; this boundary still validates loaded state and all mutation guards. */
