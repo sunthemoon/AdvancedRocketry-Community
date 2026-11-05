@@ -559,7 +559,7 @@ final class RocketFlightService {
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
     }
 
-    private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
+    static RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
         var physicalExit = RocketRuntime.passengerExits().map(exits -> exits.heldLeave(player, rocket)).orElse(null);
         if (physicalExit != null) { return physicalExit; }
         if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, player.getUUID())
@@ -574,6 +574,9 @@ final class RocketFlightService {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.NOT_BOARDED);
         }
         player.stopRiding();
+        if (player.getVehicle() == rocket) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+        }
         rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
     }
