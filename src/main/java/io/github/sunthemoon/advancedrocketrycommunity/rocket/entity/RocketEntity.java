@@ -503,6 +503,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public void tick() {
         super.tick();
+        // ServerLevel ticks this vehicle before Player.rideTick consumes its passengers' sneak input.
+        if (!level().isClientSide) { RocketRuntime.tickPassengerInput(this); }
         setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
