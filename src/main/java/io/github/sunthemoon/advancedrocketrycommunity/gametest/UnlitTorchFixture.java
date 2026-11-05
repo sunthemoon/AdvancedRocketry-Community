@@ -112,6 +112,18 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
         return player;
     }
 
+    /** Additional test-owned resources, released even when the test fails or times out. */
+    void onClose(Runnable action) {
+        cleanup.add(action);
+    }
+
+    /** Permit a native unload; close still restores the cells and releases any later fixture force. */
+    void releaseForce() {
+        helper.assertTrue(ownsForce, "Cannot release another fixture's chunk force");
+        ChunkPos chunk = new ChunkPos(origin);
+        level.setChunkForced(chunk.x, chunk.z, false);
+    }
+
     void set(BlockPos position, BlockState state) {
         BlockPos key = position.immutable();
         helper.assertTrue(bounds.contains(Vec3.atCenterOf(key)) && level.isInWorldBounds(key) && level.hasChunkAt(key),
