@@ -17,16 +17,45 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocket
 import java.util.Set;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** Gated fixture setup only; publication still uses the installed production coordinator and provider wrapper. */
 public final class SealedProductionTestAccess {
+    /** Keep native proof cells independent of noise-world fluids, even after the world-protection explosion. */
+    static void isolateTerrainFixture(ServerLevel level, BlockPos origin) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        var minimum = origin.offset(-3, -3, -3); var maximum = origin.offset(6, 3, 5);
+        // Fixed 10 * 7 * 9 envelope. Build the complete shell before clearing its interior or installing resources.
+        for (var at : BlockPos.betweenClosed(minimum, maximum)) {
+            if (onFixtureShell(at, minimum, maximum)) {
+                level.setBlock(at, Blocks.OBSIDIAN.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            }
+        }
+        for (var at : BlockPos.betweenClosed(minimum.offset(1, 1, 1), maximum.offset(-1, -1, -1))) {
+            level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        }
+    }
+    static void assertTerrainFixtureIntact(GameTestHelper helper, BlockPos origin) {
+        var minimum = origin.offset(-3, -3, -3); var maximum = origin.offset(6, 3, 5);
+        for (var at : BlockPos.betweenClosed(minimum, maximum)) {
+            if (onFixtureShell(at, minimum, maximum)) {
+                helper.assertTrue(helper.getLevel().getBlockState(at).is(Blocks.OBSIDIAN), "Ambient-fluid enclosure opened at " + at);
+            }
+        }
+    }
+    private static boolean onFixtureShell(BlockPos at, BlockPos minimum, BlockPos maximum) {
+        return at.getX() == minimum.getX() || at.getX() == maximum.getX()
+                || at.getY() == minimum.getY() || at.getY() == maximum.getY()
+                || at.getZ() == minimum.getZ() || at.getZ() == maximum.getZ();
+    }
     /**
      * W129aM (ADR-074 item 8): the journal is written off-thread and acknowledged on a later tick. Runs each step once
      * the journal is acknowledged current, in this tick when it already is, then requests the write the next step needs.
@@ -80,6 +109,7 @@ public final class SealedProductionTestAccess {
     public static BlockEntity stageHeld(ServerLevel level, BlockEntity source, ResourceLocation adapterId,
             RocketBlockEntityAdapter provider) {
         EscrowTestEndpoints.requireEnabled(level.getServer()); source.setLevel(level);
+        isolateTerrainFixture(level, source.getBlockPos());
         var registry = new RocketAdapterRegistry(ForgeRegistries.BLOCK_ENTITY_TYPES::containsKey);
         registry.forOwner(adapterId.getNamespace()).register(adapterId,
                 Set.of(ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(source.getType())), 1, provider);

@@ -37,6 +37,7 @@ public final class SealedWorldProtectionGameTests {
     @GameTest(template = "rocket_test", batch = "w152_world_protection", timeoutTicks = 400)
     public static void retainedCarrierSurvivesNativeBreakPistonExplosionFluidFireAndSupportUpdates(GameTestHelper helper) {
         var level = helper.getLevel(); var at = helper.absolutePos(new BlockPos(4, 4, 4)); var fence = at.offset(3, 0, 3);
+        SealedProductionTestAccess.isolateTerrainFixture(level, at);
         var source = new ChestBlockEntity(at, Blocks.CHEST.defaultBlockState()); source.setItem(0, new ItemStack(Items.DIAMOND, 7));
         var payload = new VanillaContainerRocketAdapter().capture(source);
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), SealedUnsealGameTests.position(at),
@@ -86,6 +87,7 @@ public final class SealedWorldProtectionGameTests {
                         "Retained C emitted a resource/carrier drop");
             }
             if (age == 60) { level.setBlock(fence, Blocks.AIR.defaultBlockState(), 3); }
+            if (age == 61) { SealedProductionTestAccess.assertTerrainFixtureIntact(helper, at); }
             if (level.getBlockEntity(at) instanceof ChestBlockEntity restored) {
                 helper.assertTrue(data.acknowledgedAbsent(id, snapshot.snapshotId(), entity), "Protection ended before checked U absence");
                 helper.assertTrue(restored.getItem(0).is(Items.DIAMOND) && restored.getItem(0).getCount() == 7,
