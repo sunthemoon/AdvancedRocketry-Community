@@ -22,6 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
 
 /** Server-owned resource commit; callbacks never receive a live player or ItemStack. */
 public final class SuitEquipmentService {
@@ -131,11 +132,8 @@ public final class SuitEquipmentService {
                 return rejected(reading.oxygenUnits());
             }
             if (!player.getAbilities().instabuild) {
-                held.shrink(1);
                 ItemStack empty = new ItemStack(ModItems.EMPTY_CANISTER.get());
-                if (!player.getInventory().add(empty)) {
-                    player.drop(empty, false);
-                }
+                player.setItemInHand(hand, ItemUtils.createFilledResult(held, player, empty));
             }
             return transfer;
         } finally {

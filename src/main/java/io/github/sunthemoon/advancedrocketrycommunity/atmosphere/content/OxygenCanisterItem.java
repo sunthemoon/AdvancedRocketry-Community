@@ -57,6 +57,6 @@ public final class OxygenCanisterItem extends Item {
                 "message.advancedrocketrycommunity.oxygen.suit_refilled",
                 transfer.oxygenUnits()
         ), true);
-        return InteractionResultHolder.consume(held);
+        return InteractionResultHolder.consume(player.getItemInHand(hand));
     }
 }
