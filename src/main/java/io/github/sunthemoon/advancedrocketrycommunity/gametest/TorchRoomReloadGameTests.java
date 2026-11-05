@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.Atmo
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.CombustionTorches;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,6 +17,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -44,7 +46,14 @@ public final class TorchRoomReloadGameTests {
     }
 
     private static void reload(GameTestHelper helper, Ending ending) {
-        UnlitTorchFixture f = UnlitTorchFixture.moon(helper);
+        var moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
+        helper.assertTrue(moon != null, "Configured Moon Level is absent");
+        // Keep these native unloads independent: adjacent tests' FULL-only tickets must not retain another room.
+        ChunkPos area = new ChunkPos(10_000 + ending.ordinal() * 16, 10_000);
+        UnlitTorchFixture f = new UnlitTorchFixture(helper, moon,
+                new BlockPos(area.getMinBlockX() + 2, 180, area.getMinBlockZ() + 7),
+                new AABB(area.getMinBlockX(), 176, area.getMinBlockZ(), area.getMaxBlockX() + 1, 186,
+                        area.getMaxBlockZ() + 1), true);
         BlockPos vent = f.origin, torch = vent.offset(1, 1, 0);
         ChunkPos centre = new ChunkPos(vent);
         List<ChunkPos> tickets = new ArrayList<>();
