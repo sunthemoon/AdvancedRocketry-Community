@@ -118,13 +118,12 @@ def _sha256(path: Path) -> str:
 
 
 def _valid_date(value: object) -> bool:
-    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return False
     try:
-        dt.date.fromisoformat(value)
+        return dt.date.fromisoformat(value).isoformat() == value
     except ValueError:
         return False
-    return True
 
 
 def _png_dimensions(path: Path) -> list[int]:

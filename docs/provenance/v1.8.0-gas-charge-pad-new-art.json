@@ -112,10 +112,11 @@
     "The final campaign's true-client V1/V2 presentation and visual acceptance remain outstanding; deterministic generation and this declaration do not approve the art or any Gate."
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "80c49ba029ec7d0a56033a51dc30b5c585a7d5d31b52e47df1aa320a00eeb124",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": []
+    "findings": [],
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   }
 }

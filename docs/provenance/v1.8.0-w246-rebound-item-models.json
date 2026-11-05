@@ -96,11 +96,12 @@
   ],
   "recorded_at": "2026-11-01",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "45c17fa5502c875220d33a7b33021864b8ed9e2f4d3341e0d0280401ae096cd1",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 2,
   "scope": "W246's provider commit changed 24 generated models: 14 block models and 10 item models. Only these two were named by a provenance record. No JSON record names the other 22, and no tracked file pins their earlier or current SHA-256, so they remain DataGen output that the provenance audit's rule 1 places by source root. W246-fix2 changed the same 24 models again and no others.",

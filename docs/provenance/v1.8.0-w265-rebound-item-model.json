@@ -46,11 +46,12 @@
   "license": "MIT",
   "pending_acceptance": "Human provenance review and real-GPU V1 of hands, all display views, beam alignment and resource reload remain open.",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "eaf09f2541dfb1cb1ae27d57a55120df51d4daf30e3ae75c347271cc935cfc97",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 1,
   "target_version": "v1.8.0"

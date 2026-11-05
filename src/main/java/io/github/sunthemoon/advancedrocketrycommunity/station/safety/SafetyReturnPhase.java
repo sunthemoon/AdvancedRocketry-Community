@@ -16,6 +16,14 @@ public final class SafetyReturnPhase {
 
     /** One player tick at server tick {@code now}; true when an attempt may start now. */
     public boolean tick(boolean adriftNow, long now) {
+        return tick(adriftNow, now, ADRIFT_TICKS);
+    }
+
+    /** R328 uses an earlier threshold inside a zero-gravity station; attempt spacing is unchanged. */
+    public boolean tick(boolean adriftNow, long now, int requiredTicks) {
+        if (requiredTicks < 1 || requiredTicks > ADRIFT_TICKS) {
+            throw new IllegalArgumentException("Adrift threshold outside the safety-return bound");
+        }
         if (!adriftNow) {
             adrift = 0;
             return false;
@@ -23,7 +31,7 @@ public final class SafetyReturnPhase {
         if (adrift < ADRIFT_TICKS) {
             adrift++;
         }
-        return adrift >= ADRIFT_TICKS && spaced(now);
+        return adrift >= requiredTicks && spaced(now);
     }
 
     /** Records an admitted attempt. */

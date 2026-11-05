@@ -585,6 +585,44 @@ class ImportV180AssetsTests(unittest.TestCase):
         self.save_plan()
         self.assertEqual("PENDING_HUMAN_REVIEW", self.generate()["review"]["status"])
 
+    def test_invalid_completed_review_date_refuses_verify_and_generate_without_writing(self) -> None:
+        record = self.generate()
+        record["review"].update(status="APPROVED", reviewer="fixture-reviewer")
+        for reviewed_at in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                            "2026-13-45", "2026-02-30", "2026-02-29", "0000-01-01",
+                            "2026-11-03\n", "2026-11-04\n", "2026-11-04\r\n",
+                            " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104):
+            with self.subTest(reviewed_at=reviewed_at):
+                record["review"]["reviewed_at"] = reviewed_at
+                self.record.write_bytes(V010.pretty_json(record))
+                before = self.tree()
+                with self.assertRaisesRegex(ValueError, "requires an ISO date"):
+                    self.verify()
+                with self.assertRaisesRegex(ValueError, "requires an ISO date"):
+                    self.generate()
+                self.assertEqual(before, self.tree())
+
+    def test_approval_basis_reproduces_without_ignoring_core_or_format_changes(self) -> None:
+        record = self.generate()
+        record["review"].update(status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01",
+                                basis="Synthetic review: docs/fixture-decision.md")
+        raw = V010.pretty_json(record)
+        self.record.write_bytes(raw)
+        self.assertEqual([], self.verify())
+        self.assertEqual(record, self.generate())
+        self.assertEqual(raw, self.record.read_bytes())
+        self.record.write_bytes(raw.replace(b'"status": "APPROVED"', b'"status":  "APPROVED"'))
+        self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets",
+                      self.verify())
+        self.record.write_bytes(raw)
+        self.plan["batch_id"] = "v1.8.0-fixture-02"
+        self.save_plan()
+        self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets",
+                      self.verify())
+        reset = self.generate()["review"]
+        self.assertEqual("PENDING_HUMAN_REVIEW", reset["status"])
+        self.assertNotIn("basis", reset)
+
     def test_plan_with_a_cr_byte_is_refused(self) -> None:
         # W249-R1: a CRLF working copy of an LF-committed plan hashes differently from every clean checkout.
         self.plan_path.write_bytes(V010.pretty_json(self.plan).replace(b"\n", b"\r\n"))

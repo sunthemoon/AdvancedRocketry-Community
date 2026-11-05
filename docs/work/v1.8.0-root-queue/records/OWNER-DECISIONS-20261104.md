@@ -103,6 +103,16 @@ offered to trace the AR 16x texture set's source chain. The owner replied:
 |---|---|---|
 | R310 | **Root traced the chain itself ([W279](W279.md))**: the public record does not settle authorship, so, as the owner said, the NEW art of W275 stands in. The owner plans to ask the authors for permission once the mod is basically playable; W279 lists whom to ask and what statement would let a later ADR-062 revision import the named files. No one is contacted now. | The owner's instruction. W279 took a few read-only requests to public GitHub, so no worker was needed. |
 
+## D7 as recorded (W276)
+
+W276 (merged at `13c0cd849`, reviewed by W276R) set the 30 records above to APPROVED with reviewer `sunthemoon`,
+review date 2026-11-04 and a basis citing this record, binding each record as it stood at `521cb9b95`. ADR-061 section
+4.5 asks the maintainer's visual review to record its comparison. What this record holds is: the owner tested the
+hosted JAR of run 41630143345 in game before answering (the request at the top), answered "通过" for D7, and recorded
+remarks on the art (item 2 of the reply), which R308 acts on. The per-record comparison sheets that the brief offered
+were not requested, so no per-record comparison is recorded beyond that. Root asked the owner late on 2026-11-04 whether to
+add such sheets; the approval stands as the owner gave it.
+
 ## W274 file-scope index (derived, not additional owner wording)
 
 This index expands the 95-file scope already authorized by G1-G8 and R304 above. It is a mechanical index from

@@ -12,6 +12,15 @@
       "reason": "The native dismount callback marks the transaction root unreadable after the input guard, so updateFlightData refuses the seat removal. The per-passenger catch logs once and retains the previous membership."
     },
     {
+      "id": "w285-bounded-gravity-floating-kicks",
+      "level": "WARN",
+      "logger": "net.minecraft.server.network.ServerGamePacketListenerImpl/",
+      "message": "gravity(?:Normal|Hover) was kicked for floating too long!",
+      "counts": {"low_gravity_flight": 2},
+      "test": "LowGravityFlightGameTests.normalGravityStillKicksAfterEightyFloatingTicks and hoveringOnTheMoonStillHasAFiniteAllowance",
+      "reason": "R328 negative controls deliberately let vanilla disconnect one normal-gravity player at tick 81 and one Moon hoverer at tick 486. No production warning is suppressed."
+    },
+    {
       "id": "w129a-transaction-journal-unacknowledged",
       "level": "ERROR",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData/",

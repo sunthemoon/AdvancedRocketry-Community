@@ -131,12 +131,56 @@ class ImportV010AssetsTests(unittest.TestCase):
         reset = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
         self.assertEqual("PENDING_HUMAN_REVIEW", reset["review"]["status"])
 
+    def test_completed_review_requires_a_canonical_real_ascii_date(self) -> None:
+        digest = "a" * 64
+        for status in ("APPROVED", "CHANGES_REQUIRED"):
+            review = dict(MODULE.pending_review(digest), status=status, reviewer="fixture-reviewer",
+                          findings=[] if status == "APPROVED" else ["Synthetic finding."])
+            for reviewed_at in ("2026-11-04", "2026-11-03", "2024-02-29", "2000-02-29",
+                                "0001-01-01", "9999-12-31"):
+                with self.subTest(status=status, reviewed_at=reviewed_at):
+                    candidate = dict(review, reviewed_at=reviewed_at)
+                    self.assertEqual(candidate, MODULE.validate_review(candidate, digest))
+            for reviewed_at in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                                "2026-13-45", "2026-02-30", "2026-02-29", "0000-01-01",
+                                "2026-11-03\n", "2026-11-04\n", "2026-11-04\r\n",
+                                " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104):
+                with self.subTest(status=status, reviewed_at=reviewed_at):
+                    with self.assertRaisesRegex(ValueError, "requires an ISO date"):
+                        MODULE.validate_review(dict(review, reviewed_at=reviewed_at), digest)
+
     def test_pending_review_cannot_prefill_reviewer(self) -> None:
         record = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
         record["review"]["reviewer"] = "not-allowed"
         self.record.write_bytes(MODULE.pretty_json(record))
         with self.assertRaisesRegex(ValueError, "must not prefill"):
             MODULE.verify(self.repository, self.upstream, self.plan, self.record)
+
+    def test_review_basis_is_preserved_only_for_the_bound_core(self) -> None:
+        record = MODULE.generate(self.repository, self.upstream, self.plan, self.record)
+        record["review"].update(status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01",
+                                basis="Synthetic decision record: docs/fixture.md")
+        self.record.write_bytes(MODULE.pretty_json(record))
+        self.assertEqual([], MODULE.verify(self.repository, self.upstream, self.plan, self.record))
+        self.assertEqual(record, MODULE.generate(self.repository, self.upstream, self.plan, self.record))
+        changed = MODULE.record_for(dict(batch_id="different core"), record)
+        self.assertEqual("PENDING_HUMAN_REVIEW", changed["review"]["status"])
+        self.assertNotIn("basis", changed["review"])
+
+    def test_review_basis_does_not_relax_decision_validation(self) -> None:
+        pending = MODULE.pending_review("a" * 64)
+        approved = dict(pending, status="APPROVED", reviewer="fixture-reviewer", reviewed_at="2099-01-01")
+        for basis in (None, 42, "", " "):
+            with self.subTest(basis=basis), self.assertRaisesRegex(ValueError, "basis must be a non-empty string"):
+                MODULE.validate_review(dict(approved, basis=basis), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "must not prefill"):
+            MODULE.validate_review(dict(pending, basis="docs/fixture.md"), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "malformed"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md", extra=True), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "cannot retain findings"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md", findings=["unresolved"]), "a" * 64)
+        with self.assertRaisesRegex(ValueError, "bind the current record"):
+            MODULE.validate_review(dict(approved, basis="docs/fixture.md"), "b" * 64)
 
     def test_duplicate_casefolded_target_is_rejected(self) -> None:
         plan = json.loads(self.plan.read_text(encoding="utf-8"))
