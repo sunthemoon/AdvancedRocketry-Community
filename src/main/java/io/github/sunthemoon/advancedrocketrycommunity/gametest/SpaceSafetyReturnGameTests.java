@@ -199,7 +199,6 @@ public final class SpaceSafetyReturnGameTests {
             for (ChunkPos chunk : unloaded) {
                 helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null, "Neighbor already loaded");
             }
-            Map<String, Integer> before = TicketCounts.near(level, new ChunkPos(center), 2);
             for (int x = 0; x <= SafetyReturnOverworldArrival.RADIUS; x++) {
                 for (int z = 0; z <= SafetyReturnOverworldArrival.RADIUS; z++) {
                     f.overworldCell(center.offset(x, -1, z), Blocks.STONE.defaultBlockState());
@@ -215,6 +214,11 @@ public final class SpaceSafetyReturnGameTests {
             f.cleanups.add(rocket::discard);
             ServerPlayer player = f.join(UUID.randomUUID(), "safetyLoaded", new BlockPos(HALF_GRID, 220, HALF_GRID));
             var original = new SafeCelestialTravel.Destination(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D);
+            for (ChunkPos chunk : unloaded) {
+                helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null,
+                        "Fixture setup loaded a neighbor before avoidance");
+            }
+            Map<String, Integer> before = TicketCounts.near(level, new ChunkPos(center), 2);
             var chosen = SafetyReturnOverworldArrival.choose(level, player, original);
             var at = chosen.destination();
             helper.assertTrue(at.x() == original.x() + 2 && at.y() == original.y() && at.z() == original.z() + 2,
@@ -230,8 +234,8 @@ public final class SpaceSafetyReturnGameTests {
     private static void rocketAtOverworldArrival(GameTestHelper helper, boolean blocked) {
         Fixture f = new Fixture(helper);
         ServerLevel overworld = f.server.overworld();
-        var original = new SafeCelestialTravel().prepare(overworld, CelestialIds.EARTH_ID);
-        BlockPos center = BlockPos.containing(original.x(), original.y(), original.z());
+        BlockPos spawn = overworld.getSharedSpawnPos();
+        BlockPos center = new BlockPos(spawn.getX(), 200, spawn.getZ());
         for (int x = -SafetyReturnOverworldArrival.RADIUS; x <= SafetyReturnOverworldArrival.RADIUS; x++) {
             for (int z = -SafetyReturnOverworldArrival.RADIUS; z <= SafetyReturnOverworldArrival.RADIUS; z++) {
                 BlockPos feet = center.offset(x, 0, z);
@@ -240,6 +244,8 @@ public final class SpaceSafetyReturnGameTests {
                 for (int y = 0; y < 5; y++) { f.overworldCell(feet.above(y), Blocks.AIR.defaultBlockState()); }
             }
         }
+        var original = new SafeCelestialTravel().prepare(overworld, CelestialIds.EARTH_ID);
+        helper.assertTrue(original.y() == center.getY(), "The fixture arrival must be above surrounding terrain");
         var rocket = ModEntities.ROCKET.get().create(overworld);
         helper.assertTrue(rocket != null, "The rocket type is missing");
         rocket.moveTo(original.x(), original.y(), original.z());
@@ -617,7 +623,8 @@ public final class SpaceSafetyReturnGameTests {
 
         void overworldCell(BlockPos at, BlockState state) {
             overworldCells.putIfAbsent(at.immutable(), server.overworld().getBlockState(at));
-            server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS);
+            // Quiet fixture setup must not let neighbor-shape updates load the columns being tested as unloaded.
+            server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
 
         /** The cell boundary beside {@code near}, on the side away from {@code far}: outside every region. */
