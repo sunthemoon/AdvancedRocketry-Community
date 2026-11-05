@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-06. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w304`, branch `codex/v1.8.0-w304`, created by Root from the shared head |
 | Decision | Root decision R347 (QUEUE row W304) |
-| Background | [W301](records/W301.md), section W301F: W301's Overworld rocket fixture let water fall into the sea at the spawn and covered the one dry column the rejoin placement falls back to, which failed four `rocket_rejoin_*` tests; W301F contained the water. W303 (record `records/W303.md` on branch `codex/v1.8.0-w303` until it merges) built its own restored stone pad at y 300 for its rejoin test |
+| Background | [W301](records/W301.md), section W301F: W301's Overworld rocket fixture let water fall into the sea at the spawn and covered the one dry column the rejoin placement falls back to, which failed four `rocket_rejoin_*` tests; W301F contained the water. [W303](records/W303.md) built its own restored stone pad at y 300 for its rejoin test |
 | Record | `docs/work/v1.8.0-root-queue/records/W304.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W304/` |
 
 ## The problem (W301F's finding)

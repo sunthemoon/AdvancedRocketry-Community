@@ -3,7 +3,7 @@
   "textures": {
     "bottom": "advancedrocketrycommunity:block/machine_casing_top",
     "front": "advancedrocketrycommunity:block/electrolyzer_front",
-    "side": "advancedrocketrycommunity:block/machine_casing_side",
+    "side": "advancedrocketrycommunity:block/machine_panel_side",
     "top": "advancedrocketrycommunity:block/machine_casing_top"
   }
 }
