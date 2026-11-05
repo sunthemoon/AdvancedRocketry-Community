@@ -55,7 +55,7 @@ class LandingPadFlightTest {
                     net.minecraft.resources.ResourceLocation.tryBuild("a", "a".repeat(126))));
         }
         var packet = new RocketFlightPlanPacket(1, 1, new RocketFlightPlanSnapshot(new TravelTarget.Station(STATION), PAD),
-                new RocketNavigation(1, new RocketFlightQuotes(quotes), stations));
+                new RocketNavigation(1, new RocketFlightQuotes(quotes), stations), "界".repeat(32));
         var buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             RocketFlightPlanPacket.encode(packet, buffer);
@@ -110,5 +110,22 @@ class LandingPadFlightTest {
         selection.initialize(chosen, new TravelTarget.BodySurface(ModIdentity.id("earth")));
         assertNull(selection.target(RocketFlightAction.LAUNCH, chosen).landingPad());
         assertEquals(RocketDestination.MOON, selection.selected());
+    }
+    @Test void stationButtonRetainsThePadWhenTheStationDoesNotChange() {
+        var selection = new RocketFlightSelection(List.of(new StationDestinationSummary(STATION, "Station")));
+        selection.selectPad(STATION, PAD);
+        selection.selectNextStation();
+        assertEquals(PAD, selection.target(RocketFlightAction.LAUNCH, RocketFlightPlanSnapshot.empty()).landingPad());
+        selection.select(RocketDestination.SPACE_STATION);
+        assertEquals(PAD, selection.target(RocketFlightAction.LAUNCH, RocketFlightPlanSnapshot.empty()).landingPad());
+    }
+    @Test void stationButtonClearsThePadOnlyWhenItMovesToAnotherStation() {
+        UUID other = UUID.randomUUID();
+        var selection = new RocketFlightSelection(List.of(new StationDestinationSummary(STATION, "Station"),
+                new StationDestinationSummary(other, "Other")));
+        selection.selectPad(STATION, PAD);
+        selection.selectNextStation();
+        assertEquals(other, selection.target(RocketFlightAction.LAUNCH, RocketFlightPlanSnapshot.empty()).stationId());
+        assertNull(selection.target(RocketFlightAction.LAUNCH, RocketFlightPlanSnapshot.empty()).landingPad());
     }
 }

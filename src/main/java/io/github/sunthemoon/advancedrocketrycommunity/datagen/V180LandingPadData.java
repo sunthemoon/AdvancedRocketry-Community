@@ -72,6 +72,22 @@ public final class V180LandingPadData implements DataProvider {
                 Map.entry(prefix + "refused", chinese ? "操作被拒绝：需要空间站所有者或管理员权限、有效名称和可用平台名额。" : "Refused: station owner/operator, a valid name and an available pad slot are required."),
                 Map.entry(prefix + "unavailable", chinese ? "平台不可用、未加载或操作过于频繁。" : "Pad unavailable, unloaded, or interaction rate exceeded."),
                 Map.entry(prefix + "selected", chinese ? "已选择 %s。打开附近火箭的飞行控制台并发射。" : "Selected %s. Open the nearby rocket flight console and launch."),
+                Map.entry(prefix + "select_invalid", chinese ? "无法选择平台：需要有效、存活且非旁观者的已连接玩家。"
+                        : "Cannot select a pad: a connected, living, non-spectator player is required."),
+                Map.entry(prefix + "select_permission", chinese ? "无法选择平台：需要空间站所有者、成员或管理员权限。"
+                        : "Cannot select a pad: only the station owner, members or an operator may visit."),
+                Map.entry(prefix + "select_unknown", chinese ? "无法选择平台：空间站或平台不存在，或平台版本已过期。"
+                        : "Cannot select a pad: unknown station or pad, or an outdated pad epoch."),
+                Map.entry(prefix + "select_full", chinese ? "无法选择平台：临时选择名额已满，请稍后重试。"
+                        : "Cannot select a pad: no free temporary selection slot; try again later."),
+                Map.entry(prefix + "select_unavailable", chinese ? "无法选择平台：空间站记录、平台索引或太空维度不可用。"
+                        : "Cannot select a pad: the station registry, pad index or Space Level is unavailable."),
+                Map.entry(prefix + "select_stale", chinese ? "无法选择平台：已加载位置的平台已移除、被替换或数据不可用。"
+                        : "Cannot select a pad: the loaded pad was removed, replaced or has unavailable data."),
+                Map.entry(prefix + "selected_unloaded", chinese ? "已选择 %s，但平台区块尚未加载。飞行前仍须通过已加载平台检查。"
+                        : "Selected %s, but its chunk is not loaded. Flight still requires a loaded, validated pad."),
+                Map.entry("screen.advancedrocketrycommunity.rocket.route_pad", chinese ? "平台：%s | %s → %s" : "Pad: %s | %s -> %s"),
+                Map.entry("screen.advancedrocketrycommunity.rocket.pad_missing", chinese ? "不可用的平台" : "Unavailable pad"),
                 Map.entry(prefix + "console", chinese ? "请打开附近火箭的飞行控制台并发射。" : "Open the nearby rocket flight console and launch."),
                 Map.entry(prefix + "list", chinese ? "%s：%s 个已注册平台。点击条目选择飞行命令。" : "%s: %s registered pads. Click an entry to select its flight command."),
                 Map.entry(prefix + "entry", "%s (%s, %s): %s"),
