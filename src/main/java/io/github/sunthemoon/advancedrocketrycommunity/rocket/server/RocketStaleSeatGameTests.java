@@ -28,6 +28,8 @@ public final class RocketStaleSeatGameTests {
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
     public static void legacySavedOnlineUnriddenSeatIsReleased(GameTestHelper h) { new RocketStaleSeatFixture(h, LEGACY).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
+    public static void boundLoaderStopsReportingOccupiedAfterAbsence(GameTestHelper h) { new RocketStaleSeatFixture(h, LOADER).start(); }
+    @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
     public static void landedLogoutKeepsSeatAndLoginRestoresItBeforeCleanup(GameTestHelper h) { new RocketStaleSeatFixture(h, OFFLINE).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_stale_seats", timeoutTicks = 240)
     public static void internalMoveKeepsSeatUntilItsScopeCloses(GameTestHelper h) { new RocketStaleSeatFixture(h, INTERNAL).start(); }

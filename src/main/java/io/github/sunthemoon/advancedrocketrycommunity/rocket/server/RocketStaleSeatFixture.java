@@ -6,6 +6,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscro
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.*;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import net.minecraft.nbt.CompoundTag;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.*;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -31,7 +34,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.Rocke
 
 /** Lifecycle-owned asynchronous fixtures; each case finishes with a positive removal assertion. */
 final class RocketStaleSeatFixture implements AutoCloseable {
-    enum Case { DEATH, TELEPORT, SPECTATOR, DISMOUNT, PEARL, LEGACY, OFFLINE, INTERNAL, REJOIN_PENDING,
+    enum Case { DEATH, TELEPORT, SPECTATOR, DISMOUNT, PEARL, LEGACY, LOADER, OFFLINE, INTERNAL, REJOIN_PENDING,
         REJOIN_ACTIVE, FROZEN, ACTIVE_TRANSFER, IN_FLIGHT, OTHER_VEHICLE, RECONNECT_PENDING, RETURNED, HELD, COMMAND }
     private static final Set<RocketStaleSeatFixture> OPEN = Collections.newSetFromMap(new IdentityHashMap<>());
     private final GameTestHelper helper;
@@ -48,6 +51,8 @@ final class RocketStaleSeatFixture implements AutoCloseable {
     private BayClaimBook claims;
     private Entity other;
     private RocketPassengerReconnectQueue reconnects;
+    private FluidFuelLoaderBlockEntity loader;
+    private BlockPos loaderAt;
 
     RocketStaleSeatFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
     void start() { OPEN.add(this); helper.onEachTick(this::tick); }
@@ -105,6 +110,17 @@ final class RocketStaleSeatFixture implements AutoCloseable {
                 helper.assertTrue(!f.player.isPassenger(), "Native ender pearl impact did not detach the rider");
             }
             case LEGACY -> { f.player.stopRiding(); f.reload(); kept("legacy save was already empty"); }
+            case LOADER -> {
+                loaderAt = helper.absolutePos(new BlockPos(9, 2, 6));
+                helper.getLevel().setBlockAndUpdate(loaderAt, ModBlocks.FLUID_FUEL_LOADER.get().defaultBlockState());
+                loader = (FluidFuelLoaderBlockEntity) helper.getLevel().getBlockEntity(loaderAt);
+                var binding = new LoaderBinding(f.record.logicalRocketId(), helper.getLevel().dimension().location(),
+                        f.rocket.getUUID(), helper.absolutePos(new BlockPos(9, 2, 3)), null);
+                var root = new LoaderRoot(f.record.ownerId(), UUID.randomUUID(), binding,
+                        LoaderTank.of(net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000), LoaderEscrowSection.neutral());
+                var saved = new CompoundTag(); saved.put(LoaderRoot.KEY, root.encode()); loader.load(saved);
+                helper.assertTrue(loader.attempt() == FluidFuelLoaderStatus.ROCKET_BUSY, "Occupied loader control was not busy"); f.player.stopRiding();
+            }
             case OFFLINE -> { f.disconnect(); releaseStart = 80; }
             case INTERNAL -> { internal = RocketRuntime.internalPassengerMove(f.player); f.player.stopRiding(); releaseStart = 60; }
             case REJOIN_PENDING, REJOIN_ACTIVE -> {
@@ -236,6 +252,8 @@ final class RocketStaleSeatFixture implements AutoCloseable {
             if (age < releaseStart + 39) { kept("seat was removed before the full eligible grace"); }
             if (age >= releaseStart + 41) {
                 helper.assertTrue(!assigned(), scenario + ": absent seat was not released after grace");
+                if (loader != null) { helper.assertTrue(loader.attempt() == FluidFuelLoaderStatus.INCOMPATIBLE_FLUID,
+                        "Loader still reported occupied after absence: " + loader.attempt()); }
                 if (other != null) { helper.assertTrue(f.player.getVehicle() == other, "Cleanup detached a different vehicle"); }
                 f.reload(); f.reconnect(); helper.assertTrue(f.player.getVehicle() == null && !assigned(), "Released seat returned on reload/login");
                 done();
@@ -252,6 +270,7 @@ final class RocketStaleSeatFixture implements AutoCloseable {
         if (reconnects != null && f != null) { reconnects.complete(f.playerId); }
         if (f != null) { f.close(); }
         if (other != null) { other.discard(); }
+        if (loaderAt != null) { helper.getLevel().removeBlockEntity(loaderAt); helper.getLevel().setBlockAndUpdate(loaderAt, Blocks.AIR.defaultBlockState()); }
         channels.forEach(EmbeddedChannel::finishAndReleaseAll);
     }
     private static final class ImpactPearl extends ThrownEnderpearl {

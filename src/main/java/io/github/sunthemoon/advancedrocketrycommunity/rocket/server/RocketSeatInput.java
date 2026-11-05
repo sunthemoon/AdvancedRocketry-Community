@@ -13,6 +13,7 @@ import net.minecraftforge.common.util.FakePlayer;
 public final class RocketSeatInput {
     static final int ABSENCE_GRACE_TICKS = 40;
     private final Map<UUID, Absence> absent = new HashMap<>();
+    private boolean waitingForThaw;
     private record Absence(ServerPlayer player, long tick, int ticks) { }
 
     public void tick(RocketEntity rocket) {
@@ -53,7 +54,12 @@ public final class RocketSeatInput {
             if (!sneak && riding) { continue; }
             // Expensive transaction-root inspection only once, immediately before the first attempted LEAVE.
             if (frozen == null) { frozen = RocketRuntime.sealedFrozen(rocket); }
-            if (frozen) { absent.clear(); return; }
+            if (frozen) { waitingForThaw = true; return; }
+            if (waitingForThaw) {
+                // Retry the blocked release guard, but never count the frozen interval toward a fresh absence.
+                waitingForThaw = false; absent.clear();
+                if (!sneak) { return; }
+            }
             try {
                 var result = sneak ? RocketFlightService.leave(player, rocket) : RocketSeatRelease.release(rocket, id);
                 if (result.success() && player.getVehicle() != rocket) {
