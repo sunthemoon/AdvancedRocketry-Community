@@ -17,13 +17,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -210,7 +213,7 @@ public final class SpaceSafetyReturnGameTests {
                 }
             }
             // The two nearest non-rocket columns: water at the floor, and a fence projecting above its heightmap cell.
-            f.overworldCell(center.offset(1, -1, 2), Blocks.WATER.defaultBlockState());
+            f.overworldWater(center.offset(1, -1, 2));
             f.overworldCell(center.offset(2, -1, 1), Blocks.OAK_FENCE.defaultBlockState());
             var rocket = ModEntities.ROCKET.get().create(level);
             helper.assertTrue(rocket != null, "The rocket type is missing");
@@ -250,7 +253,8 @@ public final class SpaceSafetyReturnGameTests {
             for (int z = -SafetyReturnOverworldArrival.RADIUS; z <= SafetyReturnOverworldArrival.RADIUS; z++) {
                 BlockPos feet = center.offset(x, 0, z);
                 overworld.getChunkAt(feet);
-                f.overworldCell(feet.below(), (blocked ? Blocks.WATER : Blocks.STONE).defaultBlockState());
+                if (blocked) { f.overworldWater(feet.below()); }
+                else { f.overworldCell(feet.below(), Blocks.STONE.defaultBlockState()); }
                 for (int y = 0; y < 5; y++) { f.overworldCell(feet.above(y), Blocks.AIR.defaultBlockState()); }
             }
         }
@@ -563,6 +567,7 @@ public final class SpaceSafetyReturnGameTests {
         private final List<UUID> stations = new ArrayList<>();
         private final Map<BlockPos, BlockState> cells = new LinkedHashMap<>();
         private final Map<BlockPos, BlockState> overworldCells = new LinkedHashMap<>();
+        private final Set<BlockPos> overworldWater = new HashSet<>();
         private final Map<UUID, ChunkPos> tickets = new LinkedHashMap<>();
         private final List<ServerPlayer> players = new ArrayList<>();
         private final Map<UUID, List<String>> tokens = new HashMap<>();
@@ -637,6 +642,22 @@ public final class SpaceSafetyReturnGameTests {
             server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
 
+        /**
+         * W301F: a water source that cannot flow. Its floor and each side that is not fixture water become recorded stone
+         * first, so the water changes no cell outside the record before {@link #close} restores it. Uncontained fixture
+         * water fell from y 198 to the Overworld sea around the spawn and outlived the restore of its source cells.
+         */
+        void overworldWater(BlockPos at) {
+            BlockPos cell = at.immutable();
+            overworldCell(cell.below(), Blocks.STONE.defaultBlockState());
+            for (Direction side : Direction.Plane.HORIZONTAL) {
+                BlockPos next = cell.relative(side);
+                if (!overworldWater.contains(next)) { overworldCell(next, Blocks.STONE.defaultBlockState()); }
+            }
+            overworldWater.add(cell);
+            overworldCell(cell, Blocks.WATER.defaultBlockState());
+        }
+
         /** The cell boundary beside {@code near}, on the side away from {@code far}: outside every region. */
         BlockPos gapBeside(StationState near, StationState far) {
             int dx = Integer.signum(near.cell().x() - far.cell().x());
@@ -697,9 +718,12 @@ public final class SpaceSafetyReturnGameTests {
                     server.getPlayerList().remove(player);
                 }
             }));
+            // W301F: restore the Overworld cells before the clean-ups release their chunk tickets, with setup's quiet flags,
+            // so the restore notifies no neighbour and loads no chunk.
+            overworldCells.forEach((at, state) -> steps.add(() -> server.overworld().setBlock(at, state,
+                    Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE)));
             steps.addAll(cleanups);
             cells.forEach((at, state) -> steps.add(() -> space.setBlock(at, state, Block.UPDATE_CLIENTS)));
-            overworldCells.forEach((at, state) -> steps.add(() -> server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS)));
             tickets.forEach((key, chunk) -> steps.add(() -> space.getChunkSource()
                     .removeRegionTicket(FIXTURE_TICKET, chunk, 2, key)));
             stations.forEach(id -> steps.add(() -> data.delete(id)));
