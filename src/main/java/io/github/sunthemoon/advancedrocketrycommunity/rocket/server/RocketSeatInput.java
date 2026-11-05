@@ -1,48 +1,73 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
-import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.FakePlayer;
 
-/** Native player input, not arbitrary lifecycle detaches, authorizes a ground LEAVE. */
-final class RocketSeatInput {
-    private RocketSeatInput() { }
+/** Per-entity transient observations, bounded by the existing durable seat limit. Never serialized. */
+public final class RocketSeatInput {
+    static final int ABSENCE_GRACE_TICKS = 40;
+    private final Map<UUID, Absence> absent = new HashMap<>();
+    private record Absence(ServerPlayer player, long tick, int ticks) { }
 
-    static void dismountSneakingPassengers(RocketEntity rocket) {
-        if (!rocket.operational() || !rocket.isAlive() || !RocketTransferEntities.loadedEntity(rocket)
-                || RocketRuntime.sealedFrozen(rocket)) { return; }
+    public void tick(RocketEntity rocket) {
+        if (!rocket.operational() || !rocket.isAlive() || !RocketTransferEntities.loadedEntity(rocket)) {
+            absent.clear(); return;
+        }
         var flight = rocket.flightData().orElseThrow();
-        if (!stationary(flight.state()) || flight.activeTransferId().isPresent()) { return; }
+        if (!RocketFlightService.stationary(flight.state()) || flight.activeTransferId().isPresent()) {
+            absent.clear(); return;
+        }
+        var server = ((ServerLevel) rocket.level()).getServer();
         var exits = RocketRuntime.passengerExits().orElse(null);
-        // The actual passenger list is immutable during iteration and bounded by the existing seat limit.
-        for (var passenger : rocket.getPassengers()) {
-            if (passenger instanceof ServerPlayer player && player.getVehicle() == rocket
-                    && player.level() == rocket.level() && player.isShiftKeyDown()
-                    && BayPassengerExitPermit.online(player) && !player.hasDisconnected() && !player.isSpectator()
-                    && !(player instanceof FakePlayer)
-                    && !BayPassengerExitPermit.guarded(player) && (exits == null || !exits.state.internal(player))) {
-                try {
-                    if (RocketFlightService.leave(player, rocket).success() && player.getVehicle() != rocket) {
-                        // Player.rideTick would reset this after consuming the same native input.
-                        player.setShiftKeyDown(false);
-                        if (rocket.flightData().orElseThrow().passengers().assignment(player.getUUID()).isEmpty()) {
-                            AdvancedRocketryCommunity.LOGGER.info("ARCE_SEAT_RELEASED rocket={} player={} cause=SNEAK",
-                                    rocket.getUUID(), player.getUUID());
-                        }
+        long tick = server.getTickCount();
+        // Assignment snapshots are immutable; removing a seat cannot invalidate this bounded iteration.
+        var assignments = flight.passengers().assignments();
+        absent.keySet().removeIf(id -> flight.passengers().assignment(id).isEmpty());
+        Boolean frozen = null;
+        for (var assignment : assignments) {
+            UUID id = assignment.passengerId();
+            var player = server.getPlayerList().getPlayer(id);
+            if (player == null || !BayPassengerExitPermit.online(player) || player.hasDisconnected()
+                    || player instanceof FakePlayer || BayPassengerExitPermit.guarded(player)
+                    || exits != null && exits.state.internal(player) || RocketRuntime.seatReconnectPending(player)) {
+                absent.remove(id); continue;
+            }
+            boolean riding = player.getVehicle() == rocket;
+            boolean sneak = riding && player.level() == rocket.level() && player.isShiftKeyDown() && !player.isSpectator();
+            if (riding) { absent.remove(id); }
+            else {
+                if (RocketEscrowGate.bayHeld(rocket)) { absent.remove(id); continue; }
+                var previous = absent.get(id);
+                int ticks = previous != null && previous.player() == player && previous.tick() == tick - 1
+                        ? Math.min(ABSENCE_GRACE_TICKS, previous.ticks() + 1) : 1;
+                if (previous != null && previous.player() == player && previous.tick() == tick) { continue; }
+                absent.put(id, new Absence(player, tick, ticks));
+                if (ticks < ABSENCE_GRACE_TICKS) { continue; }
+            }
+            if (!sneak && riding) { continue; }
+            // Expensive transaction-root inspection only once, immediately before the first attempted LEAVE.
+            if (frozen == null) { frozen = RocketRuntime.sealedFrozen(rocket); }
+            if (frozen) { absent.clear(); return; }
+            try {
+                var result = sneak ? RocketFlightService.leave(player, rocket) : RocketSeatRelease.release(rocket, id);
+                if (result.success() && player.getVehicle() != rocket) {
+                    if (sneak) { player.setShiftKeyDown(false); }
+                    if (rocket.flightData().orElseThrow().passengers().assignment(id).isEmpty()) {
+                        absent.remove(id);
+                        RocketSeatRelease.released(rocket, id, sneak ? "SNEAK" : "ABSENT");
                     }
-                } catch (RuntimeException failure) {
-                    // Refusals retain the old seat. Do not propagate them out of the entity tick or log unbounded data.
-                    String reason = failure.getClass().getSimpleName();
-                    AdvancedRocketryCommunity.LOGGER.warn("ARCE_SEAT_RELEASE_HELD rocket={} player={} reason={}",
-                            rocket.getUUID(), player.getUUID(), reason.substring(0, Math.min(reason.length(), 80)));
                 }
+            } catch (RuntimeException failure) {
+                // Back off another grace period after a refusal instead of logging every tick.
+                absent.remove(id);
+                RocketSeatRelease.held(rocket, id, failure);
             }
         }
-    }
-
-    private static boolean stationary(RocketFlightState state) {
-        return state == RocketFlightState.ASSEMBLED || state == RocketFlightState.FUELED || state == RocketFlightState.LANDED;
     }
 }

@@ -74,6 +74,10 @@ public final class RocketEntity extends Entity implements MenuProvider {
     private boolean activeStateLogged;
     private long governedObservation;
     private long governedCaptures;
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketSeatInput seatInput =
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketSeatInput();
+
+    public io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketSeatInput seatInput() { return seatInput; }
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
         super(entityType, level);

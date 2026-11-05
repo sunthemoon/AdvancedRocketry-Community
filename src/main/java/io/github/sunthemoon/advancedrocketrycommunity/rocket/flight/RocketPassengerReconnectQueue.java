@@ -48,6 +48,8 @@ public final class RocketPassengerReconnectQueue {
         waiting.remove(player);
     }
 
+    public boolean pending(UUID player) { return waiting.containsKey(player); }
+
     public void clear() {
         waiting.clear();
     }

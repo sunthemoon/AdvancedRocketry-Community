@@ -278,7 +278,7 @@ public final class RocketSeatRosterGameTests {
         }
     }
 
-    private static Object replaceField(Object target, String name, Object value) {
+    static Object replaceField(Object target, String name, Object value) {
         try {
             var field = target.getClass().getDeclaredField(name);
             field.setAccessible(true);
@@ -286,7 +286,7 @@ public final class RocketSeatRosterGameTests {
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
 
-    private static RocketRejoinRoot rejoinRoot(UUID player) {
+    static RocketRejoinRoot rejoinRoot(UUID player) {
         var release = UUID.randomUUID(); var version = new RocketRejoinRoot.Version("a".repeat(64), "PREPARED", null);
         var batch = new RocketRejoinRoot.Batch(release, 0, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                 RocketRejoinRoot.Hold.H1, "minecraft:overworld", new RocketRejoinRoot.Position(0, 64, 0),
@@ -309,7 +309,7 @@ public final class RocketSeatRosterGameTests {
         }).thenSucceed();
     }
 
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper helper;
         final UUID playerId = UUID.randomUUID();
         final RocketTransferSavedData journal = new RocketTransferSavedData();

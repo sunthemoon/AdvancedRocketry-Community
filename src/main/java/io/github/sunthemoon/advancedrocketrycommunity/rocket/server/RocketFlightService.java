@@ -560,28 +560,10 @@ final class RocketFlightService {
     }
 
     static RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
-        var physicalExit = RocketRuntime.passengerExits().map(exits -> exits.heldLeave(player, rocket)).orElse(null);
-        if (physicalExit != null) { return physicalExit; }
-        if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, player.getUUID())
-                : !passengerMutationAllowed(rocket)) {
-            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
-        }
-        RocketFlightData flight = rocket.flightData().orElseThrow();
-        if (!stationary(flight.state())) {
-            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
-        }
-        if (flight.passengers().assignment(player.getUUID()).isEmpty()) {
-            return RocketFlightRequestResult.failure(RocketFlightRequestCode.NOT_BOARDED);
-        }
-        player.stopRiding();
-        if (player.getVehicle() == rocket) {
-            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
-        }
-        rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
-        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
+        return RocketSeatRelease.leave(player, rocket);
     }
 
-    private static boolean passengerMutationAllowed(RocketEntity rocket) {
+    static boolean passengerMutationAllowed(RocketEntity rocket) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) { return false; }
         var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
                 .get(((ServerLevel) rocket.level()).getServer());
@@ -617,7 +599,7 @@ final class RocketFlightService {
         return Optional.of(flight.state() == RocketFlightState.FUELED ? flight : flight.withFuel(flight.fuel(), gameTime));
     }
 
-    private static boolean stationary(RocketFlightState state) {
+    static boolean stationary(RocketFlightState state) {
         return state == RocketFlightState.ASSEMBLED
                 || state == RocketFlightState.FUELED
                 || state == RocketFlightState.LANDED;

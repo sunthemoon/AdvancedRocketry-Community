@@ -199,6 +199,8 @@ final class RocketTransferRecoveryService {
         reconnects.complete(playerId);
     }
 
+    boolean seatReconnectPending(UUID player) { return reconnects.pending(player); }
+
     void clear() {
         retirements.clear();
         completedResults.clear();
