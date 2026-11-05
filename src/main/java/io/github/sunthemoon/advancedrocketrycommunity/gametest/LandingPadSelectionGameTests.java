@@ -3,7 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex;
+import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference;
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -143,16 +145,30 @@ public final class LandingPadSelectionGameTests {
         registry.reserve(stationId, UUID.randomUUID(), "Remote pad", CelestialIds.EARTH_ID, helper.getLevel().getGameTime());
         var station = registry.commit(stationId);
         if (member) { registry.addMember(stationId, player.getUUID()); }
-        var entry = index.register(stationId, station.ownerId(), UUID.randomUUID(), "Venus Dock",
-                new StationPosition(32, station.landingPad().y() - 1, 0));
+        LandingPadEntry entry = null;
         try {
+            BlockPos at = unloadedPosition(helper, station);
+            entry = index.register(stationId, station.ownerId(), UUID.randomUUID(), "Venus Dock",
+                    new StationPosition(at.getX() - station.landingPad().x(), at.getY(), at.getZ() - station.landingPad().z()));
             test.accept(new Fixture(helper, player, stationId, entry.reference(), index, replies));
             helper.succeed();
         } finally {
             index.forgetChoice(player.getUUID());
-            index.remove(stationId, entry.reference(), entry.physicalId());
+            if (entry != null) { index.remove(stationId, entry.reference(), entry.physicalId()); }
             registry.delete(stationId);
             server.getPlayerList().remove(player);
         }
+    }
+
+    private static BlockPos unloadedPosition(GameTestHelper helper, StationState station) {
+        var space = helper.getLevel().getServer().getLevel(CelestialIds.SPACE_LEVEL);
+        // Station cells can be recycled after another case loaded its pad. Inspect at most 64
+        // chunk centers in the region's far quadrant; never load or unload a chunk for this fixture.
+        for (int candidate = 0; candidate < 64; candidate++) {
+            var at = new BlockPos(station.region().minimumX() + 8 + 16 * (candidate % 8),
+                    station.landingPad().y() - 1, station.region().minimumZ() + 8 + 16 * (candidate / 8));
+            if (space.getChunkSource().getChunkNow(at.getX() >> 4, at.getZ() >> 4) == null) { return at; }
+        }
+        throw new IllegalStateException("No unloaded pad fixture chunk among 64 bounded candidates");
     }
 }
