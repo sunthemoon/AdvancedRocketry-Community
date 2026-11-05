@@ -35,7 +35,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/resources/assets/advancedrocketrycommunity/models/block/machine_casing.json",
-      "baseline_sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb"
+      "baseline_sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -53,7 +54,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
-      "baseline_sha256": "bc0fded8d64336919beaa5b3a80cbd2f94f815a2393196e83a945f0e43dc408d"
+      "baseline_sha256": "bc0fded8d64336919beaa5b3a80cbd2f94f815a2393196e83a945f0e43dc408d",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -71,7 +73,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
-      "baseline_sha256": "4678c52a927d7eabd7c569ba1d7eb8641b41f36a3d5a4c608b2cc0615c6db050"
+      "baseline_sha256": "4678c52a927d7eabd7c569ba1d7eb8641b41f36a3d5a4c608b2cc0615c6db050",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -89,7 +92,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/guidance_computer.json",
-      "baseline_sha256": "e8aad37f4a039472731e560dcbd4378d2887abfdc24cea3aa30fc40221e295dd"
+      "baseline_sha256": "e8aad37f4a039472731e560dcbd4378d2887abfdc24cea3aa30fc40221e295dd",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -107,7 +111,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
-      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -125,7 +130,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/block/fuel_loader.json",
-      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -143,7 +149,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
-      "baseline_sha256": "8ddab3c8cc88a07baf13729c7773c4db863d85822652f610e6b79290c1267974"
+      "baseline_sha256": "8ddab3c8cc88a07baf13729c7773c4db863d85822652f610e6b79290c1267974",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -161,7 +168,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_seat.json",
-      "baseline_sha256": "5d7a8f83a1f6f7ed3ce8b70055b6126452fca7936690b8279f2d6b93f4a0c2fd"
+      "baseline_sha256": "5d7a8f83a1f6f7ed3ce8b70055b6126452fca7936690b8279f2d6b93f4a0c2fd",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -179,7 +187,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/microwave_receiver.json",
-      "baseline_sha256": "c74de9ec248d18b4222e7661e9b5469c4b52c68687111f0c77a18b27f5bd457f"
+      "baseline_sha256": "c74de9ec248d18b4222e7661e9b5469c4b52c68687111f0c77a18b27f5bd457f",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -197,7 +206,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/black_hole_generator.json",
-      "baseline_sha256": "9c96b384a17997edc391bacb423cdafe6b20b76ff19a295216a00a7e9aaf6fdb"
+      "baseline_sha256": "9c96b384a17997edc391bacb423cdafe6b20b76ff19a295216a00a7e9aaf6fdb",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -215,7 +225,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_anchor.json",
-      "baseline_sha256": "c15534ce89ab53dcc56465174846412a7022e8149b615f435f1a103fcd225100"
+      "baseline_sha256": "c15534ce89ab53dcc56465174846412a7022e8149b615f435f1a103fcd225100",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -233,7 +244,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_terminal.json",
-      "baseline_sha256": "d5a8ff6f3c1c02096617d0e1d38d0fced2672aa8f9cc418a74eec2963558dc4c"
+      "baseline_sha256": "d5a8ff6f3c1c02096617d0e1d38d0fced2672aa8f9cc418a74eec2963558dc4c",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -251,7 +263,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/endgame_casing.json",
-      "baseline_sha256": "262b279a688dfdef53285d9e30f045a21d42e8627b73a923c7c69601017c257a"
+      "baseline_sha256": "262b279a688dfdef53285d9e30f045a21d42e8627b73a923c7c69601017c257a",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -269,7 +282,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/gravity_field_controller.json",
-      "baseline_sha256": "048f4673a7ea08512339388fc73df1241b2e5f79d9d55979924662e2cec5e95b"
+      "baseline_sha256": "048f4673a7ea08512339388fc73df1241b2e5f79d9d55979924662e2cec5e95b",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -287,7 +301,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/laser_target.json",
-      "baseline_sha256": "6c06022fa31da6b728e2d08fe03199854640e98effe41cdc6282c3ab0f6bf414"
+      "baseline_sha256": "6c06022fa31da6b728e2d08fe03199854640e98effe41cdc6282c3ab0f6bf414",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -306,7 +321,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
       "baseline_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900",
-      "supersedes_target_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900"
+      "supersedes_target_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -325,7 +341,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
       "baseline_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764",
-      "supersedes_target_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764"
+      "supersedes_target_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -344,7 +361,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
       "baseline_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2",
-      "supersedes_target_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2"
+      "supersedes_target_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -363,7 +381,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
       "baseline_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e",
-      "supersedes_target_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e"
+      "supersedes_target_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -382,7 +401,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
       "baseline_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c",
-      "supersedes_target_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c"
+      "supersedes_target_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -401,7 +421,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
       "baseline_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e",
-      "supersedes_target_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e"
+      "supersedes_target_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -420,7 +441,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/crystallizer.json",
       "baseline_sha256": "a7b56be602b29c7ee93dc9770d11ee1a5ab5d8d9bec2f427fcec8f7220255a3a",
-      "supersedes_target_sha256": "a7b56be602b29c7ee93dc9770d11ee1a5ab5d8d9bec2f427fcec8f7220255a3a"
+      "supersedes_target_sha256": "a7b56be602b29c7ee93dc9770d11ee1a5ab5d8d9bec2f427fcec8f7220255a3a",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -439,7 +461,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/chemical_reactor.json",
       "baseline_sha256": "ff347d49a98aae9e61621469bd4a94570068c96d15e6a2ac178ca2b3a1bb1d36",
-      "supersedes_target_sha256": "ff347d49a98aae9e61621469bd4a94570068c96d15e6a2ac178ca2b3a1bb1d36"
+      "supersedes_target_sha256": "ff347d49a98aae9e61621469bd4a94570068c96d15e6a2ac178ca2b3a1bb1d36",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -458,7 +481,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_laser_etcher.json",
       "baseline_sha256": "71a4a54c98bf27beb117175b8c1590ed6b9150d1282bfe6b4b25c450a811abfd",
-      "supersedes_target_sha256": "71a4a54c98bf27beb117175b8c1590ed6b9150d1282bfe6b4b25c450a811abfd"
+      "supersedes_target_sha256": "71a4a54c98bf27beb117175b8c1590ed6b9150d1282bfe6b4b25c450a811abfd",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -477,7 +501,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/centrifuge.json",
       "baseline_sha256": "161464b2ebb3674bf546f8c45ce19475f1307bf0936f1d18f941182b2e2885ae",
-      "supersedes_target_sha256": "161464b2ebb3674bf546f8c45ce19475f1307bf0936f1d18f941182b2e2885ae"
+      "supersedes_target_sha256": "161464b2ebb3674bf546f8c45ce19475f1307bf0936f1d18f941182b2e2885ae",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -496,7 +521,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/observatory.json",
       "baseline_sha256": "0fefdd1d4f6101f3d0e8aa028b559c4e5ff70f62264df653516a5d4b14fd6598",
-      "supersedes_target_sha256": "0fefdd1d4f6101f3d0e8aa028b559c4e5ff70f62264df653516a5d4b14fd6598"
+      "supersedes_target_sha256": "0fefdd1d4f6101f3d0e8aa028b559c4e5ff70f62264df653516a5d4b14fd6598",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -515,7 +541,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/astrobody_data_processor.json",
       "baseline_sha256": "58c49b76c03ad8af8be8936022f516d1d998379fdcd925851fbd08364f5f17dc",
-      "supersedes_target_sha256": "58c49b76c03ad8af8be8936022f516d1d998379fdcd925851fbd08364f5f17dc"
+      "supersedes_target_sha256": "58c49b76c03ad8af8be8936022f516d1d998379fdcd925851fbd08364f5f17dc",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -534,7 +561,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_input_port.json",
       "baseline_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
-      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a"
+      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -553,7 +581,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_output_port.json",
       "baseline_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
-      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf"
+      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -572,7 +601,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_fluid_input_port.json",
       "baseline_sha256": "ef214ce5a9f68ea1e31867fb5101818b2a9d1963bbb6a6cc21e88495ebb4a8d7",
-      "supersedes_target_sha256": "ef214ce5a9f68ea1e31867fb5101818b2a9d1963bbb6a6cc21e88495ebb4a8d7"
+      "supersedes_target_sha256": "ef214ce5a9f68ea1e31867fb5101818b2a9d1963bbb6a6cc21e88495ebb4a8d7",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -591,7 +621,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_energy_input_port.json",
       "baseline_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
-      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900"
+      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -610,7 +641,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_input_port.json",
       "baseline_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
-      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a"
+      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -629,7 +661,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json",
       "baseline_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
-      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf"
+      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -648,7 +681,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json",
       "baseline_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
-      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900"
+      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -667,7 +701,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/cutting_machine.json",
       "baseline_sha256": "b6e88aaf7b31010237224e0f7661d8624eca4da09c08c9202c72ab15c7682f95",
-      "supersedes_target_sha256": "b6e88aaf7b31010237224e0f7661d8624eca4da09c08c9202c72ab15c7682f95"
+      "supersedes_target_sha256": "b6e88aaf7b31010237224e0f7661d8624eca4da09c08c9202c72ab15c7682f95",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -685,7 +720,8 @@
         "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
       ],
       "baseline_path": "src/generated/v0.7/resources/assets/advancedrocketrycommunity/models/item/station_deployment_kit.json",
-      "baseline_sha256": "1b7f6d70fa47a52f9345d21d63220e75f8bf02f0f68d5ec51efff3e5256beff0"
+      "baseline_sha256": "1b7f6d70fa47a52f9345d21d63220e75f8bf02f0f68d5ec51efff3e5256beff0",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -704,7 +740,8 @@
       ],
       "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/nitrogen_canister.json",
       "baseline_sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2",
-      "supersedes_target_sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2"
+      "supersedes_target_sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -720,7 +757,8 @@
       "target_sha256": "0e3cfa609655d4452daceaf5440d133a3cd83087f71f8f87720575c3a95ad518",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -736,7 +774,8 @@
       "target_sha256": "708a65888ff4dadf7394c92b7c042210fe1eaf9fbcc6e826a4043cba39b49fd4",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -752,7 +791,8 @@
       "target_sha256": "0d56f8c7cc58ccf5bb3465d5898179c62eaafbf172263d7acc5537af2065f648",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -768,7 +808,8 @@
       "target_sha256": "6c563ca6b8fd8a22647cd1fca6acb448444629f4b457e9b0c61971b26b6e8a26",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -784,7 +825,8 @@
       "target_sha256": "c43ef69c97c30032177a7fd30c62c7d7ee39280802c05712bbfc4046f920e885",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -800,7 +842,8 @@
       "target_sha256": "34274597d5d1699bd041647e07ce882a7a39c99382008ff851f7ba734eb14693",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -816,7 +859,8 @@
       "target_sha256": "18707f18884d74a105f4d3a952a3557e5bc50fae1e704044f6fef26d17cf81ed",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -832,7 +876,8 @@
       "target_sha256": "a1d0b40d438dd545e1de16d2f63fba9f167234422777f275612188e17bcd34ac",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -848,7 +893,8 @@
       "target_sha256": "bcced9b93da68d6c5dc72ad56a4770144586b1f563a05f86db66b1c1da5a6dd3",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -864,7 +910,8 @@
       "target_sha256": "6bc867b95f838ea0cf1bcc4ec66a982a9d19ab322cb4b017bbc901368afbbe51",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -880,7 +927,8 @@
       "target_sha256": "1b195d5129373e73eaab61be1581e76743e160c8bc6c85b02219ee68819f01d1",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -896,7 +944,8 @@
       "target_sha256": "f1b0bf68e90089dce469a9c6e8bdf190feae84bd997bf14463328dd8463ca7f7",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -912,7 +961,8 @@
       "target_sha256": "2572eda51c28380a798117f63fd94f8347591def6686a9857468a9d580d29f2c",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -928,7 +978,8 @@
       "target_sha256": "d676231e426257fef1fa16cf16c3f3c63f24cda0ddf4200cd1e8d0dbffd5f9d7",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -944,7 +995,8 @@
       "target_sha256": "2addfd48481fe04885ac94f6a9412de47f31d18e65919aa036fe7040800cbfa5",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -960,7 +1012,8 @@
       "target_sha256": "8ea3f7c0bee51c11e50a24bf15d7ad41331ebbe1c3ffee70ffc05a01326c26d1",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -976,7 +1029,8 @@
       "target_sha256": "b92ae9a1adaea218b0b316df430cf4067525fc166ddf38117372bafe0fd6298d",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -992,7 +1046,8 @@
       "target_sha256": "fd5dad74382eb63dbbf9edb3145d652f892900e054020f67d170e97cf17e87af",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -1008,7 +1063,8 @@
       "target_sha256": "fe2bf23065f4fcfa279b1cc06850af4d9d11eeb0a7e821f8a5c22242cbe6536a",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -1024,7 +1080,8 @@
       "target_sha256": "e729ec85ea31b059767880cb46e9debed4b384fbabebde5bd399eea8876473c6",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     },
     {
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
@@ -1040,7 +1097,8 @@
       "target_sha256": "eaf2ca5460d21e6745ab37e5a9978ce481869e28e68d5ebf88d847c40bd144f8",
       "transformation": [
         "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
-      ]
+      ],
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
     }
   ],
   "review": {
@@ -1048,7 +1106,7 @@
     "reviewer": null,
     "reviewed_at": null,
     "basis": "Owner visual and originality review remains outstanding. Automated screening is not approval.",
-    "content_digest": "c709dc6a1f7142d2d89133c6c656621bb126cfce68b6e12527bba4362f1b3acc"
+    "content_digest": "22164debb6604e1ddf08e64a0800696c85454d3cc57feacb883e7b19baa367ee"
   },
   "preauthoring_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
   "historical_model_copies": [
@@ -1415,5 +1473,6 @@
         }
       }
     }
-  }
+  },
+  "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c"
 }
