@@ -82,6 +82,8 @@ final class RocketStaleSeatFixture implements AutoCloseable {
 
     private void initialize() throws Exception {
         f = new Fixture(helper);
+        // Flight controls can detach at ascent altitude; incidental fall damage is not this fixture's stimulus.
+        if (scenario != Case.DEATH) { f.player.setInvulnerable(true); }
         started = helper.getLevel().getServer().getTickCount(); releaseStart = 0;
         // Keep ordinary departures on solid ground instead of turning a 40-tick observation into a fall test.
         var floor = helper.absolutePos(new BlockPos(9, 1, 3));
