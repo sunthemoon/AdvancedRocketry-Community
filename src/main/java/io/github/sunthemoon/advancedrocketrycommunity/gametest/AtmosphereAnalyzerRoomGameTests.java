@@ -4,8 +4,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AnalyzerReading;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerFeedback;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentOperatingStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
@@ -23,7 +25,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +36,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -45,9 +51,25 @@ public final class AtmosphereAnalyzerRoomGameTests {
     public static void suppliedRoomDoorClickMatchesDirectEyeReading(GameTestHelper helper) {
         Room room = new Room(helper);
         boolean[] finished = {false};
+        boolean[] opened = {false};
         helper.onEachTick(() -> {
             if (finished[0]) { return; }
             try {
+                if (opened[0]) {
+                    if (room.vent.status() != VentOperatingStatus.OPEN) {
+                        helper.assertTrue(helper.getTick() < 79, "Open room scan did not complete");
+                        return;
+                    }
+                    var open = AtmosphereAnalyzerRuntime.read(room.player);
+                    helper.assertTrue(open.state() == AnalyzerReading.State.NON_BREATHABLE && !open.supplied(),
+                            "Completed open-room scan retained supply");
+                    room.assertAmbient(open);
+                    room.click(room.door, InteractionHand.MAIN_HAND, open);
+                    finished[0] = true;
+                    room.close();
+                    helper.succeed();
+                    return;
+                }
                 // Readiness is independent of the analyzer: these are the HUD eye and command feet queries.
                 if (AtmosphereRuntime.breathabilityAt(room.level, room.eye()).orElseThrow() != BreathabilityState.BREATHABLE
                         || AtmosphereRuntime.breathabilityAt(room.level, room.player.blockPosition()).orElseThrow()
@@ -94,15 +116,66 @@ public final class AtmosphereAnalyzerRoomGameTests {
                 helper.assertTrue(open.state() != AnalyzerReading.State.BREATHABLE && !open.supplied(),
                         "Opening the airlock retained positive authority");
                 room.click(room.door, InteractionHand.MAIN_HAND, open);
-                finished[0] = true;
-                room.close();
-                helper.succeed();
+                opened[0] = true;
             } catch (RuntimeException failed) {
                 finished[0] = true;
                 room.close();
                 throw failed;
             }
         });
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "atmosphere_analyzer", timeoutTicks = 80)
+    public static void sealedUnsuppliedRoomDoesNotGainAirFromAnalyzerClicks(GameTestHelper helper) {
+        Room room = new Room(helper, false);
+        boolean[] finished = {false};
+        helper.onEachTick(() -> {
+            if (finished[0]) { return; }
+            try {
+                if (room.vent.status() != VentOperatingStatus.NO_OXYGEN) {
+                    helper.assertTrue(helper.getTick() < 79, "Unsupplied sealed room scan did not complete");
+                    return;
+                }
+                var reading = AtmosphereAnalyzerRuntime.read(room.player);
+                helper.assertTrue(reading.state() == AnalyzerReading.State.NON_BREATHABLE && !reading.supplied(),
+                        "Sealed but unsupplied room became breathable");
+                room.assertAmbient(reading);
+                var metrics = AtmosphereRuntime.metrics(room.level);
+                room.click(room.door, InteractionHand.MAIN_HAND, reading);
+                helper.assertTrue(metrics.equals(AtmosphereRuntime.metrics(room.level)), "Unsupplied query changed atmosphere state");
+                finished[0] = true;
+                room.close();
+                helper.succeed();
+            } catch (RuntimeException failed) { finished[0] = true; room.close(); throw failed; }
+        });
+    }
+
+    @GameTest(template = "empty", batch = "atmosphere_analyzer", timeoutTicks = 40)
+    public static void blockRoutingPreservesForeignDenialsAndRejectsInvalidHeldStack(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var position = helper.absolutePos(new BlockPos(2, 2, 2));
+        var replies = new ArrayList<String>();
+        var player = ConnectedTestPlayers.join(level.getServer(), UUID.randomUUID(), "analyzerRoute", level, position, replies);
+        var item = (AtmosphereAnalyzerItem) ModItems.ATMOSPHERE_ANALYZER.get();
+        var hit = new BlockHitResult(Vec3.atCenterOf(position), Direction.UP, position, false);
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(item));
+            var denied = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, position, hit);
+            denied.setUseItem(Event.Result.DENY); denied.setCanceled(true);
+            item.onRightClickBlock(denied);
+            helper.assertTrue(denied.isCanceled() && denied.getUseItem() == Event.Result.DENY
+                    && denied.getUseBlock() == Event.Result.DENY, "Analyzer routing overrode foreign denial/cancellation");
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            var ordinary = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, position, hit);
+            item.onRightClickBlock(ordinary);
+            helper.assertTrue(ordinary.getUseBlock() == Event.Result.DEFAULT, "Analyzer routing claimed another held item");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(item, 2));
+            replies.clear();
+            helper.assertTrue(item.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit)) == InteractionResult.FAIL
+                    && replies.isEmpty() && !player.getCooldowns().isOnCooldown(item), "Invalid block use had side effects");
+            helper.assertTrue(item.useOn(null) == InteractionResult.FAIL, "Null context authorized block use");
+        } finally { level.getServer().getPlayerList().remove(player); }
+        helper.succeed();
     }
 
     private static final class Room implements AutoCloseable {
@@ -115,7 +188,9 @@ public final class AtmosphereAnalyzerRoomGameTests {
         private ServerPlayer player;
         private OxygenVentBlockEntity vent;
 
-        private Room(GameTestHelper helper) {
+        private Room(GameTestHelper helper) { this(helper, true); }
+
+        private Room(GameTestHelper helper, boolean supplied) {
             this.helper = helper;
             level = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
             helper.assertTrue(level != null, "Moon is unavailable");
@@ -144,7 +219,7 @@ public final class AtmosphereAnalyzerRoomGameTests {
                 level.setBlock(origin, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), Block.UPDATE_ALL);
                 vent = (OxygenVentBlockEntity) level.getBlockEntity(origin);
                 var items = vent.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).orElseThrow(IllegalStateException::new);
-                helper.assertTrue(items.insertItem(0, new ItemStack(ModItems.OXYGEN_CANISTER.get()), false).isEmpty(),
+                helper.assertTrue(!supplied || items.insertItem(0, new ItemStack(ModItems.OXYGEN_CANISTER.get()), false).isEmpty(),
                         "Vent refused oxygen fixture");
                 OxygenVentBlockEntity.serverTick(level, origin, vent.getBlockState(), vent);
                 vent.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new)
