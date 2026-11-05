@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -31,6 +32,11 @@ public final class RocketAssemblerBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hit
     ) {
+        if (player.getItemInHand(hand).getItem() instanceof BlockItem
+                || hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()
+                && player.getOffhandItem().getItem() instanceof BlockItem) {
+            return InteractionResult.PASS;
+        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

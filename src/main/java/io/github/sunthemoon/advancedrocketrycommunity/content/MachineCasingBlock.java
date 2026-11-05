@@ -9,6 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -48,6 +49,11 @@ public final class MachineCasingBlock extends HorizontalDirectionalBlock {
             InteractionHand hand,
             BlockHitResult hit
     ) {
+        if (player.getItemInHand(hand).getItem() instanceof BlockItem
+                || hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()
+                && player.getOffhandItem().getItem() instanceof BlockItem) {
+            return InteractionResult.PASS;
+        }
         if (!level.isClientSide()) {
             level.playSound(
                     null,

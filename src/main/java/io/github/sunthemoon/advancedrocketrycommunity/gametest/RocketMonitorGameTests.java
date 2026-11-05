@@ -97,7 +97,9 @@ public final class RocketMonitorGameTests {
     public static void linkerChecksOwnerDistancePhysicalIdentityAndRelativeTelemetry(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             var level = helper.getLevel(); var server = level.getServer(); var ownerId = UUID.randomUUID();
-            var owner = ConnectedTestPlayers.join(server, ownerId, "monitorLink", level, helper.absolutePos(DEVICE), new ArrayList<>());
+            var tokens = new ArrayList<String>();
+            var owner = ConnectedTestPlayers.join(server, ownerId, "monitorLink", level, helper.absolutePos(DEVICE),
+                    new ArrayList<>(), false, tokens);
             var stranger = ConnectedTestPlayers.join(server, UUID.randomUUID(), "monitorOther", level, helper.absolutePos(DEVICE), new ArrayList<>());
             var rocket = FluidFuelLoaderFixtures.rocket(helper, ORIGIN, ownerId);
             var monitor = monitor(helper, ownerId);
@@ -106,11 +108,15 @@ public final class RocketMonitorGameTests {
                 helper.assertTrue(!monitor.admitted(stranger), "A stranger accessed the monitor");
                 owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.LINKER.get()));
                 helper.assertTrue(select(owner, monitor.getBlockPos()) == InteractionResult.CONSUME, "Monitor was not selected");
+                helper.assertTrue(tokens.contains(ConnectedTestPlayers.ACTION_BAR + "message.advancedrocketrycommunity.linker.monitor_selected"),
+                        "Monitor selection used loader feedback: " + tokens);
                 helper.assertTrue(LinkerItem.bindRocket(owner, InteractionHand.MAIN_HAND, rocket) == InteractionResult.FAIL,
                         "Linker ignored its change cooldown");
                 owner.getCooldowns().removeCooldown(ModItems.LINKER.get());
                 helper.assertTrue(LinkerItem.bindRocket(owner, InteractionHand.MAIN_HAND, rocket) == InteractionResult.CONSUME,
                         "Owner's docked rocket was not bound");
+                helper.assertTrue(tokens.contains(ConnectedTestPlayers.ACTION_BAR + "message.advancedrocketrycommunity.linker.monitor_bound"),
+                        "Monitor binding used loader feedback: " + tokens);
                 helper.assertTrue(monitor.root().binding().equals(RocketMonitorBinding.capture(rocket)), "Wrong logical/physical binding");
                 monitor.tick(); helper.assertTrue(monitor.height() == 0 && monitor.status() == RocketMonitorStatus.READY, "Initial telemetry is not relative");
                 rocket.setPos(rocket.getX(), rocket.getY() + 24, rocket.getZ());

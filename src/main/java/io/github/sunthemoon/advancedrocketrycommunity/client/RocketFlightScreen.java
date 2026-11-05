@@ -18,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigati
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -173,6 +174,9 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         earthButton.setMessage(choiceLabel(RocketDestination.EARTH));
         moonButton.setMessage(choiceLabel(RocketDestination.MOON));
         stationButton.setMessage(stationLabel());
+        stationButton.setTooltip(menu.accessibleStations().isEmpty()
+                ? Tooltip.create(Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations")) : null);
+        ScreenText.fitButton(stationButton, font);
         otherBodyButton.setMessage(otherBodyLabel());
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
@@ -211,7 +215,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
             return Component.literal(font.plainSubstrByWidth("[ " + name + " ]", 88));
         }
         if (stations.isEmpty()) {
-            return Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations");
+            return Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations_short");
         }
         int selectedStationIndex = selection.stationIndex();
         StationDestinationSummary station = stations.get(selectedStationIndex);

@@ -2,7 +2,10 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.Objects;
 import java.util.UUID;
@@ -11,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 
-/** Exact loaded UUID resolution; telemetry may observe ascent, but never searches or loads a chunk. */
+/** Logical identity with exact loaded UUID hints; never searches entities or loads a chunk. */
 public final class RocketMonitorBinding {
     private RocketMonitorBinding() { }
     public record Result(RocketMonitorStatus status, RocketEntity rocket) { }
@@ -38,6 +41,37 @@ public final class RocketMonitorBinding {
         if (binding == null) { return new Result(RocketMonitorStatus.UNBOUND, null); }
         if (!(monitor.getLevel() instanceof ServerLevel level) || !binding.level().equals(level.dimension().location())) {
             return new Result(RocketMonitorStatus.STALE_BINDING, null);
+        }
+        // Existing schema-1 bindings already contain the stable assembly identity. Follow the journal's source
+        // during an active flight and its committed replacement, never an uncommitted destination copy.
+        var journal = RocketTransferSavedData.get(level.getServer());
+        if (!journal.operational()) { return new Result(RocketMonitorStatus.ROCKET_BUSY, null); }
+        var transfer = journal.findByLogicalRocket(binding.logicalRocket()).orElse(null);
+        if (transfer != null) {
+            boolean committed = transfer.phase() == RocketTransferPhase.COMMITTED;
+            var located = committed ? transfer.destinationFlightData() : transfer.sourceFlightData();
+            var physical = committed ? transfer.destinationEntityId().orElse(null) : transfer.sourceEntityId();
+            if (!transfer.ownerId().equals(root.owner()) || physical == null
+                    || !located.currentDimension().equals(level.dimension().location())) {
+                return new Result(RocketMonitorStatus.STALE_BINDING, null);
+            }
+            binding = new LoaderBinding(binding.logicalRocket(), located.currentDimension(), physical, origin(located), station(located));
+        } else {
+            // Native F8 retires the journal entry but retains the logical-to-physical authority head.
+            var escrow = ResourceEscrowSavedData.existing(level.getServer());
+            if (escrow != null) {
+                if (!escrow.operational()) { return new Result(RocketMonitorStatus.ROCKET_BUSY, null); }
+                var logical = binding.logicalRocket();
+                var head = escrow.ledger().rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
+                if (head != null) {
+                    if (!head.owner().equals(root.owner())) { return new Result(RocketMonitorStatus.NOT_OWNER, null); }
+                    if (!(level.getEntity(head.physical()) instanceof RocketEntity current) || !current.operational()
+                            || !current.flightData().orElseThrow().logicalRocketId().equals(logical)) {
+                        return new Result(RocketMonitorStatus.STALE_BINDING, null);
+                    }
+                    binding = capture(current);
+                }
+            }
         }
         if (!loaded(level, monitor.getBlockPos()) || !loaded(level, binding.locator())) {
             return new Result(RocketMonitorStatus.WAITING_UNLOADED, null);
