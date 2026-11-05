@@ -325,7 +325,7 @@ What is still open:
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
-  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04 and four 2026-11-05 entries below.
+  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04 and five 2026-11-05 entries below.
 - **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
@@ -412,5 +412,11 @@ What is still open:
   after the test's explosion, so the retried native proof never completed (W251's cause in another fixture). W302
   (R342, merged at `04da447ee`) encloses that fixture and four sibling sealed fixtures; a matched run of the same
   batches failed before and passed after. This stays open until runs with W298 show no recurrence.
+- **Bay matrix pending-spawn GameTest under local load (2026-11-05).** W298's new sibling
+  `BayDeploymentMatrixGameTests.aRefusedCheckpointRequestPreservesPackagesWhileDestinationSpawnAwaitsAcknowledgement`
+  failed once in W288's local full run with `The pending-spawn regression missed PREPARED source authority`: the
+  fixture expects to find the transfer still in PREPARED when it drives the destination spawn, and under local load
+  the transfer had moved on. It passed in every hosted run so far. No fix is queued unless it recurs; it stays open
+  until runs show no recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
