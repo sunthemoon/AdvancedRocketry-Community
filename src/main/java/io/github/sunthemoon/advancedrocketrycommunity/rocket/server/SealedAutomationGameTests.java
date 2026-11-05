@@ -42,6 +42,7 @@ public final class SealedAutomationGameTests {
     @GameTest(template = "rocket_test", batch = "w152_automation", timeoutTicks = 400)
     public static void tickingHoppersDropperAndCapabilityConsumerCannotAccessRetainedContainers(GameTestHelper helper) {
         var level = helper.getLevel(); var origin = helper.absolutePos(new BlockPos(2, 3, 2));
+        SealedProductionTestAccess.isolateTerrainFixture(level, origin);
         var targets = List.of(origin, origin.east(4)); var fence = origin.south(3);
         var blocks = new ArrayList<RocketBlock>(); var adapter = new VanillaContainerRocketAdapter();
         for (int index = 0; index < targets.size(); index++) {

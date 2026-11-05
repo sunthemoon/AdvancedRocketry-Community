@@ -39,6 +39,7 @@ public final class SealedDisassemblyGameTests {
     public static void retainedURequiresNativeSealedTerrainAndEntityAbsenceBeforeCompletion(GameTestHelper helper) {
         var level = helper.getLevel(); var server = level.getServer();
         var origin = helper.absolutePos(new BlockPos(1, 2, 1));
+        SealedProductionTestAccess.isolateTerrainFixture(level, origin);
         var chest = new ChestBlockEntity(origin.east(), Blocks.CHEST.defaultBlockState());
         chest.setItem(0, new ItemStack(Items.DIAMOND, 7));
         var payload = new VanillaContainerRocketAdapter().capture(chest);
