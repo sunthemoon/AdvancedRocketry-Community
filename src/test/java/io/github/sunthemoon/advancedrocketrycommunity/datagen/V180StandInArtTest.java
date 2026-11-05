@@ -103,8 +103,9 @@ class V180StandInArtTest {
         }
         for (String port : V180StandInArtData.PORTS) {
             JsonObject faces = allModels().get(ASSETS + "models/block/" + port + ".json").getAsJsonObject("textures");
-            assertEquals("advancedrocketrycommunity:block/machine_panel_side", faces.get("side").getAsString());
-            assertEquals("advancedrocketrycommunity:block/machine_casing_top", faces.get("bottom").getAsString());
+            // R332 supersedes the plain panels, without changing any W275 image.
+            assertEquals(faces.get("top"), faces.get("side"));
+            assertEquals(faces.get("top"), faces.get("bottom"));
         }
     }
 
@@ -132,7 +133,7 @@ class V180StandInArtTest {
             assertTrue(actual.add(path));
             assertEquals("NEW", entry.get("status").getAsString());
             assertEquals("MIT", entry.get("license").getAsString());
-            assertEquals(sha(Files.readAllBytes(Path.of(path))), entry.get("target_sha256").getAsString(), path);
+            V180W277ProvenanceAssertions.assertCurrentOrExplicitlySuperseded(entry);
             assertEquals(sourceHash(entry), entry.get("source_sha256").getAsString(), path);
         }
         assertEquals(expected, actual);

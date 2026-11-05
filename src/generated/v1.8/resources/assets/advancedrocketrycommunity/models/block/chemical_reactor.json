@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "front": "advancedrocketrycommunity:block/chemical_reactor",
-    "side": "advancedrocketrycommunity:block/machine_casing_side",
+    "side": "advancedrocketrycommunity:block/machine_panel_side",
     "top": "advancedrocketrycommunity:block/machine_casing_top"
   }
 }

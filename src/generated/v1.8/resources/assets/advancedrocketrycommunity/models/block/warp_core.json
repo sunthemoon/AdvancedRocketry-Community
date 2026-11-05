@@ -3,6 +3,6 @@
   "textures": {
     "bottom": "advancedrocketrycommunity:block/machine_casing_top",
     "side": "advancedrocketrycommunity:block/warp_core_side",
-    "top": "minecraft:block/crying_obsidian"
+    "top": "advancedrocketrycommunity:block/warp_core_top"
   }
 }

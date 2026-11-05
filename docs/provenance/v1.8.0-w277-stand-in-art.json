@@ -7,7 +7,7 @@
   "authority": "docs/work/v1.8.0-root-queue/TASK-W277-REMAINING-STAND-INS.md",
   "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
   "source_branch": "codex/v1.8.0-w277",
-  "source_commit": "c14ede4db",
+  "source_commit": "c14ede4dbba82ba50c31ed22f971aba7dee3990a",
   "license": "MIT",
   "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
   "method": "Original deterministic integer pixel geometry in Java, without bitmap inputs. Match the community steel/teal casing and hatch palette. Reuse W275's original Java cylinder drawing with a separately coloured nitrogen band and its existing drawn port icons. No vanilla, upstream or third-party bitmap is copied, traced, sampled or transformed. Pinned vanilla clients are read only for screening and external comparisons.",
@@ -18,12 +18,1402 @@
     "A separately named nitrogen cylinder icon with a blue band; retain all W275 images and earlier reviews unchanged.",
     "Texture-only v1.8 model bindings. No geometry, IDs, behaviour, recipes, loot, build scripts, ledger, queue, status files or historical resource changes."
   ],
-  "entries": [],
+  "entries": [
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/machine_casing.json",
+      "target_sha256": "8572e84d3923b51dbca8c50d180e1593b8297a131e123e39481f91c527094813",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/resources/assets/advancedrocketrycommunity/models/block/machine_casing.json",
+      "baseline_sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+      "target_sha256": "62bf2e7446f9fe4fdc0818b293c27a63ffc92bea2ab8a860e05bf88c2691a5d3",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+      "baseline_sha256": "bc0fded8d64336919beaa5b3a80cbd2f94f815a2393196e83a945f0e43dc408d"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+      "target_sha256": "c58c89acfe821e2544a38cead860906b5b3804ebe2dea169a1e7ed7c779c15eb",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+      "baseline_sha256": "4678c52a927d7eabd7c569ba1d7eb8641b41f36a3d5a4c608b2cc0615c6db050"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+      "target_sha256": "c2816cfdbf64423ec02a66cf5f52cacec1dbcbfa71af57de3136c251ca761f0f",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+      "baseline_sha256": "e8aad37f4a039472731e560dcbd4378d2887abfdc24cea3aa30fc40221e295dd"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+      "target_sha256": "c53e01eab703a396f6910344d45d8230faf4ff5e76866254a131bda767ef762d",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/fuel_loader.json",
+      "target_sha256": "eeabc45f4d706ab43dd03fba9f551cd5f3fad2d7ed736fc7853e6cfeac8a6f0b",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/block/fuel_loader.json",
+      "baseline_sha256": "31074070d4767286352625c3d98f0a0d39d690d722e8e51662ce3574b65bc2a3"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
+      "target_sha256": "d7b18963b7a5c20cc0ba68c705d17c73a3701a57ca3aa58be6a109ce2c17a9c5",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
+      "baseline_sha256": "8ddab3c8cc88a07baf13729c7773c4db863d85822652f610e6b79290c1267974"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+      "target_sha256": "93600a66da88764a0da60f2ea8dda63f969fa6cc983725ec3395904c6373b671",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+      "baseline_sha256": "5d7a8f83a1f6f7ed3ce8b70055b6126452fca7936690b8279f2d6b93f4a0c2fd"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/microwave_receiver.json",
+      "target_sha256": "bda7b376d08edf05073dbd06896906902cf9f8b34c20ec8e5360e60a7f6c6632",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/microwave_receiver.json",
+      "baseline_sha256": "c74de9ec248d18b4222e7661e9b5469c4b52c68687111f0c77a18b27f5bd457f"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/black_hole_generator.json",
+      "target_sha256": "a3dedc3b7e64d2966648c8d2151256c340f89c186c82fc719447e361046a5763",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/black_hole_generator.json",
+      "baseline_sha256": "9c96b384a17997edc391bacb423cdafe6b20b76ff19a295216a00a7e9aaf6fdb"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/elevator_anchor.json",
+      "target_sha256": "ef37d7a028dae040180214a68ad647bf78b92ad625da262e9720c81eab0b2f7b",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_anchor.json",
+      "baseline_sha256": "c15534ce89ab53dcc56465174846412a7022e8149b615f435f1a103fcd225100"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/elevator_terminal.json",
+      "target_sha256": "8a9bba8f2def9aa585d5a856082b9d1f7a26707f2f1867abd711196e9faf3319",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_terminal.json",
+      "baseline_sha256": "d5a8ff6f3c1c02096617d0e1d38d0fced2672aa8f9cc418a74eec2963558dc4c"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/endgame_casing.json",
+      "target_sha256": "f6772ceef978c92f69140983604b3a52a80546472b49158dc6f9ca1f29a12563",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/endgame_casing.json",
+      "baseline_sha256": "262b279a688dfdef53285d9e30f045a21d42e8627b73a923c7c69601017c257a"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/gravity_field_controller.json",
+      "target_sha256": "d4a5152f8e3a258e1a34ea0b13e7c8d1476e1ada8a2890cf4923bc0547df203d",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/gravity_field_controller.json",
+      "baseline_sha256": "048f4673a7ea08512339388fc73df1241b2e5f79d9d55979924662e2cec5e95b"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/laser_target.json",
+      "target_sha256": "02fdf43051ce3e42c183ccabff46ff5880b74a9e69a0dd1ceb27d611f3e91095",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/laser_target.json",
+      "baseline_sha256": "6c06022fa31da6b728e2d08fe03199854640e98effe41cdc6282c3ab0f6bf414"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "target_sha256": "2611841e981837c2567a4f733160afeb24dcbd03f5837bb3b832ae3917940b65",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "baseline_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900",
+      "supersedes_target_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "target_sha256": "41c220ee3e596561a1bd95461a1d7b3e3579af159cd115b8c677b19ef5b4ef83",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "baseline_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764",
+      "supersedes_target_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
+      "target_sha256": "cf20b45252f7a04ec927d3f16a29a9c3ae3ed80df83e11da6df3e706f078583c",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
+      "baseline_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2",
+      "supersedes_target_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
+      "target_sha256": "bf337fa1679d26366bca3534101a19f7ffbbcf536093fba59903cd80a7c4378e",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
+      "baseline_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e",
+      "supersedes_target_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
+      "target_sha256": "5b027cfea4b45a816a1fed8545b845a416c5064e550f459d2d20186b34dafbe6",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
+      "baseline_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c",
+      "supersedes_target_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
+      "source_sha256": "65e1e05714f9da44b599ad0a8e45c930775720843d6d9c29ffed3690675bbea8",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
+      "target_sha256": "22bbc19e71fa31f83e3018130d93d80dd2997142e0b9bb5a7dd0170754df595d",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
+      "baseline_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e",
+      "supersedes_target_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/crystallizer.json",
+      "target_sha256": "a0f51e3101eb09cb6716719a5953c6b58f13b0040cf1a955c611e26d962f5019",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/crystallizer.json",
+      "baseline_sha256": "a7b56be602b29c7ee93dc9770d11ee1a5ab5d8d9bec2f427fcec8f7220255a3a",
+      "supersedes_target_sha256": "a7b56be602b29c7ee93dc9770d11ee1a5ab5d8d9bec2f427fcec8f7220255a3a"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/chemical_reactor.json",
+      "target_sha256": "af426eef9905268925cb9601b8b90b712a9430974af36be25cdfbbfdd6ee9406",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/chemical_reactor.json",
+      "baseline_sha256": "ff347d49a98aae9e61621469bd4a94570068c96d15e6a2ac178ca2b3a1bb1d36",
+      "supersedes_target_sha256": "ff347d49a98aae9e61621469bd4a94570068c96d15e6a2ac178ca2b3a1bb1d36"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_laser_etcher.json",
+      "target_sha256": "7733ce160841c1c5c8d707547129eb7e72455e6b2e17a333c15d454c88d9f054",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_laser_etcher.json",
+      "baseline_sha256": "71a4a54c98bf27beb117175b8c1590ed6b9150d1282bfe6b4b25c450a811abfd",
+      "supersedes_target_sha256": "71a4a54c98bf27beb117175b8c1590ed6b9150d1282bfe6b4b25c450a811abfd"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/centrifuge.json",
+      "target_sha256": "b26cef000922b186092b792a5ddebb573f86fb0cb3d396c4409f1cc4619821dc",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/centrifuge.json",
+      "baseline_sha256": "161464b2ebb3674bf546f8c45ce19475f1307bf0936f1d18f941182b2e2885ae",
+      "supersedes_target_sha256": "161464b2ebb3674bf546f8c45ce19475f1307bf0936f1d18f941182b2e2885ae"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/observatory.json",
+      "target_sha256": "6a8f3788c0be874b0713d1b75237eb1dc429c6eb923696a41e78472d2b93edd1",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/observatory.json",
+      "baseline_sha256": "0fefdd1d4f6101f3d0e8aa028b559c4e5ff70f62264df653516a5d4b14fd6598",
+      "supersedes_target_sha256": "0fefdd1d4f6101f3d0e8aa028b559c4e5ff70f62264df653516a5d4b14fd6598"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/astrobody_data_processor.json",
+      "target_sha256": "334554492a7afdd52a2f1c773197050243c6a3451b34ac1ce76d6ce2b7d9f4f8",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/astrobody_data_processor.json",
+      "baseline_sha256": "58c49b76c03ad8af8be8936022f516d1d998379fdcd925851fbd08364f5f17dc",
+      "supersedes_target_sha256": "58c49b76c03ad8af8be8936022f516d1d998379fdcd925851fbd08364f5f17dc"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_input_port.json",
+      "target_sha256": "6f4e632871dfa09b1823bbbad32f4938d694150af3e80a6090fad483f385cde0",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_input_port.json",
+      "baseline_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
+      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_output_port.json",
+      "target_sha256": "60fc31b49695afe82101b1ac44b3ec387e46c98e297df3dca1f87c6857ea7442",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_output_port.json",
+      "baseline_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
+      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_fluid_input_port.json",
+      "target_sha256": "a1c279a4d6b6623f7d0df4678781efbf05372058972b853de9c3ad9d7a1cca82",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_fluid_input_port.json",
+      "baseline_sha256": "ef214ce5a9f68ea1e31867fb5101818b2a9d1963bbb6a6cc21e88495ebb4a8d7",
+      "supersedes_target_sha256": "ef214ce5a9f68ea1e31867fb5101818b2a9d1963bbb6a6cc21e88495ebb4a8d7"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_energy_input_port.json",
+      "target_sha256": "0977aea079f1c054854cedf3ca996b7a5344ce1b9c414f2f4e5a703d4647572f",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_energy_input_port.json",
+      "baseline_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
+      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_input_port.json",
+      "target_sha256": "6f4e632871dfa09b1823bbbad32f4938d694150af3e80a6090fad483f385cde0",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_input_port.json",
+      "baseline_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a",
+      "supersedes_target_sha256": "bc67b7baef8b8144e6be74a8a238bf1818600f95c9f1c93c1cccf43bd915b94a"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json",
+      "target_sha256": "60fc31b49695afe82101b1ac44b3ec387e46c98e297df3dca1f87c6857ea7442",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json",
+      "baseline_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf",
+      "supersedes_target_sha256": "72b179f5fa8ad15852e46897e6dcb36dd895ffb387f644a35272f573dbc05caf"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArtData.java",
+      "source_sha256": "fce678cabed9907ee32670d4090bec644e897aabb8288f5c0ffede19624c7287",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json",
+      "target_sha256": "0977aea079f1c054854cedf3ca996b7a5344ce1b9c414f2f4e5a703d4647572f",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json",
+      "baseline_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900",
+      "supersedes_target_sha256": "0218196f727489cf154c629ec869f169377619bfbeaeb06d9dd60bf88ec35900"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ArcCuttingData.java",
+      "source_sha256": "1af4b7ef01c6d62cce6105b51cde29a0e6f189ce68dc798439c77ec1eae02733",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ArcCuttingData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/cutting_machine.json",
+      "target_sha256": "28d668199f7a31b59609f0d220b97d58f36a94e5c160238cc2b5c802def40d28",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/cutting_machine.json",
+      "baseline_sha256": "b6e88aaf7b31010237224e0f7661d8624eca4da09c08c9202c72ab15c7682f95",
+      "supersedes_target_sha256": "b6e88aaf7b31010237224e0f7661d8624eca4da09c08c9202c72ab15c7682f95"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArtData.java",
+      "source_sha256": "e0ab5f6c5049be6669fa6fe595c5331b4174c517aadf90c995acb0d837b818cf",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArtData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/station_deployment_kit.json",
+      "target_sha256": "17362cc2f54c2218117cf5a0b5cfad9eed2e00cf0c13b00a1b5e7182e3f830da",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v0.7/resources/assets/advancedrocketrycommunity/models/item/station_deployment_kit.json",
+      "baseline_sha256": "1b7f6d70fa47a52f9345d21d63220e75f8bf02f0f68d5ec51efff3e5256beff0"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/nitrogen_canister.json",
+      "target_sha256": "6d8b6e2d9024b066f0d489c605cda7a9a13ab47f024517c6126b5668973f36da",
+      "transformation": [
+        "Replace texture bindings only; preserve parent, keys, model geometry and every non-texture field."
+      ],
+      "baseline_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/nitrogen_canister.json",
+      "baseline_sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2",
+      "supersedes_target_sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2"
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/oxygen_vent_grille_active.png",
+      "target_sha256": "0e3cfa609655d4452daceaf5440d133a3cd83087f71f8f87720575c3a95ad518",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/guidance_computer_top.png",
+      "target_sha256": "708a65888ff4dadf7394c92b7c042210fe1eaf9fbcc6e826a4043cba39b49fd4",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_assembler_top.png",
+      "target_sha256": "0d56f8c7cc58ccf5bb3465d5898179c62eaafbf172263d7acc5537af2065f648",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fuel_loader_top.png",
+      "target_sha256": "6c563ca6b8fd8a22647cd1fca6acb448444629f4b457e9b0c61971b26b6e8a26",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_seat_cushion.png",
+      "target_sha256": "c43ef69c97c30032177a7fd30c62c7d7ee39280802c05712bbfc4046f920e885",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_seat_frame.png",
+      "target_sha256": "34274597d5d1699bd041647e07ce882a7a39c99382008ff851f7ba734eb14693",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/satellite_terminal_top.png",
+      "target_sha256": "18707f18884d74a105f4d3a952a3557e5bc50fae1e704044f6fef26d17cf81ed",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/warp_core_top.png",
+      "target_sha256": "a1d0b40d438dd545e1de16d2f63fba9f167234422777f275612188e17bcd34ac",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/microwave_receiver_top.png",
+      "target_sha256": "bcced9b93da68d6c5dc72ad56a4770144586b1f563a05f86db66b1c1da5a6dd3",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/satellite_builder_top.png",
+      "target_sha256": "6bc867b95f838ea0cf1bcc4ec66a982a9d19ab322cb4b017bbc901368afbbe51",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/black_hole_generator_front.png",
+      "target_sha256": "1b195d5129373e73eaab61be1581e76743e160c8bc6c85b02219ee68819f01d1",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/black_hole_generator_top.png",
+      "target_sha256": "f1b0bf68e90089dce469a9c6e8bdf190feae84bd997bf14463328dd8463ca7f7",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/elevator_anchor_bottom.png",
+      "target_sha256": "2572eda51c28380a798117f63fd94f8347591def6686a9857468a9d580d29f2c",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/elevator_terminal_top.png",
+      "target_sha256": "d676231e426257fef1fa16cf16c3f3c63f24cda0ddf4200cd1e8d0dbffd5f9d7",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/endgame_casing_end.png",
+      "target_sha256": "2addfd48481fe04885ac94f6a9412de47f31d18e65919aa036fe7040800cbfa5",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/gravity_field_controller_top.png",
+      "target_sha256": "8ea3f7c0bee51c11e50a24bf15d7ad41331ebbe1c3ffee70ffc05a01326c26d1",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/laser_target_bottom.png",
+      "target_sha256": "b92ae9a1adaea218b0b316df430cf4067525fc166ddf38117372bafe0fd6298d",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_drill_top.png",
+      "target_sha256": "fd5dad74382eb63dbbf9edb3145d652f892900e054020f67d170e97cf17e87af",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/railgun_top.png",
+      "target_sha256": "fe2bf23065f4fcfa279b1cc06850af4d9d11eeb0a7e821f8a5c22242cbe6536a",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/station_deployment_kit.png",
+      "target_sha256": "e729ec85ea31b059767880cb46e9debed4b384fbabebde5bd399eea8876473c6",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    },
+    {
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w277",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "status": "NEW",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RemainingStandInArt.java",
+      "source_sha256": "c0533a20667fc0bd16b1f3419adbf336f172a75be9df65a17b44a98ff06ba1e7",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RemainingStandInArt",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/nitrogen_canister_cylinder.png",
+      "target_sha256": "eaf2ca5460d21e6745ab37e5a9978ce481869e28e68d5ebf88d847c40bd144f8",
+      "transformation": [
+        "Original deterministic Java geometry to a 16x16 RGBA image, without bitmap input."
+      ]
+    }
+  ],
   "review": {
     "status": "PENDING_HUMAN_REVIEW",
     "reviewer": null,
     "reviewed_at": null,
     "basis": "Owner visual and originality review remains outstanding. Automated screening is not approval.",
-    "content_digest": null
+    "content_digest": "c709dc6a1f7142d2d89133c6c656621bb126cfce68b6e12527bba4362f1b3acc"
+  },
+  "preauthoring_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+  "historical_model_copies": [
+    "src/generated/resources/assets/advancedrocketrycommunity/models/block/machine_casing.json",
+    "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent.json",
+    "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json",
+    "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/guidance_computer.json",
+    "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_assembler.json",
+    "src/generated/v0.6/resources/assets/advancedrocketrycommunity/models/block/fuel_loader.json",
+    "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/block/satellite_terminal.json",
+    "src/generated/v0.5/resources/assets/advancedrocketrycommunity/models/block/rocket_seat.json",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/microwave_receiver.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/black_hole_generator.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_anchor.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/elevator_terminal.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/endgame_casing.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/gravity_field_controller.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/laser_target.json",
+    "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+    "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
+    "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
+    "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
+    "src/generated/v1.5/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_input_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_item_output_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_fluid_input_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/rolling_machine_energy_input_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_input_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json",
+    "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json",
+    "src/generated/v0.7/resources/assets/advancedrocketrycommunity/models/item/station_deployment_kit.json"
+  ],
+  "retained_art": "All W275 images, approved v0.1.0 casing images, historical model trees, the active electrolyzer NEW front, and OBJ motor and tank models remain byte-identical. The earlier nitrogen image remains generated but is no longer bound.",
+  "supporting_sources": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StandInArt.java",
+      "source_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "source_sha256": "5ff611050be32ee51b44a5473ed2a5a8bfb1510becd41118fe3df1d42f75fb8c",
+      "purpose": "Original community pixel geometry for the retained panel and nitrogen cylinder; no bitmap input."
+    }
+  ],
+  "screening": {
+    "tool_path": "tools/audit/screen_generated_art.py",
+    "tool_sha256": "bb9935fbf7fcc62818084b68ef4784208fb15304adc62db666f5462374c04516",
+    "derivation_tool_path": "tools/audit/vanilla_derivation.py",
+    "derivation_tool_sha256": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d",
+    "report_path": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W277\\generated-art-screen.json",
+    "report_sha256": "74db38694e988462e1f114e71d41d3dc4014b0f73e7cc7af1f4de8ae00b7797f",
+    "targeted_report_path": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W277\\targeted-derivation.json",
+    "targeted_report_sha256": "7890e93fc6b1bed1c33ab8c27abbb673f8ba623a419bf1886c27c27ef99b0ed2",
+    "counts": {
+      "CLEAR": 236
+    },
+    "vanilla": {
+      "1.12.2": {
+        "bytes": 10180113,
+        "sha256": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f"
+      },
+      "1.20.1": {
+        "bytes": 23028853,
+        "sha256": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+      }
+    },
+    "targets": {
+      "block/oxygen_vent_grille_active": {
+        "sha256": "0e3cfa609655d4452daceaf5440d133a3cd83087f71f8f87720575c3a95ad518",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "scaled",
+          "orientation": 4,
+          "scale": -2,
+          "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4278
+        }
+      },
+      "block/guidance_computer_top": {
+        "sha256": "708a65888ff4dadf7394c92b7c042210fe1eaf9fbcc6e826a4043cba39b49fd4",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "scaled",
+          "orientation": 4,
+          "scale": -2,
+          "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4303
+        }
+      },
+      "block/rocket_assembler_top": {
+        "sha256": "0d56f8c7cc58ccf5bb3465d5898179c62eaafbf172263d7acc5537af2065f648",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.5034
+        }
+      },
+      "block/fuel_loader_top": {
+        "sha256": "6c563ca6b8fd8a22647cd1fca6acb448444629f4b457e9b0c61971b26b6e8a26",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 2,
+          "reference": "1.12.2:assets/minecraft/textures/blocks/observer_front.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4833
+        }
+      },
+      "block/rocket_seat_cushion": {
+        "sha256": "c43ef69c97c30032177a7fd30c62c7d7ee39280802c05712bbfc4046f920e885",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.5841
+        }
+      },
+      "block/rocket_seat_frame": {
+        "sha256": "34274597d5d1699bd041647e07ce882a7a39c99382008ff851f7ba734eb14693",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4082
+        }
+      },
+      "block/satellite_terminal_top": {
+        "sha256": "18707f18884d74a105f4d3a952a3557e5bc50fae1e704044f6fef26d17cf81ed",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "scaled",
+          "orientation": 4,
+          "scale": -2,
+          "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4218
+        }
+      },
+      "block/warp_core_top": {
+        "sha256": "a1d0b40d438dd545e1de16d2f63fba9f167234422777f275612188e17bcd34ac",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.6007
+        }
+      },
+      "block/microwave_receiver_top": {
+        "sha256": "bcced9b93da68d6c5dc72ad56a4770144586b1f563a05f86db66b1c1da5a6dd3",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "scaled",
+          "orientation": 0,
+          "scale": -2,
+          "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4485
+        }
+      },
+      "block/satellite_builder_top": {
+        "sha256": "6bc867b95f838ea0cf1bcc4ec66a982a9d19ab322cb4b017bbc901368afbbe51",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 1,
+          "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4005
+        }
+      },
+      "block/black_hole_generator_front": {
+        "sha256": "1b195d5129373e73eaab61be1581e76743e160c8bc6c85b02219ee68819f01d1",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 2,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.5747
+        }
+      },
+      "block/black_hole_generator_top": {
+        "sha256": "f1b0bf68e90089dce469a9c6e8bdf190feae84bd997bf14463328dd8463ca7f7",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4078
+        }
+      },
+      "block/elevator_anchor_bottom": {
+        "sha256": "2572eda51c28380a798117f63fd94f8347591def6686a9857468a9d580d29f2c",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 2,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4795
+        }
+      },
+      "block/elevator_terminal_top": {
+        "sha256": "d676231e426257fef1fa16cf16c3f3c63f24cda0ddf4200cd1e8d0dbffd5f9d7",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 0,
+          "reference": "1.20.1:assets/minecraft/textures/block/smithing_table_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4128
+        }
+      },
+      "block/endgame_casing_end": {
+        "sha256": "2addfd48481fe04885ac94f6a9412de47f31d18e65919aa036fe7040800cbfa5",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 2,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4649
+        }
+      },
+      "block/gravity_field_controller_top": {
+        "sha256": "8ea3f7c0bee51c11e50a24bf15d7ad41331ebbe1c3ffee70ffc05a01326c26d1",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "scaled",
+          "orientation": 0,
+          "scale": -2,
+          "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4203
+        }
+      },
+      "block/laser_target_bottom": {
+        "sha256": "b92ae9a1adaea218b0b316df430cf4067525fc166ddf38117372bafe0fd6298d",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 6,
+          "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4181
+        }
+      },
+      "block/orbital_laser_drill_top": {
+        "sha256": "fd5dad74382eb63dbbf9edb3145d652f892900e054020f67d170e97cf17e87af",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 0,
+          "reference": "1.20.1:assets/minecraft/textures/block/smithing_table_bottom.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.3905
+        }
+      },
+      "block/railgun_top": {
+        "sha256": "fe2bf23065f4fcfa279b1cc06850af4d9d11eeb0a7e821f8a5c22242cbe6536a",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "same",
+          "orientation": 4,
+          "reference": "1.12.2:assets/minecraft/textures/blocks/quartz_block_lines.png",
+          "overlap": 0.0,
+          "colours": 0,
+          "iou": 1.0,
+          "rank": 0.4805
+        }
+      },
+      "item/station_deployment_kit": {
+        "sha256": "e729ec85ea31b059767880cb46e9debed4b384fbabebde5bd399eea8876473c6",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "region",
+          "orientation": 3,
+          "candidate_scale": 1,
+          "phase": 0,
+          "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+          "reference_scale": 1,
+          "offset": [
+            -8,
+            117
+          ],
+          "votes": 1,
+          "region": 128,
+          "exact": 0.0,
+          "colours": 0,
+          "near": 0.0,
+          "near_colours": 0,
+          "mapped": 0.6667,
+          "classes": 6
+        }
+      },
+      "item/nitrogen_canister_cylinder": {
+        "sha256": "eaf2ca5460d21e6745ab37e5a9978ce481869e28e68d5ebf88d847c40bd144f8",
+        "verdict": "CLEAR",
+        "record": {
+          "method": "region",
+          "orientation": 3,
+          "candidate_scale": 1,
+          "phase": 0,
+          "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+          "reference_scale": 1,
+          "offset": [
+            70,
+            22
+          ],
+          "votes": 1,
+          "region": 256,
+          "exact": 0.0,
+          "colours": 0,
+          "near": 0.0,
+          "near_colours": 0,
+          "mapped": 0.44,
+          "classes": 6
+        }
+      }
+    }
   }
 }
