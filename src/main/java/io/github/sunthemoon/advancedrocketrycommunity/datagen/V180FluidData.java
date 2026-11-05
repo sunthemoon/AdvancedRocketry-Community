@@ -69,7 +69,8 @@ public final class V180FluidData implements DataProvider {
                 JsonObject model = new JsonObject();
                 model.addProperty("parent", "minecraft:item/generated");
                 JsonObject textures = new JsonObject();
-                textures.addProperty("layer0", ModIdentity.id("item/" + item).toString());
+                textures.addProperty("layer0", ModIdentity.id("item/" + item
+                        + (item.equals("nitrogen_canister") ? "_cylinder" : "")).toString());
                 model.add("textures", textures);
                 save(cache, writes, PackOutput.Target.RESOURCE_PACK, "models/item", item, model);
             }

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/black_hole_generator_front",
+    "side": "advancedrocketrycommunity:block/machine_panel_side",
+    "top": "advancedrocketrycommunity:block/black_hole_generator_top"
+  }
+}

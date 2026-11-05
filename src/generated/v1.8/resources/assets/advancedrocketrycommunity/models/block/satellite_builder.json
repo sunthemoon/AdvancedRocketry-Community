@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "front": "advancedrocketrycommunity:block/satellite_builder_front",
-    "side": "advancedrocketrycommunity:block/machine_casing_side",
-    "top": "minecraft:block/smithing_table_top"
+    "side": "advancedrocketrycommunity:block/machine_panel_side",
+    "top": "advancedrocketrycommunity:block/satellite_builder_top"
   }
 }
