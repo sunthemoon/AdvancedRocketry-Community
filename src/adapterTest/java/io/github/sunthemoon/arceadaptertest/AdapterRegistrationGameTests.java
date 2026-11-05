@@ -76,7 +76,7 @@ public final class AdapterRegistrationGameTests {
     }
 
     private static void productionAssemblyPreservesInventory(GameTestHelper helper, boolean rejectFirstPending) {
-        AdapterDropFixture.retireStartControl(helper);
+        AdapterDropFixture.prepare(helper);
         var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
