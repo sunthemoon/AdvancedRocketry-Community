@@ -10,8 +10,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.Statio
 import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SafetyReturnArrival;
 import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SafetyReturnPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SafetyReturnQuery;
+import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SafetyReturnOverworldArrival;
 import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SpaceSafetyReturnRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SpaceSafetyReturnService;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -75,6 +77,15 @@ public final class SpaceSafetyReturnGameTests {
         closeOpen();
     }
 
+    @AfterBatch(batch = "space_safety_return_rocket_free")
+    public static void cleanUpRocketFree(ServerLevel level) { closeOpen(); }
+
+    @AfterBatch(batch = "space_safety_return_rocket_blocked")
+    public static void cleanUpRocketBlocked(ServerLevel level) { closeOpen(); }
+
+    @AfterBatch(batch = "space_safety_return_rocket_loaded")
+    public static void cleanUpRocketLoaded(ServerLevel level) { closeOpen(); }
+
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 400)
     public static void anAdriftPlayerReturnsToTheNearestAuthorizedStationNotTheFarthest(GameTestHelper helper) {
         Fixture f = new Fixture(helper);
@@ -82,6 +93,7 @@ public final class SpaceSafetyReturnGameTests {
         StationState near = f.station("Safety nearest", UUID.randomUUID(), true, playerId);
         StationState far = f.station("Safety farthest", UUID.randomUUID(), true, playerId);
         ServerPlayer player = f.join(playerId, "safetyNearest", f.gapBeside(near, far));
+        player.connection.aboveGroundTickCount = 80;
         run(helper, f, tick -> {
             f.tickPlayers();
             helper.assertTrue(!f.arrivedAt(player, far), "Returned to the farthest station: " + f.describe(player));
@@ -94,6 +106,7 @@ public final class SpaceSafetyReturnGameTests {
                     "The destination was not announced: " + f.tokens(player));
             helper.assertTrue(!f.service.pending(playerId) && f.service.adriftTicks(playerId) == 0,
                     "The return did not clear the phase: " + f.describe(player));
+            helper.assertTrue(player.connection.aboveGroundTickCount == 0, "Station return did not reset the counter");
             return true;
         });
     }
@@ -165,6 +178,106 @@ public final class SpaceSafetyReturnGameTests {
         });
     }
 
+    @GameTest(template = "empty", batch = "space_safety_return_rocket_free", timeoutTicks = 400)
+    public static void anOverworldReturnAvoidsAParkedRocketInTheNearestFreeColumn(GameTestHelper helper) {
+        rocketAtOverworldArrival(helper, false);
+    }
+
+    @GameTest(template = "empty", batch = "space_safety_return_rocket_blocked", timeoutTicks = 400)
+    public static void blockedRocketAlternativesKeepTheOriginalOverworldArrival(GameTestHelper helper) {
+        rocketAtOverworldArrival(helper, true);
+    }
+
+    @GameTest(template = "empty", batch = "space_safety_return_rocket_loaded", timeoutTicks = 100)
+    public static void rocketAvoidanceSkipsUnloadedLiquidAndCollidingColumns(GameTestHelper helper) {
+        Fixture f = new Fixture(helper);
+        try {
+            ServerLevel level = f.server.overworld();
+            BlockPos center = new BlockPos(4_000_000, 200, 4_000_000);
+            level.getChunkAt(center);
+            List<ChunkPos> unloaded = List.of(new ChunkPos(center.west()), new ChunkPos(center.north()));
+            for (ChunkPos chunk : unloaded) {
+                helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null, "Neighbor already loaded");
+            }
+            Map<String, Integer> before = TicketCounts.near(level, new ChunkPos(center), 2);
+            for (int x = 0; x <= SafetyReturnOverworldArrival.RADIUS; x++) {
+                for (int z = 0; z <= SafetyReturnOverworldArrival.RADIUS; z++) {
+                    f.overworldCell(center.offset(x, -1, z), Blocks.STONE.defaultBlockState());
+                }
+            }
+            // The two nearest non-rocket columns: water at the floor, and a fence projecting above its heightmap cell.
+            f.overworldCell(center.offset(1, -1, 2), Blocks.WATER.defaultBlockState());
+            f.overworldCell(center.offset(2, -1, 1), Blocks.OAK_FENCE.defaultBlockState());
+            var rocket = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(rocket != null, "The rocket type is missing");
+            rocket.moveTo(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D);
+            helper.assertTrue(level.addFreshEntity(rocket), "The parked rocket did not spawn");
+            f.cleanups.add(rocket::discard);
+            ServerPlayer player = f.join(UUID.randomUUID(), "safetyLoaded", new BlockPos(HALF_GRID, 220, HALF_GRID));
+            var original = new SafeCelestialTravel.Destination(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D);
+            var chosen = SafetyReturnOverworldArrival.choose(level, player, original);
+            var at = chosen.destination();
+            helper.assertTrue(at.x() == original.x() + 2 && at.y() == original.y() && at.z() == original.z() + 2,
+                    "Did not skip unsafe/unloaded nearer columns: " + chosen);
+            for (ChunkPos chunk : unloaded) {
+                helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null, "Avoidance loaded a chunk");
+            }
+            helper.assertTrue(TicketCounts.near(level, new ChunkPos(center), 2).equals(before), "Avoidance added tickets");
+        } finally { f.close(); }
+        helper.succeed();
+    }
+
+    private static void rocketAtOverworldArrival(GameTestHelper helper, boolean blocked) {
+        Fixture f = new Fixture(helper);
+        ServerLevel overworld = f.server.overworld();
+        var original = new SafeCelestialTravel().prepare(overworld, CelestialIds.EARTH_ID);
+        BlockPos center = BlockPos.containing(original.x(), original.y(), original.z());
+        for (int x = -SafetyReturnOverworldArrival.RADIUS; x <= SafetyReturnOverworldArrival.RADIUS; x++) {
+            for (int z = -SafetyReturnOverworldArrival.RADIUS; z <= SafetyReturnOverworldArrival.RADIUS; z++) {
+                BlockPos feet = center.offset(x, 0, z);
+                overworld.getChunkAt(feet);
+                f.overworldCell(feet.below(), (blocked ? Blocks.WATER : Blocks.STONE).defaultBlockState());
+                for (int y = 0; y < 5; y++) { f.overworldCell(feet.above(y), Blocks.AIR.defaultBlockState()); }
+            }
+        }
+        var rocket = ModEntities.ROCKET.get().create(overworld);
+        helper.assertTrue(rocket != null, "The rocket type is missing");
+        rocket.moveTo(original.x(), original.y(), original.z());
+        helper.assertTrue(overworld.addFreshEntity(rocket), "The parked rocket did not spawn");
+        f.cleanups.add(rocket::discard);
+        BlockPos gap = new BlockPos(HALF_GRID * 79, StationLimits.LANDING_Y, HALF_GRID * 79);
+        ServerPlayer player = f.join(UUID.randomUUID(), "safetyRocket", gap);
+        var originalBox = player.getBoundingBox().move(original.x() - player.getX(), original.y() - player.getY(),
+                original.z() - player.getZ());
+        helper.assertTrue(rocket.getBoundingBox().intersects(originalBox), "The rocket does not block the arrival");
+        List<BlockPos> permitted = new ArrayList<>();
+        Consumer<EndgameEffectEvent> protection = event -> {
+            if (event.systemId().equals(SpaceSafetyReturnService.SYSTEM_ID)
+                    && event.actorId().filter(player.getUUID()::equals).isPresent()) { permitted.add(event.min().above()); }
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, EndgameEffectEvent.class, protection);
+        f.cleanups.add(() -> MinecraftForge.EVENT_BUS.unregister(protection));
+        run(helper, f, tick -> {
+            f.tickPlayers();
+            if (player.level() != overworld) {
+                helper.assertTrue(tick < 300, "No rocket-obstructed Overworld return: " + f.describe(player));
+                return false;
+            }
+            double distance = player.position().distanceToSqr(original.x(), original.y(), original.z());
+            if (blocked) {
+                helper.assertTrue(distance < 0.01D, "No free column must retain the original arrival");
+            } else {
+                helper.assertTrue(!rocket.getBoundingBox().intersects(player.getBoundingBox()), "Returned inside the rocket");
+                helper.assertTrue(Math.abs(distance - 4.0D) < 0.01D, "Did not choose the nearest free column: " + distance);
+                helper.assertTrue(player.getY() == original.y(), "Arrival feet are not at motion-blocking height");
+            }
+            helper.assertTrue(permitted.equals(List.of(player.blockPosition())),
+                    "Protection did not check the chosen column: " + permitted);
+            helper.assertTrue(f.tokens(player).contains(SpaceSafetyReturnService.ARRIVED_OVERWORLD), "Return not announced");
+            return true;
+        });
+    }
+
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 400)
     public static void enteringARegionCancelsTheJob(GameTestHelper helper) {
         Fixture f = new Fixture(helper);
@@ -172,6 +285,7 @@ public final class SpaceSafetyReturnGameTests {
         StationState station = f.station("Safety entered", UUID.randomUUID(), true, playerId);
         StationState other = f.station("Safety other", UUID.randomUUID(), false);
         ServerPlayer player = f.join(playerId, "safetyEntered", f.gapBeside(station, other));
+        player.connection.aboveGroundTickCount = 80;
         BlockPos inside = Fixture.feet(station).offset(40, 4, 40);
         int[] cancelledAt = {-1};
         run(helper, f, tick -> {
@@ -196,6 +310,7 @@ public final class SpaceSafetyReturnGameTests {
                             < 0.01D, "The cancelled job still moved the player: " + f.describe(player));
             helper.assertTrue(f.tokens(player).stream().noneMatch(token -> token.contains("space_safety_return")),
                     "A cancelled job announced something: " + f.tokens(player));
+            helper.assertTrue(player.connection.aboveGroundTickCount == 80, "A dropped job reset the counter");
             return tick >= cancelledAt[0] + 40;
         });
     }
@@ -254,6 +369,7 @@ public final class SpaceSafetyReturnGameTests {
         StationState other = f.station("Safety protected other", UUID.randomUUID(), false);
         BlockPos gap = f.gapBeside(station, other);
         ServerPlayer player = f.join(playerId, "safetyRefused", gap);
+        player.connection.aboveGroundTickCount = 80;
         Consumer<EndgameEffectEvent> protection = event -> {
             if (event.systemId().equals(SpaceSafetyReturnService.SYSTEM_ID)
                     && event.actorId().filter(playerId::equals).isPresent()) {
@@ -272,6 +388,7 @@ public final class SpaceSafetyReturnGameTests {
             }
             helper.assertTrue(player.level() == f.space && !f.arrivedAt(player, station),
                     "A protected arrival was used: " + f.describe(player));
+            helper.assertTrue(player.connection.aboveGroundTickCount == 80, "A refused attempt reset the counter");
             if (tick < 560) {
                 return false;
             }
@@ -429,6 +546,7 @@ public final class SpaceSafetyReturnGameTests {
         private final GameTestHelper helper;
         private final List<UUID> stations = new ArrayList<>();
         private final Map<BlockPos, BlockState> cells = new LinkedHashMap<>();
+        private final Map<BlockPos, BlockState> overworldCells = new LinkedHashMap<>();
         private final Map<UUID, ChunkPos> tickets = new LinkedHashMap<>();
         private final List<ServerPlayer> players = new ArrayList<>();
         private final Map<UUID, List<String>> tokens = new HashMap<>();
@@ -497,6 +615,11 @@ public final class SpaceSafetyReturnGameTests {
             space.setBlock(at, state, Block.UPDATE_CLIENTS);
         }
 
+        void overworldCell(BlockPos at, BlockState state) {
+            overworldCells.putIfAbsent(at.immutable(), server.overworld().getBlockState(at));
+            server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS);
+        }
+
         /** The cell boundary beside {@code near}, on the side away from {@code far}: outside every region. */
         BlockPos gapBeside(StationState near, StationState far) {
             int dx = Integer.signum(near.cell().x() - far.cell().x());
@@ -559,6 +682,7 @@ public final class SpaceSafetyReturnGameTests {
             }));
             steps.addAll(cleanups);
             cells.forEach((at, state) -> steps.add(() -> space.setBlock(at, state, Block.UPDATE_CLIENTS)));
+            overworldCells.forEach((at, state) -> steps.add(() -> server.overworld().setBlock(at, state, Block.UPDATE_CLIENTS)));
             tickets.forEach((key, chunk) -> steps.add(() -> space.getChunkSource()
                     .removeRegionTicket(FIXTURE_TICKET, chunk, 2, key)));
             stations.forEach(id -> steps.add(() -> data.delete(id)));
