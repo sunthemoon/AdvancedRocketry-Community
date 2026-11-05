@@ -67,6 +67,7 @@ public final class SealedRecoveryGameTests {
         // Reflection lets the committed regression execute against the pre-implementation source.
         tracked(server, UUID.randomUUID());
         var origin = helper.absolutePos(new BlockPos(1, 2, 1));
+        SealedProductionTestAccess.isolateTerrainFixture(level, origin);
         var source = new ChestBlockEntity(origin.east(), Blocks.CHEST.defaultBlockState());
         source.setItem(0, new ItemStack(Items.DIAMOND, 7));
         var payload = new VanillaContainerRocketAdapter().capture(source);
