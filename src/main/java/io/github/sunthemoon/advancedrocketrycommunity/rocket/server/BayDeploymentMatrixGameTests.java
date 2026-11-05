@@ -75,6 +75,11 @@ public final class BayDeploymentMatrixGameTests {
         new Matrix(helper, RocketFlightPlanner.EARTH.bodyId(), Expect.REFUSED_REQUEST).start();
     }
 
+    @GameTest(template = TEMPLATE, batch = B14, timeoutTicks = 600)
+    public static void aRefusedCheckpointRequestPreservesPackagesWhileDestinationSpawnAwaitsAcknowledgement(GameTestHelper helper) {
+        new Matrix(helper, RocketFlightPlanner.EARTH.bodyId(), Expect.REFUSED_REQUEST, true).start();
+    }
+
     /** W185-R25: an end that the low strip takes past 16 columns has no bay census, so D0 refuses before any INTENT. */
     @GameTest(template = TEMPLATE, batch = CENSUS_BATCH, timeoutTicks = 400)
     public static void d0RefusesEveryBayWhenTheLowStripTakesAnEndPastSixteenColumns(GameTestHelper helper) {
@@ -100,6 +105,7 @@ public final class BayDeploymentMatrixGameTests {
         final GameTestHelper helper;
         final ResourceLocation body;
         final Expect expect;
+        final boolean forcePendingSpawn;
         final UUID owner = UUID.randomUUID();
         final ItemStack data, solar;
         Flight flight;
@@ -108,10 +114,14 @@ public final class BayDeploymentMatrixGameTests {
         String solarCode;
         UUID consumedOp;
         int stage, waits;
-        boolean sawIntent, closed;
+        boolean sawIntent, sawPendingSpawn, closed;
 
         Matrix(GameTestHelper helper, ResourceLocation body, Expect expect) {
+            this(helper, body, expect, false);
+        }
+        Matrix(GameTestHelper helper, ResourceLocation body, Expect expect, boolean forcePendingSpawn) {
             this.helper = helper; this.body = body; this.expect = expect; data = dataPackage(owner); solar = solarPackage(owner);
+            this.forcePendingSpawn = forcePendingSpawn;
         }
         void start() { helper.onEachTick(this::tick); }
 
@@ -183,6 +193,7 @@ public final class BayDeploymentMatrixGameTests {
             }
             helper.assertTrue(claim.stage() == BayClaim.Stage.ENDED && claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE,
                     "The claim did not end with READY_SOURCE: " + claim.handoff());
+            if (forcePendingSpawn && !sawPendingSpawn && !queuePendingSpawn()) { return; }
             var dataMember = member(satellite(data)); var solarMember = member(satellite(solar));
             var registry = SatelliteMissionSavedData.get(server);
             helper.assertTrue(registry.satellite(satellite(solar)).isEmpty(), "A refused solar bay registered X");
@@ -201,7 +212,7 @@ public final class BayDeploymentMatrixGameTests {
                 return;
             } else {
                 helper.assertTrue(registry.satellite(satellite(data)).isEmpty(), "A refused data bay registered X");
-                assertPackagesUnchanged();
+                if (!assertPackagesUnchanged()) { return; }
                 String reason = switch (expect) {
                     case F5 -> "TARGET_NOT_ALLOWED";
                     case CENSUS -> "DEPLOYMENT_UNAVAILABLE";
@@ -226,7 +237,31 @@ public final class BayDeploymentMatrixGameTests {
             return claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite)).findFirst().orElseThrow();
         }
 
-        void assertPackagesUnchanged() {
+        /** Observe the actual service's RAM phase write in the same tick, before its acknowledgement can publish the entity. */
+        boolean queuePendingSpawn() {
+            var server = helper.getLevel().getServer();
+            var journal = RocketTransferSavedData.get(server);
+            var current = journal.find(flight.record().transferId()).orElseThrow();
+            helper.assertTrue(current.phase() == RocketTransferPhase.PREPARED,
+                    "The pending-spawn regression missed PREPARED source authority");
+            if (!journal.actionable(current.logicalRocketId())) { return false; }
+            var level = RocketTransferEntities.level(server, current.destinationSnapshot().sourceDimension());
+            helper.assertTrue(level != null, "The destination Level is missing");
+            RocketTransferEntities.keepDestinationLoaded(level, current.destinationSnapshot(), current.transferId());
+            var columns = RocketTransferEntities.destinationTicketSet(current.destinationSnapshot());
+            if (!RocketTransferEntities.destinationEntityChunkReady(level, current.destinationSnapshot())
+                    || RocketTransferEntities.entitiesLoadedColumns(columns, level::areEntitiesLoaded) != columns.size()) { return false; }
+            RocketRuntime.installedTransfers().spawnDestination(server, journal, current, flight.source());
+            var pending = journal.find(current.transferId()).orElseThrow();
+            helper.assertTrue(pending.phase() == RocketTransferPhase.DESTINATION_SPAWNED && pending.destinationEntityId().isPresent()
+                    && level.getEntity(pending.destinationEntityId().orElseThrow()) == null
+                    && flight.source().isAlive() && !flight.source().isRemoved() && !journal.actionable(current.logicalRocketId()),
+                    "The service did not expose its unacknowledged destination-spawn window with a live source");
+            sawPendingSpawn = true;
+            return true;
+        }
+
+        boolean assertPackagesUnchanged() {
             var server = helper.getLevel().getServer();
             var current = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
             helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.sourceSnapshot())),
@@ -234,19 +269,30 @@ public final class BayDeploymentMatrixGameTests {
             helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.destinationSnapshot())),
                     "The packages in T's current destination snapshot changed");
             var destination = RocketTransferEntities.findDestination(server, current);
-            helper.assertTrue(flight.source().isAlive() && !flight.source().isRemoved() || destination != null,
+            boolean sourceLive = flight.source().isAlive() && !flight.source().isRemoved();
+            helper.assertTrue(sourceLive || destination != null,
                     "Neither source nor published destination survives the handoff");
             if (!flight.source().isRemoved()) {
                 helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.source().snapshot().orElseThrow())),
                         "The packages in the live source changed");
             }
             if (current.destinationEntityId().isPresent()) {
+                var level = RocketTransferEntities.level(server, current.destinationSnapshot().sourceDimension());
+                helper.assertTrue(level != null, "The destination Level is missing");
+                // As in followConsumed, the RAM ID precedes the acknowledged spawn effect; source authority survives this wait.
+                if (level.getEntity(current.destinationEntityId().orElseThrow()) == null) {
+                    helper.assertTrue(current.phase() == RocketTransferPhase.DESTINATION_SPAWNED && sourceLive
+                            && !RocketTransferSavedData.get(server).actionable(current.logicalRocketId()),
+                            "T names a destination that is neither published nor awaiting its spawn write: " + current.phase());
+                    return false;
+                }
                 helper.assertTrue(destination != null, "The published destination is missing from the loaded fixture");
             }
             if (destination != null) {
                 helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())),
                         "The packages in the published destination changed");
             }
+            return true;
         }
 
         /**

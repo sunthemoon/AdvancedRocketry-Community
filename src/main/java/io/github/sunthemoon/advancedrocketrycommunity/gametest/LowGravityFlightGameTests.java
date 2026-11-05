@@ -94,6 +94,46 @@ public final class LowGravityFlightGameTests {
         stationCase(helper, false, true);
     }
 
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
+    public static void anOverworldSafetyReturnDoesNotCarryTheFloatingCounter(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper, CelestialIds.SPACE_LEVEL, "gravityReturn")) {
+            var server = f.player.server;
+            var data = StationRegistrySavedData.get(server);
+            int halfGrid = io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits.GRID_SPACING / 2;
+            BlockPos gap = new BlockPos(halfGrid * 75, 220, halfGrid * 75);
+            helper.assertTrue(data.findAt(gap.getX(), gap.getZ()).isEmpty(), "The fixture is inside a station");
+            f.level.getChunkAt(gap);
+            f.player.teleportTo(f.level, gap.getX() + 0.5D, gap.getY(), gap.getZ() + 0.5D, 0, 0);
+            f.acknowledge();
+            var service = io.github.sunthemoon.advancedrocketrycommunity.station.safety.SpaceSafetyReturnRuntime
+                    .current().orElseThrow();
+            int ticks = 0;
+            while (f.player.level() == f.level && ticks++ < 200) {
+                f.tick(0.0D);
+                helper.assertTrue(f.connected(), "Disconnected before the safety return at " + ticks);
+                helper.assertTrue(CelestialGravityController.appliedMultiplier(f.player) == 0.0D,
+                        "The outside-region fixture did not receive zero gravity");
+                service.tickServer(server);
+            }
+            helper.assertTrue(ticks >= 100 && f.player.level() == server.overworld(), "No Overworld safety return");
+            int arrivalCounter = f.player.connection.aboveGroundTickCount;
+            // Do not acknowledge yet: the client can still be reporting the old zero-g floating state.
+            f.player.connection.tick();
+            helper.assertTrue(f.connected(), "The first connection tick after the return kicked the player; arrival counter="
+                    + arrivalCounter);
+            helper.assertTrue(arrivalCounter == 0, "The successful return retained counter " + arrivalCounter);
+            helper.assertTrue(f.tokens.contains(SpaceSafetyReturnService.ARRIVED_OVERWORLD),
+                    "The return was not announced: " + f.tokens);
+            f.acknowledge();
+            for (int tick = 1; tick <= 100; tick++) {
+                f.tick(0.0D);
+                helper.assertTrue(f.connected() && f.player.level() == server.overworld(),
+                        "The returned player did not remain connected in the Overworld at " + tick);
+            }
+        }
+        helper.succeed();
+    }
+
     private static void stationCase(GameTestHelper helper, boolean reconnect, boolean supported) {
         try (Fixture f = new Fixture(helper, CelestialIds.SPACE_LEVEL, "gravityStation")) {
             StationRegistrySavedData data = StationRegistrySavedData.get(f.player.server);

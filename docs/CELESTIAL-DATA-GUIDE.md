@@ -119,6 +119,23 @@ backup, not deleting a dimension directory or binding entry.
 
 ## Survival environment and protection
 
+### Low gravity on servers with flight disabled
+
+With `allow-flight=false`, low gravity grants a finite allowance for consecutive
+ticks that vanilla classifies as floating, including slow-falling descents. The
+allowance is `min(800, ceil(80 / gravity_multiplier))` ticks for gravity between
+zero and one; zero gravity uses 800 ticks. Normal gravity keeps vanilla's 80-tick
+limit. Landing and other native counter resets still apply.
+
+At the Moon's 0.165 gravity the allowance is 485 ticks (about 24 seconds at
+20 TPS). A player with Slow Falling descends about 0.15 blocks per tick there;
+a continuous slow-falling descent longer than the allowance can still be kicked
+with `Flying is not enabled on this server`. This is not unlimited flight
+permission. Zero-gravity station drift and players outside station regions use
+the separate safety return, subject to destination availability and protection.
+
+### Environmental exposure
+
 Schema-2 definitions can set `"environment_effects": true`. Omitted means
 false, preserving older packs. This flag enables additional survival effects
 only on an unambiguously mapped surface; a station never acquires its orbiting
