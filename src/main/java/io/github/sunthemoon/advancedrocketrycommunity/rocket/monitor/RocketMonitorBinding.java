@@ -58,6 +58,7 @@ public final class RocketMonitorBinding {
             binding = new LoaderBinding(binding.logicalRocket(), located.currentDimension(), physical, origin(located), station(located));
         } else {
             // Native F8 retires the journal entry but retains the logical-to-physical authority head.
+            boolean anchored = false;
             var escrow = ResourceEscrowSavedData.existing(level.getServer());
             if (escrow != null) {
                 if (!escrow.operational()) { return new Result(RocketMonitorStatus.ROCKET_BUSY, null); }
@@ -70,6 +71,18 @@ public final class RocketMonitorBinding {
                         return new Result(RocketMonitorStatus.STALE_BINDING, null);
                     }
                     binding = capture(current);
+                    anchored = true;
+                }
+            }
+            if (!anchored) {
+                // Unanchored native flights have no retained head after F8. Use only an unambiguous loaded hint.
+                var current = RocketMonitorLoadedRockets.unique(level, binding.logicalRocket());
+                if (current != null && current.operational()
+                        && current.flightData().orElseThrow().logicalRocketId().equals(binding.logicalRocket())) {
+                    if (!current.getUUID().equals(binding.physicalRocket())) { binding = capture(current); }
+                } else if (RocketMonitorLoadedRockets.ambiguous(level, binding.logicalRocket())) {
+                    // A duplicate/overflow must not quietly fall back to the old physical hint.
+                    return new Result(RocketMonitorStatus.STALE_BINDING, null);
                 }
             }
         }

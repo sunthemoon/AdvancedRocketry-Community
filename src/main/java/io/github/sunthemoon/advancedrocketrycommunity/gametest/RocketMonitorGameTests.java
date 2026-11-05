@@ -138,6 +138,44 @@ public final class RocketMonitorGameTests {
         }, ORIGIN, DEVICE);
     }
 
+    @GameTest(template = "rocket_test", batch = "monitor_identity", timeoutTicks = 100)
+    public static void loadedIdentitySurvivesRecreationButRejectsCopiesAndWrongOwners(GameTestHelper helper) {
+        EntitySections.whenLoaded(helper, () -> {
+            var level = helper.getLevel(); var owner = UUID.randomUUID();
+            var original = FluidFuelLoaderFixtures.rocket(helper, ORIGIN, owner);
+            var monitor = monitor(helper, owner);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity replacement = null, copy = null;
+            try {
+                var binding = RocketMonitorBinding.capture(original);
+                helper.assertTrue(monitor.bind(binding), "Identity fixture did not bind");
+                var saved = monitor.saveWithoutMetadata(); var entity = original.saveWithoutId(new CompoundTag());
+                original.discard();
+                replacement = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
+                entity.putUUID("UUID", UUID.randomUUID()); replacement.load(entity);
+                helper.assertTrue(level.addFreshEntity(replacement), "Recreated identity did not join");
+                monitor.load(saved);
+                helper.assertTrue(RocketMonitorBinding.resolve(monitor, false).rocket() == replacement,
+                        "A recreated loaded identity did not resolve without a transfer/head");
+                helper.assertTrue(saved.equals(monitor.saveWithoutMetadata()), "Loaded lookup changed saved binding data");
+                copy = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
+                entity.putUUID("UUID", UUID.randomUUID()); copy.load(entity);
+                helper.assertTrue(level.addFreshEntity(copy), "Duplicate identity did not join");
+                helper.assertTrue(RocketMonitorBinding.resolve(monitor, false).status() == RocketMonitorStatus.STALE_BINDING,
+                        "An ambiguous loaded identity resolved");
+                copy.discard();
+                helper.assertTrue(RocketMonitorBinding.resolve(monitor, false).rocket() == replacement,
+                        "Removing the duplicate did not restore the unique hint");
+                var wrongOwner = saved.copy(); wrongOwner.getCompound(RocketMonitorRoot.KEY).putUUID("owner", UUID.randomUUID());
+                monitor.load(wrongOwner);
+                helper.assertTrue(RocketMonitorBinding.resolve(monitor, false).status() == RocketMonitorStatus.NOT_OWNER,
+                        "Logical lookup bypassed ownership");
+            } finally {
+                original.discard(); if (replacement != null) { replacement.discard(); } if (copy != null) { copy.discard(); }
+                FluidFuelLoaderFixtures.clear(level, monitor.getBlockPos());
+            }
+        }, ORIGIN, DEVICE);
+    }
+
     @GameTest(template = "rocket_test", batch = "monitor_refusal", timeoutTicks = 100)
     public static void refusedRisingEdgeRetainsResourcesAndAPoweredReloadDoesNotRetry(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {

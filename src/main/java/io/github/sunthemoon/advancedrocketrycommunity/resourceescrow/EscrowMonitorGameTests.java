@@ -261,9 +261,17 @@ public final class EscrowMonitorGameTests {
             oldSaved.put(RocketMonitorRoot.KEY, new RocketMonitorRoot(monitor.root().owner(), UUID.randomUUID(), oldBinding,
                     0, false, false, null, "").encode());
             observer.load(oldSaved);
-            helper.assertTrue(RocketMonitorBinding.resolve(observer, false).rocket() == arrival,
-                    "Monitor lost the logical identity after native F8 retired the transfer journal");
+            var resolved = RocketMonitorBinding.resolve(observer, false);
             helper.assertTrue(oldSaved.equals(observer.saveWithoutMetadata()), "Head lookup rewrote the saved binding");
+            if (!RocketMonitorBinding.loaded(destinationLevel, arrival.blockPosition())
+                    || !RocketMonitorBinding.loaded(destinationLevel, RocketMonitorBinding.origin(flight))) {
+                // Entity registration precedes entity-ticking readiness when a cold column is restored.
+                helper.assertTrue(resolved.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorStatus.WAITING_UNLOADED
+                        && resolved.rocket() == null, "Unready destination was not kept unloaded: " + resolved.status());
+                return;
+            }
+            helper.assertTrue(resolved.rocket() == arrival,
+                    "Monitor lost the logical identity after native F8 retired the transfer journal: " + resolved.status());
             monitor.tick(); helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.SUCCESS, "Acknowledged governed flight still displays pending");
             if (revocation != Revocation.NONE) {
                 helper.assertTrue(revoked && !monitor.root().armed() && monitor.root().powered(), "Membership cut/arming invalidation not observed");
