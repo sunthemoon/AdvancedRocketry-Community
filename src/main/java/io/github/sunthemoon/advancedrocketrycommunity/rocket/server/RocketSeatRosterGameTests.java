@@ -171,11 +171,7 @@ public final class RocketSeatRosterGameTests {
                 f.sneakTick();
                 f.assertSeatKept("A pending rejoin obligation lost its seat");
                 helper.assertTrue(f.player.startRiding(f.rocket, true), "Pending rider did not remount");
-                var cancel = new Object() {
-                    @SubscribeEvent public void mount(EntityMountEvent event) {
-                        if (event.isDismounting() && event.getEntityMounting() == f.player) { event.setCanceled(true); }
-                    }
-                };
+                var cancel = new GuardInstallDismountCancellation(f.player);
                 // Keep the rider through guard installation so the following native tick reaches the input guard.
                 MinecraftForge.EVENT_BUS.register(cancel);
                 try { data.guards(server).join(f.player); }
@@ -213,13 +209,7 @@ public final class RocketSeatRosterGameTests {
         run(helper, f -> {
             var data = RocketTransactionSavedData.get(helper.getLevel().getServer());
             var previous = replaceField(data, "unreadable", false);
-            var refuse = new Object() {
-                @SubscribeEvent public void mount(EntityMountEvent event) {
-                    if (event.isDismounting() && event.getEntityMounting() == f.player) {
-                        replaceField(data, "unreadable", true);
-                    }
-                }
-            };
+            var refuse = new TransactionRefusalOnDismount(f.player, data);
             MinecraftForge.EVENT_BUS.register(refuse);
             try {
                 helper.assertTrue(!RocketRuntime.sealedFrozen(f.rocket), "Refusal control was frozen before input");
@@ -266,6 +256,26 @@ public final class RocketSeatRosterGameTests {
                         "A canceled dismount removed membership");
             } finally { MinecraftForge.EVENT_BUS.unregister(cancel); }
         });
+    }
+
+    // Named classes keep Forge's generated event-handler names distinct from the existing anonymous listener.
+    private static final class GuardInstallDismountCancellation {
+        private final ServerPlayer player;
+        GuardInstallDismountCancellation(ServerPlayer player) { this.player = player; }
+        @SubscribeEvent public void mount(EntityMountEvent event) {
+            if (event.isDismounting() && event.getEntityMounting() == player) { event.setCanceled(true); }
+        }
+    }
+
+    private static final class TransactionRefusalOnDismount {
+        private final ServerPlayer player;
+        private final RocketTransactionSavedData data;
+        TransactionRefusalOnDismount(ServerPlayer player, RocketTransactionSavedData data) {
+            this.player = player; this.data = data;
+        }
+        @SubscribeEvent public void mount(EntityMountEvent event) {
+            if (event.isDismounting() && event.getEntityMounting() == player) { replaceField(data, "unreadable", true); }
+        }
     }
 
     private static Object replaceField(Object target, String name, Object value) {
