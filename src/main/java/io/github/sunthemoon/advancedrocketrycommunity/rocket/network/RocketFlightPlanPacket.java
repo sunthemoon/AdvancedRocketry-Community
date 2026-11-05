@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.network.TravelTargetWireCodec;
 import java.util.Objects;
@@ -17,13 +18,18 @@ import net.minecraftforge.network.NetworkEvent;
 
 /** Bounded, S2C-only typed plan and quote update for one open flight console. */
 public record RocketFlightPlanPacket(int containerId, int rocketEntityId, RocketFlightPlanSnapshot plan,
-                                    RocketNavigation navigation) {
+                                    RocketNavigation navigation, String padName) {
     public static final int MIN_ENCODED_BYTES = 20;
     public static final int MAX_ENCODED_BYTES = 8 + 1 + TravelTargetWireCodec.MAX_ENCODED_BYTES
             + 3 + RocketFlightQuotes.MAX_QUOTES * (TravelTargetWireCodec.MAX_ENCODED_BYTES + 5)
             + 8 + 3 + StationLimits.MAX_ACCESSIBLE_DESTINATIONS
             * (16 + 2 + 3 * StationLimits.MAX_NAME_LENGTH + 2 + TravelTarget.MAX_RESOURCE_LOCATION_CHARS)
-            + io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.MAX_WIRE_BYTES;
+            + io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.MAX_WIRE_BYTES
+            + 2 + 3 * LandingPadEntry.MAX_NAME_LENGTH;
+
+    public RocketFlightPlanPacket(int containerId, int rocketEntityId, RocketFlightPlanSnapshot plan, RocketNavigation navigation) {
+        this(containerId, rocketEntityId, plan, navigation, "");
+    }
 
     public RocketFlightPlanPacket(int containerId, int rocketEntityId, RocketFlightPlanSnapshot plan, RocketFlightQuotes quotes) {
         this(containerId, rocketEntityId, plan, new RocketNavigation(0, quotes, java.util.List.of()));
@@ -37,6 +43,11 @@ public record RocketFlightPlanPacket(int containerId, int rocketEntityId, Rocket
         }
         Objects.requireNonNull(plan, "plan");
         Objects.requireNonNull(navigation, "navigation");
+        Objects.requireNonNull(padName, "padName");
+        if (!padName.isEmpty()) {
+            LandingPadEntry.checkedName(padName);
+            if (plan.landingPad() == null) { throw new IllegalArgumentException("A pad name requires a pad reference"); }
+        }
     }
 
     public static void encode(RocketFlightPlanPacket packet, FriendlyByteBuf buffer) {
@@ -60,6 +71,7 @@ public record RocketFlightPlanPacket(int containerId, int rocketEntityId, Rocket
             buffer.writeUtf(station.orbitBody().toString(), TravelTarget.MAX_RESOURCE_LOCATION_CHARS);
         }
         io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.writeOptional(buffer, packet.plan().landingPad());
+        if (packet.plan().landingPad() != null) { buffer.writeUtf(packet.padName(), LandingPadEntry.MAX_NAME_LENGTH); }
     }
 
     public static RocketFlightPlanPacket decode(FriendlyByteBuf buffer) {
@@ -114,10 +126,11 @@ public record RocketFlightPlanPacket(int containerId, int rocketEntityId, Rocket
         }
         plan = new RocketFlightPlanSnapshot(plan.target(),
                 io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.readOptional(buffer));
+        String padName = plan.landingPad() == null ? "" : buffer.readUtf(LandingPadEntry.MAX_NAME_LENGTH);
         if (buffer.isReadable()) {
             throw new IllegalArgumentException("Flight plan frame contains trailing bytes");
         }
-        return new RocketFlightPlanPacket(containerId, entityId, plan, new RocketNavigation(generation, quotes, stations));
+        return new RocketFlightPlanPacket(containerId, entityId, plan, new RocketNavigation(generation, quotes, stations), padName);
     }
 
     public boolean targets(int openContainerId, int openRocketEntityId) {
