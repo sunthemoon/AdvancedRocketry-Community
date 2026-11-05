@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-w277-stand-in-art",
+  "target_version": "v1.8.0",
+  "recorded_at": "2026-11-06",
+  "declaration": "Pre-authoring NEW-art registration, committed before any W277 generator or image exists. Hashes and screening evidence follow generation. This declaration is not approval.",
+  "authority": "docs/work/v1.8.0-root-queue/TASK-W277-REMAINING-STAND-INS.md",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w277",
+  "source_commit": "c14ede4db",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "method": "Original deterministic integer pixel geometry in Java, without bitmap inputs. Match the community steel/teal casing and hatch palette. Reuse W275's original Java cylinder drawing with a separately coloured nitrogen band and its existing drawn port icons. No vanilla, upstream or third-party bitmap is copied, traced, sampled or transformed. Pinned vanilla clients are read only for screening and external comparisons.",
+  "planned_scope": [
+    "Replace only live vanilla stand-in faces with functional machine drawings and a station-deployment-kit icon; preserve the already replaced electrolyzer front and OBJ rocket motor and fuel tank.",
+    "Rebind all 24 remaining drawer-side models to the W275 machine panel; retain the approved baseline casing image byte-for-byte.",
+    "Bind each W275 port's existing type icon to its side and bottom as well as its top, making all six faces identifiable.",
+    "A separately named nitrogen cylinder icon with a blue band; retain all W275 images and earlier reviews unchanged.",
+    "Texture-only v1.8 model bindings. No geometry, IDs, behaviour, recipes, loot, build scripts, ledger, queue, status files or historical resource changes."
+  ],
+  "entries": [],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "reviewer": null,
+    "reviewed_at": null,
+    "basis": "Owner visual and originality review remains outstanding. Automated screening is not approval.",
+    "content_digest": null
+  }
+}
