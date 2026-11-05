@@ -58,7 +58,7 @@ public final class AtmosphereServerEvents {
     }
 
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        // ADR-067: only item-only measurement skips preemptive interaction invalidation.
+        // Read-only instruments skip preemptive invalidation only when block activation is denied.
         if (nonMutatingItem.test(event.getItemStack()) && event.getUseBlock() == Event.Result.DENY) {
             return;
         }
