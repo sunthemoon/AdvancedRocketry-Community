@@ -67,15 +67,25 @@ public final class LandingPadService {
         return chunk != null && chunk.getBlockEntity(position) instanceof LandingPadBlockEntity pad && !pad.isRemoved() ? pad : null;
     }
 
-    public static LandingPadEntry resolve(MinecraftServer server, UUID stationId, LandingPadReference reference) {
+    /** Indexed menu intent only. This does not prove physical availability or authorize a flight. */
+    public static LandingPadEntry registered(MinecraftServer server, UUID stationId, LandingPadReference reference) {
         if (!server.isSameThread()) { return null; }
         var station = StationRegistrySavedData.get(server).find(stationId).orElse(null);
         var index = LandingPadIndex.get(server);
         LandingPadEntry entry = index.find(stationId, reference).orElse(null);
-        var space = server.getLevel(CelestialIds.SPACE_LEVEL);
-        if (station == null || entry == null || space == null || !entry.ownerId().equals(station.ownerId())) { return null; }
+        if (station == null || entry == null || !entry.ownerId().equals(station.ownerId())) { return null; }
         BlockPos position = entry.position(station);
         if (!station.region().contains(position.getX(), position.getZ())) { return null; }
+        return entry;
+    }
+
+    public static LandingPadEntry resolve(MinecraftServer server, UUID stationId, LandingPadReference reference) {
+        LandingPadEntry entry = registered(server, stationId, reference);
+        if (entry == null) { return null; }
+        var space = server.getLevel(CelestialIds.SPACE_LEVEL);
+        if (space == null) { return null; }
+        var station = StationRegistrySavedData.get(server).find(stationId).orElseThrow();
+        BlockPos position = entry.position(station);
         LandingPadBlockEntity pad = loadedPad(space, position);
         if (pad == null || !pad.operational() || !entry.matches(pad.reference(), pad.physicalId())
                 || !stationId.equals(pad.stationId())) { return null; }

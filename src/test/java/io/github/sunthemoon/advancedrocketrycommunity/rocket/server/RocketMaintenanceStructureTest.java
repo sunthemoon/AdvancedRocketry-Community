@@ -40,11 +40,11 @@ class RocketMaintenanceStructureTest {
     }
 
     @Test
-    void saveSchemasRemainStableAndFlightChannelUsesDiscoveryRevision() {
+    void saveSchemasRemainStableAndFlightChannelUsesPadDisplayRevision() {
         assertEquals(2, RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION);
         assertEquals(3, RocketFlightPlan.SCHEMA_VERSION);
         assertEquals(2, RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
-        assertEquals("9", RocketFlightNetwork.protocolVersion());
+        assertEquals("10", RocketFlightNetwork.protocolVersion());
     }
 
     @Test

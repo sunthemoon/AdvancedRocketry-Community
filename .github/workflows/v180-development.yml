@@ -80,6 +80,17 @@ jobs:
         with:
           cache-read-only: true
 
+      # R349: the wrapper's 10-second distribution download timed out or returned 504 seven times on 2026-11-05.
+      # Fetch the checksum-pinned distribution with bounded retries before any build step; nothing else changes.
+      - name: Fetch the Gradle distribution with bounded retries
+        run: |
+          for attempt in 1 2 3 4; do
+            if ./gradlew --version --no-daemon > "$RUNNER_TEMP/gradle-fetch-$attempt.log" 2>&1; then exit 0; fi
+            sleep $((attempt * 20))
+          done
+          cat "$RUNNER_TEMP"/gradle-fetch-*.log
+          exit 1
+
       - name: Record toolchain and check tooling
         run: |
           java -XshowSettings:properties -version 2>&1 | tee "$EVIDENCE_DIR/java-version.txt"
@@ -203,6 +214,15 @@ jobs:
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
         with:
           cache-read-only: true
+
+      - name: Fetch the Gradle distribution with bounded retries
+        run: |
+          for attempt in 1 2 3 4; do
+            if ./gradlew --version --no-daemon > "$RUNNER_TEMP/gradle-fetch-$attempt.log" 2>&1; then exit 0; fi
+            sleep $((attempt * 20))
+          done
+          cat "$RUNNER_TEMP"/gradle-fetch-*.log
+          exit 1
 
       - name: Download the once-built runtime bundle
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
