@@ -15,10 +15,14 @@ public final class RocketSeatRelease {
 
     static RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
         var physicalExit = RocketRuntime.passengerExits().map(exits -> exits.heldLeave(player, rocket)).orElse(null);
-        return physicalExit != null ? physicalExit : release(rocket, player.getUUID());
+        return physicalExit != null ? physicalExit : release(rocket, player.getUUID(), player);
     }
 
     static RocketFlightRequestResult release(RocketEntity rocket, UUID playerId) {
+        return release(rocket, playerId, ((ServerLevel) rocket.level()).getServer().getPlayerList().getPlayer(playerId));
+    }
+
+    private static RocketFlightRequestResult release(RocketEntity rocket, UUID playerId, ServerPlayer player) {
         if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, playerId)
                 : !RocketFlightService.passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
@@ -31,7 +35,6 @@ public final class RocketSeatRelease {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.NOT_BOARDED);
         }
         var server = ((ServerLevel) rocket.level()).getServer();
-        var player = server.getPlayerList().getPlayer(playerId);
         var exits = RocketRuntime.passengerExits().orElse(null);
         if (RocketRejoinProtection.required(server, playerId) || player != null
                 && (BayPassengerExitPermit.guarded(player) || exits != null && exits.state.internal(player))) {
