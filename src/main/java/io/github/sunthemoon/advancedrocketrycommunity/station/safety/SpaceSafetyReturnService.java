@@ -287,8 +287,9 @@ public final class SpaceSafetyReturnService {
                     "destination=station station=" + target.stationId() + " passes=" + station.passes());
         } else if (result instanceof SafetyReturnQuery.Overworld overworld) {
             ServerLevel level = server.overworld();
-            move(player, level, travel.prepare(level, CelestialIds.EARTH_ID), Component.translatable(ARRIVED_OVERWORLD),
-                    "destination=overworld passes=" + overworld.passes());
+            var arrival = SafetyReturnOverworldArrival.choose(level, player, travel.prepare(level, CelestialIds.EARTH_ID));
+            move(player, level, arrival.destination(), Component.translatable(ARRIVED_OVERWORLD),
+                    "destination=overworld passes=" + overworld.passes() + " " + arrival.audit());
         }
     }
 
@@ -306,6 +307,8 @@ public final class SpaceSafetyReturnService {
             refuse(player, Refusal.CANCELLED, audit);
             return;
         }
+        // R340: the old zero-g floating flag may survive until the client acknowledges this trusted move.
+        player.connection.aboveGroundTickCount = 0;
         end(player.getUUID());
         player.sendSystemMessage(announcement);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_SAFETY_RETURN player={} outcome=returned {} level={} at={}",

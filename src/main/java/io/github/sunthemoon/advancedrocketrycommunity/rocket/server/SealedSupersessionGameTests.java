@@ -29,6 +29,7 @@ public final class SealedSupersessionGameTests {
     @GameTest(template = "rocket_test", batch = "w152_hardening", timeoutTicks = 400)
     public static void changedCarrierInvalidatesItsPendingNativeProofBeforeElection(GameTestHelper helper) {
         var level = helper.getLevel(); var server = level.getServer(); var at = helper.absolutePos(new BlockPos(1, 2, 1));
+        SealedProductionTestAccess.isolateTerrainFixture(level, at);
         var position = new RocketPosition(at.getX(), at.getY(), at.getZ());
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position,
                 List.of(new RocketBlock(new RocketPosition(0, 0, 0), RocketBlockStateAdapter.capture(Blocks.IRON_BLOCK.defaultBlockState()))),
