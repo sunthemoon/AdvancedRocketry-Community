@@ -737,7 +737,7 @@ def _validate_outcome_fields(
     ):
         raise FinalG0ReviewError(f"non-pending {label} reviewer is invalid")
     reviewed_at = record.get("reviewed_at")
-    if not isinstance(reviewed_at, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}", reviewed_at) is None:
+    if not isinstance(reviewed_at, str) or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", reviewed_at) is None:
         raise FinalG0ReviewError(f"non-pending {label} reviewed_at must be YYYY-MM-DD")
     try:
         if dt.date.fromisoformat(reviewed_at).isoformat() != reviewed_at:

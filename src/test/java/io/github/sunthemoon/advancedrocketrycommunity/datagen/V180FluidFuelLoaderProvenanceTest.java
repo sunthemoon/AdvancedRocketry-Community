@@ -99,7 +99,7 @@ class V180FluidFuelLoaderProvenanceTest {
         byte[] canonical = (new GsonBuilder().disableHtmlEscaping().create().toJson(core) + "\n")
                 .getBytes(StandardCharsets.UTF_8); // the record uses recursively sorted keys
         assertEquals(V180ArtRedrawTest.sha256(canonical), record.getAsJsonObject("review").get("content_digest").getAsString());
-        assertEquals("PENDING_HUMAN_REVIEW", record.getAsJsonObject("review").get("status").getAsString());
+        V180OwnerReviewAssertions.assertD7Approval(record.getAsJsonObject("review"));
     }
 
     private static JsonObject json(Path path) throws IOException {

@@ -601,15 +601,24 @@ def check_required_paths(results: Results) -> None:
         )
 
 
+def _valid_date(value: object) -> bool:
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+        return False
+    try:
+        return dt.date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def parse_current_identity(text: str) -> tuple[str | None, str | None, str | None]:
     current_values = text.split("当前值：", 1)[-1]
     match = IDENTITY_STATUS.search(current_values)
     reviewer = re.search(r'reviewed_by:\s*"([^"]+)"', current_values)
-    reviewed_at = re.search(r'reviewed_at:\s*"(\d{4}-\d{2}-\d{2})"', current_values)
+    reviewed_at = re.search(r'reviewed_at:\s*"([^"\r\n]*)"', current_values)
     return (
         match.group(1) if match else None,
         reviewer.group(1) if reviewer else None,
-        reviewed_at.group(1) if reviewed_at else None,
+        reviewed_at.group(1) if reviewed_at and _valid_date(reviewed_at.group(1)) else None,
     )
 
 
@@ -2853,14 +2862,10 @@ def _gate_scalar(raw: str) -> str:
 
 
 def _valid_gate_approval_timestamp(value: str) -> bool:
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-        try:
-            dt.date.fromisoformat(value)
-        except ValueError:
-            return False
+    if _valid_date(value):
         return True
     if not re.fullmatch(
-        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})",
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:Z|[+-][0-9]{2}:[0-9]{2})",
         value,
     ):
         return False

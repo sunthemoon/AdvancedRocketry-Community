@@ -94,6 +94,23 @@ class OriginFindingAdoptionTests(unittest.TestCase):
         self.assertEqual({}, decisions)
         self.assertTrue(any("preparation date is not a review date" in error for error in errors), errors)
 
+    def test_review_date_requires_a_full_string_match(self) -> None:
+        for reviewed_at in (ORIGIN_ADOPTION_PREPARED_AT + "\n", "2026-11-04\n", "2026-11-04\r\n",
+                            " 2026-11-04", "2026-11-04 ", "2026-11-4", None, 20261104,
+                            "\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                            "2026-13-45", "2026-02-30", "2026-02-29", "0000-01-01"):
+            with self.subTest(reviewed_at=reviewed_at):
+                decisions, errors = self._load(dict(self.reviewed, reviewed_at=reviewed_at))
+                self.assertEqual({}, decisions)
+                self.assertTrue(any("invalid review date" in error for error in errors), errors)
+
+    def test_review_date_accepts_real_leap_days_and_canonical_year_bounds(self) -> None:
+        for reviewed_at in ("2024-02-29", "2000-02-29", "0001-01-01", "9999-12-31"):
+            with self.subTest(reviewed_at=reviewed_at):
+                decisions, errors = self._load(dict(self.reviewed, reviewed_at=reviewed_at))
+                self.assertEqual([], errors)
+                self.assertEqual({self.reviewed["asset"]: "EXCLUDED"}, decisions)
+
     def test_decision_record_required_instead_of_adr(self) -> None:
         for record in (None, "", " ", PLAYER_IMPACT_PATH.as_posix(),
                        "docs/../" + PLAYER_IMPACT_PATH.as_posix()):

@@ -140,11 +140,12 @@
   ],
   "license": "MIT",
   "review": {
+    "basis": "Owner provenance and licence approval (D7, R306): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md. Applies to this record as it stood at 521cb9b95, not later replacements or release Gates.",
     "content_digest": "ad926c5991284f7ceab274a5f4b883b4ce5d1c8c3d68d43d72807c963ac64837",
     "findings": [],
-    "reviewed_at": null,
-    "reviewer": null,
-    "status": "PENDING_HUMAN_REVIEW"
+    "reviewed_at": "2026-11-04",
+    "reviewer": "sunthemoon",
+    "status": "APPROVED"
   },
   "schema_version": 2,
   "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",

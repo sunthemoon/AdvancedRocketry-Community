@@ -12,8 +12,17 @@ most 16 lines.
 
 ## Switching systems on and off
 
-Each system has its own switch in the common config. It is read each time a
-device acts, so a change applies without a restart:
+Each system has its own switch in the server's
+`config/advancedrocketrycommunity-common.toml`. To change a switch reliably,
+stop the server, edit that file, and start the server again. Treat changes as
+taking effect after a restart; do not rely on editing the file while the server
+is running. For singleplayer, fully exit and restart Minecraft instead.
+
+Devices read Forge's loaded configuration, not the TOML file, each time they
+act. Forge's file watcher can miss edits, leaving the previous values loaded.
+`/reload` reloads data packs, not this common config, and ARCE has no operator
+command to reload it. After restarting, use `/arce endgame status` to confirm
+the loaded switches before operating a device.
 
 | Key | Default | What turning it off stops |
 |---|---|---|

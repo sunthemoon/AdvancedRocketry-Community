@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffectE
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -28,6 +29,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
@@ -52,6 +54,8 @@ public final class SpaceSafetyReturnService {
     public static final String ARRIVED_OVERWORLD = PREFIX + "overworld";
     public static final String REFUSED = PREFIX + "refused";
     private static final long PRUNE_TICKS = 200L;
+    /** R328: leave half of vanilla's default allowance for the bounded destination query and commit. */
+    public static final int STATION_DRIFT_TICKS = 40;
 
     /** Why an attempt moved nobody; each has its own translated reason. */
     public enum Refusal {
@@ -127,13 +131,14 @@ public final class SpaceSafetyReturnService {
             return;
         }
         UUID id = player.getUUID();
-        if (!adrift(server, player)) {
+        int threshold = adriftThreshold(server, player);
+        if (threshold == 0) {
             end(id);
             return;
         }
         SafetyReturnPhase phase = phases.computeIfAbsent(id, ignored -> new SafetyReturnPhase());
         long now = server.getTickCount();
-        if (!phase.tick(true, now) || query.pending(id)) {
+        if (!phase.tick(true, now, threshold) || query.pending(id)) {
             return;
         }
         if (inTransaction(server, id)) {
@@ -214,21 +219,40 @@ public final class SpaceSafetyReturnService {
 
     /**
      * Adrift: an actual connected player, alive and not a spectator, in the Space Level, neither riding nor carrying,
-     * and outside every committed region of an operational registry. A blocked registry hides the regions, so nobody
-     * is adrift then.
+     * and outside every committed region of an operational registry, or unsupported and airborne inside a zero-g
+     * station (R328). A blocked registry hides the regions, so nobody is adrift then.
      */
-    private static boolean adrift(MinecraftServer server, ServerPlayer player) {
+    private static int adriftThreshold(MinecraftServer server, ServerPlayer player) {
         if (player instanceof FakePlayer || player.connection == null || player.hasDisconnected()
                 || server.getPlayerList().getPlayer(player.getUUID()) != player) {
-            return false;
+            return 0;
         }
         if (!player.isAlive() || player.isRemoved() || player.isSpectator()
                 || !player.level().dimension().equals(CelestialIds.SPACE_LEVEL)
                 || player.isPassenger() || player.isVehicle()) {
-            return false;
+            return 0;
         }
         StationRegistrySavedData registry = StationRegistrySavedData.get(server);
-        return registry.operational() && registry.findAt(player.getBlockX(), player.getBlockZ()).isEmpty();
+        if (!registry.operational()) { return 0; }
+        if (registry.findAt(player.getBlockX(), player.getBlockZ()).isEmpty()) { return SafetyReturnPhase.ADRIFT_TICKS; }
+        if (player.isCreative() || player.getAbilities().mayfly || player.onGround() || player.isFallFlying()
+                || player.isInWaterOrBubble() || player.isInLava()
+                || CelestialGravityController.appliedMultiplier(player) != 0.0D) { return 0; }
+        // Paid suit corrections already reset the native counter at server START. An unpaid intent cannot keep
+        // this exemption once vanilla counts its first floating tick; it still receives only the finite allowance.
+        if (player.connection.aboveGroundTickCount == 0
+                && io.github.sunthemoon.advancedrocketrycommunity.equipment.motion.SuitMotionEvents.service()
+                .flatMap(service -> service.session(player.getUUID()))
+                .filter(session -> session.active(server.getTickCount())).isPresent()) { return 0; }
+        AABB body = player.getBoundingBox();
+        // At most a normal-sized footprint and its collision iterator's one-cell margin; never scan down to a floor.
+        if (body.getXsize() > 2.0D || body.getZsize() > 2.0D) { return 0; }
+        AABB support = new AABB(body.minX, body.minY - 0.0625D, body.minZ, body.maxX, body.minY, body.maxZ);
+        ServerLevel level = player.serverLevel();
+        if (!level.hasChunksAt(BlockPos.containing(support.minX - 1, support.minY - 1, support.minZ - 1),
+                BlockPos.containing(support.maxX + 1, support.maxY + 1, support.maxZ + 1))) { return 0; }
+        if (player.onClimbable()) { return 0; } // This block lookup must also follow the loaded-chunk check.
+        return level.getBlockCollisions(player, support).iterator().hasNext() ? 0 : STATION_DRIFT_TICKS;
     }
 
     private boolean inTransaction(MinecraftServer server, UUID player) {
@@ -246,7 +270,7 @@ public final class SpaceSafetyReturnService {
     private void commit(MinecraftServer server, ServerPlayer player, SafetyReturnQuery.Result result) {
         UUID id = player.getUUID();
         // The query revalidated the station; the player must still be adrift in the Space Level, outside any ride.
-        if (!adrift(server, player) || inTransaction(server, id)) {
+        if (adriftThreshold(server, player) == 0 || inTransaction(server, id)) {
             end(id);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_SAFETY_RETURN player={} outcome=dropped reason=not_adrift", id);
             return;

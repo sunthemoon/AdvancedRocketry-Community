@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import importlib
 import io
 import os
 import subprocess
@@ -655,6 +656,46 @@ identity_status: "APPROVED"
             ("APPROVED", "sunthemoon", "2026-08-26"),
             parse_current_identity(document),
         )
+
+    def test_review_date_rejects_noncanonical_and_impossible_dates(self) -> None:
+        for value in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                      "2026-13-45", "2026-02-30", "2026-11-03\n", "2026-11-04\r\n",
+                      " 2026-11-04", "2026-11-04 ", "2026-11-4", "20261104", "2026-W45-3"):
+            with self.subTest(value=value):
+                document = f'reviewed_by: "sunthemoon"\nreviewed_at: "{value}"\nidentity_status: "APPROVED"\n'
+                self.assertEqual(("APPROVED", "sunthemoon", None), parse_current_identity(document))
+
+
+class CanonicalReviewDateTests(unittest.TestCase):
+    def test_review_and_decision_date_helpers_use_the_same_canonical_contract(self) -> None:
+        validators = [(f"validate_v{version}_release_evidence", "_valid_date")
+                      for version in ("010", "020", "030", "040", "050", "060", "070", "080", "090")]
+        validators += [("validate_repository", "_valid_date"), ("collect_v002_manual_evidence", "_valid_date"),
+                       ("validate_bootstrap_provenance", "_valid_iso_date"),
+                       ("validate_v002_g4_applicability", "_valid_date")]
+        for module_name, name in validators:
+            validator = getattr(importlib.import_module("scripts." + module_name), name)
+            for value in ("2026-11-03", "2026-11-04", "2024-02-29", "2000-02-29", "0001-01-01", "9999-12-31"):
+                with self.subTest(module=module_name, value=value):
+                    self.assertTrue(validator(value))
+            for value in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                          "2026-13-45", "2026-02-30", "2026-02-29", "1900-02-29", "0000-01-01",
+                          "2026-11-03\n", "2026-11-04\n", "2026-11-04\r\n", " 2026-11-04",
+                          "2026-11-04 ", "2026-11-4", "20261104", "2026-W45-3", None, 20261104):
+                with self.subTest(module=module_name, value=value):
+                    self.assertFalse(validator(value))
+
+    def test_gate_approval_keeps_canonical_dates_and_existing_timestamp_forms(self) -> None:
+        validator = repository_validator._valid_gate_approval_timestamp
+        for value in ("2026-11-04", "2024-02-29", "2026-11-04T12:34:56Z", "2026-11-04T12:34:56+08:00"):
+            with self.subTest(value=value):
+                self.assertTrue(validator(value))
+        for value in ("\uff12\uff10\uff12\uff16-\uff11\uff11-\uff10\uff13", "\u0662\u0660\u0662\u0666-\u0661\u0661-\u0660\u0663",
+                      "2026-13-45", "2026-02-30", "2026-11-03\n", "2026-11-04\r\n",
+                      " 2026-11-04", "2026-11-04 ", "2026-11-4", "20261104", "2026-W45-3"):
+            for candidate in (value, value + "T12:34:56Z"):
+                with self.subTest(value=candidate):
+                    self.assertFalse(validator(candidate))
 
 
 class MarkdownTargetTests(unittest.TestCase):

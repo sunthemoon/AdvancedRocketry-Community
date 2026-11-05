@@ -147,8 +147,9 @@ public final class CommonConfig {
             .comment("Gas mission duration in percent of the gas-v1 base duration (ADR-052; 10..1,000).")
             .defineInRange("satellites.gasMissionTimePercent", 100, 10, 1_000);
 
-    // ADR-054 section 1: per-system switches, read at each use. A disabled system keeps its content and state and
-    // still settles and recovers; it only starts nothing new.
+    // ADR-054 section 1: per-system switches, read from Forge's loaded config at each use, not from disk.
+    // Stop the server, edit the COMMON file, then restart: Forge's watcher can miss edits; /reload is for data packs.
+    // A disabled system keeps its content and state and still settles and recovers; it only starts nothing new.
     public static final ForgeConfigSpec.BooleanValue ENDGAME_LASER_DRILL = system(
             "endgame.laserDrill.enabled", "Orbital laser drills may operate (ADR-055).", true);
     public static final ForgeConfigSpec.BooleanValue ENDGAME_LASER_PHYSICAL = system(
@@ -568,7 +569,10 @@ public final class CommonConfig {
         return SERVER_SWITCHES.contains(value);
     }
 
-    /** An in-memory override ({@link SwitchOverrides}, tests only), else the loaded value, else the default. */
+    /**
+     * An in-memory override ({@link SwitchOverrides}, tests only), else Forge's loaded/cached value, else the default.
+     * Reading on use does not reload the file; a successful Forge reload clears the value cache.
+     */
     private static boolean serverSwitchValue(ForgeConfigSpec.BooleanValue value) {
         Boolean override = SwitchOverrides.get(value);
         if (override != null) {
