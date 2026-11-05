@@ -15,11 +15,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
@@ -49,6 +51,15 @@ public final class RocketRejoinCommitGameTests {
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_commit_residual", timeoutTicks = 240)
     public static void postCommitNoCandidateDisconnectPinsAndNextLoginIsOrdinary(GameTestHelper helper) { new Fixture(helper, "Residual").start(); }
 
+    // W304: a test that fails or times out can skip its fixture's close(); its batch then restores the pad it left.
+    @AfterBatch(batch = "rocket_rejoin_commit_death") public static void afterDeath(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_clone") public static void afterClone(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_login") public static void afterLogin(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_unsafe") public static void afterUnsafe(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_ack") public static void afterAck(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_final") public static void afterFinal(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_commit_residual") public static void afterResidual(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+
     private static final class Fixture {
         final GameTestHelper helper;
         final MinecraftServer server;
@@ -59,6 +70,7 @@ public final class RocketRejoinCommitGameTests {
         final CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
         final java.util.function.Consumer<TickEvent.ServerTickEvent> beforeUnguard = this::beforeUnguard;
         RocketRejoinSavedData original, data;
+        RocketRejoinFixturePad pad;
         ServerPlayer player;
         RocketRejoinGuards.Session old;
         Path file;
@@ -106,6 +118,9 @@ public final class RocketRejoinCommitGameTests {
             for (int x = -5; x <= 5; x++) { for (int z = -5; z <= 5; z++) { for (int y = -1; y <= 2; y++) {
                 helper.getLevel().setBlockAndUpdate(center.offset(x, y, z), (y == -1 ? Blocks.STONE : Blocks.AIR).defaultBlockState());
             } } }
+            // W304: the candidates take their height from the surface, above this floor; the pad over the same columns
+            // is that surface, so neither the terrain above the structure nor the spawn ring decides the placement.
+            pad = RocketRejoinFixturePad.around(server.overworld(), center.getX(), center.getZ(), center.getX(), center.getZ());
             var b = RocketRejoinGuardGameTests.root(id).batches().get(0);
             var p = new Position(center.getX(), center.getY(), center.getZ());
             b = new Batch(b.release(), 0, b.transfer(), b.rocket(), b.authority(), b.hold(), "minecraft:overworld", p, p, p,
@@ -219,6 +234,7 @@ public final class RocketRejoinCommitGameTests {
             if (data != null) { data.close(); server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), original); }
             try { if (file != null) { Files.deleteIfExists(file); } }
             catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); }
+            finally { if (pad != null) { pad.close(); } }
         }
     }
 }
