@@ -269,12 +269,15 @@ final class RocketStaleSeatFixture implements AutoCloseable {
                 if (scenario == Case.IN_FLIGHT) {
                     landAfterFlight();
                 }
-                if (claims != null) { claims.remove(f.record.logicalRocketId()); claims = null; helper.assertTrue(!RocketEscrowGate.bayHeld(f.rocket), "Bay hold did not end"); }
+                if (claims != null) { BayDeploymentGameTestSupport.bays(helper).forgetForTests(f.record.logicalRocketId()); claims = null;
+                    helper.assertTrue(!RocketEscrowGate.bayHeld(f.rocket), "Bay hold did not end"); }
             }
             if (reconnects != null) {
                 if (age < 60) { helper.assertTrue(reconnects.offer(f.playerId, helper.getLevel().getGameTime()), "Reconnect queue refused fixture"); }
                 else { reconnects.complete(f.playerId); }
             }
+            // A physical exit can queue the claim. Keep this control held without running unrelated deployment IO.
+            if (claims != null) { BayDeploymentGameTestSupport.bays(helper).unqueueForTests(f.record.logicalRocketId()); }
             helper.getLevel().tickNonPassenger(f.rocket);
             if (age < releaseStart + 39) { kept("seat was removed before the full eligible grace"); }
             if (age >= releaseStart + 41) {
@@ -293,7 +296,7 @@ final class RocketStaleSeatFixture implements AutoCloseable {
         if (internal != null) { internal.close(); internal = null; }
         endRejoin();
         if (transactions != null) { replaceField(transactions, "unreadable", previousFrozen); transactions = null; }
-        if (claims != null && f != null) { claims.remove(f.record.logicalRocketId()); }
+        if (claims != null && f != null) { BayDeploymentGameTestSupport.bays(helper).forgetForTests(f.record.logicalRocketId()); }
         if (reconnects != null && f != null) { reconnects.complete(f.playerId); }
         if (f != null) { f.close(); }
         if (other != null) { other.discard(); }
