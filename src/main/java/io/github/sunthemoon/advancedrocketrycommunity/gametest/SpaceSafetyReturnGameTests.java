@@ -194,6 +194,11 @@ public final class SpaceSafetyReturnGameTests {
         try {
             ServerLevel level = f.server.overworld();
             BlockPos center = new BlockPos(4_000_000, 200, 4_000_000);
+            UUID ticket = UUID.randomUUID();
+            ChunkPos centerChunk = new ChunkPos(center);
+            // A FULL border chunk makes its entity sections accessible after the next chunk-status update.
+            level.getChunkSource().addRegionTicket(FIXTURE_TICKET, centerChunk, 0, ticket);
+            f.cleanups.add(() -> level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, centerChunk, 0, ticket));
             level.getChunkAt(center);
             List<ChunkPos> unloaded = List.of(new ChunkPos(center.west()), new ChunkPos(center.north()));
             for (ChunkPos chunk : unloaded) {
@@ -214,21 +219,26 @@ public final class SpaceSafetyReturnGameTests {
             f.cleanups.add(rocket::discard);
             ServerPlayer player = f.join(UUID.randomUUID(), "safetyLoaded", new BlockPos(HALF_GRID, 220, HALF_GRID));
             var original = new SafeCelestialTravel.Destination(center.getX() + 0.5D, center.getY(), center.getZ() + 0.5D);
-            for (ChunkPos chunk : unloaded) {
-                helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null,
-                        "Fixture setup loaded a neighbor before avoidance");
-            }
-            Map<String, Integer> before = TicketCounts.near(level, new ChunkPos(center), 2);
-            var chosen = SafetyReturnOverworldArrival.choose(level, player, original);
-            var at = chosen.destination();
-            helper.assertTrue(at.x() == original.x() + 2 && at.y() == original.y() && at.z() == original.z() + 2,
-                    "Did not skip unsafe/unloaded nearer columns: " + chosen);
-            for (ChunkPos chunk : unloaded) {
-                helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null, "Avoidance loaded a chunk");
-            }
-            helper.assertTrue(TicketCounts.near(level, new ChunkPos(center), 2).equals(before), "Avoidance added tickets");
-        } finally { f.close(); }
-        helper.succeed();
+            run(helper, f, tick -> {
+                if (tick < 2) { return false; }
+                helper.assertTrue(level.getEntitiesOfClass(rocket.getClass(), rocket.getBoundingBox()).contains(rocket),
+                        "The fixture rocket must be accessible before avoidance");
+                for (ChunkPos chunk : unloaded) {
+                    helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null,
+                            "Fixture setup loaded a neighbor before avoidance");
+                }
+                Map<String, Integer> before = TicketCounts.near(level, centerChunk, 2);
+                var chosen = SafetyReturnOverworldArrival.choose(level, player, original);
+                var at = chosen.destination();
+                helper.assertTrue(at.x() == original.x() + 2 && at.y() == original.y() && at.z() == original.z() + 2,
+                        "Did not skip unsafe/unloaded nearer columns: " + chosen);
+                for (ChunkPos chunk : unloaded) {
+                    helper.assertTrue(level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null, "Avoidance loaded a chunk");
+                }
+                helper.assertTrue(TicketCounts.near(level, centerChunk, 2).equals(before), "Avoidance added tickets");
+                return true;
+            });
+        } catch (RuntimeException | Error failure) { f.close(); throw failure; }
     }
 
     private static void rocketAtOverworldArrival(GameTestHelper helper, boolean blocked) {
