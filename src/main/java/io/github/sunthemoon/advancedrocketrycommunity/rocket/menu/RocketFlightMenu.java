@@ -152,8 +152,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         super.broadcastChanges();
         if (viewer instanceof ServerPlayer player && player.containerMenu == this && stillValid(player)) {
             var navigation = navigation();
-            var plan = activePlan();
-            var snapshot = new RocketFlightPlanPacket(containerId, rocketEntityId, plan, navigation, padName(plan));
+            var snapshot = planPacket(navigation);
             if (!snapshot.equals(lastSentSnapshot)) {
                 RocketFlightNetwork.sendPlan(player, snapshot);
                 lastSentSnapshot = snapshot;
@@ -165,6 +164,12 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
                 });
             }
         }
+    }
+
+    /** The plan frame {@link #broadcastChanges()} sends: the active plan, the given quotes and the indexed pad name. */
+    public RocketFlightPlanPacket planPacket(RocketNavigation navigation) {
+        var plan = activePlan();
+        return new RocketFlightPlanPacket(containerId, rocketEntityId, plan, navigation, padName(plan));
     }
 
     @Override
