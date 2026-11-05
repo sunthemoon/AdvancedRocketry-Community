@@ -104,14 +104,12 @@ public final class AdapterFaultGameTests {
                         && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                 "Framework start control was not placed at the expected position");
         create(helper);
-        level.setBlockAndUpdate(button.below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north().below(), Blocks.STONE.defaultBlockState());
-        level.setBlockAndUpdate(button.north(), Blocks.WATER.defaultBlockState());
+        AdapterDropFixture.flowAcrossStartControl(helper, button);
         helper.runAtTickTime(8, () -> {
             helper.assertTrue(!level.getFluidState(button).isEmpty(), "Water did not reach the start-control position");
             helper.assertTrue(level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                     "Water test removed the start control's support");
-            helper.assertTrue(level.getEntitiesOfClass(ItemEntity.class, new AABB(button).inflate(2)).isEmpty(),
+            AdapterDropFixture.assertNoDrops(helper, new AABB(button).inflate(2),
                     "Water dropped a fixture start button");
             helper.succeed();
         });
@@ -122,15 +120,20 @@ public final class AdapterFaultGameTests {
         create(helper);
         BlockPos origin = helper.absolutePos(ORIGIN);
         for (var item : List.of(block("rocket_motor").asItem(), block("rocket_seat").asItem(),
-                block("guidance_computer").asItem(), Items.DIAMOND, Items.IRON_INGOT, Items.STONE_BUTTON)) {
+                block("guidance_computer").asItem(), Items.DIAMOND, Items.IRON_INGOT, Items.STONE_BUTTON,
+                Items.DIAMOND_BLOCK, Items.EMERALD_BLOCK, Items.OAK_PLANKS, Items.GOLD_BLOCK, Items.QUARTZ_BLOCK)) {
             var drop = new ItemEntity(helper.getLevel(), origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5,
-                    new ItemStack(item));
+                    new ItemStack(item, 3));
             helper.assertTrue(helper.getLevel().addFreshEntity(drop), "Duplicate-drop control was not spawned");
             boolean rejected = false;
             try { noDrops(helper); }
             catch (GameTestAssertException expected) {
                 rejected = expected.getMessage().contains("Duplicate inventory drops found: ")
-                        && expected.getMessage().contains(drop.getItem().toString());
+                        && expected.getMessage().contains(drop.getItem().toString())
+                        && expected.getMessage().contains("type=" + ForgeRegistries.ITEMS.getKey(item))
+                        && expected.getMessage().contains("count=3")
+                        && expected.getMessage().contains("at " + drop.position())
+                        && expected.getMessage().contains("age=" + drop.getAge());
             } finally { drop.discard(); }
             helper.assertTrue(rejected, "Duplicate-drop assertion accepted " + item);
         }
@@ -327,14 +330,7 @@ public final class AdapterFaultGameTests {
     }
 
     private static Fixture create(GameTestHelper helper, Block cargo) {
-        // GameTestInfo.spawnStructure adds this start control outside the template, backed by a command block.
-        // Seed-0 cave water can wash the button into region(helper) long after setup. Retire only this fixture's
-        // control without drops before rocket operations; keep the full region and every item type in noDrops.
-        BlockPos startButton = helper.absolutePos(new BlockPos(1, 0, -2));
-        if (helper.getLevel().getBlockState(startButton).is(Blocks.STONE_BUTTON)
-                && helper.getLevel().getBlockState(startButton.south()).is(Blocks.COMMAND_BLOCK)) {
-            helper.assertTrue(helper.getLevel().removeBlock(startButton, false), "Could not retire fixture start button");
-        }
+        AdapterDropFixture.retireStartControl(helper);
         // Structure placement can drop natural cave decorations before this test starts.
         // Clear only pre-operation items; every later inventory assertion still requires zero drops.
         for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper))) {
@@ -431,9 +427,7 @@ public final class AdapterFaultGameTests {
 
     private static AABB region(GameTestHelper helper) { return new AABB(helper.absolutePos(ORIGIN)).inflate(3); }
     private static void noDrops(GameTestHelper helper) {
-        var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper));
-        helper.assertTrue(drops.isEmpty(), "Duplicate inventory drops found: " + drops.stream()
-                .map(item -> item.getItem() + " at " + item.position() + " age=" + item.getAge()).toList());
+        AdapterDropFixture.assertNoDrops(helper, region(helper), "Duplicate inventory drops found");
     }
     private static Block block(String id) { return ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(HOST + ":" + id)); }
     private record Fixture(FakePlayer owner, FixtureContainerBlockEntity source, CompoundTag inventory) { }

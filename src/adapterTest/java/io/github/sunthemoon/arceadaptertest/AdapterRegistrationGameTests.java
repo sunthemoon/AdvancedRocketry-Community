@@ -14,7 +14,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +33,10 @@ public final class AdapterRegistrationGameTests {
                 AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
                         4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory),
                 AdapterAsyncFixture.test("w272_adapter_registration_pending_rejection", "AdapterRegistrationGameTests.externalAdapterRetriesRejectedPendingDisassembly",
-                        4, 1, false, helper -> productionAssemblyPreservesInventory(helper, true)));
+                        4, 1, false, helper -> productionAssemblyPreservesInventory(helper, true)),
+                AdapterAsyncFixture.test("w299_adapter_start_button", "AdapterRegistrationGameTests.flowingWaterCannotDropRegistrationStartButton",
+                        4, 1, false, helper -> AdapterDropFixture.withFlowingStartControlWater(helper,
+                                () -> productionAssemblyPreservesInventory(helper, true))));
     }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
@@ -74,6 +76,7 @@ public final class AdapterRegistrationGameTests {
     }
 
     private static void productionAssemblyPreservesInventory(GameTestHelper helper, boolean rejectFirstPending) {
+        AdapterDropFixture.retireStartControl(helper);
         var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
@@ -124,7 +127,7 @@ public final class AdapterRegistrationGameTests {
                     helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(cargoPosition)) == null,
                             "Assembly left the source inventory BlockEntity behind");
                     assertSavedPayload(helper, rocket, owner.getUUID(), expectedInventory);
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(),
+                    AdapterDropFixture.assertNoDrops(helper, region,
                             "Assembly dropped duplicate inventory items");
 
                     // Normal player interaction dispatches into the installed production RocketRuntime.
@@ -159,7 +162,7 @@ public final class AdapterRegistrationGameTests {
                     savedContainer.remove("schema_version");
                     helper.assertTrue(expectedInventory.equals(savedContainer),
                             "Restored BlockEntity persistence changed the recovered items");
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(),
+                    AdapterDropFixture.assertNoDrops(helper, region,
                             "Disassembly dropped duplicate inventory items");
                 })
                 .thenSucceed();
