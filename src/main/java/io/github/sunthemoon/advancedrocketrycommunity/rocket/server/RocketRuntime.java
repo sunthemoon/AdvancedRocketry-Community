@@ -32,7 +32,7 @@ public final class RocketRuntime {
     public static void tickPassengerInput(RocketEntity rocket) {
         if (service instanceof RocketManager && rocket.level() instanceof ServerLevel level
                 && level.getServer().isSameThread() && !level.getServer().isStopped()) {
-            RocketFlightService.dismountSneakingPassengers(rocket);
+            RocketSeatInput.dismountSneakingPassengers(rocket);
         }
     }
     /** W242-R8: without the exit service (before ServerStarting, after ServerStopped) every rider keeps the old offset. */
