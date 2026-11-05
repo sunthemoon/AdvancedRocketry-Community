@@ -220,6 +220,9 @@ public final class ElevatorRides {
                     // Debited only once the rider stands at the arrival; a teleport another mod cancelled is free.
                     departure.storage().energy().spend(cost);
                     rider.resetFallDistance();
+                    // R345 (W303): a counter held at zero g must not reach the first 1 g connection tick, which still
+                    // sees the client's old floating state until it acknowledges this move.
+                    rider.connection.aboveGroundTickCount = 0;
                 }
                 release(server, ride);
                 cooldownUntil.put(ride.rider(), now + ElevatorRules.RIDE_COOLDOWN_TICKS);
