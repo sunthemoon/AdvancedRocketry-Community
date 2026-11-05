@@ -1,11 +1,11 @@
 # TASK W277: NEW art for the remaining stand-in faces and the drawer-like side
 
-Root: Claude. Date: 2026-11-04. Read [WORKER-RULES](WORKER-RULES.md) first. You are a new session.
+Root: Claude. Date: 2026-11-04, extended 2026-11-06 with R332. Read [WORKER-RULES](WORKER-RULES.md) first. You are a new session.
 
 | Item | Value |
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w277`, branch `codex/v1.8.0-w277`, created by Root from the shared head |
-| Decisions | R308 (the owner's feedback in [OWNER-DECISIONS-20261104](records/OWNER-DECISIONS-20261104.md)) and R314 (below) |
+| Decisions | R308 (the owner's feedback in [OWNER-DECISIONS-20261104](records/OWNER-DECISIONS-20261104.md)), R314 (below) and R332 (scope items 3 and 4) |
 | Style to follow | [W275](records/W275.md), merged at `8e6728547`: `datagen/V180StandInArt.java`, `V180StandInArtData.java`, its provenance record `docs/provenance/v1.8.0-w275-stand-in-art.json`, its tests and its `build.gradle` exclusions |
 | Record | `docs/work/v1.8.0-root-queue/records/W277.md`; logs and contact sheet under `D:/GitHub/ARCE-Task-Evidence/root-queue/W277/` |
 
@@ -32,6 +32,13 @@ Root: Claude. Date: 2026-11-04. Read [WORKER-RULES](WORKER-RULES.md) first. You 
    sides to W275's `machine_panel_side` (or a matching NEW variant where a lighter casing reads better, for example the
    plain machine casing block), through v1.8 models, as W275 did. `machine_casing_side.png` itself stays byte-identical
    with v0.1.0's approved record; do not change that file.
+3. **Port sides show their type (R332).** W278's round 5 findings 5-3 and 5-4
+   (`D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md`): once a multiblock forms, the classic OBJ models cover
+   the ports' tops, and W275's port side faces are identical panels, so a player cannot tell an item input from a fluid
+   output or a power port. Give each W275 port's side faces the type icon its top already shows (the classic hatches
+   show their type on every face), in W275's style, so every visible face identifies the port.
+4. **The nitrogen canister (R332).** Give it the cylinder icon W275 drew for the oxygen and hydrogen canisters, with
+   its own colour band so it reads as nitrogen.
 
 Root's decision R314, under the owner's delegation of design points: the owner's complaint about the drawer-like side
 covers every block that shows it, so W277 rebinds all 24 rather than leaving two side styles in the mod.

@@ -35,6 +35,29 @@ class ArmorRootCodecTest {
         loaded.get(0).stack().getCompound("tag").putInt("Damage", 100);
         assertEquals(before, armor); assertEquals(7, tank.getCompound("tag").getInt("Damage"));
     }
+    @Test void sharedTankKindPreservesEachActualItemTierAndSavedCapacity() {
+        for (String item : ModuleKind.PRESSURE_TANK.itemPaths()) {
+            for (TankData.Gas gas : List.of(TankData.Gas.EMPTY, TankData.Gas.OXYGEN, TankData.Gas.HYDROGEN)) {
+                CompoundTag stack = component(item);
+                int maximum = TankData.baseCapacity(stack.getString("id")) * 4;
+                TankData tank = new TankData(gas, gas == TankData.Gas.EMPTY ? 0 : maximum - 123, maximum);
+                stack.getCompound("tag").put(TankData.KEY, tank.encode());
+                CompoundTag armor = outer(List.of(new ArmorRootCodec.Module(1, ModuleKind.PRESSURE_TANK, stack)));
+                // Existing saves use a family discriminator, not the nested item's tier ID.
+                CompoundTag entry = armor.getCompound(ArmorRootCodec.KEY).getList("modules", 10).getCompound(0);
+                assertEquals("low_pressure_tank", entry.getString("kind"));
+                CompoundTag before = armor.copy();
+                var loaded = ArmorRootCodec.read(armor, SuitPart.CHEST);
+                assertNotNull(loaded); assertEquals(1, loaded.size());
+                assertEquals(ModuleKind.PRESSURE_TANK, loaded.get(0).kind());
+                assertEquals(stack, loaded.get(0).stack());
+                assertEquals(tank, TankData.read(loaded.get(0).stack().getCompound("tag").get(TankData.KEY),
+                        TankData.baseCapacity(stack.getString("id")), 1));
+                assertEquals(before.get(ArmorRootCodec.KEY), ArmorRootCodec.encode(loaded));
+                assertEquals(before, armor);
+            }
+        }
+    }
     @Test void wrongTypesFutureVersionsUnknownIdsAndOverlargeRootsStayIntact() {
         CompoundTag armor = outer(List.of(new ArmorRootCodec.Module(0, ModuleKind.HOVER, component("hover_upgrade"))));
         armor.getCompound(ArmorRootCodec.KEY).putInt("schema_version", 2); CompoundTag before = armor.copy();
