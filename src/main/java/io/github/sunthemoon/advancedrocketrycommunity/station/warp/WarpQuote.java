@@ -16,7 +16,7 @@ public record WarpQuote(
         ResourceLocation target,
         WarpCostClass costClass,
         int cost,
-        boolean targetSystemHasRoutes
+        boolean targetOrbitHasRoutes
 ) {
     public WarpQuote {
         Objects.requireNonNull(actor, "actor");

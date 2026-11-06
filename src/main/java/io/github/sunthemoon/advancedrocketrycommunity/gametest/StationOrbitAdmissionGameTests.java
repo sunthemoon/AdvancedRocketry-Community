@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
@@ -52,6 +53,7 @@ public final class StationOrbitAdmissionGameTests {
         } finally {
             for (var station : created) {
                 existing.data.delete(station.stationId());
+                StationNoticeSavedData.get(existing.server).remove(station.stationId());
                 existing.platforms.removeTemplate(existing.space, station.cell());
             }
             existing.close();

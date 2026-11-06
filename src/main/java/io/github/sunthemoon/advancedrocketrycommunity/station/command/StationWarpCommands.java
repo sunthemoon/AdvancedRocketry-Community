@@ -74,7 +74,8 @@ public final class StationWarpCommands {
                         + " /arce station warp confirm %s",
                 station.name(), station.stationId(), station.orbitBody(), quote.target(), quote.costClass().label(),
                 quote.cost(), result.balance(),
-                quote.targetSystemHasRoutes() ? "" : " The target's star system has no rocket routes.",
+                quote.targetOrbitHasRoutes() ? "" : " The target orbit has no rocket routes;"
+                        + " rockets cannot reach or leave the station in that orbit.",
                 seconds, station.stationId())), false);
         return 1;
     }
