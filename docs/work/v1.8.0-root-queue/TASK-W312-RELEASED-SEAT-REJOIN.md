@@ -74,6 +74,28 @@ The verification section above still applies. The connected-player GameTests mus
 - a rocket in flight at logout, where the saved position is unchanged;
 - the existing `RocketPassengerPersistenceGameTests` invariant that the save has no `RootVehicle`.
 
+## Revision 2 (Root, 2026-11-07, R365): detach before the save, as vanilla does after it
+
+The second session found (record, "Revision 1 design inspection") that `Entity.saveWithoutId` writes a mounted
+player's `Pos` with the vehicle's X and Z, so moving a still-mounted rider changes only the saved Y. It also confirmed
+that `PlayerList.remove` fires `PlayerLoggedOutEvent`, then saves, then calls `player.unRide()`. Vanilla therefore
+detaches every rider at logout already, right after the save, and W287's rule keeps the seat for that detach because the
+player is disconnecting.
+
+Root decides: "not dismounted" in revision 1 meant that the seat assignment stays; the physical mount may end at logout,
+because vanilla ends it there anyway. The logout hook ends it before the save instead of after:
+
+1. For a rider of a stationary rocket (ASSEMBLED, FUELED or LANDED, no active transfer, not guarded), the hook detaches
+   the player through the same path that vanilla's `unRide` takes at logout, while the player is already marked as
+   disconnecting. The player then stands at the dismount location (`getDismountLocationForPassenger`, the exit that
+   LEAVE SEAT uses), and vanilla saves that position.
+2. The durable seat assignment must be unchanged: assert in the GameTests that the manifest keeps the player after
+   logout and that the reconnect reseats it. If the existing detach path would release the seat or start a bay exit's
+   side effects for a disconnecting player, stop and say so in the record instead of working around it.
+3. When the dismount location is unproved or unsafe, or the rocket is not stationary, leave the logout as it is today.
+
+Everything else in revision 1 (old saves, autosaves, design section, separate review, GameTests) still applies.
+
 ## Not in this task
 
 The seat release rules themselves (W300, W300F), rider position (W292), the high-seat console (W311), the ledger, the
