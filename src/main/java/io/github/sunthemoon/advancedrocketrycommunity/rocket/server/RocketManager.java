@@ -316,7 +316,7 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
-    boolean seatReconnectPending(ServerPlayer player) { return flights.transfers().seatReconnectPending(player); }
+    boolean seatReconnectPending(ServerPlayer player, RocketEntity rocket) { return flights.transfers().seatReconnectPending(player, rocket); }
 
     void onRocketJoined(RocketEntity rocket) { if (bays != null) { bays.endpointSeen(rocket); } flights.onRocketJoined(rocket); }
     void onBaySourceChanged(RocketEntity rocket) { if (bays != null) { bays.sourceChanged(rocket); } } // W170-R22

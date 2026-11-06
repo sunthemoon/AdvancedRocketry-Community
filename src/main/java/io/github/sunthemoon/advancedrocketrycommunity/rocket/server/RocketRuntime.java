@@ -35,9 +35,9 @@ public final class RocketRuntime {
             rocket.seatInput().tick(rocket);
         }
     }
-    /** An in-progress login owns seating before absence observations can start. */
-    static boolean seatReconnectPending(ServerPlayer player) {
-        return service instanceof RocketManager manager && manager.seatReconnectPending(player);
+    /** Pending login work or a logical transfer fence owns membership before absence observations can start. */
+    static boolean seatReconnectPending(ServerPlayer player, RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.seatReconnectPending(player, rocket);
     }
 
     /** W242-R8: without the exit service (before ServerStarting, after ServerStopped) every rider keeps the old offset. */

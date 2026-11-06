@@ -199,8 +199,11 @@ final class RocketTransferRecoveryService {
         reconnects.complete(playerId);
     }
 
-    boolean seatReconnectPending(ServerPlayer player) {
-        return !RocketTransferSavedData.get(player.getServer()).operational() || reconnects.pending(player.getUUID());
+    boolean seatReconnectPending(ServerPlayer player, RocketEntity rocket) {
+        var journal = RocketTransferSavedData.get(player.getServer());
+        return !journal.operational() || reconnects.pending(player.getUUID())
+                || journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow())
+                        .filter(record -> fences.reason(record.transferId()) != null).isPresent();
     }
 
     void clear() {
