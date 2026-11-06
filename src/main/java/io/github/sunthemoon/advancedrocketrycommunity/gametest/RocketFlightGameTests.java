@@ -260,6 +260,10 @@ public final class RocketFlightGameTests {
         UUID owner = UUID.randomUUID();
         BlockPos origin = new BlockPos(3, 2, 3);
         assembleFueledRocket(helper, driver, origin, owner, outbound -> {
+            var monitor = RocketMonitorGameTests.monitor(helper, owner);
+            var binding = io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBinding.capture(outbound);
+            helper.assertTrue(monitor.bind(binding), "Round-trip monitor did not bind");
+            var savedMonitor = monitor.saveWithoutMetadata();
             UUID logical = outbound.assemblyTransactionId().orElseThrow();
             long initialFuel = outbound.flightData().orElseThrow().fuel().amount();
             UUID outwardId = UUID.randomUUID();
@@ -307,6 +311,15 @@ public final class RocketFlightGameTests {
                     helper.assertTrue(prepared, "Moon return did not prepare within its retirement budget");
                     RocketEntity landedEarth = findLogicalRocket(earth, logical);
                     helper.assertTrue(landedEarth != null, "Moon-to-Earth transfer did not create an Earth rocket");
+                    helper.assertTrue(!landedEarth.getUUID().equals(binding.physicalRocket()), "Return reused the physical UUID");
+                    monitor.load(savedMonitor);
+                    var resolved = io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBinding.resolve(monitor, false);
+                    helper.assertTrue(resolved.rocket() == landedEarth
+                            && resolved.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorStatus.READY,
+                            "Saved monitor did not follow its logical rocket after the round trip: " + resolved.status());
+                    helper.assertTrue(monitor.root().binding().equals(binding)
+                            && savedMonitor.equals(monitor.saveWithoutMetadata()), "Resolution rewrote the saved binding");
+                    FluidFuelLoaderFixtures.clear(earth, monitor.getBlockPos());
                     helper.assertTrue(
                             landedEarth.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                             "Returned Earth rocket did not land"

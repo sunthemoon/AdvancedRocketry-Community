@@ -22,6 +22,9 @@ import net.minecraftforge.items.IItemHandler;
  */
 public final class SatelliteBayMenu extends AbstractContainerMenu {
     public static final int DATA_COUNT = 2;
+    public static final int PANEL_HEIGHT = 178;
+    public static final int INVENTORY_Y = 96;
+    public static final int HOTBAR_Y = 154;
     private static final int FORMAT = 1;
     @Nullable private final SatelliteBayBlockEntity bay;
     private final Player viewer;
@@ -44,11 +47,11 @@ public final class SatelliteBayMenu extends AbstractContainerMenu {
         addSlot(new BaySlot(80, 35));
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, 9 + row * 9 + column, 8 + column * 18, 84 + row * 18));
+                addSlot(new Slot(inventory, 9 + row * 9 + column, 8 + column * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 142));
+            addSlot(new Slot(inventory, column, 8 + column * 18, HOTBAR_Y));
         }
         addDataSlots(data);
     }

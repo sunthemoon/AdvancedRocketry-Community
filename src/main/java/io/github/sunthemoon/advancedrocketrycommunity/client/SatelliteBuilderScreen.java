@@ -64,14 +64,7 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
         graphics.fill(x + 6, y + 17, x + 218, y + 104, 0xC9081109);
         graphics.renderOutline(x + 6, y + 17, 212, 87, 0xFF3B6B50);
-        drawSlot(graphics, x + 17, y + 29);
-        drawSlot(graphics, x + 17, y + 53);
-        for (int index = 0; index < 6; index++) {
-            drawSlot(graphics, x + 51 + (index % 3) * 20, y + 29 + (index / 3) * 24);
-        }
-        drawSlot(graphics, x + 127, y + 29);
-        drawSlot(graphics, x + 161, y + 41);
-        drawSlot(graphics, x + 197, y + 65);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF709B80, RECESS);
         int stored = menu.energyStored();
         int capacity = Math.max(1, menu.energyCapacity());
         graphics.fill(x + 199, y + 20, x + 213, y + 60, RECESS);
@@ -93,14 +86,11 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
             text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.satellite_builder.stats",
                     stats.power(), stats.battery(), stats.data(), stats.cargo(), stats.rating()), 12, 91, 202, MUTED);
         }
-        SatelliteOperationCode code = menu.status() == SatelliteOperationCode.SUCCESS ? preview : menu.status();
+        SatelliteOperationCode code = SatelliteScreenLabels.builderStatus(menu.status(), preview);
         int color = code == SatelliteOperationCode.SUCCESS ? GREEN : RED;
-        Component status = Component.translatable(code.translationKey()).append(" [" + code.name() + "]");
+        Component status = Component.translatable(SatelliteScreenLabels.builderKey(code, preview))
+                .append(" [" + code.name() + "]");
         text.draw(graphics, font, status, 12, 19, 180, color);
     }
 
-    private static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, RECESS);
-        graphics.renderOutline(x, y, 18, 18, 0xFF3B6B50);
-    }
 }

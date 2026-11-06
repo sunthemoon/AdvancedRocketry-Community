@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "advancedrocketrycommunity:block/endgame_casing_end",
+    "side": "advancedrocketrycommunity:block/machine_panel_side"
+  }
+}

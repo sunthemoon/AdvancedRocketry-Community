@@ -14,11 +14,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.block.Blocks;
@@ -53,6 +55,17 @@ public final class RocketRejoinReadbackGameTests {
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_clone", timeoutTicks = 240)
     public static void deathAndRealRespawnDiscardTheOldSessionsReadback(GameTestHelper helper) { new Fixture(helper, "Clone").start(); }
 
+    // W304: a test that fails or times out can skip its fixture's close(); its batch then restores the pad it left.
+    @AfterBatch(batch = "rocket_rejoin_quit") public static void afterQuit(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_temp_failure") public static void afterTempFailure(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_replace_failure") public static void afterReplaceFailure(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_temp_ordinary") public static void afterTempOrdinary(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_replace_ordinary") public static void afterReplaceOrdinary(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_unsafe") public static void afterUnsafe(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_vehicle") public static void afterVehicle(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_vehicle_first") public static void afterVehicleFirst(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_clone") public static void afterClone(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+
     private static final class Fixture {
         final GameTestHelper helper;
         final MinecraftServer server;
@@ -63,6 +76,7 @@ public final class RocketRejoinReadbackGameTests {
         final UUID id = UUID.randomUUID();
         final Consumer<PlayerEvent.SaveToFile> listener = this::saved;
         RocketRejoinSavedData original, data;
+        RocketRejoinFixturePad pad;
         ServerPlayer player;
         RocketRejoinGuards.Session session;
         Path sidecar, playerDirectory, movedDirectory, ownedDirectory, backup;
@@ -109,6 +123,9 @@ public final class RocketRejoinReadbackGameTests {
             for (int x = -5; x <= 5; x++) { for (int z = -5; z <= 5; z++) { for (int y = -1; y <= 2; y++) {
                 helper.getLevel().setBlockAndUpdate(center.offset(x, y, z), (y == -1 ? Blocks.STONE : Blocks.AIR).defaultBlockState());
             } } }
+            // W304: the candidates take their height from the surface, above this floor; the pad over the same columns
+            // is that surface, so neither the terrain above the structure nor the spawn ring decides the placement.
+            pad = RocketRejoinFixturePad.around(server.overworld(), center.getX(), center.getZ(), center.getX(), center.getZ());
             var base = RocketRejoinGuardGameTests.root(id); var b = base.batches().get(0);
             var p = new Position(center.getX(), center.getY(), center.getZ());
             b = new Batch(b.release(), 0, b.transfer(), b.rocket(), b.authority(), b.hold(), "minecraft:overworld", p, p, p,
@@ -270,6 +287,7 @@ public final class RocketRejoinReadbackGameTests {
             MinecraftForge.EVENT_BUS.unregister(listener);
             if (data != null) { data.close(); server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), original); }
             try { if (sidecar != null) { Files.deleteIfExists(sidecar); } } catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
+            finally { if (pad != null) { pad.close(); } }
         }
     }
 }

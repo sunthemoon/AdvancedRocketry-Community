@@ -110,7 +110,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
         int output = 0;
         if (resolved.rocket() != null) {
             var rocket = resolved.rocket();
-            double relative = rocket.getY() - root.binding().locator().getY();
+            double relative = rocket.getY() - RocketMonitorBinding.origin(rocket.flightData().orElseThrow()).getY();
             height = RocketMonitorRules.milli(relative, 4096000);
             velocity = sampledTick >= 0 && now > sampledTick
                     ? RocketMonitorRules.milli((relative - lastHeight) / (now - sampledTick), 64000) : 0;

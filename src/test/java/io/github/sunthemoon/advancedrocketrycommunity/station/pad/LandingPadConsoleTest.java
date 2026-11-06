@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDesti
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.DecoderException;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
@@ -56,6 +57,22 @@ class LandingPadConsoleTest {
                 buffer.writerIndex(buffer.writerIndex() - 1);
                 buffer.writeUtf(invalid);
                 assertThrows(RuntimeException.class, () -> RocketFlightPlanPacket.decode(buffer));
+            } finally { buffer.release(); }
+        }
+    }
+
+    @Test void overlongDeclaredNameFailsInTheBoundedReadBeforeTheRecordCheck() {
+        // 33 characters pass the 96-byte length check and fail the 32-character check; 97 bytes fail the byte check.
+        // Both must stop in readUtf itself (DecoderException), not later in the record's IllegalArgumentException.
+        for (String overlong : List.of("x".repeat(LandingPadEntry.MAX_NAME_LENGTH + 1),
+                "x".repeat(3 * LandingPadEntry.MAX_NAME_LENGTH + 1))) {
+            var buffer = new FriendlyByteBuf(Unpooled.buffer());
+            try {
+                RocketFlightPlanPacket.encode(packet(PLAN, ""), buffer);
+                buffer.writerIndex(buffer.writerIndex() - 1);
+                buffer.writeUtf(overlong);
+                assertTrue(buffer.readableBytes() <= RocketFlightPlanPacket.MAX_ENCODED_BYTES);
+                assertThrows(DecoderException.class, () -> RocketFlightPlanPacket.decode(buffer));
             } finally { buffer.release(); }
         }
     }

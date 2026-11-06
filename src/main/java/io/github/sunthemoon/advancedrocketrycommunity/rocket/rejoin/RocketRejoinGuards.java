@@ -114,6 +114,9 @@ public final class RocketRejoinGuards {
         player.stopRiding();
         if (player.connection != null && (player.level() != level || !player.position().equals(position))) {
             player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
+            // R345 (W303): a counter held at zero g must not reach the first connection tick after a confirmed move,
+            // which still sees the client's old floating state until it acknowledges the teleport.
+            if (player.level() == level && player.position().distanceToSqr(position) < 1.0D) { player.connection.aboveGroundTickCount = 0; }
         } else { player.setPos(position); }
         player.setDeltaMovement(Vec3.ZERO); player.fallDistance = 0; player.clearFire(); player.setTicksFrozen(0);
     }

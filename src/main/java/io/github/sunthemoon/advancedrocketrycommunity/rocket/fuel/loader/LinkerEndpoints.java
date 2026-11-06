@@ -24,12 +24,12 @@ final class LinkerEndpoints {
                 || player.getCooldowns().isOnCooldown(context.getItemInHand().getItem())) { return InteractionResult.FAIL; }
         if (player.isSecondaryUseActive()) {
             if (monitor.root().binding() == null || !monitor.bind(null)) { return InteractionResult.FAIL; }
-            return changed(player, context.getHand(), LinkerItem.UNBOUND);
+            return changed(player, context.getHand(), "message.advancedrocketrycommunity.linker.monitor_unbound");
         }
         var selected = new LinkerSelection(monitor.root().device(), context.getLevel().dimension().location(), monitor.getBlockPos());
         if (LinkerItem.selection(context.getItemInHand()).filter(selected::equals).isPresent()) { return InteractionResult.FAIL; }
         context.getItemInHand().getOrCreateTag().put(LinkerSelection.KEY, selected.encode());
-        return changed(player, context.getHand(), LinkerItem.SELECTED);
+        return changed(player, context.getHand(), "message.advancedrocketrycommunity.linker.monitor_selected");
     }
     static InteractionResult bind(ServerPlayer player, InteractionHand hand, RocketEntity rocket,
                                   LinkerSelection selected, RocketMonitorBlockEntity monitor) {
@@ -40,7 +40,7 @@ final class LinkerEndpoints {
                 || rocket.getBoundingBox().distanceToSqr(player.position()) > 64) { return refuse(player); }
         var binding = RocketMonitorBinding.capture(rocket);
         if (binding.equals(monitor.root().binding()) || !monitor.bind(binding)) { return InteractionResult.FAIL; }
-        return changed(player, hand, LinkerItem.BOUND);
+        return changed(player, hand, "message.advancedrocketrycommunity.linker.monitor_bound");
     }
 
     /** A bounded journal lookup of the clicked pad, not a world/entity search. Empty and ambiguous pads refuse. */

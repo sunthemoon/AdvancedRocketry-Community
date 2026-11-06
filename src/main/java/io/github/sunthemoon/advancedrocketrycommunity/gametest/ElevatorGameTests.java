@@ -224,6 +224,8 @@ public final class ElevatorGameTests {
                 .thenWaitUntil(() -> fixture.registered(helper))
                 .thenExecute(() -> {
                     fixture.bind(helper);
+                    assertAudited(helper, "bind", fixture.terminal().deviceId().orElseThrow(), fixture.owner,
+                            fixture.owner);
                     ElevatorStationGuard guard = ElevatorStationGuard.Installed.current();
                     helper.assertTrue(guard.warp(fixture.server, fixture.station) == ElevatorStationGuard.Decision.BOUND,
                             "A bound station may warp");
@@ -268,6 +270,7 @@ public final class ElevatorGameTests {
                     ElevatorPair pair = root().pairs().forStation(fixture.stationId).orElseThrow();
                     helper.assertTrue(ElevatorPairs.unbind(fixture.server, service(), devices(), pair, fixture.owner,
                             false, fixture.level.getGameTime()).ok(), "The owner could not unbind");
+                    assertAudited(helper, "unbind", pair.terminalId(), fixture.owner, fixture.owner);
                     ElevatorStationGuard guard = ElevatorStationGuard.Installed.current();
                     helper.assertTrue(guard.warp(fixture.server, fixture.station)
                             == ElevatorStationGuard.Decision.ALLOWED, "The unbound station may not warp");
@@ -331,6 +334,9 @@ public final class ElevatorGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(fixture.anchor().storage().energy().energy() == 150_000,
                             "The ride up cost " + (200_000 - fixture.anchor().storage().energy().energy()));
+                    // The departing anchor is the owner's; the member is only the actor.
+                    assertAudited(helper, "ride_commit", fixture.anchor().deviceId().orElseThrow(), fixture.owner,
+                            memberId);
                     helper.assertTrue(arrivalTickets(fixture.space) == 0 && arrivalTickets(fixture.level) == 0,
                             "A ticket remained after the commit");
                     // Obstruct the arrival platform below: the ride down is cancelled at its commit.
@@ -409,6 +415,9 @@ public final class ElevatorGameTests {
                                     .anyMatch(line -> line.contains("ride_cancel") && line.contains("TARGET_PROTECTED")
                                             && line.contains(terminalId.toString())),
                             "The ride was not refused by the zone; " + fixture.arrivalReport());
+                    // The owner column names the departing terminal's owner, not the anchor's owner or the rider.
+                    assertAudited(helper, "ride_request", terminalId, fixture.owner, memberId);
+                    assertAudited(helper, "ride_cancel", terminalId, fixture.owner, memberId);
                     service().barrier(root -> root.removeZone(zone));
                     zone(helper, fixture, zone, fixture.owner);
                 })
@@ -731,5 +740,28 @@ public final class ElevatorGameTests {
 
     private static EndgameRoot root() {
         return service().root().orElseThrow();
+    }
+
+    /** Every retained elevator audit line, newest first; the ring holds at most 512 lines (32 pages). */
+    private static List<String> elevatorAudit() {
+        List<String> lines = new ArrayList<>();
+        for (int page = 0; ; page++) {
+            List<String> next = service().audit().page(EndgameSystem.SPACE_ELEVATOR.id(), page);
+            if (next.isEmpty()) {
+                return lines;
+            }
+            lines.addAll(next);
+        }
+    }
+
+    /**
+     * W294 (finding 4-4): an elevator line has ADR-054 section 13's {@code device owner actor} columns, and the owner is
+     * the device's owner, not {@code -}.
+     */
+    private static void assertAudited(GameTestHelper helper, String action, UUID device, UUID owner, UUID actor) {
+        String columns = " device=" + device + " owner=" + owner + " actor=" + actor;
+        List<String> lines = elevatorAudit().stream().filter(line -> line.contains(" action=" + action + " ")).toList();
+        helper.assertTrue(lines.stream().anyMatch(line -> line.contains(columns)),
+                "No " + action + " audit line with" + columns + ": " + lines);
     }
 }

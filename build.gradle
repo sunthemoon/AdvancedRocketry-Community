@@ -202,14 +202,23 @@ def supersededW49Models = [
                                        'assets/advancedrocketrycommunity/models/item/rocket_motor.json',
                                        // W260 (R286): preserve the v0.5 tank models, package their v1.8 replacements.
                                        'assets/advancedrocketrycommunity/models/block/rocket_fuel_tank.json',
-                                       'assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json'] as Set,
+                                       'assets/advancedrocketrycommunity/models/item/rocket_fuel_tank.json',
+                                       // W277 (R308, R314): the v1.8 models bind NEW faces and the panel side.
+                                       'assets/advancedrocketrycommunity/models/block/guidance_computer.json',
+                                       'assets/advancedrocketrycommunity/models/block/rocket_assembler.json',
+                                       'assets/advancedrocketrycommunity/models/block/rocket_seat.json'] as Set,
         'src/generated/v0.2/resources': ['assets/advancedrocketrycommunity/models/block/electrolyzer.json', 'assets/advancedrocketrycommunity/models/block/electrolyzer_active.json',
                                          // W275 (R308): the v1.8 canister models bind NEW cylinder icons.
                                          'assets/advancedrocketrycommunity/models/item/empty_canister.json', 'assets/advancedrocketrycommunity/models/item/oxygen_canister.json',
                                          'assets/advancedrocketrycommunity/models/item/hydrogen_canister.json'] as Set,
         'src/generated/v0.4/resources': ['assets/advancedrocketrycommunity/models/item/space_suit_boots.json', 'assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json',
-                                         'assets/advancedrocketrycommunity/models/item/space_suit_helmet.json', 'assets/advancedrocketrycommunity/models/item/space_suit_leggings.json'] as Set,
-        'src/generated/v0.8/resources': ['assets/advancedrocketrycommunity/models/item/satellite_solar_module.json'] as Set,
+                                         'assets/advancedrocketrycommunity/models/item/space_suit_helmet.json', 'assets/advancedrocketrycommunity/models/item/space_suit_leggings.json',
+                                         // W277 (R308, R314): the v1.8 vent models bind NEW faces and the panel side.
+                                         'assets/advancedrocketrycommunity/models/block/oxygen_vent.json',
+                                         'assets/advancedrocketrycommunity/models/block/oxygen_vent_active.json'] as Set,
+        'src/generated/v0.8/resources': ['assets/advancedrocketrycommunity/models/item/satellite_solar_module.json',
+                                         // W277 (R308, R314)
+                                         'assets/advancedrocketrycommunity/models/block/satellite_terminal.json'] as Set,
         'src/generated/v1.2/resources': ['assets/advancedrocketrycommunity/models/block/precision_assembler.json',
                                          // W275 (R308): the v1.8 rolling machine, port and side models bind NEW art.
                                          'assets/advancedrocketrycommunity/models/block/rolling_machine.json',
@@ -221,8 +230,21 @@ def supersededW49Models = [
                                          'assets/advancedrocketrycommunity/models/block/precision_assembler_item_output_port.json',
                                          'assets/advancedrocketrycommunity/models/block/precision_assembler_energy_input_port.json'] as Set,
         'src/generated/v1.5/resources': ['assets/advancedrocketrycommunity/models/block/warp_core.json'] as Set,
-        'src/generated/v1.6/resources': ['assets/advancedrocketrycommunity/models/block/satellite_builder.json', 'assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json'] as Set,
-        'src/generated/v1.7/resources': ['assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json', 'assets/advancedrocketrycommunity/models/block/railgun.json'] as Set
+        'src/generated/v1.6/resources': ['assets/advancedrocketrycommunity/models/block/satellite_builder.json', 'assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json',
+                                         // W277 (R308, R314)
+                                         'assets/advancedrocketrycommunity/models/block/microwave_receiver.json'] as Set,
+        'src/generated/v1.7/resources': ['assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json', 'assets/advancedrocketrycommunity/models/block/railgun.json',
+                                         // W277 (R308, R314): the v1.8 endgame models bind NEW faces and the panel side.
+                                         'assets/advancedrocketrycommunity/models/block/black_hole_generator.json',
+                                         'assets/advancedrocketrycommunity/models/block/elevator_anchor.json',
+                                         'assets/advancedrocketrycommunity/models/block/elevator_terminal.json',
+                                         'assets/advancedrocketrycommunity/models/block/endgame_casing.json',
+                                         'assets/advancedrocketrycommunity/models/block/gravity_field_controller.json',
+                                         'assets/advancedrocketrycommunity/models/block/laser_target.json'] as Set,
+        // W277 (R308, R314): roots with no earlier superseded model.
+        'src/generated/resources': ['assets/advancedrocketrycommunity/models/block/machine_casing.json'] as Set,
+        'src/generated/v0.6/resources': ['assets/advancedrocketrycommunity/models/block/fuel_loader.json'] as Set,
+        'src/generated/v0.7/resources': ['assets/advancedrocketrycommunity/models/item/station_deployment_kit.json'] as Set
 ]
 // ADR-066 section 3.3 and D1 outcome 1 (W37b): the v1.8 copies of the four v1.4 dimension types (natural=true) supersede
 // the v1.4 copies; v1.8 becomes the one writer of all six off-world types.

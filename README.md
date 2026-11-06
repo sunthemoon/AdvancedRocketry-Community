@@ -297,6 +297,34 @@ Security-sensitive duplication, arbitrary chunk loading, packet abuse, or save c
 
 The unpublished `1.0.0-dev` build is not the download offered by these steps.
 
+### Your first single-player world: two "experimental settings" warnings
+
+Minecraft 1.20.1 treats every world that has dimensions besides the Overworld, the
+Nether and the End as a world with "experimental settings". This mod adds six
+dimensions: space (where stations are built), the Moon, Mars, Venus, Tau Ceti f and
+Tau Ceti g. So every single-player world made with the mod shows two warnings, once
+each. They are expected. They do not mean that the mod is unstable or that your world
+has a problem.
+
+| When you see it | Title in English | Title in Simplified Chinese | Button that continues |
+|---|---|---|---|
+| You press **Create New World** | Warning! These settings are using experimental features | 警告！这些设置使用了实验性功能 | **Yes** (是) |
+| You open the world from the world list for the first time | Worlds using Experimental Settings are not supported | 不支持使用实验性设置的世界 | **Proceed** (继续) |
+
+- Confirming either screen does not change or damage the world. You do not need to
+  turn anything on in the **Experiments** tab.
+- The second screen ends with "This message will not show again for this world"
+  (这个消息不会再对此世界显示。). After you press **Proceed**, Forge notes your answer in
+  that world's `level.dat` when the world next saves, for example when you leave it.
+  From then on that world opens without the warning. Each new world asks again.
+- **No** returns you to the world settings, and **Cancel** returns you to the title
+  screen. Neither changes anything.
+- Dedicated servers do not show these screens, and players who join a server do not
+  see them either.
+- "Here be dragons!" is Mojang's general notice for worlds with added dimensions. It
+  does not replace your own backups: keep backing up worlds you care about, as step 4
+  says.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md).

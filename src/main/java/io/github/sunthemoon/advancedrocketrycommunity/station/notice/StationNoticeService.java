@@ -148,7 +148,7 @@ public class StationNoticeService implements StationLifecycleListener {
         StationNoticeSavedData.get(server).remove(stationId);
     }
 
-    /** The translatable component: text, bodies and numbers literal, codes and cost classes through their keys. */
+    /** Only free text and numbers stay literal; bodies, codes and cost classes use their translation keys. */
     public static MutableComponent component(StationNotice notice) {
         List<StationNoticeKind.Role> roles = notice.kind().roles();
         Object[] arguments = new Object[roles.size()];
@@ -157,7 +157,12 @@ public class StationNoticeService implements StationLifecycleListener {
             arguments[index] = switch (roles.get(index)) {
                 case CODE -> Component.translatable(StationManagementCode.valueOf(value).translationKey());
                 case COST_CLASS -> Component.translatable(StationNoticeKind.costClassKey(value));
-                case TEXT, BODY, NUMBER -> Component.literal(value);
+                case BODY -> {
+                    var body = net.minecraft.resources.ResourceLocation.tryParse(value);
+                    yield body == null ? Component.literal(value) : Component.translatableWithFallback(
+                            "body." + body.getNamespace() + "." + body.getPath(), value);
+                }
+                case TEXT, NUMBER -> Component.literal(value);
             };
         }
         return Component.translatable(notice.kind().key(), arguments);

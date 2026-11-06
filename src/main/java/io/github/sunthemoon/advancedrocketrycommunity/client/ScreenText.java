@@ -22,6 +22,21 @@ public final class ScreenText {
         draw(graphics, font, full, x, y, width, color, true);
     }
 
+    /** Wrap within an explicitly reserved rectangle; overflow retains the full component on hover. */
+    public void wrapped(GuiGraphics graphics, Font font, Component full, int x, int y, int width, int rows, int color) {
+        var lines = font.split(full, width);
+        boolean overflow = lines.size() > rows;
+        String code = BoundedTextLayout.reasonSuffix(full.getString());
+        if (overflow) { shortened.add(new Label(full, x, y, width, rows * font.lineHeight)); }
+        for (int index = 0; index < Math.min(rows, lines.size()); index++) {
+            if (index == rows - 1 && overflow && !code.isEmpty()) {
+                draw(graphics, font, Component.literal("... " + code), x, y + index * font.lineHeight, width, color);
+            } else {
+                graphics.drawString(font, lines.get(index), x, y + index * font.lineHeight, color, false);
+            }
+        }
+    }
+
     private void draw(GuiGraphics graphics, Font font, Component full, int x, int y, int width, int color,
                       boolean centered) {
         var line = BoundedTextLayout.fit(full.getString(), width, font::width);
