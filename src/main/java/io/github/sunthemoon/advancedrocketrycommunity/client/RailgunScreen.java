@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
@@ -87,7 +86,8 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
-        if (isHovering(152, 18, 16, 50, mouseX, mouseY)) {
+        if (isHovering(CargoScreenLayout.ENERGY_X, CargoScreenLayout.ENERGY_Y,
+                CargoScreenLayout.ENERGY_WIDTH, CargoScreenLayout.ENERGY_HEIGHT, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.translatable("tooltip.advancedrocketrycommunity.energy",
                     menu.energyStored(), RailgunBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
@@ -119,26 +119,14 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         int y = topPos;
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, PANEL_TOP, PANEL_BOTTOM);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
-        graphics.fill(x + 152, y + 18, x + 168, y + 68, RECESS);
-        int height = (int) Math.min(50L, (long) menu.energyStored() * 50L / RailgunBlockEntity.ENERGY_CAPACITY);
-        graphics.fill(x + 152, y + 68 - height, x + 168, y + 68, CHARGE);
-        for (int slot = 0; slot < CargoStorage.INPUT_SLOTS; slot++) {
-            slot(graphics, x + 7 + slot * 18, y + 17);
-        }
-        for (int slot = 0; slot < CargoStorage.RECEIVE_SLOTS; slot++) {
-            slot(graphics, x + 7 + slot * 18, y + 53);
-        }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 139 + row * 18 : 197);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
-    }
-
-    private static void slot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, RECESS);
-        graphics.renderOutline(x, y, 18, 18, 0xFF2E4A60);
+        graphics.fill(x + CargoScreenLayout.ENERGY_X, y + CargoScreenLayout.ENERGY_Y,
+                x + CargoScreenLayout.ENERGY_X + CargoScreenLayout.ENERGY_WIDTH,
+                y + CargoScreenLayout.ENERGY_BOTTOM, RECESS);
+        int height = CargoScreenLayout.fill(menu.energyStored(), RailgunBlockEntity.ENERGY_CAPACITY);
+        graphics.fill(x + CargoScreenLayout.ENERGY_X, y + CargoScreenLayout.ENERGY_BOTTOM - height,
+                x + CargoScreenLayout.ENERGY_X + CargoScreenLayout.ENERGY_WIDTH,
+                y + CargoScreenLayout.ENERGY_BOTTOM, CHARGE);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF52738B, RECESS);
     }
 
     @Override

@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Compact mission-control panel with server-listed station choices. */
 public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlightMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int FRAME = 0xFF26363B;
     private static final int PANEL = 0xFF0B1418;
     private static final int EDGE = 0xFF6E8A91;
@@ -125,7 +126,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
 
     private void selectNextStation() {
         selection.selectNextStation();
-        stationButton.setMessage(stationLabel());
+        updateButtons();
     }
 
     private void selectNextOtherBody() {
@@ -173,6 +174,8 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         earthButton.setMessage(choiceLabel(RocketDestination.EARTH));
         moonButton.setMessage(choiceLabel(RocketDestination.MOON));
         stationButton.setMessage(stationLabel());
+        stationButton.setTooltip(null);
+        ScreenText.fitButton(stationButton, font);
         otherBodyButton.setMessage(otherBodyLabel());
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
@@ -208,7 +211,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
             var activeId = menu.activePlan().stationId();
             String name = stations.stream().filter(station -> station.stationId().equals(activeId))
                     .map(StationDestinationSummary::name).findFirst().orElse(activeId.toString());
-            return Component.literal(font.plainSubstrByWidth("[ " + name + " ]", 88));
+            return Component.literal("[ " + name + " ]");
         }
         if (stations.isEmpty()) {
             return Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations");
@@ -224,7 +227,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         Component display = displayedDestination() == RocketDestination.SPACE_STATION
                 ? Component.literal("[ ").append(label).append(" ]")
                 : label;
-        return Component.literal(font.plainSubstrByWidth(display.getString(), 88));
+        return display;
     }
 
     private Component otherBodyLabel() {
@@ -254,6 +257,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -295,7 +299,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         graphics.drawString(font, font.plainSubstrByWidth(title.getString(), imageWidth - 94), titleLabelX, titleLabelY, 0xFFE7F0F2, false);
         TravelTarget selected = displayedTarget();
         Component route = routeLabel();
-        graphics.drawString(font, font.plainSubstrByWidth(route.getString(), 204), 22, 33, 0xFFD6E2E5, false);
+        text.draw(graphics, font, route, 22, 33, 204, 0xFFD6E2E5);
         graphics.drawString(
                 font,
                 Component.translatable(

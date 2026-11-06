@@ -32,7 +32,7 @@ public final class BoundedTextLayout {
         return new Line(body.substring(0, body.offsetByCodePoints(0, low)) + suffix, 1.0F, true);
     }
 
-    private static String reasonSuffix(String text) {
+    static String reasonSuffix(String text) {
         int start = text.lastIndexOf('[');
         if (start < 0 || !text.endsWith("]")) { return ""; }
         String code = text.substring(start);

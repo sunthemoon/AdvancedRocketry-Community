@@ -86,18 +86,7 @@ public final class LaserTargetScreen extends AbstractContainerScreen<LaserTarget
         int y = topPos;
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, PANEL_TOP, PANEL_BOTTOM);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
-        for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
-            int slotX = x + 7 + (slot % 9) * 18;
-            int slotY = y + 17 + (slot / 9) * 18;
-            graphics.fill(slotX, slotY, slotX + 18, slotY + 18, RECESS);
-            graphics.renderOutline(slotX, slotY, 18, 18, 0xFF2E4A60);
-        }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 103 + row * 18 : 161);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF52738B, RECESS);
     }
 
     @Override

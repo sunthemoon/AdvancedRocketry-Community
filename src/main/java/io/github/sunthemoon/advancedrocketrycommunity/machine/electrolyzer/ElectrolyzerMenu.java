@@ -23,6 +23,8 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public final class ElectrolyzerMenu extends AbstractContainerMenu {
+    public static final int CHARGE_X = 20;
+    public static final int CHARGE_Y = 35;
     private static final int MACHINE_SLOT_COUNT = ElectrolyzerBlockEntity.SLOT_COUNT;
     private static final int PLAYER_SLOT_START = MACHINE_SLOT_COUNT;
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
@@ -82,7 +84,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         this.machineInventory = machineInventory;
 
         addSlot(new MachineSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_INPUT, 44, 35));
-        addSlot(new MachineSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_CHARGE, 44, 59));
+        addSlot(new MachineSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_CHARGE, CHARGE_X, CHARGE_Y));
         addSlot(new OutputSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_HYDROGEN, 116, 35));
         addSlot(new OutputSlot(machineInventory, ElectrolyzerBlockEntity.SLOT_OXYGEN, 140, 35));
         addPlayerInventory(playerInventory);
