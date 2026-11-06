@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
@@ -196,6 +197,24 @@ final class StationWarpStateTest {
         assertEquals(WarpCostClass.INTERSTELLAR, WarpCostClass.of(catalog, StarSystemContent.TAU_CETI_E, MOON));
         // Evacuation from an orbit body that is no longer in the catalog costs the interstellar price.
         assertEquals(WarpCostClass.INTERSTELLAR, WarpCostClass.of(catalog, ModIdentity.id("removed_body"), MOON));
+    }
+
+    @Test
+    void warpsOfferEveryOrbitableBodyButTheSharedSpaceBody() {
+        List<CelestialBodyDefinition> bodies = new ArrayList<>(CelestialDefaults.definitions());
+        bodies.addAll(PlanetaryContent.definitions());
+        bodies.addAll(StarSystemContent.definitions());
+        CelestialCatalog catalog = CelestialCatalog.create(bodies).result().orElseThrow();
+        // W308: the Space body is orbitable only by ADR-031's legacy default; it names the Space Level itself.
+        CelestialBodyDefinition space = catalog.get(CelestialIds.SPACE_ID).orElseThrow();
+        assertTrue(space.capabilities().orbitable(), "Fixture: the Space body is no longer orbitable");
+        assertFalse(WarpTargetRule.offered(space), "The shared Space body is offered as a warp target");
+        for (ResourceLocation id : List.of(EARTH, MOON, PlanetaryContent.MARS, PlanetaryContent.GAS_GIANT,
+                StarSystemContent.TAU_CETI_E)) {
+            assertTrue(WarpTargetRule.offered(catalog.get(id).orElseThrow()), id + " is not offered");
+        }
+        assertFalse(WarpTargetRule.offered(catalog.get(StarSystemContent.TAU_CETI).orElseThrow()),
+                "A body that cannot be orbited is offered");
     }
 
     @Test

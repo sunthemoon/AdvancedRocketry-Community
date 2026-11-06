@@ -140,7 +140,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
                 && rocket.operational()
                 && rocket.level() == player.level()
                 && player.level().hasChunkAt(rocket.blockPosition())
-                && player.distanceToSqr(rocket) <= 64.0D;
+                && (player.getVehicle() == rocket || player.distanceToSqr(rocket) <= 64.0D);
     }
 
     public int rocketEntityId() {
