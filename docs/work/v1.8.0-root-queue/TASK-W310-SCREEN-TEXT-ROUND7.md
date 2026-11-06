@@ -16,8 +16,6 @@ Root: Claude. Date: 2026-11-06. Read [WORKER-RULES](WORKER-RULES.md) first. You 
    - the satellite terminal's status line is drawn under the target `<` and `>` buttons (`SatelliteTerminalScreen`,
      screenshot `b1-term-00-idle`);
    - the satellite bay's notice touches the middle slot's frame (`SatelliteBayScreen`, `b1-bay-00-idle`);
-   - the flight console's station button text `[ STATION ArceT…` touches the button's left edge (`RocketFlightScreen`
-     and `RocketFlightScreenLayout`, `c1-43`);
    - the satellite builder's hint `Insert a chassis and a primary mo…` is still cut (hover shows it). Fit or wrap it if
      its panel allows.
 2. **Finding 7-4 (low), raw IDs.** Show translated names instead of raw IDs where round 7 still saw them:
@@ -34,10 +32,11 @@ Root: Claude. Date: 2026-11-06. Read [WORKER-RULES](WORKER-RULES.md) first. You 
      and its hover still say `OK [OK]` (`b1-raila-06`).
    - The elevator's Bind refusal says "An elevator endpoint rule fails [ELEVATOR_RULE]" without naming the rule, although
      `ElevatorRules.Check` holds the failed rule's name (`b1-elev-05`).
-   - **Root decision:** the bottom notice stays the refusal channel, and the status line describes the device. Make the
-     status line not contradict a refusal the player has just seen, for example by keeping the notice visible until the
-     next action.
-   - Name the failed elevator rule in the notice if the client already receives it.
+   - **Root decision:** the bottom notice stays the refusal channel, and the status line describes the device.
+   - In this task, name the failed elevator rule in the notice if the client already receives it.
+   - Keeping the railgun's refusal visible until the next action waits for W311. W311 is adding that mechanism to the
+     shared screen notice (`ScreenMessageState`, `ScreenActionMessages`), and Root will queue its use on the endgame
+     screens after W311's merge. Do not change the railgun's notice handling here.
 4. **Star map.** It still lists the shared Space body as a focusable body under Earth, with "No surface arrival; inspect
    orbit stations" (`e1-starmap-next-2`). From W308 and W309 on, no station can be warped to or created around that
    body. Leave it out of the star map, unless the star map needs it to reach existing stations; say which.
@@ -60,5 +59,7 @@ Commit on the branch; do not push. Root reviews, pushes for a sharded run and me
 
 ## Not in this task
 
-The warp controller screen (W309), the flight console's high seat and refusal notice (W311), new device behaviour, the
-ledger, the status file and QUEUE.
+The warp controller screen (W309), new device behaviour, the ledger, the status file and QUEUE. W311 runs in parallel
+and is changing `RocketFlightScreen`, `ScreenMessageState`, `ScreenActionMessages`, `RocketFlightFeedback`,
+`RocketFlightService` and `RocketEntity`; do not edit them or `RocketFlightScreenLayout`. The flight console's
+station button bracket (`[ STATION ArceT…` touching the button's left edge, `c1-43`) is left for after W311's merge.
