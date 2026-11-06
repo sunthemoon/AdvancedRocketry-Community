@@ -578,7 +578,8 @@ final class RocketFlightService {
                 || !level.hasChunkAt(rocket.blockPosition())) {
             return Access.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
         }
-        if (player.distanceToSqr(rocket) > RocketManager.MAX_INTERACTION_DISTANCE_SQUARED) {
+        if (player.getVehicle() != rocket
+                && player.distanceToSqr(rocket) > RocketManager.MAX_INTERACTION_DISTANCE_SQUARED) {
             return Access.failure(RocketFlightRequestCode.OUT_OF_RANGE);
         }
         return Access.success(rocket);

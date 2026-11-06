@@ -66,6 +66,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
                     .toList();
 
     private RocketStructureSnapshot snapshot;
+    private final RocketPassengerPlacement passengerPlacement = new RocketPassengerPlacement();
     private UUID assemblyTransactionId;
     private UUID ownerId;
     private RocketFlightData flightData;
@@ -616,7 +617,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 break;
             }
         }
-        RocketPassengerPosition offset = RocketPassengerPosition.forSeat(seat, entityData.get(DISPLAYED_SEAT_CAPACITY));
+        RocketPassengerPosition offset = passengerPlacement.position(this, seat, entityData.get(DISPLAYED_SEAT_CAPACITY));
         move.accept(
                 passenger,
                 getX() + offset.x(),
