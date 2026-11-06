@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentOperat
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
@@ -175,6 +176,44 @@ public final class AtmosphereAnalyzerRoomGameTests {
                     && replies.isEmpty() && !player.getCooldowns().isOnCooldown(item), "Invalid block use had side effects");
             helper.assertTrue(item.useOn(null) == InteractionResult.FAIL, "Null context authorized block use");
         } finally { level.getServer().getPlayerList().remove(player); }
+        helper.succeed();
+    }
+
+    /**
+     * W294 (finding 3-7): outdoors on Venus (9.2 atm, not breathable) the status command names a non-breathable
+     * atmosphere, not {@code VACUUM}; on the Moon (zero pressure) it still says {@code VACUUM} (ADR-066 section 3.1).
+     */
+    @GameTest(template = "empty", batch = "atmosphere_analyzer", timeoutTicks = 40)
+    public static void statusCommandSeparatesVacuumFromANonBreathableAtmosphere(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var cases = List.of(
+                java.util.Map.entry(PlanetaryContent.level(PlanetaryContent.VENUS), "Atmosphere=NON_BREATHABLE_ATMOSPHERE "),
+                java.util.Map.entry(CelestialIds.MOON_LEVEL, "Atmosphere=VACUUM "));
+        for (var expected : cases) {
+            ServerLevel level = server.getLevel(expected.getKey());
+            helper.assertTrue(level != null, "Missing Level " + expected.getKey().location());
+            BlockPos base = helper.absolutePos(new BlockPos(2, 1, 2));
+            BlockPos at = new BlockPos(base.getX(), 200, base.getZ());
+            ChunkPos chunk = new ChunkPos(at);
+            boolean forced = !level.getForcedChunks().contains(chunk.toLong());
+            ServerPlayer player = null;
+            try {
+                if (forced) { level.setChunkForced(chunk.x, chunk.z, true); }
+                level.getChunk(chunk.x, chunk.z); // Bounded fixture setup, never query-side loading.
+                player = ConnectedTestPlayers.join(server, UUID.randomUUID(), "atmosphereStatus", level, at,
+                        new ArrayList<>());
+                helper.assertTrue(AtmosphereRuntime.breathabilityAt(level, player.blockPosition()).orElseThrow()
+                        == BreathabilityState.VACUUM, "The open-air fixture is not an unsupplied, non-breathable cell");
+                var status = new ArrayList<String>();
+                server.getCommands().performPrefixedCommand(player.createCommandSourceStack()
+                        .withSource(ConnectedTestPlayers.capture(status)), "arce atmosphere status");
+                helper.assertTrue(status.stream().anyMatch(line -> line.startsWith(expected.getValue())),
+                        expected.getKey().location() + " status did not start with " + expected.getValue() + ": " + status);
+            } finally {
+                if (player != null) { server.getPlayerList().remove(player); }
+                if (forced) { level.setChunkForced(chunk.x, chunk.z, false); }
+            }
+        }
         helper.succeed();
     }
 
