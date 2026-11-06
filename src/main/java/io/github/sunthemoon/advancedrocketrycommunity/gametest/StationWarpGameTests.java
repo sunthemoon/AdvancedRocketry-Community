@@ -214,14 +214,14 @@ public final class StationWarpGameTests {
             fixture.core(fixture.pad.east(2));
             List<String> owner = fixture.join(fixture.ownerId, "starOwner");
             fixture.look(fixture.ownerId, fixture.pad.east(2));
-            // Cygnus X-1 has no rocket routes; since ADR-063 revision 6 Tau Ceti has (Tau Ceti f and g).
+            // Neither Cygnus X-1 nor Tau Ceti e has an orbit anchor, even though Tau Ceti f and g have routes.
             fixture.run(fixture.ownerId, "arce station warp " + SingularityContent.CYGNUS_X1);
             helper.assertTrue(last(owner).contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
-                    && last(owner).contains("The target's star system has no rocket routes."),
+                    && last(owner).contains("rockets cannot reach or leave the station in that orbit."),
                     "Routeless quote differs: " + last(owner));
             fixture.run(fixture.ownerId, "arce station warp " + StarSystemContent.TAU_CETI_E);
             helper.assertTrue(last(owner).contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
-                    && !last(owner).contains("no rocket routes"),
+                    && last(owner).contains("rockets cannot reach or leave the station in that orbit."),
                     "Interstellar quote differs: " + last(owner));
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             scheduled = true;

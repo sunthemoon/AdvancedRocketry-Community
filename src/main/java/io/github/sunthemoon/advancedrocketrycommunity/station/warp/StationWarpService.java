@@ -28,6 +28,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLoc
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteCooldown;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.route.model.RouteAnchor;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,7 +53,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 public final class StationWarpService {
     private final StationAccessService access = new StationAccessService();
     private final CelestialCatalogManager catalogs;
-    private final Predicate<ResourceLocation> systemHasRoutes;
+    private final Predicate<ResourceLocation> orbitHasRoutes;
     private final Supplier<WarpSettings> settings;
     private final StationWarpCredits credits = new StationWarpCredits();
     private final StationWarpConfirmations confirmations = new StationWarpConfirmations();
@@ -63,36 +64,35 @@ public final class StationWarpService {
     private volatile StationRocketAuthority rocketAuthority = StationRocketAuthority.FAIL_CLOSED;
     private final StationWriteBudget writeBudget;
 
-    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> orbitHasRoutes,
                               Supplier<WarpSettings> settings) {
-        this(catalogs, systemHasRoutes, settings, StationWriteBudget.unbounded());
+        this(catalogs, orbitHasRoutes, settings, StationWriteBudget.unbounded());
     }
 
     /** {@code writeBudget} is shared with station expansion and gravity (review B9). */
-    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> orbitHasRoutes,
                               Supplier<WarpSettings> settings, StationWriteBudget writeBudget) {
-        this(catalogs, systemHasRoutes, settings, writeBudget, new StationNoticeService());
+        this(catalogs, orbitHasRoutes, settings, writeBudget, new StationNoticeService());
     }
 
     /** With the notice service to use; a GameTest passes one whose outcome delivery fails (W22 review F7). */
-    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> orbitHasRoutes,
                               Supplier<WarpSettings> settings, StationWriteBudget writeBudget,
                               StationNoticeService notices) {
         this.writeBudget = Objects.requireNonNull(writeBudget, "writeBudget");
         this.catalogs = Objects.requireNonNull(catalogs, "catalogs");
-        this.systemHasRoutes = Objects.requireNonNull(systemHasRoutes, "systemHasRoutes");
+        this.orbitHasRoutes = Objects.requireNonNull(orbitHasRoutes, "orbitHasRoutes");
         this.settings = Objects.requireNonNull(settings, "settings");
         this.notices = Objects.requireNonNull(notices, "notices");
     }
 
-    /** True when any route of the current planetary catalog touches a body of the given system. */
-    public static Predicate<ResourceLocation> routesInSystem(PlanetaryCatalogManager planetary) {
+    /** True when any current rocket route starts or ends at orbit(body), the station planner's exact anchor. */
+    public static Predicate<ResourceLocation> routesForOrbit(PlanetaryCatalogManager planetary) {
         Objects.requireNonNull(planetary, "planetary");
-        return system -> planetary.capture().map(generation -> {
-            CelestialCatalog celestial = generation.catalog().celestial();
+        return body -> planetary.capture().map(generation -> {
+            RouteAnchor orbit = RouteAnchor.orbit(body);
             return generation.catalog().routes().definitions().stream().anyMatch(route ->
-                    celestial.systemOf(route.from().bodyId()).filter(system::equals).isPresent()
-                            || celestial.systemOf(route.to().bodyId()).filter(system::equals).isPresent());
+                    orbit.equals(route.from()) || orbit.equals(route.to()));
         }).orElse(false);
     }
 
@@ -617,7 +617,7 @@ public final class StationWarpService {
         }
         WarpCostClass costClass = WarpCostClass.of(catalog.orElseThrow(), station.orbitBody(), target);
         int cost = settings.get().cost(costClass);
-        boolean routes = catalog.orElseThrow().systemOf(target).filter(systemHasRoutes).isPresent();
+        boolean routes = orbitHasRoutes.test(target);
         WarpQuote quote = new WarpQuote(actor, station, target, costClass, cost, routes);
         fold(server);
         int balance = data.warpEnergy(station.stationId());
