@@ -775,6 +775,7 @@
   "screen.advancedrocketrycommunity.station_controller.unknown": "unknown",
   "screen.advancedrocketrycommunity.suit.install": "Install",
   "screen.advancedrocketrycommunity.suit.remove_hint": "-: remove; Shift+-: stow",
+  "starmap.advancedrocketrycommunity.route_quote": "%s · Route needs %s fuel",
   "station.advancedrocketrycommunity.code.already_expanded": "The station already uses its largest region.",
   "station.advancedrocketrycommunity.code.altitude_set": "Station orbital distance set.",
   "station.advancedrocketrycommunity.code.altitude_unchanged": "The station already uses that orbital distance.",

@@ -775,6 +775,7 @@
   "screen.advancedrocketrycommunity.station_controller.unknown": "未知",
   "screen.advancedrocketrycommunity.suit.install": "安装",
   "screen.advancedrocketrycommunity.suit.remove_hint": "−：取出；Shift+−：存入背包",
+  "starmap.advancedrocketrycommunity.route_quote": "%s · 航程需要燃料 %s",
   "station.advancedrocketrycommunity.code.already_expanded": "空间站已使用最大区域。",
   "station.advancedrocketrycommunity.code.altitude_set": "空间站轨道距离已设定。",
   "station.advancedrocketrycommunity.code.altitude_unchanged": "空间站已在使用该轨道距离。",
