@@ -423,12 +423,12 @@ What is still open:
   failed with `Packet descent ended before its landing: case=FALL_2_1` in shard 1 of the first attempt of W288's
   integration run 42057329524 (a torch change); the second attempt passed. W262 fixed an earlier failure of this case.
   No fix is queued unless it recurs; it stays open until runs show no recurrence.
-- **Bay exit FIFO GameTest in a local full run (2026-11-06).**
+- **Bay exit FIFO GameTest in local full runs (2026-11-06).**
   `BayPassengerExitGameTests.twoHookBypassesDrainInCaptureOrder` (batch `bay_exit_fifo`) failed once in W309's local
   full run with `Exact first winner changed`: the first safe exit was candidate 29, after 29 probes, where the test
-  expects candidate 5. W309 changes no passenger-exit code, and the test passed in W309's hosted branch run
-  42213632920. The cause is not established; a fixture whose nearer candidates were blocked by leftover or ambient
-  blocks would explain it, as in W304 and W307. No fix is queued unless it recurs; it stays open until runs show no
-  recurrence.
+  expects candidate 5. It failed the same way, at the same place, in both of W300F's local full runs. Neither W309
+  nor W300F changes passenger-exit code, and the test passed in their hosted branch runs and in the shared runs.
+  The cause is not established; a fixture whose nearer candidates are blocked at that placement would explain it,
+  as in W304 and W307. W313 (R361) reproduces and fixes it; it stays open until then.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
