@@ -37,6 +37,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceKey;
@@ -74,6 +75,8 @@ public final class SleepRespawnGameTests {
     private static final BlockPos FAR = new BlockPos(25_000_000, 80, 25_000_000);
     /** Eight cells beyond the last cell the station allocator's spiral can hand out. */
     private static final int STATION_FREE_CELL = lastAllocatableLayer() + 8;
+    /** Cells tried, outward along x from {@link #STATION_FREE_CELL}, before a Space fixture gives up. */
+    private static final int STATION_FREE_CANDIDATES = 8;
     private static final ResourceKey<Level> MISSING_BODY =
             ResourceKey.create(Registries.DIMENSION, ModIdentity.id("w37_missing_body"));
     private static final String RESPAWN_TOKEN = "message." + ModIdentity.MOD_ID + ".planet_respawn.";
@@ -91,13 +94,15 @@ public final class SleepRespawnGameTests {
         try {
             for (ResourceKey<Level> key : List.of(CelestialIds.MOON_LEVEL, CelestialIds.SPACE_LEVEL)) {
                 ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
+                // Station regions are Space Level coordinates, and only Space sleep consults them
+                // (SleepRespawnService.station), so the Moon bed keeps the structure's own column and needs no station
+                // precondition. The Space bed goes to a column that a bounded search finds outside every station.
                 BlockPos head = key == CelestialIds.MOON_LEVEL ? new BlockPos(column.getX(), MOON_Y, column.getZ())
                         : outsideEveryStation(helper, new BlockPos(column.getX(), SPACE_Y, column.getZ()), 3);
                 cleanup.add(placeBedOnPlatform(level, head));
-                Optional<StationState> found = StationRegistrySavedData.get(server).findAt(head.getX(), head.getZ());
-                helper.assertTrue(found.isEmpty(), found.isEmpty() ? "The vacuum fixture lies inside a station"
-                        : "The vacuum fixture lies inside a station: level=" + key.location() + " head=" + head
-                                + " origin=" + helper.absolutePos(BlockPos.ZERO) + " " + stationReport(helper, found.get()));
+                helper.assertTrue(key != CelestialIds.SPACE_LEVEL
+                                || StationRegistrySavedData.get(server).findAt(head.getX(), head.getZ()).isEmpty(),
+                        "The Space vacuum fixture at " + head + " lies inside a station");
                 player.teleportTo(level, head.getX() + 1.5D, head.getY(), head.getZ() + 1.5D, 0.0F, 0.0F);
                 tokens.clear();
                 Either<Player.BedSleepingProblem, Unit> result = player.startSleepInBed(head);
@@ -553,44 +558,58 @@ public final class SleepRespawnGameTests {
     }
 
     /**
-     * The structure's Space column moved along x, keeping its offset inside the station cell, to a cell the station
-     * allocator can never hand out. Earlier tests leave committed stations behind, and vanilla places each structure
-     * after every earlier one, so the structure's own column can lie inside a station, or receive one from a test
-     * that runs alongside (W98: the sealed Space room fell inside a station and sleep was refused). Every column
-     * within {@code radius} is checked to be outside every station.
+     * A Space column outside every station region, found by a bounded search. The structure's column is moved along x,
+     * keeping its offset inside the station cell, to a cell the station allocator can never hand out, then one cell
+     * further out at a time, at most {@link #STATION_FREE_CANDIDATES} cells. A candidate is taken only when every
+     * column within {@code radius} lies outside every committed station and every reservation (which a later commit
+     * turns into a station). Earlier tests leave committed stations behind, and vanilla places each structure after
+     * every earlier one, so the structure's own column can lie inside a station, or receive one from a test that runs
+     * alongside (W98: the sealed Space room fell inside a station and sleep was refused; W315: the same for a Moon
+     * check that compared a Moon column with Space station regions). The registry must also be operational: a blocked
+     * registry answers every lookup with no station, while Space sleep then refuses it as unavailable.
      */
     static BlockPos outsideEveryStation(GameTestHelper helper, BlockPos column, int radius) {
-        long cell = Math.floorDiv((long) column.getX() + StationLimits.GRID_SPACING / 2L, StationLimits.GRID_SPACING);
-        BlockPos moved = column.offset(Math.toIntExact((-STATION_FREE_CELL - cell) * StationLimits.GRID_SPACING), 0, 0);
         StationRegistrySavedData stations = StationRegistrySavedData.get(helper.getLevel().getServer());
+        helper.assertTrue(stations.operational(),
+                "The station registry is not operational, so no Space column is known to lie outside every station");
+        List<StationReservation> reserved = stations.reservations();
+        long cell = Math.floorDiv((long) column.getX() + StationLimits.GRID_SPACING / 2L, StationLimits.GRID_SPACING);
+        List<String> refused = new ArrayList<>();
+        for (int candidate = 0; candidate < STATION_FREE_CANDIDATES; candidate++) {
+            BlockPos moved = column.offset(
+                    Math.toIntExact((-STATION_FREE_CELL - candidate - cell) * StationLimits.GRID_SPACING), 0, 0);
+            Optional<String> blocker = stationNear(stations, reserved, moved, radius);
+            if (blocker.isEmpty()) {
+                return moved;
+            }
+            refused.add(moved + ": " + blocker.get());
+        }
+        throw new GameTestAssertException("No Space column within " + STATION_FREE_CANDIDATES
+                + " cells lies outside every station: " + refused);
+    }
+
+    /** The first committed station or reservation over any column within {@code radius} of {@code center}. */
+    private static Optional<String> stationNear(StationRegistrySavedData stations, List<StationReservation> reserved,
+                                                BlockPos center, int radius) {
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
-                helper.assertTrue(stations.findAt(moved.getX() + dx, moved.getZ() + dz).isEmpty(),
-                        "The Space fixture at " + moved + " lies inside a station");
+                int x = center.getX() + dx;
+                int z = center.getZ() + dz;
+                Optional<StationState> committed = stations.findAt(x, z);
+                if (committed.isPresent()) {
+                    StationState state = committed.get();
+                    return Optional.of("station " + state.stationId() + " '" + state.name() + "' cell=" + state.cell()
+                            + " region=" + state.region() + " created=" + state.createdAtGameTime());
+                }
+                for (StationReservation reservation : reserved) {
+                    if (reservation.region().contains(x, z)) {
+                        return Optional.of("reservation " + reservation.stationId() + " '" + reservation.name()
+                                + "' cell=" + reservation.cell() + " created=" + reservation.createdAtGameTime());
+                    }
+                }
             }
         }
-        return moved;
-    }
-
-    /** Diagnostic text for a station precondition failure: the station found and at most 16 others of each kind. */
-    private static String stationReport(GameTestHelper helper, StationState found) {
-        StationRegistrySavedData stations = StationRegistrySavedData.get(helper.getLevel().getServer());
-        List<StationState> committed = stations.stations();
-        List<StationReservation> reserved = stations.reservations();
-        StringBuilder report = new StringBuilder("gameTime=").append(helper.getLevel().getGameTime())
-                .append(" found=").append(describe(found)).append(" committed=").append(committed.size()).append(" [");
-        committed.stream().limit(16).forEach(state -> report.append(describe(state)).append("; "));
-        report.append("] reserved=").append(reserved.size()).append(" [");
-        reserved.stream().limit(16).forEach(reservation -> report.append(reservation.stationId()).append(" '")
-                .append(reservation.name()).append("' cell=").append(reservation.cell()).append(" created=")
-                .append(reservation.createdAtGameTime()).append("; "));
-        return report.append(']').toString();
-    }
-
-    private static String describe(StationState state) {
-        return state.stationId() + " '" + state.name() + "' owner=" + state.ownerId() + " cell=" + state.cell()
-                + " region=" + state.region() + " created=" + state.createdAtGameTime() + " members="
-                + state.members().size();
+        return Optional.empty();
     }
 
     private static int lastAllocatableLayer() {
