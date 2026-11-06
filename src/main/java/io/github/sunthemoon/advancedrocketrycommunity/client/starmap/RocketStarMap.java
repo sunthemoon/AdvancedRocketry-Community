@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.starmap;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.client.BodyDisplayNames;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -65,6 +65,7 @@ public final class RocketStarMap {
             menu.navigation().stations().stream().filter(s -> s.stationId().equals(station.instanceId())).findFirst()
                     .ifPresent(s -> { selectedBody = s.orbitBody(); selectedStation = s.stationId(); });
         }
+        update();
         focus();
     }
 
@@ -80,11 +81,13 @@ public final class RocketStarMap {
                 viewport = null;
             }
         }
-        if (layout != null && viewport == null) {
-            viewport = new StarMapViewport(layout, x + 10, y + 44, width - 20, mapHeight);
+        if (layout != null) {
             if (layout.nodes().stream().noneMatch(node -> node.id().equals(selectedBody))) {
                 selectedBody = layout.nodes().isEmpty() ? null : layout.nodes().get(0).id();
             }
+        }
+        if (layout != null && viewport == null) {
+            viewport = new StarMapViewport(layout, x + 10, y + 44, width - 20, mapHeight);
             focus();
         }
         stations = menu.navigation().stations().stream().filter(station -> station.orbitBody().equals(selectedBody)).toList();
@@ -136,7 +139,7 @@ public final class RocketStarMap {
         var entry = entry();
         int detailY = y + 50 + mapHeight;
         if (entry != null) {
-            line(graphics, font, bodyLabel(selectedBody).copy().append(" / " + selectedBody), x + 12, detailY, width - 24, 0xFFE7F0F2);
+            line(graphics, font, bodyLabel(selectedBody), x + 12, detailY, width - 24, 0xFFE7F0F2);
             line(graphics, font, Component.translatable("starmap.advancedrocketrycommunity.gravity_temperature",
                     number(entry.gravityMultiplier()), number(entry.temperatureKelvin())), x + 12, detailY + 11, width - 24, 0xFF91A6AC);
             line(graphics, font, Component.translatable("starmap.advancedrocketrycommunity.atmosphere",
@@ -225,7 +228,6 @@ public final class RocketStarMap {
 
     public static Component text(String suffix) { return Component.translatable("starmap.advancedrocketrycommunity." + suffix); }
     public static Component bodyLabel(ResourceLocation id) {
-        String key = "body." + id.getNamespace() + "." + id.getPath().replace('/', '.');
-        return I18n.exists(key) ? Component.translatable(key) : Component.literal(id.toString());
+        return BodyDisplayNames.bodyName(id.toString());
     }
 }

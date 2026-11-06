@@ -80,11 +80,16 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
         var kind = menu.previewKind();
         Component kindText = kind.map(value -> Component.translatable("satellite_kind.advancedrocketrycommunity." + value.id()))
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite_builder.no_kind"));
-        text.draw(graphics, font, kindText, 12, 80, 180, TEXT);
-        SatelliteStats stats = menu.previewStats().orElse(null);
-        if (stats != null) {
-            text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.satellite_builder.stats",
-                    stats.power(), stats.battery(), stats.data(), stats.cargo(), stats.rating()), 12, 91, 202, MUTED);
+        if (kind.isEmpty()) {
+            text.wrapped(graphics, font, kindText, 12, SatelliteScreenLayout.BUILDER_HINT_Y,
+                    SatelliteScreenLayout.BUILDER_HINT_WIDTH, SatelliteScreenLayout.BUILDER_HINT_ROWS, TEXT);
+        } else {
+            text.draw(graphics, font, kindText, 12, 80, 180, TEXT);
+            SatelliteStats stats = menu.previewStats().orElse(null);
+            if (stats != null) {
+                text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.satellite_builder.stats",
+                        stats.power(), stats.battery(), stats.data(), stats.cargo(), stats.rating()), 12, 91, 202, MUTED);
+            }
         }
         SatelliteOperationCode code = SatelliteScreenLabels.builderStatus(menu.status(), preview);
         int color = code == SatelliteOperationCode.SUCCESS ? GREEN : RED;

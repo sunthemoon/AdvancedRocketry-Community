@@ -92,9 +92,7 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             for (EndgameDeviceView.Line line : view.get().lines()) {
-                Component value = line.translated() ? Component.translatable(line.value())
-                        : Component.literal(line.value());
-                lines.add(Component.translatable(line.label()).append(": ").append(value));
+                lines.add(EndgameViewText.line(line));
             }
             if (!lines.isEmpty()) {
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);

@@ -6,6 +6,7 @@ import java.util.Map;
 public final class V180ScreenLayoutLanguage {
     public static Map<String, String> entries(boolean chinese) {
         return Map.of(
+                "black_hole_fuel.advancedrocketrycommunity.default", chinese ? "标准黑洞燃料" : "Standard black-hole fuel",
                 "screen.advancedrocketrycommunity.satellite.launch_short", chinese ? "发射" : "Launch",
                 "screen.advancedrocketrycommunity.satellite.power_short", chinese ? "电量 %s FE" : "Power %s FE",
                 "screen.advancedrocketrycommunity.satellite_builder.ready", chinese ? "组装机就绪" : "Builder ready",
