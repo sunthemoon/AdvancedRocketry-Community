@@ -24,6 +24,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridC
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
@@ -93,8 +94,10 @@ public final class SleepRespawnGameTests {
                 BlockPos head = key == CelestialIds.MOON_LEVEL ? new BlockPos(column.getX(), MOON_Y, column.getZ())
                         : outsideEveryStation(helper, new BlockPos(column.getX(), SPACE_Y, column.getZ()), 3);
                 cleanup.add(placeBedOnPlatform(level, head));
-                helper.assertTrue(StationRegistrySavedData.get(server).findAt(head.getX(), head.getZ()).isEmpty(),
-                        "The vacuum fixture lies inside a station");
+                Optional<StationState> found = StationRegistrySavedData.get(server).findAt(head.getX(), head.getZ());
+                helper.assertTrue(found.isEmpty(), found.isEmpty() ? "The vacuum fixture lies inside a station"
+                        : "The vacuum fixture lies inside a station: level=" + key.location() + " head=" + head
+                                + " origin=" + helper.absolutePos(BlockPos.ZERO) + " " + stationReport(helper, found.get()));
                 player.teleportTo(level, head.getX() + 1.5D, head.getY(), head.getZ() + 1.5D, 0.0F, 0.0F);
                 tokens.clear();
                 Either<Player.BedSleepingProblem, Unit> result = player.startSleepInBed(head);
@@ -567,6 +570,27 @@ public final class SleepRespawnGameTests {
             }
         }
         return moved;
+    }
+
+    /** Diagnostic text for a station precondition failure: the station found and at most 16 others of each kind. */
+    private static String stationReport(GameTestHelper helper, StationState found) {
+        StationRegistrySavedData stations = StationRegistrySavedData.get(helper.getLevel().getServer());
+        List<StationState> committed = stations.stations();
+        List<StationReservation> reserved = stations.reservations();
+        StringBuilder report = new StringBuilder("gameTime=").append(helper.getLevel().getGameTime())
+                .append(" found=").append(describe(found)).append(" committed=").append(committed.size()).append(" [");
+        committed.stream().limit(16).forEach(state -> report.append(describe(state)).append("; "));
+        report.append("] reserved=").append(reserved.size()).append(" [");
+        reserved.stream().limit(16).forEach(reservation -> report.append(reservation.stationId()).append(" '")
+                .append(reservation.name()).append("' cell=").append(reservation.cell()).append(" created=")
+                .append(reservation.createdAtGameTime()).append("; "));
+        return report.append(']').toString();
+    }
+
+    private static String describe(StationState state) {
+        return state.stationId() + " '" + state.name() + "' owner=" + state.ownerId() + " cell=" + state.cell()
+                + " region=" + state.region() + " created=" + state.createdAtGameTime() + " members="
+                + state.members().size();
     }
 
     private static int lastAllocatableLayer() {
