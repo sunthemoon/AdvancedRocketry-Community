@@ -1136,11 +1136,12 @@
         "station_warp_rejections": 1,
         "station_warp_repriced": 1,
         "station_warp_serial": 2,
+        "station_warp_space": 2,
         "station_warp_target_removed": 1,
         "tau_ceti_path": 1
       },
-      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests, StationNoticeGameTests",
-      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding). StationNoticeGameTests deletes one charged station after its warp in each of the delivery, login and notice-failure tests."
+      "test": "StationWarpGameTests, StationWarpAbortGameTests, StationWarpSpaceGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests, StationNoticeGameTests",
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding). StationNoticeGameTests deletes one charged station after its warp in each of the delivery, login and notice-failure tests. StationWarpSpaceGameTests (W308) deletes the Earth-orbit station whose Space request was refused and the station that warped out of the Space body's orbit."
     },
     {
       "id": "station-notices-refused",
