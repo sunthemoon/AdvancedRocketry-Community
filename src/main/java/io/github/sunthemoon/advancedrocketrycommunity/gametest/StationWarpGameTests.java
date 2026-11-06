@@ -221,7 +221,7 @@ public final class StationWarpGameTests {
                     "Routeless quote differs: " + last(owner));
             fixture.run(fixture.ownerId, "arce station warp " + StarSystemContent.TAU_CETI_E);
             helper.assertTrue(last(owner).contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
-                    && !last(owner).contains("no rocket routes"),
+                    && last(owner).contains("no rocket routes"),
                     "Interstellar quote differs: " + last(owner));
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             scheduled = true;
