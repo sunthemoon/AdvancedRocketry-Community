@@ -47,8 +47,10 @@ public final class SatelliteBayScreen extends AbstractContainerScreen<SatelliteB
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, 0xFF2A3440, 0xFF161D26);
         graphics.renderOutline(x, y, imageWidth, imageHeight, 0xFF9AA9B8);
         // The bay hatch around its one slot.
-        graphics.fill(x + 70, y + 25, x + 106, y + 61, 0xFF0E141B);
-        graphics.renderOutline(x + 70, y + 25, 36, 36, 0xFFE0A64A);
+        graphics.fill(x + 70, y + SatelliteScreenLayout.BAY_HATCH_Y,
+                x + 106, y + SatelliteScreenLayout.BAY_HATCH_BOTTOM, 0xFF0E141B);
+        graphics.renderOutline(x + 70, y + SatelliteScreenLayout.BAY_HATCH_Y, 36,
+                SatelliteScreenLayout.BAY_HATCH_BOTTOM - SatelliteScreenLayout.BAY_HATCH_Y, 0xFFE0A64A);
         graphics.fill(x + 79, y + 34, x + 97, y + 52, 0xFF3A4654);
         ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF7B8E9F, 0xFF1B2633);
     }
@@ -61,6 +63,6 @@ public final class SatelliteBayScreen extends AbstractContainerScreen<SatelliteB
         Component phase = Component.translatable(PREFIX + "phase", Component.translatable(view.phase().translationKey()));
         text.draw(graphics, font, phase, 8, 63, 160, 0xFFACC5D7);
         Component reason = Component.translatable(view.reason().translationKey());
-        text.draw(graphics, font, reason, 8, 18, 160, 0xFFF2C46E);
+        text.draw(graphics, font, reason, 8, SatelliteScreenLayout.BAY_NOTICE_Y, 160, 0xFFF2C46E);
     }
 }

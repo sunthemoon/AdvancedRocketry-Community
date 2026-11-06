@@ -62,9 +62,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
             lines.add(Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
                     Component.translatable(view.get().status().translationKey()), view.get().status().name()));
             for (EndgameDeviceView.Line line : view.get().lines()) {
-                Component value = line.translated() ? Component.translatable(line.value())
-                        : Component.literal(line.value());
-                lines.add(Component.translatable(line.label()).append(": ").append(value));
+                lines.add(EndgameViewText.line(line));
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
         }
