@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketSeatRosterGameTests.replaceField;
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketSourceRetirementFixtures.field;
 
-/** W300 review regressions. Journal replacement has its own batch and is restored on every exit. */
+/** W300 review regressions. The fenced journal record has its own batch and is removed on every exit. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketSeatReviewGameTests {
@@ -66,7 +67,7 @@ public final class RocketSeatReviewGameTests {
         private final Mode mode;
         private RocketSeatRosterGameTests.Fixture f;
         private RocketEntity copy;
-        private RocketTransferSavedData previousJournal, blockedJournal;
+        private RocketTransferSavedData fencedJournal, blockedJournal;
         private Object previousBlocked;
         private Map<UUID, String> fenceReasons;
         private Map<UUID, Long> fenceAttempts;
@@ -119,8 +120,10 @@ public final class RocketSeatReviewGameTests {
         }
         private void beginFence() {
             var server = helper.getLevel().getServer();
-            previousJournal = RocketTransferSavedData.get(server);
-            server.overworld().getDataStorage().set(RocketTransferSavedData.DATA_NAME, f.journal);
+            // Keep the world's journal and first-event outbox intact; replacing the root simulates rollback.
+            fencedJournal = RocketTransferSavedData.get(server);
+            fencedJournal.put(f.record);
+            RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var recovery = RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers());
             var fences = field(recovery, "fences");
             fenceReasons = field(fences, "reasons"); fenceAttempts = field(fences, "attempts");
@@ -128,17 +131,21 @@ public final class RocketSeatReviewGameTests {
             fenceReasons.put(f.record.transferId(), "MATCH_LIMIT");
             fenceAttempts.put(f.record.transferId(), (long) server.getTickCount());
             helper.assertTrue(RocketSeatRelease.mutationAllowed(f.rocket, f.playerId), "Fence control was already mutation-held");
-            recovery.onPlayerLoggedIn(f.player, f.journal);
+            recovery.onPlayerLoggedIn(f.player, fencedJournal);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerReconnectQueue reconnects = field(recovery, "reconnects");
             helper.assertTrue(!reconnects.pending(f.playerId) && !f.player.isPassenger()
                     && "MATCH_LIMIT".equals(fenceReasons.get(f.record.transferId())), "Fenced login did not skip seating");
         }
         private void endFence() {
-            if (fenceReasons == null) { return; }
-            fenceReasons.remove(f.record.transferId()); fenceAttempts.remove(f.record.transferId());
-            fenceReasons = null; fenceAttempts = null;
-            helper.getLevel().getServer().overworld().getDataStorage().set(RocketTransferSavedData.DATA_NAME, previousJournal);
-            previousJournal = null;
+            if (fenceReasons != null) {
+                fenceReasons.remove(f.record.transferId()); fenceAttempts.remove(f.record.transferId());
+                fenceReasons = null; fenceAttempts = null;
+            }
+            if (fencedJournal != null) {
+                fencedJournal.remove(f.record.transferId());
+                RocketJournalGameTestSupport.acknowledgeFixture(helper);
+                fencedJournal = null;
+            }
         }
         private void tick() {
             if (closed) { return; }
