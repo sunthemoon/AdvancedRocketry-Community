@@ -191,6 +191,9 @@ public final class RocketSeatReviewGameTests {
                 if (age >= releaseAt + 41) {
                     helper.assertTrue(!assigned(), mode + ": online absence was not released after grace");
                     if (mode == Mode.RECORDLESS) {
+                        f.player.teleportTo(helper.getLevel(), f.rocket.getX() + 2, f.rocket.getY(), f.rocket.getZ(), 0, 0);
+                        f.player.containerMenu = new io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu(
+                                1, f.player.getInventory(), f.rocket);
                         RocketRuntime.requestFlightIntent(f.player, f.rocket.getId(), RocketFlightAction.BOARD,
                                 io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination.MOON, UUID.randomUUID());
                         helper.assertTrue(f.player.getVehicle() == f.rocket && assigned(), "Recordless player could not BOARD again");
