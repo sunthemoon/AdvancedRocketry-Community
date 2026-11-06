@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal;
 
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.world.inventory.ContainerData;
 
@@ -19,7 +23,7 @@ final class SatelliteTerminalMenuData implements ContainerData {
         return switch (index) {
             case 0 -> terminal.energyStored();
             case 1 -> SatelliteTerminalBlockEntity.ENERGY_CAPACITY;
-            case 2 -> terminal.lastResultId();
+            case 2 -> status();
             case 3 -> terminal.selectedTargetIndex();
             case 4 -> terminal.missionDurationSeconds();
             case 5 -> terminal.researchBalanceLow(viewerId);
@@ -31,6 +35,21 @@ final class SatelliteTerminalMenuData implements ContainerData {
             case 11 -> targets.indexOf(terminal.selectedDefinition());
             default -> 0;
         };
+    }
+
+    private int status() {
+        int result = terminal.lastResultId();
+        if (result != SatelliteOperationCode.PENDING_DISCOVERY.ordinal() || terminal.getLevel() == null
+                || terminal.getLevel().getServer() == null) { return result; }
+        return displayResult(result, terminal.chipIdentity().flatMap(identity ->
+                SatelliteRuntime.satellite(terminal.getLevel().getServer(), identity.satelliteId())));
+    }
+
+    /** Discovery completion clears the satellite's current mission; an absent/held registry is not success. */
+    static int displayResult(int result, Optional<SatelliteState> satellite) {
+        return result == SatelliteOperationCode.PENDING_DISCOVERY.ordinal()
+                && satellite.filter(state -> state.currentMissionId().isEmpty()).isPresent()
+                ? SatelliteOperationCode.SUCCESS.ordinal() : result;
     }
 
     @Override

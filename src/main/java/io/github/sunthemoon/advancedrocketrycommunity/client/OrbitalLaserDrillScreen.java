@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<OrbitalLaserDrillMenu> {
     private final ScreenText text = new ScreenText();
+    private final ScrollableTooltip details = new ScrollableTooltip();
     private static final int PANEL_TOP = 0xFF1B1F2A;
     private static final int PANEL_BOTTOM = 0xFF0D1016;
     private static final int EDGE = 0xFF7FD3FF;
@@ -57,11 +58,11 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_TARGET_NEXT,
                 "screen.advancedrocketrycommunity.orbital_laser_drill.next", 26, 92, 16));
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_LINK,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.link", 44, 92, 38));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.link", 44, 92, 32));
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_UNLINK,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.unlink", 84, 92, 40));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.unlink", 78, 92, 38));
         addRenderableWidget(button(OrbitalLaserDrillMenu.BUTTON_CONFIRM,
-                "screen.advancedrocketrycommunity.orbital_laser_drill.confirm", 126, 92, 42));
+                "screen.advancedrocketrycommunity.orbital_laser_drill.confirm", 118, 92, 50));
     }
 
     private Button button(int id, String key, int x, int y, int width) {
@@ -82,6 +83,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         text.clear();
+        details.beginFrame();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -93,7 +95,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             lines.add(statusLine(view.get().status()));
-            if (view.get().lastStop() != EndgameCode.OK) {
+            if (EndgameScreenLabels.showLastStop(view.get().status(), view.get().lastStop())) {
                 lines.add(Component.translatable("screen.advancedrocketrycommunity.orbital_laser_drill.last_stop",
                         statusLine(view.get().lastStop())));
             }
@@ -104,12 +106,17 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
                 lines.add(Component.translatable(line.label()).append(": ").append(value));
             }
             if (!lines.isEmpty()) {
-                graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+                details.render(graphics, font, lines, mouseX, mouseY);
             }
         }
         if (!isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        return details.scroll(delta) || super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
@@ -121,21 +128,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
         graphics.fill(x + 8, y + 18, x + 18, y + 68, RECESS);
         int height = (int) Math.min(50L, (long) menu.energyStored() * 50L / LaserDrillStorage.ENERGY_CAPACITY);
         graphics.fill(x + 8, y + 68 - height, x + 18, y + 68, BEAM);
-        slot(graphics, x + 25, y + 35);
-        for (int slot = 0; slot < LaserDrillStorage.OUTPUT_SLOTS; slot++) {
-            slot(graphics, x + 61 + (slot % 6) * 18, y + 17 + (slot / 6) * 18);
-        }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 139 + row * 18 : 197);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
-    }
-
-    private static void slot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, RECESS);
-        graphics.renderOutline(x, y, 18, 18, 0xFF2E4A60);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF52738B, RECESS);
     }
 
     @Override
@@ -147,12 +140,8 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
             return;
         }
         EndgameCode status = view.get().status();
-        text.draw(graphics, font, statusLine(status), 8, 109, 160, status == EndgameCode.OK ? BEAM : WARNING);
-        if (view.get().lastStop() != EndgameCode.OK && view.get().lastStop() != status) {
-            text.draw(graphics, font, Component.translatable(
-                    "screen.advancedrocketrycommunity.orbital_laser_drill.last_stop",
-                    statusLine(view.get().lastStop())), 8, 119, 160, MUTED);
-        }
+        text.wrapped(graphics, font, statusLine(status), 8, 109, 160, 2,
+                status == EndgameCode.OK ? BEAM : WARNING);
     }
 
     /** The translated status with its stable code, never colour alone (ADR-054 section 4). */

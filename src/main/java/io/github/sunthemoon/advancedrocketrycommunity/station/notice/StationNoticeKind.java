@@ -85,7 +85,7 @@ public enum StationNoticeKind {
     public enum Role {
         /** The station name, under the station record's own rule; shown as literal text. */
         TEXT,
-        /** A canonical body ResourceLocation; shown as literal text. */
+        /** A canonical body ResourceLocation; shown through its body translation key with an ID fallback. */
         BODY,
         /** A canonical non-negative int; shown as literal text. */
         NUMBER,
