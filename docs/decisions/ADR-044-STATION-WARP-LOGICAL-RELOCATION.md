@@ -207,6 +207,22 @@ backup discards all balances.
 - **Evacuation.** A station whose orbit body is unavailable may warp to any valid
   target at interstellar cost.
 
+### W308 implementation note: the shared Space body is not a warp target (Root, 2026-11-06, R356)
+
+This section offers a target that is present, orbitable, known and not the current orbit. The shared Space body
+(`advancedrocketrycommunity:space`) is orbitable only by ADR-031's legacy default, and ADR-031 keeps shared Space a
+world host; by section 1, every system is a label over that same Level. W308 warped a station there through the warp
+controller. The record, the charge and the checked write were correct, but:
+
+- no rocket route reaches or leaves an orbit of the Space body;
+- the satellite bay refuses it as a source, and the orbital laser has no table for it;
+- the sky showed the Space body as a planet below the station.
+
+The warp controller's list and the quote behind every request, confirmation and commit therefore exclude the Space
+body (`WarpTargetRule`) and refuse it with `WARP_TARGET_UNAVAILABLE`. A station that already orbits it keeps its
+record and may warp away, as the evacuation rule allows. Nothing persisted changes, and the relocation decision, the
+schema and the checked commit are unchanged. Evidence: [W308](../work/v1.8.0-root-queue/records/W308.md).
+
 ## 5. Rockets and passengers
 
 - **Passengers** stay in place and see the new context. There is no teleport.

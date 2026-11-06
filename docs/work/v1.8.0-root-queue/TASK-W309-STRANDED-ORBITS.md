@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-06. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w309`, branch `codex/v1.8.0-w309`, created by Root on W308's integration commit `15fa195a1` with this TASK merged in |
 | Decision | Root decision R357 (QUEUE row W309) |
-| Background | W308 (record `records/W308.md`, section 6): the shared Space body is no warp target any more (`WarpTargetRule`), but `/arce station create` still accepts it, because `StationManager` checks only `orbitable`. Separately, no rocket route anchors an orbit of Tau Ceti e (an orbit-only body by ADR-043), so a station warped there strands its docked rockets, and the quote does not warn, because the warning (`WarpQuote.targetSystemHasRoutes`, filled by `StationWarpService.routesInSystem`) asks whether any route touches the target's star system |
+| Background | [W308](records/W308.md) (section 6): the shared Space body is no warp target any more (`WarpTargetRule`), but `/arce station create` still accepts it, because `StationManager` checks only `orbitable`. Separately, no rocket route anchors an orbit of Tau Ceti e (an orbit-only body by ADR-043), so a station warped there strands its docked rockets, and the quote does not warn, because the warning (`WarpQuote.targetSystemHasRoutes`, filled by `StationWarpService.routesInSystem`) asks whether any route touches the target's star system |
 | Record | `docs/work/v1.8.0-root-queue/records/W309.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W309/` |
 
 ## What to do
