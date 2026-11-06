@@ -154,9 +154,9 @@ public final class StationWarpService {
     }
 
     /**
-     * The bodies a {@code warp_controller} screen offers: present, orbitable and known, not the current orbit,
-     * sorted by ID and at most {@code limit}. A screen sends only an index into this server list; every request
-     * is still quoted and checked in full.
+     * The bodies a {@code warp_controller} screen offers: present, offered by {@link WarpTargetRule} (orbitable, not the
+     * shared Space body) and known, not the current orbit, sorted by ID and at most {@code limit}. A screen sends only
+     * an index into this server list; every request is still quoted and checked in full.
      */
     public java.util.List<ResourceLocation> warpTargets(MinecraftServer server, StationState station, int limit) {
         Objects.requireNonNull(server, "server");
@@ -167,7 +167,7 @@ public final class StationWarpService {
         }
         CelestialSavedData discoveries = CelestialSavedData.get(server);
         return catalog.orElseThrow().definitions().stream()
-                .filter(body -> body.capabilities().orbitable() && !body.id().equals(station.orbitBody()))
+                .filter(body -> WarpTargetRule.offered(body) && !body.id().equals(station.orbitBody()))
                 .map(CelestialBodyDefinition::id)
                 .filter(id -> StarSystemKnowledge.bodyKnown(catalog.orElseThrow(), id,
                         known -> discoveries.isWritableSchema() && discoveries.get(known).isPresent()))
@@ -575,8 +575,8 @@ public final class StationWarpService {
     }
 
     /**
-     * Server-side quote for the station's current state: target present, orbitable, known and not the
-     * current orbit; not cooling down or counting down; balance (after a fold) covering the cost; and
+     * Server-side quote for the station's current state: target present, offered by {@link WarpTargetRule}, known
+     * and not the current orbit; not cooling down or counting down; balance (after a fold) covering the cost; and
      * no rocket that can still move in the region.
      */
     private Quoted quote(MinecraftServer server, StationRegistrySavedData data, StationState station,
@@ -604,7 +604,7 @@ public final class StationWarpService {
             return Quoted.failed(StationManagementCode.WARP_CATALOG_UNAVAILABLE);
         }
         Optional<CelestialBodyDefinition> body = catalog.orElseThrow().get(target);
-        if (body.isEmpty() || !body.orElseThrow().capabilities().orbitable()) {
+        if (body.isEmpty() || !WarpTargetRule.offered(body.orElseThrow())) {
             return Quoted.failed(StationManagementCode.WARP_TARGET_UNAVAILABLE);
         }
         CelestialSavedData discoveries = CelestialSavedData.get(server);
