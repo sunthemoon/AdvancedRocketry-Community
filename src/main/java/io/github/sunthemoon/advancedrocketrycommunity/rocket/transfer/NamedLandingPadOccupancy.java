@@ -54,14 +54,19 @@ final class NamedLandingPadOccupancy {
         });
         if (refusal[0] != null) {
             // The search spans the whole station, so name what refused it for operators (W13F review N3).
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_PAD_OCCUPANCY_REFUSED reason={} level={} arrival={},{},{} rocket={}"
-                            + " rocket_pos={} snapshot={} inspected={}", refusal[0] == OCCUPIED ? "occupied" : "entity_budget",
-                    level.dimension().location(), arrival.minimum().x(), arrival.minimum().y(), arrival.minimum().z(),
-                    blocker[0] == null ? "none" : blocker[0].getUUID(),
-                    blocker[0] == null ? "none" : blocker[0].blockPosition().toShortString(),
-                    blocker[0] == null ? "none" : blocker[0].snapshot().isPresent() ? "readable" : "unreadable", inspected[0]);
+            logRefusal(level, arrival, refusal[0], blocker[0], inspected[0]);
         }
         return refusal[0];
+    }
+
+    /** The operator line of a refused arrival; also used by the fixed-pad selector's entity-box check (W311). */
+    static void logRefusal(ServerLevel level, RocketRegion arrival, String refusal, RocketEntity blocker, int inspected) {
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_PAD_OCCUPANCY_REFUSED reason={} level={} arrival={},{},{} rocket={}"
+                        + " rocket_pos={} snapshot={} inspected={}", OCCUPIED.equals(refusal) ? "occupied" : "entity_budget",
+                level.dimension().location(), arrival.minimum().x(), arrival.minimum().y(), arrival.minimum().z(),
+                blocker == null ? "none" : blocker.getUUID(),
+                blocker == null ? "none" : blocker.blockPosition().toShortString(),
+                blocker == null ? "none" : blocker.snapshot().isPresent() ? "readable" : "unreadable", inspected);
     }
 
     static AABB discoveryBox(RocketRegion arrival, StationRegion station, int minimumY, int maximumY) {
