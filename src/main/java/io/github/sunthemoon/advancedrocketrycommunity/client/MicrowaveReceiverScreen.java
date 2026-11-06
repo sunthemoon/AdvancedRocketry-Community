@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Community-authored receiver panel: four chip slots with their link state, the buffer and the output rate. */
 public final class MicrowaveReceiverScreen extends AbstractContainerScreen<MicrowaveReceiverMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF2A2412;
     private static final int PANEL_BOTTOM = 0xFF15120A;
     private static final int EDGE = 0xFFE0B04A;
@@ -28,9 +29,11 @@ public final class MicrowaveReceiverScreen extends AbstractContainerScreen<Micro
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         for (int slot = 0; slot < MicrowaveReceiverBlockEntity.SLOT_COUNT; slot++) {
             if (isHovering(44 + slot * 24, 50, 16, 4, mouseX, mouseY)) {
                 graphics.renderTooltip(font, Component.translatable(statusKey(menu.status(slot))), mouseX, mouseY);
@@ -53,24 +56,17 @@ public final class MicrowaveReceiverScreen extends AbstractContainerScreen<Micro
         graphics.fill(x + 8, y + 68 - height, x + 18, y + 68, GOLD);
         for (int slot = 0; slot < MicrowaveReceiverBlockEntity.SLOT_COUNT; slot++) {
             int slotX = x + 43 + slot * 24;
-            graphics.fill(slotX, y + 29, slotX + 18, y + 47, RECESS);
-            graphics.renderOutline(slotX, y + 29, 18, 18, 0xFF6B5A2E);
             graphics.fill(slotX + 1, y + 50, slotX + 17, y + 54, statusColor(menu.status(slot)));
         }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 83 + row * 18 : 141);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF9A854F, RECESS);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
-        graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.microwave_receiver.output",
-                String.format(Locale.ROOT, "%,d", menu.output())), 44, 60, GOLD, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, MUTED);
+        text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.microwave_receiver.output",
+                String.format(Locale.ROOT, "%,d", menu.output())), 44, 60, 124, GOLD);
     }
 
     private static int statusColor(SolarLinks.LinkStatus status) {

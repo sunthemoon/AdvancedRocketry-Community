@@ -33,7 +33,7 @@ public final class AtmosphereCommands {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = player.serverLevel();
         BlockPos position = player.blockPosition();
-        BreathabilityState state = atmosphere.breathabilityAt(level, position);
+        String state = label(atmosphere.breathabilityAt(level, position), atmosphere.profileVacuum(level.dimension()));
         AtmosphereLevelMetrics metrics = atmosphere.metrics(level.dimension())
                 .orElse(new AtmosphereLevelMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0L, 0L, 0L));
         source.sendSuccess(() -> Component.literal(
@@ -48,6 +48,19 @@ public final class AtmosphereCommands {
                         + " inspections=" + metrics.lastTickInspections()
         ), false);
         return metrics.activeProviders();
+    }
+
+    /**
+     * ADR-066 section 3.1's names for the cell: the internal state calls every non-breathable cell {@code VACUUM}, but
+     * that name is only for zero ambient pressure; a non-breathable atmosphere with pressure (Venus, Tau Ceti g) is
+     * {@code NON_BREATHABLE_ATMOSPHERE}, as the analyzer and the detector already distinguish (W294, finding 3-7).
+     */
+    static String label(BreathabilityState state, boolean ambientVacuum) {
+        return switch (state) {
+            case BREATHABLE -> "BREATHABLE";
+            case PENDING -> "PENDING";
+            case VACUUM -> ambientVacuum ? "VACUUM" : "NON_BREATHABLE_ATMOSPHERE";
+        };
     }
 
     private int rescan(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

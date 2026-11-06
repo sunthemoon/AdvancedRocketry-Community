@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameIntentGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.network.EndgameDeviceView;
@@ -22,6 +21,7 @@ import net.minecraft.world.entity.player.Inventory;
  * the device view (hover for the pair state, the far end, settings and counts), so no state is shown by colour alone.
  */
 public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF1B1F2A;
     private static final int PANEL_BOTTOM = 0xFF0D1016;
     private static final int EDGE = 0xFF7FD3FF;
@@ -62,12 +62,12 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
     }
 
     private Button button(int id, String key, int x, int y, int width) {
-        return Button.builder(Component.translatable(key),
+        return ScreenText.fitButton(Button.builder(Component.translatable(key),
                 ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
                     }
-                }).bounds(leftPos + x, topPos + y, width, 14).build();
+                }).bounds(leftPos + x, topPos + y, width, 14).build(), font);
     }
 
     @Override
@@ -78,13 +78,16 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
-        if (isHovering(152, 18, 16, 50, mouseX, mouseY)) {
+        if (isHovering(CargoScreenLayout.ENERGY_X, CargoScreenLayout.ENERGY_Y,
+                CargoScreenLayout.ENERGY_WIDTH, CargoScreenLayout.ENERGY_HEIGHT, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.translatable("tooltip.advancedrocketrycommunity.energy",
                     menu.energyStored(), ElevatorEndpointBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
@@ -105,43 +108,31 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
         int y = topPos;
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, PANEL_TOP, PANEL_BOTTOM);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
-        graphics.fill(x + 152, y + 18, x + 168, y + 68, RECESS);
-        int height = (int) Math.min(50L, (long) menu.energyStored() * 50L / ElevatorEndpointBlockEntity.ENERGY_CAPACITY);
-        graphics.fill(x + 152, y + 68 - height, x + 168, y + 68, CHARGE);
-        for (int slot = 0; slot < CargoStorage.INPUT_SLOTS; slot++) {
-            slot(graphics, x + 7 + slot * 18, y + 17);
-        }
-        for (int slot = 0; slot < CargoStorage.RECEIVE_SLOTS; slot++) {
-            slot(graphics, x + 7 + slot * 18, y + 53);
-        }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 139 + row * 18 : 197);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
-    }
-
-    private static void slot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, RECESS);
-        graphics.renderOutline(x, y, 18, 18, 0xFF2E4A60);
+        graphics.fill(x + CargoScreenLayout.ENERGY_X, y + CargoScreenLayout.ENERGY_Y,
+                x + CargoScreenLayout.ENERGY_X + CargoScreenLayout.ENERGY_WIDTH,
+                y + CargoScreenLayout.ENERGY_BOTTOM, RECESS);
+        int height = CargoScreenLayout.fill(menu.energyStored(), ElevatorEndpointBlockEntity.ENERGY_CAPACITY);
+        graphics.fill(x + CargoScreenLayout.ENERGY_X, y + CargoScreenLayout.ENERGY_BOTTOM - height,
+                x + CargoScreenLayout.ENERGY_X + CargoScreenLayout.ENERGY_WIDTH,
+                y + CargoScreenLayout.ENERGY_BOTTOM, CHARGE);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF52738B, RECESS);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.elevator.received"), 8, 44,
-                MUTED, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, TEXT);
+        text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.elevator.received"), 8, 44,
+                140, MUTED);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, MUTED);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isEmpty()) {
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, statusLine(status), 8, 110, status == EndgameCode.OK ? CHARGE : WARNING, false);
+        text.draw(graphics, font, statusLine(status), 8, 110, 160, status == EndgameCode.OK ? CHARGE : WARNING);
         if (view.get().lastStop() != EndgameCode.OK && view.get().lastStop() != status) {
-            graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.elevator.last",
-                    statusLine(view.get().lastStop())), 8, 120, MUTED, false);
+            text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.elevator.last",
+                    statusLine(view.get().lastStop())), 8, 120, 160, MUTED);
         }
     }
 

@@ -90,6 +90,14 @@ public final class AtmosphereManager {
         return resolveEnvironment(levelKey).breathable();
     }
 
+    /**
+     * Catalog-only: whether the Level's ambient profile has zero pressure, which separates ADR-066's {@code VACUUM}
+     * from a non-breathable atmosphere. The Space Level uses its own profile, never an orbited body's (ADR-066 3.1).
+     */
+    public boolean profileVacuum(ResourceKey<Level> levelKey) {
+        return resolveEnvironment(levelKey).vacuum();
+    }
+
     public EnvironmentalConditions surfaceExposure(ServerLevel level) {
         return environments.surfaceExposure(level.dimension());
     }
