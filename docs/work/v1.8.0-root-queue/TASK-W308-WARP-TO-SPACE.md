@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-06. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w308`, branch `codex/v1.8.0-w308`, created by Root from the shared head |
 | Decision | Root decision R355 (QUEUE row W308) |
-| Background | W294 (record `docs/work/v1.8.0-root-queue/records/W294.md` on its branch until it merges), item 2: the warp target list offers the Space body because ADR-044 section 4 offers any existing, orbitable, known body other than the current orbit, and ADR-031 makes the Space body orbitable; the satellite bay already refuses it; nobody has tested what a warp to `space` does |
+| Background | [W294](records/W294.md), item 2: the warp target list offers the Space body because ADR-044 section 4 offers any existing, orbitable, known body other than the current orbit, and ADR-031 makes the Space body orbitable; the satellite bay already refuses it; nobody has tested what a warp to `space` does |
 | Record | `docs/work/v1.8.0-root-queue/records/W308.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W308/` |
 
 ## What to do

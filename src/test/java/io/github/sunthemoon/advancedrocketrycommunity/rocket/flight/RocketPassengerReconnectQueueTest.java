@@ -7,6 +7,16 @@ import org.junit.jupiter.api.Test;
 
 class RocketPassengerReconnectQueueTest {
     @Test
+    void pendingQueryFollowsRetryCompletionExpiryAndClear() {
+        var queue = new RocketPassengerReconnectQueue(); var player = UUID.randomUUID();
+        assertFalse(queue.pending(player));
+        queue.offer(player, 0); assertTrue(queue.pending(player));
+        queue.next(1); assertTrue(queue.pending(player));
+        queue.complete(player); assertFalse(queue.pending(player));
+        queue.offer(player, 0); queue.next(200); assertFalse(queue.pending(player));
+        queue.offer(player, 201); queue.clear(); assertFalse(queue.pending(player));
+    }
+    @Test
     void rotatesUnderThePerTickBudgetWithoutLosingWaitingPlayers() {
         var queue = new RocketPassengerReconnectQueue();
         var players = java.util.stream.IntStream.range(0, 6).mapToObj(i -> new UUID(0, i)).toList();

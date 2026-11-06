@@ -3,9 +3,33 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBounds;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class RocketPassengerPositionTest {
+    @Test
+    void assignedAnchorsPreserveAllThreeCoordinatesWithinStructureBounds() {
+        var anchors = List.of(new RocketPosition(-2, 10, 3), new RocketPosition(4, 2, -1));
+        var bounds = RocketBounds.enclosing(anchors);
+        assertEquals(new RocketPassengerPosition(-2, 10.15D, 3),
+                RocketPassengerPosition.forSeat(0, 2, anchors, bounds));
+        assertEquals(new RocketPassengerPosition(4, 2.15D, -1),
+                RocketPassengerPosition.forSeat(1, 2, anchors, bounds));
+    }
+
+    @Test
+    void absentAndOutOfBoundsAnchorsKeepTheOriginalFallback() {
+        var bounds = new RocketBounds(new RocketPosition(0, 0, 0), new RocketPosition(1, 10, 1));
+        assertEquals(RocketPassengerPosition.forSeat(1, 2),
+                RocketPassengerPosition.forSeat(1, 2, List.of(new RocketPosition(0, 10, 0)), bounds));
+        assertEquals(RocketPassengerPosition.forSeat(0, 1),
+                RocketPassengerPosition.forSeat(0, 1, List.of(new RocketPosition(-1, 10, 0)), bounds));
+        assertEquals(RocketPassengerPosition.forSeat(0, 0),
+                RocketPassengerPosition.forSeat(0, 0, List.of(), bounds));
+    }
+
     @Test
     void pendingMetadataStillKeepsTheRiderAboveTheMovingRocket() {
         assertEquals(new RocketPassengerPosition(0.0D, 1.15D, 0.0D),

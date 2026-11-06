@@ -205,9 +205,15 @@ public final class ElevatorPairs {
                 + pair.z();
     }
 
+    /**
+     * One {@code system action result device owner actor} line (ADR-054 section 13). The owner is the device's own,
+     * from its index record or tombstone in the root (W294, finding 4-4: it was always {@code -}); a device the root
+     * does not know, or a root that is unavailable, still writes {@code owner=-}. No chunk is read.
+     */
     static void audit(EndgameService service, long now, String action, ElevatorRules.Check check,
                       @Nullable UUID device, @Nullable UUID actor, String fields) {
-        service.audit().line(now, EndgameSystem.SPACE_ELEVATOR.id(), action, check.code().name(), device, null, actor,
+        UUID owner = device == null ? null : service.root().flatMap(root -> owner(root, device)).orElse(null);
+        service.audit().line(now, EndgameSystem.SPACE_ELEVATOR.id(), action, check.code().name(), device, owner, actor,
                 check.rule().map(rule -> "rule=" + rule.name() + " ").orElse("") + fields);
     }
 }

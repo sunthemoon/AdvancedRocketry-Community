@@ -3,9 +3,11 @@ package io.github.sunthemoon.arceadaptertest;
 import java.util.function.Consumer;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
@@ -49,8 +51,12 @@ final class AdapterAsyncFixture {
         boolean admitted;
         long nextAttempt;
         CompoundTag acceptedAuthority;
+        String unexpectedAdmission;
         Submission(FakePlayer player, Entity rocket) { this.player = (Player) player; this.rocket = rocket; }
         boolean advance(GameTestHelper helper) {
+            // thenWaitUntil retries assertion failures. Preserve the first refusal instead of
+            // flooding the limiter and replacing its useful diagnosis with a silent null reply.
+            helper.assertTrue(unexpectedAdmission == null, unexpectedAdmission);
             if (admitted) {
                 if (!"validation.advancedrocketrycommunity.rocket.region_busy".equals(player.reply)) { return true; }
                 helper.assertTrue(!rocket.isRemoved() && acceptedAuthority.equals(save(helper)),
@@ -70,8 +76,13 @@ final class AdapterAsyncFixture {
                 acceptedAuthority = before;
                 admitted = true; return true;
             }
-            helper.assertTrue("validation.advancedrocketrycommunity.rocket.region_busy".equals(player.reply),
-                    "Unexpected disassembly admission result: " + player.reply);
+            if (!"validation.advancedrocketrycommunity.rocket.region_busy".equals(player.reply)) {
+                unexpectedAdmission = "Unexpected disassembly admission result: " + player.reply;
+                if ("validation.advancedrocketrycommunity.rocket.target_occupied".equals(player.reply)) {
+                    unexpectedAdmission += "; restore targets=" + describeTargets(helper, before);
+                }
+                helper.assertTrue(false, unexpectedAdmission);
+            }
             helper.assertTrue(!rocket.isRemoved() && before.equals(save(helper)), "Refused request changed D authority");
             nextAttempt = helper.getTick() + (int) invoke("intentWindowTicks", new Class<?>[0]);
             return false;
@@ -79,6 +90,20 @@ final class AdapterAsyncFixture {
         private CompoundTag save(GameTestHelper helper) {
             var root = new CompoundTag(); helper.assertTrue(rocket.save(root), "Admission D did not serialize");
             return root.getCompound("RocketEntityData");
+        }
+        private String describeTargets(GameTestHelper helper, CompoundTag data) {
+            var snapshot = data.getCompound("snapshot");
+            int[] xyz = snapshot.getIntArray("source_origin");
+            var origin = new BlockPos(xyz[0], xyz[1], xyz[2]);
+            var targets = new java.util.ArrayList<String>();
+            for (var tag : snapshot.getList("relative_blocks", Tag.TAG_COMPOUND)) {
+                int[] offset = ((CompoundTag) tag).getIntArray("position");
+                var at = origin.offset(offset[0], offset[1], offset[2]);
+                targets.add(at.toShortString() + "=" + (helper.getLevel().hasChunkAt(at)
+                        ? helper.getLevel().getBlockState(at) + " fluid=" + helper.getLevel().getFluidState(at)
+                        : "unloaded"));
+            }
+            return targets.toString();
         }
     }
 

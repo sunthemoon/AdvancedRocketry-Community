@@ -330,7 +330,7 @@ public final class AdapterFaultGameTests {
     }
 
     private static Fixture create(GameTestHelper helper, Block cargo) {
-        AdapterDropFixture.retireStartControl(helper);
+        AdapterDropFixture.prepare(helper);
         // Structure placement can drop natural cave decorations before this test starts.
         // Clear only pre-operation items; every later inventory assertion still requires zero drops.
         for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper))) {

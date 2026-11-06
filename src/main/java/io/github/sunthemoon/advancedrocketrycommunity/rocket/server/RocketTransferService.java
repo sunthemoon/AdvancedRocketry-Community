@@ -350,6 +350,8 @@ final class RocketTransferService {
         recovery.onPlayerLoggedOut(playerId);
     }
 
+    boolean seatReconnectPending(ServerPlayer player) { return recovery.seatReconnectPending(player); }
+
     /**
      * ADR-044 §5 in-motion rule for one station region in the Space Level: journal records plus this
      * session's classification (live launches and descents, settled sources and landings).
