@@ -620,7 +620,8 @@ final class RocketFlightService {
                     .reply(action, result), true);
         }
         if (result.detailKey() != null && player.connection != null) {
-            player.sendSystemMessage(Component.translatable("message.advancedrocketrycommunity.pad.landing_refused",
+            player.sendSystemMessage(Component.translatable(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightFeedback.PAD_REFUSED,
                     Component.translatable(result.detailKey())));
         }
         AdvancedRocketryCommunity.LOGGER.info(

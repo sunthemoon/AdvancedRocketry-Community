@@ -22,12 +22,21 @@ public final class ScreenActionMessages {
 
     private ScreenActionMessages() { }
 
+    /** W311: a screen that keeps its refusals until its next action or plan change, instead of the timed lifetime. */
+    public interface RefusalOwner {
+        boolean refusal(Component message);
+    }
+
+    /** W311: called by a {@link RefusalOwner} on its next action or plan change. */
+    public static void release(Screen screen) { NOTICE.release(screen); }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void received(ClientChatReceivedEvent.System event) {
         Screen screen = Minecraft.getInstance().screen;
         boolean ours = screen != null && screen.getClass().getName()
                 .startsWith("io.github.sunthemoon.advancedrocketrycommunity.");
-        NOTICE.accept(screen, ours, event.isOverlay(), event.getMessage().copy(), Util.getMillis());
+        boolean pin = ours && event.isOverlay() && screen instanceof RefusalOwner owner && owner.refusal(event.getMessage());
+        NOTICE.accept(screen, ours, event.isOverlay(), event.getMessage().copy(), Util.getMillis(), pin);
     }
 
     @SubscribeEvent
