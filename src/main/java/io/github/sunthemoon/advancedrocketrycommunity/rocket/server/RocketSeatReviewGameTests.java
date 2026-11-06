@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -68,6 +69,7 @@ public final class RocketSeatReviewGameTests {
         private RocketSeatRosterGameTests.Fixture f;
         private RocketEntity copy;
         private RocketTransferSavedData fencedJournal, blockedJournal;
+        private FirstEvent moonEvent;
         private Object previousBlocked;
         private Map<UUID, String> fenceReasons;
         private Map<UUID, Long> fenceAttempts;
@@ -121,7 +123,9 @@ public final class RocketSeatReviewGameTests {
         private void beginFence() {
             var server = helper.getLevel().getServer();
             // Keep the world's journal and first-event outbox intact; replacing the root simulates rollback.
+            RocketJournalGameTestSupport.occupyFirstMoonLanding(helper);
             fencedJournal = RocketTransferSavedData.get(server);
+            moonEvent = fencedJournal.firstMoonLandingRam().event();
             fencedJournal.put(f.record);
             RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var recovery = RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers());
@@ -186,6 +190,11 @@ public final class RocketSeatReviewGameTests {
                         f.login(); f.player.setInvulnerable(true);
                         helper.assertTrue(!f.player.isPassenger(), "Recordless login unexpectedly reseated the player");
                     }
+                }
+                if (fencedJournal != null) {
+                    helper.assertTrue(RocketTransferSavedData.get(helper.getLevel().getServer()) == fencedJournal
+                            && moonEvent.equals(fencedJournal.firstMoonLandingRam().event()),
+                            "Fence observation replaced the shared journal or its first-Moon event");
                 }
                 helper.getLevel().tickNonPassenger(f.rocket);
                 if (age < releaseAt + 39) { helper.assertTrue(assigned(), mode + ": seat lost before fresh eligible grace"); }
