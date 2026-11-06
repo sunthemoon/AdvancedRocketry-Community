@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadServ
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -75,6 +76,10 @@ public final class LandingPadSelectionGameTests {
             var menu = new RocketFlightMenu(1, f.player.getInventory(), rocket);
             helper.assertTrue(menu.activePlan().equals(f.index.choice(f.player.getUUID()))
                     && menu.padName(menu.activePlan()).equals("Venus Dock"), "Console did not supply the indexed pad name");
+            // The frame broadcastChanges actually sends must carry the same plan and indexed name.
+            var sent = menu.planPacket(RocketNavigation.empty());
+            helper.assertTrue(sent.plan().equals(f.index.choice(f.player.getUUID())) && sent.padName().equals("Venus Dock"),
+                    "Console plan packet did not carry the indexed pad name: " + sent.padName());
             rocket.discard();
             helper.assertTrue(saved.equals(f.index.save(new net.minecraft.nbt.CompoundTag())), "Menu intent changed durable pad data");
             helper.assertTrue(LandingPadService.resolve(f.player.getServer(), f.station, f.pad) == null,

@@ -29,8 +29,8 @@ public final class V180C16cMachineData implements DataProvider {
             var textures = new JsonObject();
             if (controller) {
                 textures.addProperty("front", NS + ":block/" + block);
-                // The machine casing ships separate side and top textures (see V180ArcCuttingData).
-                for (String face : List.of("side", "top")) { textures.addProperty(face, NS + ":block/machine_casing_" + face); }
+                textures.addProperty("side", NS + ":block/machine_panel_side");
+                textures.addProperty("top", NS + ":block/machine_casing_top");
             } else {
                 textures.addProperty("all", NS + ":block/" + block);
                 // Override only the inherited underside; REVIEW/EXCLUDE legacy faces remain unused.

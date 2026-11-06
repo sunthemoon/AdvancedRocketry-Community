@@ -30,7 +30,7 @@ class V180ClosureProvenanceTest {
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void allSixteenImagesAndThirteenBindingsHaveNewMitEntriesWithActualHashes() throws IOException {
+    @Test void allSixteenImagesAndThirteenBindingsHaveNewMitEntriesWithActualHashes() throws Exception {
         JsonObject record = record();
         assertEquals(2, record.get("schema_version").getAsInt());
         Map<String, JsonObject> entries = new HashMap<>();
@@ -49,7 +49,7 @@ class V180ClosureProvenanceTest {
                 assertEquals(entry.get("target_sha256"), replacement.get("supersedes_target_sha256"));
                 assertEquals(sha256(Path.of(target)), replacement.get("target_sha256").getAsString(), target);
             } else {
-                assertEquals(sha256(Path.of(target)), entry.get("target_sha256").getAsString(), target);
+                V180W277ProvenanceAssertions.assertCurrentOrExplicitlySuperseded(entry);
             }
             String source = entry.get("source_path").getAsString();
             if (source.endsWith("/V180ClosureModels.java")) {

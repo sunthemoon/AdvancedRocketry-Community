@@ -38,8 +38,9 @@ public final class V180StandInArtData implements DataProvider {
             String kind = port.substring(port.indexOf("_", port.indexOf("_") + 1) + 1);
             JsonObject json = model("minecraft:block/cube_bottom_top");
             JsonObject textures = json.getAsJsonObject("textures");
-            textures.addProperty("side", NS + "block/machine_panel_side");
-            textures.addProperty("bottom", NS + "block/machine_casing_top");
+            // R332: formed hulls obscure the top, so all six faces must identify the port.
+            textures.addProperty("side", NS + "block/machine_" + kind);
+            textures.addProperty("bottom", NS + "block/machine_" + kind);
             textures.addProperty("top", NS + "block/machine_" + kind);
             files.put(ASSETS + "models/block/" + port + ".json", json);
         }
