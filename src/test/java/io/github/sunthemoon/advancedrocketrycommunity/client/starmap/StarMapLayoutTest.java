@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.starmap;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialCapabilities;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,29 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
 class StarMapLayoutTest {
+    @Test
+    void sharedSpaceIsNotFocusableButGasBodiesAndDatapackDescendantsRemain() {
+        var earth = entry(0, -1);
+        var space = new CelestialSnapshot.Entry(CelestialIds.SPACE_ID, Optional.of(earth.bodyId()), Optional.empty(),
+                0, 0, false, 270, id(900), id(901), new CelestialCapabilities(false, true, false), 1, 0);
+        var child = new CelestialSnapshot.Entry(id(2), Optional.of(CelestialIds.SPACE_ID), Optional.empty(),
+                1, 0, false, 270, id(900), id(901), new CelestialCapabilities(false, true, true), 1, 0);
+        var layout = StarMapLayout.create(new CelestialSnapshot(2, List.of(child, space, earth)));
+        assertEquals(List.of(earth.bodyId(), child.bodyId()), layout.nodes().stream().map(StarMapLayout.Node::id).toList());
+        assertEquals(earth.bodyId(), layout.nodes().get(1).parent());
+        var viewport = new StarMapViewport(layout, 10, 44, 288, 84);
+        for (var node : layout.nodes()) {
+            viewport.focus(node);
+            assertTrue(viewport.contains(viewport.screenX(node.x()), viewport.screenY(node.y())));
+        }
+        assertTrue(StarMapLayout.create(new CelestialSnapshot(2, List.of(new CelestialSnapshot.Entry(
+                CelestialIds.SPACE_ID, Optional.empty(), Optional.empty(), 0, 0, false, 270,
+                id(900), id(901), new CelestialCapabilities(false, true, false), 1, 0)))).nodes().isEmpty());
+        // Filtering is presentation-only, never a way to bypass the full graph's validation.
+        assertThrows(IllegalArgumentException.class,
+                () -> StarMapLayout.create(new CelestialSnapshot(2, List.of(space))));
+    }
+
     @Test
     void viewportReceivesClicksBeforeTheAlwaysConsumingContainerAndToolbarStillWorks() {
         var calls = new ArrayList<String>();

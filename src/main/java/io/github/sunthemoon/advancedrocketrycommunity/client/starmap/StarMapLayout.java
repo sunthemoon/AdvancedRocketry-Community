@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client.starmap;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,14 @@ public record StarMapLayout(List<Node> nodes, double maxX, double maxY) {
             if (entry.parentId().isEmpty()) { place(entry.bodyId(), null, 0, children, placed, row); }
         }
         if (placed.size() != entries.size()) { throw new IllegalArgumentException("Cyclic map hierarchy"); }
-        var nodes = entries.stream().map(entry -> placed.get(entry.bodyId())).toList();
+        // Shared Space hosts station regions; it is not a celestial destination. Validate the
+        // complete graph first, then retain any datapack descendants under the visible ancestor.
+        var nodes = entries.stream().filter(entry -> !entry.bodyId().equals(CelestialIds.SPACE_ID))
+                .map(entry -> placed.get(entry.bodyId())).map(node -> {
+                    ResourceLocation parent = CelestialIds.SPACE_ID.equals(node.parent())
+                            ? placed.get(CelestialIds.SPACE_ID).parent() : node.parent();
+                    return new Node(node.id(), parent, node.x(), node.y());
+                }).toList();
         return new StarMapLayout(nodes, nodes.stream().mapToDouble(Node::x).max().orElse(0),
                 nodes.stream().mapToDouble(Node::y).max().orElse(0));
     }

@@ -202,9 +202,9 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         text.centered(graphics,
                 font,
                 targetDisplay,
-                30,
-                84,
-                164,
+                SatelliteScreenLayout.TERMINAL_SELECTION_X,
+                SatelliteScreenLayout.TERMINAL_TARGET_Y,
+                SatelliteScreenLayout.TERMINAL_SELECTION_WIDTH,
                 menu.targetDiscovered() ? GREEN : GOLD
         );
 
@@ -222,9 +222,9 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         text.draw(graphics,
                 font,
                 Component.translatable(status.translationKey()).append(" [" + status.name() + "]"),
-                10,
-                94,
-                204,
+                SatelliteScreenLayout.TERMINAL_SELECTION_X,
+                SatelliteScreenLayout.TERMINAL_STATUS_Y,
+                SatelliteScreenLayout.TERMINAL_SELECTION_WIDTH,
                 isError(status) || !menu.ownedByViewer() ? RED : MUTED
         );
         view().ifPresent(current -> renderDelivery(graphics, current));
