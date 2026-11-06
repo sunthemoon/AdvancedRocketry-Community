@@ -169,9 +169,13 @@ public final class RocketArrivalFootprintGameTests {
                     "The parked rocket was not admitted in the far footprint column");
             var arrival = RocketRegion.fromSnapshot(arrivalSnapshot());
             helper.assertTrue(RocketRegion.fromSnapshot(snapshot).overlaps(arrival), "The parked structure misses the arrival");
-            helper.assertTrue(!parked.getBoundingBox().intersects(new AABB(arrival.minimum().x(), arrival.minimum().y(),
-                    arrival.minimum().z(), arrival.maximum().x() + 1, arrival.maximum().y() + 1, arrival.maximum().z() + 1)),
-                    "The parked entity box overlaps the arrival, so the census would not be exercised");
+            // W311 (R359): the entity box follows the structure and reaches the arrival; the parked rocket's base box,
+            // its whole entity box before W311, must stay clear of it, and the entity stays in the far column.
+            var arrivalBox = new AABB(arrival.minimum().x(), arrival.minimum().y(), arrival.minimum().z(),
+                    arrival.maximum().x() + 1, arrival.maximum().y() + 1, arrival.maximum().z() + 1);
+            helper.assertTrue(parked.getBoundingBox().intersects(arrivalBox), "The parked structure box missed the arrival");
+            helper.assertTrue(!ModEntities.ROCKET.get().getDimensions().makeBoundingBox(parked.position()).intersects(arrivalBox),
+                    "The parked base box overlaps the arrival, so the census would not be exercised");
             parkedId = parked.getUUID();
             removeTicket(farColumn, 0);
             stage = 2;

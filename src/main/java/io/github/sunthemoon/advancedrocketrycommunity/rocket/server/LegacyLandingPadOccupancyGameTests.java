@@ -194,8 +194,11 @@ public final class LegacyLandingPadOccupancyGameTests {
                 spawned.add(parked);
                 var parkedRegion = RocketRegion.fromSnapshot(parked.snapshot().orElseThrow());
                 helper.assertTrue(parkedRegion.overlaps(first), "Wide structure did not cover the first fixed pad");
-                helper.assertTrue(!parked.getBoundingBox().intersects(box(first)),
-                        "Fixed-pad geometry accidentally overlaps the occupant entity AABB");
+                // W311 (R359): the entity box follows the structure, so it covers the pad too; the occupant's base box,
+                // which was its whole entity box before W311, must still stay clear of it.
+                helper.assertTrue(parked.getBoundingBox().intersects(box(first)), "The occupant's structure box missed the pad");
+                helper.assertTrue(!ModEntities.ROCKET.get().getDimensions().makeBoundingBox(parked.position()).intersects(box(first)),
+                        "Fixed-pad geometry accidentally overlaps the occupant's base box");
                 String reason = selector.unavailable(earth, dry.destinationSnapshot(), null, false);
                 helper.assertTrue(reason != null && reason.endsWith("occupied"),
                         "Fixed-pad recheck did not state the occupant: " + reason);
@@ -361,8 +364,10 @@ public final class LegacyLandingPadOccupancyGameTests {
         private void assertReviewGeometry(RocketEntity parked, RocketRegion arrival) {
             helper.assertTrue(RocketRegion.fromSnapshot(parked.snapshot().orElseThrow()).overlaps(arrival),
                     "Wide structure did not cover the station pad");
-            helper.assertTrue(!parked.getBoundingBox().intersects(box(arrival)),
-                    "Review geometry accidentally overlaps the occupant entity AABB");
+            // W311 (R359): as above, the structure box covers the arrival and the base box stays clear of it.
+            helper.assertTrue(parked.getBoundingBox().intersects(box(arrival)), "The occupant's structure box missed the arrival");
+            helper.assertTrue(!ModEntities.ROCKET.get().getDimensions().makeBoundingBox(parked.position()).intersects(box(arrival)),
+                    "Review geometry accidentally overlaps the occupant's base box");
             for (int x = -1; x <= 1; x++) {
                 helper.assertTrue(space.getBlockState(pad.offset(x, 0, 0)).isAir(), "Assembly did not clear pad terrain");
             }

@@ -313,8 +313,12 @@ public final class NamedLandingPadOccupancyGameTests {
         private void assertReviewGeometry(RocketEntity parked) {
             var region = new RocketRegion(space.dimension().location(), position(pad.offset(-1, 1, 0)), position(pad.offset(1, 3, 0)));
             helper.assertTrue(RocketRegion.fromSnapshot(parked.snapshot().orElseThrow()).overlaps(region), "Wide structure did not cover X=9..11");
-            helper.assertTrue(!parked.getBoundingBox().intersects(new AABB(pad.offset(-1, 1, 0), pad.offset(2, 4, 1))),
-                    "Review geometry accidentally overlaps the occupant entity AABB");
+            // W311 (R359): the entity box follows the structure, so it covers the pad too; the occupant's base box,
+            // which was its whole entity box before W311, must still stay clear of it.
+            var padBox = new AABB(pad.offset(-1, 1, 0), pad.offset(2, 4, 1));
+            helper.assertTrue(parked.getBoundingBox().intersects(padBox), "The occupant's structure box missed the pad");
+            helper.assertTrue(!ModEntities.ROCKET.get().getDimensions().makeBoundingBox(parked.position()).intersects(padBox),
+                    "Review geometry accidentally overlaps the occupant's base box");
             for (int x = 9; x <= 11; x++) {
                 helper.assertTrue(space.getBlockState(origin.offset(x, 0, 0)).isAir(), "Assembly did not clear pad terrain");
             }
