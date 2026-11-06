@@ -430,11 +430,12 @@ What is still open:
   nor W300F changes passenger-exit code, and the test passed in their hosted branch runs and in the shared runs.
   The cause is not established; a fixture whose nearer candidates are blocked at that placement would explain it,
   as in W304 and W307. W313 (R361) reproduces and fixes it; it stays open until then.
-- **Sleep in vacuum GameTest in a local full run (2026-11-07).**
+- **Sleep in vacuum GameTest in local full runs (2026-11-07).**
   `SleepRespawnGameTests.sleepIsDeniedInVacuumOnAPlanetAndInSpace` (`defaultBatch`) failed once in W314's local full
   run with `The vacuum fixture lies inside a station`. It passed in W314's focused default-batch run and in the hosted
-  run 42275141335 at the same code. The batch count passed 768 with W300F, so every batch moved; a fixture that
-  landed inside a station region at its new local placement would explain it. No fix is queued unless it recurs; it
-  stays open until runs show no recurrence.
+  run 42275141335 at the same code. It failed the same way in W311F's local full run. The batch count passed 768,
+  so every batch moved; the Moon iteration checks for a station at its column in Space Level coordinates, so a
+  station left there by another test would explain it. W315 (R366) reproduces and fixes it; it stays open until
+  then.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
