@@ -41,6 +41,39 @@ No saved field, packet or protocol change; if one seems needed, stop and say so.
 
 Commit on the branch; do not push. Root reviews, pushes for a sharded run and merges.
 
+## Revision 1 (Root, 2026-11-07, R364): save the exit position at logout
+
+The first session stopped correctly (record `records/W312.md`, commit `4c63ff065`). A rider's save has no `RootVehicle`
+(`RocketEntity.hasExactlyOnePlayerPassenger` is false by design), so at login nothing tells a former rider from an
+airborne player. Root decides the following instead of a new saved field. This replaces the Root decision in item 1.
+
+1. **At logout,** a player riding a stationary rocket is saved where LEAVE SEAT would place it: the rocket's existing
+   exit position, from the same code LEAVE SEAT and the ground sneak use.
+   - The player is not dismounted, its seat assignment is unchanged, and W287's rule that a disconnect keeps the seat
+     still holds. Only the position that vanilla writes for the player changes.
+   - Verify from the Forge 47.4.10 bytecode which hook runs before `PlayerList.remove` saves the player (for example
+     `PlayerLoggedOutEvent`), and use that hook. Server stop saves players through the same path; check it.
+   - When the rocket is not stationary (in flight or in transfer), or when no safe exit exists, change nothing: the
+     transfer recovery owns those cases, as today.
+2. **At login,** nothing new is needed:
+   - a kept seat is reseated by the existing reconnect, from the exit position;
+   - a seat released while the player was offline (operator release, W300's release) leaves the player standing at the
+     exit position;
+   - a removed or disassembled rocket leaves it there too.
+3. **Old saves.** A rider saved before this change keeps the old behaviour once (the fall). State this limit in the
+   record; do not edit offline player files.
+4. **Design first.** Write a one-page design section in the record before the code: the hook, the exit computation,
+   the stationary condition, what happens to an autosave while seated (unchanged), and the limits. Root will have a
+   separate session review it read-only before merge, because it changes a saved player position.
+
+The verification section above still applies. The connected-player GameTests must cover:
+
+- an operator release while offline, then rejoin;
+- a removed rocket while offline, then rejoin;
+- a kept seat, reseated on rejoin;
+- a rocket in flight at logout, where the saved position is unchanged;
+- the existing `RocketPassengerPersistenceGameTests` invariant that the save has no `RootVehicle`.
+
 ## Not in this task
 
 The seat release rules themselves (W300, W300F), rider position (W292), the high-seat console (W311), the ledger, the
