@@ -63,6 +63,7 @@ final class BayPassengerExitGameTestFixture {
     Runnable cacheListenerCleanup = () -> { };
     BayPassengerExitGameTestAudit.Mount probeMount;
     BayPassengerExitGameTestAudit.DispatchEnd probeDispatch;
+    BayPassengerExitGameTestArea exitArea;
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this(helper, scenario, false); }
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario, boolean tickConnection) {
@@ -194,6 +195,9 @@ final class BayPassengerExitGameTestFixture {
         pause(); exits = RocketRuntime.passengerExits().orElseThrow();
         exits.probeLocationForTests((rider, rocket) -> BayPassengerExitGameTestAudit.probe(this, rider, rocket));
         helper.assertTrue(exits.motion.generation(player) != null && exits.landing.available(), "Pinned mapped observers unavailable");
+        if (arbitrationCase() || Set.of(Case.SAFE, Case.MENU, Case.CREW, Case.GANTRY, Case.LOCAL_ONLY).contains(scenario)) {
+            exitArea = BayPassengerExitGameTestArea.prepare(level, origin);
+        }
         for (int x = -3; x <= 3; x++) { for (int z = -3; z <= 3; z++) {
             for (int y = -2; y <= 54; y++) {
                 if (y <= 3 || y >= 46 || Math.abs(x) <= 1 && Math.abs(z) <= 1) {
@@ -488,6 +492,7 @@ final class BayPassengerExitGameTestFixture {
             joined.getServer().getPlayerList().remove(joined);
         }
         channels.forEach(EmbeddedChannel::finishAndReleaseAll);
+        if (exitArea != null) { exitArea.close(); }
         for (long column : forcedColumns) {
             var pos = new net.minecraft.world.level.ChunkPos(column); helper.getLevel().setChunkForced(pos.x, pos.z, false);
         }
