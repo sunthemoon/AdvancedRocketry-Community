@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDe
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.LowGravityFlightAllowance;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.ZeroGravityFooting;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.binding.PlanetaryBindingLifecycle;
@@ -242,6 +243,8 @@ public final class AdvancedRocketryCommunity {
         // ADR-066 section 3.3 leaf B: the fall uses the multiplier the tick applied, once per landing (W38).
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingFall);
         MinecraftForge.EVENT_BUS.register(new LowGravityFlightAllowance());
+        // W294: a player resting on a block at zero gravity digs at ground speed (both sides predict it alike).
+        MinecraftForge.EVENT_BUS.register(new ZeroGravityFooting());
         CelestialCommands celestialCommands = new CelestialCommands(
                 celestialCatalogs,
                 new SafeCelestialTravel()
