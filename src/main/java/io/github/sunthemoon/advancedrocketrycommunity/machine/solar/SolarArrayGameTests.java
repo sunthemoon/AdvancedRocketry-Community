@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.SkyWeatherFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
@@ -165,12 +166,24 @@ public final class SolarArrayGameTests {
     @GameTest(template = "solar_array_test", batch = "solar_array_surface", timeoutTicks = 80)
     public static void surfaceDayNightWeatherRoofAndOverflowUseNativeSamples(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
-        var level = helper.getLevel(); long day = level.getDayTime(); float rain = level.getRainLevel(1), thunder = level.getThunderLevel(1);
-        var fixture = fixture(helper, 63); BlockPos roof = fixture.position.above(); fixture.set(roof, Blocks.AIR.defaultBlockState());
-        Runnable restore = () -> { try { fixture.close(); } finally { level.setDayTime(day); level.setRainLevel(rain); level.setThunderLevel(thunder); } };
+        var level = helper.getLevel();
+        var environment = new SkyWeatherFixture(helper, "solar_array_surface");
+        var fixture = fixture(helper, 63); BlockPos roof = fixture.position.above();
+        environment.onClose(fixture::close);
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_WEATHER_FIXTURE solar position={} biome={} roof={} sky={} raining={} thundering={}",
+                fixture.position, level.getBiome(fixture.position).unwrapKey(), level.getBlockState(roof),
+                level.canSeeSky(roof), level.getLevelData().isRaining(), level.getLevelData().isThundering());
+        environment.clearSky(roof);
+        Runnable restore = environment::close;
+        environment.clearWeather();
         level.setDayTime(6_000); level.setRainLevel(0); level.setThunderLevel(0);
         await(helper, driver, () -> level.isDay() && level.canSeeSky(roof), () -> {
             fixture.energy(0); fixture.tick();
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_WEATHER_FIXTURE solar credit={} reason={} collectors={} environment={} rain={} thunder={}",
+                    fixture.array.actualCredit(), fixture.array.reason(), fixture.array.collectors(), fixture.array.environment(),
+                    level.getRainLevel(1), level.getThunderLevel(1));
             helper.assertTrue(fixture.array.actualCredit() == 126 && fixture.array.reason() == SolarGeneration.Reason.GENERATING, "Surface daytime array rate differs");
             level.setRainLevel(1); level.setThunderLevel(1); fixture.energy(0); fixture.tick();
             helper.assertTrue(fixture.array.actualCredit() == 31 && fixture.array.environment().weatherPermille() == 250, "Array forked weather accounting");

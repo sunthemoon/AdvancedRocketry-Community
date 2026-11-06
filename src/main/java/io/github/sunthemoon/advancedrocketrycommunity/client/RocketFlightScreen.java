@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightSelection;
@@ -24,7 +25,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Compact mission-control panel with server-listed station choices. */
-public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlightMenu> {
+public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlightMenu>
+        implements ScreenActionMessages.RefusalOwner {
     private final ScreenText text = new ScreenText();
     private static final int FRAME = 0xFF26363B;
     private static final int PANEL = 0xFF0B1418;
@@ -46,11 +48,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private Button boardButton;
     private Button leaveButton;
     private int otherBodyIndex;
+    /** W311: the plan a launch would send when the last refusal arrived; a different plan ends that refusal. */
+    private RocketFlightPlanSnapshot noticePlan;
 
     public RocketFlightScreen(RocketFlightMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         selection = new RocketFlightSelection(menu.accessibleStations());
-        starMap = new RocketStarMap(menu, target -> { selection.select(target); showMap(false); });
+        starMap = new RocketStarMap(menu, target -> act(() -> { selection.select(target); showMap(false); }));
         imageWidth = 248;
         imageHeight = 216;
         titleLabelX = 12;
@@ -65,44 +69,64 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         super.init();
         initializeSelection();
         if (mapMode) {
-            starMap.init(leftPos, topPos, imageWidth, imageHeight, this::addRenderableWidget, () -> showMap(false));
+            starMap.init(leftPos, topPos, imageWidth, imageHeight, this::addRenderableWidget, () -> act(() -> showMap(false)));
             return;
         }
-        addRenderableWidget(Button.builder(RocketStarMap.text("open"), b -> showMap(true))
+        addRenderableWidget(Button.builder(RocketStarMap.text("open"), b -> act(() -> showMap(true)))
                 .bounds(leftPos + imageWidth - 74, topPos + 5, 64, 20).build());
         earthButton = addRenderableWidget(Button.builder(
                 body(RocketDestination.EARTH),
-                button -> selection.select(RocketDestination.EARTH)
+                button -> act(() -> selection.select(RocketDestination.EARTH))
         ).bounds(leftPos + 22, topPos + RocketFlightScreenLayout.DESTINATION_BUTTON_Y, 94, 20).build());
         moonButton = addRenderableWidget(Button.builder(
                 body(RocketDestination.MOON),
-                button -> selection.select(RocketDestination.MOON)
+                button -> act(() -> selection.select(RocketDestination.MOON))
         ).bounds(leftPos + 132, topPos + RocketFlightScreenLayout.DESTINATION_BUTTON_Y, 94, 20).build());
         otherBodyButton = addRenderableWidget(Button.builder(
                 otherBodyLabel(),
-                button -> selectNextOtherBody()
+                button -> act(this::selectNextOtherBody)
         ).bounds(leftPos + 22, topPos + 114, 98, 20).build());
         stationButton = addRenderableWidget(Button.builder(
                 stationLabel(),
-                button -> selectNextStation()
+                button -> act(this::selectNextStation)
         ).bounds(leftPos + 128, topPos + 114, 98, 20).build());
         launchButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.launch"),
-                button -> send(RocketFlightAction.LAUNCH)
+                button -> act(() -> send(RocketFlightAction.LAUNCH))
         ).bounds(leftPos + 22, topPos + 176, 204, 24).build());
         cancelButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.cancel"),
-                button -> send(RocketFlightAction.CANCEL)
+                button -> act(() -> send(RocketFlightAction.CANCEL))
         ).bounds(leftPos + 22, topPos + 176, 204, 24).build());
         boardButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.board"),
-                button -> send(RocketFlightAction.BOARD)
+                button -> act(() -> send(RocketFlightAction.BOARD))
         ).bounds(leftPos + 22, topPos + 148, 98, 20).build());
         leaveButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.leave"),
-                button -> send(RocketFlightAction.LEAVE)
+                button -> act(() -> send(RocketFlightAction.LEAVE))
         ).bounds(leftPos + 128, topPos + 148, 98, 20).build());
         updateButtons();
+    }
+
+    /** W311 (finding 7-5): a refused request stays on the console until the player's next action here. */
+    private void act(Runnable action) {
+        ScreenActionMessages.release(this);
+        action.run();
+    }
+
+    @Override
+    public boolean refusal(Component message) {
+        return RocketFlightFeedback.refusal(message);
+    }
+
+    /** W311: a refusal also ends when the plan a launch would send changes, for example a cleared station or pad. */
+    private void releaseOnPlanChange() {
+        var plan = selection.target(RocketFlightAction.LAUNCH, menu.activePlan());
+        if (!plan.equals(noticePlan)) {
+            noticePlan = plan;
+            ScreenActionMessages.release(this);
+        }
     }
 
     private void showMap(boolean enabled) {
@@ -147,6 +171,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     protected void containerTick() {
         super.containerTick();
         initializeSelection();
+        releaseOnPlanChange();
         if (minecraft != null && minecraft.level != null && minecraft.gameMode != null) {
             long now = minecraft.level.getGameTime();
             if (!RocketStarMap.coherent(menu) && now >= nextCatalogRequest) {

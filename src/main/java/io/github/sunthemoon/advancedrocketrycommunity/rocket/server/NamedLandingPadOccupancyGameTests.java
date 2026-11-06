@@ -68,6 +68,7 @@ public final class NamedLandingPadOccupancyGameTests {
             var source = f.source();
             var parked = f.parkWideRocket();
             f.assertReviewGeometry(parked);
+            f.leaveToDiscovery(parked);
             UUID transfer = UUID.randomUUID();
             var before = source.flightData().orElseThrow();
             List<String> diagnostics;
@@ -116,6 +117,7 @@ public final class NamedLandingPadOccupancyGameTests {
             var record = journal.find(transfer).orElseThrow();
             var parked = f.parkWideRocket();
             f.assertReviewGeometry(parked);
+            f.leaveToDiscovery(parked);
             var staging = new NamedLandingPadStaging();
             helper.assertTrue(staging.unavailable(f.space, record.destinationSnapshot(), f.station).endsWith("occupied"),
                     "Pre-spawn occupancy reason was not stated");
@@ -310,11 +312,22 @@ public final class NamedLandingPadOccupancyGameTests {
             rockets.add(parked); return parked;
         }
 
+        /** The arrival that the named pad's staging computes for the source rocket: X=9..11, one to three blocks up. */
+        private RocketRegion arrival() {
+            return new RocketRegion(space.dimension().location(), position(pad.offset(-1, 1, 0)), position(pad.offset(1, 3, 0)));
+        }
+
+        /**
+         * W311F: named pads run only the structure discovery ({@code NamedLandingPadStaging}), so the entity box decides
+         * nothing here. The base box keeps W13 R1's premise, a parked box that misses the arrival, even if the staging
+         * ever adds an entity-box check. The base-box and structure-box assertions of W311 moved into this step.
+         */
+        private void leaveToDiscovery(RocketEntity parked) {
+            LandingOccupancyGameTestSupport.leaveToDiscovery(helper, space, parked, arrival(), "Named pad occupancy");
+        }
+
         private void assertReviewGeometry(RocketEntity parked) {
-            var region = new RocketRegion(space.dimension().location(), position(pad.offset(-1, 1, 0)), position(pad.offset(1, 3, 0)));
-            helper.assertTrue(RocketRegion.fromSnapshot(parked.snapshot().orElseThrow()).overlaps(region), "Wide structure did not cover X=9..11");
-            helper.assertTrue(!parked.getBoundingBox().intersects(new AABB(pad.offset(-1, 1, 0), pad.offset(2, 4, 1))),
-                    "Review geometry accidentally overlaps the occupant entity AABB");
+            helper.assertTrue(RocketRegion.fromSnapshot(parked.snapshot().orElseThrow()).overlaps(arrival()), "Wide structure did not cover X=9..11");
             for (int x = 9; x <= 11; x++) {
                 helper.assertTrue(space.getBlockState(origin.offset(x, 0, 0)).isAir(), "Assembly did not clear pad terrain");
             }
