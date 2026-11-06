@@ -51,7 +51,8 @@ final class BayPassengerExitGameTestArea implements AutoCloseable {
             area.close();
             throw failure;
         }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_BAY_EXIT_AREA installed origin={} cells={}", origin, area.original.size());
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_BAY_EXIT_AREA installed origin={} cells={} originalCeiling={}",
+                origin, area.original.size(), area.original.get(origin.above(TOP)));
         return area;
     }
 
