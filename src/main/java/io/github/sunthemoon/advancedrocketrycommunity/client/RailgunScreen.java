@@ -100,9 +100,7 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
                         statusLine(view.get().lastStop())));
             }
             for (EndgameDeviceView.Line line : view.get().lines()) {
-                Component value = line.translated() ? Component.translatable(line.value())
-                        : Component.literal(line.value());
-                lines.add(Component.translatable(line.label()).append(": ").append(value));
+                lines.add(EndgameViewText.line(line));
             }
             if (!lines.isEmpty()) {
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);

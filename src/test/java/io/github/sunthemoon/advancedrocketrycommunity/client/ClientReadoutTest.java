@@ -21,11 +21,11 @@ class ClientReadoutTest {
     }
 
     @Test void orbitalBodyUsesTheCelestialTranslationKeyWithAnIdFallback() {
-        var earth = OrbitalLaserDrillScreen.bodyName("advancedrocketrycommunity:earth");
+        var earth = BodyDisplayNames.bodyName("advancedrocketrycommunity:earth");
         var contents = assertInstanceOf(TranslatableContents.class, earth.getContents());
         assertEquals("body.advancedrocketrycommunity.earth", contents.getKey());
         assertEquals("advancedrocketrycommunity:earth", contents.getFallback());
-        assertEquals("not a body id", OrbitalLaserDrillScreen.bodyName("not a body id").getString());
-        assertEquals("custom:untranslated", OrbitalLaserDrillScreen.bodyName("custom:untranslated").getString());
+        assertEquals("not a body id", BodyDisplayNames.bodyName("not a body id").getString());
+        assertEquals("custom:untranslated", BodyDisplayNames.bodyName("custom:untranslated").getString());
     }
 }

@@ -182,7 +182,7 @@ public final class AdvancedRocketryCommunity {
         stationManager = new StationManager(celestialCatalogs, stationWriteBudget);
         StationRuntime.install(stationManager);
         stationWarp = new StationWarpService(celestialCatalogs,
-                StationWarpService.routesInSystem(planetaryCatalogs), CommonConfig::warpSettings, stationWriteBudget);
+                StationWarpService.routesForOrbit(planetaryCatalogs), CommonConfig::warpSettings, stationWriteBudget);
         StationWarpRuntime.install(stationWarp);
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onServerStopping);
