@@ -61,9 +61,8 @@ final class RocketFlightService {
             return;
         }
         RocketEntity rocket = access.rocket();
-        rocket.flightData().orElseThrow().fuel().propulsion().ifPresent(value -> player.sendSystemMessage(
-                Component.translatable("message.advancedrocketrycommunity.propulsion.mode", value.descriptor().mode().name(),
-                        value.summary())));
+        rocket.flightData().orElseThrow().fuel().propulsion().ifPresent(value -> AdvancedRocketryCommunity.LOGGER.debug(
+                "ARCE_FLIGHT_MENU rocket={} mode={} propulsion={}", rocket.getUUID(), value.descriptor().mode(), value.summary()));
         StationRegistrySavedData stationData = StationRegistrySavedData.get(player.getServer());
         List<StationDestinationSummary> accessible = stationData.operational()
                 ? stationAccess.accessibleDestinations(
@@ -632,7 +631,11 @@ final class RocketFlightService {
             RocketFlightRequestResult result
     ) {
         // W242-R10: identity marks the held self-exit, whose bay-exit message is its only feedback.
-        if (result != BayPassengerExitService.HELD_EXIT) { notify(player, result.code(), result.requiredFuel()); }
+        if (result != BayPassengerExitService.HELD_EXIT && player.connection != null
+                && player.connection.connection.isConnected()) {
+            player.displayClientMessage(io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightFeedback
+                    .reply(action, result), true);
+        }
         if (result.detailKey() != null && player.connection != null) {
             player.sendSystemMessage(Component.translatable("message.advancedrocketrycommunity.pad.landing_refused",
                     Component.translatable(result.detailKey())));
