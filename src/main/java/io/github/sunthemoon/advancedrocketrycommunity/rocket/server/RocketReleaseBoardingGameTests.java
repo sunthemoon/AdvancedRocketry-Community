@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -44,6 +45,10 @@ public final class RocketReleaseBoardingGameTests {
     public static void sameSeatBoardsOnlyAfterS2AndSurvivesReloadWithoutRevivingOldCopies(GameTestHelper helper) {
         new Boarding(helper).start();
     }
+
+    // W307: a test that fails or times out can skip its fixture's close(); its batch then restores the pad it left.
+    @AfterBatch(batch = "rocket_release_boarding")
+    public static void afterBoarding(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
 
     private static final class Boarding {
         private static final TicketType<UUID> TICKET = TicketType.create("arce_w158_boarding", java.util.Comparator.<UUID>naturalOrder());
@@ -72,6 +77,7 @@ public final class RocketReleaseBoardingGameTests {
         BlockPos origin, other;
         UUID release;
         RocketRejoinRoot.Resources resources;
+        RocketRejoinFixturePad pad;
         CompoundTag reloadedImage;
         final java.util.Set<ChunkPos> savedSlots = new java.util.HashSet<>(), savingSlots = new java.util.HashSet<>();
         String saveFailure;
@@ -233,6 +239,10 @@ public final class RocketReleaseBoardingGameTests {
                 level.setBlockAndUpdate(safe.offset(x, y, z), (y == -1 ? net.minecraft.world.level.block.Blocks.STONE
                         : net.minecraft.world.level.block.Blocks.AIR).defaultBlockState());
             } } }
+            // W307: the candidates take their height from the surface, above this floor inside the structure. A pad over
+            // the ring around the batch's recorded footprint is that surface, so neither the terrain above the structure
+            // nor the spawn ring decides where the returning passenger lands.
+            pad = RocketRejoinFixturePad.around(level, batch.minimum().x(), batch.minimum().z(), batch.maximum().x(), batch.maximum().z());
             firstPlayer = FirstEventGameTestPlayers.join(server, first, "W159Returning", level, origin);
             helper.assertTrue(RocketRejoinProtection.guarded(firstPlayer), "Returning AP passenger was not guarded");
             phase = 6;
@@ -364,6 +374,8 @@ public final class RocketReleaseBoardingGameTests {
                 try { Files.deleteIfExists(sidecarFile); }
                 catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
             }
+            // W307: last, after the returning passenger has left it; the AfterBatch hook covers a close() that never ran.
+            if (pad != null) { pad.close(); }
         }
     }
 }

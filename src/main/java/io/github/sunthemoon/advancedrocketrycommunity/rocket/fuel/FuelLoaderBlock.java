@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -77,17 +78,24 @@ public final class FuelLoaderBlock extends BaseEntityBlock {
         }
         ItemStack held = player.getItemInHand(hand);
         if (!held.isEmpty() && RocketFuelRuntime.find(held.getItem()) != null) {
+            boolean cell = held.is(ModItems.ROCKET_FUEL_CELL.get());
             boolean accepted = loader.insertFuelFromPlayer(player, hand);
             player.displayClientMessage(Component.translatable(
                     accepted
-                            ? "message.advancedrocketrycommunity.fuel_loader.fuel_inserted"
-                            : "message.advancedrocketrycommunity.fuel_loader.fuel_rejected"
+                            ? (cell
+                                    ? "message.advancedrocketrycommunity.fuel_loader.cell_inserted"
+                                    : "message.advancedrocketrycommunity.fuel_loader.fuel_inserted")
+                            : (cell
+                                    ? "message.advancedrocketrycommunity.fuel_loader.cell_rejected"
+                                    : "message.advancedrocketrycommunity.fuel_loader.fuel_rejected")
             ), true);
             return accepted ? InteractionResult.CONSUME : InteractionResult.FAIL;
         }
+        boolean canister = loader.itemHandler().getStackInSlot(0).is(ModItems.EMPTY_CANISTER.get());
         if (loader.takeOutput(player)) {
             player.displayClientMessage(Component.translatable(
-                    "message.advancedrocketrycommunity.fuel_loader.item_returned"
+                    canister ? "message.advancedrocketrycommunity.fuel_loader.canister_returned"
+                            : "message.advancedrocketrycommunity.fuel_loader.item_returned"
             ), true);
             return InteractionResult.CONSUME;
         }
