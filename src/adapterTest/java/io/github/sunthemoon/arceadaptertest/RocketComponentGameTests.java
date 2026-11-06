@@ -63,7 +63,7 @@ public final class RocketComponentGameTests {
     }
 
     private static void componentAssemblyAndDisassembly(GameTestHelper helper, boolean rejectFirstPending) {
-        AdapterDropFixture.retireStartControl(helper);
+        AdapterDropFixture.prepare(helper);
         var rejection = rejectFirstPending ? new AdapterPendingRejectionFixture(helper) : null;
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,
