@@ -22,7 +22,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class ScreenMenuLayoutGameTests {
     @GameTest(template = "empty", batch = "screen_menu_layout", timeoutTicks = 20)
-    public static void relocatedElectrolyzerChargeStillAcceptsAndReturnsRedstone(GameTestHelper helper) {
+    public static void relocatedElectrolyzerChargePreservesInsertOnlyRedstonePolicy(GameTestHelper helper) {
         helper.setBlock(BlockPos.ZERO, ModBlocks.ELECTROLYZER.get());
         var machine = (ElectrolyzerBlockEntity) helper.getBlockEntity(BlockPos.ZERO);
         var player = helper.makeMockPlayer();
@@ -37,9 +37,14 @@ public final class ScreenMenuLayoutGameTests {
         menu.quickMoveStack(player, ElectrolyzerBlockEntity.SLOT_COUNT);
         helper.assertTrue(charge.getItem().is(Items.REDSTONE) && charge.getItem().getCount() == 13,
                 "Shift-click did not insert into the same charge index");
-        menu.quickMoveStack(player, ElectrolyzerBlockEntity.SLOT_CHARGE);
-        helper.assertTrue(charge.getItem().isEmpty() && player.getInventory().countItem(Items.REDSTONE) == 13,
-                "Charge return lost or duplicated redstone");
+        // The existing charge port is insert-only, including through the menu; moving it must not grant extraction.
+        helper.assertTrue(!charge.mayPickup(player), "The insert-only charge slot became removable");
+        helper.assertTrue(menu.quickMoveStack(player, ElectrolyzerBlockEntity.SLOT_CHARGE).isEmpty(),
+                "Shift-click extracted from the insert-only charge slot");
+        menu.clicked(ElectrolyzerBlockEntity.SLOT_CHARGE, 0, ClickType.PICKUP, player);
+        helper.assertTrue(charge.getItem().is(Items.REDSTONE) && charge.getItem().getCount() == 13
+                && player.getInventory().countItem(Items.REDSTONE) == 0 && menu.getCarried().isEmpty(),
+                "Refused charge extraction lost or duplicated redstone");
         helper.succeed();
     }
 

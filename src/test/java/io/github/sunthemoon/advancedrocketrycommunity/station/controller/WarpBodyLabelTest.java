@@ -33,4 +33,16 @@ class WarpBodyLabelTest {
         assertEquals("ArceTester1 Station", ((Component) content.getArgs()[0]).getString());
         assertEquals("10", ((Component) content.getArgs()[2]).getString());
     }
+
+    @Test void unknownBodyRetainsItsCanonicalFallbackAndStoredEnvelope() {
+        var id = new ResourceLocation("custom_pack", "unknown_body");
+        var notice = StationNotice.countdown("Custom station", id, 5);
+        var component = StationNoticeService.component(notice);
+        var content = (TranslatableContents) component.getContents();
+        var body = (TranslatableContents) ((Component) content.getArgs()[1]).getContents();
+        assertEquals("body.custom_pack.unknown_body", body.getKey());
+        assertEquals(id.toString(), body.getFallback());
+        assertEquals(java.util.List.of("Custom station", id.toString(), "5"), notice.arguments());
+        assertTrue(Component.Serializer.toJson(component).contains("\"fallback\":\"custom_pack:unknown_body\""));
+    }
 }
