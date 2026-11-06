@@ -16,6 +16,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 /** Original drawn bay panel with no imported GUI texture; the phase and reason come only from the server. */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class SatelliteBayScreen extends AbstractContainerScreen<SatelliteBayMenu> {
+    private final ScreenText text = new ScreenText();
     private static final String PREFIX = "screen.advancedrocketrycommunity.rocket_satellite_bay.";
 
     @SubscribeEvent
@@ -26,15 +27,17 @@ public final class SatelliteBayScreen extends AbstractContainerScreen<SatelliteB
     public SatelliteBayScreen(SatelliteBayMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 166;
+        imageHeight = SatelliteBayMenu.PANEL_HEIGHT;
         inventoryLabelY = imageHeight - 94;
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
     }
 
     @Override
@@ -47,22 +50,17 @@ public final class SatelliteBayScreen extends AbstractContainerScreen<SatelliteB
         graphics.fill(x + 70, y + 25, x + 106, y + 61, 0xFF0E141B);
         graphics.renderOutline(x + 70, y + 25, 36, 36, 0xFFE0A64A);
         graphics.fill(x + 79, y + 34, x + 97, y + 52, 0xFF3A4654);
-        for (int column = 0; column < 9; column++) {
-            for (int row = 0; row < 4; row++) {
-                int slotY = row < 3 ? 83 + row * 18 : 141;
-                graphics.fill(x + 7 + column * 18, y + slotY, x + 25 + column * 18, y + slotY + 18, 0xFF3A4654);
-            }
-        }
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF7B8E9F, 0xFF1B2633);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE4EDF4, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFACC5D7, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, 0xFFE4EDF4);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, 0xFFACC5D7);
         SatelliteBayMenu.View view = menu.view();
         Component phase = Component.translatable(PREFIX + "phase", Component.translatable(view.phase().translationKey()));
-        graphics.drawString(font, font.plainSubstrByWidth(phase.getString(), 160), 8, 63, 0xFFACC5D7, false);
+        text.draw(graphics, font, phase, 8, 63, 160, 0xFFACC5D7);
         Component reason = Component.translatable(view.reason().translationKey());
-        graphics.drawString(font, font.plainSubstrByWidth(reason.getString(), 160), 8, 18, 0xFFF2C46E, false);
+        text.draw(graphics, font, reason, 8, 18, 160, 0xFFF2C46E);
     }
 }

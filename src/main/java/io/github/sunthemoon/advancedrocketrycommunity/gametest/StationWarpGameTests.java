@@ -545,7 +545,10 @@ public final class StationWarpGameTests {
 
     /** The code token of a station notice (ADR-065 section 5.3): its key and its arguments, never English prose. */
     static String notice(String kind, Object... arguments) {
-        return NOTICE + kind + "(" + java.util.Arrays.stream(arguments).map(String::valueOf)
+        // BODY arguments remain canonical IDs in storage, but live components now carry body translation keys.
+        return NOTICE + kind + "(" + java.util.Arrays.stream(arguments).map(argument ->
+                        argument instanceof ResourceLocation body
+                                ? "body." + body.getNamespace() + "." + body.getPath() : String.valueOf(argument))
                 .collect(java.util.stream.Collectors.joining(", ")) + ")";
     }
 

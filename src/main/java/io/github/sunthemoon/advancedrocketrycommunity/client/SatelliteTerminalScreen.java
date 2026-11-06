@@ -59,22 +59,23 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         addRenderableWidget(button(6, 105, 44,
                 "screen.advancedrocketrycommunity.satellite.assemble_short",
                 SatelliteTerminalMenu.BUTTON_ASSEMBLE));
-        addRenderableWidget(button(52, 105, 40,
-                "screen.advancedrocketrycommunity.satellite.launch",
-                SatelliteTerminalMenu.BUTTON_LAUNCH));
-        addRenderableWidget(button(94, 105, 34,
+        Button launch = button(52, 105, 46, "screen.advancedrocketrycommunity.satellite.launch_short",
+                SatelliteTerminalMenu.BUTTON_LAUNCH);
+        launch.setTooltip(Tooltip.create(Component.translatable("screen.advancedrocketrycommunity.satellite.launch")));
+        addRenderableWidget(launch);
+        addRenderableWidget(button(100, 105, 46,
                 "screen.advancedrocketrycommunity.satellite.claim",
                 SatelliteTerminalMenu.BUTTON_CLAIM));
-        addRenderableWidget(button(130, 105, 40,
+        addRenderableWidget(button(148, 105, 66,
                 "screen.advancedrocketrycommunity.satellite.cancel",
                 SatelliteTerminalMenu.BUTTON_CANCEL));
-        Button decommission = button(172, 105, 46,
+        Button decommission = button(10, 123, 76,
                 "screen.advancedrocketrycommunity.satellite.decommission",
                 SatelliteTerminalMenu.BUTTON_DECOMMISSION);
         decommission.setTooltip(Tooltip.create(
                 Component.translatable("tooltip.advancedrocketrycommunity.satellite.decommission")));
         addRenderableWidget(decommission);
-        Button unlink = button(172, 123, 46,
+        Button unlink = button(90, 123, 76,
                 "screen.advancedrocketrycommunity.satellite.unlink",
                 SatelliteTerminalMenu.BUTTON_UNLINK);
         unlink.setTooltip(Tooltip.create(
@@ -140,9 +141,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
 
         drawOrbit(graphics, x + 149, y + 34);
         drawEnergy(graphics, x + 181, y + 19);
-        for (int slotX : new int[]{17, 43, 69, 107, 133, 187}) {
-            drawSlot(graphics, x + slotX, y + 53);
-        }
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF7897A0, RECESS);
         graphics.fill(x + 96, y + 61, x + 105, y + 65, MUTED);
         graphics.fill(x + 158, y + 61, x + 178, y + 65, MUTED);
         graphics.fill(x + 176, y + 59, x + 179, y + 67, MUTED);
@@ -152,9 +151,9 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         int progressWidth = duration <= 0
                 ? 0
                 : Math.max(2, 158 - Math.min(158, remaining * 158 / duration));
-        graphics.fill(x + 10, y + 135, x + 168, y + 138, RECESS);
+        graphics.fill(x + 10, y + 139, x + 168, y + 141, RECESS);
         if (menu.missionStatus().isPresent()) {
-            graphics.fill(x + 10, y + 135, x + 10 + progressWidth, y + 138,
+            graphics.fill(x + 10, y + 139, x + 10 + progressWidth, y + 141,
                     menu.missionStatus().orElseThrow() == MissionStatus.READY ? GOLD : CYAN);
         }
     }
@@ -177,7 +176,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         text.draw(graphics,
                 font,
                 Component.translatable(
-                        "screen.advancedrocketrycommunity.satellite.power",
+                        "screen.advancedrocketrycommunity.satellite.power_short",
                         menu.energyStored()
                 ),
                 10,
@@ -223,9 +222,9 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         text.draw(graphics,
                 font,
                 Component.translatable(status.translationKey()).append(" [" + status.name() + "]"),
-                30,
+                10,
                 94,
-                164,
+                204,
                 isError(status) || !menu.ownedByViewer() ? RED : MUTED
         );
         view().ifPresent(current -> renderDelivery(graphics, current));
@@ -308,11 +307,6 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 .<Component>map(body -> Component.translatable("screen.advancedrocketrycommunity.satellite.kind_orbit",
                         kind, Component.translatable("body." + body.getNamespace() + "." + body.getPath())))
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite.kind_idle", kind)));
-    }
-
-    private static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, 0xFF7897A0);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, RECESS);
     }
 
     private static void drawOrbit(GuiGraphics graphics, int centerX, int centerY) {

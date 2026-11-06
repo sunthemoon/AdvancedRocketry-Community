@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public final class ElectrolyzerScreen extends AbstractContainerScreen<ElectrolyzerMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL = 0xFF172126;
     private static final int PANEL_EDGE = 0xFF66808A;
     private static final int RECESS = 0xFF0B1114;
@@ -29,6 +30,7 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -56,6 +58,7 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
                     mouseY
             );
         }
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
     }
 
     @Override
@@ -67,10 +70,7 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
         graphics.fill(x + 4, y + 17, x + imageWidth - 4, y + 71, 0xB50B1114);
         graphics.renderOutline(x + 4, y + 17, imageWidth - 8, 54, 0xFF40545D);
 
-        drawSlot(graphics, x + 43, y + 34);
-        drawSlot(graphics, x + 43, y + 58);
-        drawSlot(graphics, x + 115, y + 34);
-        drawSlot(graphics, x + 139, y + 34);
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, SLOT_EDGE, RECESS);
 
         drawVerticalGauge(
                 graphics,
@@ -102,26 +102,18 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFDCE9ED, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFC9D4D7, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, 0xFFDCE9ED);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, 0xFFC9D4D7);
         ElectrolyzerStatus status = menu.status();
         Component statusText = menu.recipeReason() == RecipeMenuReason.NONE
                 ? Component.translatable(status.translationKey())
                 : Component.translatable(menu.recipeReason().translationKey());
-        graphics.drawCenteredString(
-                font,
-                statusText,
-                imageWidth / 2,
-                72,
+        text.centered(
+                graphics, font, statusText, 8, 72, 160,
                 status == ElectrolyzerStatus.INVALID_RECIPE || status == ElectrolyzerStatus.UNSUPPORTED_DATA
                         ? 0xFFFF6B5F
                         : 0xFF9FB4BA
         );
-    }
-
-    private static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, SLOT_EDGE);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, RECESS);
     }
 
     private static void drawVerticalGauge(
