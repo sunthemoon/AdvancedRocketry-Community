@@ -134,6 +134,80 @@ public final class LowGravityFlightGameTests {
         helper.succeed();
     }
 
+    /**
+     * W294 (finding 6-4): at 0 % a player standing on the platform reports {@code onGround} false. Vanilla would then
+     * divide dig speed by 5 as if airborne; supported, they dig at ground speed. Off the platform, and standing at 1 g
+     * with the airborne flag, vanilla's penalty stays.
+     */
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
+    public static void aPlayerStandingOnAZeroGravityPlatformDigsAtGroundSpeed(GameTestHelper helper) {
+        var stone = Blocks.STONE.defaultBlockState();
+        try (Fixture f = new Fixture(helper, CelestialIds.SPACE_LEVEL, "gravityDig")) {
+            StationRegistrySavedData data = StationRegistrySavedData.get(f.player.server);
+            UUID id = UUID.randomUUID();
+            data.reserve(id, f.player.getUUID(), "Gravity dig", CelestialIds.EARTH_ID, f.level.getGameTime());
+            data.commit(id);
+            StationState station = data.find(id).orElseThrow();
+            BlockPos pad = new BlockPos(station.landingPad().x(), station.landingPad().y(), station.landingPad().z());
+            f.level.getChunkAt(pad);
+            var floor = f.level.getBlockState(pad.below());
+            var feet = f.level.getBlockState(pad);
+            var head = f.level.getBlockState(pad.above());
+            try {
+                f.level.setBlockAndUpdate(pad.below(), Blocks.SMOOTH_STONE.defaultBlockState());
+                f.level.setBlockAndUpdate(pad, Blocks.AIR.defaultBlockState());
+                f.level.setBlockAndUpdate(pad.above(), Blocks.AIR.defaultBlockState());
+                f.player.teleportTo(f.level, pad.getX() + 0.5D, pad.getY(), pad.getZ() + 0.5D, 0, 0);
+                for (int x = -1; x <= 1; x++) {
+                    for (int z = -1; z <= 1; z++) { f.level.getChunkAt(f.player.blockPosition().offset(x * 16, 0, z * 16)); }
+                }
+                f.acknowledge();
+                for (int tick = 0; tick < 3; tick++) { f.tick(0.0D); }
+                helper.assertTrue(CelestialGravityController.appliedMultiplier(f.player) == 0.0D && !f.player.onGround(),
+                        "The fixture is not a 0 % player reporting onGround false");
+                float floating = f.player.getDigSpeed(stone, pad.below());
+                float ground = groundDigSpeed(f.player, stone, pad.below());
+                helper.assertTrue(floating == ground, "A player standing on a 0 % platform digs at " + floating
+                        + " instead of the ground speed " + ground);
+                // Off the platform edge (inside the region, unsupported), the airborne penalty stays.
+                f.player.teleportTo(f.level, pad.getX() + 0.5D, pad.getY(), pad.getZ() + 10.5D, 0, 0);
+                f.acknowledge();
+                f.tick(0.0D);
+                float adrift = f.player.getDigSpeed(stone, pad.below());
+                helper.assertTrue(!f.player.onGround() && adrift == groundDigSpeed(f.player, stone, pad.below()) / 5.0F,
+                        "An unsupported 0 % player lost vanilla's airborne dig penalty: " + adrift);
+            } finally {
+                f.level.setBlockAndUpdate(pad.below(), floor);
+                f.level.setBlockAndUpdate(pad, feet);
+                f.level.setBlockAndUpdate(pad.above(), head);
+                data.delete(id);
+            }
+        }
+        try (Fixture f = new Fixture(helper, net.minecraft.world.level.Level.OVERWORLD, "gravityDigNormal")) {
+            BlockPos below = f.player.blockPosition().below();
+            var original = f.level.getBlockState(below);
+            try {
+                f.level.setBlockAndUpdate(below, Blocks.SMOOTH_STONE.defaultBlockState());
+                f.tick(0.0D);
+                f.player.setOnGround(false); // As the client reports a jump just above the block.
+                float airborne = f.player.getDigSpeed(stone, below);
+                helper.assertTrue(!f.player.onGround() && airborne == groundDigSpeed(f.player, stone, below) / 5.0F,
+                        "A 1 g player reporting airborne over a block lost vanilla's dig penalty: " + airborne);
+            } finally { f.level.setBlockAndUpdate(below, original); }
+        }
+        helper.succeed();
+    }
+
+    /** The same player's dig speed with the ground flag set, then the flag restored. */
+    private static float groundDigSpeed(ServerPlayer player, net.minecraft.world.level.block.state.BlockState state,
+                                        BlockPos pos) {
+        boolean onGround = player.onGround();
+        player.setOnGround(true);
+        try {
+            return player.getDigSpeed(state, pos);
+        } finally { player.setOnGround(onGround); }
+    }
+
     private static void stationCase(GameTestHelper helper, boolean reconnect, boolean supported) {
         try (Fixture f = new Fixture(helper, CelestialIds.SPACE_LEVEL, "gravityStation")) {
             StationRegistrySavedData data = StationRegistrySavedData.get(f.player.server);

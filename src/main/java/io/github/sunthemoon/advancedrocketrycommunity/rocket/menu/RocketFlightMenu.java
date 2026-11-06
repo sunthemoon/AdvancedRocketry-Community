@@ -38,6 +38,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     private final TravelTarget openingCurrentTarget;
     private final Player viewer;
     private RocketFlightPlanSnapshot receivedPlan = RocketFlightPlanSnapshot.empty();
+    private String receivedPadName = "";
     private RocketNavigation receivedNavigation = RocketNavigation.empty();
     private RocketNavigation serverNavigation = RocketNavigation.empty();
     private RocketFlightData quotedFlight;
@@ -151,7 +152,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
         super.broadcastChanges();
         if (viewer instanceof ServerPlayer player && player.containerMenu == this && stillValid(player)) {
             var navigation = navigation();
-            var snapshot = new RocketFlightPlanPacket(containerId, rocketEntityId, activePlan(), navigation);
+            var snapshot = planPacket(navigation);
             if (!snapshot.equals(lastSentSnapshot)) {
                 RocketFlightNetwork.sendPlan(player, snapshot);
                 lastSentSnapshot = snapshot;
@@ -163,6 +164,12 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
                 });
             }
         }
+    }
+
+    /** The plan frame {@link #broadcastChanges()} sends: the active plan, the given quotes and the indexed pad name. */
+    public RocketFlightPlanPacket planPacket(RocketNavigation navigation) {
+        var plan = activePlan();
+        return new RocketFlightPlanPacket(containerId, rocketEntityId, plan, navigation, padName(plan));
     }
 
     @Override
@@ -190,11 +197,25 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     }
 
     public void acceptPlanSnapshot(RocketFlightPlanSnapshot plan, RocketNavigation navigation) {
+        acceptPlanSnapshot(plan, navigation, "");
+    }
+
+    public void acceptPlanSnapshot(RocketFlightPlanSnapshot plan, RocketNavigation navigation, String padName) {
         if (viewer.level().isClientSide() && navigation.generation() >= receivedNavigation.generation()) {
             receivedPlan = java.util.Objects.requireNonNull(plan, "plan");
             receivedNavigation = java.util.Objects.requireNonNull(navigation, "navigation");
+            receivedPadName = java.util.Objects.requireNonNull(padName, "padName");
             planReceived = true;
         }
+    }
+
+    /** Display metadata only; a missing index entry never substitutes a different landing target. */
+    public String padName(RocketFlightPlanSnapshot plan) {
+        if (plan.landingPad() == null) { return ""; }
+        if (viewer.level().isClientSide()) { return receivedPlan.equals(plan) ? receivedPadName : ""; }
+        return io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex
+                .get(((net.minecraft.server.level.ServerLevel) viewer.level()).getServer())
+                .find(plan.stationId(), plan.landingPad()).map(entry -> entry.name()).orElse("");
     }
 
     public RocketFlightState state() {

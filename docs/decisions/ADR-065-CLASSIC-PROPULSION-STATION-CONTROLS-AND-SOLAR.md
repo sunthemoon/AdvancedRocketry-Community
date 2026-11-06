@@ -2403,6 +2403,21 @@ TASK-W06F did. It changes no accepted behaviour or bound.
 - The malformed-kind tests move their unknown sample to the first unassigned byte (5). They and the protocol pin test
   gain the version-2 cases; no assertion is removed.
 
+### R324 implementation note: the chosen pad's name on `rocket_flight` protocol 10 (Root, 2026-11-05)
+
+W278's round 3 finding 3-3 needs the flight console to show which named landing pad is chosen. Root decision R324
+(QUEUE, TASK-W291) adds it inside this ADR's accepted surface, as R92 did above. It changes no accepted behaviour or
+bound; review W291R approved it.
+
+- `RocketFlightPlanPacket` (index 1, PLAY_TO_CLIENT) gains one display-only pad name of at most 32 characters, written
+  only when the plan carries a pad reference. Its declared bound grows by 98 bytes to 31,542, inside the existing
+  32 KiB ceiling. `RocketFlightIntentPacket` and `CelestialSnapshotPacket` keep their layouts, indices and directions.
+- `rocket_flight` moves from protocol 9 to 10 with exact-version negotiation, so a protocol-9 peer cannot join instead
+  of misreading the frame. The rows of the table above for `rocket_flight` read 10 from this note on.
+- The client only displays the name. No C2S message, coordinate, launch validation or saved flight plan changes, and a
+  pad chosen while its chunk is unloaded is menu intent only: flight admission still requires the loaded pad (section
+  6.1).
+
 ### 11.2 Authority, content and verification
 
 C2S classic intents carry menu/container identity,

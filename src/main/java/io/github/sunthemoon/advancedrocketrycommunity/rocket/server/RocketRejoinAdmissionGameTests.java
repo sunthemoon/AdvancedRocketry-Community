@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -42,6 +44,10 @@ public final class RocketRejoinAdmissionGameTests {
     public static void landedHoldRefusalsDoNotMutateAuthority(GameTestHelper helper) { new Scenario(helper, true, true).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_command_unloaded", timeoutTicks = 600)
     public static void unloadedAuthorityRefusesWithoutLoadingItsSection(GameTestHelper helper) { new Scenario(helper, false, true, true).start(); }
+
+    // W304: a test that fails or times out can skip its scenario's close(); its batch then restores the pad it left.
+    @AfterBatch(batch = "rocket_rejoin_command_h1") public static void afterH1(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_command_h2") public static void afterH2(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
 
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_command_view")
     public static void viewCapsEightEntriesAndFiltersOfflineUuidWithoutWrites(GameTestHelper helper) throws Exception {
@@ -92,7 +98,7 @@ public final class RocketRejoinAdmissionGameTests {
         final GameTestTickPacer pacer; final Output output = new Output();
         final List<UUID> riders = List.of(UUID.randomUUID(), UUID.randomUUID());
         final List<ServerPlayer> players = new ArrayList<>();
-        RocketRejoinSavedData original, data; RocketReleaseAccess.Owner originalOwner;
+        RocketRejoinSavedData original, data; RocketReleaseAccess.Owner originalOwner; RocketRejoinFixturePad pad;
         RocketTransferRecord transfer; RocketEntity rocket; RocketRejoinRoot.Resources resources;
         Path file; int phase, ticks; boolean closed, installed;
         Scenario(GameTestHelper helper, boolean landed) { this(helper, landed, false); }
@@ -142,6 +148,14 @@ public final class RocketRejoinAdmissionGameTests {
                 rocket.initializeTransferred(transfer.sourceSnapshot(), transfer.logicalRocketId(), transfer.ownerId(), RocketTransferEntities.stationarySource(transfer, level.getGameTime()));
             }
             RocketTransferEntities.positionAtOrigin(rocket, rocket.snapshot().orElseThrow().sourceOrigin());
+            if (!refusalOnly) {
+                // W304: the riders' candidates take their height from the surface, above the floor in the structure. A pad
+                // over the ring around the release's region (the authority snapshot's, as RocketReleasePlan records it)
+                // is that surface, so neither the terrain above the structure nor the spawn ring decides the placement.
+                var region = RocketRegion.fromSnapshot(rocket.snapshot().orElseThrow());
+                pad = RocketRejoinFixturePad.around(server.overworld(), region.minimum().x(), region.minimum().z(),
+                        region.maximum().x(), region.maximum().z());
+            }
             journal.put(transfer); transfers.holdForGameTest(server, transfer.transferId(), landed, false);
             helper.assertTrue(level.addFreshEntity(rocket), "Authority not added");
             resources = RocketReleasePlan.resources(rocket.snapshot().orElseThrow(), rocket.flightData().orElseThrow()); phase = 1;
@@ -272,6 +286,7 @@ public final class RocketRejoinAdmissionGameTests {
             if (file != null && installed) {
                 try { Files.deleteIfExists(file); } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
             }
+            if (pad != null) { pad.close(); }
         }
     }
 }

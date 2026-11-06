@@ -251,6 +251,27 @@ public final class EscrowMonitorGameTests {
             helper.assertTrue(flight.fuel().totalAmount() == quote.source().fuel().totalAmount() - quote.cost()
                     && flight.fuel().committedDebits().equals(java.util.List.of(prepared.transferId())), "Governed flight did not debit exactly once");
             helper.assertTrue(!rocket.isAlive(), "Governed source survived");
+            // W289: F8 has retired T, so a schema-1 old physical hint must follow the retained logical head.
+            var observer = new RocketMonitorBlockEntity(arrival.blockPosition(), ModBlocks.ROCKET_MONITORING_STATION.get().defaultBlockState());
+            observer.setLevel(destinationLevel);
+            var oldBinding = new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding(
+                    logical(rocket), destinationLevel.dimension().location(), rocket.getUUID(),
+                    RocketMonitorBinding.origin(flight), RocketMonitorBinding.station(flight));
+            var oldSaved = new CompoundTag();
+            oldSaved.put(RocketMonitorRoot.KEY, new RocketMonitorRoot(monitor.root().owner(), UUID.randomUUID(), oldBinding,
+                    0, false, false, null, "").encode());
+            observer.load(oldSaved);
+            var resolved = RocketMonitorBinding.resolve(observer, false);
+            helper.assertTrue(oldSaved.equals(observer.saveWithoutMetadata()), "Head lookup rewrote the saved binding");
+            if (!RocketMonitorBinding.loaded(destinationLevel, arrival.blockPosition())
+                    || !RocketMonitorBinding.loaded(destinationLevel, RocketMonitorBinding.origin(flight))) {
+                // Entity registration precedes entity-ticking readiness when a cold column is restored.
+                helper.assertTrue(resolved.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorStatus.WAITING_UNLOADED
+                        && resolved.rocket() == null, "Unready destination was not kept unloaded: " + resolved.status());
+                return;
+            }
+            helper.assertTrue(resolved.rocket() == arrival,
+                    "Monitor lost the logical identity after native F8 retired the transfer journal: " + resolved.status());
             monitor.tick(); helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.SUCCESS, "Acknowledged governed flight still displays pending");
             if (revocation != Revocation.NONE) {
                 helper.assertTrue(revoked && !monitor.root().armed() && monitor.root().powered(), "Membership cut/arming invalidation not observed");

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.starmap;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
@@ -149,11 +150,18 @@ public final class RocketStarMap {
     }
 
     private Component quoteLabel(TravelTarget target) {
-        var quote = menu.quotes().forTarget(target);
+        return quoteLabel(menu.quotes().forTarget(target));
+    }
+
+    /**
+     * The route's fuel requirement in the rocket's own units, as the console's "ROUTE NEEDS" shows it; never millibuckets
+     * (W294, finding 3-7; ADR-065 D1-A). The v1.4 key {@code starmap.advancedrocketrycommunity.quote} said "mB".
+     */
+    static Component quoteLabel(RocketFlightQuotes.Quote quote) {
         if (quote.status() == RocketNavigationStatus.DISCOVERY_REQUIRED) {
             return Component.translatable(quote.status().translationKey());
         }
-        return Component.translatable("starmap.advancedrocketrycommunity.quote",
+        return Component.translatable("starmap.advancedrocketrycommunity.route_quote",
                 Component.translatable(quote.status().translationKey()), quote.requiredFuel());
     }
 

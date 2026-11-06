@@ -143,10 +143,10 @@ public final class WarpControllerMenu extends StationControllerMenu {
         List<Component> lines = new ArrayList<>();
         int orbit = view.value(ORBIT);
         lines.add(Component.translatable(KEY + "orbit", orbit >= 0 && orbit < names().size()
-                ? Component.literal(names().get(orbit).toString()) : Component.translatable(KEY + "unknown")));
+                ? bodyName(names().get(orbit)) : Component.translatable(KEY + "unknown")));
         int index = view.value(SELECTED);
         lines.add(index >= 0 && index < targets().size()
-                ? Component.translatable(KEY + "target", Component.literal(targets().get(index).toString()))
+                ? Component.translatable(KEY + "target", bodyName(targets().get(index)))
                 : Component.translatable(KEY + "no_target"));
         lines.add(Component.translatable(KEY + "balance", view.value(BALANCE), view.value(PENDING)));
         int costClass = view.value(COST_CLASS);
@@ -159,6 +159,10 @@ public final class WarpControllerMenu extends StationControllerMenu {
             lines.add(Component.translatable(KEY + "countdown", countdown));
         }
         return lines;
+    }
+
+    static Component bodyName(net.minecraft.resources.ResourceLocation id) {
+        return Component.translatableWithFallback("body." + id.getNamespace() + "." + id.getPath(), id.toString());
     }
 
     @Override

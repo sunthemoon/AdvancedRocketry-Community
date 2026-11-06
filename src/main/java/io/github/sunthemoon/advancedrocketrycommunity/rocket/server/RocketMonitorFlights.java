@@ -43,8 +43,8 @@ public final class RocketMonitorFlights {
         var entries = new ArrayList<Target>();
         if (catalog == null) {
             if (flights.configuredCatalogs()) { return List.of(); }
-            entries.add(new Target(new TravelTarget.BodySurface(RocketDestination.EARTH.bodyId()), "Earth"));
-            entries.add(new Target(new TravelTarget.BodySurface(RocketDestination.MOON.bodyId()), "Moon"));
+            entries.add(new Target(new TravelTarget.BodySurface(RocketDestination.EARTH.bodyId()), RocketDestination.EARTH.bodyId().toString()));
+            entries.add(new Target(new TravelTarget.BodySurface(RocketDestination.MOON.bodyId()), RocketDestination.MOON.bodyId().toString()));
         } else {
             for (var body : catalog.celestial().definitions()) {
                 var target = new TravelTarget.BodySurface(body.id());

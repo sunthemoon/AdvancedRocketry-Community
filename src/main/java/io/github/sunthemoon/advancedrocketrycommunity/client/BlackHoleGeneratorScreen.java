@@ -57,7 +57,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
                     menu.energyStored(), BlackHoleGeneratorBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
-        if (view.isPresent() && isHovering(8, 76, imageWidth - 16, 12, mouseX, mouseY)) {
+        if (view.isPresent() && isHovering(8, 74, imageWidth - 16, 19, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             lines.add(Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
                     Component.translatable(view.get().status().translationKey()), view.get().status().name()));
@@ -68,7 +68,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
         }
-        if (!isHovering(8, 76, imageWidth - 16, 12, mouseX, mouseY)) {
+        if (!isHovering(8, 74, imageWidth - 16, 19, mouseX, mouseY)) {
             text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
@@ -83,18 +83,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
         int height = (int) Math.min(54L, (long) menu.energyStored() * 54L
                 / BlackHoleGeneratorBlockEntity.ENERGY_CAPACITY);
         graphics.fill(x + 8, y + 72 - height, x + 18, y + 72, GLOW);
-        for (int slot = 0; slot < BlackHoleGeneratorBlockEntity.FUEL_SLOTS; slot++) {
-            int slotX = x + 61 + (slot % 3) * 18;
-            int slotY = y + 17 + (slot / 3) * 18;
-            graphics.fill(slotX, slotY, slotX + 18, slotY + 18, RECESS);
-            graphics.renderOutline(slotX, slotY, 18, 18, 0xFF5A3A2A);
-        }
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 103 + row * 18 : 161);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, RECESS);
-            }
-        }
+        ContainerSlotBackground.draw(graphics, menu.slots, x, y, 0xFF8C6444, RECESS);
     }
 
     @Override
@@ -110,8 +99,8 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
             return;
         }
         EndgameCode status = view.get().status();
-        text.draw(graphics, font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
-                Component.translatable(status.translationKey()), status.name()), 8, 78, imageWidth - 16,
+        text.wrapped(graphics, font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
+                Component.translatable(status.translationKey()), status.name()), 8, 74, imageWidth - 16, 2,
                 status == EndgameCode.GENERATING ? GLOW : WARNING);
     }
 }

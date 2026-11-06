@@ -59,11 +59,11 @@ public final class RocketFlightSelection {
     }
 
     public void select(RocketDestination destination) {
-        selectedPad = null;
         if (destination == RocketDestination.SPACE_STATION) {
             selectNextStation();
             return;
         }
+        selectedPad = null;
         selectedTarget = LegacyTravelTargetAdapter.fromLegacy(destination, null);
     }
 
@@ -83,18 +83,19 @@ public final class RocketFlightSelection {
                 return;
             }
         }
-        if (selectedTarget instanceof TravelTarget.Station) { selectedTarget = null; }
+        if (selectedTarget instanceof TravelTarget.Station) { selectedTarget = null; selectedPad = null; }
     }
 
     public void selectNextStation() {
-        selectedPad = null;
         if (stations.isEmpty()) {
             return;
         }
         if (selectedTarget instanceof TravelTarget.Station) {
             stationIndex = (stationIndex + 1) % stations.size();
         }
-        selectedTarget = new TravelTarget.Station(stations.get(stationIndex).stationId());
+        var next = new TravelTarget.Station(stations.get(stationIndex).stationId());
+        if (!next.equals(selectedTarget)) { selectedPad = null; }
+        selectedTarget = next;
     }
 
     public RocketDestination selected() {
@@ -120,6 +121,11 @@ public final class RocketFlightSelection {
 
     public TravelTarget displayedTarget(RocketFlightState state, RocketFlightPlanSnapshot activePlan) {
         return state == RocketFlightState.COUNTDOWN ? activePlan.target() : selectedTarget;
+    }
+
+    public io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference displayedPad(
+            RocketFlightState state, RocketFlightPlanSnapshot activePlan) {
+        return state == RocketFlightState.COUNTDOWN ? activePlan.landingPad() : selectedPad;
     }
 
     public int stationIndex() {

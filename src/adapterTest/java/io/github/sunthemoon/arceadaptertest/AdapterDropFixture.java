@@ -9,14 +9,17 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /** Fixture-only control retirement and unfiltered item observations in the original assertion regions. */
 final class AdapterDropFixture {
-    static void retireStartControl(GameTestHelper helper) {
+    static void prepare(GameTestHelper helper) {
+        var world = new AdapterWorldFixture(helper);
         // GameTestInfo places this control outside the template. Water can destroy it while its
         // command-block support remains intact, and its item can drift into a zero-drop region.
         BlockPos button = helper.absolutePos(new BlockPos(1, 0, -2));
         if (helper.getLevel().getBlockState(button).is(Blocks.STONE_BUTTON)
                 && helper.getLevel().getBlockState(button.south()).is(Blocks.COMMAND_BLOCK)) {
-            helper.assertTrue(helper.getLevel().removeBlock(button, false), "Could not retire fixture start button");
+            world.setOutside(button, Blocks.AIR.defaultBlockState());
+            helper.assertTrue(helper.getLevel().getBlockState(button).isAir(), "Could not retire fixture start button");
         }
+        world.isolateTerrain();
     }
 
     static void withFlowingStartControlWater(GameTestHelper helper, Runnable setupAndOperation) {
@@ -37,15 +40,25 @@ final class AdapterDropFixture {
 
     static void flowAcrossStartControl(GameTestHelper helper, BlockPos button) {
         var level = helper.getLevel();
+        var world = new AdapterWorldFixture(helper);
         BlockPos source = button.north();
+        helper.assertTrue(level.getBlockState(button).isAir(), "Start control must be retired before water setup");
         // A bounded channel removes terrain-dependent downhill alternatives. Reset the source so
         // an already-present water block also gets a fresh fluid tick; never replace the button.
-        level.setBlockAndUpdate(source, Blocks.STONE.defaultBlockState());
-        for (BlockPos wall : java.util.List.of(button.below(), source.below(), button.east(), button.west(),
-                source.east(), source.west(), source.north())) {
-            level.setBlockAndUpdate(wall, Blocks.STONE.defaultBlockState());
+        world.setOutside(source, Blocks.STONE.defaultBlockState());
+        var walls = java.util.List.of(button.below(), source.below(), button.east(), button.west(),
+                source.east(), source.west(), source.north(), button.above(), source.above());
+        for (BlockPos wall : walls) {
+            world.setOutside(wall, Blocks.STONE.defaultBlockState());
         }
         level.setBlockAndUpdate(source, Blocks.WATER.defaultBlockState());
+        helper.runAtTickTime(8, () -> {
+            AdapterWorldFixture.assertTerrainIntact(helper);
+            for (BlockPos wall : walls) {
+                helper.assertTrue(level.getBlockState(wall).is(Blocks.STONE) && level.getFluidState(wall).isEmpty(),
+                        "Fixture water channel opened at " + wall);
+            }
+        });
     }
 
     static void assertNoDrops(GameTestHelper helper, AABB region, String message) {

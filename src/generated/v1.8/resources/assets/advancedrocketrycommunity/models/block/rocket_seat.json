@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/machine_panel_side",
+    "side": "advancedrocketrycommunity:block/rocket_seat_frame",
+    "top": "advancedrocketrycommunity:block/rocket_seat_cushion"
+  }
+}

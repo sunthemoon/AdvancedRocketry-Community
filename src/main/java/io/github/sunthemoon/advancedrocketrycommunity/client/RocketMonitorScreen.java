@@ -73,7 +73,8 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
         lines.add(Component.translatable(KEY + "motion", decimal(v.get(2)), decimal(v.get(3))));
         int selected = v.get(4);
         lines.add(Component.translatable(KEY + "destination", selected >= 0 && selected < menu.labels().size()
-                ? menu.labels().get(selected) : "-"));
+                ? io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorLabels.display(
+                        menu.labels().get(selected), net.minecraft.client.resources.language.I18n::exists) : Component.literal("-")));
         for (int bank = 0; bank < 2; bank++) {
             int offset = 10 + bank * 5;
             Component fluid = v.get(offset + 4) < 0 ? Component.literal("-") : BuiltInRegistries.FLUID.byId(v.get(offset + 4)).getFluidType().getDescription();
