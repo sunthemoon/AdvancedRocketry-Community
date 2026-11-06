@@ -223,6 +223,26 @@ body (`WarpTargetRule`) and refuse it with `WARP_TARGET_UNAVAILABLE`. A station 
 record and may warp away, as the evacuation rule allows. Nothing persisted changes, and the relocation decision, the
 schema and the checked commit are unchanged. Evidence: [W308](../work/v1.8.0-root-queue/records/W308.md).
 
+### W309 implementation note: the route warning is per orbit (Root, 2026-11-06, R357)
+
+This section's route disclosure is evaluated for the exact `orbit(targetBody)` anchor that section 5's rocket
+planner resolves a station source or destination to. The warning is shown when no current rocket route starts or
+ends at that anchor:
+
+- surface routes and routes to another body in the same system do not suppress it, so Tau Ceti f and g's routes do
+  not suppress it for Tau Ceti e, which has none by design (ADR-043, ADR-063);
+- either endpoint counts, including a one-way route, so the warning is not a full flight-feasibility check.
+
+The command says that rockets cannot reach or leave the station in that orbit. A routeless orbit remains a valid
+warp target; admission, costs and relocation are unchanged. The server-only quote boolean is renamed in place to
+`targetOrbitHasRoutes`, with no saved or wire format change. The warp controller screen does not show the warning:
+its menu data carries no route flag, and inferring routes from body capabilities would misstate a server's data
+pack. Showing it would need a route flag in the controller's menu data, which is a protocol change.
+
+Station creation follows the same target rule as the warp (`WarpTargetRule`): an operator cannot create a station
+around the shared Space body, and a station that already orbits it is unchanged. Evidence:
+[W309](../work/v1.8.0-root-queue/records/W309.md).
+
 ## 5. Rockets and passengers
 
 - **Passengers** stay in place and see the new context. There is no teleport.

@@ -18,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironment;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpTargetRule;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public final class StationManager implements StationOperationService {
                 platforms,
                 bodyId -> celestialCatalogs.current()
                         .flatMap(catalog -> catalog.get(bodyId))
-                        .filter(body -> body.capabilities().orbitable())
+                        .filter(WarpTargetRule::offered)
                         .isPresent()
         );
         this.orbitEnvironments = new StationOrbitEnvironmentResolver(celestialCatalogs);
