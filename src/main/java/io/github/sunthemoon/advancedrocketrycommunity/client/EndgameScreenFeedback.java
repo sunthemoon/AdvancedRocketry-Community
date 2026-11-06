@@ -59,7 +59,8 @@ final class EndgameScreenFeedback {
                     || line.value().equals(refusal.name())).isPresent();
             if (!recordsRefusal && !field(before, field).equals(changed)) { return true; }
         }
-        if (refusal == EndgameCode.OUTBOX_FULL) {
+        if (refusal == EndgameCode.OUTBOX_FULL
+                && !before.line(VIEW + "outbox").equals(after.line(VIEW + "outbox"))) {
             var counts = after.line(VIEW + "outbox").filter(line -> !line.translated())
                     .map(line -> COUNTS.matcher(line.value())).filter(java.util.regex.Matcher::matches);
             if (counts.isPresent() && Long.parseLong(counts.get().group(1)) < Long.parseLong(counts.get().group(2))) {

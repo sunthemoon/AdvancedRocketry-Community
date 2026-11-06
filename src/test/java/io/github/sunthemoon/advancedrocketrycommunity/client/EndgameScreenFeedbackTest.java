@@ -84,6 +84,7 @@ class EndgameScreenFeedbackTest {
             var full = view(system, EndgameCode.OK, line("outbox", "64 / 64"));
             var available = view(system, EndgameCode.OK, line("outbox", "63 / 64"));
             assertTrue(answers(EndgameCode.OUTBOX_FULL, full, available));
+            assertFalse(answers(EndgameCode.OUTBOX_FULL, available, available));
             assertFalse(answers(EndgameCode.UNAUTHORIZED, full, available));
             assertFalse(answers(EndgameCode.OUTBOX_FULL, available, full));
             assertFalse(answers(EndgameCode.OUTBOX_FULL, full, view(system, EndgameCode.OK, line("outbox", "?"))));
