@@ -35,6 +35,10 @@ public final class ResearchEnvironmentGameTests {
     public static void dayRainCoveredSkyAndUnloadedCellsPauseWithoutPayment(GameTestHelper helper) {
         var fixture = ResearchGameTests.fixture(helper, false, Direction.NORTH, UUID.randomUUID(), 0);
         var service = ResearchRuntime.service(fixture.level); BlockPos roof = fixture.lens().above(3);
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_WEATHER_FIXTURE research origin={} lens={} biome={} precipitation={} roof={}",
+                fixture.origin, fixture.lens(), fixture.level.getBiome(fixture.lens()).unwrapKey(),
+                fixture.level.getBiome(fixture.lens()).value().hasPrecipitation(), fixture.level.getBlockState(roof));
         ResearchGameTests.steps(helper, ResearchGameTests.ticking(List.of(fixture), true), ResearchGameTests.then(() -> {
             var owner = fixture.controller.researchOwner().orElseThrow();
             ResearchGameTests.night(fixture); helper.assertTrue(service.intent(fixture.controller, owner, 0), "Environment START refused"); fixture.flush(); fixture.feed(1_000);
@@ -42,6 +46,9 @@ public final class ResearchEnvironmentGameTests {
             helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.DAYTIME, "Daytime paid");
             fixture.level.setDayTime(18_000); fixture.level.setWeatherParameters(0, 100_000, true, false);
             fixture.level.setRainLevel(1); fixture.level.updateSkyBrightness();
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_WEATHER_FIXTURE research rain={} rainingAtLens={} sky={}", fixture.level.getRainLevel(1),
+                    fixture.level.isRainingAt(fixture.lens()), fixture.level.canSeeSky(fixture.lens()));
             helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.WEATHER, "Rain paid");
             ResearchGameTests.night(fixture); fixture.level.setRainLevel(0); fixture.level.updateSkyBrightness();
             var chunk = new net.minecraft.world.level.ChunkPos(fixture.origin); fixture.controller.chunkUnavailable(chunk);
