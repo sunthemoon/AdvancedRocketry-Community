@@ -385,6 +385,7 @@ final class BayPassengerExitGameTestFixture {
             var previousFlight = flight; flight = otherFlight; otherFlight = previousFlight;
         }
         if (lastUnit()) { buildGantry(); }
+        if (scenario == Case.FIFO) { BayPassengerExitGameTestAudit.placement(this); }
         for (var entry : List.of(Map.entry(player, flight), Map.entry(otherPlayer, otherFlight))) {
             helper.assertTrue(exits.state.admit(entry.getKey().getUUID(), entry.getValue().record().transferId(),
                     entry.getValue().record().logicalRocketId(), player.getServer().getTickCount()) != null, "Closed history could not be seeded");

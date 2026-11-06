@@ -25,6 +25,45 @@ import net.minecraft.world.phys.Vec3;
 final class BayPassengerExitGameTestAudit {
     private static final String UNKNOWN_33 = "Ticket[unknown 33 ";
     private BayPassengerExitGameTestAudit() { }
+    /** Read-only placement census, using a private budget rather than the measured service budget. */
+    static void placement(BayPassengerExitGameTestFixture fixture) {
+        var level = fixture.helper.getLevel();
+        var origin = fixture.origin;
+        var rocket = fixture.flight.source();
+        var positions = io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.ordered(
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Position(
+                        level.dimension().location().toString(), rocket.getX(), rocket.getY(), rocket.getZ()),
+                java.util.Optional.empty(), java.util.Optional.of(
+                        new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Anchor(
+                                level.dimension().location().toString(), origin.getX(), origin.getY(), origin.getZ())));
+        int ordinal = 0;
+        for (var position : positions) {
+            var box = new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Box(position, .6F, 1.8F);
+            var world = new BayPassengerExitWorld(fixture.player);
+            var budget = new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitBudget(0);
+            try (var probe = budget.openProbe().orElseThrow()) {
+                var verdict = io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.loaded(world)
+                        .inspect(box, probe, (candidate, allowance) -> true);
+                var fluids = new ArrayList<String>();
+                int supportY = (int) Math.floor(Math.nextDown(position.y()));
+                for (int x = (int) Math.floor(box.minX()) - 1; x < (int) Math.ceil(box.maxX()) + 1; x++) {
+                    for (int z = (int) Math.floor(box.minZ()) - 1; z < (int) Math.ceil(box.maxZ()) + 1; z++) {
+                        var chunk = level.getChunkSource().getChunkNow(x >> 4, z >> 4);
+                        if (chunk == null) { continue; }
+                        for (int y = supportY - 1; y < (int) Math.ceil(box.maxY()) + 1; y++) {
+                            var at = new BlockPos(x, y, z);
+                            var state = chunk.getBlockState(at);
+                            if (!state.getFluidState().isEmpty()) { fluids.add(at + "=" + state); }
+                        }
+                    }
+                }
+                AdvancedRocketryCommunity.LOGGER.info(
+                        "W313_PLACEMENT case={} origin={} ordinal={} feet={} verdict={} reads={} columnChecks={} contact={} support={} fluids={}",
+                        fixture.scenario, origin, ++ordinal, position, verdict, world.reads, world.columnChecks,
+                        world.firstContact, level.getBlockState(BlockPos.containing(position.x(), supportY, position.z())), fluids);
+            }
+        }
+    }
     static String difference(Object before, Object after) {
         var left = (Map<?, ?>) before; var right = (Map<?, ?>) after;
         var changed = new TreeMap<String, String>();
