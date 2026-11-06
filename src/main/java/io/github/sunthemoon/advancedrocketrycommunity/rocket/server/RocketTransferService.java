@@ -350,7 +350,7 @@ final class RocketTransferService {
         recovery.onPlayerLoggedOut(playerId);
     }
 
-    boolean seatReconnectPending(ServerPlayer player) { return recovery.seatReconnectPending(player); }
+    boolean seatReconnectPending(ServerPlayer player, RocketEntity rocket) { return recovery.seatReconnectPending(player, rocket); }
 
     /**
      * ADR-044 §5 in-motion rule for one station region in the Space Level: journal records plus this

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.SkyWeatherFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
@@ -33,15 +34,26 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class ResearchEnvironmentGameTests {
     @GameTest(template = "empty", batch = "research_environment", timeoutTicks = 400)
     public static void dayRainCoveredSkyAndUnloadedCellsPauseWithoutPayment(GameTestHelper helper) {
+        var environment = new SkyWeatherFixture(helper, "research_environment");
         var fixture = ResearchGameTests.fixture(helper, false, Direction.NORTH, UUID.randomUUID(), 0);
+        environment.onClose(fixture::close);
         var service = ResearchRuntime.service(fixture.level); BlockPos roof = fixture.lens().above(3);
-        ResearchGameTests.steps(helper, ResearchGameTests.ticking(List.of(fixture), true), ResearchGameTests.then(() -> {
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_WEATHER_FIXTURE research origin={} lens={} biome={} precipitation={} roof={}",
+                fixture.origin, fixture.lens(), fixture.level.getBiome(fixture.lens()).unwrapKey(),
+                fixture.level.getBiome(fixture.lens()).value().hasPrecipitation(), fixture.level.getBlockState(roof));
+        environment.clearSky(fixture.lens().above());
+        environment.precipitatingBiome(fixture.lens());
+        ResearchGameTests.steps(helper, environment::close, ResearchGameTests.ticking(List.of(fixture), true), ResearchGameTests.then(() -> {
             var owner = fixture.controller.researchOwner().orElseThrow();
             ResearchGameTests.night(fixture); helper.assertTrue(service.intent(fixture.controller, owner, 0), "Environment START refused"); fixture.flush(); fixture.feed(1_000);
             fixture.level.setDayTime(6_000); fixture.level.updateSkyBrightness();
             helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.DAYTIME, "Daytime paid");
             fixture.level.setDayTime(18_000); fixture.level.setWeatherParameters(0, 100_000, true, false);
             fixture.level.setRainLevel(1); fixture.level.updateSkyBrightness();
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_WEATHER_FIXTURE research rain={} rainingAtLens={} sky={}", fixture.level.getRainLevel(1),
+                    fixture.level.isRainingAt(fixture.lens()), fixture.level.canSeeSky(fixture.lens()));
             helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.WEATHER, "Rain paid");
             ResearchGameTests.night(fixture); fixture.level.setRainLevel(0); fixture.level.updateSkyBrightness();
             var chunk = new net.minecraft.world.level.ChunkPos(fixture.origin); fixture.controller.chunkUnavailable(chunk);
@@ -53,13 +65,13 @@ public final class ResearchEnvironmentGameTests {
             fixture.level.setDayTime(6_000); fixture.level.updateSkyBrightness();
             fixture.level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
         }), () -> !fixture.level.canSeeSky(fixture.lens()), ResearchGameTests.then(() -> {
-            try (fixture) {
+            try (environment) {
                 ResearchGameTests.night(fixture);
                 helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.NO_SKY,
                         "Covered lens paid: " + fixture.controller.researchStatus());
                 helper.assertTrue(fixture.power.get(0).energyStored() == 1_000 && service.work(fixture.controller).orElseThrow().surveyProgress() == 0,
                         "Paused environment changed FE/progress");
-            } finally { fixture.level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); }
+            }
             helper.succeed();
         }));
     }

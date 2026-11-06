@@ -37,7 +37,7 @@ public final class RocketSeatCommands {
         if (player == null) { return refuse(source, "use one assigned cached player name or UUID"); }
         var result = RocketSeatRelease.operator(rocket, player);
         if (!result.success()) { return refuse(source, result.code().name()); }
-        source.sendSuccess(() -> Component.literal("Released rocket seat: rocket=" + rocket.getUUID() + " player=" + player), false);
+        source.sendSuccess(() -> Component.literal("Released rocket seat: rocket=" + rocket.getUUID() + " player=" + player + "; dismounts the target if riding this rocket"), false);
         return 1;
     }
 
