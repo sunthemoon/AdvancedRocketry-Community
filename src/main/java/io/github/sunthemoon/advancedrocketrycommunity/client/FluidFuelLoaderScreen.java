@@ -27,6 +27,8 @@ public final class FluidFuelLoaderScreen extends AbstractContainerScreen<FluidFu
     private static final int GAUGE_Y = 22;
     private static final int GAUGE_WIDTH = 16;
     private static final int GAUGE_HEIGHT = 52;
+    public static final int TEXT_X = 36, TEXT_RIGHT = 168;
+    private final ScreenText text = new ScreenText();
 
     @SubscribeEvent
     public static void setup(FMLClientSetupEvent event) {
@@ -43,6 +45,7 @@ public final class FluidFuelLoaderScreen extends AbstractContainerScreen<FluidFu
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
     }
 
     @Override
@@ -71,7 +74,8 @@ public final class FluidFuelLoaderScreen extends AbstractContainerScreen<FluidFu
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE4EDF4, false);
+        text.clear();
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, imageWidth - titleLabelX - 8, 0xFFE4EDF4);
         FluidFuelLoaderMenu.View view = menu.view();
         int width = imageWidth - 44;
         drawLine(graphics, contents(view), 36, 24, width, 0xFFD5E2EC);
@@ -79,11 +83,7 @@ public final class FluidFuelLoaderScreen extends AbstractContainerScreen<FluidFu
                 0xFFACC5D7);
         Component status = view.status() == null ? Component.translatable(PREFIX + "status_unknown")
                 : Component.translatable(view.status().translationKey());
-        // Status text wraps onto at most two lines inside the panel.
-        var lines = font.split(status, width);
-        for (int index = 0; index < Math.min(2, lines.size()); index++) {
-            graphics.drawString(font, lines.get(index), 36, 62 + index * 10, 0xFFF2C46E, false);
-        }
+        text.draw(graphics, font, status, TEXT_X, 62, TEXT_RIGHT - TEXT_X, 0xFFF2C46E);
     }
 
     private Component contents(FluidFuelLoaderMenu.View view) {
@@ -97,6 +97,6 @@ public final class FluidFuelLoaderScreen extends AbstractContainerScreen<FluidFu
     }
 
     private void drawLine(GuiGraphics graphics, Component text, int x, int y, int width, int colour) {
-        graphics.drawString(font, font.plainSubstrByWidth(text.getString(), width), x, y, colour, false);
+        this.text.draw(graphics, font, text, x, y, width, colour);
     }
 }
