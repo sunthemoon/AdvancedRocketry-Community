@@ -39,6 +39,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /** Native connected survival logins; unlike the general fixture, rejoin never teleports over the loaded save. */
 final class RocketLogoutSaveFixture implements AutoCloseable {
@@ -51,14 +56,24 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
     final Map<BlockPos, BlockState> original = new LinkedHashMap<>();
     final List<EmbeddedChannel> channels = new ArrayList<>();
     final Path directory;
-    final RocketTransferRecord record;
+    RocketTransferRecord record;
+    private boolean closed;
     RocketEntity rocket;
     ServerPlayer player;
     Vec3 exit;
+    boolean mountedWhenSaved;
 
     RocketLogoutSaveFixture(GameTestHelper helper, RocketFlightState state) throws IOException {
         this.helper = helper;
         directory = Files.createTempDirectory("arce-w312-");
+        try { initialize(state); }
+        catch (RuntimeException | Error failure) {
+            try { close(); } catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
+            throw failure;
+        }
+    }
+
+    private void initialize(RocketFlightState state) {
         var level = helper.getLevel();
         var at = helper.absolutePos(ORIGIN);
         // An elevated, fixed-size platform avoids natural terrain and other batches' fixture blocks.
@@ -89,6 +104,7 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
                     .withFuel(old.sourceFlightData().fuel(), level.getGameTime());
             case LANDED -> record.destinationFlightData().land(level.getGameTime());
             case ASCENT -> base.countdown().completeCountdown(level.getGameTime());
+            case TRANSIT -> record.sourceFlightData();
             default -> throw new IllegalArgumentException("Unsupported logout fixture state " + state);
         };
         // stationarySource retains source fuel; explicitly establish an empty ASSEMBLED control.
@@ -138,29 +154,68 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
         return new Vec3(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
     }
 
-    void logout() {
+    void logout() { logout(false); }
+
+    void logout(boolean cancelled) {
         var before = rocket.flightData().orElseThrow().passengers();
-        player.setShiftKeyDown(true); // Unconsumed sneak is not LEAVE on a disconnect.
-        player.connection.onDisconnect(Component.literal("W312 fixture logout"));
-        helper.assertTrue(player.hasDisconnected() && !player.isPassenger(), "Native disconnect did not detach");
-        helper.assertTrue(rocket.flightData().orElseThrow().passengers().equals(before), "Logout changed the durable seat manifest");
         var exits = RocketRuntime.passengerExits().orElseThrow();
-        helper.assertTrue(!exits.state.live.containsKey(player) && !exits.state.refusals.containsKey(player),
+        int histories = exits.state.histories();
+        var observation = new LogoutObservation(player);
+        player.setShiftKeyDown(true); // Unconsumed sneak is not LEAVE on a disconnect.
+        MinecraftForge.EVENT_BUS.register(observation);
+        try { player.connection.onDisconnect(Component.literal("W312 fixture logout")); }
+        finally { MinecraftForge.EVENT_BUS.unregister(observation); }
+        helper.assertTrue(observation.saves == 1 && observation.detachAttempts > 0 && observation.disconnecting,
+                "Logout did not use native disconnecting detach/save events");
+        mountedWhenSaved = observation.mountedWhenSaved;
+        helper.assertTrue(player.hasDisconnected() && (cancelled || !player.isPassenger()), "Native disconnect did not detach");
+        helper.assertTrue(rocket.flightData().orElseThrow().passengers().equals(before), "Logout changed the durable seat manifest");
+        helper.assertTrue(!exits.state.live.containsKey(player) && !exits.state.refusals.containsKey(player)
+                && exits.state.histories() == histories,
                 "Disconnect started a bay exit or refusal");
         helper.assertTrue(!disk().contains("RootVehicle"), "Logout embedded another rocket authority in the player save");
         recovery.onPlayerLoggedOut(playerId);
         player = null;
     }
 
+    public static final class LogoutObservation {
+        private final ServerPlayer player;
+        int saves, detachAttempts;
+        boolean disconnecting = true, mountedWhenSaved;
+        LogoutObservation(ServerPlayer player) { this.player = player; }
+        @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+        public void mount(EntityMountEvent event) {
+            if (event.isDismounting() && event.getEntityMounting() == player) {
+                detachAttempts++; disconnecting &= player.hasDisconnected();
+            }
+        }
+        @SubscribeEvent public void saved(PlayerEvent.SaveToFile event) {
+            if (event.getEntity() == player) { saves++; mountedWhenSaved = player.isPassenger(); }
+        }
+    }
+
     void reconnect() {
         var committed = record.destinationSpawned(rocket.getUUID()).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
                 .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
         journal.put(committed); settled.add(record.transferId());
-        RocketJournalGameTestSupport.confirmDetached(helper, journal, directory.resolve("arce_rocket_transfers.dat"));
+        RocketJournalGameTestSupport.confirmDetached(helper, journal, directory.resolve(
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
         recovery.onPlayerLoggedIn(player, journal);
     }
 
+    void reloadRocket() {
+        var passengers = rocket.flightData().orElseThrow().passengers();
+        var saved = rocket.saveWithoutId(new CompoundTag());
+        rocket.discard();
+        rocket = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(rocket != null, "Reloaded logout rocket type unavailable");
+        rocket.load(saved);
+        helper.assertTrue(helper.getLevel().addFreshEntity(rocket) && rocket.operational()
+                && rocket.flightData().orElseThrow().passengers().equals(passengers), "Reload lost the retained seat manifest");
+    }
+
     @Override public void close() {
+        if (closed) { return; } closed = true;
         journal.abort(); recovery.clear();
         if (player != null && helper.getLevel().getServer().getPlayerList().getPlayer(playerId) == player) {
             player.connection.onDisconnect(Component.literal("W312 fixture cleanup")); player = null;
