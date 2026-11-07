@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import com.mojang.authlib.GameProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
@@ -229,6 +230,8 @@ public final class RocketLogoutGravityGameTests {
             GravityFieldBlockEntity.serverTick(level, devicePos, device.getBlockState(), device);
             helper.assertTrue(device.active(), "The gravity field lapsed: " + device.describe());
             float lost = fallFromTheExit(player);
+            AdvancedRocketryCommunity.LOGGER.info("W312F2_LOGOUT_GRAVITY field={} depth={} proof={} seatSaved={} landingLost={}",
+                    field / 100.0D, depth, proof, seatSaved, lost);
             if (!seatSaved) {
                 helper.assertTrue(lost == 0.0F, "The returning rider lost " + lost + " health landing " + depth
                         + " blocks below the saved exit in a " + field / 100.0D + " g field (logout proof " + proof + ")");
