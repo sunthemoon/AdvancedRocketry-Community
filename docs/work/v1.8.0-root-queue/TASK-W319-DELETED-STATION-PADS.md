@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-07. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w319`, branch `codex/v1.8.0-w319`, created by Root from the shared head |
 | Decision | Root decision R372 (QUEUE row W319) |
-| Background | `records/W318.md` (on W318's branch, merging soon): `StationManager.delete` does not remove a deleted station's entries from `LandingPadIndex` (`station/pad/`), and two escrow GameTests leave 20 index entries under IDs that are not stations |
+| Background | [W318](records/W318.md): `StationManager.delete` does not remove a deleted station's entries from `LandingPadIndex` (`station/pad/`), and two escrow GameTests leave 20 index entries under IDs that are not stations |
 | Record | `docs/work/v1.8.0-root-queue/records/W319.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W319/` |
 
 ## What to do
