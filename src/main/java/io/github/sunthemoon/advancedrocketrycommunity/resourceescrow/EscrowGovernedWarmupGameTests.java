@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestStationCleanup;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -343,6 +344,8 @@ public final class EscrowGovernedWarmupGameTests {
             data = ResourceEscrowSavedData.forTests(server); data.bind(server);
             station = new StationCreationService(new StationPlatformGenerator(), id -> true)
                     .create(server, UUID.randomUUID(), "Warm-up Cap Station", CelestialIds.EARTH_ID, false).station().orElseThrow();
+            // W318: the station goes when the test ends, once none of its rockets holds a record or a warm-up.
+            GameTestStationCleanup.track(helper, station).heldWhile(() -> rocketHolds(server, data, all()));
             earth.getChunkSource().addRegionTicket(FIXTURE, new ChunkPos(owned.get(0)), 2, key);
             owned.forEach(position -> mine.add(governed(earth, position, data.ledger().id())));
             for (int i = 0; i < 7; i++) {

@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestStationCleanup;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -152,6 +153,9 @@ public final class EscrowMonitorGameTests {
                             .create(server, revocation == Revocation.NONE ? rocket.ownerId().orElseThrow() : UUID.randomUUID(),
                                     "Monitor Station", CelestialIds.EARTH_ID, false)
                             .station().orElseThrow();
+                    // W318: the station goes when the test ends, once this flight no longer names it.
+                    GameTestStationCleanup.track(helper, station)
+                            .heldWhile(() -> rocketHolds(earth.getServer(), data, java.util.Arrays.asList(rocket)));
                     if (revocation != Revocation.NONE) {
                         station = StationRegistrySavedData.get(server).addMember(station.stationId(), rocket.ownerId().orElseThrow());
                     }
