@@ -10,6 +10,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightPlanSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
@@ -21,11 +26,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.Statio
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -50,8 +57,11 @@ public final class DeletedStationPadGameTests {
             helper.assertTrue(LandingPadService.registered(f.server(), f.station.stationId(), f.entry.reference()) == null
                     && LandingPadService.resolve(f.server(), f.station.stationId(), f.entry.reference()) == null,
                     "Deleted station still admitted its old pad");
-            // Identity is checked before the source snapshot is read, with no chunk loading.
-            helper.assertTrue(!new NamedLandingPadStaging().select(f.space(), null, UUID.randomUUID(), f.station,
+            var source = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),
+                    new RocketPosition(0, 80, 0), List.of(new RocketBlock(new RocketPosition(0, 0, 0),
+                            new RocketBlockState(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), Map.of()))),
+                    List.of(), new RocketStats(1, 1, 0, 0, 0, 0, 0, 0), 0);
+            helper.assertTrue(!new NamedLandingPadStaging().select(f.space(), source, UUID.randomUUID(), f.station,
                     f.entry.reference(), List.of(), 0).success(), "Deleted station admitted a named landing");
             UUID replacementId = UUID.randomUUID();
             f.registry.reserve(replacementId, f.station.ownerId(), "Recycled cell", CelestialIds.EARTH_ID, 0);
@@ -61,7 +71,15 @@ public final class DeletedStationPadGameTests {
                 helper.assertTrue(f.index.entries(replacementId).isEmpty()
                         && LandingPadService.resolve(f.server(), replacementId, f.entry.reference()) == null,
                         "Recycled cell inherited an old pad or binding");
-                for (int i = 0; i < LandingPadIndexCodec.MAX_PADS; i++) {
+                // The old physical block is not inherited. Its new owner can explicitly clear the obsolete binding.
+                refused(helper, () -> LandingPadService.register(f.space(), f.position, replacement.ownerId(), false, "New"));
+                helper.assertTrue(LandingPadService.remove(f.space(), f.position, replacement.ownerId(), false),
+                        "New station owner could not clear the obsolete physical binding");
+                var rebound = LandingPadService.register(f.space(), f.position, replacement.ownerId(), false, "Rebound");
+                helper.assertTrue(!rebound.reference().equals(f.entry.reference())
+                        && LandingPadService.resolve(f.server(), replacementId, rebound.reference()) != null,
+                        "Rebound pad did not get a new usable identity");
+                for (int i = 1; i < LandingPadIndexCodec.MAX_PADS; i++) {
                     f.index.register(replacementId, replacement.ownerId(), UUID.randomUUID(), "New " + i,
                             new StationPosition(i, 80, 0));
                 }
@@ -76,8 +94,47 @@ public final class DeletedStationPadGameTests {
             helper.assertTrue(f.index.entries(f.station.stationId()).isEmpty(), "Deleted station retained its pad bucket");
             helper.assertTrue(LandingPadIndexCodec.decode(f.index.save(new CompoundTag())).entries().isEmpty(),
                     "Deleted pad was still serialized");
+            // The deletion's flush must already have saved the removal, before any end-of-test autosave.
+            try {
+                var file = f.server().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                        .resolve("data").resolve(LandingPadIndex.DATA_NAME + ".dat").toFile();
+                helper.assertTrue(NbtIo.readCompressed(file).getCompound("data").getList("pads", 10).isEmpty(),
+                        "Station deletion did not flush its pad removal");
+            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
             helper.succeed();
         }
+    }
+
+    @GameTest(template = "empty", batch = "pad_station_delete_guard", timeoutTicks = 100)
+    public static void refusedDeletionKeepsEveryPadClaimAndChoice(GameTestHelper helper) {
+        try (var f = new Fixture(helper)) {
+            f.select("selected", 1);
+            UUID transfer = UUID.randomUUID();
+            helper.assertTrue(f.index.claim(f.station.stationId(), f.entry.reference(), f.entry.physicalId(), transfer),
+                    "Fixture claim could not be installed");
+            var before = f.index.save(new CompoundTag()); var choice = f.index.choice(f.player.getUUID());
+            refused(helper, () -> f.manager.delete(f.server(), f.station.ownerId(), false, f.station.stationId(), "wrong"));
+            refused(helper, () -> f.manager.delete(f.server(), UUID.randomUUID(), false, f.station.stationId(), "confirm"));
+            var rocket = ModEntities.ROCKET.get().create(f.space());
+            helper.assertTrue(rocket != null, "Deletion guard rocket could not be created");
+            try {
+                var at = f.station.landingPad(); f.space().getChunk(new BlockPos(at.x(), at.y(), at.z()));
+                rocket.setPos(at.x() + 0.5, at.y(), at.z() + 0.5);
+                helper.assertTrue(f.space().addFreshEntity(rocket), "Deletion guard rocket could not be published");
+                refused(helper, f::delete);
+                helper.assertTrue(before.equals(f.index.save(new CompoundTag()))
+                        && choice.equals(f.index.choice(f.player.getUUID())) && f.registry.find(f.station.stationId()).isPresent(),
+                        "Rejected deletion mutated station pads, claims or choice");
+            } finally { rocket.discard(); }
+            helper.succeed();
+        }
+    }
+
+    private static void refused(GameTestHelper helper, Runnable operation) {
+        boolean refused = false;
+        try { operation.run(); }
+        catch (IllegalArgumentException | IllegalStateException | SecurityException expected) { refused = true; }
+        helper.assertTrue(refused, "Operation was not refused");
     }
 
     @GameTest(template = "empty", batch = "pad_station_delete_console", timeoutTicks = 100)

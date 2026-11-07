@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorS
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironment;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationOrbitEnvironmentResolver;
+import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpTargetRule;
 import java.util.LinkedHashMap;
@@ -246,6 +247,8 @@ public final class StationManager implements StationOperationService {
         StationState deleted = data.delete(stationId).orElseThrow(
                 () -> new IllegalStateException("Station changed during deletion")
         );
+        // Remove this station's bounded pad authority before the registry's existing SavedData flush.
+        LandingPadIndex.get(server).removeStation(stationId);
         data.flush(server);
         AdvancedRocketryCommunity.LOGGER.warn(
                 "ARCE_STATION_DELETED station={} actor={} inspected={} removed={} chunks={}",
