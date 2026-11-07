@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Box;
@@ -7,9 +8,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCan
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.LogoutExitSafety;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import java.util.List;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -27,8 +31,29 @@ public final class RocketPassengerLogout {
     /** PlayerList.remove fires this before it saves the player, then detaches it natively after the save. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.hasDisconnected()
-                && player.getVehicle() instanceof RocketEntity rocket) { detach(player, rocket); }
+        if (event.getEntity() instanceof ServerPlayer player && player.hasDisconnected()) { attempt(player); }
+    }
+
+    /**
+     * W312F (R375, review F2): stopServer saves every online player before removeAll, and that disconnect normally never
+     * reaches PlayerList.remove. Detach riders before that save. No rocket or seat input ticks after this event, so the
+     * seat stays assigned exactly as at a logout.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void stopping(ServerStoppingEvent event) {
+        MinecraftServer server = event.getServer();
+        if (!server.isSameThread()) { return; }
+        int riders = 0, detached = 0;
+        for (var player : List.copyOf(server.getPlayerList().getPlayers())) {
+            if (!(player.getVehicle() instanceof RocketEntity)) { continue; }
+            riders++;
+            if (attempt(player)) { detached++; }
+        }
+        if (riders > 0) { AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_STOP_EXIT riders={} detached={}", riders, detached); }
+    }
+
+    static boolean attempt(ServerPlayer player) {
+        return player.getVehicle() instanceof RocketEntity rocket && detach(player, rocket);
     }
 
     private static boolean detach(ServerPlayer player, RocketEntity rocket) {
