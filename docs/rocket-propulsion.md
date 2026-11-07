@@ -12,6 +12,11 @@ still transfers its captured abstract fuel at 25 units per tick. It cannot fill
 bipropellant, oxidizer or working-fluid tanks. Existing assembled rockets never
 gain Fluid content by reloading an old save.
 
+Place loaders, chests and other devices that need hand interaction outside the
+rocket's rectangular outline, including the full fin span. The assembled rocket
+takes clicks inside that outline, even beside a narrow body where no rocket block
+is visible, so devices placed there may not open by hand.
+
 Use a filled bucket or gas canister on an owned, stationary rocket to transfer one
 whole 1,000 mB container. Empty containers unload actual Fluid, preferring the
 primary bank and then oxidizer. The container and its metadata are exchanged
