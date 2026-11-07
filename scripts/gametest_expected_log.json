@@ -1099,7 +1099,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_STATION_DELETE_BACKUP station=[0-9a-f-]{36} owner=[0-9a-f-]{36} members=\\[.*\\] cell=-?\\d+,-?\\d+ region=-?\\d+,-?\\d+,-?\\d+,-?\\d+",
-      "counts": {"station": 1, "station_permission_matrix": 2},
+      "counts": {"station": 1, "station_permission_matrix": 2, "pad_station_delete": 1, "pad_station_delete_console": 1, "pad_station_delete_capacity": 1},
       "test": "StationGameTests, StationPermissionMatrixGameTests",
       "reason": "Deleting a station records its backup before removal."
     },
@@ -1108,7 +1108,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_STATION_DELETED station=[0-9a-f-]{36} actor=[0-9a-f-]{36} inspected=\\d+ removed=\\d+ chunks=\\d+",
-      "counts": {"station": 1, "station_permission_matrix": 2},
+      "counts": {"station": 1, "station_permission_matrix": 2, "pad_station_delete": 1, "pad_station_delete_console": 1, "pad_station_delete_capacity": 1},
       "test": "StationGameTests, StationPermissionMatrixGameTests",
       "reason": "Deleting a station records the actor and the removed blocks."
     },

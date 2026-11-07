@@ -362,6 +362,8 @@ public final class EscrowGovernedLiveReturnGameTests {
             if (veto != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto); }
             terrain.forEach((pos, state) -> level.setBlock(pos, state, 3));
             for (var chunk : chunks()) { level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); }
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(server)
+                    .entries(transfer).isEmpty(), "Live-return cleanup retained synthetic pad entries");
             done = true; helper.succeed();
         }
 
