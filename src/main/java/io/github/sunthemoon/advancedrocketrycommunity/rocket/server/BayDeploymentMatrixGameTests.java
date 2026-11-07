@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayPackage;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -113,7 +114,7 @@ public final class BayDeploymentMatrixGameTests {
         List<String> before;
         String solarCode;
         UUID consumedOp;
-        int stage, waits;
+        int stage, waits, pendingSpawnReadyTicks;
         boolean sawIntent, sawPendingSpawn, closed;
 
         Matrix(GameTestHelper helper, ResourceLocation body, Expect expect) {
@@ -164,6 +165,10 @@ public final class BayDeploymentMatrixGameTests {
                 solarCode = validation.result().code().name();
             }
             var journal = RocketTransferSavedData.get(server);
+            if (forcePendingSpawn) {
+                // Install before publishing T: READY_SOURCE can dispatch on the next server tick.
+                RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, flight.record().transferId(), true);
+            }
             journal.put(flight.record());
             if (expect == Expect.REFUSED_REQUEST) {
                 bays(helper).refuseCheckpointForTests(flight.record().logicalRocketId());
@@ -237,7 +242,7 @@ public final class BayDeploymentMatrixGameTests {
             return claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite)).findFirst().orElseThrow();
         }
 
-        /** Observe the actual service's RAM phase write in the same tick, before its acknowledgement can publish the entity. */
+        /** Drive the actual service's RAM phase write, before its acknowledgement can publish the entity. */
         boolean queuePendingSpawn() {
             var server = helper.getLevel().getServer();
             var journal = RocketTransferSavedData.get(server);
@@ -251,6 +256,9 @@ public final class BayDeploymentMatrixGameTests {
             var columns = RocketTransferEntities.destinationTicketSet(current.destinationSnapshot());
             if (!RocketTransferEntities.destinationEntityChunkReady(level, current.destinationSnapshot())
                     || RocketTransferEntities.entitiesLoadedColumns(columns, level::areEntitiesLoaded) != columns.size()) { return false; }
+            // Let the installed service tick with ready chunks beyond the ordinary transit deadline.
+            // The fixture must retain PREPARED authority until it drives this exact spawn itself.
+            if (++pendingSpawnReadyTicks <= RocketFlightLimits.TRANSIT_TICKS + 2) { return false; }
             RocketRuntime.installedTransfers().spawnDestination(server, journal, current, flight.source());
             var pending = journal.find(current.transferId()).orElseThrow();
             helper.assertTrue(pending.phase() == RocketTransferPhase.DESTINATION_SPAWNED && pending.destinationEntityId().isPresent()
@@ -258,6 +266,7 @@ public final class BayDeploymentMatrixGameTests {
                     && flight.source().isAlive() && !flight.source().isRemoved() && !journal.actionable(current.logicalRocketId()),
                     "The service did not expose its unacknowledged destination-spawn window with a live source");
             sawPendingSpawn = true;
+            RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, current.transferId(), false);
             return true;
         }
 
@@ -338,6 +347,9 @@ public final class BayDeploymentMatrixGameTests {
             var server = helper.getLevel().getServer();
             var session = bays(helper).sessionForTests();
             if (flight != null) {
+                if (forcePendingSpawn) {
+                    RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, flight.record().transferId(), false);
+                }
                 var journal = RocketTransferSavedData.get(server);
                 RocketTransferRecord current = journal.find(flight.record().transferId()).orElse(null);
                 if (current != null) {
