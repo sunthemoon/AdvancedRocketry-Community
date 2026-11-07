@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSaf
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.Snapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.Verdict;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.Window;
+import java.util.OptionalDouble;
 
 /**
  * W312F (R375): the logout save's own proof, built on {@link BayExitSafety}. It answers one question: would a player who
@@ -17,14 +18,19 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSaf
  *
  * <p>SAFE means that the exact standing box is SAFE under the shared proof, or that the player settles at most
  * {@link #MAX_DROP} whole blocks straight down onto the first stable support: every cell of the fall column's shared
- * window (body, support row and one-block collar) is free of collision with the falling body, fluid and hazards, and the
- * landing box is SAFE under the shared proof. A fall of three blocks or less never deals fall damage in vanilla.
+ * window (body, support row and one-block collar) is free of collision with the falling body, fluid and hazards, the
+ * landing box is SAFE under the shared proof, and the landing deals no fall damage. Vanilla deals none up to
+ * {@link #DAMAGE_FREE_DISTANCE}, but this mod scales a landing distance by the gravity multiplier first (W312F2, R378), so
+ * the fall times the largest multiplier from the exit down to the landing must stay within that distance. A fall whose
+ * multiplier cannot be known is not accepted.
  *
  * <p>All world reads come from one window that the caller's shared probe pays for once, before any read. The landing
  * proofs then evaluate only that snapshot; their local allowance pays for no world access.
  */
 public final class LogoutExitSafety {
     public static final int MAX_DROP = 3;
+    /** {@code LivingEntity.calculateFallDamage}: no damage while the landing distance stays at or below three blocks. */
+    public static final double DAMAGE_FREE_DISTANCE = 3.0D;
 
     private LogoutExitSafety() { }
 
@@ -37,6 +43,12 @@ public final class LogoutExitSafety {
     public interface Region extends LoadedState {
         /** One raw state read per cell of an already reserved window; false if any column became unavailable. */
         boolean read(Window window);
+
+        /**
+         * W312F2 (R378): the largest gravity multiplier that can scale the player's landing anywhere from the exact feet
+         * down to the feet {@code drop} blocks below, by the rules that scale it; empty when it cannot be known.
+         */
+        OptionalDouble fallMultiplier(Box exact, int drop);
     }
 
     public static Proof inspect(Region state, Box exact, BayExitBudget.Probe probe) {
@@ -76,9 +88,22 @@ public final class LogoutExitSafety {
                 landing = BayExitSafety.loaded(state).inspect(shifted(exact, drop), local, (box, work) -> true);
             }
             if (probe.incomplete() || landing == Verdict.UNPROVED) { return Proof.refused(Verdict.UNPROVED); }
-            if (landing == Verdict.SAFE) { return new Proof(Verdict.SAFE, drop); }
+            if (landing == Verdict.SAFE) { return drop == 0 ? new Proof(Verdict.SAFE, 0) : landed(state, exact, drop); }
         }
         return Proof.refused(Verdict.UNSAFE);
+    }
+
+    /**
+     * W312F2: the first stable support is where the player lands, so a damaging landing refuses the fall outright. The
+     * shared proof accepts a landing only with its feet on the support's whole-block top (its body may not reach into the
+     * support), so the fall is at most {@code drop} blocks.
+     */
+    private static Proof landed(Region state, Box exact, int drop) {
+        OptionalDouble multiplier = state.fallMultiplier(exact, drop);
+        if (multiplier == null || multiplier.isEmpty() || !Double.isFinite(multiplier.getAsDouble())
+                || multiplier.getAsDouble() < 0.0D) { return Proof.refused(Verdict.UNPROVED); }
+        return drop * multiplier.getAsDouble() <= DAMAGE_FREE_DISTANCE
+                ? new Proof(Verdict.SAFE, drop) : Proof.refused(Verdict.UNSAFE);
     }
 
     /** The fall from the exact feet down to the landing feet: the swept body and its whole shared window. */

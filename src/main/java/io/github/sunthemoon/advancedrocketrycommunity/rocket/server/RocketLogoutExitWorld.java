@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Box;
@@ -12,8 +13,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSaf
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.LogoutExitSafety;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.AbortableIterationConsumer.Continuation;
@@ -110,6 +113,27 @@ final class RocketLogoutExitWorld implements LogoutExitSafety.Region {
             return null;
         }
         return (x, y, z) -> window.contains(x, y, z) ? cells[index(window, x, y, z)] : null;
+    }
+
+    /**
+     * W312F2 (R378): the largest multiplier the installed gravity controller would apply to this player with its feet in
+     * any block it passes, from the exit's block down to the landing's, by the controller's own layers (area field,
+     * station, Level profile); the gravity switch is ignored, since it may change before the next login. The range is
+     * the feet's block and the {@code drop} blocks below it, which covers every block the feet pass, also for feet within
+     * the support tolerance of a whole block. At most {@code MAX_DROP + 1} bounded lookups and no world read. Empty when
+     * the controller is missing or any layer cannot answer.
+     */
+    @Override public OptionalDouble fallMultiplier(Box exact, int drop) {
+        var controller = CelestialGravityRuntime.controller().orElse(null);
+        if (controller == null || drop < 0 || drop > LogoutExitSafety.MAX_DROP || !exact.valid()) { return OptionalDouble.empty(); }
+        int x = Mth.floor(exact.feet().x()), z = Mth.floor(exact.feet().z()), top = Mth.floor(exact.minY());
+        double largest = 0.0D;
+        for (int y = top; y >= top - drop; y--) {
+            var multiplier = controller.playerMultiplier(player, new BlockPos(x, y, z));
+            if (multiplier.isEmpty()) { return OptionalDouble.empty(); }
+            largest = Math.max(largest, multiplier.getAsDouble());
+        }
+        return OptionalDouble.of(largest);
     }
 
     /** The shared probe pays for every visited entity, whichever proof asks. */

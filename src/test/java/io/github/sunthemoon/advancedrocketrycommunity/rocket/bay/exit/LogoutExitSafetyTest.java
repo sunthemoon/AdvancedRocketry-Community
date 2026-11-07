@@ -11,10 +11,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
 import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /** W312F (R375): the logout save's own proof over a small block grid that models collision, support and hazards. */
@@ -32,8 +34,13 @@ final class LogoutExitSafetyTest {
         Window region;
         int regions, regionReads;
         boolean readFails;
+        /** W312F2: the multiplier that scales a landing; 1 g unless a test sets another (or none). */
+        OptionalDouble gravity = OptionalDouble.of(1.0);
+        final List<Query> queries = new ArrayList<>();
+        record Query(Box exact, int drop) { }
 
         public String level() { return "test:level"; }
+        public OptionalDouble fallMultiplier(Box exact, int drop) { queries.add(new Query(exact, drop)); return gravity; }
         public Bounds bounds() { return bounds; }
         public boolean loadedColumn(int x, int z) { return !missing.contains(x + ":" + z); }
         public boolean read(Window window) {
@@ -196,6 +203,58 @@ final class LogoutExitSafetyTest {
         }
         var probe = new BayExitBudget(0).openProbe().orElseThrow(); probe.close();
         assertThrows(IllegalStateException.class, () -> LogoutExitSafety.inspect(new Grid().floor(63), EXIT, probe));
+    }
+
+    // W312F2 (R378, review W312FR F1): the mod scales a landing distance by gravity before vanilla's damage-free three
+    // blocks apply, so a fall is accepted only while drop x multiplier stays within them.
+
+    @ParameterizedTest
+    @CsvSource({"1, 3.0, true", "1, 3.05, false", "1, 4.0, false", "2, 1.5, true", "2, 1.55, false", "3, 1.0, true",
+            "3, 1.000000001, false", "3, 0.165, true", "3, 0.0, true"})
+    void aFallIsAcceptedOnlyWhileTheScaledLandingStaysDamageFree(int drop, double multiplier, boolean safe) {
+        var grid = new Grid().floor(63 - drop); grid.gravity = OptionalDouble.of(multiplier);
+        assertEquals(safe ? new Proof(Verdict.SAFE, drop) : unsafe(), inspect(grid));
+        assertEquals(List.of(new Grid.Query(EXIT, drop)), grid.queries, "One question, about the fall to the first stable support");
+    }
+
+    @Test void twoGravityRefusesTheReviewProbesThreeBlockFallButKeepsAOneBlockFall() {
+        // W312FR's probe: in a 2 g field a three-block fall lands at distance 6 and deals 3 health.
+        var deep = new Grid().floor(60); deep.gravity = OptionalDouble.of(2.0);
+        assertEquals(unsafe(), inspect(deep));
+        var lower = new Grid().floor(61).floor(59); lower.gravity = OptionalDouble.of(2.0);
+        assertEquals(unsafe(), inspect(lower), "A damaging first support is where the player lands; no deeper floor helps");
+        var shallow = new Grid().floor(62); shallow.gravity = OptionalDouble.of(2.0);
+        assertEquals(new Proof(Verdict.SAFE, 1), inspect(shallow));
+    }
+
+    @Test void lowGravityKeepsTheThreeBlockCeiling() {
+        for (double multiplier : new double[]{0.0, 0.1, 0.5}) {
+            var grid = new Grid().floor(59); grid.gravity = OptionalDouble.of(multiplier);
+            assertEquals(unsafe(), inspect(grid), "A four-block fall at " + multiplier + " g");
+            assertTrue(grid.queries.isEmpty(), "A fall beyond the ceiling never asks for gravity");
+        }
+    }
+
+    @Test void anUnknownOrMalformedMultiplierAcceptsNoFallAndLeavesTheSupportedExitAlone() {
+        var unknown = new ArrayList<OptionalDouble>(List.of(OptionalDouble.empty(), OptionalDouble.of(Double.NaN),
+                OptionalDouble.of(-0.5), OptionalDouble.of(Double.POSITIVE_INFINITY)));
+        unknown.add(null);
+        for (var multiplier : unknown) {
+            var fall = new Grid().floor(62); fall.gravity = multiplier;
+            assertEquals(new Proof(Verdict.UNPROVED, -1), inspect(fall), String.valueOf(multiplier));
+            var supported = new Grid().floor(63); supported.gravity = multiplier;
+            assertEquals(new Proof(Verdict.SAFE, 0), inspect(supported), String.valueOf(multiplier));
+            assertTrue(supported.queries.isEmpty(), "The shared SAFE case asks for no gravity");
+        }
+    }
+
+    @Test void refusedColumnsAndLandingsAskForNoGravity() {
+        var magma = new Grid().fill(61, Kind.MAGMA); var slab = new Grid().fill(62, Kind.SLAB);
+        var unloaded = new Grid().floor(62); unloaded.missing.add("0:-1");
+        for (var grid : List.of(magma, slab, unloaded)) {
+            assertNotEquals(Verdict.SAFE, inspect(grid).verdict());
+            assertTrue(grid.queries.isEmpty());
+        }
     }
 
     @Test void withoutAFallTheVerdictIsTheSharedProofsVerdict() {
