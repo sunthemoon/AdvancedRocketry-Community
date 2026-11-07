@@ -95,6 +95,16 @@ public final class LandingPadIndex extends SavedData {
         setDirty(); return true;
     }
 
+    /** Confirmed station deletion only: at most eight pads and 128 transient choices, with no world access. */
+    public int removeStation(UUID station) {
+        java.util.Objects.requireNonNull(station);
+        if (!operational()) { return 0; }
+        var removed = stations.remove(station);
+        choices.values().removeIf(choice -> station.equals(choice.stationId()));
+        if (removed == null) { return 0; }
+        setDirty(); return removed.size();
+    }
+
     public boolean claim(UUID station, LandingPadReference reference, UUID physical, UUID transfer) {
         java.util.Objects.requireNonNull(transfer);
         LandingPadEntry entry = find(station, reference).orElse(null);

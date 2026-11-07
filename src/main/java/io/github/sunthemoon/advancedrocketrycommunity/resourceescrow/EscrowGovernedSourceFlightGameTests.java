@@ -603,6 +603,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                 var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(level.getServer());
                 pads.remove(transfer, claimedPad.reference(), claimedPad.physicalId());
                 pads.remove(transfer, otherPad.reference(), otherPad.physicalId());
+                helper.assertTrue(pads.entries(transfer).isEmpty(), "Source-flight cleanup retained synthetic pad entries");
             }
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             if (passenger != null) {
