@@ -165,10 +165,16 @@ public final class RocketLogoutSaveGameTests {
                 if (f == null) {
                     var at = helper.absolutePos(RocketLogoutSaveFixture.ORIGIN);
                     var level = helper.getLevel();
-                    if (level.getChunkSource().getChunkNow(at.getX() >> 4, at.getZ() >> 4) == null
-                            || !level.areEntitiesLoaded(new ChunkPos(at).toLong()) || !level.isPositionEntityTicking(at)) {
-                        pacer.pace(); return;
+                    // W312F: every column of the chamber and of the exit proof's window, not only the origin's, must be
+                    // FULL, entity-loaded and entity-ticking first; the window can cross into the next column.
+                    boolean ready = true;
+                    for (int x = (at.getX() - 1) >> 4; x <= (at.getX() + 4) >> 4; x++) {
+                        for (int z = (at.getZ() - 2) >> 4; z <= (at.getZ() + 2) >> 4; z++) {
+                            ready &= level.getChunkSource().getChunkNow(x, z) != null && level.areEntitiesLoaded(ChunkPos.asLong(x, z))
+                                    && level.isPositionEntityTicking(new BlockPos(x * 16, at.getY(), z * 16));
+                        }
                     }
+                    if (!ready) { pacer.pace(); return; }
                     var state = switch (mode) {
                         case FUELED -> RocketFlightState.FUELED;
                         case LANDED, KEPT -> RocketFlightState.LANDED;
