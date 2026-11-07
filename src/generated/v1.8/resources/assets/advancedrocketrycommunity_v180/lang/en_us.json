@@ -765,6 +765,7 @@
   "screen.advancedrocketrycommunity.station_controller.minus_one": "-1",
   "screen.advancedrocketrycommunity.station_controller.minus_ten": "-10",
   "screen.advancedrocketrycommunity.station_controller.next": ">",
+  "screen.advancedrocketrycommunity.station_controller.no_orbit_routes": "The target orbit has no rocket routes; rockets cannot reach or leave the station in that orbit.",
   "screen.advancedrocketrycommunity.station_controller.no_station": "Not in a station you can view",
   "screen.advancedrocketrycommunity.station_controller.no_target": "No known target",
   "screen.advancedrocketrycommunity.station_controller.orbit": "Orbit: %s",

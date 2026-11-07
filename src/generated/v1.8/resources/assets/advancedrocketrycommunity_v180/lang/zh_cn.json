@@ -765,6 +765,7 @@
   "screen.advancedrocketrycommunity.station_controller.minus_one": "-1",
   "screen.advancedrocketrycommunity.station_controller.minus_ten": "-10",
   "screen.advancedrocketrycommunity.station_controller.next": ">",
+  "screen.advancedrocketrycommunity.station_controller.no_orbit_routes": "目标轨道没有火箭航线；火箭无法抵达或离开该轨道上的空间站。",
   "screen.advancedrocketrycommunity.station_controller.no_station": "不在你可查看的空间站内",
   "screen.advancedrocketrycommunity.station_controller.no_target": "没有已知目标",
   "screen.advancedrocketrycommunity.station_controller.orbit": "轨道：%s",

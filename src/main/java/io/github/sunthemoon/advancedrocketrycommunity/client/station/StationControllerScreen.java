@@ -22,7 +22,7 @@ import net.minecraft.world.entity.player.Inventory;
  * {@code classic_controls} intents; the lines and the last action's stable code come from the server's view of
  * this container, never colour alone. A button whose intent cannot be formed from the current view is inactive.
  * Warp body IDs occupy one abbreviated row each, with full hover text. Balance, cost, countdown and status own
- * fixed rows; Confirm requires the complete cost to have been drawn for the current server view (W07G).
+ * fixed rows; Confirm requires the complete cost and any route warning to have been drawn for this view.
  */
 public final class StationControllerScreen extends AbstractContainerScreen<StationControllerMenu> {
     private static final int PANEL_TOP = 0xFF1B2430;
@@ -96,7 +96,7 @@ public final class StationControllerScreen extends AbstractContainerScreen<Stati
         renderTooltip(graphics, mouseX, mouseY);
         for (BodyTooltip tooltip : bodyTooltips) {
             int x = leftPos + StationControllerMenu.TEXT_LEFT;
-            int y = topPos + StationControllerMenu.LINES_TOP + tooltip.row() * StationControllerMenu.LINE_HEIGHT;
+            int y = topPos + WarpControllerLayout.LINES_TOP + tooltip.row() * StationControllerMenu.LINE_HEIGHT;
             if (mouseX >= x && mouseX < x + font.width(tooltip.line().text())
                     && mouseY >= y && mouseY < y + StationControllerMenu.LINE_HEIGHT) {
                 graphics.renderTooltip(font, Component.literal(tooltip.line().tooltip()), mouseX, mouseY);
@@ -147,14 +147,19 @@ public final class StationControllerScreen extends AbstractContainerScreen<Stati
         int next = 3;
         List<FormattedCharSequence> cost = shown.value(WarpControllerMenu.COST_CLASS) > 0
                 ? font.split(lines.get(next++), StationControllerMenu.TEXT_WIDTH) : List.of();
+        List<FormattedCharSequence> warning = WarpControllerMenu.showsRouteWarning(shown)
+                ? font.split(lines.get(next++), StationControllerMenu.TEXT_WIDTH) : List.of();
         List<FormattedCharSequence> countdown = shown.value(WarpControllerMenu.COUNTDOWN) >= 0
                 ? font.split(lines.get(next), StationControllerMenu.TEXT_WIDTH) : List.of();
         WarpControllerLayout.Layout<FormattedCharSequence> layout = WarpControllerLayout.arrange(
                 Component.literal(orbit.text()).getVisualOrderText(), Component.literal(target.text()).getVisualOrderText(),
-                font.split(lines.get(2), StationControllerMenu.TEXT_WIDTH), cost, countdown, StationControllerMenu.LINE_ROWS);
+                font.split(lines.get(2), StationControllerMenu.TEXT_WIDTH), cost, warning, countdown,
+                WarpControllerLayout.LINE_ROWS);
         for (WarpControllerLayout.Row<FormattedCharSequence> row : layout.rows()) {
             graphics.drawString(font, row.text(), StationControllerMenu.TEXT_LEFT,
-                    StationControllerMenu.LINES_TOP + row.index() * StationControllerMenu.LINE_HEIGHT, MUTED, false);
+                    WarpControllerLayout.LINES_TOP + row.index() * StationControllerMenu.LINE_HEIGHT,
+                    row.index() >= WarpControllerLayout.WARNING_ROW && row.index() < WarpControllerLayout.COUNTDOWN_ROW
+                            ? WARNING : MUTED, false);
         }
         bodyTooltips.add(new BodyTooltip(orbit, WarpControllerLayout.ORBIT_ROW));
         bodyTooltips.add(new BodyTooltip(target, WarpControllerLayout.TARGET_ROW));

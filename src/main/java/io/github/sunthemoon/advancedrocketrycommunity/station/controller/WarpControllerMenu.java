@@ -51,6 +51,8 @@ public final class WarpControllerMenu extends StationControllerMenu {
     public static final int COST = 4;
     public static final int COST_CLASS = 5;
     public static final int COUNTDOWN = 6;
+    /** -1: no displayed quote, 0: no target-orbit routes, 1: routes exist. */
+    public static final int TARGET_ORBIT_HAS_ROUTES = 7;
     static final List<Button> BUTTONS = List.of(
             new Button(BUTTON_PREVIOUS, KEY + "previous", 8, 20, 20), new Button(BUTTON_NEXT, KEY + "next", 148, 20, 20),
             new Button(BUTTON_REQUEST, KEY + "request", 8, 38, 52), new Button(BUTTON_CONFIRM, KEY + "confirm", 62, 38, 52),
@@ -153,12 +155,20 @@ public final class WarpControllerMenu extends StationControllerMenu {
         if (costClass > 0) {
             lines.add(Component.translatable(KEY + "cost", view.value(COST),
                     Component.translatable(KEY + "class." + (costClass == 1 ? "in_system" : "interstellar"))));
+            if (showsRouteWarning(view)) {
+                lines.add(Component.translatable(KEY + "no_orbit_routes"));
+            }
         }
         int countdown = view.value(COUNTDOWN);
         if (countdown >= 0) {
             lines.add(Component.translatable(KEY + "countdown", countdown));
         }
         return lines;
+    }
+
+    /** The flag describes the displayed server quote, not body capabilities or client route data. */
+    public static boolean showsRouteWarning(ClassicControlViewPacket view) {
+        return view.value(COST_CLASS) > 0 && view.value(TARGET_ORBIT_HAS_ROUTES) == 0;
     }
 
     static Component bodyName(net.minecraft.resources.ResourceLocation id) {
@@ -179,7 +189,8 @@ public final class WarpControllerMenu extends StationControllerMenu {
                 Math.max(0, warp.map(service -> service.pendingCredit(station.stationId())).orElse(0)),
                 displayed == null ? 0 : displayed.cost(),
                 displayed == null ? 0 : displayed.costClass() == WarpCostClass.IN_SYSTEM ? 1 : 2,
-                Math.max(-1, countdown));
+                Math.max(-1, countdown),
+                displayed == null ? -1 : displayed.targetOrbitHasRoutes() ? 1 : 0);
     }
 
     @Override
