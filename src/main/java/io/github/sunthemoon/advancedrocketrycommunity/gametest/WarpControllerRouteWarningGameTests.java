@@ -32,15 +32,22 @@ public final class WarpControllerRouteWarningGameTests {
 
     @GameTest(template = "empty", batch = "station_controls_route_warning", timeoutTicks = 100)
     public static void routeFlagFollowsTheDisplayedQuoteAndClearsWithIt(GameTestHelper helper) {
-        verifyTarget(helper, StarSystemContent.TAU_CETI_E, "routeTau");
-        verifyTarget(helper, StationWarpGameTests.MOON, "routeMoon");
-        helper.succeed();
+        var driver = new GameTestTickDriver(helper);
+        verifyTarget(helper, driver, StarSystemContent.TAU_CETI_E, "routeTau",
+                () -> verifyTarget(helper, driver, StationWarpGameTests.MOON, "routeMoon", helper::succeed));
     }
 
-    private static void verifyTarget(GameTestHelper helper, ResourceLocation target, String playerName) {
+    private static void verifyTarget(GameTestHelper helper, GameTestTickDriver driver, ResourceLocation target,
+                                     String playerName, Runnable complete) {
         var fixture = new StationWarpGameTests.Fixture(helper, "Route warning", CelestialIds.EARTH_ID, 9_000_000);
         StationRocketAuthority previous = fixture.warp.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
         List<BlockPos> placed = new ArrayList<>();
+        Runnable cleanup = () -> {
+            fixture.warp.installRocketAuthority(previous);
+            StationControlsGameTests.clear(fixture, placed);
+            fixture.close();
+        };
+        boolean scheduled = false;
         try {
             CelestialSavedData discoveries = CelestialSavedData.get(fixture.server);
             if (discoveries.get(StarSystemContent.TAU_CETI_E).isEmpty()) {
@@ -60,37 +67,53 @@ public final class WarpControllerRouteWarningGameTests {
             }
             StationControlsGameTests.click(helper, menu, owner, WarpControllerMenu.BUTTON_REQUEST, selected, 0L,
                     StationManagementCode.WARP_ISSUED);
-            ClassicControlViewPacket view = wireView(menu);
-            boolean routed = target.equals(StationWarpGameTests.MOON);
-            helper.assertTrue(view.value(WarpControllerMenu.TARGET_ORBIT_HAS_ROUTES) == (routed ? 1 : 0)
-                            && view.value(WarpControllerMenu.COST) == (routed ? 2_000_000 : 8_000_000)
-                            && view.value(WarpControllerMenu.COST_CLASS) == (routed ? 1 : 2)
-                            && view.token() > 0L,
-                    "Route flag and price do not describe " + target + ": " + view);
-            helper.assertTrue(WarpControllerMenu.showsRouteWarning(view) == !routed, "Wrong warning predicate");
-            List<Component> lines = menu.lines(view);
-            helper.assertTrue(lines.size() == (routed ? 4 : 5), "Wrong quoted lines: " + lines);
-            if (!routed) {
-                helper.assertTrue(lines.get(3).getContents() instanceof TranslatableContents cost
-                                && cost.getKey().equals(StationControllerMenu.KEY + "cost")
-                                && lines.get(4).getContents() instanceof TranslatableContents warning
-                                && warning.getKey().equals(StationControllerMenu.KEY + "no_orbit_routes"),
-                        "The warning does not immediately follow the price: " + lines);
-            }
-            StationControlsGameTests.send(menu, owner, WarpControllerMenu.BUTTON_NEXT, 0, 0L);
-            assertNoQuote(helper, menu);
-            StationControlsGameTests.click(helper, menu, owner, WarpControllerMenu.BUTTON_REQUEST,
-                    menu.lastView().orElseThrow().value(WarpControllerMenu.SELECTED), 0L,
+            assertQuote(helper, menu, target);
+            // Refuse the same target while its quote is still live, without navigating first.
+            StationControlsGameTests.click(helper, menu, owner, WarpControllerMenu.BUTTON_REQUEST, selected, 0L,
                     StationManagementCode.CONTROL_RATE_LIMITED);
             assertNoQuote(helper, menu);
-            owner.closeContainer();
-            helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
-                    && fixture.data.warpEnergy(fixture.id()) == 9_000_000
-                    && fixture.warp.countdown(fixture.id()).isEmpty(), "Viewing quotes changed the station");
+            driver.after(11, () -> {
+                try {
+                    // Navigation must independently clear a fresh, live quote after the rate window.
+                    StationControlsGameTests.click(helper, menu, owner, WarpControllerMenu.BUTTON_REQUEST,
+                            selected, 0L, StationManagementCode.WARP_ISSUED);
+                    assertQuote(helper, menu, target);
+                    StationControlsGameTests.send(menu, owner, WarpControllerMenu.BUTTON_NEXT, 0, 0L);
+                    assertNoQuote(helper, menu);
+                    owner.closeContainer();
+                    helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
+                            && fixture.data.warpEnergy(fixture.id()) == 9_000_000
+                            && fixture.warp.countdown(fixture.id()).isEmpty(), "Viewing quotes changed the station");
+                } finally {
+                    cleanup.run();
+                }
+                complete.run();
+            });
+            scheduled = true;
         } finally {
-            fixture.warp.installRocketAuthority(previous);
-            StationControlsGameTests.clear(fixture, placed);
-            fixture.close();
+            if (!scheduled) {
+                cleanup.run();
+            }
+        }
+    }
+
+    private static void assertQuote(GameTestHelper helper, StationControllerMenu menu, ResourceLocation target) {
+        ClassicControlViewPacket view = wireView(menu);
+        boolean routed = target.equals(StationWarpGameTests.MOON);
+        helper.assertTrue(view.value(WarpControllerMenu.TARGET_ORBIT_HAS_ROUTES) == (routed ? 1 : 0)
+                        && view.value(WarpControllerMenu.COST) == (routed ? 2_000_000 : 8_000_000)
+                        && view.value(WarpControllerMenu.COST_CLASS) == (routed ? 1 : 2)
+                        && view.token() > 0L,
+                "Route flag and price do not describe " + target + ": " + view);
+        helper.assertTrue(WarpControllerMenu.showsRouteWarning(view) == !routed, "Wrong warning predicate");
+        List<Component> lines = menu.lines(view);
+        helper.assertTrue(lines.size() == (routed ? 4 : 5), "Wrong quoted lines: " + lines);
+        if (!routed) {
+            helper.assertTrue(lines.get(3).getContents() instanceof TranslatableContents cost
+                            && cost.getKey().equals(StationControllerMenu.KEY + "cost")
+                            && lines.get(4).getContents() instanceof TranslatableContents warning
+                            && warning.getKey().equals(StationControllerMenu.KEY + "no_orbit_routes"),
+                    "The warning does not immediately follow the price: " + lines);
         }
     }
 
