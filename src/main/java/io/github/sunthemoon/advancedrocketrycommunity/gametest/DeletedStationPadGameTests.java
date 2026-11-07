@@ -34,6 +34,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.util.Unit;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -107,7 +110,8 @@ public final class DeletedStationPadGameTests {
 
     @GameTest(template = "empty", batch = "pad_station_delete_guard", timeoutTicks = 100)
     public static void refusedDeletionKeepsEveryPadClaimAndChoice(GameTestHelper helper) {
-        try (var f = new Fixture(helper)) {
+        var f = new Fixture(helper);
+        try {
             f.select("selected", 1);
             UUID transfer = UUID.randomUUID();
             helper.assertTrue(f.index.claim(f.station.stationId(), f.entry.reference(), f.entry.physicalId(), transfer),
@@ -115,19 +119,27 @@ public final class DeletedStationPadGameTests {
             var before = f.index.save(new CompoundTag()); var choice = f.index.choice(f.player.getUUID());
             refused(helper, () -> f.manager.delete(f.server(), f.station.ownerId(), false, f.station.stationId(), "wrong"));
             refused(helper, () -> f.manager.delete(f.server(), UUID.randomUUID(), false, f.station.stationId(), "confirm"));
-            var rocket = ModEntities.ROCKET.get().create(f.space());
-            helper.assertTrue(rocket != null, "Deletion guard rocket could not be created");
-            try {
-                var at = f.station.landingPad(); f.space().getChunk(new BlockPos(at.x(), at.y(), at.z()));
-                rocket.setPos(at.x() + 0.5, at.y(), at.z() + 0.5);
-                helper.assertTrue(f.space().addFreshEntity(rocket), "Deletion guard rocket could not be published");
+            f.guardRocket = ModEntities.ROCKET.get().create(f.space());
+            helper.assertTrue(f.guardRocket != null, "Deletion guard rocket could not be created");
+            var at = f.station.landingPad();
+            f.guardChunk = new ChunkPos(new BlockPos(at.x(), at.y(), at.z()));
+            f.space().getChunkSource().addRegionTicket(TicketType.START, f.guardChunk, 2, Unit.INSTANCE);
+            f.space().getChunk(f.guardChunk.x, f.guardChunk.z);
+            f.guardRocket.setPos(at.x() + 0.5, at.y(), at.z() + 0.5);
+            helper.assertTrue(f.space().addFreshEntity(f.guardRocket), "Deletion guard rocket could not be published");
+            // Full runs can recycle a non-entity-ticking cell. Publish is not proof of query visibility.
+            // Register this retry at test start, not from a scheduled callback; keep the original 100-tick bound.
+            helper.succeedWhen(() -> {
+                helper.assertTrue(f.space().getEntitiesOfClass(
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class,
+                        f.guardRocket.getBoundingBox().inflate(1)).contains(f.guardRocket),
+                        "Deletion guard rocket is not yet visible to the level query");
                 refused(helper, f::delete);
                 helper.assertTrue(before.equals(f.index.save(new CompoundTag()))
                         && choice.equals(f.index.choice(f.player.getUUID())) && f.registry.find(f.station.stationId()).isPresent(),
                         "Rejected deletion mutated station pads, claims or choice");
-            } finally { rocket.discard(); }
-            helper.succeed();
-        }
+            });
+        } catch (RuntimeException | Error failure) { f.close(); throw failure; }
     }
 
     private static void refused(GameTestHelper helper, Runnable operation) {
@@ -180,7 +192,7 @@ public final class DeletedStationPadGameTests {
         }
     }
 
-    private static final class Fixture implements AutoCloseable {
+    private static final class Fixture implements AutoCloseable, net.minecraft.gametest.framework.GameTestListener {
         final GameTestHelper helper;
         final StationRegistrySavedData registry;
         final LandingPadIndex previousIndex;
@@ -192,6 +204,9 @@ public final class DeletedStationPadGameTests {
         final BlockPos position;
         final net.minecraft.world.level.block.state.BlockState previousBlock;
         final List<String> replies = new ArrayList<>();
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity guardRocket;
+        ChunkPos guardChunk;
+        boolean closed;
 
         Fixture(GameTestHelper helper) {
             this.helper = helper;
@@ -214,6 +229,10 @@ public final class DeletedStationPadGameTests {
             helper.assertTrue(space().getBlockEntity(position) == null, "Fixture overlaps a block entity");
             space().setBlock(position, ModBlocks.LANDING_PAD.get().defaultBlockState(), 3);
             entry = LandingPadService.register(space(), position, owner, false, "Deleted Dock");
+            try {
+                var field = GameTestHelper.class.getDeclaredField("testInfo"); field.setAccessible(true);
+                ((net.minecraft.gametest.framework.GameTestInfo) field.get(helper)).addListener(this);
+            } catch (ReflectiveOperationException failure) { close(); throw new IllegalStateException(failure); }
         }
 
         net.minecraft.server.MinecraftServer server() { return helper.getLevel().getServer(); }
@@ -230,6 +249,10 @@ public final class DeletedStationPadGameTests {
                     "Unexpected pad command result " + result + ": " + replies);
         }
         @Override public void close() {
+            if (closed) { return; }
+            closed = true;
+            if (guardRocket != null) { guardRocket.discard(); }
+            if (guardChunk != null) { space().getChunkSource().removeRegionTicket(TicketType.START, guardChunk, 2, Unit.INSTANCE); }
             server().getPlayerList().deop(player.getGameProfile());
             server().getPlayerList().remove(player);
             registry.delete(station.stationId());
@@ -237,5 +260,8 @@ public final class DeletedStationPadGameTests {
             previousIndex.setDirty();
             server().overworld().getDataStorage().set(LandingPadIndex.DATA_NAME, previousIndex);
         }
+        @Override public void testStructureLoaded(net.minecraft.gametest.framework.GameTestInfo info) { }
+        @Override public void testPassed(net.minecraft.gametest.framework.GameTestInfo info) { close(); }
+        @Override public void testFailed(net.minecraft.gametest.framework.GameTestInfo info) { close(); }
     }
 }
