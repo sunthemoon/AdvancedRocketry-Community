@@ -9,13 +9,13 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
- * ADR-065 section 11.1 / R92: the exact-version {@code advancedrocketrycommunity:classic_controls} channel, protocol 2.
+ * ADR-065 section 11.1 / W317: the exact-version {@code advancedrocketrycommunity:classic_controls} channel, protocol 3.
  * Index 0 is the C2S control intent, index 1 the S2C view of the open control menu and index 2 the S2C beacon
  * marker snapshot of C17c, sent by the beacon finder service. Forge disconnects a message that arrives in the wrong
  * direction and drops an unknown index; a client without this exact version cannot join.
  */
 public final class ClassicControlsNetwork {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
     private static volatile ClassicControlsNetwork installed;
 
     private final SimpleChannel channel;
@@ -53,7 +53,7 @@ public final class ClassicControlsNetwork {
         return PROTOCOL_VERSION;
     }
 
-    /** Exact-version negotiation: only protocol 2, never a protocol-1, absent or vanilla peer. */
+    /** Exact-version negotiation: only protocol 3, never an older, absent or vanilla peer. */
     public static boolean acceptsProtocol(String version) {
         return PROTOCOL_VERSION.equals(version);
     }

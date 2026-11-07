@@ -2418,6 +2418,22 @@ bound; review W291R approved it.
   pad chosen while its chunk is unloaded is menu intent only: flight admission still requires the loaded pad (section
   6.1).
 
+### R368 implementation note: the warp quote's route flag on `classic_controls` protocol 3 (Root, 2026-11-07)
+
+ADR-044's W309 note makes the warp quote warn when no rocket route starts or ends at the target's own orbit, and
+says that the controller screen would need a route flag in its view. Root decision R368 (QUEUE, TASK-W317) adds it
+inside this ADR's accepted surface, as R92 did above. It changes no warp rule, cost, admission or bound; review W317R
+approved it.
+
+- The `WARP_CONTROLLER` view gains an eighth scalar after the countdown: the displayed quote's target-orbit route
+  flag, -1 when no quote is shown, 0 when the target orbit has no rocket route and 1 when it has one. The server fills
+  it from the same quote as the cost and cost class, so the screen never shows a warning for another target.
+- `classic_controls` moves from protocol 2 to 3 with exact-version negotiation, so a protocol-2 peer cannot join
+  instead of misreading the view. The other kinds, the intent, the message indices and directions and the 8 KiB view
+  bound are unchanged, and the protocol table above reads 3 for `classic_controls` from this note on.
+- The screen shows the command's warning under the cost when a quote is shown and the flag is 0. Its real-client
+  rendering is checked in a later client round (W317R note N2).
+
 ### 11.2 Authority, content and verification
 
 C2S classic intents carry menu/container identity,
