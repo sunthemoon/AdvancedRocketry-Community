@@ -23,6 +23,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
 import java.util.UUID;
@@ -67,6 +68,7 @@ public final class RocketFlightGameTests {
                     CelestialIds.EARTH_ID,
                     false
             ).station().orElseThrow();
+            GameTestStationCleanup.track(helper, station);
             helper.assertTrue(platforms.intact(space, station.cell()),
                     "Station platform was not generated exactly");
 
@@ -148,6 +150,7 @@ public final class RocketFlightGameTests {
                         StationRegistrySavedData data = StationRegistrySavedData.get(earth.getServer());
                         helper.assertTrue(data.delete(station.stationId()).isPresent(),
                                 "Station cleanup did not release its committed cell");
+                        StationNoticeSavedData.get(earth.getServer()).remove(station.stationId());
                         platforms.removeTemplate(space, station.cell());
                         data.flush(earth.getServer());
                         clearTransferJournal(earth);

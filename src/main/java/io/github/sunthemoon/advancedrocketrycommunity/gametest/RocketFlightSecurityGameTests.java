@@ -106,7 +106,7 @@ public final class RocketFlightSecurityGameTests {
                             CelestialIds.EARTH_ID,
                             earth.getGameTime()
                     );
-                    quoteStations.commit(quoteStationId);
+                    GameTestStationCleanup.track(helper, quoteStations.commit(quoteStationId));
                     RocketFlightMenu console = new RocketFlightMenu(7, owner.getInventory(), rocket);
                     helper.assertTrue(console.activePlan().destination() == null,
                             "An unplanned console invented an active cancellation target");
@@ -164,7 +164,6 @@ public final class RocketFlightSecurityGameTests {
                             rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                             "Countdown cancellation did not restore FUELED"
                     );
-                    quoteStations.delete(quoteStationId);
                     helper.assertTrue(
                             rocket.flightData().orElseThrow().fuel().amount() == fuelBefore,
                             "Hostile or cancelled request consumed fuel"
