@@ -243,6 +243,10 @@ Station creation follows the same target rule as the warp (`WarpTargetRule`): an
 around the shared Space body, and a station that already orbits it is unchanged. Evidence:
 [W309](../work/v1.8.0-root-queue/records/W309.md).
 
+Since W317 (Root decision R368, 2026-11-07) the warp controller screen shows the same warning under the cost, from
+a route flag in the controller's view on `classic_controls` protocol 3; see ADR-065's R368 implementation note.
+Evidence: [W317](../work/v1.8.0-root-queue/records/W317.md).
+
 ## 5. Rockets and passengers
 
 - **Passengers** stay in place and see the new context. There is no teleport.
