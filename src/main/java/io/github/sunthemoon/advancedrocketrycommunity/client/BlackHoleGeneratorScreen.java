@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -19,7 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
  * Community-authored black-hole generator panel (ADR-057 section 6): fuel slots, the energy bar, output rate,
  * remaining burn and the status with its stable code, never colour alone. It has no buttons.
  */
-public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<BlackHoleGeneratorMenu> {
+public final class BlackHoleGeneratorScreen extends EndgameRefusalScreen<BlackHoleGeneratorMenu> {
     static final int PANEL_WIDTH = 236;
     static final int METRICS_X = 120;
     static final int METRICS_WIDTH = PANEL_WIDTH - METRICS_X - 8;
@@ -34,7 +33,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
     private static final int WARNING = 0xFFFFC857;
 
     public BlackHoleGeneratorScreen(BlackHoleGeneratorMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, title, menu::energyStored);
         imageWidth = PANEL_WIDTH;
         imageHeight = 186;
         inventoryLabelY = 93;

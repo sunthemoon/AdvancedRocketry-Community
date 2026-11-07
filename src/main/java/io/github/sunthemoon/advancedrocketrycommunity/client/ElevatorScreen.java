@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -20,7 +19,7 @@ import net.minecraft.world.entity.player.Inventory;
  * and bind (terminal only), unbind, ride, launch, auto and redstone buttons, and the status with its stable code from
  * the device view (hover for the pair state, the far end, settings and counts), so no state is shown by colour alone.
  */
-public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> {
+public final class ElevatorScreen extends EndgameRefusalScreen<ElevatorMenu> {
     private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF1B1F2A;
     private static final int PANEL_BOTTOM = 0xFF0D1016;
@@ -32,7 +31,7 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
     private static final int WARNING = 0xFFFFC857;
 
     public ElevatorScreen(ElevatorMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, title, menu::energyStored);
         imageWidth = 176;
         imageHeight = 222;
         inventoryLabelY = 129;
@@ -63,11 +62,7 @@ public final class ElevatorScreen extends AbstractContainerScreen<ElevatorMenu> 
 
     private Button button(int id, String key, int x, int y, int width) {
         return ScreenText.fitButton(Button.builder(Component.translatable(key),
-                ignored -> {
-                    if (minecraft != null && minecraft.gameMode != null) {
-                        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
-                    }
-                }).bounds(leftPos + x, topPos + y, width, 14).build(), font);
+                ignored -> sendButton(id)).bounds(leftPos + x, topPos + y, width, 14).build(), font);
     }
 
     @Override
