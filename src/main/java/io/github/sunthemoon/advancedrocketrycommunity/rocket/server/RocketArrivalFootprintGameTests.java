@@ -113,7 +113,7 @@ public final class RocketArrivalFootprintGameTests {
         UUID parkedId;
         RocketEntity destination;
         int stage, waits;
-        boolean visited, closed;
+        boolean visited, closed, refusedByDiscovery;
 
         Footprint(GameTestHelper helper, int z, boolean parkedCase) {
             this.helper = helper; this.parkedCase = parkedCase;
@@ -169,9 +169,14 @@ public final class RocketArrivalFootprintGameTests {
                     "The parked rocket was not admitted in the far footprint column");
             var arrival = RocketRegion.fromSnapshot(arrivalSnapshot());
             helper.assertTrue(RocketRegion.fromSnapshot(snapshot).overlaps(arrival), "The parked structure misses the arrival");
-            helper.assertTrue(!parked.getBoundingBox().intersects(new AABB(arrival.minimum().x(), arrival.minimum().y(),
-                    arrival.minimum().z(), arrival.maximum().x() + 1, arrival.maximum().y() + 1, arrival.maximum().z() + 1)),
-                    "The parked entity box overlaps the arrival, so the census would not be exercised");
+            // W311 (R359): the entity box follows the structure and reaches the arrival; the parked rocket's base box,
+            // its whole entity box before W311, must stay clear of it, and the entity stays in the far column. Once the
+            // rocket is reloaded, flyIntoParked narrows it to that base box (W311F).
+            var arrivalBox = new AABB(arrival.minimum().x(), arrival.minimum().y(), arrival.minimum().z(),
+                    arrival.maximum().x() + 1, arrival.maximum().y() + 1, arrival.maximum().z() + 1);
+            helper.assertTrue(parked.getBoundingBox().intersects(arrivalBox), "The parked structure box missed the arrival");
+            helper.assertTrue(!ModEntities.ROCKET.get().getDimensions().makeBoundingBox(parked.position()).intersects(arrivalBox),
+                    "The parked base box overlaps the arrival, so the census would not be exercised");
             parkedId = parked.getUUID();
             removeTicket(farColumn, 0);
             stage = 2;
@@ -237,7 +242,20 @@ public final class RocketArrivalFootprintGameTests {
             if (current != null && journal.actionable(logical)) {
                 boolean farLoaded = moon.areEntitiesLoaded(farColumn.toLong());
                 int before = lines("ARCE_ARRIVAL_ENTITIES_LOADING transfer=" + transfer).size();
+                // W311F: loading the parked rocket restores its structure-sized box (W311), which the selector's quick
+                // check would find first; its base box leaves the refusal to the structure discovery, as W13 R1 intended.
+                var loadedParked = moon.getEntity(parkedId) instanceof RocketEntity rocket ? rocket : null;
+                if (loadedParked != null) {
+                    LandingOccupancyGameTestSupport.leaveToDiscovery(helper, moon, loadedParked,
+                            RocketRegion.fromSnapshot(current.destinationSnapshot()), "Arrival footprint");
+                }
+                int refusals = parkedRefusals().size();
                 service.tickLive(server, journal, current);
+                if (parkedRefusals().size() > refusals) {
+                    helper.assertTrue(loadedParked != null, "The parked rocket refused the arrival on a visit before it was"
+                            + " loaded and given its base box, so the structure discovery was not shown to refuse it");
+                    refusedByDiscovery = true;
+                }
                 var after = journal.find(transfer).orElse(null);
                 if (!visited) {
                     visited = true;
@@ -263,6 +281,8 @@ public final class RocketArrivalFootprintGameTests {
                     && lines("ARCE_ARRIVAL_ENTITIES_READY transfer=" + transfer).size() == 1, "The wait did not log one line per transition");
             helper.assertTrue(lines("ARCE_PAD_OCCUPANCY_REFUSED reason=occupied").stream().anyMatch(line -> line.contains("rocket=" + parkedId)),
                     "The arrival was not refused by the parked rocket: " + lines("ARCE_PAD_OCCUPANCY_REFUSED"));
+            helper.assertTrue(refusedByDiscovery, "The parked rocket's refusal did not come from a due visit on which its base"
+                    + " box left the refusal to the structure discovery");
             helper.assertTrue(lines("ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=" + transfer).stream()
                     .anyMatch(line -> line.contains("reason=destination_pad_blocked")), "The refused arrival did not return to its source");
             var parked = moon.getEntity(parkedId);
@@ -335,6 +355,10 @@ public final class RocketArrivalFootprintGameTests {
 
         List<String> lines(String prefix) {
             return log == null ? List.of() : log.lines().stream().filter(line -> line.startsWith(prefix)).toList();
+        }
+
+        List<String> parkedRefusals() {
+            return lines("ARCE_PAD_OCCUPANCY_REFUSED reason=occupied").stream().filter(line -> line.contains("rocket=" + parkedId)).toList();
         }
 
         void addTicket(ChunkPos column, int distance) {

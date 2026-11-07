@@ -353,7 +353,12 @@ public final class RocketLandingPadSelector {
         Predicate<RocketEntity> matching = rocket -> allowMatchingRocket
                 && allowedRocketId != null
                 && allowedRocketId.equals(rocket.getUUID());
-        if (!target.getEntitiesOfClass(RocketEntity.class, box).stream().allMatch(matching)) {
+        var found = target.getEntitiesOfClass(RocketEntity.class, box);
+        var occupant = found.stream().filter(matching.negate()).findFirst().orElse(null);
+        if (occupant != null) {
+            // W311: the entity box follows the structure (R359), so this check now finds most occupants before the
+            // discovery below; it names them for operators in the same line (W13F review N3).
+            NamedLandingPadOccupancy.logRefusal(target, region, NamedLandingPadOccupancy.OCCUPIED, occupant, found.size());
             return NamedLandingPadOccupancy.OCCUPIED;
         }
         // A parked rocket's small entity box can miss an arrival that its structure covers (W13 R1).
