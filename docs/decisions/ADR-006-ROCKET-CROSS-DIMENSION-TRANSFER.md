@@ -75,6 +75,26 @@ active-flight record. Online passengers move only after destination spawn.
 Offline passengers rejoin at the authoritative rocket or its safe pad; the
 system never edits or deletes playerdata.
 
+#### Implementation note: a stationary rider's logout save (Root, 2026-11-07, R364, R365, R375, R378)
+
+W278's round 7 finding 7-1: a rider whose high seat was released while it was offline logged in at the seat's height
+and fell. Since W312, W312F and W312F2 (merged at `dcc0baa82`), a rider of a loaded, stationary rocket (ASSEMBLED,
+FUELED or LANDED, with no active transfer, rejoin guard, release fence, held bay receipt or internal move) is
+detached, through vanilla's own dismount, just before vanilla saves it: at logout, and in `ServerStoppingEvent`
+before a server stop saves online players. Vanilla performs that dismount right after the save anyway.
+
+- The player is saved where LEAVE SEAT puts it, only when a logout-only check proves that place harmless after
+  login. The check accepts this mod's full-cube structural blocks as ordinary blocks, ignores the rider's own rocket
+  and other players, and allows a fall of at most three blocks whose gravity-scaled landing deals no damage.
+  Otherwise the save is as before.
+- The seat assignment is unchanged, so the reconnect still reseats a kept seat. Playerdata is still written only by
+  vanilla; no file is edited.
+- Limits: saves made before this change, autosaves and crashes keep the seat's height once; a refused check keeps
+  it; a stop proves at most about 42 riders within one tick's shared budget.
+
+Evidence: [W312](../work/v1.8.0-root-queue/records/W312.md), [W312F](../work/v1.8.0-root-queue/records/W312F.md)
+and [W312F2](../work/v1.8.0-root-queue/records/W312F2.md), with reviews W312R and W312FR.
+
 ### Landing and disassembly
 
 Destination placement uses the same bounded structure snapshot with a new
