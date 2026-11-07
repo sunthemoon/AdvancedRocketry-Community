@@ -89,7 +89,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         stationButton = addRenderableWidget(Button.builder(
                 stationLabel(),
                 button -> act(this::selectNextStation)
-        ).bounds(leftPos + 128, topPos + 114, 98, 20).build());
+        ).bounds(leftPos + 128, topPos + 114, RocketFlightScreenLayout.STATION_BUTTON_WIDTH, 20).build());
         launchButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.launch"),
                 button -> act(() -> send(RocketFlightAction.LAUNCH))
@@ -199,10 +199,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         stationButton.active = stationary && !menu.accessibleStations().isEmpty();
         earthButton.setMessage(choiceLabel(RocketDestination.EARTH));
         moonButton.setMessage(choiceLabel(RocketDestination.MOON));
-        stationButton.setMessage(stationLabel());
+        Component fullStationLabel = stationLabel();
+        var fittedStationLabel = RocketFlightScreenLayout.stationLabel(fullStationLabel.getString(), font::width);
+        stationButton.setMessage(fittedStationLabel.shortened()
+                ? Component.literal(fittedStationLabel.text()) : fullStationLabel);
         stationButton.setTooltip(menu.accessibleStations().isEmpty()
-                ? Tooltip.create(Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations")) : null);
-        ScreenText.fitButton(stationButton, font);
+                ? Tooltip.create(Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations"))
+                : Tooltip.create(fullStationLabel));
         otherBodyButton.setMessage(otherBodyLabel());
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
