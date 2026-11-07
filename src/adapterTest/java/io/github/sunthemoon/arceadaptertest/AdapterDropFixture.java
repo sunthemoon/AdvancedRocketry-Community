@@ -1,5 +1,6 @@
 package io.github.sunthemoon.arceadaptertest;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -7,7 +8,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Fixture-only control retirement and unfiltered item observations in the original assertion regions. */
+/** Fixture-only control retirement and empty pre-operation regions with unfiltered drop observations. */
 final class AdapterDropFixture {
     static void prepare(GameTestHelper helper) {
         var world = new AdapterWorldFixture(helper);
@@ -20,6 +21,9 @@ final class AdapterDropFixture {
             helper.assertTrue(helper.getLevel().getBlockState(button).isAir(), "Could not retire fixture start button");
         }
         world.isolateTerrain();
+        // Template placement can drop decorations, and earlier tests can leave items here.
+        // Clear before placing members/cargo; all later observations still require zero items.
+        clearPreexistingDrops(helper, new AABB(helper.absolutePos(new BlockPos(3, 2, 3))).inflate(3));
     }
 
     static void withFlowingStartControlWater(GameTestHelper helper, Runnable setupAndOperation) {
@@ -28,6 +32,7 @@ final class AdapterDropFixture {
         helper.assertTrue(level.getBlockState(button).is(Blocks.STONE_BUTTON)
                         && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                 "Framework start control was not placed at the expected position");
+        prepareStartControlObservation(helper, button);
         setupAndOperation.run();
         flowAcrossStartControl(helper, button);
         helper.runAtTickTime(8, () -> {
@@ -59,6 +64,21 @@ final class AdapterDropFixture {
                         "Fixture water channel opened at " + wall);
             }
         });
+    }
+
+    static void prepareStartControlObservation(GameTestHelper helper, BlockPos button) {
+        // This region extends outside the template and does not match the member/cargo region.
+        // Clean it before retiring the control or flowing water, never after either operation.
+        clearPreexistingDrops(helper, new AABB(button).inflate(2));
+    }
+
+    static void clearPreexistingDrops(GameTestHelper helper, AABB region) {
+        for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region)) {
+            LogUtils.getLogger().info("ARCE_ADAPTER_FIXTURE_PREEXISTING_DROP uuid={} item={} position={} age={}",
+                    item.getUUID(), item.getItem(), item.position(), item.getAge());
+            item.discard();
+        }
+        assertNoDrops(helper, region, "Could not clear pre-operation drop region");
     }
 
     static void assertNoDrops(GameTestHelper helper, AABB region, String message) {

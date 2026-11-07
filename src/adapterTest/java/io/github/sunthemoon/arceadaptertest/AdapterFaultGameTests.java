@@ -103,6 +103,7 @@ public final class AdapterFaultGameTests {
         helper.assertTrue(level.getBlockState(button).is(Blocks.STONE_BUTTON)
                         && level.getBlockState(button.south()).is(Blocks.COMMAND_BLOCK),
                 "Framework start control was not placed at the expected position");
+        AdapterDropFixture.prepareStartControlObservation(helper, button);
         create(helper);
         AdapterDropFixture.flowAcrossStartControl(helper, button);
         helper.runAtTickTime(8, () -> {
@@ -116,29 +117,58 @@ public final class AdapterFaultGameTests {
     }
 
     @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w273_adapter_start_button", timeoutTicks = 20)
+    public static void flowingWaterCannotCountPreexistingStartButtonDrop(GameTestHelper helper) {
+        BlockPos button = helper.absolutePos(new BlockPos(1, 0, -2));
+        var leftover = new ItemEntity(helper.getLevel(), button.getX() + 0.5, button.getY(), button.getZ() + 0.5,
+                new ItemStack(Items.STONE_BUTTON));
+        leftover.setDeltaMovement(0, 0, 0);
+        leftover.setNoGravity(true);
+        helper.assertTrue(helper.getLevel().addFreshEntity(leftover), "Earlier-drop control was not spawned");
+        flowingWaterCannotDropFixtureStartButton(helper);
+        helper.assertTrue(leftover.isRemoved(), "Pre-operation cleanup left the earlier-drop control alive");
+    }
+
+    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w273_adapter_start_button", timeoutTicks = 20)
     public static void fixtureStillRejectsMemberAndCargoDrops(GameTestHelper helper) {
         create(helper);
         BlockPos origin = helper.absolutePos(ORIGIN);
+        BlockPos button = helper.absolutePos(new BlockPos(1, 0, -2));
+        AdapterDropFixture.prepareStartControlObservation(helper, button);
         for (var item : List.of(block("rocket_motor").asItem(), block("rocket_seat").asItem(),
                 block("guidance_computer").asItem(), Items.DIAMOND, Items.IRON_INGOT, Items.STONE_BUTTON,
                 Items.DIAMOND_BLOCK, Items.EMERALD_BLOCK, Items.OAK_PLANKS, Items.GOLD_BLOCK, Items.QUARTZ_BLOCK)) {
             var drop = new ItemEntity(helper.getLevel(), origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5,
                     new ItemStack(item, 3));
+            drop.setDeltaMovement(0, 0, 0);
+            drop.setNoGravity(true);
+            helper.assertTrue(region(helper).contains(drop.position()), "Drop control escaped its own region");
             helper.assertTrue(helper.getLevel().addFreshEntity(drop), "Duplicate-drop control was not spawned");
-            boolean rejected = false;
-            try { noDrops(helper); }
-            catch (GameTestAssertException expected) {
-                rejected = expected.getMessage().contains("Duplicate inventory drops found: ")
-                        && expected.getMessage().contains(drop.getItem().toString())
-                        && expected.getMessage().contains("type=" + ForgeRegistries.ITEMS.getKey(item))
-                        && expected.getMessage().contains("count=3")
-                        && expected.getMessage().contains("at " + drop.position())
-                        && expected.getMessage().contains("age=" + drop.getAge());
+            try {
+                assertDropRejected(helper, drop, "Duplicate inventory drops found", () -> noDrops(helper));
+                // The water observation has the same all-item guarantee after its one-time cleanup.
+                // Both controls stay in this test's regions and are discarded before the tick ends.
+                drop.setPos(button.getX() + 0.5, button.getY(), button.getZ() + 0.5);
+                assertDropRejected(helper, drop, "Water dropped a fixture start button",
+                        () -> AdapterDropFixture.assertNoDrops(helper, new AABB(button).inflate(2),
+                                "Water dropped a fixture start button"));
             } finally { drop.discard(); }
-            helper.assertTrue(rejected, "Duplicate-drop assertion accepted " + item);
         }
         noDrops(helper);
         helper.succeed();
+    }
+
+    private static void assertDropRejected(GameTestHelper helper, ItemEntity drop, String message, Runnable assertion) {
+        boolean rejected = false;
+        try { assertion.run(); }
+        catch (GameTestAssertException expected) {
+            rejected = expected.getMessage().contains(message + ": ")
+                    && expected.getMessage().contains(drop.getItem().toString())
+                    && expected.getMessage().contains("type=" + ForgeRegistries.ITEMS.getKey(drop.getItem().getItem()))
+                    && expected.getMessage().contains("count=3")
+                    && expected.getMessage().contains("at " + drop.position())
+                    && expected.getMessage().contains("age=" + drop.getAge());
+        }
+        helper.assertTrue(rejected, "Drop assertion accepted " + drop.getItem());
     }
 
     @GameTest(templateNamespace = HOST, template = "empty", timeoutTicks = 20)
@@ -331,13 +361,6 @@ public final class AdapterFaultGameTests {
 
     private static Fixture create(GameTestHelper helper, Block cargo) {
         AdapterDropFixture.prepare(helper);
-        // Structure placement can drop natural cave decorations before this test starts.
-        // Clear only pre-operation items; every later inventory assertion still requires zero drops.
-        for (var item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, region(helper))) {
-            LogUtils.getLogger().info("ARCE_ADAPTER_FIXTURE_PREEXISTING_DROP item={} position={} age={}",
-                    item.getItem(), item.position(), item.getAge());
-            item.discard();
-        }
         noDrops(helper);
         helper.setBlock(ORIGIN.below(), block("rocket_assembler"));
         helper.setBlock(ORIGIN, block("rocket_motor"));
