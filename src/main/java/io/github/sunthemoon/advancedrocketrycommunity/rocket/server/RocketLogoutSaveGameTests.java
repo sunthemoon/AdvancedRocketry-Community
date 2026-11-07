@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoin
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
@@ -23,6 +24,13 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class RocketLogoutSaveGameTests {
     private RocketLogoutSaveGameTests() { }
+
+    @AfterBatch(batch = "rocket_logout_save")
+    public static void afterSave(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_logout_budget")
+    public static void afterBudget(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_logout_guarded")
+    public static void afterGuarded(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
 
     @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
     public static void offlineOperatorReleaseRejoinsOutsideTheTallRocketUnhurt(GameTestHelper helper) { run(helper, Mode.ASSEMBLED); }

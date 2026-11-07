@@ -48,6 +48,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 /** Native connected survival logins; unlike the general fixture, rejoin never teleports over the loaded save. */
 final class RocketLogoutSaveFixture implements AutoCloseable {
     static final BlockPos ORIGIN = new BlockPos(3, 40, 3);
+    private static final java.util.Set<RocketLogoutSaveFixture> ACTIVE = new HashSet<>();
     final GameTestHelper helper;
     final UUID playerId = UUID.randomUUID();
     final RocketTransferSavedData journal = new RocketTransferSavedData();
@@ -66,6 +67,7 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
     RocketLogoutSaveFixture(GameTestHelper helper, RocketFlightState state) throws IOException {
         this.helper = helper;
         directory = Files.createTempDirectory("arce-w312-");
+        ACTIVE.add(this);
         try { initialize(state); }
         catch (RuntimeException | Error failure) {
             try { close(); } catch (Throwable cleanup) { failure.addSuppressed(cleanup); }
@@ -76,8 +78,9 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
     private void initialize(RocketFlightState state) {
         var level = helper.getLevel();
         var at = helper.absolutePos(ORIGIN);
-        // An elevated, fixed-size platform avoids natural terrain and other batches' fixture blocks.
+        // This fixed chamber is outside other batches' fixture height. Restore every changed terrain cell on close.
         for (int x = -1; x <= 3; x++) { for (int z = -1; z <= 1; z++) {
+            for (int y = -2; y <= 11; y++) { block(at.offset(x, y, z), Blocks.AIR.defaultBlockState()); }
             block(at.offset(x, -1, z), Blocks.STONE.defaultBlockState());
         } }
         var sourceAt = state == RocketFlightState.LANDED ? at.west(6) : at;
@@ -126,6 +129,24 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
         helper.assertTrue(!player.isCreative() && !player.isInvulnerable() && player.getY() > rocket.getY() + 9,
                 "Logout control is not an unprotected high-seat survival rider");
         exit = rocket.getDismountLocationForPassenger(player);
+        assertSafeExit();
+    }
+
+    private void assertSafeExit() {
+        var world = new BayPassengerExitWorld(player);
+        var size = player.getDimensions(net.minecraft.world.entity.Pose.STANDING);
+        var box = new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Box(
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.Position(
+                        player.serverLevel().dimension().location().toString(), exit.x, exit.y, exit.z), size.width, size.height);
+        // An independent proof verifies the fixture without spending or resetting the installed shared budget.
+        var budget = new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitBudget(
+                player.getServer().getTickCount());
+        try (var probe = budget.openProbe().orElseThrow()) {
+            var verdict = io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.loaded(world)
+                    .inspect(box, probe, (candidate, work) -> true);
+            helper.assertTrue(verdict == io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.Verdict.SAFE,
+                    "Initial logout exit is not proved safe: " + verdict + " firstContact=" + world.firstContact);
+        }
     }
 
     void block(BlockPos at, BlockState state) {
@@ -216,6 +237,7 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
 
     @Override public void close() {
         if (closed) { return; } closed = true;
+        ACTIVE.remove(this);
         journal.abort(); recovery.clear();
         if (player != null && helper.getLevel().getServer().getPlayerList().getPlayer(playerId) == player) {
             player.connection.onDisconnect(Component.literal("W312 fixture cleanup")); player = null;
@@ -229,4 +251,6 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
             for (var path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) { Files.delete(path); }
         } catch (IOException failure) { throw new UncheckedIOException(failure); }
     }
+
+    static void closeAbandoned() { for (var fixture : List.copyOf(ACTIVE)) { fixture.close(); } }
 }
