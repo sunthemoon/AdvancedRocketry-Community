@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -52,8 +53,17 @@ public final class RocketPassengerLogout {
         if (riders > 0) { AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_STOP_EXIT riders={} detached={}", riders, detached); }
     }
 
+    /** W312F (review F5): an unexpected failure logs one WARN and leaves this player's save as it was before W312. */
     static boolean attempt(ServerPlayer player) {
-        return player.getVehicle() instanceof RocketEntity rocket && detach(player, rocket);
+        Entity vehicle = null;
+        try {
+            vehicle = player.getVehicle();
+            return vehicle instanceof RocketEntity rocket && detach(player, rocket);
+        } catch (RuntimeException unexpected) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_ROCKET_LOGOUT_EXIT_FAILED player={} uuid={} rocket={}; the save is unchanged",
+                    player.getGameProfile().getName(), player.getUUID(), vehicle == null ? "none" : vehicle.getUUID(), unexpected);
+            return false;
+        }
     }
 
     private static boolean detach(ServerPlayer player, RocketEntity rocket) {
