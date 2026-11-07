@@ -315,6 +315,7 @@ public final class RocketLogoutSaveGameTests {
             RocketRuntime.PassengerMoveScope internal = null;
             LocationFailure failure = null;
             UUID logical = f.rocket.assemblyTransactionId().orElseThrow();
+            var rider = f.player;
             var cancel = mode == Mode.CANCELLED ? new CancelLogoutDismount(f.player) : null;
             if (cancel != null) { MinecraftForge.EVENT_BUS.register(cancel); }
             try {
@@ -342,13 +343,15 @@ public final class RocketLogoutSaveGameTests {
                 }
                 if (mode == Mode.INTERNAL) { internal = RocketRuntime.internalPassengerMove(f.player); }
                 if (mode == Mode.FAILURE) { failure = new LocationFailure(f.playerId); failure.install(); }
-                f.logout(mode == Mode.CANCELLED);
+                // A held rider's vanilla detach after the save reaches the held bay exit service, as before W312.
+                f.logout(mode == Mode.CANCELLED, mode == Mode.HELD);
                 if (failure != null) { helper.assertTrue(failure.thrown == 1, "The injected failure did not reach the logout hook once"); }
             } finally {
                 if (cancel != null) { MinecraftForge.EVENT_BUS.unregister(cancel); }
                 if (internal != null) { internal.close(); }
                 if (failure != null) { failure.remove(); }
                 if (mode == Mode.HELD) {
+                    RocketRuntime.passengerExits().ifPresent(exits -> exits.revoke(rider));
                     var bays = BayDeploymentGameTestSupport.bays(helper);
                     bays.unqueueForTests(logical); bays.forgetForTests(logical);
                 }

@@ -299,11 +299,17 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
 
     void logout() { logout(false); }
 
-    void logout(boolean cancelled) {
+    void logout(boolean cancelled) { logout(cancelled, false); }
+
+    /**
+     * W312F: {@code heldAfterSave} is for a rider of a held rocket. Vanilla's own detach after the save then reaches the
+     * held bay exit service, exactly as before W312, so only the state at the save is checked for that rider.
+     */
+    void logout(boolean cancelled, boolean heldAfterSave) {
         var before = rocket.flightData().orElseThrow().passengers();
         var exits = RocketRuntime.passengerExits().orElseThrow();
         int histories = exits.state.histories();
-        var observation = new LogoutObservation(player);
+        var observation = new LogoutObservation(player, exits, histories);
         player.setShiftKeyDown(true); // Unconsumed sneak is not LEAVE on a disconnect.
         MinecraftForge.EVENT_BUS.register(observation);
         try { player.connection.onDisconnect(Component.literal("W312 fixture logout")); }
@@ -313,7 +319,8 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
         mountedWhenSaved = observation.mountedWhenSaved;
         helper.assertTrue(player.hasDisconnected() && (cancelled || !player.isPassenger()), "Native disconnect did not detach");
         helper.assertTrue(rocket.flightData().orElseThrow().passengers().equals(before), "Logout changed the durable seat manifest");
-        helper.assertTrue(!exits.state.live.containsKey(player) && !exits.state.refusals.containsKey(player)
+        helper.assertTrue(!observation.bayExitAtSave, "The logout started a bay exit or refusal before the save");
+        helper.assertTrue(heldAfterSave || !exits.state.live.containsKey(player) && !exits.state.refusals.containsKey(player)
                 && exits.state.histories() == histories,
                 "Disconnect started a bay exit or refusal");
         helper.assertTrue(!disk().contains("RootVehicle"), "Logout embedded another rocket authority in the player save");
@@ -323,9 +330,13 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
 
     public static final class LogoutObservation {
         private final ServerPlayer player;
+        private final BayPassengerExitService exits;
+        private final int histories;
         int saves, detachAttempts;
-        boolean disconnecting = true, mountedWhenSaved;
-        LogoutObservation(ServerPlayer player) { this.player = player; }
+        boolean disconnecting = true, mountedWhenSaved, bayExitAtSave;
+        LogoutObservation(ServerPlayer player, BayPassengerExitService exits, int histories) {
+            this.player = player; this.exits = exits; this.histories = histories;
+        }
         @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
         public void mount(EntityMountEvent event) {
             if (event.isDismounting() && event.getEntityMounting() == player) {
@@ -333,7 +344,11 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
             }
         }
         @SubscribeEvent public void saved(PlayerEvent.SaveToFile event) {
-            if (event.getEntity() == player) { saves++; mountedWhenSaved = player.isPassenger(); }
+            if (event.getEntity() == player) {
+                saves++; mountedWhenSaved = player.isPassenger();
+                bayExitAtSave |= exits.state.live.containsKey(player) || exits.state.refusals.containsKey(player)
+                        || exits.state.histories() != histories;
+            }
         }
     }
 
