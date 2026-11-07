@@ -52,10 +52,10 @@ public final class DeletedStationPadGameTests {
             f.command("list " + f.station.stationId(), "list", 1);
             f.select("selected", 1);
             f.delete();
-            f.command("list " + f.station.stationId(), "refused", 0);
+            f.command("list " + f.station.stationId(), "list_refused", 0);
             f.select("select_unknown", 0);
             f.server().getPlayerList().op(f.player.getGameProfile());
-            f.command("list " + f.station.stationId(), "refused", 0);
+            f.command("list " + f.station.stationId(), "list_refused", 0);
             f.select("select_unknown", 0);
             helper.assertTrue(LandingPadService.registered(f.server(), f.station.stationId(), f.entry.reference()) == null
                     && LandingPadService.resolve(f.server(), f.station.stationId(), f.entry.reference()) == null,
