@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSyst
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.client.station.WarpControllerLayout;
+import io.github.sunthemoon.advancedrocketrycommunity.client.ScreenNoticeLayout;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -48,6 +49,23 @@ final class StationControllerLayoutTest {
     @BeforeAll
     static void bootstrap() {
         MinecraftBootstrap.initialize();
+    }
+
+    @Test
+    void countdownAndCancellationNoticesFitBelowTheirBilingualStatusesAtScaleThree() throws IOException {
+        for (String language : List.of("en_us", "zh_cn")) {
+            JsonObject strings = JsonParser.parseString(Files.readString(LANG.resolve(language + ".json"),
+                    StandardCharsets.UTF_8)).getAsJsonObject();
+            for (StationManagementCode code : List.of(StationManagementCode.WARP_STARTED,
+                    StationManagementCode.WARP_CANCELLED, StationManagementCode.WARP_COMMITTED)) {
+                String status = fill(text(strings, StationControllerMenu.KEY + "status"),
+                        text(strings, code.translationKey()), code.name());
+                int contentBottom = 9 + StationControllerMenu.STATUS_TOP
+                        + rows(status) * StationControllerMenu.STATUS_LINE_HEIGHT;
+                assertTrue(ScreenNoticeLayout.forPanel(427, 240, 85, 9, 256, 222, contentBottom).isPresent(),
+                        language + " " + code);
+            }
+        }
     }
 
     @Test

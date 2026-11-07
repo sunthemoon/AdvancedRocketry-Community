@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.client.station.StationControllerScreen;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,8 +36,13 @@ public final class ScreenActionMessages {
         Screen screen = Minecraft.getInstance().screen;
         boolean ours = screen != null && screen.getClass().getName()
                 .startsWith("io.github.sunthemoon.advancedrocketrycommunity.");
-        boolean pin = ours && event.isOverlay() && screen instanceof RefusalOwner owner && owner.refusal(event.getMessage());
-        NOTICE.accept(screen, ours, event.isOverlay(), event.getMessage().copy(), Util.getMillis(), pin);
+        receive(screen, ours, event.isOverlay(), event.getMessage(), Util.getMillis());
+    }
+
+    static void receive(Object screen, boolean ours, boolean overlay, Component message, long now) {
+        boolean mirror = overlay || WarpScreenNotice.replacesCountdown(NOTICE.current(screen, now).orElse(null), message);
+        boolean pin = ours && overlay && screen instanceof RefusalOwner owner && owner.refusal(message);
+        NOTICE.accept(screen, ours, mirror, message.copy(), now, pin);
     }
 
     @SubscribeEvent
@@ -46,14 +52,18 @@ public final class ScreenActionMessages {
         if (message == null || screen.width < 32 || screen.height < 32) { return; }
         var graphics = event.getGuiGraphics();
         var font = Minecraft.getInstance().font;
-        int y = screen.height - 24;
+        ScreenNoticeLayout.Bounds bounds = screen instanceof StationControllerScreen controller
+                && WarpScreenNotice.isNotice(message) ? controller.noticeBounds().orElse(null)
+                : ScreenNoticeLayout.bottom(screen.width, screen.height);
+        if (bounds == null) { return; }
+        int x = bounds.x(), y = bounds.y();
         graphics.pose().pushPose();
         try {
             graphics.pose().translate(0, 0, 400);
-            graphics.fill(8, y, screen.width - 8, y + 17, 0xF0101820);
-            graphics.renderOutline(8, y, screen.width - 16, 17, 0xFFFFC857);
+            graphics.fill(x, y, x + bounds.width(), y + bounds.height(), 0xF0101820);
+            graphics.renderOutline(x, y, bounds.width(), bounds.height(), 0xFFFFC857);
             TEXT.clear();
-            TEXT.centered(graphics, font, message, 12, y + 4, screen.width - 24, 0xFFFFE5AE);
+            TEXT.centered(graphics, font, message, x + 4, y + 4, bounds.width() - 8, 0xFFFFE5AE);
             TEXT.renderTooltip(graphics, font, 0, 0, event.getMouseX(), event.getMouseY());
         } finally { graphics.pose().popPose(); }
     }
