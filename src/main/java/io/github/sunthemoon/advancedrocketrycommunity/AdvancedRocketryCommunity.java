@@ -16,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCa
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityController;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialGravityRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.LowGravityFlightAllowance;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.ZeroGravityFooting;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialVisitTracker;
@@ -235,10 +236,13 @@ public final class AdvancedRocketryCommunity {
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
         MinecraftForge.EVENT_BUS.addListener(rocketVisualSynchronizer::onStartTracking);
         lifeSupportNetwork = new LifeSupportNetwork();
+        // W312F2: the field layer also answers for another block, for the rocket logout save's fall check.
+        CelestialGravityController.PlayerGravityAt fieldGravity = (player, position) -> io.github.sunthemoon
+                .advancedrocketrycommunity.endgame.service.EndgameRuntime.devices()
+                .map(devices -> devices.fieldGravity(player, position)).orElse(java.util.OptionalDouble.empty());
         CelestialGravityController gravityController = new CelestialGravityController(environments,
-                stationManager::effectiveGravity, player -> io.github.sunthemoon.advancedrocketrycommunity.endgame
-                .service.EndgameRuntime.devices().map(devices -> devices.fieldGravity(player))
-                .orElse(java.util.OptionalDouble.empty()), CommonConfig::classicGravityEnabled);
+                stationManager::effectiveGravity, fieldGravity, CommonConfig::classicGravityEnabled);
+        CelestialGravityRuntime.install(gravityController);
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
         // ADR-066 section 3.3 leaf B: the fall uses the multiplier the tick applied, once per landing (W38).
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingFall);

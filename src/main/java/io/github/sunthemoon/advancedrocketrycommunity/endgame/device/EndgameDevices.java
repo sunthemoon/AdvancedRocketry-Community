@@ -159,12 +159,16 @@ public final class EndgameDevices {
      * one bounded bucket lookup. Empty while the system is disabled.
      */
     public OptionalDouble fieldGravity(ServerPlayer player) {
+        return fieldGravity(player, player.blockPosition());
+    }
+
+    /** W312F2 (R378): the same lookup for this player with its feet in another block of its Level. */
+    public OptionalDouble fieldGravity(ServerPlayer player, BlockPos position) {
         if (fields.size() == 0 || !settings.get().enabled(EndgameSystem.GRAVITY_FIELD)) {
             return OptionalDouble.empty();
         }
         long start = System.nanoTime();
         try {
-            BlockPos position = player.blockPosition();
             return fields.at(player.level().dimension().location(), position.getX(), position.getY(),
                     position.getZ(), player.getUUID(), trust.trusted(player));
         } finally {
