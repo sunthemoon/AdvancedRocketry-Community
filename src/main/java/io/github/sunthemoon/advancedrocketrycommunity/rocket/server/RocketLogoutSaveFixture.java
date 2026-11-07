@@ -93,7 +93,7 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
         };
         // stationarySource retains source fuel; explicitly establish an empty ASSEMBLED control.
         if (state == RocketFlightState.ASSEMBLED) {
-            flight = flight.withFuel(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFuelState.empty(
+            flight = flight.withFuel(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(
                     snapshot.propulsion().orElseThrow()), level.getGameTime());
         }
         rocket = ModEntities.ROCKET.get().create(level);
