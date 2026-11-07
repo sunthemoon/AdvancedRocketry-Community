@@ -40,6 +40,7 @@ final class RocketTransferService {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
+    final RocketTransferGameTestControl gameTests = new RocketTransferGameTestControl();
     final RocketDestinationWarmups warmups = new RocketDestinationWarmups(); // W90b: RAM only, never saved
     private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher(warmups::handover);
     private final RocketGovernedCleanupDispatcher governedCleanup = new RocketGovernedCleanupDispatcher();
@@ -70,9 +71,7 @@ final class RocketTransferService {
         var prior = releases; releases = replacement; return prior;
     }
     void holdForGameTest(MinecraftServer server, UUID transfer, boolean landed, boolean remove) {
-        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || !server.isSameThread()) {
-            throw new IllegalStateException("Hold fixture requires GameTest owner thread");
-        }
+        RocketTransferGameTestControl.requireOwner(server);
         if (remove) { liveTransfers.remove(transfer); settledTransfers.remove(transfer); }
         else { (landed ? liveTransfers : settledTransfers).add(transfer); }
     }
@@ -539,6 +538,7 @@ final class RocketTransferService {
         arrivalFootprints.clear();
         liveTransfers.clear();
         settledTransfers.clear();
+        gameTests.clear();
         recovery.clear();
         governedSources.clear();
         governedCleanup.clear();
@@ -625,7 +625,8 @@ final class RocketTransferService {
             }
         }
         if (flight.state() == RocketFlightState.TRANSIT
-                && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.TRANSIT_TICKS) {
+                && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.TRANSIT_TICKS
+                && !gameTests.destinationSpawnHeld(record.transferId())) {
             if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "TRANSIT", 0); }
             spawnDestination(server, journal, record, source);
         } else if (flight.state() != RocketFlightState.COUNTDOWN

@@ -11,7 +11,7 @@ Root: Claude. Date: 2026-11-08. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 
 ## The failure
 
-W322's full run (`D:/GitHub/ARCE-Task-Evidence/root-queue/W322/`, record `records/W322.md` on W322's branch, line 75)
+W322's full run (`D:/GitHub/ARCE-Task-Evidence/root-queue/W322/`, record [W322](records/W322.md), line 75)
 saw one dropped stone button at `(134.79, -60.0, 1598.55)` with age 80. The test asserts at tick 8 that no drop lies
 within two blocks of its start button (`AdapterDropFixture.assertNoDrops`, test lines 99 to 116). An item 80 ticks old
 existed before this test began. GameTest batches reuse the same grid positions, so an earlier batch's dropped button,
