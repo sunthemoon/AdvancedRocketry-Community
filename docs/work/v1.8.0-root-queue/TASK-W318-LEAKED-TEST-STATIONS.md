@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-07. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w318`, branch `codex/v1.8.0-w318`, created by Root from the shared head |
 | Decision | Root decision R369 (QUEUE row W318) |
-| Background | `records/W315.md` (on W315's branch; merged soon): a station that `EscrowMonitorGameTests.stationMembershipRevokedAfterPreparedLaunchesAndInvalidatesArming` left in grid cell (0, 1) broke the sleep-in-vacuum test about 7,300 ticks later. W315 named five tests that create a station and never delete it |
+| Background | [W315](records/W315.md): a station that `EscrowMonitorGameTests.stationMembershipRevokedAfterPreparedLaunchesAndInvalidatesArming` left in grid cell (0, 1) broke the sleep-in-vacuum test about 7,300 ticks later. W315 named five tests that create a station and never delete it |
 | Record | `docs/work/v1.8.0-root-queue/records/W318.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W318/` |
 
 ## The tests
