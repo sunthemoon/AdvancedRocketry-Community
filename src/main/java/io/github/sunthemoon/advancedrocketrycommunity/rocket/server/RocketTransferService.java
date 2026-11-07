@@ -40,6 +40,7 @@ final class RocketTransferService {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
+    private final Set<UUID> destinationSpawnHoldsForGameTest = new HashSet<>();
     final RocketDestinationWarmups warmups = new RocketDestinationWarmups(); // W90b: RAM only, never saved
     private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher(warmups::handover);
     private final RocketGovernedCleanupDispatcher governedCleanup = new RocketGovernedCleanupDispatcher();
@@ -75,6 +76,16 @@ final class RocketTransferService {
         }
         if (remove) { liveTransfers.remove(transfer); settledTransfers.remove(transfer); }
         else { (landed ? liveTransfers : settledTransfers).add(transfer); }
+    }
+
+    /** Let one fixture drive the real spawn boundary without racing this service's automatic transit tick. */
+    void holdDestinationSpawnForGameTest(MinecraftServer server, UUID transfer, boolean hold) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("Destination spawn fixture requires GameTest owner thread");
+        }
+        Objects.requireNonNull(transfer, "transfer");
+        if (hold) { destinationSpawnHoldsForGameTest.add(transfer); }
+        else { destinationSpawnHoldsForGameTest.remove(transfer); }
     }
 
     RocketReleaseAccess.Owner releaseOwner(MinecraftServer server) {
@@ -539,6 +550,7 @@ final class RocketTransferService {
         arrivalFootprints.clear();
         liveTransfers.clear();
         settledTransfers.clear();
+        destinationSpawnHoldsForGameTest.clear();
         recovery.clear();
         governedSources.clear();
         governedCleanup.clear();
@@ -627,7 +639,9 @@ final class RocketTransferService {
         if (flight.state() == RocketFlightState.TRANSIT
                 && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.TRANSIT_TICKS) {
             if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "TRANSIT", 0); }
-            spawnDestination(server, journal, record, source);
+            if (!destinationSpawnHoldsForGameTest.contains(record.transferId())) {
+                spawnDestination(server, journal, record, source);
+            }
         } else if (flight.state() != RocketFlightState.COUNTDOWN
                 && flight.state() != RocketFlightState.ASCENT
                 && flight.state() != RocketFlightState.TRANSIT) {
