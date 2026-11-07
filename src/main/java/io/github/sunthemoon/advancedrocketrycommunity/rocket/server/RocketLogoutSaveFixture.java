@@ -65,7 +65,9 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
         for (int x = -1; x <= 3; x++) { for (int z = -1; z <= 1; z++) {
             block(at.offset(x, -1, z), Blocks.STONE.defaultBlockState());
         } }
-        var base = RocketSourceRetirementFixtures.countdown(helper, at, at, List.of(playerId), 0);
+        var sourceAt = state == RocketFlightState.LANDED ? at.west(6) : at;
+        var targetAt = state == RocketFlightState.LANDED ? at : at.east(6);
+        var base = RocketSourceRetirementFixtures.countdown(helper, sourceAt, targetAt, List.of(playerId), 0);
         var old = base.record();
         var blocks = new ArrayList<RocketBlock>();
         var seat = new RocketPosition(0, 9, 0);
@@ -75,10 +77,10 @@ final class RocketLogoutSaveFixture implements AutoCloseable {
                     ? ModBlocks.ROCKET_SEAT.get().defaultBlockState() : Blocks.IRON_BLOCK.defaultBlockState())));
         }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(),
-                RocketSourceRetirementFixtures.position(at), blocks, List.of(seat),
+                RocketSourceRetirementFixtures.position(sourceAt), blocks, List.of(seat),
                 new RocketStats(blocks.size(), 100, 1_000, 1_000, 1, 1, 1, 0), level.getGameTime(),
                 old.sourceSnapshot().propulsion().orElseThrow());
-        var arrival = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), snapshot.sourceOrigin(), level.getGameTime());
+        var arrival = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), old.destinationSnapshot().sourceOrigin(), level.getGameTime());
         record = RocketTransferRecord.create(old.transferId(), old.logicalRocketId(), old.ownerId(), old.sourceEntityId(),
                 snapshot, arrival, old.sourceFlightData(), old.destinationFlightData(), old.requiredFuel(), old.createdAtGameTime());
         var flight = switch (state) {
