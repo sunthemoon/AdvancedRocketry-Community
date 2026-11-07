@@ -70,6 +70,8 @@ public final class V180LandingPadData implements DataProvider {
                 Map.entry(prefix + "registered", chinese ? "已注册着陆平台 %s（%s，版本 %s）。" : "Registered pad %s (%s, epoch %s)."),
                 Map.entry(prefix + "removed", chinese ? "已取消注册着陆平台。" : "Landing pad unregistered."),
                 Map.entry(prefix + "refused", chinese ? "操作被拒绝：需要空间站所有者或管理员权限、有效名称和可用平台名额。" : "Refused: station owner/operator, a valid name and an available pad slot are required."),
+                Map.entry(prefix + "list_refused", chinese ? "无法列出平台：空间站不存在，或玩家无权访问。"
+                        : "Cannot list pads: the station is unknown or you may not visit it."),
                 Map.entry(prefix + "unavailable", chinese ? "平台不可用、未加载或操作过于频繁。" : "Pad unavailable, unloaded, or interaction rate exceeded."),
                 Map.entry(prefix + "selected", chinese ? "已选择 %s。打开附近火箭的飞行控制台并发射。" : "Selected %s. Open the nearby rocket flight console and launch."),
                 Map.entry(prefix + "select_invalid", chinese ? "无法选择平台：需要有效、存活且非旁观者的已连接玩家。"

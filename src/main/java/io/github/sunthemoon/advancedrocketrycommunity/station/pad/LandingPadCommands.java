@@ -82,7 +82,7 @@ public final class LandingPadCommands {
         var station = StationRegistrySavedData.get(player.getServer()).find(stationId).orElse(null);
         if (!valid(player) || station == null || !new StationAccessService().allowed(station,
                 player.getUUID(), player.hasPermissions(2), StationAccessAction.VISIT)) {
-            player.sendSystemMessage(text("refused")); return 0;
+            player.sendSystemMessage(text("list_refused")); return 0;
         }
         var index = LandingPadIndex.get(player.getServer());
         if (!index.operational()) { player.sendSystemMessage(text("unavailable")); return 0; }
