@@ -51,7 +51,7 @@ final class NetworkProtocolPinTest {
                 channel.reset().find();
                 protocol.reset().find();
                 if ("classic_controls".equals(channel.group(1))) {
-                    assertEquals("2", protocol.group(1), "R92 monitor protocol must reject version-1 peers");
+                    assertEquals("3", protocol.group(1), "W317 warp view protocol must reject older peers");
                 }
                 Matcher message = MESSAGE.matcher(source);
                 int messages = 0;
@@ -94,12 +94,12 @@ final class NetworkProtocolPinTest {
     }
 
     @Test
-    void r102KeepsProtocolTwoWithUnavailableMonitorRequirements() throws IOException {
+    void w317KeepsUnavailableMonitorRequirementsAtProtocolThree() throws IOException {
         var kind = io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind.ROCKET_MONITOR;
         assertEquals(4, kind.wireId()); assertEquals(21, kind.valueCount());
         for (int index : new int[] {13, 18, 20}) {
             assertEquals(-1, kind.minimum(index)); assertEquals(2_048_000, kind.maximum(index));
         }
-        assertEquals(3, expected().stream().filter(line -> line.startsWith(ModIdentity.id("classic_controls") + "|2|")).count());
+        assertEquals(3, expected().stream().filter(line -> line.startsWith(ModIdentity.id("classic_controls") + "|3|")).count());
     }
 }

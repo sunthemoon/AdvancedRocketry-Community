@@ -12,7 +12,12 @@ public final class WarpControllerLayout {
     public static final int BALANCE_ROWS = 2;
     public static final int COST_ROW = BALANCE_ROW + BALANCE_ROWS;
     public static final int COST_ROWS = 2;
-    public static final int COUNTDOWN_ROW = COST_ROW + COST_ROWS;
+    public static final int WARNING_ROW = COST_ROW + COST_ROWS;
+    public static final int WARNING_ROWS = 4;
+    public static final int COUNTDOWN_ROW = WARNING_ROW + WARNING_ROWS;
+    /** Warp buttons end at 54; these eleven rows still end before the shared status at 170. */
+    public static final int LINES_TOP = 58;
+    public static final int LINE_ROWS = COUNTDOWN_ROW + 1;
     private static final String ELLIPSIS = "...";
 
     private WarpControllerLayout() {
@@ -34,19 +39,22 @@ public final class WarpControllerLayout {
     }
 
     /**
-     * Balance and cost each own two wrapped rows; countdown owns the final row. Abbreviated body lines cannot
-     * displace them. A clipped or absent cost is not eligible for confirmation.
+     * Balance and cost each own two wrapped rows, followed by four warning rows and the countdown. Abbreviated
+     * body lines cannot displace them. A clipped price or warning is not eligible for confirmation.
      */
-    public static <T> Layout<T> arrange(T orbit, T target, List<T> balance, List<T> cost, List<T> countdown,
+    public static <T> Layout<T> arrange(T orbit, T target, List<T> balance, List<T> cost, List<T> warning, List<T> countdown,
                                       int drawnRows) {
         List<Row<T>> rows = new ArrayList<>();
         add(rows, List.of(orbit), ORBIT_ROW, 1, drawnRows);
         add(rows, List.of(target), TARGET_ROW, 1, drawnRows);
         add(rows, balance, BALANCE_ROW, BALANCE_ROWS, drawnRows);
         add(rows, cost, COST_ROW, COST_ROWS, drawnRows);
+        add(rows, warning, WARNING_ROW, WARNING_ROWS, drawnRows);
         add(rows, countdown, COUNTDOWN_ROW, 1, drawnRows);
         boolean costVisible = !cost.isEmpty() && cost.size() <= COST_ROWS && COST_ROW + cost.size() <= drawnRows;
-        return new Layout<>(rows, costVisible);
+        boolean warningVisible = warning.isEmpty()
+                || warning.size() <= WARNING_ROWS && WARNING_ROW + warning.size() <= drawnRows;
+        return new Layout<>(rows, costVisible, warningVisible);
     }
 
     private static <T> void add(List<Row<T>> rows, List<T> text, int first, int limit, int drawnRows) {
@@ -61,14 +69,14 @@ public final class WarpControllerLayout {
     public record Row<T>(int index, T text) {
     }
 
-    public record Layout<T>(List<Row<T>> rows, boolean costVisible) {
+    public record Layout<T>(List<Row<T>> rows, boolean costVisible, boolean warningVisible) {
         public Layout {
             rows = List.copyOf(rows);
         }
 
         /** The positive server quote token remains mandatory, even when the price is visible. */
         public boolean confirmEnabled(long quoteToken) {
-            return quoteToken > 0L && costVisible;
+            return quoteToken > 0L && costVisible && warningVisible;
         }
     }
 }

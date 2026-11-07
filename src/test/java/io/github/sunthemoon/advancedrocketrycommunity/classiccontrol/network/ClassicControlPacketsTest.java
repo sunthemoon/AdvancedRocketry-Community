@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * ADR-065 section 11.1: the three {@code classic_controls} messages. Every frame stays inside its frozen bound, a
- * deliberately malformed frame is a {@link DecoderException}, and only protocol 2 is accepted (R92).
+ * deliberately malformed frame is a {@link DecoderException}, and only protocol 3 is accepted (W317).
  */
 final class ClassicControlPacketsTest {
     private static final ClassicControlKind WARP = ClassicControlKind.WARP_CONTROLLER;
@@ -38,9 +38,10 @@ final class ClassicControlPacketsTest {
 
     @Test
     void onlyTheExactProtocolIsAccepted() {
-        assertEquals("2", ClassicControlsNetwork.protocolVersion());
-        assertTrue(ClassicControlsNetwork.acceptsProtocol("2"));
-        for (String version : new String[] {null, "", "0", "1", "3", "01", "1 ", "1.0", "02", "2 ", "2.0",
+        assertEquals("3", ClassicControlsNetwork.protocolVersion());
+        assertTrue(ClassicControlsNetwork.acceptsProtocol("3"));
+        for (String version : new String[] {null, "", "0", "1", "2", "4", "01", "1 ", "1.0", "02", "2 ", "2.0",
+                "03", "3 ", "3.0",
                 NetworkRegistry.ABSENT.version(), NetworkRegistry.ACCEPTVANILLA}) {
             assertFalse(ClassicControlsNetwork.acceptsProtocol(version), "version " + version);
         }
@@ -79,10 +80,10 @@ final class ClassicControlPacketsTest {
     }
 
     @Test
-    void r92KeepsTheLegacyKindsByteIdenticalAndAddsOnlyKindFour() {
-        // Golden version-1 frames: schema, container, kind, optional status, token, fixed int layout.
+    void w317AppendsTheWarpFlagAndKeepsOtherKindsAndAllIntentsByteIdentical() {
+        // Only warp changes: count 8 and one appended no-quote int. Other golden frames are unchanged.
         String[] goldenViews = {
-                "01010000000000000000000007ffffffffffffffff00000000000000000000000000000000ffffffff",
+                "01010000000000000000000008ffffffffffffffff00000000000000000000000000000000ffffffffffffffff",
                 "0101010000000000000000000100000000",
                 "0101020000000000000000000100000004",
                 "0101030000000000000000000700000000ffffffc4ffffffc4ffffffc4000000000000000000000000"};
@@ -190,18 +191,18 @@ final class ClassicControlPacketsTest {
 
     @Test
     void viewConstructionRefusesValuesOutsideTheKindsLayout() {
-        List<Integer> warp = List.of(0, 0, 0, 0, 0, 0, -1);
+        List<Integer> warp = List.of(0, 0, 0, 0, 0, 0, -1, -1);
         new ClassicControlViewPacket(1, WARP, Optional.empty(), 5L, warp);
         assertThrows(IllegalArgumentException.class,
                 () -> new ClassicControlViewPacket(1, WARP, Optional.empty(), -1L, warp));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, WARP, Optional.empty(), 0L,
                 List.of(0, 0, 0, 0, 0, 0)));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, WARP, Optional.empty(), 0L,
-                List.of(32, 0, 0, 0, 0, 0, -1)));
+                List.of(32, 0, 0, 0, 0, 0, -1, -1)));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, WARP, Optional.empty(), 0L,
-                List.of(0, 0, -1, 0, 0, 0, -1)));
+                List.of(0, 0, -1, 0, 0, 0, -1, -1)));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, WARP, Optional.empty(), 0L,
-                List.of(0, 0, 0, 0, 0, 3, -1)));
+                List.of(0, 0, 0, 0, 0, 3, -1, -1)));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, ORIENTATION,
                 Optional.empty(), 0L, List.of(0, 61, 0, 0, 0, 0, 0)));
         assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(1, ORIENTATION,
@@ -215,15 +216,37 @@ final class ClassicControlPacketsTest {
     }
 
     @Test
+    void warpRouteFlagHasExactlyThreeWireValuesAndRejectsTheOldLayout() {
+        assertEquals(8, WARP.valueCount());
+        for (int flag : new int[] {-1, 0, 1}) {
+            List<Integer> values = new ArrayList<>(warpValues());
+            values.set(7, flag);
+            ClassicControlViewPacket decoded = ClassicControlViewPacket.decode(wrap(
+                    view(1, 1, 0, 0, null, 0L, 8, values)));
+            assertEquals(flag, decoded.value(7));
+        }
+        for (int flag : new int[] {Integer.MIN_VALUE, -2, 2, Integer.MAX_VALUE}) {
+            List<Integer> values = new ArrayList<>(warpValues());
+            values.set(7, flag);
+            assertThrows(IllegalArgumentException.class, () -> new ClassicControlViewPacket(
+                    1, WARP, Optional.empty(), 0L, values));
+            assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(wrap(
+                    view(1, 1, 0, 0, null, 0L, 8, values))));
+        }
+        assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(wrap(
+                view(1, 1, 0, 0, null, 0L, 7, warpValues().subList(0, 7)))));
+    }
+
+    @Test
     void malformedViewFramesAreDecoderExceptions() {
         String code = StationManagementCode.WARP_ISSUED.name();
         List<byte[]> frames = List.of(
-                view(2, 1, 0, 0, null, 0L, 7, warpValues()),        // schema 2
-                view(1, 1, 5, 0, null, 0L, 7, warpValues()),        // first unassigned kind after R92
-                view(1, 1, 0, 2, null, 0L, 7, warpValues()),        // status flag 2
-                view(1, 1, 0, 1, "NOT_A_CODE", 0L, 7, warpValues()), // unknown code
-                view(1, 1, 0, 0, null, 0L, 6, warpValues()),        // a count that is not the kind's
-                view(1, 1, 0, 0, null, -1L, 7, warpValues()),       // a negative token
+                view(2, 1, 0, 0, null, 0L, 8, warpValues()),        // schema 2
+                view(1, 1, 5, 0, null, 0L, 8, warpValues()),        // first unassigned kind after R92
+                view(1, 1, 0, 2, null, 0L, 8, warpValues()),        // status flag 2
+                view(1, 1, 0, 1, "NOT_A_CODE", 0L, 8, warpValues()), // unknown code
+                view(1, 1, 0, 0, null, 0L, 7, warpValues()),        // old count
+                view(1, 1, 0, 0, null, -1L, 8, warpValues()),       // a negative token
                 view(1, 1, 1, 0, null, 3L, 1, List.of(50)),         // a token on gravity
                 view(1, 1, 1, 0, null, 0L, 1, List.of(101)),        // gravity 101
                 view(1, 0, 1, 0, null, 0L, 1, List.of(50)));        // container 0
@@ -231,7 +254,7 @@ final class ClassicControlPacketsTest {
             FriendlyByteBuf buffer = wrap(frames.get(index));
             assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(buffer), "frame " + index);
         }
-        byte[] valid = view(1, 1, 0, 1, code, 77L, 7, warpValues());
+        byte[] valid = view(1, 1, 0, 1, code, 77L, 8, warpValues());
         assertEquals(new ClassicControlViewPacket(1, WARP, Optional.of(StationManagementCode.WARP_ISSUED), 77L,
                 warpValues()), ClassicControlViewPacket.decode(wrap(valid)));
         assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(wrap(append(valid, 0))));
@@ -244,7 +267,7 @@ final class ClassicControlPacketsTest {
         overlong.writeByte(1).writeByte(1).writeByte(0).writeByte(1);
         overlong.writeByte(0x80 | code.length()).writeByte(0);
         overlong.writeBytes(code.getBytes(StandardCharsets.US_ASCII));
-        overlong.writeLong(77L).writeByte(7);
+        overlong.writeLong(77L).writeByte(8);
         warpValues().forEach(overlong::writeInt);
         assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(overlong));
         FriendlyByteBuf oversized = wrap(Arrays.copyOf(valid, ClassicControlViewPacket.MAX_BYTES + 1));
@@ -339,7 +362,7 @@ final class ClassicControlPacketsTest {
     }
 
     private static List<Integer> warpValues() {
-        return List.of(3, 0, 2_500_000, 1_000, 2_000_000, 1, 10);
+        return List.of(3, 0, 2_500_000, 1_000, 2_000_000, 1, 10, 1);
     }
 
     private static byte[] intent(int schema, int container, int kind, int action, int value, long token) {
