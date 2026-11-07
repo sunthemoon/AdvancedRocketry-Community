@@ -12,6 +12,16 @@
       "reason": "The native dismount callback marks the transaction root unreadable after the input guard, so updateFlightData refuses the seat removal. The per-passenger catch logs once and retains the previous membership."
     },
     {
+      "id": "w312f-logout-exit-failure",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_ROCKET_LOGOUT_EXIT_FAILED player=W312Rider uuid=[0-9a-f-]{36} rocket=[0-9a-f-]{36}; the save is unchanged",
+      "exception": "java\\.lang\\.IllegalStateException: W312F injected logout exit failure",
+      "counts": {"rocket_logout_failure": 1},
+      "test": "RocketLogoutSaveGameTests.unexpectedFailureLogsOnceAndKeepsTheExistingSave",
+      "reason": "W312F (R375 item 5): the gated location observer throws once inside the logout hook. The hook logs one WARN and returns, and vanilla saves the seated position as it did before W312."
+    },
+    {
       "id": "w285-bounded-gravity-floating-kicks",
       "level": "WARN",
       "logger": "net.minecraft.server.network.ServerGamePacketListenerImpl/",

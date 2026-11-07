@@ -2,24 +2,38 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaimBook;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinEvents;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinSavedData;
+import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** W312: native connected survival logouts, installed player files and uncorrected logins. */
+/** W312: native connected survival logouts, installed player files and uncorrected logins. W312F adds R375's cases. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketLogoutSaveGameTests {
@@ -31,6 +45,12 @@ public final class RocketLogoutSaveGameTests {
     public static void afterBudget(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
     @AfterBatch(batch = "rocket_logout_guarded")
     public static void afterGuarded(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_logout_fenced")
+    public static void afterFenced(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_logout_stop")
+    public static void afterStop(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_logout_failure")
+    public static void afterFailure(net.minecraft.server.level.ServerLevel level) { RocketLogoutSaveFixture.closeAbandoned(); }
 
     @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
     public static void offlineOperatorReleaseRejoinsOutsideTheTallRocketUnhurt(GameTestHelper helper) { run(helper, Mode.ASSEMBLED); }
@@ -61,7 +81,70 @@ public final class RocketLogoutSaveGameTests {
     @GameTest(template = "rocket_test", batch = "rocket_logout_guarded", timeoutTicks = 160)
     public static void pendingRejoinGuardOwnsTheLogoutSave(GameTestHelper helper) { run(helper, Mode.GUARDED); }
 
-    private enum Mode { ASSEMBLED, FUELED, LANDED, REMOVED, KEPT, FLIGHT, TRANSFER, STALE, UNSUPPORTED, OBSTRUCTED, AUTOSAVE, CANCELLED, BUDGET, GUARDED }
+    // W312F (R375 item 1): finding 7-1's field shape, then each logout-only rule on its own.
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 200)
+    public static void rocketOnItsAssemblerAboveALowerPlatformSavesTheExit(GameTestHelper helper) { run(helper, Mode.ASSEMBLER); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void ownRocketBoxOverTheExitDoesNotBlockTheSave(GameTestHelper helper) { run(helper, Mode.WIDE); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void threeBlockFallToStableSupportSavesTheExit(GameTestHelper helper) { run(helper, Mode.DROP3); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void fourBlockFallKeepsTheExistingHighSeatSave(GameTestHelper helper) { run(helper, Mode.DROP4); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void hazardousLandingKeepsTheExistingHighSeatSave(GameTestHelper helper) { run(helper, Mode.DROP_HAZARD); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save")
+    public static void logoutStructuralBlocksAreFullCubesWithoutHazard(GameTestHelper helper) {
+        for (var supplier : RocketLogoutExitWorld.STRUCTURAL) {
+            Block block = supplier.get();
+            for (var state : block.getStateDefinition().getPossibleStates()) {
+                var shape = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                helper.assertTrue(Block.isShapeFullBlock(shape) && state.getFluidState().isEmpty()
+                        && BayPassengerExitWorld.support(state, shape) == BayExitSafety.Support.FULL_STABLE
+                        && RocketLogoutExitWorld.hazard(state) == BayExitSafety.Hazard.NONE
+                        && BayPassengerExitWorld.hazard(state) == BayExitSafety.Hazard.UNKNOWN,
+                        "Not a full-cube, non-hazard structural block for the logout only: " + state);
+            }
+        }
+        helper.succeed();
+    }
+    // R375 item 3: other players are not collision surfaces; mobs still are.
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void crewmateAtTheExitDoesNotBlockTheSave(GameTestHelper helper) { run(helper, Mode.CREWMATE); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void mobAtTheExitKeepsTheExistingHighSeatSave(GameTestHelper helper) { run(helper, Mode.MOB); }
+    // R375 item 4: the remaining exclusions.
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void fireAtTheExitKeepsTheExistingHighSeatSave(GameTestHelper helper) { run(helper, Mode.HAZARD); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void internalPassengerMoveOwnsTheLogoutSave(GameTestHelper helper) { run(helper, Mode.INTERNAL); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_save", timeoutTicks = 160)
+    public static void heldBayClaimOwnsTheLogoutSave(GameTestHelper helper) { run(helper, Mode.HELD); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_fenced", timeoutTicks = 160)
+    public static void releaseFenceOwnsTheLogoutSave(GameTestHelper helper) { run(helper, Mode.FENCED); }
+    // R375 item 2: the server stop saves online players before any logout.
+    @GameTest(template = "rocket_test", batch = "rocket_logout_stop", timeoutTicks = 160)
+    public static void serverStopDetachesTheStationaryRiderBeforeItsSave(GameTestHelper helper) { run(helper, Mode.STOP); }
+    @GameTest(template = "rocket_test", batch = "rocket_logout_stop", timeoutTicks = 160)
+    public static void serverStopKeepsAnAscendingRiderSeated(GameTestHelper helper) { run(helper, Mode.STOP_FLIGHT); }
+    // R375 item 5: an unexpected failure never blocks the save.
+    @GameTest(template = "rocket_test", batch = "rocket_logout_failure", timeoutTicks = 160)
+    public static void unexpectedFailureLogsOnceAndKeepsTheExistingSave(GameTestHelper helper) { run(helper, Mode.FAILURE); }
+
+    private enum Mode {
+        ASSEMBLED, FUELED, LANDED, REMOVED, KEPT, FLIGHT, TRANSFER, STALE, UNSUPPORTED, OBSTRUCTED, AUTOSAVE, CANCELLED, BUDGET, GUARDED,
+        ASSEMBLER, WIDE, DROP3, DROP4, DROP_HAZARD, CREWMATE, MOB, HAZARD, INTERNAL, HELD, FENCED, STOP, STOP_FLIGHT, FAILURE;
+
+        /** The logout leaves vanilla's seated save unchanged. */
+        boolean excluded() {
+            return switch (this) {
+                case FLIGHT, TRANSFER, UNSUPPORTED, OBSTRUCTED, CANCELLED, BUDGET, GUARDED, DROP4, DROP_HAZARD, MOB, HAZARD, INTERNAL,
+                        HELD, FENCED, STOP_FLIGHT, FAILURE -> true;
+                default -> false;
+            };
+        }
+        /** The rocket's W311 box covers the exit; a rider standing in it after LEAVE SEAT is harmless (R375). */
+        boolean boxOverExit() { return this == ASSEMBLER || this == WIDE; }
+    }
     private static void run(GameTestHelper helper, Mode mode) { new Scenario(helper, mode).start(); }
 
     private static final class Scenario {
@@ -70,7 +153,7 @@ public final class RocketLogoutSaveGameTests {
         final GameTestTickPacer pacer;
         RocketLogoutSaveFixture f;
         int joinedAt;
-        boolean finished;
+        boolean finished, boarded;
 
         Scenario(GameTestHelper helper, Mode mode) {
             this.helper = helper; this.mode = mode; pacer = new GameTestTickPacer(helper.getLevel().getServer());
@@ -89,14 +172,24 @@ public final class RocketLogoutSaveGameTests {
                     var state = switch (mode) {
                         case FUELED -> RocketFlightState.FUELED;
                         case LANDED, KEPT -> RocketFlightState.LANDED;
-                        case FLIGHT -> RocketFlightState.ASCENT;
+                        case FLIGHT, STOP_FLIGHT -> RocketFlightState.ASCENT;
                         case TRANSFER -> RocketFlightState.TRANSIT;
                         default -> RocketFlightState.ASSEMBLED;
                     };
-                    f = new RocketLogoutSaveFixture(helper, state);
-                    exercise();
-                    if (f.player == null) { complete(); return; }
-                    joinedAt = level.getServer().getTickCount();
+                    var shape = switch (mode) {
+                        case ASSEMBLER -> RocketLogoutSaveFixture.Shape.ON_ASSEMBLER;
+                        case WIDE -> RocketLogoutSaveFixture.Shape.WIDE;
+                        default -> RocketLogoutSaveFixture.Shape.TALL;
+                    };
+                    f = new RocketLogoutSaveFixture(helper, state, shape);
+                    boarded = shape != RocketLogoutSaveFixture.Shape.ON_ASSEMBLER;
+                    if (!boarded) { pacer.pace(); return; }
+                    exerciseAndJoin();
+                } else if (!boarded) {
+                    // The installed manager assembles on its own server tick; board as soon as the rocket exists.
+                    if (!f.boardAssembled()) { pacer.pace(); return; }
+                    boarded = true;
+                    exerciseAndJoin();
                 } else if (helper.getLevel().getServer().getTickCount() - joinedAt >= (mode == Mode.STALE ? 60 : 20)) {
                     helper.assertTrue(!f.player.hasDisconnected() && f.player.getHealth() == f.player.getMaxHealth(),
                             "Returning survival rider disconnected or lost health during native ticks");
@@ -105,7 +198,8 @@ public final class RocketLogoutSaveGameTests {
                     } else {
                         helper.assertTrue(!f.player.isPassenger() && f.player.position().distanceTo(f.exit) < 1e-7,
                                 "Returning rider left the safe exit during native ticks");
-                        helper.assertTrue(!f.player.getBoundingBox().intersects(f.rocket.getBoundingBox()), "Returning rider is inside the rocket");
+                        helper.assertTrue(mode.boxOverExit() || !f.player.getBoundingBox().intersects(f.rocket.getBoundingBox()),
+                                "Returning rider is inside the rocket");
                         if (mode == Mode.STALE) {
                             helper.assertTrue(f.rocket.flightData().orElseThrow().passengers().assignment(f.playerId).isEmpty(),
                                     "Native stale-seat observation did not release the returning absent rider");
@@ -121,6 +215,11 @@ public final class RocketLogoutSaveGameTests {
                 throw new java.io.UncheckedIOException((java.io.IOException) failure);
             }
         }
+        private void exerciseAndJoin() {
+            exercise();
+            if (f.player == null) { complete(); return; }
+            joinedAt = helper.getLevel().getServer().getTickCount();
+        }
         private void exercise() {
             var before = f.player.saveWithoutId(new net.minecraft.nbt.CompoundTag());
             helper.assertTrue(!before.contains("RootVehicle"), "Mounted autosave embeds a rocket authority");
@@ -131,33 +230,21 @@ public final class RocketLogoutSaveGameTests {
             }
             if (mode == Mode.UNSUPPORTED) { f.block(BlockPos.containing(f.exit).below(), Blocks.AIR.defaultBlockState()); }
             if (mode == Mode.OBSTRUCTED) { f.block(BlockPos.containing(f.exit), Blocks.STONE.defaultBlockState()); }
+            arrange();
+            var server = helper.getLevel().getServer();
             if (mode == Mode.BUDGET) {
                 var budget = RocketRuntime.passengerExits().orElseThrow().budget;
                 for (int i = 0; i < io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitBudget.CANDIDATES_PER_TICK; i++) {
                     var probe = budget.openProbe().orElse(null); if (probe != null) { probe.close(); }
                 }
             }
-            var server = helper.getLevel().getServer();
-            RocketRejoinSavedData previous = null, guarded = null;
-            var cancel = mode == Mode.CANCELLED ? new CancelLogoutDismount(f.player) : null;
-            if (cancel != null) { MinecraftForge.EVENT_BUS.register(cancel); }
-            if (mode == Mode.GUARDED) {
-                previous = RocketRejoinEvents.get(server);
-                guarded = RocketRejoinSavedData.load(RocketRejoinCodec.encode(RocketSeatRosterGameTests.rejoinRoot(f.playerId)));
-                server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), guarded);
-            }
-            try { f.logout(mode == Mode.CANCELLED); }
-            finally {
-                if (cancel != null) { MinecraftForge.EVENT_BUS.unregister(cancel); }
-                if (guarded != null) {
-                    guarded.close(); server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), previous);
-                }
-            }
-            if (switch (mode) { case FLIGHT, TRANSFER, UNSUPPORTED, OBSTRUCTED, CANCELLED, BUDGET, GUARDED -> true; default -> false; }) {
+            if (mode == Mode.STOP || mode == Mode.STOP_FLIGHT) { stop(before); }
+            else { logout(); }
+            if (mode.excluded()) {
                 var saved = f.disk();
                 helper.assertTrue(f.mountedWhenSaved, "Excluded logout detached before saving: " + mode);
                 helper.assertTrue(saved.get("Pos").equals(before.get("Pos")), "Excluded logout changed its saved position: " + mode);
-                if (mode == Mode.FLIGHT || mode == Mode.TRANSFER) {
+                if (mode == Mode.FLIGHT || mode == Mode.TRANSFER || mode == Mode.STOP_FLIGHT) {
                     helper.assertTrue(saved.get("Motion").equals(before.get("Motion"))
                             && saved.get("FallDistance").equals(before.get("FallDistance")), "Flight logout changed motion or fall distance");
                 }
@@ -186,7 +273,160 @@ public final class RocketLogoutSaveGameTests {
             }
             helper.assertTrue(f.player.getHealth() == f.player.getMaxHealth(), "Returning rider lost health at login");
         }
+
+        /** W312F: the terrain, entities and players around the exit, each checked against both proofs before logout. */
+        private void arrange() {
+            var level = helper.getLevel();
+            switch (mode) {
+                case DROP3 -> { f.settle(3); f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.SAFE, 3); }
+                case DROP4 -> { f.settle(4); f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.UNSAFE, -1); }
+                case DROP_HAZARD -> {
+                    f.settle(2); f.row(-3, Blocks.MAGMA_BLOCK.defaultBlockState());
+                    f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.UNSAFE, -1);
+                }
+                case HAZARD -> {
+                    f.block(BlockPos.containing(f.exit), Blocks.FIRE.defaultBlockState());
+                    helper.assertTrue(level.getBlockState(BlockPos.containing(f.exit)).is(Blocks.FIRE), "Fixture fire did not stay");
+                    f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.UNSAFE, -1);
+                }
+                case CREWMATE -> {
+                    var crew = f.joinOther("W312FCrew");
+                    crew.teleportTo(level, f.exit.x, f.exit.y, f.exit.z, 0, 0);
+                    helper.assertTrue(crew.getBoundingBox().intersects(BayPassengerExitWorld.aabb(f.exitBox())), "Crewmate is not at the exit");
+                    f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.SAFE, 0);
+                }
+                case MOB -> {
+                    var stand = EntityType.ARMOR_STAND.create(level);
+                    helper.assertTrue(stand != null, "Armor stand type unavailable");
+                    stand.moveTo(f.exit.x, f.exit.y, f.exit.z, 0, 0);
+                    helper.assertTrue(level.addFreshEntity(stand), "Fixture mob was not admitted");
+                    f.extras.add(stand);
+                    f.assertProofs(BayExitSafety.Verdict.UNSAFE, BayExitSafety.Verdict.UNSAFE, -1);
+                }
+                default -> { }
+            }
+        }
+
+        private void logout() {
+            var server = helper.getLevel().getServer();
+            RocketRejoinSavedData previous = null, replaced = null;
+            RocketReleaseAccess.Owner previousOwner = null;
+            RocketTransferService transfers = null;
+            RocketRuntime.PassengerMoveScope internal = null;
+            LocationFailure failure = null;
+            UUID logical = f.rocket.assemblyTransactionId().orElseThrow();
+            var cancel = mode == Mode.CANCELLED ? new CancelLogoutDismount(f.player) : null;
+            if (cancel != null) { MinecraftForge.EVENT_BUS.register(cancel); }
+            try {
+                if (mode == Mode.GUARDED) {
+                    previous = RocketRejoinEvents.get(server);
+                    replaced = RocketRejoinSavedData.load(RocketRejoinCodec.encode(RocketSeatRosterGameTests.rejoinRoot(f.playerId)));
+                    server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), replaced);
+                }
+                if (mode == Mode.FENCED) {
+                    // A pending release of another rider fences this rocket; the logging-out rider is not guarded.
+                    transfers = RocketRuntime.installedTransfers();
+                    previousOwner = transfers.swapReleaseOwnerForGameTest(server, null);
+                    previous = RocketRejoinEvents.get(server);
+                    replaced = RocketRejoinSavedData.load(RocketRejoinCodec.encode(fenceRoot(logical)));
+                    server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), replaced);
+                    helper.assertTrue(RocketRuntime.releaseFenced(f.rocket) && !BayPassengerExitPermit.guarded(f.player),
+                            "Fixture release fence does not hold this rocket alone");
+                }
+                if (mode == Mode.HELD) {
+                    // The same RAM claim the real session consults, without advancing its deployment queue (as W300F).
+                    var claims = (BayClaimBook) field(BayDeploymentGameTestSupport.bays(helper), "claims");
+                    helper.assertTrue(claims.begin(BayClaim.checkpoint(logical, f.record.transferId(), f.rocket.getUUID(),
+                            List.of(BayMember.candidate(new RocketPosition(0, 0, 0), UUID.randomUUID())))), "Could not hold the bay claim");
+                    helper.assertTrue(BayReceipts.holdsRocket(server, logical), "The claim does not hold the rocket");
+                }
+                if (mode == Mode.INTERNAL) { internal = RocketRuntime.internalPassengerMove(f.player); }
+                if (mode == Mode.FAILURE) { failure = new LocationFailure(f.playerId); failure.install(); }
+                f.logout(mode == Mode.CANCELLED);
+                if (failure != null) { helper.assertTrue(failure.thrown == 1, "The injected failure did not reach the logout hook once"); }
+            } finally {
+                if (cancel != null) { MinecraftForge.EVENT_BUS.unregister(cancel); }
+                if (internal != null) { internal.close(); }
+                if (failure != null) { failure.remove(); }
+                if (mode == Mode.HELD) {
+                    var bays = BayDeploymentGameTestSupport.bays(helper);
+                    bays.unqueueForTests(logical); bays.forgetForTests(logical);
+                }
+                if (transfers != null) {
+                    var created = transfers.swapReleaseOwnerForGameTest(server, previousOwner);
+                    if (created != null) { created.close(); }
+                }
+                if (replaced != null) {
+                    replaced.close(); server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), previous);
+                }
+            }
+            if (mode == Mode.HELD) { helper.assertTrue(!BayReceipts.holdsRocket(server, logical), "The fixture claim was not forgotten"); }
+        }
+
+        /** R375 item 2: the real stopping handler, then stopServer's own saveAll; the seat stays assigned. */
+        private void stop(net.minecraft.nbt.CompoundTag before) {
+            var server = helper.getLevel().getServer();
+            var manifest = f.rocket.flightData().orElseThrow().passengers();
+            RocketPassengerLogout.stopping(new ServerStoppingEvent(server));
+            helper.assertTrue(!f.player.hasDisconnected() && f.rocket.flightData().orElseThrow().passengers().equals(manifest)
+                    && manifest.assignment(f.playerId).isPresent(), "The stop pass disconnected the rider or changed the seat");
+            if (mode == Mode.STOP_FLIGHT) {
+                helper.assertTrue(f.player.getVehicle() == f.rocket, "The stop pass detached an ascending rider");
+                server.getPlayerList().saveAll();
+                f.mountedWhenSaved = true;
+                helper.assertTrue(f.disk().get("Pos").equals(before.get("Pos")) && !f.disk().contains("RootVehicle"),
+                        "The stop save moved an ascending rider");
+                f.logout();
+                return;
+            }
+            helper.assertTrue(f.player.getVehicle() == null && f.player.position().distanceTo(f.exit) < 1e-7,
+                    "The stop pass did not detach the stationary rider at its exit: " + f.player.position());
+            server.getPlayerList().saveAll();
+            f.mountedWhenSaved = false;
+            helper.assertTrue(!f.disk().contains("RootVehicle"), "The stop save embedded the rocket");
+            // The stop save is the one that counts; the fixture's own disconnect afterwards writes the same position.
+            helper.assertTrue(RocketLogoutSaveFixture.position(f.disk()).distanceTo(f.exit) < 1e-7,
+                    "The stop save kept the seat: " + RocketLogoutSaveFixture.position(f.disk()));
+            f.player.connection.onDisconnect(Component.literal("W312F fixture stop"));
+            f.recovery.onPlayerLoggedOut(f.playerId);
+            f.player = null;
+        }
+
         private void complete() { finished = true; f.close(); helper.succeed(); }
+    }
+
+    /** A pending release batch for another rider on this logical rocket, so the rocket is fenced. */
+    static RocketRejoinRoot fenceRoot(UUID logical) {
+        var release = UUID.randomUUID(); var other = UUID.randomUUID();
+        var version = new RocketRejoinRoot.Version("a".repeat(64), "PREPARED", null);
+        var batch = new RocketRejoinRoot.Batch(release, 0, UUID.randomUUID(), logical, UUID.randomUUID(),
+                RocketRejoinRoot.Hold.H1, "minecraft:overworld", new RocketRejoinRoot.Position(0, 64, 0),
+                new RocketRejoinRoot.Position(-1, 64, -1), new RocketRejoinRoot.Position(1, 66, 1),
+                new RocketRejoinRoot.Resources("b".repeat(64), "c".repeat(64)), version, version, List.of(other),
+                List.of(new RocketRejoinRoot.Slot("minecraft:overworld", 0, 0)));
+        return RocketRejoinRoot.empty().admit(batch, List.of(new RocketRejoinRoot.Entry(release, other, 0,
+                RocketRejoinRoot.Placement.PENDING, RocketRejoinRoot.Seat.PENDING, null)));
+    }
+
+    private static Object field(Object target, String name) {
+        try { var field = target.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(target); }
+        catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+    }
+
+    /** R375 item 5: the location hook throws once, for this disconnecting rider, through the gated GameTest observer. */
+    private static final class LocationFailure {
+        final UUID rider;
+        int thrown;
+        LocationFailure(UUID rider) { this.rider = rider; }
+        void install() {
+            RocketRuntime.passengerExits().orElseThrow().probeLocationForTests((player, rocket) -> {
+                if (thrown == 0 && player.getUUID().equals(rider) && player.hasDisconnected()) {
+                    thrown++;
+                    throw new IllegalStateException("W312F injected logout exit failure");
+                }
+            });
+        }
+        void remove() { RocketRuntime.passengerExits().ifPresent(exits -> exits.probeLocationForTests(null)); }
     }
 
     public static final class CancelLogoutDismount {
