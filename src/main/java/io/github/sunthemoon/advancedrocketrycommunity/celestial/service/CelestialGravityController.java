@@ -41,7 +41,7 @@ public final class CelestialGravityController {
     }
 
     public CelestialGravityController(CelestialEnvironmentService environments, PositionGravity override) {
-        this(environments, override, player -> OptionalDouble.empty());
+        this(environments, override, (PlayerGravityAt) (player, position) -> OptionalDouble.empty());
     }
 
     /** ADR-058 section 4: the field layer goes in front of the position override; the override is unchanged. */
@@ -170,14 +170,41 @@ public final class CelestialGravityController {
         return false;
     }
 
-    private double multiplierAt(LivingEntity entity, ServerLevel level) {
-        if (entity instanceof ServerPlayer player) {
-            OptionalDouble field = fields.at(player);
-            OptionalDouble local = field.isPresent() ? field : override.at(level, player.blockPosition());
-            if (local.isPresent()) {
-                return local.getAsDouble();
-            }
+    /**
+     * W312F2 (R378): the multiplier {@link #onLivingTick} would apply to this player with its feet in {@code position} of
+     * its own Level, through the same layers in the same order. Empty when the player is not in a server Level, when the
+     * area-field layer can answer only at the player's own block, or when the result is outside the model bounds.
+     */
+    public OptionalDouble playerMultiplier(ServerPlayer player, BlockPos position) {
+        if (!(player.level() instanceof ServerLevel level)) {
+            return OptionalDouble.empty();
         }
+        OptionalDouble field;
+        if (fields instanceof PlayerGravityAt positioned) {
+            field = positioned.at(player, position);
+        } else if (position.equals(player.blockPosition())) {
+            field = fields.at(player);
+        } else {
+            return OptionalDouble.empty();
+        }
+        double multiplier = playerLayers(field, level, position);
+        return Double.isFinite(multiplier) && multiplier >= 0.0D
+                && multiplier <= CelestialBodyDefinition.MAX_GRAVITY_MULTIPLIER
+                ? OptionalDouble.of(multiplier) : OptionalDouble.empty();
+    }
+
+    private double multiplierAt(LivingEntity entity, ServerLevel level) {
+        return entity instanceof ServerPlayer player
+                ? playerLayers(fields.at(player), level, player.blockPosition()) : levelMultiplier(level);
+    }
+
+    /** Players: the area field, then the position override at {@code position}, then the Level profile. */
+    private double playerLayers(OptionalDouble field, ServerLevel level, BlockPos position) {
+        OptionalDouble local = field.isPresent() ? field : override.at(level, position);
+        return local.isPresent() ? local.getAsDouble() : levelMultiplier(level);
+    }
+
+    private double levelMultiplier(ServerLevel level) {
         return environments.forLevel(level.dimension())
                 .map(CelestialEnvironmentService.EnvironmentProfile::gravityMultiplier)
                 .orElse(1.0D);
@@ -187,6 +214,20 @@ public final class CelestialGravityController {
     @FunctionalInterface
     public interface PlayerGravity {
         OptionalDouble at(ServerPlayer player);
+    }
+
+    /**
+     * W312F2 (R378): the same per-player layer, for the player with its feet in any block of its Level. The tick asks
+     * it at the player's own block, exactly as a {@link PlayerGravity}.
+     */
+    @FunctionalInterface
+    public interface PlayerGravityAt extends PlayerGravity {
+        OptionalDouble at(ServerPlayer player, BlockPos position);
+
+        @Override
+        default OptionalDouble at(ServerPlayer player) {
+            return at(player, player.blockPosition());
+        }
     }
 
     /** Bounded, constant-time gravity for a position; empty falls back to the Level profile. */
