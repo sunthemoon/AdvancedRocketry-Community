@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /** Save an ordinary stationary rider's native exit instead of its high seat; never release membership. */
+@Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class RocketPassengerLogout {
     private RocketPassengerLogout() { }
 
