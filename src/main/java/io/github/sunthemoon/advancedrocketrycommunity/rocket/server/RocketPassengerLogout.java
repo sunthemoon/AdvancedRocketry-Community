@@ -53,7 +53,10 @@ public final class RocketPassengerLogout {
         if (riders > 0) { AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_STOP_EXIT riders={} detached={}", riders, detached); }
     }
 
-    /** W312F (review F5): an unexpected failure logs one WARN and leaves this player's save as it was before W312. */
+    /**
+     * W312F (review F5): an unexpected failure logs one WARN. A failure before the native detach leaves this player's save as
+     * it was before W312; one thrown after {@code unRide} has begun cannot undo the detach (W312F2 wording, R378).
+     */
     static boolean attempt(ServerPlayer player) {
         Entity vehicle = null;
         try {
