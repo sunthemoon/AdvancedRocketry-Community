@@ -443,9 +443,9 @@ What is still open:
   placement: a station left by `EscrowMonitorGameTests` covered the Moon column. The Moon bed no longer checks
   stations, and the matched full run passed. W318 removes the stations five escrow tests leave. It stays open until
   later local full runs show no recurrence.
-- **Fixture start button in flowing water, local full run (2026-11-08).** `flowingWaterCannotDropFixtureStartButton`
+- **Fixture start button in flowing water, local full runs (2026-11-08).** `flowingWaterCannotDropFixtureStartButton`
   failed once in W321's first local full run after observing one dropped stone button, and passed in W321's second
-  full run and in its hosted run 42400089907. W299 and W305 fixed earlier start-button drops in other fixtures. No
-  fix is queued unless it recurs; it stays open until runs show no recurrence.
+  full run and in its hosted run 42400089907. It failed again in W322's local full run, on a stone button 80 ticks
+  old, older than the test itself. W323 (R382) makes it count only the drops it causes; it stays open until then.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
