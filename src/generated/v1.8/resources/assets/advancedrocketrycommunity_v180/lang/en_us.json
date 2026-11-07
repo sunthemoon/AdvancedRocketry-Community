@@ -402,6 +402,7 @@
   "message.advancedrocketrycommunity.pad.entry": "%s (%s, %s): %s",
   "message.advancedrocketrycommunity.pad.landing_refused": "Landing pad refused: %s",
   "message.advancedrocketrycommunity.pad.list": "%s: %s registered pads. Click an entry to select its flight command.",
+  "message.advancedrocketrycommunity.pad.list_refused": "Cannot list pads: the station is unknown or you may not visit it.",
   "message.advancedrocketrycommunity.pad.loaded": "loaded",
   "message.advancedrocketrycommunity.pad.reason.arithmetic": "Landing structure or arithmetic outside safe bounds.",
   "message.advancedrocketrycommunity.pad.reason.block_budget": "Full landing inspection exceeds the 2,048-block budget.",

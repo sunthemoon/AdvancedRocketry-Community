@@ -402,6 +402,7 @@
   "message.advancedrocketrycommunity.pad.entry": "%s (%s, %s): %s",
   "message.advancedrocketrycommunity.pad.landing_refused": "着陆平台拒绝着陆：%s",
   "message.advancedrocketrycommunity.pad.list": "%s：%s 个已注册平台。点击条目选择飞行命令。",
+  "message.advancedrocketrycommunity.pad.list_refused": "无法列出平台：空间站不存在，或玩家无权访问。",
   "message.advancedrocketrycommunity.pad.loaded": "已加载",
   "message.advancedrocketrycommunity.pad.reason.arithmetic": "着陆结构或坐标超出安全范围。",
   "message.advancedrocketrycommunity.pad.reason.block_budget": "完整着陆检查超过 2,048 方块预算。",

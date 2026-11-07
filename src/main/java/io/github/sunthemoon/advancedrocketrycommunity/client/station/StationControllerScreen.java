@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.Cla
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewCache;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlsNetwork;
+import io.github.sunthemoon.advancedrocketrycommunity.client.ScreenNoticeLayout;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.WarpControllerMenu;
@@ -80,6 +81,17 @@ public final class StationControllerScreen extends AbstractContainerScreen<Stati
 
     private Optional<ClassicControlViewPacket> view() {
         return ClassicControlViewCache.view(menu.containerId, menu.classicControlKind());
+    }
+
+    /** Short windows keep the notice inside the frame, below the actual wrapped status, never over its border. */
+    public Optional<ScreenNoticeLayout.Bounds> noticeBounds() {
+        int statusRows = view().flatMap(ClassicControlViewPacket::status).map(code -> Math.min(
+                StationControllerMenu.STATUS_ROWS, font.split(Component.translatable(
+                        "screen.advancedrocketrycommunity.station_controller.status",
+                        Component.translatable(code.translationKey()), code.name()), StationControllerMenu.TEXT_WIDTH).size()))
+                .orElse(0);
+        int contentBottom = topPos + StationControllerMenu.STATUS_TOP + statusRows * StationControllerMenu.STATUS_LINE_HEIGHT;
+        return ScreenNoticeLayout.forPanel(width, height, leftPos, topPos, imageWidth, imageHeight, contentBottom);
     }
 
     @Override

@@ -30,6 +30,21 @@ public final class LandingPadSelectionGameTests {
     private LandingPadSelectionGameTests() { }
 
     @GameTest(template = "empty", batch = "pad_selection", timeoutTicks = 100)
+    public static void listingAnUnvisitableStationExplainsStationAccess(GameTestHelper helper) {
+        fixture(helper, f -> f.list(f.station, "list_refused", 0), false);
+    }
+
+    @GameTest(template = "empty", batch = "pad_selection", timeoutTicks = 100)
+    public static void listingUnknownAndDeletedStationsExplainsStationAccess(GameTestHelper helper) {
+        fixture(helper, f -> {
+            f.list(UUID.randomUUID(), "list_refused", 0);
+            f.list(f.station, "list", 1);
+            StationRegistrySavedData.get(f.player.getServer()).delete(f.station);
+            f.list(f.station, "list_refused", 0);
+        }, true);
+    }
+
+    @GameTest(template = "empty", batch = "pad_selection", timeoutTicks = 100)
     public static void unauthorizedSelectionExplainsVisitPermission(GameTestHelper helper) {
         fixture(helper, f -> {
             f.select(f.station, f.pad, "select_permission", 0);
@@ -136,6 +151,15 @@ public final class LandingPadSelectionGameTests {
             helper.assertTrue(result == expected, "Selection returned " + result + ", expected " + expected);
             helper.assertTrue(replies.size() == 1 && replies.get(0).startsWith(
                     "message.advancedrocketrycommunity.pad." + message), "Wrong selection reply: " + replies);
+        }
+        void list(UUID stationId, String message, int expected) {
+            replies.clear();
+            int result = player.getServer().getCommands().performPrefixedCommand(player.createCommandSourceStack(),
+                    "arcepad list " + stationId);
+            helper.assertTrue(result == expected, "List returned " + result + ", expected " + expected);
+            helper.assertTrue(!replies.isEmpty() && replies.get(0).startsWith(
+                    "message.advancedrocketrycommunity.pad." + message), "Wrong list reply: " + replies);
+            helper.assertTrue(replies.size() == (expected == 0 ? 1 : expected + 1), "Unexpected list entries: " + replies);
         }
     }
 

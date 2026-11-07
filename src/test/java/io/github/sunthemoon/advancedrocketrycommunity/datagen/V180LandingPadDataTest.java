@@ -4,6 +4,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class V180LandingPadDataTest {
+    @Test void listingHasItsOwnStationAccessRefusalInBothLanguages() {
+        for (boolean chinese : new boolean[]{false, true}) {
+            var language = V180LandingPadData.language(chinese);
+            String refusal = language.get("message.advancedrocketrycommunity.pad.list_refused");
+            assertNotNull(refusal);
+            assertNotEquals(language.get("message.advancedrocketrycommunity.pad.refused"), refusal);
+            assertFalse(refusal.contains("%s"), "Listing does not take a pad name or a slot");
+        }
+    }
+
     @Test void selectionReasonsAndNamedRouteHaveEnglishAndChineseTranslations() {
         for (boolean chinese : new boolean[]{false, true}) {
             var language = V180LandingPadData.language(chinese);
