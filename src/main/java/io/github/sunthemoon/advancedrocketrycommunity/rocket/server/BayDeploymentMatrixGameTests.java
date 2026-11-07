@@ -167,7 +167,7 @@ public final class BayDeploymentMatrixGameTests {
             var journal = RocketTransferSavedData.get(server);
             if (forcePendingSpawn) {
                 // Install before publishing T: READY_SOURCE can dispatch on the next server tick.
-                RocketRuntime.installedTransfers().holdDestinationSpawnForGameTest(server, flight.record().transferId(), true);
+                RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, flight.record().transferId(), true);
             }
             journal.put(flight.record());
             if (expect == Expect.REFUSED_REQUEST) {
@@ -266,7 +266,7 @@ public final class BayDeploymentMatrixGameTests {
                     && flight.source().isAlive() && !flight.source().isRemoved() && !journal.actionable(current.logicalRocketId()),
                     "The service did not expose its unacknowledged destination-spawn window with a live source");
             sawPendingSpawn = true;
-            RocketRuntime.installedTransfers().holdDestinationSpawnForGameTest(server, current.transferId(), false);
+            RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, current.transferId(), false);
             return true;
         }
 
@@ -348,7 +348,7 @@ public final class BayDeploymentMatrixGameTests {
             var session = bays(helper).sessionForTests();
             if (flight != null) {
                 if (forcePendingSpawn) {
-                    RocketRuntime.installedTransfers().holdDestinationSpawnForGameTest(server, flight.record().transferId(), false);
+                    RocketRuntime.installedTransfers().gameTests.holdDestinationSpawn(server, flight.record().transferId(), false);
                 }
                 var journal = RocketTransferSavedData.get(server);
                 RocketTransferRecord current = journal.find(flight.record().transferId()).orElse(null);
