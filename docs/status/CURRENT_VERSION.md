@@ -417,8 +417,9 @@ What is still open:
   `BayDeploymentMatrixGameTests.aRefusedCheckpointRequestPreservesPackagesWhileDestinationSpawnAwaitsAcknowledgement`
   failed once in W288's local full run with `The pending-spawn regression missed PREPARED source authority`: the
   fixture expects to find the transfer still in PREPARED when it drives the destination spawn, and under local load
-  the transfer had moved on. It passed in every hosted run so far. No fix is queued unless it recurs; it stays open
-  until runs show no recurrence.
+  the transfer had moved on. It failed the same way in shard 3 of the shared run 42403168945 at `b0b576620`
+  (2026-11-08), while the same tree passed in W321's branch run. The fixture races the installed transfer
+  service for the destination spawn. W322 (R381) makes the fixture deterministic; it stays open until then.
 - **Bay exit packet descent GameTest (2026-11-06).** `tickingConnectionFallAt2Point1BlocksPerTickCompletesItsLanding`
   failed with `Packet descent ended before its landing: case=FALL_2_1` in shard 1 of the first attempt of W288's
   integration run 42057329524 (a torch change); the second attempt passed. W262 fixed an earlier failure of this case.
