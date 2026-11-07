@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -20,7 +19,7 @@ import net.minecraft.world.entity.player.Inventory;
  * buttons, the target selection, link, unlink and the physical-mode confirmation, and the status with its stable code
  * from the device view, so no state is shown by colour alone.
  */
-public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<OrbitalLaserDrillMenu> {
+public final class OrbitalLaserDrillScreen extends EndgameRefusalScreen<OrbitalLaserDrillMenu> {
     private final ScreenText text = new ScreenText();
     private final ScrollableTooltip details = new ScrollableTooltip();
     private static final int PANEL_TOP = 0xFF1B1F2A;
@@ -33,7 +32,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
     private static final int WARNING = 0xFFFFC857;
 
     public OrbitalLaserDrillScreen(OrbitalLaserDrillMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, title, menu::energyStored);
         imageWidth = 176;
         imageHeight = 222;
         inventoryLabelY = 129;
@@ -67,11 +66,7 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
 
     private Button button(int id, String key, int x, int y, int width) {
         return ScreenText.fitButton(Button.builder(Component.translatable(key),
-                ignored -> {
-                    if (minecraft != null && minecraft.gameMode != null) {
-                        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
-                    }
-                }).bounds(leftPos + x, topPos + y, width, 14).build(), font);
+                ignored -> sendButton(id)).bounds(leftPos + x, topPos + y, width, 14).build(), font);
     }
 
     @Override
@@ -113,7 +108,11 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        return details.scroll(delta) || super.mouseScrolled(mouseX, mouseY, delta);
+        if (details.scroll(delta)) {
+            releaseRefusal();
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override

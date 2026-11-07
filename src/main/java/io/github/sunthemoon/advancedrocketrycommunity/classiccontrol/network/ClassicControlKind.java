@@ -15,11 +15,11 @@ public enum ClassicControlKind {
      * {@code warp_controller}: previous, next, request (value: the target index), confirm (the displayed quote's
      * token) and cancel. View: selected target (-1 when none), orbit (an index into the open names, -1 when
      * unknown), balance, pending credit, the displayed cost and class (0 none, 1 in-system, 2 interstellar) and the
-     * countdown in seconds (-1 when none).
+     * countdown in seconds (-1 when none), then target-orbit routes (-1 no quote, 0 none, 1 present).
      */
     WARP_CONTROLLER(0, 5, 2, 31, 3,
-            new int[] {-1, -1, 0, 0, 0, 0, -1},
-            new int[] {31, 32, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 2, Short.MAX_VALUE}),
+            new int[] {-1, -1, 0, 0, 0, 0, -1, -1},
+            new int[] {31, 32, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 2, Short.MAX_VALUE, 1}),
     /** {@code station_gravity_controller}: four gravity steps. View: gravity in percent. */
     STATION_GRAVITY_CONTROLLER(1, 4, -1, 0, -1, new int[] {0}, new int[] {100}),
     /** {@code station_altitude_controller}: four distance steps and GEO. View: the logical distance. */

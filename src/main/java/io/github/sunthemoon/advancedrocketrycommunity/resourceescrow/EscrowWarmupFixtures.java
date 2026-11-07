@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketR
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -137,6 +138,27 @@ final class EscrowWarmupFixtures {
                 RocketWarmupGameTestSupport.launchReservations(server, RocketTransferSavedData.get(server), logical(rocket)),
                 level.getGameTime(), true);
         return selected.success() ? region(selected.snapshot().orElseThrow()) : null;
+    }
+
+    /**
+     * W318: what these rockets still hold that a station cleanup must wait for: a transfer record, an ARMED tuple, a
+     * warm-up or a terrain allocation of any of them. A rocket the failed test never created ({@code null}) holds nothing.
+     */
+    static List<String> rocketHolds(MinecraftServer server, ResourceEscrowSavedData data, Collection<RocketEntity> rockets) {
+        var holds = new ArrayList<String>();
+        var journal = RocketTransferSavedData.get(server);
+        for (var rocket : rockets) {
+            if (rocket == null || rocket.assemblyTransactionId().isEmpty()) { continue; }
+            var logical = logical(rocket);
+            journal.findByLogicalRocket(logical).ifPresent(record -> holds.add("transfer " + record.transferId() + " of " + logical));
+            if (data != null && data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))) {
+                holds.add("ARMED " + logical);
+            }
+            if (RocketWarmupGameTestSupport.warmup(server, logical).isPresent() || RocketWarmupGameTestSupport.preparing(server, logical)) {
+                holds.add("warm-up " + logical);
+            }
+        }
+        return holds;
     }
 
     /** A connected creative mock player that records the translation keys it is shown. */

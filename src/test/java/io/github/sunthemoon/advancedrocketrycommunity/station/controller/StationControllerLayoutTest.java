@@ -14,6 +14,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSyst
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.client.station.WarpControllerLayout;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -151,15 +154,15 @@ final class StationControllerLayoutTest {
             assertTrue(rows(cost) <= WarpControllerLayout.COST_ROWS);
             assertEquals(1, rows(countdown));
             WarpControllerLayout.Layout<String> layout = WarpControllerLayout.arrange(orbitLine.text(),
-                    targetLine.text(), estimatedRows(balance), estimatedRows(cost), estimatedRows(countdown),
-                    StationControllerMenu.LINE_ROWS);
+                    targetLine.text(), estimatedRows(balance), estimatedRows(cost), List.of(), estimatedRows(countdown),
+                    WarpControllerLayout.LINE_ROWS);
             assertEquals(0, layout.rows().get(0).index());
             assertEquals(1, layout.rows().get(1).index());
             assertEquals(WarpControllerLayout.COST_ROW, layout.rows().stream()
                     .filter(row -> row.text().equals(cost)).findFirst().orElseThrow().index());
             assertEquals(WarpControllerLayout.COUNTDOWN_ROW, layout.rows().stream()
                     .filter(row -> row.text().equals(countdown)).findFirst().orElseThrow().index());
-            assertTrue(layout.rows().stream().allMatch(row -> row.index() < StationControllerMenu.LINE_ROWS));
+            assertTrue(layout.rows().stream().allMatch(row -> row.index() < WarpControllerLayout.LINE_ROWS));
             assertTrue(layout.costVisible());
             assertTrue(layout.confirmEnabled(123L));
             assertFalse(layout.confirmEnabled(0L));
@@ -170,18 +173,18 @@ final class StationControllerLayoutTest {
     void confirmRequiresEveryCostRowToBeDrawnAsWellAsTheQuoteToken() {
         List<String> cost = List.of("cost", "cost continuation");
         WarpControllerLayout.Layout<String> visible = WarpControllerLayout.arrange("orbit", "target",
-                List.of("balance"), cost, List.of("countdown"), StationControllerMenu.LINE_ROWS);
+                List.of("balance"), cost, List.of(), List.of("countdown"), WarpControllerLayout.LINE_ROWS);
         assertTrue(visible.costVisible());
         assertTrue(visible.confirmEnabled(1L));
         assertFalse(visible.confirmEnabled(0L));
         for (int drawnRows : List.of(WarpControllerLayout.COST_ROW, WarpControllerLayout.COST_ROW + 1)) {
             WarpControllerLayout.Layout<String> clipped = WarpControllerLayout.arrange("orbit", "target",
-                    List.of("balance"), cost, List.of("countdown"), drawnRows);
+                    List.of("balance"), cost, List.of(), List.of("countdown"), drawnRows);
             assertFalse(clipped.costVisible());
             assertFalse(clipped.confirmEnabled(1L));
         }
         WarpControllerLayout.Layout<String> absent = WarpControllerLayout.arrange("orbit", "target",
-                List.of("balance"), List.of(), List.of("countdown"), StationControllerMenu.LINE_ROWS);
+                List.of("balance"), List.of(), List.of(), List.of("countdown"), WarpControllerLayout.LINE_ROWS);
         assertFalse(absent.confirmEnabled(1L));
         assertEquals(WarpControllerLayout.COUNTDOWN_ROW, absent.rows().get(3).index());
     }
@@ -190,11 +193,71 @@ final class StationControllerLayoutTest {
     void anOverflowingBalanceOrCostCannotConsumeTheCountdownSlot() {
         WarpControllerLayout.Layout<String> layout = WarpControllerLayout.arrange("orbit", "target",
                 List.of("balance", "pending", "balance overflow"), List.of("cost", "class", "cost overflow"),
-                List.of("countdown"), StationControllerMenu.LINE_ROWS);
-        assertEquals(List.of(0, 1, 2, 3, 4, 5, 6), layout.rows().stream().map(WarpControllerLayout.Row::index).toList());
+                List.of(), List.of("countdown"), WarpControllerLayout.LINE_ROWS);
+        assertEquals(List.of(0, 1, 2, 3, 4, 5, 10), layout.rows().stream().map(WarpControllerLayout.Row::index).toList());
         assertEquals("countdown", layout.rows().get(6).text());
         assertFalse(layout.costVisible());
         assertFalse(layout.confirmEnabled(1L));
+    }
+
+    @Test
+    void onlyAQuotedRoutelessOrbitShowsTheWarning() {
+        for (int costClass : new int[] {0, 1, 2}) {
+            for (int routes : new int[] {-1, 0, 1}) {
+                var view = new ClassicControlViewPacket(1, ClassicControlKind.WARP_CONTROLLER, Optional.empty(), 0L,
+                        List.of(0, 0, 9_000_000, 0, 2_000_000, costClass, -1, routes));
+                assertEquals(costClass > 0 && routes == 0, WarpControllerMenu.showsRouteWarning(view));
+            }
+        }
+    }
+
+    @Test
+    void theRouteWarningFitsBetweenCostAndCountdownInBothLanguages() throws IOException {
+        assertEquals(WarpControllerLayout.COST_ROW + WarpControllerLayout.COST_ROWS, WarpControllerLayout.WARNING_ROW);
+        assertTrue(WarpControllerMenu.BUTTONS.stream().allMatch(button ->
+                button.y() + BUTTON_HEIGHT + 2 <= WarpControllerLayout.LINES_TOP));
+        assertTrue(WarpControllerLayout.LINES_TOP + WarpControllerLayout.LINE_ROWS * StationControllerMenu.LINE_HEIGHT
+                <= StationControllerMenu.STATUS_TOP);
+        for (String language : List.of("en_us", "zh_cn")) {
+            JsonObject strings = JsonParser.parseString(Files.readString(LANG.resolve(language + ".json"),
+                    StandardCharsets.UTF_8)).getAsJsonObject();
+            String warning = text(strings, StationControllerMenu.KEY + "no_orbit_routes");
+            if (language.equals("en_us")) {
+                assertEquals("The target orbit has no rocket routes;"
+                        + " rockets cannot reach or leave the station in that orbit.", warning);
+            }
+            assertTrue(rows(warning) <= WarpControllerLayout.WARNING_ROWS, language + ": " + warning);
+            String cost = fill(text(strings, StationControllerMenu.KEY + "cost"), "10000000",
+                    text(strings, StationControllerMenu.KEY + "class.interstellar"));
+            var layout = WarpControllerLayout.arrange(bodyLine("x:" + "w".repeat(126)).text(),
+                    bodyLine("y:" + "w".repeat(126)).text(), List.of("balance", "pending"),
+                    estimatedRows(cost), estimatedRows(warning), List.of("countdown"), WarpControllerLayout.LINE_ROWS);
+            assertTrue(layout.costVisible() && layout.warningVisible());
+            assertTrue(layout.confirmEnabled(42L));
+            assertEquals(estimatedRows(warning), layout.rows().stream()
+                    .filter(row -> row.index() >= WarpControllerLayout.WARNING_ROW
+                            && row.index() < WarpControllerLayout.COUNTDOWN_ROW).map(WarpControllerLayout.Row::text).toList());
+            assertEquals("countdown", layout.rows().get(layout.rows().size() - 1).text());
+            assertEquals(WarpControllerLayout.COUNTDOWN_ROW, layout.rows().get(layout.rows().size() - 1).index());
+            assertEquals(layout.rows().size(), layout.rows().stream().map(WarpControllerLayout.Row::index).distinct().count());
+        }
+    }
+
+    @Test
+    void aClippedWarningCannotEnableConfirmOrDisplaceTheCountdown() {
+        for (int drawnRows : List.of(WarpControllerLayout.WARNING_ROW, WarpControllerLayout.WARNING_ROW + 1)) {
+            var clipped = WarpControllerLayout.arrange("orbit", "target", List.of("balance"), List.of("cost"),
+                    List.of("warning", "continuation"), List.of("countdown"), drawnRows);
+            assertTrue(clipped.costVisible());
+            assertFalse(clipped.warningVisible());
+            assertFalse(clipped.confirmEnabled(42L));
+        }
+        var overflow = WarpControllerLayout.arrange("orbit", "target", List.of("balance"), List.of("cost"),
+                Collections.nCopies(WarpControllerLayout.WARNING_ROWS + 1, "warning"), List.of("countdown"),
+                WarpControllerLayout.LINE_ROWS);
+        assertFalse(overflow.warningVisible());
+        assertFalse(overflow.confirmEnabled(42L));
+        assertEquals("countdown", overflow.rows().get(overflow.rows().size() - 1).text());
     }
 
     @Test

@@ -44,6 +44,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 
@@ -510,6 +511,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         super.tick();
         // ServerLevel ticks this vehicle before Player.rideTick consumes its passengers' sneak input.
         if (!level().isClientSide) { RocketRuntime.tickPassengerInput(this); }
+        else { refreshBox(); } // W311: the synced visual blocks arrive after the entity, without a position change.
         setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
@@ -585,6 +587,38 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     public boolean isPushable() {
+        return false;
+    }
+
+    /**
+     * W311 (R359): the box follows the structure, as upstream's rocket sized itself from its storage, and never shrinks
+     * below the type's fixed base box. A seated rider's eyes then start inside it, so picking selects the rocket and the
+     * server's reach check accepts the console. It stays neither pushable nor a collision surface.
+     */
+    @Override
+    protected AABB makeBoundingBox() {
+        AABB base = super.makeBoundingBox();
+        // Vanilla's constructor positions the entity before this class's fields exist.
+        var extent = passengerPlacement == null ? null : passengerPlacement.extent(this);
+        return extent == null ? base : base.minmax(new AABB(getX() + extent.minX(), getY() + extent.minY(),
+                getZ() + extent.minZ(), getX() + extent.maxX(), getY() + extent.maxY(), getZ() + extent.maxZ()));
+    }
+
+    /** Not setPos: a box refresh is not a position write, and must not invalidate a watching bay proof (W170-R22). */
+    private void refreshBox() {
+        AABB box = makeBoundingBox();
+        if (!box.equals(getBoundingBox())) { setBoundingBox(box); }
+    }
+
+    /** W311: explosions cast rays in proportion to the box size; the rocket takes no damage and keeps no knockback. */
+    @Override
+    public boolean ignoreExplosion() {
+        return true;
+    }
+
+    /** W311: vanilla scans every block of the box for fluids each tick; a rocket never moves with or reads them. */
+    @Override
+    protected boolean updateInWaterStateAndDoFluidPushing() {
         return false;
     }
 
@@ -689,6 +723,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     private void refreshSyncedData() {
+        refreshBox(); // Every snapshot change ends here.
         entityData.set(DISPLAYED_SEAT_CAPACITY, flightData == null ? 0 : flightData.passengers().seatCapacity());
         List<Optional<UUID>> seats = new java.util.ArrayList<>(
                 java.util.Collections.nCopies(RocketFlightLimits.MAX_PASSENGERS, Optional.empty()));

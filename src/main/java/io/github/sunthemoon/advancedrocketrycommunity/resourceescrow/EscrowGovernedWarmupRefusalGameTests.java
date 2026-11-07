@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestStationCleanup;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -28,7 +29,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadEntry;
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
@@ -39,6 +43,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -345,6 +350,8 @@ public final class EscrowGovernedWarmupRefusalGameTests {
         private LandingPadEntry entry;
         private RocketEntity rival;
         private List<ChunkPos> padColumns;
+        /** W318: each block the dock replaced, with its state before, in placement order. */
+        private final Map<BlockPos, BlockState> replaced = new LinkedHashMap<>();
 
         NamedPad(GameTestHelper helper) { super(helper, new BlockPos(660_008, 100, 660_008)); }
 
@@ -353,14 +360,20 @@ public final class EscrowGovernedWarmupRefusalGameTests {
             helper.assertTrue(space != null, "Space Level is missing");
             station = new StationCreationService(new StationPlatformGenerator(), id -> true)
                     .create(server, UUID.randomUUID(), "Warm-up Pad Station", CelestialIds.EARTH_ID, false).station().orElseThrow();
+            // W318: the station, its dock and the strip go when the test ends, once neither rocket names them.
+            GameTestStationCleanup.track(helper, station)
+                    .heldWhile(() -> rocketHolds(server, data, Arrays.asList(rocket, rival)))
+                    .restoring(this::restoreDock);
             var origin = new BlockPos(station.landingPad().x(), 80, station.landingPad().z());
             var pad = origin.offset(10, -1, 0);
             for (int x = -1; x <= 12; x++) {
                 for (int z = -1; z <= 1; z++) {
                     var at = origin.offset(x, -1, z);
-                    space.getChunk(at); space.setBlock(at, Blocks.GRAY_CONCRETE.defaultBlockState(), Block.UPDATE_ALL);
+                    space.getChunk(at); replaced.putIfAbsent(at, space.getBlockState(at));
+                    space.setBlock(at, Blocks.GRAY_CONCRETE.defaultBlockState(), Block.UPDATE_ALL);
                 }
             }
+            replaced.putIfAbsent(pad, space.getBlockState(pad));
             space.setBlock(pad, ModBlocks.LANDING_PAD.get().defaultBlockState(), Block.UPDATE_ALL);
             entry = LandingPadService.register(space, pad, station.ownerId(), false, "Warm-up Dock");
             helper.assertTrue(entry != null, "The named pad was not registered");
@@ -382,6 +395,12 @@ public final class EscrowGovernedWarmupRefusalGameTests {
 
         @Override RocketFlightRequestResult request(UUID request) {
             return RocketRuntime.requestAdminPadFlight(rocket, station.stationId(), entry.reference(), request);
+        }
+
+        /** W318: breaking the pad drops its index entry (LandingPadBlock.onRemove); each block gets its old state back. */
+        private void restoreDock() {
+            replaced.forEach((at, previous) -> { space.getChunk(at); space.setBlock(at, previous, Block.UPDATE_ALL); });
+            replaced.clear();
         }
 
         private LandingPadEntry current() {

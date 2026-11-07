@@ -81,6 +81,10 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   unchecked `finally` remove another script's lock, so three heavy JVMs overlapped for about four
   minutes. Use the atomic `mkdir` and the owner check above.)
 
+  Keep the backslashes in `$lock`. `cmd /c mkdir` rejects a forward-slash path with "The syntax of the command is
+  incorrect", and the loop above then reads every attempt as a busy lock. (Added by Root on 2026-11-07: W314's and
+  W312's runners waited for hours on a lock they could never take.)
+
   A script that takes the lock several times in a row (for example one native case at a time) waits at least
   90 seconds after each release before it tries again, so a script that polls once a minute gets its turn.
   (Added by Root on 2026-10-22, after W132F waited behind W133's back-to-back native cases.)

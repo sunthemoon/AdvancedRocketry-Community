@@ -106,6 +106,9 @@ public final class V180StationControlData implements DataProvider {
                 {"target", "Target: %s", "目标：%s"}, {"no_target", "No known target", "没有已知目标"},
                 {"balance", "Warp energy: %s FE (pending %s FE)", "跃迁能量：%s FE（待入账 %s FE）"},
                 {"cost", "Cost: %s FE, %s", "费用：%s FE，%s"},
+                {"no_orbit_routes", "The target orbit has no rocket routes;"
+                        + " rockets cannot reach or leave the station in that orbit.",
+                        "目标轨道没有火箭航线；火箭无法抵达或离开该轨道上的空间站。"},
                 {"class.in_system", "in-system", "星系内"}, {"class.interstellar", "interstellar", "星际"},
                 {"countdown", "Warp in %s s", "%s 秒后跃迁"}, {"status", "%s [%s]", "%s [%s]"}};
         for (String[] row : screen) {
