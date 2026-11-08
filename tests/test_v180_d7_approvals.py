@@ -1,4 +1,4 @@
-"""D7 binds the owner's decision to the thirty unchanged record cores."""
+"""D7 binds the owner's decisions to the unchanged reviewed record cores."""
 import hashlib
 import importlib.util
 import json
@@ -10,6 +10,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 AUTHORITY = "docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md"
 REVIEWED_COMMIT = "521cb9b95"
+STAND_IN_AUTHORITY = "docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md"
+STAND_IN_REVIEWED_COMMIT = "e07b09627"
 BATCHES = (
     "c18d-k1", "c18d-k2", "c18d-k3", "c18d-k4", "c18d-k6", "c18d-w244",
     "w246-flat-textures", "w246-rebound-item-models", "w249-motor-models",
@@ -50,11 +52,34 @@ class D7ApprovalTests(unittest.TestCase):
                 self.assertIn("D7", review["basis"])
                 self.assertIn("v1.8.0-" + batch if not batch.startswith("c18d-k") else "-" + batch[5:], authority)
 
-    def test_later_stand_in_art_is_still_pending(self):
-        record = json.loads((ROOT / "docs/provenance/v1.8.0-w275-stand-in-art.json").read_bytes())
-        core = {key: value for key, value in record.items() if key != "review"}
-        self.assertEqual(IMPORTER.pending_review(hashlib.sha256(IMPORTER.canonical_json(core)).hexdigest()),
-                         record["review"])
+    def test_both_stand_in_records_have_bound_owner_approvals_and_unchanged_cores(self):
+        authority = (ROOT / STAND_IN_AUTHORITY).read_text(encoding="utf-8")
+        for batch in ("w275", "w277"):
+            relative = f"docs/provenance/v1.8.0-{batch}-stand-in-art.json"
+            with self.subTest(record=relative):
+                original = json.loads(subprocess.check_output(
+                    ["git", "show", f"{STAND_IN_REVIEWED_COMMIT}:{relative}"], cwd=ROOT))
+                record = json.loads((ROOT / relative).read_bytes())
+                core = {key: value for key, value in record.items() if key != "review"}
+                self.assertEqual({key: value for key, value in original.items() if key != "review"}, core)
+                digest = hashlib.sha256(IMPORTER.canonical_json(core)).hexdigest()
+                review = record["review"]
+                self.assertEqual("PENDING_HUMAN_REVIEW", original["review"]["status"])
+                self.assertEqual(original["review"]["content_digest"], digest)
+                self.assertEqual(review, IMPORTER.validate_review(review, digest))
+                self.assertEqual({
+                    "status": "APPROVED",
+                    "content_digest": digest,
+                    "reviewer": "sunthemoon",
+                    "reviewed_at": "2026-11-08",
+                    "findings": [],
+                    "basis": (
+                        "Owner visual and originality approval (D7, R383): " + STAND_IN_AUTHORITY +
+                        ". Applies to this record in full as it stood at " + STAND_IN_REVIEWED_COMMIT +
+                        ", not later replacements or release Gates."
+                    ),
+                }, review)
+                self.assertIn(f"v1.8.0-{batch}-stand-in-art", authority)
 
 
 if __name__ == "__main__":

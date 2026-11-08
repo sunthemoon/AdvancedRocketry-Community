@@ -18,7 +18,9 @@ final class V180W277ProvenanceAssertions {
     private V180W277ProvenanceAssertions() { }
 
     static JsonObject replacement(String target) throws IOException {
-        for (JsonElement value : JsonParser.parseString(Files.readString(RECORD)).getAsJsonObject().getAsJsonArray("entries")) {
+        JsonObject record = JsonParser.parseString(Files.readString(RECORD)).getAsJsonObject();
+        V180OwnerReviewAssertions.assertStandInArtApproval(record.getAsJsonObject("review"));
+        for (JsonElement value : record.getAsJsonArray("entries")) {
             JsonObject entry = value.getAsJsonObject();
             if (target.equals(entry.get("target_path").getAsString())) { return entry; }
         }

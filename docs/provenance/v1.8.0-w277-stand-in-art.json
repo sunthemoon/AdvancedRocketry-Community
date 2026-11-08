@@ -1102,10 +1102,11 @@
     }
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
-    "reviewer": null,
-    "reviewed_at": null,
-    "basis": "Owner visual and originality review remains outstanding. Automated screening is not approval.",
+    "status": "APPROVED",
+    "reviewer": "sunthemoon",
+    "reviewed_at": "2026-11-08",
+    "findings": [],
+    "basis": "Owner visual and originality approval (D7, R383): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md. Applies to this record in full as it stood at e07b09627, not later replacements or release Gates.",
     "content_digest": "22164debb6604e1ddf08e64a0800696c85454d3cc57feacb883e7b19baa367ee"
   },
   "preauthoring_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",

@@ -196,7 +196,7 @@ class V180RemainingStandInArtTest {
                 shared.get("source_path").getAsString());
         assertEquals(sha(git(shared.get("source_commit").getAsString(), shared.get("source_path").getAsString())),
                 shared.get("source_sha256").getAsString());
-        assertEquals("PENDING_HUMAN_REVIEW", record.getAsJsonObject("review").get("status").getAsString());
+        V180OwnerReviewAssertions.assertStandInArtApproval(record.getAsJsonObject("review"));
     }
 
     @Test void screeningBindsEveryImageToBothPinnedVanillaClientsAndTheUnchangedTools() throws Exception {
