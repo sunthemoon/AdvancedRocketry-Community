@@ -137,8 +137,7 @@ class V180StandInArtTest {
             assertEquals(sourceHash(entry), entry.get("source_sha256").getAsString(), path);
         }
         assertEquals(expected, actual);
-        String status = record.getAsJsonObject("review").get("status").getAsString();
-        assertTrue(Set.of("PENDING_HUMAN_REVIEW", "APPROVED").contains(status));
+        V180OwnerReviewAssertions.assertStandInArtApproval(record.getAsJsonObject("review"));
     }
 
     @Test void runtimeJarHasExactlyOneCopyOfEveryModelAndItsNewTextures() throws Exception {

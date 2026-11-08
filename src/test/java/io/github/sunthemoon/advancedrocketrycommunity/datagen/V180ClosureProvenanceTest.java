@@ -42,9 +42,10 @@ class V180ClosureProvenanceTest {
             assertEquals("MIT", entry.get("license").getAsString(), target);
             if (target.endsWith("models/block/precision_assembler.json")) {
                 // W275 preserves this approved record and explicitly supersedes only its model binding.
-                JsonObject replacement = JsonParser.parseString(Files.readString(Path.of(
-                        "docs/provenance/v1.8.0-w275-stand-in-art.json"))).getAsJsonObject()
-                        .getAsJsonArray("entries").asList().stream().map(JsonElement::getAsJsonObject)
+                JsonObject standInRecord = JsonParser.parseString(Files.readString(Path.of(
+                        "docs/provenance/v1.8.0-w275-stand-in-art.json"))).getAsJsonObject();
+                V180OwnerReviewAssertions.assertStandInArtApproval(standInRecord.getAsJsonObject("review"));
+                JsonObject replacement = standInRecord.getAsJsonArray("entries").asList().stream().map(JsonElement::getAsJsonObject)
                         .filter(value2 -> target.equals(value2.get("target_path").getAsString())).findFirst().orElseThrow();
                 assertEquals(entry.get("target_sha256"), replacement.get("supersedes_target_sha256"));
                 assertEquals(sha256(Path.of(target)), replacement.get("target_sha256").getAsString(), target);

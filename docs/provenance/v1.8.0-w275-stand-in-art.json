@@ -519,11 +519,12 @@
   ],
   "human_visual_and_originality_gate": "OPEN",
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "status": "APPROVED",
     "content_digest": "e74d3c2dcad8fdc1466bef121247d12455004121c43af43a29e7331a0271cf8e",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": []
+    "reviewer": "sunthemoon",
+    "reviewed_at": "2026-11-08",
+    "findings": [],
+    "basis": "Owner visual and originality approval (D7, R383): docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md. Applies to this record in full as it stood at e07b09627, not later replacements or release Gates."
   },
   "preauthoring_commit": "9fbc17877e3ebb36c1eea200d84c14f6d7fbedd6",
   "retained_art": "W49 precision_assembler_front already depicts an assembly arm and remains bound. The earlier four pressure-tank PNGs remain byte-identical, generated but unbound; the four models now bind separately named cylinder icons. Earlier records and reviews remain unchanged.",
