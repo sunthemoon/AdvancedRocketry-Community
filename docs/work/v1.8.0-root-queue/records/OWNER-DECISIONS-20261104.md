@@ -111,7 +111,8 @@ review date 2026-11-04 and a basis citing this record, binding each record as it
 hosted JAR of run 41630143345 in game before answering (the request at the top), answered "通过" for D7, and recorded
 remarks on the art (item 2 of the reply), which R308 acts on. The per-record comparison sheets that the brief offered
 were not requested, so no per-record comparison is recorded beyond that. Root asked the owner late on 2026-11-04 whether to
-add such sheets; the approval stands as the owner gave it.
+add such sheets; the approval stands as the owner gave it. On 2026-11-08 the owner answered that no sheets are wanted
+([OWNER-DECISIONS-20261108](OWNER-DECISIONS-20261108.md), R384).
 
 ## W274 file-scope index (derived, not additional owner wording)
 

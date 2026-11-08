@@ -110,12 +110,13 @@ What is still open:
   plan has 89 IMPORTED, 365 EXCLUDE and 444 REGENERATE files. The owner accepted all eight groups of W268's proposal
   on 2026-11-04, G7 by choosing the NEW audio
   ([OWNER-DECISIONS-20261104](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md)). The owner's D7 review
-  passed the 30 pending v1.8 provenance records, which W276 (merged at `13c0cd849`, R306) set to APPROVED; only W275's
-  and W277's new records are pending, for the owner's look in game. The owner also reported stand-in art: W275 (merged
-  at `8e6728547`) replaced it on the rolling machine, the precision assembler, their ports and the gas containers, and
-  W277 (merged at `f1469f09c`, R308, R314 and R332) replaced the remaining vanilla stand-in faces, the drawer-like
-  side, the identical port sides and the nitrogen canister; the owner now looks at both in game (contact sheets in
-  `D:/GitHub/ARCE-Task-Evidence/root-queue/W275/` and `W277/`). Excluding a file does not clear its authorship; W279
+  passed the 30 pending v1.8 provenance records, which W276 (merged at `13c0cd849`, R306) set to APPROVED, and on
+  2026-11-08 the owner declined per-record comparison sheets for them (R384). The owner also reported stand-in art:
+  W275 (merged at `8e6728547`) replaced it on the rolling machine, the precision assembler, their ports and the gas
+  containers, and W277 (merged at `f1469f09c`, R308, R314 and R332) replaced the remaining vanilla stand-in faces, the
+  drawer-like side, the identical port sides and the nitrogen canister. On 2026-11-08 the owner accepted both in full
+  ([OWNER-DECISIONS-20261108](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md)); W324 (R383) sets
+  their two records, the last pending ones, to APPROVED. Excluding a file does not clear its authorship; W279
   records whom the owner plans to ask about the AR 16x texture set.
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   [W176](../work/v1.8.0-root-queue/records/W176.md), merged at `7c9e5f7e9`, also ran nine B3-D
