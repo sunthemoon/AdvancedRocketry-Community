@@ -60,14 +60,19 @@ def case_observations(directory: Path, case: str) -> dict:
             for path in sorted(directory.glob(f"{case}-*.log"))}
 
 
-def seed_capacity_world(world: Path, count: int, owner: str | None = None) -> dict:
-    """Create inert historical schema-1 receipts, never exceeding 16/owner or 8/rocket.
+def seed_capacity_world(world: Path, count: int, owner: str | None = None,
+                        phase: str = "INTENT", released: bool = False) -> dict:
+    """Create bounded inert historical receipts for pending or independent retained limits.
 
     C1's older live fill command always uses one owner and therefore cannot fill 64 after W238.
     This fixture exercises loading and pending refusal, not the admission that created these inert rows.
     """
-    if not 1 <= count <= 64 or owner is not None and count > 16:
-        raise ValueError("Capacity fixture must fit the unchanged 64/server and 16/owner caps")
+    if phase not in ("INTENT", "REPAIR", "REJECTED"):
+        raise ValueError("Unsupported capacity fixture phase")
+    pending = phase != "REJECTED" or released
+    owner_cap = 16 if pending else 128
+    if not 1 <= count <= (64 if pending else 4096) or owner is not None and count > owner_cap:
+        raise ValueError("Capacity fixture exceeds its unchanged pending or retained caps")
     file = world / "data/advancedrocketrycommunity_bay_receipts.dat"
     if file.exists():
         raise FileExistsError(file)
@@ -82,11 +87,12 @@ def seed_capacity_world(world: Path, count: int, owner: str | None = None) -> di
         receipts.append(nbt.Tag(nbt.COMPOUND, dict(
             schema_version=nbt.Tag(nbt.INT, 1), op=identity("op", index), seq=nbt.Tag(nbt.LONG, index + 1),
             rocket=identity("rocket", index // 8), bay=nbt.Tag(nbt.INTS, [0, index % 8, 0]),
-            satellite=identity("satellite", index), owner=nbt.uuid_tag(uuid.UUID(owner)) if owner else identity("owner", index // 16),
+            satellite=identity("satellite", index), owner=nbt.uuid_tag(uuid.UUID(owner)) if owner else identity("owner", index // owner_cap),
             definition=string("advancedrocketrycommunity:data_satellite"), kind=string("data"),
             orbit=string("advancedrocketrycommunity:earth"), package_sig=nbt.Tag(nbt.BYTES, hashed),
             transfer=identity("transfer", index // 8), src_before=nbt.Tag(nbt.BYTES, hashed), dst_before=nbt.Tag(nbt.BYTES, hashed),
-            phase=string("INTENT"), reason=string("NONE"), preexisting=nbt.Tag(nbt.BYTE, 0), released=nbt.Tag(nbt.BYTE, 0),
+            phase=string(phase), reason=string("TRANSFER_AUTHORITY_CONFLICT" if phase == "REPAIR" else "NONE"),
+            preexisting=nbt.Tag(nbt.BYTE, 0), released=nbt.Tag(nbt.BYTE, int(released)),
             registry_epoch=nbt.Tag(nbt.LONG, 0), created_tick=nbt.Tag(nbt.LONG, 0), updated_tick=nbt.Tag(nbt.LONG, 0),
             attempts=nbt.Tag(nbt.INT, 0))))
     payload = nbt.Tag(nbt.COMPOUND, dict(schema_version=nbt.Tag(nbt.INT, 1),
@@ -98,5 +104,6 @@ def seed_capacity_world(world: Path, count: int, owner: str | None = None) -> di
     nbt.write_gzip(file, b"", root)
     if nbt.read_gzip(file)[1] != root:
         raise ValueError("Capacity fixture failed typed readback")
-    return dict(count=count, owner=owner, owners=1 if owner else (count + 15) // 16,
+    return dict(count=count, pending=count if pending else 0, phase=phase, released=released,
+                owner=owner, owners=1 if owner else (count + owner_cap - 1) // owner_cap,
                 rockets=(count + 7) // 8, sha256=hashlib.sha256(file.read_bytes()).hexdigest())

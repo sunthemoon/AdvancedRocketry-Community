@@ -35,9 +35,9 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B3.6 | REGISTERED staged-only, source present, offline seat | F `W325_B3_STAGED_PRESENT` |
 | B3.7 | REGISTERED staged-only, source absent, offline seat | F `W325_B3_STAGED_ABSENT` |
 | B3.8 | REGISTERED staged-only, source present, online facility passenger | F `W325_B3_STAGED_ONLINE` (real-client V2 remains separate). |
-| B3.9 | REGISTERED staged-only, source absent, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
+| B3.9 | REGISTERED staged-only, source absent, online facility passenger | F `W325_B3_STAGED_ONLINE_ABSENT` (the named offline UUID is absent; the online rider's seat is checked separately). |
 | B3.10 | REGISTERED replaced, source present, online facility passenger | F `W325_B3_MOVED_ONLINE` (real-client V2 remains separate). |
-| B3.11 | REGISTERED replaced, source absent, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
+| B3.11 | REGISTERED replaced, source absent, online facility passenger | F `W325_B3_MOVED_ONLINE_ABSENT` (real-client V2 remains separate). |
 | B3.12 | Restart waits for checked startup journal, then resumes | F `B3_JOURNAL_HELD` |
 | B4.1 | Idle non-data X decommissioned on first restart tick, source not explicitly forced, no passengers | F `B4_DECOMMISSION` (narrower than decommission-before-kill). |
 | B4.2 | X decommissioned on first restart tick, source absent, offline seat | F `W185_B4_ABSENT` (narrower than absent X on initial disk). |
@@ -83,10 +83,10 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B10.6 | Incoherent signature authority remains frozen | NOT_COVERED natively: released conflict GameTests exist; packaged release fixture seeds coherent authority only. |
 | B11.1 | Shared global pending saturation, bay-only fill of 64/server | F `B11_FULL` (historical root split across four owners; mixed-consumer coverage is separate). |
 | B11.2 | Per-rocket mixed 7 escrow + 1 bay / 8 limit | NOT_COVERED natively: no mixed-authority packaged fixture. |
-| B11.3 | Retained 4,096/server independently of pending | NOT_COVERED: no packaged retained-store saturation fixture. |
-| B11.4 | Retained 128/owner independently of pending | NOT_COVERED: no packaged retained-owner saturation fixture. |
-| B11.5 | REPAIR operations retain charges across restart | NOT_COVERED for saturation: B10 release cuts prove one retained operation, not full capacity. |
-| B11.6 | Released operations retain saturated capacity across restart | NOT_COVERED: no saturated released-flight packaged fixture. |
+| B11.3 | Retained 4,096/server independently of pending | F `W325_RETAINED_GLOBAL` (historical REJECTED root, zero pending charges). |
+| B11.4 | Retained 128/owner independently of pending | F `W325_RETAINED_OWNER` (historical REJECTED root, zero pending charges). |
+| B11.5 | REPAIR operations retain charges across restart | F `W325_REPAIR_FULL` (64 inert historical REPAIR operations). |
+| B11.6 | Released operations retain saturated capacity across restart | F `W325_RELEASED_FULL` (inert historical released flags; coherent flight is covered separately by R). |
 | B11.7 | UNKNOWN/captured/successor copies counted once across restart | NOT_COVERED: no packaged admission-union fixture. |
 | B11.8 | REJECTED re-arm refuses at full capacity and later reuses its op | NOT_COVERED: no packaged capacity/re-arm fixture. |
 | B11.9 | Mixed-consumer 63 escrow + 1 bay global saturation and reverse consumers | NOT_COVERED natively: the packaged fill command creates bay receipts only. |
@@ -113,7 +113,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B16.3 | Captured retirement invalidated by source leave/reload | F `B16_LEAVE` |
 | B16.4 | Captured retirement invalidated by source motion | F `B16_MOTION` |
 | B17.1 | Unresolved work ahead of a healthy group, bounded progress | F `B17_FAIR` |
-| B17.2 | REPAIR group ahead of healthy groups | NOT_COVERED natively: fill fixture is not a specifically checked REPAIR queue. |
+| B17.2 | REPAIR group ahead of healthy groups | F `W325_REPAIR_FAIR` (56 historical REPAIR operations ahead of the healthy flight). |
 | B17.3 | Unloaded group ahead of healthy groups | NOT_COVERED natively: no packaged multi-group end-loading fixture. |
 | B17.4 | Partial D1, immutable group hashes | NOT_COVERED: no packaged partial multi-bay admission fixture. |
 | B17.5 | Mixed REGISTERED/REJECTED/REPAIR group | NOT_COVERED: packaged fixture cannot seed this three-phase group. |

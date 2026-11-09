@@ -60,7 +60,9 @@ class EvidenceTests(unittest.TestCase):
         expected = {"W325_B3_STAGED_PRESENT", "W325_B3_STAGED_ABSENT", "W325_B4_LIVE_X_PRESENT_S",
                     "W325_B4_LIVE_X_ABSENT_S", "W325_B8_STAGED_OFFLINE", "W325_B8_MOVED_OFFLINE",
                     "W325_B3_STAGED_ONLINE", "W325_B3_MOVED_ONLINE", "W325_B8_STAGED_ONLINE", "W325_B8_MOVED_ONLINE",
-                    "W325_OWNER_FULL", "W325_OTHER_OWNER_ROOM"}
+                    "W325_OWNER_FULL", "W325_OTHER_OWNER_ROOM", "W325_B3_STAGED_ONLINE_ABSENT",
+                    "W325_B3_MOVED_ONLINE_ABSENT", "W325_RETAINED_GLOBAL", "W325_RETAINED_OWNER", "W325_REPAIR_FULL",
+                    "W325_RELEASED_FULL", "W325_REPAIR_FAIR"}
         self.assertEqual(expected, {key for key in bay.CASES if key.startswith("W325_")})
         for key in expected:
             self.assertEqual(2, len(bay.CASES[key]["restarts"]))
@@ -155,6 +157,39 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual("setworldspawn 8 2 8", commands[1])
         self.assertEqual("gamerule spawnRadius 0", commands[2])
         self.assertIn("exit fixture", commands[-1])
+
+    def test_retained_fixtures_keep_the_independent_global_and_owner_limits(self):
+        with tempfile.TemporaryDirectory() as temp:
+            for count, owner in ((4096, None), (128, "00000000-0000-4000-8000-000000128d01")):
+                world = Path(temp) / str(count)
+                result = evidence.seed_capacity_world(world, count, owner, phase="REJECTED")
+                self.assertEqual(count, result["count"])
+                self.assertEqual(0, result["pending"])
+                _, root = nbt.read_gzip(world / "data" / bay.RECEIPTS)
+                rows = nbt.compound(root, "data", "receipts").value[1]
+                self.assertEqual(count, len(rows))
+                self.assertTrue(all(nbt.plain(nbt.compound(row, "phase")) == "REJECTED" for row in rows))
+                self.assertLess(len(nbt.write(b"", root)), 4 * 1024**2)
+            with self.assertRaises(ValueError):
+                evidence.seed_capacity_world(Path(temp) / "bad", 4097, phase="REJECTED")
+
+    def test_repair_and_released_fixtures_preserve_pending_charges(self):
+        with tempfile.TemporaryDirectory() as temp:
+            for released in (False, True):
+                world = Path(temp) / str(released)
+                result = evidence.seed_capacity_world(world, 64, phase="REPAIR", released=released)
+                self.assertEqual(64, result["pending"])
+                _, root = nbt.read_gzip(world / "data" / bay.RECEIPTS)
+                for row in nbt.compound(root, "data", "receipts").value[1]:
+                    self.assertEqual("REPAIR", nbt.plain(nbt.compound(row, "phase")))
+                    self.assertEqual(int(released), nbt.compound(row, "released").value)
+
+    def test_online_copy_census_does_not_claim_the_offline_fixture_uuid_is_assigned(self):
+        line = "ARCE_RELEASE_BAY_CENSUS logical=l count=1 transfer=COMMITTED assigned=false rows=[u:minecraft:overworld:hash:0:0:NONE:0:false]"
+        result = bay.check_copy_census(line, "l", 1, assigned=False)
+        self.assertFalse(result["assigned"])
+        with self.assertRaises(bay.smoke.SmokeError):
+            bay.check_copy_census(line, "l", 1)
 
 
 if __name__ == "__main__":

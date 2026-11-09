@@ -179,8 +179,26 @@ CASES.update({
                              restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
     "W325_OTHER_OWNER_ROOM": dict(cut=None, end="land", durable="NONE", fill=16, first="LANDED",
                                    restarts=("LANDED", "LANDED")),
+    "W325_B3_STAGED_ONLINE_ABSENT": dict(cut="B3_STAGED", end="kill", durable="INTENT", online=True,
+                                         copies="absent", save=True, restarts=("LANDED", "LANDED")),
+    "W325_B3_MOVED_ONLINE_ABSENT": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", online=True,
+                                        copies="absent", save=True, restarts=("LANDED", "LANDED")),
 })
 TRANCHES["E"] = [case for case in CASES if case.startswith("W325_")]
+CASES.update({
+    "W325_RETAINED_GLOBAL": dict(cut=None, end="land", durable="NONE", fill=4096, fill_phase="REJECTED", pending_count=0,
+                                  first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_RETAINED_OWNER": dict(cut=None, end="land", durable="NONE", fill=128, fill_phase="REJECTED", pending_count=0,
+                                 fill_owner="00000000-0000-4000-8000-000000128d01", first="LANDED_UNCONSUMED",
+                                 restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_REPAIR_FULL": dict(cut=None, end="land", durable="NONE", fill=64, fill_phase="REPAIR",
+                              first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_RELEASED_FULL": dict(cut=None, end="land", durable="NONE", fill=64, fill_phase="REPAIR", fill_released=True,
+                                first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_REPAIR_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fill_phase="REPAIR", fixture_restart=1,
+                              restarts=("LANDED", "LANDED")),
+})
+TRANCHES["F"] = [case for case in CASES if case.startswith("W325_") and case not in TRANCHES["E"]]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
@@ -440,20 +458,22 @@ def online_state(run: Session, logical: str, at_cut: bool = False) -> dict:
 def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict]:
     spec = CASES[case]
     properties = {"bayCheckpoint": spec["cut"]} if spec.get("cut") else {}
-    if spec.get("copies") or spec.get("offline"):
+    if spec.get("offline") or spec.get("copies") and not spec.get("online"):
         properties["bayOfflinePassenger"] = "true"
     if spec.get("refuse"):
         properties["bayRefuseRegistration"] = "true"
     observed: dict = {}
     if spec.get("fill"):
-        observed["capacity_fixture"] = evidence_tools.seed_capacity_world(world, spec["fill"], spec.get("fill_owner"))
+        observed["capacity_fixture"] = evidence_tools.seed_capacity_world(
+            world, spec["fill"], spec.get("fill_owner"), spec.get("fill_phase", "INTENT"), spec.get("fill_released", False))
     process = run.start(case, 0, properties)
     if spec.get("staging"):
         # A directory at the staging path refuses the next receipt write before staging: FAILED_BEFORE_REPLACE.
         (world / "data" / STAGING).mkdir(parents=True)
     if spec.get("fill"):
         observed["filled"] = run.pending()
-        if observed["filled"]["pending"] != spec["fill"] or observed["filled"]["retained"] != spec["fill"]:
+        if (observed["filled"]["pending"] != spec.get("pending_count", spec["fill"])
+                or observed["filled"]["retained"] != spec["fill"]):
             raise smoke.SmokeError(f"Capacity fixture did not load its exact pending/retained union: {observed['filled']}")
     fixture = None
     if spec.get("fixture_restart") is None:
@@ -496,15 +516,17 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
                     line = run.send(f"arce bay release-test copies {fixture['logical']} {spec['copies']}",
                                     re.compile(r"ARCE_RELEASE_BAY_COPIES(?:_WAIT)? logical="))
                     if "_WAIT" not in line:
-                        if "passenger=true" not in line:
-                            raise smoke.SmokeError(f"{case}: offline assignment missing: {line}")
+                        expected_seat = "passenger=false" if spec.get("online") else "passenger=true"
+                        if expected_seat not in line:
+                            raise smoke.SmokeError(f"{case}: copy fixture seat identity changed: {line}")
                         observed["copies"] = line.strip(); break
                     if time.monotonic() > deadline:
                         raise smoke.SmokeError(f"{case}: destination did not load for copy fixture")
                     time.sleep(1)
                 census = run.send(f"arce bay release-test census {fixture['logical']}",
                                   re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
-                observed["copy_census"] = check_copy_census(census, fixture["logical"], 4 if spec["copies"] == "absent" else 5)
+                observed["copy_census"] = check_copy_census(census, fixture["logical"],
+                    4 if spec["copies"] == "absent" else 5, assigned=not spec.get("online", False))
             if spec.get("save"):
                 # The source entity is on disk at its current image before the end (B3 and B6 with S present).
                 observed["saved"] = run.send("save-all flush", SAVED, 120)
@@ -727,7 +749,8 @@ def run_case(run: Session, case: str) -> dict:
                 census = run.send(f"arce bay release-test census {fixture['logical']}",
                                   re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
                 expected_count = 5 if spec.get("copy_hold") else 1
-                entry["census"] = check_copy_census(census, fixture["logical"], expected_count)
+                entry["census"] = check_copy_census(census, fixture["logical"], expected_count,
+                                                    assigned=not spec.get("online", False))
                 if spec.get("cold") and restart == 1 and not any(
                         (match := CLAIM.search(line)) and match.group(2) == fixture["logical"] and match.group(4) == "END_LOADING"
                         for line in process.lines):
@@ -745,7 +768,8 @@ def run_case(run: Session, case: str) -> dict:
                                            f"{op} {relaunched['consumed']}")
                 entry["relaunched"] = relaunched
         entry["pending"] = run.pending()
-        if spec.get("fill") and entry["pending"]["pending"] != spec["fill"]:
+        if spec.get("fill") and (entry["pending"]["pending"] != spec.get("pending_count", spec["fill"])
+                                 or entry["pending"]["retained"] != spec["fill"]):
             raise smoke.SmokeError(f"{case}/{restart}: the filled capacity changed: {entry['pending']}")
         code = run.end("stop", run.args.exit_timeout)
         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
@@ -763,14 +787,15 @@ def run_case(run: Session, case: str) -> dict:
     return row
 
 
-def check_copy_census(line: str, logical: str, expected_count: int) -> dict:
+def check_copy_census(line: str, logical: str, expected_count: int, assigned: bool = True) -> dict:
     match = re.search(r"ARCE_RELEASE_BAY_CENSUS logical=(\S+) count=(\d+) transfer=(\w+) assigned=(true|false) rows=\[([^\]]*)\]", line)
     if not match or match[1] != logical:
         raise smoke.SmokeError(f"Invalid copy census: {line}")
     rows = match[5].split(",") if match[5] else []
     if (int(match[2]) != expected_count or len(rows) != expected_count
-            or any(not row.endswith(":true") for row in rows) or len({row.split(":")[0] for row in rows}) != len(rows)
-            or match[3] != "NONE" and match[4] != "true"):
+            or any(not row.endswith(":" + str(assigned).lower()) for row in rows)
+            or len({row.split(":")[0] for row in rows}) != len(rows)
+            or match[3] != "NONE" and match[4] != str(assigned).lower()):
         raise smoke.SmokeError(f"Duplicate count or offline seat changed: {line}")
     for row in rows:
         copy_row(row)
