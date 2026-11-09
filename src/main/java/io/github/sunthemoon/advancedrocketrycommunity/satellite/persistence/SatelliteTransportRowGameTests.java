@@ -62,13 +62,17 @@ public final class SatelliteTransportRowGameTests {
         try (var f = new SatelliteRowGameTestFiles(h)) {
             f.seed();
             CompoundTag before = f.data.save(new CompoundTag());
+            CompoundTag previousFile = before.copy();
             if (blocked) {
                 before.putInt("schema_version", 999);
                 before.putString("w333_opaque", "must survive every write entry");
                 f.data.close();
                 f.data = SatelliteMissionSavedData.load(before);
                 h.assertTrue(!f.data.operational(), "Future-root fixture unexpectedly operational");
-                ATOMIC.replace(f.file, () -> f.data.save(new CompoundTag()));
+                previousFile = before.copy();
+                previousFile.putString("w333_opaque", "previous blocked root");
+                CompoundTag previous = previousFile;
+                ATOMIC.replace(f.file, () -> previous);
                 f.data.setDirty();
             } else {
                 h.assertTrue(f.data.groundSurveys(g -> g.start(ground(1, 1001), 1001)).code() == GroundSurveys.Code.SUCCESS,
@@ -88,7 +92,7 @@ public final class SatelliteTransportRowGameTests {
                 // The stop drain may retry its first cut. It must preserve the same root even if it abandons the write.
                 CompoundTag disk = CheckedSavedDataFile.readPayload(f.file, TYPE).orElseThrow();
                 if (outcome.equals("FAILED") && f.data.isDirty()) {
-                    h.assertTrue(blocked ? disk.equals(before) : disk.getList("ground_surveys", 10).size() == 1,
+                    h.assertTrue(disk.equals(previousFile),
                             "Failed stop changed the previous file");
                 } else {
                     assertSections(h, expected, disk, blocked, entry + "/" + outcome);
@@ -128,7 +132,8 @@ public final class SatelliteTransportRowGameTests {
         try (var f = new SatelliteRowGameTestFiles(h)) {
             f.seed();
             var data = f.data;
-            data.groundSurveys(g -> g.start(ground(1, 1001), 1001));
+            h.assertTrue(data.groundSurveys(g -> g.start(ground(1, 1001), 1001)).code() == GroundSurveys.Code.SUCCESS,
+                    "Frozen-capture fixture mutation failed");
             long epoch = data.saveEpoch();
             var entered = new CountDownLatch(1);
             var release = new CountDownLatch(1);
@@ -143,7 +148,10 @@ public final class SatelliteTransportRowGameTests {
             }, (path, type) -> { reads.incrementAndGet(); return CheckedSavedDataFile.readPayload(path, type); });
             try {
                 h.assertTrue(data.requestWrite(f.file, policy), "Could not request paused write");
-                h.assertTrue(entered.await(10, TimeUnit.SECONDS), "Writer never reached committer");
+                // A detached writer still obeys cadence. Pump its owner poll instead of blocking the owner before it can start.
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+                while (entered.getCount() != 0 && System.nanoTime() < deadline) { data.pollWriter(); entered.await(1, TimeUnit.MILLISECONDS); }
+                h.assertTrue(entered.getCount() == 0, "Writer never reached committer");
                 h.assertTrue(data.groundSurveys(g -> g.start(ground(2, 1002), 1002)).code() == GroundSurveys.Code.SUCCESS,
                         "Owner mutation during capture failed");
                 var later = data.token();
