@@ -31,6 +31,7 @@ import shutil
 import time
 import uuid
 
+import bay_integrated_evidence as evidence_tools
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest
@@ -53,6 +54,7 @@ CLAIM = re.compile(r"ARCE_BAY_CLAIM transfer=(\S+) logical=(\S+) state=(\w+) rea
 STOPPED = re.compile(r"ARCE_BAY_STOPPED claims=(\d+) unresolved=(\d+)")
 REGISTRY_BLOCKED = "ARCE_RELEASE_BAY_REGISTRY_BLOCKED session=true"
 ALTITUDE = 48
+ONLINE_RIDER = "00000000-0000-4000-8000-000000254001"
 TXW_PAUSED = re.compile(r"ARCE_RELEASE_TXW_PAUSED point=STAGED")
 TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(ARMED|MUTATED)")
 SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED")
@@ -150,6 +152,63 @@ TRANCHES = {"A": ["B1_STAGED", "B1_MOVED", "B9_STAGED", "B9_MOVED", "B12_UNKNOWN
                   "B18_D7"],
             "C": ["B16_MOTION", "B16_SAVE", "B16_JOIN", "B16_LEAVE", "B3_JOURNAL_HELD"]}
 TRANCHES["D"] = [case for case in CASES if case.startswith("W185_")]
+# W325 composes existing C1 fixture controls; no new production hook is required.
+CASES.update({
+    "W325_B3_STAGED_PRESENT": dict(cut="B3_STAGED", end="kill", durable="INTENT", copies="both", save=True,
+                                   restarts=("LANDED", "LANDED")),
+    "W325_B3_STAGED_ABSENT": dict(cut="B3_STAGED", end="kill", durable="INTENT", copies="absent", save=True,
+                                  restarts=("LANDED", "LANDED")),
+    "W325_B4_LIVE_X_PRESENT_S": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", copies="both", save=True,
+                                     survey=True, owned=2, restarts=("LANDED", "LANDED")),
+    "W325_B4_LIVE_X_ABSENT_S": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", copies="absent", save=True,
+                                    survey=True, owned=2, restarts=("LANDED", "LANDED")),
+    "W325_B8_STAGED_OFFLINE": dict(cut="B8_STAGED", end="kill", durable="REGISTERED", offline=True, save=True,
+                                   restarts=("LANDED", "LANDED")),
+    "W325_B8_MOVED_OFFLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", offline=True, save=True,
+                                  restarts=("CONSUMED_CREW_WAIT", "CONSUMED_CREW_WAIT")),
+    "W325_B3_STAGED_ONLINE": dict(cut="B3_STAGED", end="kill", durable="INTENT", online=True, save=True,
+                                  restarts=("LANDED", "LANDED")),
+    "W325_B3_MOVED_ONLINE": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", online=True, save=True,
+                                 restarts=("LANDED", "LANDED")),
+    "W325_B8_STAGED_ONLINE": dict(cut="B8_STAGED", end="kill", durable="REGISTERED", online=True, save=True,
+                                  restarts=("LANDED", "LANDED")),
+    "W325_B8_MOVED_ONLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", online=True, save=True,
+                                 restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    "W325_OWNER_FULL": dict(cut=None, end="land", durable="NONE", fill=16,
+                             fill_owner="00000000-0000-4000-8000-000000128d01", first="LANDED_UNCONSUMED",
+                             restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_OTHER_OWNER_ROOM": dict(cut=None, end="land", durable="NONE", fill=16, first="LANDED",
+                                   restarts=("LANDED", "LANDED")),
+    "W325_B3_STAGED_ONLINE_ABSENT": dict(cut="B3_STAGED", end="kill", durable="INTENT", online=True,
+                                         copies="absent", save=True, restarts=("LANDED", "LANDED")),
+    "W325_B3_MOVED_ONLINE_ABSENT": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", online=True,
+                                        copies="absent", save=True, restarts=("LANDED", "LANDED")),
+})
+TRANCHES["E"] = [case for case in CASES if case.startswith("W325_")]
+CASES.update({
+    "W325_RETAINED_GLOBAL": dict(cut=None, end="land", durable="NONE", fill=4096, fill_phase="REJECTED", pending_count=0,
+                                  first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_RETAINED_OWNER": dict(cut=None, end="land", durable="NONE", fill=128, fill_phase="REJECTED", pending_count=0,
+                                 fill_owner="00000000-0000-4000-8000-000000128d01", first="LANDED_UNCONSUMED",
+                                 restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_REPAIR_FULL": dict(cut=None, end="land", durable="NONE", fill=64, fill_phase="REPAIR",
+                              first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_RELEASED_FULL": dict(cut=None, end="land", durable="NONE", fill=64, fill_phase="REPAIR", fill_released=True,
+                                first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_REPAIR_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fill_phase="REPAIR", fixture_restart=1,
+                              restarts=("LANDED", "LANDED")),
+})
+TRANCHES["F"] = [case for case in CASES if case.startswith("W325_") and case not in TRANCHES["E"]]
+CASES.update({
+    "W325_D4_FAILED": dict(cut=None, registry="STAGED PAUSE", group_failed="D4", end="land", durable="NONE",
+                            first="LANDED", restarts=("LANDED", "LANDED")),
+    "W325_D7_FAILED": dict(cut="B3_MOVED", group_failed="D7", end="land", durable="NONE",
+                            first="LANDED", restarts=("LANDED", "LANDED")),
+})
+TRANCHES["G"] = ["W325_D4_FAILED", "W325_D7_FAILED"]
+CASES["W325_B9_RETRY"] = dict(cut="B9_MOVED", end="kill", durable="REJECTED", refuse=True, relaunch=True,
+                               restarts=("REFUSED", "REFUSED"))
+TRANCHES["H"] = ["W325_B9_RETRY"]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
@@ -161,6 +220,7 @@ OUTCOMES = {
     "LANDED": (None, "LANDED", True, 1),
     "LANDED_UNCONSUMED": (None, "LANDED", False, 0),
     "CONSUMED_REST": (None, "ORIGIN", True, 1),
+    "CONSUMED_CREW_WAIT": (None, "CREW_WAIT", True, 1),
 }
 
 
@@ -242,6 +302,11 @@ def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bo
         return False
     if rest == "LANDED":
         return status["state"] == "LANDED"
+    if rest == "CREW_WAIT":
+        # W27A section 9/B8 permits stationary ordinary recovery after final retirement.
+        # RocketTransferRecoveryService.settleRecoveredSource retains T for offline crew.
+        return (status["state"] == "FUELED" and status["transfer"] == "PREPARED"
+                and status["locked"] == "false" and float(status["y"]) == float(ORIGIN[1]))
     return status["state"] == "FUELED" and status["transfer"] == "NONE" and float(status["y"]) == float(ORIGIN[1])
 
 
@@ -264,7 +329,7 @@ def check_settled(case: str, restart: int, status: dict, fixture: dict, relaunch
             raise smoke.SmokeError(f"{case}/{restart}: the survey bay was not consumed: {status}")
     elif actual[1] != expected[1] or (status["consumed"] and status["consumed"][1] is not None):
         raise smoke.SmokeError(f"{case}/{restart}: the research-locked solar package changed: {status['packages']}")
-    owned = 0 if name == "HELD" else OUTCOMES[name][3]
+    owned = 0 if name == "HELD" else CASES[case].get("owned", OUTCOMES[name][3])
     if status["owned"] != owned:
         raise smoke.SmokeError(f"{case}/{restart}: the fixture owner holds {status['owned']} satellites, expected {owned}")
     for receipt in status["receipts"]:
@@ -363,15 +428,27 @@ class Session:
         return process.finish(timeout)
 
 
-def launch_fixture(run: Session, survey: bool = False) -> dict:
+def launch_fixture(run: Session, survey: bool = False, online: bool = False) -> dict:
+    if online and survey:
+        raise smoke.SmokeError("C1's online rider fixture has no survey variant")
     run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
     variant = " survey" if survey else ""
+    command = "exit fixture" if online else "fixture"
+    marker = r"ARCE_RELEASE_BAY_EXIT_FIXTURE .*" if online else FIXTURE.pattern
     deadline = time.monotonic() + run.args.flight_timeout
     while True:
-        line = run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}",
-                        re.compile(FIXTURE.pattern + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
+        line = run.send(f"arce bay release-test {command} {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}",
+                        re.compile(marker + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
         if "ARCE_RELEASE_BAY_FIXTURE_WAIT" not in line:
-            fixture = parse_fixture(line); break
+            if online:
+                expected = f"rider={ONLINE_RIDER} name=W254Rider mounted=true seat=0 mode=survival"
+                if expected not in line:
+                    raise smoke.SmokeError(f"Survival rider did not board seat zero: {line}")
+                fixture = parse_fixture(next(value for value in reversed(run.process.lines) if FIXTURE.search(value)))
+                fixture["rider"] = ONLINE_RIDER
+            else:
+                fixture = parse_fixture(line)
+            break
         if time.monotonic() > deadline:
             raise smoke.SmokeError("The fixture source did not become entity-ticking")
         time.sleep(1)
@@ -380,27 +457,47 @@ def launch_fixture(run: Session, survey: bool = False) -> dict:
     return fixture
 
 
+def online_state(run: Session, logical: str, at_cut: bool = False) -> dict:
+    line = run.send(f"arce bay release-test exit state {logical}", re.compile(r"ARCE_RELEASE_BAY_EXIT_STATE "))
+    state = {}
+    for key, value in re.findall(r"(\w+)=(\S+)", line.split("ARCE_RELEASE_BAY_EXIT_STATE ", 1)[1]):
+        if key in state:
+            raise smoke.SmokeError(f"Repeated online-state field {key}")
+        state[key] = value
+    if (state.get("rider") != "online" or state.get("rocketSeat") != "0"
+            or float(state.get("health", "0")) <= 0
+            or at_cut and (state.get("mounted") != "true" or state.get("seat") != "0")):
+        raise smoke.SmokeError(f"Online passenger or seat changed: {state}")
+    return state
+
+
 def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict]:
     spec = CASES[case]
     properties = {"bayCheckpoint": spec["cut"]} if spec.get("cut") else {}
-    if spec.get("copies"):
+    if spec.get("offline") or spec.get("copies") and not spec.get("online"):
         properties["bayOfflinePassenger"] = "true"
     if spec.get("refuse"):
         properties["bayRefuseRegistration"] = "true"
-    process = run.start(case, 0, properties)
     observed: dict = {}
+    if spec.get("fill"):
+        observed["capacity_fixture"] = evidence_tools.seed_capacity_world(
+            world, spec["fill"], spec.get("fill_owner"), spec.get("fill_phase", "INTENT"), spec.get("fill_released", False))
+    process = run.start(case, 0, properties)
     if spec.get("staging"):
         # A directory at the staging path refuses the next receipt write before staging: FAILED_BEFORE_REPLACE.
         (world / "data" / STAGING).mkdir(parents=True)
     if spec.get("fill"):
-        observed["filled"] = run.fill(spec["fill"])
+        observed["filled"] = run.pending()
+        if (observed["filled"]["pending"] != spec.get("pending_count", spec["fill"])
+                or observed["filled"]["retained"] != spec["fill"]):
+            raise smoke.SmokeError(f"Capacity fixture did not load its exact pending/retained union: {observed['filled']}")
     fixture = None
     if spec.get("fixture_restart") is None:
         if spec.get("journal"):
             run.send("arce rocket release-test transaction-writer arm STAGED PAUSE", TXW_DONE)
         if spec.get("registry"):
             run.send(f"arce satellite release-test registry-writer arm {spec['registry']}", SRW_DONE)
-        fixture = launch_fixture(run, spec.get("survey", False))
+        fixture = launch_fixture(run, spec.get("survey", False), spec.get("online", False))
         if spec.get("journal"):
             run.send("arce rocket release-test transaction-writer add", TXW_DONE)
             run.wait(TXW_PAUSED, run.args.flight_timeout)
@@ -417,6 +514,8 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             run.wait(re.compile(rf"ARCE_RELEASE_SRW_PAUSED point={spec['registry'].split()[0]}"), run.args.flight_timeout)
         elif spec.get("cut"):
             run.wait(re.compile(rf"ARCE_RELEASE_BAY_(PAUSED|INJECTED) cut={spec['cut']} op="), run.args.flight_timeout)
+        if spec.get("group_failed"):
+            observed["failed_group_write"] = failed_group_write(run, case, fixture, world)
         if spec.get("b16"):
             observed["b16"] = b16_guard(run, case, fixture, world)
         if spec["end"] == "land" or spec.get("staging"):
@@ -427,24 +526,32 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             observed["at_cut"] = run.status(fixture["logical"])
             if observed["at_cut"]["claim"] == "NONE" or observed["at_cut"]["state"] != "TRANSIT":
                 raise smoke.SmokeError(f"{case}: the cut did not hold T in TRANSIT: {observed['at_cut']}")
+            if spec.get("online"):
+                observed["online_at_cut"] = online_state(run, fixture["logical"], at_cut=True)
             if spec.get("copies"):
                 deadline = time.monotonic() + run.args.settle_timeout
                 while True:
                     line = run.send(f"arce bay release-test copies {fixture['logical']} {spec['copies']}",
                                     re.compile(r"ARCE_RELEASE_BAY_COPIES(?:_WAIT)? logical="))
                     if "_WAIT" not in line:
-                        if "passenger=true" not in line:
-                            raise smoke.SmokeError(f"{case}: offline assignment missing: {line}")
+                        expected_seat = "passenger=false" if spec.get("online") else "passenger=true"
+                        if expected_seat not in line:
+                            raise smoke.SmokeError(f"{case}: copy fixture seat identity changed: {line}")
                         observed["copies"] = line.strip(); break
                     if time.monotonic() > deadline:
                         raise smoke.SmokeError(f"{case}: destination did not load for copy fixture")
                     time.sleep(1)
                 census = run.send(f"arce bay release-test census {fixture['logical']}",
                                   re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
-                observed["copy_census"] = check_copy_census(census, fixture["logical"], 4 if spec["copies"] == "absent" else 5)
+                observed["copy_census"] = check_copy_census(census, fixture["logical"],
+                    4 if spec["copies"] == "absent" else 5, assigned=not spec.get("online", False))
             if spec.get("save"):
                 # The source entity is on disk at its current image before the end (B3 and B6 with S present).
                 observed["saved"] = run.send("save-all flush", SAVED, 120)
+            if spec.get("offline"):
+                census = run.send(f"arce bay release-test census {fixture['logical']}",
+                                  re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
+                observed["offline_census"] = check_copy_census(census, fixture["logical"], 1)
             if spec.get("cold"):
                 run.send(f"forceload remove {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Uu]nmarked|forceload|chunk"))
                 observed["cold_forceloads_saved"] = run.send("save-all flush", SAVED, 120)
@@ -458,6 +565,10 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     code = run.end("wait" if spec["end"] == "crash" else spec["end"] if spec["end"] != "land" else "stop",
                    run.args.exit_timeout)
     text = "".join(process.lines)
+    errors = evidence_tools.unexpected_errors(process.lines, registry_injection=spec.get("unproved", False),
+                                              crash_injection=spec["end"] == "crash")
+    if errors:
+        raise smoke.SmokeError(f"{case}: first start logged unexpected ERROR/FATAL: {errors}")
     if spec["end"] in ("stop", "land") and code != 0:
         raise smoke.SmokeError(f"{case}: the normal stop exited {code}")
     if spec["end"] == "stop" and spec.get("cut") and "ARCE_RELEASE_BAY_RELEASED" not in text:
@@ -468,6 +579,43 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     if spec.get("at_stop"):
         observed["stopped"] = check_stopped_while_waiting(case, process.lines, fixture)
     return fixture, observed
+
+
+def check_failed_group_write(status: dict, fixture: dict, step: str, before: str, after: str) -> None:
+    if (before != after or status["transfer"] != "PREPARED" or status["state"] != "TRANSIT"
+            or status["locked"] != "true" or status["owned"] != 1):
+        raise smoke.SmokeError(f"{step}: definite receipt failure changed durable authority: {status}")
+    if step == "D4" and (status["packages"] != fixture["packages"] or status["consumed"] != [None, None]):
+        raise smoke.SmokeError(f"D4 consumed before its receipt acknowledgement: {status}")
+    if step == "D7" and (status["consumed"][0] is None or status["packages"] == fixture["packages"]):
+        raise smoke.SmokeError(f"D7 lost its consumed source: {status}")
+
+
+def failed_group_write(run: Session, case: str, fixture: dict, world: Path) -> dict:
+    """Block staging only after D1/D4 is acknowledged, then preserve and retry that boundary."""
+    step = CASES[case]["group_failed"]
+    receipts = world / "data" / RECEIPTS
+    before = digest(receipts)
+    staging = world / "data" / STAGING
+    staging.mkdir()  # Must be absent: never replace or remove an existing fixture file.
+    if step == "D4":
+        run.send("arce satellite release-test registry-writer release", SRW_DONE)
+        marker = re.compile(r"ARCE_BAY_RECEIPTS_UNAVAILABLE failures=3 generation=")
+    else:
+        run.send("arce bay release-test release", re.compile(r"ARCE_RELEASE_BAY_RELEASE_REQUESTED"))
+        marker = re.compile(rf"ARCE_BAY_RETIRE_REFUSED transfer={fixture['transfer']} logical={fixture['logical']} outcome=FAILED_BEFORE_REPLACE")
+    observed = run.wait(marker, run.args.flight_timeout)
+    status = run.status(fixture["logical"])
+    after = digest(receipts)
+    check_failed_group_write(status, fixture, step, before, after)
+    # This one authority file is immutable while staging is blocked. The full stopped-world
+    # authority snapshot is captured normally after the first start and each restart.
+    target = run.evidence / f"{case}-failed-receipt.dat"
+    shutil.copy2(receipts, target)
+    if digest(target) != before:
+        raise smoke.SmokeError("Failed-receipt evidence changed during capture")
+    staging.rmdir()
+    return dict(step=step, marker=observed.strip(), status=status, receipt_sha256=before, receipt_file=target.name)
 
 
 def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
@@ -631,8 +779,10 @@ def run_case(run: Session, case: str) -> dict:
     receipts = world / "data" / RECEIPTS
     row["cut_disk"] = dict(receipts=digest(receipts) if receipts.is_file() else None,
                            staging=(world / "data" / STAGING).exists())
+    row["cut_disk"]["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
     if spec.get("copies"):
-        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"])
+        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"],
+            passenger=ONLINE_RIDER if spec.get("online") else "00000000-0000-4000-8000-000000185001")
     row["restarts"] = []
     for restart in (1, 2):
         hooked = first_tick_satellite(case, fixture) if fixture is not None and restart == 1 else None
@@ -644,17 +794,26 @@ def run_case(run: Session, case: str) -> dict:
             properties.update(rocketJournalFailure="HOLD", rocketJournalHoldStartup="true")
         process = run.start(case, restart, properties)
         entry = dict(restart=restart)
+        if spec.get("online"):
+            entry["login"] = run.send(f"arce bay release-test exit login {fixture['logical']}",
+                                      re.compile(r"ARCE_RELEASE_BAY_EXIT_LOGIN "))
         if fixture is None and spec.get("fixture_restart") == restart:
             fixture = launch_fixture(run)
         if fixture is not None:
             if held:
                 entry["journal_hold"] = check_journal_hold(run, case, fixture)
             entry["settled"] = run.await_settled(case, restart, fixture)
-            if spec.get("copies"):
+            if outcome(case, restart) == "CONSUMED_CREW_WAIT":
+                entry["crew_wait"] = run.wait(re.compile(
+                    rf"ARCE_TRANSFER_RETIREMENT_WAIT transfer={fixture['transfer']} .* reason=CREW_WAITING"), 30).strip()
+            if spec.get("online"):
+                entry["online_settled"] = online_state(run, fixture["logical"])
+            if spec.get("copies") or spec.get("offline"):
                 census = run.send(f"arce bay release-test census {fixture['logical']}",
                                   re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
                 expected_count = 5 if spec.get("copy_hold") else 1
-                entry["census"] = check_copy_census(census, fixture["logical"], expected_count)
+                entry["census"] = check_copy_census(census, fixture["logical"], expected_count,
+                                                    assigned=not spec.get("online", False))
                 if spec.get("cold") and restart == 1 and not any(
                         (match := CLAIM.search(line)) and match.group(2) == fixture["logical"] and match.group(4) == "END_LOADING"
                         for line in process.lines):
@@ -672,7 +831,10 @@ def run_case(run: Session, case: str) -> dict:
                                            f"{op} {relaunched['consumed']}")
                 entry["relaunched"] = relaunched
         entry["pending"] = run.pending()
-        if spec.get("fill") and entry["pending"]["pending"] != spec["fill"]:
+        if outcome(case, restart) == "CONSUMED_CREW_WAIT" and entry["pending"] != dict(pending=0, retained=0, work=False):
+            raise smoke.SmokeError(f"{case}/{restart}: retired crew wait retained bay authority: {entry['pending']}")
+        if spec.get("fill") and (entry["pending"]["pending"] != spec.get("pending_count", spec["fill"])
+                                 or entry["pending"]["retained"] != spec["fill"]):
             raise smoke.SmokeError(f"{case}/{restart}: the filled capacity changed: {entry['pending']}")
         code = run.end("stop", run.args.exit_timeout)
         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
@@ -684,19 +846,21 @@ def run_case(run: Session, case: str) -> dict:
             entry["held"] = check_held_restart(case, restart, process.lines, fixture, row["cut_disk"]["receipts"],
                                                entry["receipts"], entry["pending"])
         row["restarts"].append(entry)
+        entry["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-restart-{restart}-raw")
     row["fixture"] = fixture
     row["status"] = "PASS"
     return row
 
 
-def check_copy_census(line: str, logical: str, expected_count: int) -> dict:
+def check_copy_census(line: str, logical: str, expected_count: int, assigned: bool = True) -> dict:
     match = re.search(r"ARCE_RELEASE_BAY_CENSUS logical=(\S+) count=(\d+) transfer=(\w+) assigned=(true|false) rows=\[([^\]]*)\]", line)
     if not match or match[1] != logical:
         raise smoke.SmokeError(f"Invalid copy census: {line}")
     rows = match[5].split(",") if match[5] else []
     if (int(match[2]) != expected_count or len(rows) != expected_count
-            or any(not row.endswith(":true") for row in rows) or len({row.split(":")[0] for row in rows}) != len(rows)
-            or match[3] != "NONE" and match[4] != "true"):
+            or any(not row.endswith(":" + str(assigned).lower()) for row in rows)
+            or len({row.split(":")[0] for row in rows}) != len(rows)
+            or match[3] != "NONE" and match[4] != str(assigned).lower()):
         raise smoke.SmokeError(f"Duplicate count or offline seat changed: {line}")
     for row in rows:
         copy_row(row)
@@ -711,7 +875,8 @@ def copy_row(row: str) -> dict:
                 ledger=parts[6], epoch=int(parts[7]))
 
 
-def inspect_copy_disk(world: Path, logical: str, census: dict) -> list[dict]:
+def inspect_copy_disk(world: Path, logical: str, census: dict,
+                      passenger: str = "00000000-0000-4000-8000-000000185001") -> list[dict]:
     """After the kill, prove the actual fixture images were saved before testing their restart disposition."""
     expected = {copy["uuid"]: copy for copy in map(copy_row, census["rows"])}
     dimensions = {"minecraft:overworld": world, "advancedrocketrycommunity:moon": world / "dimensions/advancedrocketrycommunity/moon"}
@@ -733,7 +898,7 @@ def inspect_copy_disk(world: Path, logical: str, census: dict) -> list[dict]:
                           ledger=uuid_of(wrapper.get("ledger_id")) or "NONE", epoch=wrapper.get("resource_epoch"))
             seats = data.get("flight_data", {}).get("passengers", {}).get("assignments", [])
             if actual != expected.get(identity) or not any(uuid_of(seat.get("passenger_id"))
-                    == "00000000-0000-4000-8000-000000185001" for seat in seats):
+                    == passenger for seat in seats):
                 raise smoke.SmokeError(f"Saved copy differs from the observed fixture: {actual}")
             found.append(actual)
     if len(found) != len(expected) or {row["uuid"] for row in found} != set(expected):
@@ -774,9 +939,14 @@ def run(args) -> dict:
                 if runner.process is not None:
                     runner.process.abort(); runner.process = None
                 report["cases"].append(dict(case=case, status="FAILED", error=str(failure)))
+                report["cases"][-1]["raw"] = evidence_tools.snapshot_world(
+                    session / ("world-" + case), evidence / f"{case}-failure-raw")
                 print(f"{case}: FAIL {failure}", flush=True)
+            report["cases"][-1]["observed_ticks"] = evidence_tools.case_observations(evidence, case)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
+            if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
+                break
         report.pop("in_progress", None); assert_pin(args.source_commit)
         report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
         return report
@@ -801,6 +971,7 @@ def main() -> int:
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--case", action="append", choices=list(CASES))
     parser.add_argument("--tranche", choices=sorted(TRANCHES))
+    parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
     parser.add_argument("--flight-timeout", type=float, default=120)
