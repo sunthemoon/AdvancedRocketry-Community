@@ -165,7 +165,7 @@ CASES.update({
     "W325_B8_STAGED_OFFLINE": dict(cut="B8_STAGED", end="kill", durable="REGISTERED", offline=True, save=True,
                                    restarts=("LANDED", "LANDED")),
     "W325_B8_MOVED_OFFLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", offline=True, save=True,
-                                  restarts=("CONSUMED_REST", "CONSUMED_REST")),
+                                  restarts=("CONSUMED_CREW_WAIT", "CONSUMED_CREW_WAIT")),
     "W325_B3_STAGED_ONLINE": dict(cut="B3_STAGED", end="kill", durable="INTENT", online=True, save=True,
                                   restarts=("LANDED", "LANDED")),
     "W325_B3_MOVED_ONLINE": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", online=True, save=True,
@@ -206,6 +206,9 @@ CASES.update({
                             first="LANDED", restarts=("LANDED", "LANDED")),
 })
 TRANCHES["G"] = ["W325_D4_FAILED", "W325_D7_FAILED"]
+CASES["W325_B9_RETRY"] = dict(cut="B9_MOVED", end="kill", durable="REJECTED", refuse=True, relaunch=True,
+                               restarts=("REFUSED", "REFUSED"))
+TRANCHES["H"] = ["W325_B9_RETRY"]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
@@ -217,6 +220,7 @@ OUTCOMES = {
     "LANDED": (None, "LANDED", True, 1),
     "LANDED_UNCONSUMED": (None, "LANDED", False, 0),
     "CONSUMED_REST": (None, "ORIGIN", True, 1),
+    "CONSUMED_CREW_WAIT": (None, "CREW_WAIT", True, 1),
 }
 
 
@@ -298,6 +302,11 @@ def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bo
         return False
     if rest == "LANDED":
         return status["state"] == "LANDED"
+    if rest == "CREW_WAIT":
+        # W27A section 9/B8 permits stationary ordinary recovery after final retirement.
+        # RocketTransferRecoveryService.settleRecoveredSource retains T for offline crew.
+        return (status["state"] == "FUELED" and status["transfer"] == "PREPARED"
+                and status["locked"] == "false" and float(status["y"]) == float(ORIGIN[1]))
     return status["state"] == "FUELED" and status["transfer"] == "NONE" and float(status["y"]) == float(ORIGIN[1])
 
 
@@ -790,6 +799,9 @@ def run_case(run: Session, case: str) -> dict:
             if held:
                 entry["journal_hold"] = check_journal_hold(run, case, fixture)
             entry["settled"] = run.await_settled(case, restart, fixture)
+            if outcome(case, restart) == "CONSUMED_CREW_WAIT":
+                entry["crew_wait"] = run.wait(re.compile(
+                    rf"ARCE_TRANSFER_RETIREMENT_WAIT transfer={fixture['transfer']} .* reason=CREW_WAITING"), 30).strip()
             if spec.get("online"):
                 entry["online_settled"] = online_state(run, fixture["logical"])
             if spec.get("copies") or spec.get("offline"):
@@ -815,6 +827,8 @@ def run_case(run: Session, case: str) -> dict:
                                            f"{op} {relaunched['consumed']}")
                 entry["relaunched"] = relaunched
         entry["pending"] = run.pending()
+        if outcome(case, restart) == "CONSUMED_CREW_WAIT" and entry["pending"] != dict(pending=0, retained=0, work=False):
+            raise smoke.SmokeError(f"{case}/{restart}: retired crew wait retained bay authority: {entry['pending']}")
         if spec.get("fill") and (entry["pending"]["pending"] != spec.get("pending_count", spec["fill"])
                                  or entry["pending"]["retained"] != spec["fill"]):
             raise smoke.SmokeError(f"{case}/{restart}: the filled capacity changed: {entry['pending']}")

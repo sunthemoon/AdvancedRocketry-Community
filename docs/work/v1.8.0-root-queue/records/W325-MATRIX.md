@@ -74,7 +74,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED: no packaged partial-group fixture. |
 | B9.1 | Registration refused after INTENT, REJECTED staged-only | F `B9_STAGED` |
 | B9.2 | REJECTED replaced before callback | F `B9_MOVED` |
-| B9.3 | Refused package later succeeds with the same operation | NOT_COVERED: `B1_MOVED` proves interrupted re-arm, not successful retry after the B9 registry refusal. |
+| B9.3 | Refused package later succeeds with the same operation | F `W325_B9_RETRY` (relaunch after two restart observations of the durable registry refusal). |
 | B10.1 | Blocked registry, unreleased INTENT hold | F `B10_BLOCKED` |
 | B10.2 | Coherent blocked INTENT, release flag staged-only | R `B10_BLOCKED_STAGED` |
 | B10.3 | Coherent blocked INTENT, release flag replaced | R `B10_BLOCKED_MOVED` |

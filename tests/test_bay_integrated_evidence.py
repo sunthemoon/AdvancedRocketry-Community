@@ -14,6 +14,26 @@ import run_v180_bay_exit_cuts as exit_runner
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_retired_offline_recovery_requires_the_exact_stationary_crew_wait(self):
+        case = "W325_B8_MOVED_OFFLINE"
+        fixture = dict(logical="l", data="data", solar="solar", packages="a+b")
+        status = dict(claim="NONE", transfer="PREPARED", state="FUELED", y="2", packages="c+b",
+                      consumed=["op-data", None], receipts=[], owned=1, locked="false")
+        self.assertTrue(bay.settled(case, 1, status, fixture))
+        bay.check_settled(case, 1, status, fixture)
+        for change in (dict(transfer="NONE"), dict(state="TRANSIT"), dict(locked="true"),
+                       dict(y="50"), dict(consumed=[None, None]), dict(claim="RETIRE")):
+            bad = dict(status, **change)
+            self.assertFalse(bay.settled(case, 1, bad, fixture))
+
+    def test_registry_refusal_retry_keeps_its_durable_cut_and_same_operation_check(self):
+        spec = bay.CASES["W325_B9_RETRY"]
+        self.assertEqual("B9_MOVED", spec["cut"])
+        self.assertEqual("REJECTED", spec["durable"])
+        self.assertTrue(spec["refuse"])
+        self.assertTrue(spec["relaunch"])
+        self.assertEqual(("REFUSED", "REFUSED"), spec["restarts"])
+
     def test_online_copy_disk_requires_the_online_rider_on_every_saved_image(self):
         census = dict(rows=["copy:minecraft:overworld:hash:0:0:NONE:0:false"])
         entity = dict(UUID="copy", RocketEntityData=dict(assembly_transaction_id="logical",
@@ -77,7 +97,7 @@ class EvidenceTests(unittest.TestCase):
                     "W325_OWNER_FULL", "W325_OTHER_OWNER_ROOM", "W325_B3_STAGED_ONLINE_ABSENT",
                     "W325_B3_MOVED_ONLINE_ABSENT", "W325_RETAINED_GLOBAL", "W325_RETAINED_OWNER", "W325_REPAIR_FULL",
                     "W325_RELEASED_FULL", "W325_REPAIR_FAIR"}
-        expected.update(("W325_D4_FAILED", "W325_D7_FAILED"))
+        expected.update(("W325_D4_FAILED", "W325_D7_FAILED", "W325_B9_RETRY"))
         self.assertEqual(expected, {key for key in bay.CASES if key.startswith("W325_")})
         for key in expected:
             self.assertEqual(2, len(bay.CASES[key]["restarts"]))
