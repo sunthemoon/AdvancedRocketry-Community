@@ -21,7 +21,8 @@ def seed_ledger(world):
                   ledger_id=nbt.uuid_tag(uuid.uuid4()), issued_through=nbt.Tag(nbt.LONG, 0),
                   writer_generation=nbt.Tag(nbt.LONG, 0), issued_launch_serial=nbt.Tag(nbt.LONG, 0))
     for key in ("records", "floors", "tombstones", "rocket_authorities", "armed_flights"):
-        fields[key] = nbt.Tag(nbt.LIST, (nbt.COMPOUND, []))
+        # Native ListTag writes an empty list as TAG_End; typed empties fail the exact-retention preflight.
+        fields[key] = nbt.Tag(nbt.LIST, (0, []))
     nbt.write_gzip(path, b"", nbt.Tag(nbt.COMPOUND, dict(data=nbt.Tag(nbt.COMPOUND, fields),
                                                        DataVersion=nbt.Tag(nbt.INT, 3465))))
 
@@ -69,6 +70,7 @@ def family(run):
             w176_oracle=w176.refusal_storage_result(before, after))
         rows.append(dict(attempt=attempt, exit_code=code, live=live, result=result,
                          world=run.capture(world, f"old-{attempt}-world")))
+        native.write_json(run.evidence / "downgrade-observations.json", rows)
     # Replace only this owned disposable world, from its entire backup, never one store.
     native.require(world.parent == run.session and backup.parent == run.session, "Unsafe whole-world restore")
     shutil.rmtree(world); shutil.copytree(backup, world)
@@ -82,6 +84,7 @@ def family(run):
         run.stop(f"restored-{restart}")
         native.require(oracle.device_roots(world) == devices, "Restored candidate changed placed device roots")
         restored.append(dict(status=status, world=run.capture(world, f"restored-{restart}-world")))
+        native.write_json(run.evidence / "candidate-restored.json", restored)
     # An expected historical defect is still a failed storage-safety row, not a passing downgrade.
     return dict(status="FAILED", reason="W176 whole-world byte-preservation oracle failed; not waived",
                 old_commit=oracle.OLD_COMMIT, old_sha256=oracle.OLD_SHA256, fixture=fixture,

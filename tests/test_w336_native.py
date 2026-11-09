@@ -206,6 +206,8 @@ class DowngradeTest(unittest.TestCase):
             fields = nbt.compound(root, "data")
             self.assertEqual(nbt.compound(fields, "schema_version"), nbt.Tag(nbt.INT, 2))
             self.assertEqual(nbt.compound(fields, "format_epoch").value, b"v1.8.0-resource-escrow")
+            for key in ("records", "floors", "tombstones", "rocket_authorities", "armed_flights"):
+                self.assertEqual(nbt.compound(fields, key), nbt.Tag(nbt.LIST, (0, [])))
             with self.assertRaises(ValueError):
                 downgrade.seed_ledger(world)
 
