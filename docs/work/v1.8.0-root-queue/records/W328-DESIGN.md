@@ -15,6 +15,20 @@ rejoin sidecar's existing rule does (`ARCE-BETA-2000`, typed with the file's typ
 unknown ledger or receipt presence as present, so an escrow world gets the whole-world hint and never the
 single-file restore hint.
 
+**Correction (W328F, 2026-11-09): order.** As delivered in `a571ccfee`, the status checks did not all run before any
+read (review F2). Discovery checked one managed file's status and then read, migrated, validated and hashed that file
+before it checked the next one, so an unknown presence of a later file did not stop earlier files from being decoded.
+Since W328F item 1, a metadata-only preflight runs the safe-path, no-follow presence and regular-file checks over every
+managed path before any file is decoded, after the existing rejoin sidecar and data directory checks. Only the files
+proven present are read afterwards.
+
+**Correction (W328F, 2026-11-09): hint.** The hint precedence above is incomplete (review check 1). The rejoin hint wins
+over the escrow hint. When the data directory's status is unknown, the rejoin sidecar's status is normally unknown too,
+and it is checked first, so that refusal is typed `ROCKET_REJOINS` and gets the rejoin hint. Since W328F item 2, a refusal caused by a failed status check
+(told apart by a typed marker on the exception) first tells the operator to fix storage access to the world folder and
+restart, and never to delete, move or restore single files. Today's rejoin, escrow or migration hint follows, with the
+same precedence, so the whole-world restrictions stay.
+
 I recommend this over passing UNKNOWN on to each store's own start:
 
 - Only some stores handle UNKNOWN themselves: the station registry, the transfer journal and the classic progression
@@ -34,6 +48,10 @@ store's start.
 | Duration | Until a start at which every managed path's status can be checked. |
 | Logs | One ERROR per start attempt, from the existing `BetaWorldMigrationEvents` paths, naming the type and "presence is unknown". |
 | Recovery | Fix the cause (permissions, a lock, storage) and restart. No offline repair is needed, because nothing changed. |
+
+**Correction (W328F, 2026-11-09).** "No file is read past its status check" held for each file, but not across files,
+until W328F item 1. Since then, no managed file is read before every managed path's status check has passed. The ERROR
+line's hint now starts with the storage instruction (W328F item 2).
 
 Today the same world starts in a worse state: the bay is NOT_LOADED (R-042's server-wide lock), W44 roots are held,
 or three roots and the ledger start empty and could later replace the existing files.
@@ -75,3 +93,10 @@ section 1, this only happens when the status check fails after the pre-start che
 - **R-035, escrow ledger paragraph:** "W328：账本文件的存在性无法证明（无跟随状态检查失败且不是 NoSuchFileException）时，启动前检查拒绝整世界启动（ARCE-BETA-2000，每次启动一条 ERROR，给出整世界恢复提示），不读取、不创建、不改动任何文件，修复存储或权限后重启即可。若状态检查在启动前检查之后才失败，PROPULSION 委托在本次会话保持 NOT_LOADED：不创建账本，燃料、四种货物和卫星舱准入以及对账全部拒绝，范围为整个服务器，每次启动一条 WARN `ARCE_ESCROW_LEDGER_NOT_LOADED reason=PRESENCE_UNKNOWN`，能证明存在或不存在的重启即恢复。"
 - **R-042, NOT_LOADED trigger:** "收据文件存在但未能加载（WARN `reason=LOAD_FAILED`），或无法证明收据文件不存在（`reason=PRESENCE_UNKNOWN`；W328 起通常由启动前检查拒绝启动，只在状态检查于启动前检查之后才失败时出现，此时不需要任何收据文件）。"
 - **Pre-start check, in R-039 or a world-level entry:** "W328：启动前检查对全部受管根及 `data` 目录只把 NoSuchFileException 当作不存在，任何其他状态检查失败都拒绝整世界启动，与已有的 rejoin 侧车规则相同。可影响任何世界，包括没有 ARCE 数据的世界；持续到状态可检查的重启；每次启动一条 ERROR；修复后重启即可恢复。"
+
+**Correction (W328F, 2026-11-09).** The proposed text needs two changes before it is registered. In the R-035 paragraph,
+"不读取" (reads no file) holds only since W328F item 1, which checks every managed path's status before any file is
+decoded. "给出整世界恢复提示" (gives the whole-world hint) is incomplete: since W328F item 2, the hint first asks the
+operator to fix storage access to the world folder and restart, and never to delete, move or restore single files. Then
+today's hint follows, and the rejoin hint comes before the escrow hint, so an unknown data directory gets the rejoin hint.
+The pre-start check entry should say the same about the order and the hint.

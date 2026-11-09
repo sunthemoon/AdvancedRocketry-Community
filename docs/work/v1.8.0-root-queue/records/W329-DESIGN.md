@@ -95,6 +95,11 @@ A new record `EscrowLedgerLookup(State state, ResourceEscrowSavedData data)` in 
   runtime, also answers NOT_LOADED (fail closed, like `BayReceipts.blocksInsertion`).
 - `UNCLASSIFIED`: no root before the startup classification (section 3).
 
+**Correction (W328F, 2026-11-09).** As delivered in `41b85e98d`, the lookup called vanilla storage before it checked
+the thread, and it did not check for an Overworld (review check 5). Since W328F item 3, off the server thread or without
+an Overworld it answers NOT_LOADED before it touches storage, so an off-thread read answers NOT_LOADED even when a root
+is loaded. Every production caller runs on the server thread.
+
 `EscrowRuntime` gains one flag, set in `starting` right after `EscrowLedgerStartup.start`, and `missingLedger(server)`,
 which reads the flag and the delegate. W328's lookup itself does not change. Each changed read becomes:
 
@@ -129,6 +134,15 @@ ticks). The release manifest filter would also be skipped. So UNCLASSIFIED keeps
    recovery's `actionAllowed`, `flightAllowed`, and the launch, fill, cargo and disassembly gates. Those then answer
    protectively.
 
+**Correction (W328F, 2026-11-09).** Point 3 does not hold for the manifest filter, which is a stated exception (review
+check 5). `RocketReleaseAccess.joined` changes the rocket at once. If the filter removes passengers and
+`RocketEscrowGate.idle` answers idle, which it does under UNCLASSIFIED for a rocket with no history in RAM, it calls
+`updateFlightData` with the filtered manifest, and nothing rechecks that change later. The filter removes only passengers
+whose release the rejoin sidecar already records: a release batch for this rocket with a pending seat entry, or the
+installed release coordinator's own filter. It changes only the passenger manifest. It moves no fuel or cargo and grants
+no transfer. This is the existing behaviour, kept on purpose so that joins in a NO_FILE world behave as before. W328F found
+no unit-level way to pin it without a new production seam (W328F's record, item 4).
+
 This is the bay's precedent: `BayReceipts.holds` is false before the receipts start (R390).
 
 ## 4. What the hold means for players (AGENTS.md section 3.3)
@@ -140,11 +154,79 @@ This is the bay's precedent: `BayReceipts.holds` is false before the receipts st
 | Logs | No new log line. W328 logs one WARN per start (`ARCE_ESCROW_LEDGER_NOT_LOADED`). Existing fence WARNs fire at most once per legacy transfer record (64 at most) and once per pending assembly transaction (256 at most) when recovery reaches them. Their text says `repair=offline-whole-world`, although a restart that loads the ledger clears them. |
 | Recovery | Fix the storage or permissions and restart. A start that loads the ledger or proves it absent restores every answer. |
 
+**Correction (W328F, 2026-11-09): files.** "No file is changed by the hold" means that the hold writes no ledger: there
+is no root in storage, creation needs NO_FILE, and vanilla saves only the roots it holds. Normal world saving goes on and
+writes every other file as usual: chunks and entities, including the held rockets and devices, player data, and the other
+SavedData roots such as the transfer journal and the bay receipts (review check 9).
+
+**Correction (W328F, 2026-11-09): transfer-fence WARNs.** The Logs row's transfer-fence bound is wrong (review F3). Root
+decision R397 keeps the deduplication and asks for its real behaviour. `ARCE_TRANSFER_FENCED`
+(`rocket/server/RocketTransferFences.java` lines 260 to 262) is logged once per change of a record's stored fence reason,
+not once per record. Both callers compare the new reason with the stored one: `fence` (lines 253 to 258) and `reevaluate`
+(lines 136 to 149, which logs at line 143). A record's reason changes on these events:
+
+- **First classification** (`classify`, line 69), only while the record has no stored reason. Under NOT_LOADED every
+  ordinary record is fenced here with `ESCROW_PENDING_OR_TOMBSTONE`, because `logicalLocked` is true.
+- **A join or leave of the record's rocket.** `RocketEscrowInterlocks.joined` and `left` (lines 21 and 28) both call
+  `RocketRuntime.onRocketJoined`, which reaches `RocketTransferFences.joined` (lines 158 to 170). For an ordinary record
+  that is already fenced, it fences again with `ENDPOINT_JOIN_PROOF_REQUIRED` (line 166). A further join or leave while
+  that reason is stored logs nothing.
+- **A reevaluation** (`reevaluate`, line 138): at most `RETRIES_PER_TICK` (2) observations per server tick across all
+  records, operator retries included, and at most one per record per `RETRY_TICKS` (1,200 ticks). Under NOT_LOADED it
+  observes `ESCROW_PENDING_OR_TOMBSTONE`, or `BAY_HELD` at a bay boundary, and never permits the record.
+- **A final action guard** (`actionAllowed`, line 247) fences only a record that was permitted first, which does not
+  happen to a fenced record under NOT_LOADED. Governed records go through `classifyGoverned` (line 95) and the same
+  `fence` deduplication.
+
+So a stable reason logs once, and a reason that alternates logs on each change. Under NOT_LOADED an ordinary record
+alternates between `ENDPOINT_JOIN_PROOF_REQUIRED` after a join or leave of its rocket and `ESCROW_PENDING_OR_TOMBSTONE`
+after its next reevaluation. After its first fence, that is at most two WARNs per record per 1,200-tick reevaluation
+interval, and only when its rocket joins or leaves a level in between, for example when its chunk loads or unloads or it
+is teleported. With at most 64 records (`MAX_ACTIVE_TRANSFERS`, `rocket/flight/RocketFlightLimits.java` line 12), the
+worst case is 128 WARNs per 1,200 ticks server-wide, and the reevaluation WARNs are also limited to two per tick. There
+is no per-session total: the count grows with the number of joins and leaves.
+`RocketTransferFencesTest.fenceWarnsRepeatOnEachReasonChangeButNotForAStableReason` pins this behaviour (W328F item 5).
+
+The assembly fence is a separate mechanism. `ARCE_ROCKET_RECOVERY_FENCED` is logged once per pending transaction while
+it stays fenced (`RocketTransactionRecoveryService.fence`, lines 141 to 147, through `fencedTransactions.add`), so the
+Logs row's 256 bound for assembly transactions stands. That once-per-transaction rule does not apply to transfer fences.
+
+**Correction (W328F, 2026-11-09): bay-claim WARNs, which this section omitted.** Under NOT_LOADED `bayNeutral` is false,
+so a bay claim that reaches one of these steps is held for offline repair:
+
+- `BaySourceResume.resume` refuses a loaded source with `SOURCE_AUTHORITY_CONFLICT` (line 117) and a rebuilt one with
+  `BAY_SOURCE_PROTECTED` (`rebuild`, line 168).
+- The released-flight resume returns `BAY_SOURCE_PROTECTED` (`BayReleasedResume` line 41 and its later checks), and
+  `BayReleasedFlight.step` holds the claim with it (lines 107 to 113).
+- The consumption and copy steps refuse the same way (`BayConsumptionSteps` line 62; `BayCopySteps` lines 60, 70, 91
+  and 94).
+- At a bay boundary, the transfer fences report `escrowLogicalLocked` as a conflict (`RocketTransferFences` lines 180 to
+  181 and 246), and `BayTransferRecovery.escrowConflict` holds the claim with `ESCROW_AUTHORITY_CONFLICT` (lines 162 to
+  165).
+
+`BayClaim.repair` (`rocket/bay/deployment/BayClaim.java` lines 177 to 182) puts the claim in REPAIR for the rest of the
+session and latches both its first repair reason and its first reason that cannot release flight.
+`BayTransferRecovery.audit` (lines 490 to 502) logs `ARCE_BAY_CLAIM ... state=REPAIR reason=...` as a WARN once per
+change of the claim's state and reason, deduplicated against the claim's previous line (line 496). None of the reasons
+above can release flight, so once one latches the claim's line no longer changes, and the refusal adds at most one WARN
+per claim. A claim already held for `REGISTRY_BLOCKED` or `REGISTRY_SIGNATURE_CONFLICT` logs one more when the new reason
+latches. There are at most 256 claims (`BayClaimBook.LIMIT`), and claim steps run at most 32 per tick server-wide
+(`BayStepQueue.STEPS_PER_TICK`). A group check that finds the source not neutral (`BayTransferRecovery` line 301) rejects
+the claim's bays instead and logs at INFO.
+
 After W328, NOT_LOADED is reachable only when a status check or load fails after the pre-start check.
 
 ## 5. Proposed risk-register text (Root edits the register)
 
 **R-035, escrow ledger paragraph:** "W329（R393）：账本处于 NOT_LOADED（文件存在但未能载入，或其存在性无法证明）时，只读保护判定一律给出保护值：火箭不视为空闲、不可在加注前退役、不作为中性卫星舱来源、逻辑锁成立、飞行状态冻结；持有根数据的燃料加注器和货物装置一律视为托管锁定。范围为整个服务器的全部火箭和这些装置：本次会话内火箭不能发射、经座位操作登乘或离开、加注、装卸货、拆解、退役，也不能被命令击杀或传送；进行中的普通转移暂停，普通转移与装配恢复对其记录设围栏；装置拒绝拆除、爆炸、掉落、端口与容器交换及链接。玩家仍可用原版操作下车。保持不改动任何文件，保存照常进行。持续到本次会话结束。不新增日志：W328 每次启动一条 WARN `ARCE_ESCROW_LEDGER_NOT_LOADED`；恢复触及时，每条普通转移记录（至多 64 条）和每个待恢复装配事务（至多 256 个）各有一条已有的围栏 WARN，其文字仍写 repair=offline-whole-world，但重启即可恢复。恢复方式：修复存储或权限后重启，能载入账本或证明其不存在即恢复全部判定。ServerStartingEvent 分类之前（出生区块载入实体时）保持原有判定，与卫星舱收据（R390）相同。NO_FILE 世界（生产准入关闭时的全部生产世界）不受影响。"
+
+**Correction (W328F, 2026-11-09).** Three parts of this proposed text are wrong or incomplete; see the corrections in
+sections 3 and 4. "每条普通转移记录（至多 64 条）……各有一条已有的围栏 WARN" (one fence WARN per transfer record) is wrong:
+the transfer-fence WARN repeats on each change of a record's reason, at most two per record per 1,200 ticks under
+NOT_LOADED, and the omitted bay-claim repair WARNs add at most one per claim for these refusals (256 claims at most).
+The assembly bound stands. "保持不改动任何文件，保存照常进行" should say that the hold writes no ledger while normal saving still writes every
+other file. "保持原有判定" before ServerStartingEvent should name the manifest filter as an immediate change that is not
+rechecked later: it removes only passengers whose release is already recorded and moves no fuel or cargo.
 
 ## 6. Tests
 
