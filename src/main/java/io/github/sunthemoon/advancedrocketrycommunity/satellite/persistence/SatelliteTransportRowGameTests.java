@@ -88,15 +88,12 @@ public final class SatelliteTransportRowGameTests {
             f.data.writePolicy(policy);
             if (entry.equals("stop")) {
                 f.data.latchShutdown();
-                f.data.save(f.file.toFile());
-                // The stop drain may retry its first cut. It must preserve the same root even if it abandons the write.
+                // A live GameTest server cannot set vanilla's stopped flag. Unload/close invokes the same bounded stop drain.
+                f.data.close();
+                h.assertTrue(f.data.drainReport().orElseThrow().success(), "Stop drain did not cover final RAM");
+                h.assertTrue(outcome.equals("COMMITTED") || calls.get() > 0, "Stop drain did not reach its injected cut");
                 CompoundTag disk = CheckedSavedDataFile.readPayload(f.file, TYPE).orElseThrow();
-                if (outcome.equals("FAILED") && f.data.isDirty()) {
-                    h.assertTrue(disk.equals(previousFile),
-                            "Failed stop changed the previous file");
-                } else {
-                    assertSections(h, expected, disk, blocked, entry + "/" + outcome);
-                }
+                assertSections(h, expected, disk, blocked, entry + "/" + outcome);
             } else {
                 if (entry.equals("barrier")) {
                     var result = f.data.checkpoint(f.file, List.of(), policy, path -> { });
