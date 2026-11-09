@@ -86,6 +86,8 @@ public final class BayMissionRowGameTests {
         BayClaim claim;
         BayReceipt receipt;
         List<MissionState> expected;
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState expectedSatellite;
+        io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount expectedAccount;
         int stage, waits;
         boolean closed;
         Object originalManager;
@@ -111,7 +113,7 @@ public final class BayMissionRowGameTests {
                                 definition(), ModIdentity.id("earth"), data.logicalGameTime(), false).success(), "Preexisting DATA seed refused");
                         mutate(data);
                     }
-                    expected = missions(data);
+                    capture(data);
                     if (variant.entry.failedWrite()) {
                         data.awaitForTests(server); var watch = data.watch(satellite(pkg));
                         h.assertTrue(data.failOneWriteForTests(server)
@@ -162,7 +164,7 @@ public final class BayMissionRowGameTests {
                     h.assertTrue(initial.satelliteId().equals(satellite(pkg)) && initial.ownerId().equals(owner)
                             && initial.definitionId().equals(definition().id()) && initial.targetBodyId().equals(ModIdentity.id("earth")),
                             "Fresh DATA did not atomically create its deterministic captured-body mission");
-                    mutate(data); expected = missions(data); release.countDown();
+                    mutate(data); capture(data); release.countDown();
                     policy(data, CheckedSavedDataPolicy.atomic(ManagedSavedDataType.SATELLITE_MISSIONS));
                 }
                 stage = 3;
@@ -172,6 +174,8 @@ public final class BayMissionRowGameTests {
                     "Mission history held/refused registration: " + variant + " " + claim.reason());
             h.assertTrue(missions(data).equals(expected) && data.satellites().stream().filter(s -> s.satelliteId().equals(satellite(pkg))).count() == 1,
                     "D3/D4/replay/promotion queried or recreated initial/current/history: " + variant);
+            h.assertTrue(data.satellite(satellite(pkg)).orElseThrow().equals(expectedSatellite) && data.account(owner).equals(expectedAccount),
+                    "Proof/replay/promotion changed current mission, satellite state or rewarded twice: " + variant);
             var current = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
             var ops = claim.group().orElseThrow().operations();
             h.assertTrue(consumedOps(current.sourceSnapshot()).size() == 1 && ops.contains(consumedOps(current.sourceSnapshot()).get(0))
@@ -183,6 +187,9 @@ public final class BayMissionRowGameTests {
 
         SatelliteDefinition definition() { return new SatelliteDefinition(1, ModIdentity.id("data_satellite"), 200, 120, 100, List.of(ModIdentity.id("earth"))); }
         List<MissionState> missions(SatelliteMissionSavedData data) { return data.missions().stream().filter(m -> m.satelliteId().equals(satellite(pkg))).toList(); }
+        void capture(SatelliteMissionSavedData data) {
+            expected = missions(data); expectedSatellite = data.satellite(satellite(pkg)).orElseThrow(); expectedAccount = data.account(owner);
+        }
         void mutate(SatelliteMissionSavedData data) {
             UUID initial = SatelliteManager.initialMissionId(satellite(pkg));
             long now = data.logicalGameTime();
