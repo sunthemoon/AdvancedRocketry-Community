@@ -216,7 +216,7 @@ class HarnessTest(unittest.TestCase):
             world = Path(folder); (world / "data").mkdir()
             def write(values):
                 nbt.write_gzip(world / "data/chunks.dat", b"", nbt.Tag(nbt.COMPOUND, {
-                    "data": nbt.Tag(nbt.COMPOUND, {"Forced": nbt.Tag(nbt.LONG_ARRAY, values)})}))
+                    "data": nbt.Tag(nbt.COMPOUND, {"Forced": nbt.Tag(nbt.LONGS, values)})}))
             write([])
             native.require_unforced(world)
             write([2207613190666])
