@@ -30,7 +30,13 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class BayMissionRowGameTests {
     private BayMissionRowGameTests() { }
     private enum Change { NONE, CANCEL, CLAIM, PRUNE, REPLACE }
-    private enum Entry { BEFORE_PROOF, REPLAY, PROMOTION }
+    private enum Entry {
+        BEFORE_PROOF, REPLAY, PROMOTION, REPLAY_COALESCED, REPLAY_AUTOSAVE, PROMOTE_COALESCED, PROMOTE_AUTOSAVE,
+        REGISTERED_REMOVED_DATA, REGISTERED_REMOVED_SOLAR;
+        boolean promotion() { return this == PROMOTION || this == PROMOTE_COALESCED || this == PROMOTE_AUTOSAVE; }
+        boolean registered() { return this == REGISTERED_REMOVED_DATA || this == REGISTERED_REMOVED_SOLAR; }
+        boolean failedWrite() { return this == REPLAY_COALESCED || this == REPLAY_AUTOSAVE || this == PROMOTE_COALESCED || this == PROMOTE_AUTOSAVE; }
+    }
 
     @GameTest(template = TEMPLATE, batch = "w333_mission_rows", timeoutTicks = 12000)
     public static void initialMissionProofReplayAndPromotionMatrix(GameTestHelper h) {
@@ -48,8 +54,13 @@ public final class BayMissionRowGameTests {
         queue.add(new Variant(Change.NONE, Entry.BEFORE_PROOF));
         for (Change change : Change.values()) {
             if (change == Change.NONE) { continue; }
-            for (Entry entry : Entry.values()) { queue.add(new Variant(change, entry)); }
+            for (Entry entry : List.of(Entry.BEFORE_PROOF, Entry.REPLAY, Entry.PROMOTION)) { queue.add(new Variant(change, entry)); }
         }
+        for (Entry entry : List.of(Entry.REPLAY_COALESCED, Entry.REPLAY_AUTOSAVE, Entry.PROMOTE_COALESCED, Entry.PROMOTE_AUTOSAVE)) {
+            queue.add(new Variant(Change.PRUNE, entry));
+        }
+        queue.add(new Variant(Change.NONE, Entry.REGISTERED_REMOVED_DATA));
+        queue.add(new Variant(Change.NONE, Entry.REGISTERED_REMOVED_SOLAR));
         var current = new Case[1];
         h.onEachTick(() -> {
             if (current[0] == null) {
@@ -77,7 +88,11 @@ public final class BayMissionRowGameTests {
         List<MissionState> expected;
         int stage, waits;
         boolean closed;
-        Case(GameTestHelper h, Variant variant) { this.h = h; this.variant = variant; pkg = dataPackage(owner); }
+        Object originalManager;
+        Case(GameTestHelper h, Variant variant) {
+            this.h = h; this.variant = variant;
+            pkg = variant.entry == Entry.REGISTERED_REMOVED_SOLAR ? solarPackage(owner) : dataPackage(owner);
+        }
 
         boolean tick() throws Exception {
             h.assertTrue(++waits < 850, "W333 mission variant exceeded bounded wait: " + variant + " stage=" + stage);
@@ -90,9 +105,24 @@ public final class BayMissionRowGameTests {
                 flight = transit(h, origin, target, owner, List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
                 if (variant.entry != Entry.BEFORE_PROOF) {
                     var identity = io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteItemData.read(pkg).identity().orElseThrow();
-                    h.assertTrue(data.launch(identity.satelliteId(), SatelliteManager.initialMissionId(identity.satelliteId()), owner,
-                            definition(), ModIdentity.id("earth"), data.logicalGameTime(), false).success(), "Preexisting DATA seed refused");
-                    mutate(data); expected = missions(data); data.flush(server);
+                    if (variant.entry == Entry.REGISTERED_REMOVED_SOLAR) { registerSolar(server, pkg, owner); }
+                    else {
+                        h.assertTrue(data.launch(identity.satelliteId(), SatelliteManager.initialMissionId(identity.satelliteId()), owner,
+                                definition(), ModIdentity.id("earth"), data.logicalGameTime(), false).success(), "Preexisting DATA seed refused");
+                        mutate(data);
+                    }
+                    expected = missions(data);
+                    if (variant.entry.failedWrite()) {
+                        data.awaitForTests(server); var watch = data.watch(satellite(pkg));
+                        h.assertTrue(data.failOneWriteForTests(server)
+                                == io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof.Outcome.FAILED
+                                && !data.proves(watch), "F2.7 did not retain an unproved failed checkpoint");
+                        if (variant.entry == Entry.REPLAY_AUTOSAVE || variant.entry == Entry.PROMOTE_AUTOSAVE) {
+                            server.overworld().getDataStorage().save();
+                        } else { data.request(server); }
+                        data.awaitForTests(server);
+                        h.assertTrue(data.proves(watch) && missions(data).equals(expected), "Later write did not prove identity without history");
+                    } else { data.flush(server); }
                 } else if (variant.change != Change.NONE) {
                     // Existing writer-policy injection, fixture-only reflection; the capture is held until the owner mutates history.
                     policy(data, CheckedSavedDataPolicy.atomic(ManagedSavedDataType.SATELLITE_MISSIONS).withCommitter((staged, targetFile) -> {
@@ -103,8 +133,12 @@ public final class BayMissionRowGameTests {
                     }));
                 }
                 var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
-                if (variant.entry == Entry.PROMOTION) {
+                if (variant.entry.promotion() || variant.entry.registered()) {
                     receipt = intent(server, flight.record(), pkg, 0);
+                    if (variant.entry.registered()) {
+                        var consumed = BayRegisteredGameTests.consumed(flight.record(), List.of(receipt));
+                        receipt = BayRegisteredGameTests.registered(receipt, consumed.source().contentHash(), consumed.destination().contentHash());
+                    }
                     h.assertTrue(BayReceiptTestHooks.put(server, receipt, outcome -> { }).queued(), "Restart INTENT refused");
                     stage = 1;
                 } else {
@@ -116,8 +150,10 @@ public final class BayMissionRowGameTests {
             if (stage == 1) {
                 if (!storeIdle(server)) { return false; }
                 h.assertTrue(bays(h).sessionForTests().acknowledged(receipt.op()), "INTENT was not durable before restart promotion");
+                if (variant.entry.registered()) { removePhysicalCatalog(); }
                 var claims = bays(h).restartForTests(List.of(receipt));
-                h.assertTrue(claims.size() == 1 && claims.get(0).stage() == BayClaim.Stage.OUTCOMES, "Equal INTENT did not enter promotion");
+                h.assertTrue(claims.size() == 1 && claims.get(0).stage() == (variant.entry.registered() ? BayClaim.Stage.RESUME : BayClaim.Stage.OUTCOMES),
+                        "Restart did not select its exact promotion/registered branch");
                 claim = claims.get(0); stage = 3; return false;
             }
             if (stage == 2 && data.satellite(satellite(pkg)).isPresent()) {
@@ -179,6 +215,10 @@ public final class BayMissionRowGameTests {
         void close() {
             if (closed) { return; } closed = true; release.countDown();
             var server = h.getLevel().getServer();
+            if (originalManager != null) {
+                try { var bridge = SatelliteRuntime.class.getDeclaredField("manager"); bridge.setAccessible(true); bridge.set(null, originalManager); }
+                catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+            }
             try { policy(SatelliteMissionSavedData.get(server), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.SATELLITE_MISSIONS)); }
             catch (Exception failure) { throw new IllegalStateException(failure); }
             if (flight != null) {
@@ -192,6 +232,18 @@ public final class BayMissionRowGameTests {
             }
             bays(h).sessionForTests().rejections().remove(satellite(pkg));
             bays(h).sessionForTests().find(satellite(pkg)).ifPresent(row -> BayReceiptTestHooks.remove(server, row.op(), outcome -> { }));
+        }
+
+        void removePhysicalCatalog() throws Exception {
+            var bridge = SatelliteRuntime.class.getDeclaredField("manager"); bridge.setAccessible(true); originalManager = bridge.get(null);
+            var satellites = new io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteCatalogManager();
+            h.assertTrue(satellites.applyCandidate(com.mojang.serialization.DataResult.success(SatelliteRuntime.catalog().orElseThrow())), "Satellite catalog fixture refused");
+            var celestial = new io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager();
+            var constructor = SatelliteManager.class.getDeclaredConstructor(satellites.getClass(), celestial.getClass(), java.util.function.Consumer.class);
+            constructor.setAccessible(true);
+            SatelliteRuntime.install(constructor.newInstance(satellites, celestial, (java.util.function.Consumer<net.minecraft.server.MinecraftServer>) ignored -> { }));
+            h.assertTrue(SatelliteRuntime.celestialCatalog().isEmpty() && BayDeploymentChecks.orbitRefusal(ModIdentity.id("earth")).isPresent(),
+                    "REGISTERED replay fixture did not remove fresh physical admission");
         }
     }
 
