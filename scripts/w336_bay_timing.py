@@ -70,6 +70,13 @@ def retry_spacing(lines, marker):
     return [elapsed(bracket(lines, a), bracket(lines, b)) for a, b in zip(indices, indices[1:])]
 
 
+def retry_probe_tick(lines, index):
+    """Schedule the next fixture impulse from a logged retry, not a repeated stage-transition line."""
+    match = re.search(r"ARCE_BAY_PROOF_REFUSED .* retry=(\d+)\s*$", lines[index])
+    native.require(match is not None and 0 < int(match[1]) <= 200, "Missing bounded non-superseding D6 retry")
+    return bracket(lines, index)[1] + int(match[1]) + 1
+
+
 class TimedSession(bay.Session):
     """Reuse the existing case bodies and invariants, adding only vanilla console observations."""
     def __init__(self, args, session, evidence):

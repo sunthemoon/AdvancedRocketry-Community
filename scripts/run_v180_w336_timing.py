@@ -139,14 +139,22 @@ def d6_retry(run, session):
     session.wait(bay.JOURNAL_HELD, 60)
     start = len(session.process.lines)
     session.send("arce rocket release-test journal-hold-release", bay.JOURNAL_RELEASED)
+    session.wait_after(re.compile(rf"ARCE_BAY_CLAIM .*logical={row['logical']} .*reason=BAY_SOURCE_PROOF"), start, 90)
+    next_probe = None
     for attempt in range(3):
-        session.wait_after(re.compile(rf"ARCE_BAY_CLAIM .*logical={row['logical']} .*reason=BAY_SOURCE_PROOF"), start, 90)
+        if next_probe is not None:
+            # The production logger emits state/reason changes, not a new line for each unchanged PROVE retry.
+            deadline = time.monotonic() + 90
+            while session.query_tick() < next_probe:
+                native.require(time.monotonic() < deadline, "Game time did not reach the next D6 fixture impulse")
+                time.sleep(0.1)
         # A new same-L source image makes the production D5 copy pass invalidate the in-progress D6 census.
         start = len(session.process.lines)
         session.send(f"arce bay release-test copy {row['logical']}", re.compile("ARCE_RELEASE_BAY_COPY .*added=true"))
         refused = session.wait_after(re.compile(rf"ARCE_BAY_PROOF_REFUSED .*logical={row['logical']} .*retry=200"), start, 90)
         native.require("retry=200" in refused, "D6 did not select its non-superseding retry spacing")
-        start = len(session.process.lines)
+        index = next(i for i in range(start, len(session.process.lines)) if session.process.lines[i] == refused)
+        next_probe = timing.retry_probe_tick(session.process.lines, index)
     session.await_settled("B6_D5", 1, row)
     session.end("stop", run.args.exit_timeout)
     intervals = timing.retry_spacing(session.timed_starts[-1], "ARCE_BAY_PROOF_REFUSED ")

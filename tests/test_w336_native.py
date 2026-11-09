@@ -65,6 +65,14 @@ class TimingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             timing.retry_spacing(lines, "ARCE_BAY_PROOF_REFUSED")
 
+    def test_retry_impulse_uses_logged_delay_and_tick_bracket_not_repeated_stage(self):
+        lines = [query(100), "ARCE_BAY_PROOF_REFUSED transfer=t logical=a reason=BARRIER_UNSTABLE retry=200", query(103)]
+        self.assertEqual(timing.retry_probe_tick(lines, 1), 304)
+        for value in (0, 201):
+            lines[1] = f"ARCE_BAY_PROOF_REFUSED transfer=t logical=a reason=X retry={value}"
+            with self.assertRaises(ValueError):
+                timing.retry_probe_tick(lines, 1)
+
     def test_reconnect_compares_login_with_expiry(self):
         lines = [query(10), "ARCE_RELEASE_BAY_EXIT_LOGIN logical=a", query(12),
                  query(210), "ARCE_PASSENGER_RECONNECT_EXPIRED player=p", query(212)]
