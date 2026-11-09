@@ -345,6 +345,11 @@ class Run(bay.Session):
 
 def launch(run: Run) -> dict:
     run.send(f"forceload add {bay.ORIGIN[0]} {bay.ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
+    # The embedded connection starts ticking only when the exit drive is armed. Its initial
+    # login must use the fixture chunk, not a randomized spawn chunk whose player tickets
+    # would catch up during the vertical-only descent. Keep every ticket assertion intact.
+    run.send(f"setworldspawn {bay.ORIGIN[0]} {bay.ORIGIN[1]} {bay.ORIGIN[2]}", re.compile(r"Set the world spawn point"))
+    run.send("gamerule spawnRadius 0", re.compile(r"spawnRadius.*0"))
     run.send("arce satellite release-test registry-writer arm STAGED PAUSE", bay.SRW_DONE)
     deadline = time.monotonic() + run.args.flight_timeout
     while True:
@@ -537,6 +542,7 @@ def run_case(run: Run, case: str) -> dict:
     receipts = world / "data" / bay.RECEIPTS
     require(receipts.is_file(), f"{case}: no receipt file at the cut")
     row["cut_disk"] = dict(receipts=bay.digest(receipts), rider=saved_rider(world))
+    row["cut_disk"]["raw"] = bay.evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
     check_saved_rider(row["cut_disk"]["rider"], case, row["first_start"].get("at_cut"))
     row["restarts"] = []
     for restart in (1, 2):
@@ -574,6 +580,7 @@ def run_case(run: Run, case: str) -> dict:
         entry.update(exit_code=code, receipts=bay.digest(receipts))
         require(entry["receipts"] == row["cut_disk"]["receipts"], f"{case}/{restart}: the held receipt file changed")
         row["restarts"].append(entry)
+        entry["raw"] = bay.evidence_tools.snapshot_world(world, run.evidence / f"{case}-restart-{restart}-raw")
     row["status"] = "PASS"
     return row
 
@@ -622,9 +629,14 @@ def run(args) -> dict:
                 if runner.process is not None:
                     runner.process.abort(); runner.process = None
                 report["cases"].append(dict(case=case, status="FAILED", error=str(failure)))
+                report["cases"][-1]["raw"] = bay.evidence_tools.snapshot_world(
+                    session / ("world-" + case), evidence / f"{case}-failure-raw")
                 print(f"{case}: FAIL {failure}", flush=True)
+            report["cases"][-1]["observed_ticks"] = bay.evidence_tools.case_observations(evidence, case)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
+            if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
+                break
         report.pop("in_progress", None)
         bay.assert_pin(args.source_commit)
         report["control"] = compare_with_control(report["cases"])
@@ -652,6 +664,7 @@ def main() -> int:
     for key in ("source-commit", "java", "lock-owner"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--case", action="append", choices=list(CASES))
+    parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     for key, default in (("startup-timeout", 240), ("exit-timeout", 180), ("flight-timeout", 120), ("settle-timeout", 180)):
         parser.add_argument("--" + key, type=float, default=default)
     args = parser.parse_args()
