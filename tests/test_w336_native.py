@@ -5,6 +5,7 @@ from pathlib import Path
 import struct
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -188,6 +189,22 @@ class DowngradeTest(unittest.TestCase):
 
 
 class HarnessTest(unittest.TestCase):
+    def test_candidate_is_installed_before_an_adapter_can_start(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); parent = root / "Temp"; parent.mkdir()
+            source = root / "source"; (source / "libraries").mkdir(parents=True)
+            jar = root / "candidate.jar"; jar.write_bytes(b"pinned candidate")
+            args = SimpleNamespace(session_dir=parent / "session", evidence_dir=root / "evidence",
+                                   jar=jar, source_commit="a", candidate_commit="a", jar_sha256="b",
+                                   lock_owner="test", source_server=source)
+            with patch.object(native, "TEMP", parent), patch.object(native, "verify_candidate", return_value={}), \
+                    patch.object(native, "require_lock"), patch.object(native.smoke, "allocate_port", return_value=32000):
+                run = native.Native(args)
+                try:
+                    self.assertEqual((run.session / "mods/w336.jar").read_bytes(), jar.read_bytes())
+                finally:
+                    run.close()
+
     def test_candidate_arguments_are_required(self):
         parser = native.parser("test")
         args = parser.parse_args(["template", "--jar", "test.jar", "--session-dir", "session", "--evidence-dir", "evidence",

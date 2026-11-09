@@ -75,14 +75,18 @@ class TimedSession(bay.Session):
     def __init__(self, args, session, evidence):
         super().__init__(args, session, evidence)
         self.timed_starts = []
+        self.launches = []
+        self.command_log = []
         self.hold_window = 0
         self.pause_window = 0
 
     def query_tick(self):
+        self.command_log.append("time query gametime")
         return int(native.GAMETIME.search(super().send("time query gametime", native.GAMETIME))[1])
 
     def start(self, case, restart, properties):
         process = super().start(case, restart, properties)
+        self.launches.append(dict(case=case, restart=restart, command=process.process.args, properties=properties))
         self.query_tick()
         return process
 
@@ -90,6 +94,7 @@ class TimedSession(bay.Session):
         self.query_tick()
         if value == "arce bay release-test release" and self.pause_window:
             self.window(self.pause_window)
+        self.command_log.append(value)
         answer = super().send(value, marker, timeout)
         self.query_tick()
         return answer

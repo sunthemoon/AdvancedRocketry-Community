@@ -169,6 +169,9 @@ def family(run):
     finally:
         # Native's single owning finally terminates a failed adapter process before cleanup.
         run.process = session.process
+        run.commands.extend(session.command_log)
+        run.starts.extend(session.launches)
+        native.write_json(run.evidence / "starts.json", run.starts)
 
 
 def main():

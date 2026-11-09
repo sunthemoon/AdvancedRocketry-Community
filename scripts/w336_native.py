@@ -68,6 +68,8 @@ class Native:
         self.evidence.mkdir(parents=True)
         shutil.copytree(libraries, self.session / "libraries")
         (self.session / "mods").mkdir()
+        # Bay adapters start their own CapturedProcess; they must see the same pinned mod too.
+        shutil.copy2(args.jar, self.session / "mods/w336.jar")
         smoke.write_server_configuration(self.session, self.port, True)
 
     def start(self, label, world="world", properties=None, jar=None):
