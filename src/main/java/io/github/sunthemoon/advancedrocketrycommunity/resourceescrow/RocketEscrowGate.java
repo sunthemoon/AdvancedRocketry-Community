@@ -4,7 +4,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
 
-/** Read-only guards: neither an ordinary rocket nor a policy query creates the lazy ledger. */
+/**
+ * Read-only guards: neither an ordinary rocket nor a policy query creates the lazy ledger. While the ledger is
+ * NOT_LOADED each guard answers its protective value, because the ledger may hold history it cannot see (W329, R393);
+ * with no ledger file, or before the startup classification, the no-ledger answers stand ({@link EscrowLedgerLookup}).
+ */
 public final class RocketEscrowGate {
     private RocketEscrowGate() { }
 
@@ -28,7 +32,9 @@ public final class RocketEscrowGate {
     /** R52: an ordinary landed record may retire before a fill only without any protected escrow history. */
     public static boolean retirementUnprotected(RocketEntity rocket) {
         if (rocket.escrowSection().ledger() != null || rocket.escrowSection().epoch() != 0 || !idle(rocket)) { return false; }
-        var data = ResourceEscrowSavedData.existing(((ServerLevel) rocket.level()).getServer());
+        var lookup = EscrowLedgerLookup.of(((ServerLevel) rocket.level()).getServer());
+        if (lookup.notLoaded()) { return false; }
+        var data = lookup.data();
         if (data == null) { return true; }
         var logical = rocket.assemblyTransactionId().orElseThrow(); var ledger = data.ledger();
         return data.operational() && ledger.records().stream().noneMatch(op -> op.guard().rocket().equals(logical))
@@ -48,7 +54,9 @@ public final class RocketEscrowGate {
         var server = ((ServerLevel) rocket.level()).getServer();
         UUID logical = rocket.assemblyTransactionId().orElse(null);
         if (logical == null || escrowLogicalLocked(server, logical)) { return false; }
-        var data = ResourceEscrowSavedData.existing(server);
+        var lookup = EscrowLedgerLookup.of(server);
+        if (lookup.notLoaded()) { return false; }
+        var data = lookup.data();
         if (data == null) { return true; }
         if (!data.operational()) { return false; }
         var ledger = data.ledger();
@@ -72,7 +80,9 @@ public final class RocketEscrowGate {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return true; }
         if (io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparing(rocket)) { return true; }
         if (rocket.assemblyTransactionId().filter(EscrowRuntime.of(level.getServer()).flightCheckpoint()::locked).isPresent()) { return true; }
-        var data = ResourceEscrowSavedData.existing(level.getServer());
+        var lookup = EscrowLedgerLookup.of(level.getServer());
+        if (lookup.notLoaded()) { return true; }
+        var data = lookup.data();
         return data != null && data.ledger().armedFlights().stream()
                 .anyMatch(arm -> rocket.assemblyTransactionId().filter(arm.logical()::equals).isPresent());
     }
@@ -87,7 +97,9 @@ public final class RocketEscrowGate {
         UUID logical = rocket.assemblyTransactionId().orElse(null);
         if (logical != null && EscrowRuntime.of(level.getServer()).flightCheckpoint().locked(logical)) { return false; }
         if (!section.markers().isEmpty()) { return false; }
-        var data = ResourceEscrowSavedData.existing(level.getServer());
+        var lookup = EscrowLedgerLookup.of(level.getServer());
+        if (lookup.notLoaded()) { return false; }
+        var data = lookup.data();
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
         if (logical != null && ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))) { return false; }
@@ -115,7 +127,9 @@ public final class RocketEscrowGate {
 
     public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
         if (EscrowRuntime.of(server).flightCheckpoint().locked(logical)) { return true; }
-        var data = ResourceEscrowSavedData.existing(server);
+        var lookup = EscrowLedgerLookup.of(server);
+        if (lookup.notLoaded()) { return true; }
+        var data = lookup.data();
         if (data == null) { return false; }
         return data.bind(server).logicalLocked(logical) || EscrowSettlementTombstones.logicalLocked(data.ledger(), logical);
     }

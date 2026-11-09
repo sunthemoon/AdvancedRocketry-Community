@@ -123,6 +123,7 @@ def run_case(run, case):
 
 def run(args):
     bay.assert_pin(args.source_commit)
+    candidate = bay.check_candidate(args)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
     if session.parent != intended or session.exists() or bay.smoke.is_link_or_junction(session):
@@ -140,7 +141,7 @@ def run(args):
     marker = session / ".arce-w196-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=bay.digest(args.jar),
-                  counted_starts_planned=len(cases) * 4, cases=[], lock_owner=args.lock_owner)
+                  counted_starts_planned=len(cases) * 4, cases=[], lock_owner=args.lock_owner, candidate=candidate)
     runner = bay.Session(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -168,6 +169,7 @@ def run(args):
             if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
                 break
         bay.assert_pin(args.source_commit)
+        bay.recheck_candidate(candidate)
         report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
         return report
     finally:
@@ -185,6 +187,7 @@ def main():
         parser.add_argument("--" + key, type=Path, required=True)
     for key in ("source-commit", "java", "lock-owner"):
         parser.add_argument("--" + key, required=True)
+    bay.add_candidate_arguments(parser)
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     for key, default in (("startup-timeout", 240), ("exit-timeout", 180), ("flight-timeout", 120), ("settle-timeout", 180)):

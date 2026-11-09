@@ -14,7 +14,13 @@ final class EscrowOperatorDiagnostics {
     private EscrowOperatorDiagnostics() { }
 
     static List<String> status(MinecraftServer server) {
-        var data = ResourceEscrowSavedData.existing(server);
+        var lookup = EscrowLedgerLookup.of(server);
+        var data = lookup.data();
+        if (data == null && lookup.notLoaded()) {
+            // W329: a ledger that did not load, or whose presence is unknown, may hold records; never report it absent.
+            return List.of("escrow admission=disabled ledger=not-loaded held=unknown released=unknown pruning_groups=unknown"
+                    + " receipts=unknown; every rocket and escrow device is held until a restart loads the ledger or proves it absent");
+        }
         if (data == null) { return List.of("escrow admission=disabled ledger=absent held=0 released=0 pruning_groups=0 receipts=0/64"); }
         var runtime = EscrowRuntime.of(server);
         var lines = new ArrayList<>(status(data.ledger(), op -> runtimeReason(runtime, op), data.floorUsage()));

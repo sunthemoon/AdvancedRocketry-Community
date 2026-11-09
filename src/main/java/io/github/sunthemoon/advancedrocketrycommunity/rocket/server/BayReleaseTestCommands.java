@@ -57,6 +57,7 @@ public final class BayReleaseTestCommands {
         BayCopyReleaseTestCommands.register(event);
         BayReleasedTestCommands.register(event);
         BayPassengerExitReleaseTest.register(event);
+        BayGapReleaseTestCommands.register(event);
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -69,6 +70,12 @@ public final class BayReleaseTestCommands {
                         .then(Commands.literal("survey").executes(context -> {
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
                             return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true, null);
+                        }))
+                        // W331 B8.7, B8.8 and B17.4: three bays (data, survey, research-locked solar), two of which register.
+                        .then(Commands.literal("trio").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), Variant.TRIO,
+                                    null, null);
                         }))))
                 // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
                 .then(Commands.literal("release").executes(context -> release(context.getSource())))
@@ -88,9 +95,22 @@ public final class BayReleaseTestCommands {
                 .then(Commands.literal("pending").executes(context -> pending(context.getSource()))))));
     }
 
+    /** The fixture's package layout; STANDARD and SURVEY are C1's, TRIO is W331's. */
+    enum Variant { STANDARD, SURVEY, TRIO }
+
     /** W254: a non-null {@code rider}, a facility-owned test player, is assigned the seat and boards before the launch. */
     static int fixture(CommandSourceStack source, BlockPos origin, boolean survey,
                        @javax.annotation.Nullable net.minecraft.server.level.ServerPlayer rider) {
+        return fixture(source, origin, survey ? Variant.SURVEY : Variant.STANDARD, rider, null);
+    }
+
+    /**
+     * W331: as above for every variant, and a non-null {@code offlineRider} is assigned seat 0 without being placed, so it
+     * is an offline passenger who can log in later (B7.3). TRIO adds a third bay, so the group has two registering bays
+     * and one research-locked bay (B8.7, B8.8, B17.4).
+     */
+    static int fixture(CommandSourceStack source, BlockPos origin, Variant variant,
+                       @javax.annotation.Nullable net.minecraft.server.level.ServerPlayer rider, @javax.annotation.Nullable UUID offlineRider) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
@@ -98,14 +118,19 @@ public final class BayReleaseTestCommands {
             LOGGER.info("ARCE_RELEASE_BAY_FIXTURE_WAIT origin={}", origin.toShortString());
             return 0;
         }
+        boolean survey = variant == Variant.SURVEY || variant == Variant.TRIO;
         var data = BayDeploymentGameTestSupport.dataPackage(OWNER);
         var solar = survey ? BayDeploymentGameTestSupport.surveyPackage(OWNER) : BayDeploymentGameTestSupport.solarPackage(OWNER);
-        List<BlockPos> blocks = List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(), origin.east().above());
+        var locked = variant == Variant.TRIO ? BayDeploymentGameTestSupport.solarPackage(OWNER) : null;
+        var blocks = new java.util.ArrayList<>(List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(),
+                origin.east().above()));
         level.setBlock(origin, ModBlocks.ROCKET_MOTOR.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(origin.above(), ModBlocks.ROCKET_SEAT.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(origin.above(2), ModBlocks.GUIDANCE_COMPUTER.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get().defaultBlockState(), Block.UPDATE_ALL);
-        for (var bay : List.of(new Object[] {origin.east(), data}, new Object[] {origin.east().above(), solar})) {
+        var bays = new java.util.ArrayList<Object[]>(List.of(new Object[] {origin.east(), data}, new Object[] {origin.east().above(), solar}));
+        if (locked != null) { bays.add(new Object[] {origin.east().above(2), locked}); blocks.add(origin.east().above(2)); }
+        for (var bay : bays) {
             level.setBlock((BlockPos) bay[0], ModBlocks.ROCKET_SATELLITE_BAY.get().defaultBlockState(), Block.UPDATE_ALL);
             CompoundTag outer = new CompoundTag();
             outer.put(SatelliteBayRoot.KEY, BayDeploymentGameTestSupport.root(OWNER, (net.minecraft.world.item.ItemStack) bay[1]));
@@ -129,9 +154,14 @@ public final class BayReleaseTestCommands {
             flight = flight.withPassengers(flight.passengers().assign(BayCopyReleaseTestCommands.PASSENGER).orElseThrow());
         }
         if (rider != null) { flight = flight.withPassengers(flight.passengers().assign(rider.getUUID()).orElseThrow()); }
+        if (offlineRider != null) { flight = flight.withPassengers(flight.passengers().assign(offlineRider).orElseThrow()); }
         rocket.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), level.getGameTime()));
         if (rider != null && !rider.startRiding(rocket, true)) { throw new IllegalStateException("The bay fixture rider did not board"); }
         var launched = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer);
+        if (locked != null) {
+            LOGGER.info("ARCE_RELEASE_BAY_TRIO logical={} data={} survey={} solar={}", logical, BayDeploymentGameTestSupport.satellite(data),
+                    BayDeploymentGameTestSupport.satellite(solar), BayDeploymentGameTestSupport.satellite(locked));
+        }
         LOGGER.info("ARCE_RELEASE_BAY_FIXTURE logical={} transfer={} rocket={} data={} solar={} launch={} packages={}", logical,
                 transfer, rocket.getUUID(), BayDeploymentGameTestSupport.satellite(data), BayDeploymentGameTestSupport.satellite(solar),
                 launched.code(), signatures(snapshot));

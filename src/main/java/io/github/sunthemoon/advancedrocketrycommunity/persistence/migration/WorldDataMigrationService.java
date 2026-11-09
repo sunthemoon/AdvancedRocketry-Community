@@ -47,7 +47,10 @@ public final class WorldDataMigrationService {
     private final Clock clock;
     private final FileCommitter committer;
     private final FileStager stager;
-    private final java.util.function.Function<Path, CheckedSavedDataFile.Presence> rejoinPresence;
+    /** The no-follow presence check of every managed path; tests inject a failing status check. */
+    private final java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence;
+    /** The bounded decoder of a present managed file; tests observe which files were read. */
+    private final java.util.function.BiFunction<Path, ManagedSavedDataType, CompoundTag> reader;
 
     public WorldDataMigrationService() {
         this(Clock.systemUTC(), WorldDataMigrationService::replaceFile);
@@ -62,18 +65,26 @@ public final class WorldDataMigrationService {
     }
 
     WorldDataMigrationService(Clock clock, FileCommitter committer, FileStager stager,
-                             java.util.function.Function<Path, CheckedSavedDataFile.Presence> rejoinPresence) {
+                             java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence) {
+        this(clock, committer, stager, presence, BoundedSavedDataIo::read);
+    }
+
+    WorldDataMigrationService(Clock clock, FileCommitter committer, FileStager stager,
+                             java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence,
+                             java.util.function.BiFunction<Path, ManagedSavedDataType, CompoundTag> reader) {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.committer = Objects.requireNonNull(committer, "committer");
         this.stager = Objects.requireNonNull(stager, "stager");
-        this.rejoinPresence = Objects.requireNonNull(rejoinPresence, "rejoinPresence");
+        this.presence = Objects.requireNonNull(presence, "presence");
+        this.reader = Objects.requireNonNull(reader, "reader");
     }
 
     public MigrationReport migrate(Path suppliedWorldRoot) {
         WorldPaths paths = validateWorldPaths(suppliedWorldRoot);
         // Files.exists cannot prove absence when stat fails. Refuse unknown presence before discovery.
-        requireKnownRejoinPresence(paths.dataDirectory().resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName()));
-        if (!Files.exists(paths.dataDirectory(), LinkOption.NOFOLLOW_LINKS)) {
+        requireKnownPresence(paths.dataDirectory().resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName()),
+                ManagedSavedDataType.ROCKET_REJOINS);
+        if (requireKnownPresence(paths.dataDirectory(), null) == CheckedSavedDataFile.Presence.ABSENT) {
             return MigrationReport.noData();
         }
 
@@ -112,16 +123,11 @@ public final class WorldDataMigrationService {
 
     private List<SourceFile> discoverSources(WorldPaths paths) {
         List<SourceFile> sources = new ArrayList<>();
-        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+        for (PresentSource present : preflight(paths)) {
+            ManagedSavedDataType type = present.type();
+            Path source = present.path();
             try {
-                Path source = safeChild(paths.dataDirectory(), type.fileName(), paths.worldRoot());
-                if (type == ManagedSavedDataType.ROCKET_REJOINS
-                        ? requireKnownRejoinPresence(source) == CheckedSavedDataFile.Presence.ABSENT
-                        : !Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
-                    continue;
-                }
-                requireRegularFile(source);
-                CompoundTag outer = BoundedSavedDataIo.read(source, type);
+                CompoundTag outer = reader.apply(source, type);
                 SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
                         type,
                         BoundedSavedDataIo.payload(outer, type)
@@ -147,13 +153,43 @@ public final class WorldDataMigrationService {
         return List.copyOf(sources);
     }
 
-    private CheckedSavedDataFile.Presence requireKnownRejoinPresence(Path source) {
-        var presence = rejoinPresence.apply(source);
-        if (presence == CheckedSavedDataFile.Presence.UNKNOWN) {
-            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA, "Unknown rocket rejoin sidecar presence")
-                    .forType(ManagedSavedDataType.ROCKET_REJOINS);
+    /**
+     * W328F (review F2): the metadata-only checks of every managed path, in type order, before any file is decoded:
+     * the safe child path, the no-follow presence check and the regular-file check. A refusal here therefore comes
+     * before any managed file is read, whichever type it names; only the files proven present are read afterwards.
+     */
+    private List<PresentSource> preflight(WorldPaths paths) {
+        List<PresentSource> present = new ArrayList<>();
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            try {
+                Path source = safeChild(paths.dataDirectory(), type.fileName(), paths.worldRoot());
+                if (requireKnownPresence(source, type) == CheckedSavedDataFile.Presence.ABSENT) {
+                    continue;
+                }
+                requireRegularFile(source);
+                present.add(new PresentSource(type, source));
+            } catch (SavedDataMigrationException failure) {
+                throw failure.forType(type);
+            }
         }
-        return presence;
+        return present;
+    }
+
+    /**
+     * W328: only a proven absence skips a managed file or the data directory ({@code type} null). Any other status
+     * failure refuses startup before discovery reads, backs up, stages or commits anything, as for an unreadable root;
+     * a later start whose status check succeeds proceeds normally.
+     */
+    private CheckedSavedDataFile.Presence requireKnownPresence(Path source, ManagedSavedDataType type) {
+        var state = presence.apply(source);
+        if (state == CheckedSavedDataFile.Presence.UNKNOWN) {
+            String name = type == null ? "The world data directory" : type.dataName();
+            var failure = new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    name + " presence is unknown: its file status check failed, so its absence is not proven")
+                    .presenceUnknown();
+            throw type == null ? failure : failure.forType(type);
+        }
+        return state;
     }
 
     private Backup createBackup(WorldPaths paths, List<SourceFile> sources) {
@@ -486,6 +522,10 @@ public final class WorldDataMigrationService {
     }
 
     private record WorldPaths(Path worldRoot, Path dataDirectory) {
+    }
+
+    /** A managed path that passed the preflight's metadata checks and has not been read yet. */
+    private record PresentSource(ManagedSavedDataType type, Path path) {
     }
 
     private record SourceFile(

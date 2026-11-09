@@ -906,8 +906,544 @@ def inspect_copy_disk(world: Path, logical: str, census: dict,
     return found
 
 
+# W331 (records/W331-DESIGN.md): the native rows W325 left NOT_COVERED, as their own cases. They live outside CASES and
+# TRANCHES, whose contract W325's tests pin, and run through run_w331_case, which reuses the helpers above unchanged.
+REGISTRY_FILE = "advancedrocketrycommunity_satellite_missions.dat"
+JOURNAL_FILE = "advancedrocketrycommunity_rocket_transactions.dat"
+OFFLINE_PASSENGER = "00000000-0000-4000-8000-000000185001"
+MOON_ENTITIES = Path("dimensions/advancedrocketrycommunity/moon/entities")
+TRIO = re.compile(r"ARCE_RELEASE_BAY_TRIO logical=(\S+) data=(\S+) survey=(\S+) solar=(\S+)")
+DECOMMISSIONED = re.compile(r"ARCE_RELEASE_BAY_DECOMMISSIONED satellite=(\S+) result=(\w+) present=(true|false) "
+                            r"flushed=(true|false) sequence=(\d+)")
+DEPLOYMENT_STATUS = re.compile(r"ARCE_RELEASE_BAY_DEPLOYMENT_STATUS satellite=(\S+) phase=(\w+) reason=(\w+)")
+STALE = re.compile(r"ARCE_RELEASE_BAY_STALE_ASSEMBLY logical=(\S+) snapshot=(\S+) records=(\d+) sequence=(\d+)")
+TXW_INJECTED = re.compile(r"ARCE_RELEASE_TXW_INJECTED point=(\w+) mode=(\w+)")
+SRW_MOVED_UNKNOWN = re.compile(r"ARCE_RELEASE_SRW_INJECTED point=MOVED mode=UNKNOWN")
+EXIT_LINE = re.compile(r"ARCE_RELEASE_BAY_EXIT_(LOGIN|STATE) logical=(\S+) ")
+COPY_ADDED = re.compile(r"ARCE_RELEASE_BAY_COPY logical=\S+ copy=\S+ added=true")
+ROLES = dict(standard=("data", "solar"), offline_rider=("data", "solar"),
+             survey=("data", "survey"), online_survey=("data", "survey"), trio=("data", "survey", "solar"))
+W331_CASES = {
+    # Family T, the transaction journal at D0 (section 3.1).
+    "W331_B14_FAILED": dict(rows=("B14.3",), fixture="standard", journal_arm="STAGED FAIL", reject="ASSEMBLY_JOURNAL_UNPROVED",
+                            injected=("STAGED", "FAIL", 1), journal_at_reject="unchanged", end="land", durable="NONE",
+                            first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W331_B14_STALE": dict(rows=("B14.4",), fixture="standard", journal_arm="STAGED PAUSE", stale=True,
+                           reject="ASSEMBLY_JOURNAL_PENDING", end="land", durable="NONE", first="LANDED_UNCONSUMED",
+                           restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W331_B15_JOURNAL": dict(rows=("B15.5",), fixture="standard", journal_arm="MOVED UNKNOWN", reject="ASSEMBLY_JOURNAL_UNPROVED",
+                             injected=("MOVED", "UNKNOWN", 1), journal_at_reject="replaced", end="land", durable="NONE",
+                             first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    # Family W, replace-then-throw and the clean stop (section 3.2).
+    "W331_B15_D1": dict(rows=("B15.3",), fixture="standard", cut="B15_D1", end="land", durable="NONE", first="LANDED",
+                        restarts=("LANDED", "LANDED")),
+    "W331_B15_REGISTRY": dict(rows=("B15.4",), fixture="standard", registry_arm="MOVED UNKNOWN", end="kill", durable="INTENT",
+                              registry_names_x=True, restarts=("LANDED", "LANDED")),
+    "W331_B18_SUCCESSOR": dict(rows=("B18.6",), fixture="standard", cut="B18_INTENT", successor=True, end="stop",
+                               durable="INTENT", restarts=("INTERRUPTED", "INTERRUPTED"), pending=(1, 2)),
+    "W331_B18_UNKNOWN": dict(rows=("B18.7",), fixture="standard", registry_arm="MOVED UNKNOWN", unproved=True, end="stop",
+                             durable="INTENT", registry_names_x=True, restarts=("LANDED", "LANDED")),
+    # Family P (section 3.3) was removed after smoke 2: an unbound wrapper with a non-zero epoch is invalid in the escrow
+    # model, so B6.8 needs a ledger-bound source from a real loader fill (W331-DESIGN section 5).
+    # Family D, X absent on the initial disk and the online non-data rider (section 3.4).
+    "W331_B4_GONE_X_S_PRESENT": dict(rows=("B4.3",), fixture="survey", cut="B6_D5", copies="source-before", predecommission=True,
+                                     end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED"), owned=1),
+    "W331_B4_GONE_X_S_ABSENT": dict(rows=("B4.10",), fixture="survey", cut="B6_D5", copies="absent", predecommission=True,
+                                    end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED"), owned=1),
+    "W331_B4_GONE_X_S_PRESENT_ONLINE": dict(rows=("B4.6",), fixture="online_survey", cut="B6_D5", copies="source-before",
+                                            predecommission=True, end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED"),
+                                            owned=1),
+    "W331_B4_GONE_X_S_ABSENT_ONLINE": dict(rows=("B4.7",), fixture="online_survey", cut="B6_D5", copies="absent",
+                                           predecommission=True, end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED"),
+                                           owned=1),
+    "W331_B4_LIVE_X_S_PRESENT_ONLINE": dict(rows=("B4.8",), fixture="online_survey", cut="B3_MOVED", copies="both", end="kill",
+                                            durable="REGISTERED", restarts=("LANDED", "LANDED"), owned=2),
+    "W331_B4_LIVE_X_S_ABSENT_ONLINE": dict(rows=("B4.9",), fixture="online_survey", cut="B3_MOVED", copies="absent", end="kill",
+                                           durable="REGISTERED", restarts=("LANDED", "LANDED"), owned=2),
+    # Family G, a multi-REGISTERED partial group (section 3.5).
+    "W331_B8_TRIO_STAGED": dict(rows=("B8.7",), fixture="trio", cut="B8_STAGED", end="kill", durable="REGISTERED",
+                                restarts=("LANDED", "LANDED"), owned=2, disk_registered=2),
+    "W331_B8_TRIO_MOVED": dict(rows=("B8.8",), fixture="trio", cut="B8_MOVED", end="kill", durable="RETIRED",
+                               restarts=("CONSUMED_REST", "CONSUMED_REST"), owned=2, disk_registered=0),
+    "W331_B17_PARTIAL_D1": dict(rows=("B17.4",), fixture="trio", cut="B1_MOVED", end="kill", durable="INTENT",
+                                restarts=("INTERRUPTED", "INTERRUPTED"), immutable=True),
+    # Family R, the destination absent after D7 (section 3.6). Smoke 3: D6's barrier proof made S' durable, so ordinary
+    # recovery keeps that consumed source (KEEP_SOURCE), as W27A's B8 row allows, instead of rebuilding the destination.
+    "W331_B6_DESTINATION_ABSENT": dict(rows=("B6.5",), fixture="standard", end="land-kill", durable="NONE", first="LANDED",
+                                       restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    # Family L, a login while retirement is queued (section 3.7).
+    "W331_B7_LOGIN_QUEUED": dict(rows=("B7.3",), fixture="offline_rider", cut="B16_GUARD", login=True, end="land",
+                                 durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    # Family U, the admission union's captured and successor copies (section 3.8; part of B11.7).
+    "W331_B11_UNION": dict(rows=("B11.7",), fixture="standard", cut="B3_STAGED", successor=True, union=(2, 2), end="kill",
+                           durable="INTENT", restarts=("LANDED", "LANDED"), pending=(0, 0)),
+}
+W331_TRANCHES = {
+    "W331_T": ["W331_B14_FAILED", "W331_B14_STALE", "W331_B15_JOURNAL"],
+    "W331_W": ["W331_B15_D1", "W331_B15_REGISTRY", "W331_B18_SUCCESSOR", "W331_B18_UNKNOWN"],
+    "W331_D": [case for case in W331_CASES if case.startswith("W331_B4_")],
+    "W331_G": ["W331_B8_TRIO_STAGED", "W331_B8_TRIO_MOVED", "W331_B17_PARTIAL_D1"],
+    "W331_R": ["W331_B6_DESTINATION_ABSENT"],
+    "W331_L": ["W331_B7_LOGIN_QUEUED"],
+    "W331_U": ["W331_B11_UNION"],
+}
+
+
+def w331_outcome(spec: dict, restart: int) -> str:
+    return spec["first"] if restart == 0 else spec["restarts"][restart - 1]
+
+
+def w331_settled(spec: dict, name: str, status: dict, fixture: dict) -> bool:
+    """settled() for any fixture layout: no claim, the data receipt as expected, the rocket at rest."""
+    if status["claim"] != "NONE":
+        return False
+    expected, rest, consumed, _ = OUTCOMES[name]
+    data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
+    if expected is None:
+        if data:
+            return False
+    elif len(data) != 1 or (data[0]["phase"], data[0]["reason"]) != expected or not data[0]["acknowledged"]:
+        return False
+    if len(status["consumed"]) != len(fixture["roles"]) or (status["consumed"][0] is not None) != consumed:
+        return False
+    if rest == "LANDED":
+        return status["state"] == "LANDED"
+    return status["state"] == "FUELED" and status["transfer"] == "NONE" and float(status["y"]) == float(ORIGIN[1])
+
+
+def w331_check(case: str, spec: dict, name: str, status: dict, fixture: dict) -> None:
+    """check_settled() for any layout: registering bays consumed exactly when the outcome consumes, the research-locked
+    solar bay always byte-equal with no receipt, the owner's satellites, and no foreign or premature receipt."""
+    expected, actual = fixture["packages"].split("+"), status["packages"].split("+")
+    roles, consumed = fixture["roles"], OUTCOMES[name][2]
+    if len(actual) != len(roles) or len(status["consumed"]) != len(roles):
+        raise smoke.SmokeError(f"{case}: the rocket does not hold its {len(roles)} bays: {status}")
+    for index, role in enumerate(roles):
+        changed, op = actual[index] != expected[index], status["consumed"][index]
+        if role == "solar" or not consumed:
+            if changed or op is not None:
+                raise smoke.SmokeError(f"{case}: the {role} bay changed: {status['packages']} {status['consumed']}")
+        elif not changed or op is None:
+            raise smoke.SmokeError(f"{case}: the {role} bay was not consumed: {status}")
+    owned = spec.get("owned", OUTCOMES[name][3]) if consumed else 0
+    if status["owned"] != owned:
+        raise smoke.SmokeError(f"{case}: the fixture owner holds {status['owned']} satellites, expected {owned}")
+    satellites = [value for value in fixture["satellites"] if value]
+    for receipt in status["receipts"]:
+        if receipt["satellite"] not in satellites:
+            raise smoke.SmokeError(f"{case}: a foreign receipt names the fixture rocket: {receipt}")
+        role = roles[satellites.index(receipt["satellite"])]
+        if role == "solar" or not consumed and role != "data":
+            raise smoke.SmokeError(f"{case}: the {role} bay got a receipt: {receipt}")
+
+
+def w331_await(run: Session, case: str, restart: int, fixture: dict) -> dict:
+    spec, name = W331_CASES[case], w331_outcome(W331_CASES[case], restart)
+    deadline = time.monotonic() + run.args.settle_timeout
+    while True:
+        status = run.status(fixture["logical"])
+        if w331_settled(spec, name, status, fixture):
+            w331_check(case, spec, name, status, fixture)
+            return status
+        if time.monotonic() > deadline:
+            raise smoke.SmokeError(f"{case}/{restart}: never settled as {name}: {status}")
+        time.sleep(1.0)
+
+
+def w331_launch(run: Session, kind: str) -> dict:
+    """The fixture of one layout; exit variants print the bay FIXTURE line before their own line."""
+    run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
+    exit_kind = kind in ("online_survey", "offline_rider")
+    suffix = {"survey": " survey", "trio": " trio", "online_survey": " survey", "offline_rider": " offline"}.get(kind, "")
+    marker = {"online_survey": r"ARCE_RELEASE_BAY_EXIT_FIXTURE .*",
+              "offline_rider": r"ARCE_RELEASE_BAY_EXIT_OFFLINE_FIXTURE .*"}.get(kind, FIXTURE.pattern)
+    assert run.process is not None
+    deadline = time.monotonic() + run.args.flight_timeout
+    while True:
+        start = len(run.process.lines)
+        line = run.send(f"arce bay release-test {'exit fixture' if exit_kind else 'fixture'} {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}"
+                        f"{suffix}", re.compile(marker + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
+        if "ARCE_RELEASE_BAY_FIXTURE_WAIT" not in line:
+            break
+        if time.monotonic() > deadline:
+            raise smoke.SmokeError("The fixture source did not become entity-ticking")
+        time.sleep(1)
+    lines = run.process.lines[start:]
+    fixture = parse_fixture(next(value for value in reversed(lines) if FIXTURE.search(value)))
+    if kind == "online_survey" and f"rider={ONLINE_RIDER} name=W254Rider mounted=true seat=0 mode=survival" not in line:
+        raise smoke.SmokeError(f"Survival rider did not board seat zero: {line}")
+    if kind == "offline_rider" and f"rider={ONLINE_RIDER} online=false" not in line:
+        raise smoke.SmokeError(f"The offline rider is online: {line}")
+    if exit_kind:
+        fixture["rider"] = ONLINE_RIDER
+    fixture["roles"] = ROLES[kind]
+    fixture["satellites"] = [fixture["data"], fixture["solar"]]
+    if kind == "trio":
+        trio = TRIO.search(next(value for value in lines if TRIO.search(value)))
+        if trio[1] != fixture["logical"] or trio[2] != fixture["data"] or trio[3] != fixture["solar"]:
+            raise smoke.SmokeError(f"The trio line names other bays: {trio[0]}")
+        fixture["satellites"].append(trio[4])
+    if fixture["launch"] not in ("SUCCESS", "JOURNAL_PENDING") or fixture["packages"].count("+") != len(fixture["roles"]) - 1:
+        raise smoke.SmokeError(f"The fixture did not launch with its {len(fixture['roles'])} bays: {fixture}")
+    return fixture
+
+
+def exit_fields(line: str) -> dict:
+    fields = {}
+    for key, value in re.findall(r"(\w+)=(\S+)", line.split(" logical=", 1)[1]):
+        if key in fields:
+            raise smoke.SmokeError(f"Repeated exit field {key}")
+        fields[key] = value
+    return fields
+
+
+def entities_naming(world: Path, logical: str, directory: Path = MOON_ENTITIES) -> list[str]:
+    """Every saved entity naming L in one dimension's entity regions (bounded: each stored chunk of each region file)."""
+    found = []
+    folder = world / directory
+    for region in sorted(folder.glob("r.*.*.mca")) if folder.is_dir() else []:
+        parts = region.name.split(".")
+        region_x, region_z = int(parts[1]), int(parts[2])
+        for slot in range(1024):
+            root = chunk_record(region, region_x * 32 + slot % 32, region_z * 32 + slot // 32)
+            for entity in (root or {}).get("Entities", []):
+                if uuid_of(entity.get("RocketEntityData", {}).get("assembly_transaction_id")) == logical:
+                    found.append(uuid_of(entity.get("UUID")))
+    return found
+
+
+def w331_rejection(run: Session, case: str, fixture: dict, start: int, data: Path, before: str | None) -> dict:
+    """Family T and P: D0 rejects every bay of L with the case's reason, before any receipt names L.
+
+    D0's reason is recorded on each bay member and remembered by the session (``BayTransferRecovery.reject``), which is
+    what the bay menu shows; the claim line itself only reports the claim's wait reasons and its READY_SOURCE handoff.
+    """
+    spec = W331_CASES[case]
+    reason = spec["reject"]
+    marker = re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} logical={fixture['logical']} state=READY_SOURCE\b")
+    run.wait_after(marker, start, run.args.flight_timeout + 60)
+    assert run.process is not None
+    lines = run.process.lines
+    at = next(index for index in range(start, len(lines)) if marker.search(lines[index]))
+    reasons = [match.group(4) for line in lines[start:at + 1] if (match := CLAIM.search(line))
+               and match.group(2) == fixture["logical"]]
+    if spec.get("journal_arm") and "ASSEMBLY_JOURNAL_CHECKPOINT" not in reasons:
+        raise smoke.SmokeError(f"{case}: D0 never requested its journal checkpoint: {reasons}")
+    observed = dict(reasons=reasons, menu=[])
+    for satellite in fixture["satellites"]:
+        shown = DEPLOYMENT_STATUS.search(run.send(f"arce bay release-test deployment-status {satellite}", DEPLOYMENT_STATUS))
+        if shown.groups() != (satellite, "NONE", reason):
+            raise smoke.SmokeError(f"{case}: the bay of {satellite} does not show D0's {reason}: {shown[0]}")
+        observed["menu"].append(shown[0])
+    if spec.get("injected"):
+        # The injected write must be D0's own requested checkpoint: between its request and the handoff (W331 smoke 2).
+        point, mode, minimum = spec["injected"]
+        requested = next(index for index in range(start, at) if (match := CLAIM.search(lines[index]))
+                         and match.group(2) == fixture["logical"] and match.group(4) == "ASSEMBLY_JOURNAL_CHECKPOINT")
+        injected = [match.groups() for line in lines[requested:at] if (match := TXW_INJECTED.search(line))]
+        everywhere = [match.groups() for line in lines[start:at] if (match := TXW_INJECTED.search(line))]
+        if len(injected) < minimum or any(row != (point, mode) for row in everywhere):
+            raise smoke.SmokeError(f"{case}: expected at least {minimum} {point} {mode} injection of D0's requested "
+                                   f"write: {injected} of {everywhere}")
+        observed["injected"] = dict(after_request=len(injected), total=len(everywhere))
+    if spec.get("journal_at_reject"):
+        now = digest(data / JOURNAL_FILE) if (data / JOURNAL_FILE).is_file() else None
+        if (now == before) != (spec["journal_at_reject"] == "unchanged"):
+            raise smoke.SmokeError(f"{case}: the journal file is not {spec['journal_at_reject']}: {before} -> {now}")
+        observed["journal"] = dict(before=before, at_rejection=now)
+    if any(receipt["rocket"] == fixture["logical"] for receipt in evidence_tools.bay_receipts(data / RECEIPTS)):
+        raise smoke.SmokeError(f"{case}: a receipt names L after the D0 rejection")
+    status = run.status(fixture["logical"])
+    if status["receipts"] or status["packages"] != fixture["packages"]:
+        raise smoke.SmokeError(f"{case}: the rejection changed a package or wrote a receipt: {status}")
+    observed["status"] = status
+    return observed
+
+
+def w331_login(run: Session, case: str, fixture: dict, world: Path) -> dict:
+    """Family L at D7's paused guard: the assigned offline rider logs in, a late source copy joins, the guard releases."""
+    assert run.process is not None
+    paused = run.status(fixture["logical"])
+    if paused["claim"] != "RETIRE" or paused["state"] != "TRANSIT" or paused["transfer"] != "PREPARED":
+        raise smoke.SmokeError(f"{case}: the guard pause is not D7 with T in TRANSIT: {paused}")
+    start = len(run.process.lines)
+    login = exit_fields(run.send(f"arce bay release-test exit login {fixture['logical']}", EXIT_LINE))
+    if (login.get("rider") != "online" or login.get("mounted") != "false" or login.get("transfer") != "PREPARED"
+            or login.get("seat") != "0" or login.get("rocketSeat") != "0" or login.get("claim") != "RETIRE"):
+        raise smoke.SmokeError(f"{case}: the held login was routed, settled or cleared the seat: {login}")
+    copy = run.send(f"arce bay release-test copy {fixture['logical']}", COPY_ADDED).strip()
+    run.send("arce bay release-test release", re.compile(r"ARCE_RELEASE_BAY_RELEASE_REQUESTED"))
+    refused = RETIRE_REFUSED.search(run.wait_after(RETIRE_REFUSED, start, 60))
+    if refused.group(2) != fixture["logical"] or refused.group(3) != "GUARD_REFUSED":
+        raise smoke.SmokeError(f"{case}: the paused guard did not refuse after the login and the copy: {refused.group(0)}")
+    return dict(paused=paused["claim"], login=login, copy=copy, refused=refused.group(3))
+
+
+def w331_first_start(run: Session, case: str, world: Path) -> tuple[dict, dict]:
+    spec = W331_CASES[case]
+    online = spec["fixture"] == "online_survey"
+    properties = {"bayCheckpoint": spec["cut"]} if spec.get("cut") else {}
+    if spec.get("copies") and not online:
+        properties["bayOfflinePassenger"] = "true"
+    data = world / "data"
+    observed: dict = {}
+    process = run.start(case, 0, properties)
+    before = None
+    if spec.get("journal_arm"):
+        run.send(f"arce rocket release-test transaction-writer arm {spec['journal_arm']}", TXW_DONE)
+    if spec.get("registry_arm"):
+        run.send(f"arce satellite release-test registry-writer arm {spec['registry_arm']}", SRW_DONE)
+    start = len(process.lines)
+    fixture = w331_launch(run, spec["fixture"])
+    if spec.get("journal_arm"):
+        # The journal bytes just before the inert record that makes D0 request its checkpoint.
+        before = digest(data / JOURNAL_FILE) if (data / JOURNAL_FILE).is_file() else None
+        run.send("arce rocket release-test transaction-writer add", TXW_DONE)
+        observed["journal_before_add"] = before
+    if spec.get("stale"):
+        run.wait(TXW_PAUSED, run.args.flight_timeout)
+        run.wait(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=ASSEMBLY_JOURNAL_CHECKPOINT"), 30)
+        stale = STALE.search(run.send(f"arce bay release-test stale-assembly {fixture['logical']}", STALE))
+        if stale[1] != fixture["logical"]:
+            raise smoke.SmokeError(f"{case}: the stale record names another rocket: {stale[0]}")
+        observed["stale"] = stale[0]
+    if spec.get("reject"):
+        observed["rejection"] = w331_rejection(run, case, fixture, start, data, before)
+        if spec.get("journal_arm"):
+            # A one-shot PAUSE replaces a FAIL or UNKNOWN cut; releasing it at once lets every later write pass.
+            if spec["journal_arm"] != "STAGED PAUSE":
+                run.send("arce rocket release-test transaction-writer arm STAGED PAUSE", TXW_DONE)
+            run.send("arce rocket release-test transaction-writer release", TXW_DONE)
+    elif spec.get("registry_arm"):
+        run.wait_after(SRW_MOVED_UNKNOWN, start, run.args.flight_timeout)
+        if spec.get("unproved"):
+            run.wait_after(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=REGISTRY_UNPROVED"), start,
+                           run.args.flight_timeout + 60)
+    elif spec.get("cut"):
+        run.wait(re.compile(rf"ARCE_RELEASE_BAY_(PAUSED|INJECTED) cut={spec['cut']} op="), run.args.flight_timeout)
+    if spec.get("successor"):
+        filled = FILLED.search(run.send("arce bay release-test fill 1", FILLED))
+        if filled.groups() != ("1", "1"):
+            raise smoke.SmokeError(f"{case}: the successor receipt was not queued behind the paused write: {filled[0]}")
+        observed["successor"] = filled[0]
+        if spec.get("union"):
+            observed["union"] = run.pending()
+            if (observed["union"]["pending"], observed["union"]["retained"]) != spec["union"]:
+                raise smoke.SmokeError(f"{case}: the union counted an op twice or lost one: {observed['union']}")
+    if spec.get("login"):
+        observed["login"] = w331_login(run, case, fixture, world)
+    if spec["end"] in ("land", "land-kill"):
+        observed["settled"] = w331_await(run, case, 0, fixture)
+        if spec.get("login"):
+            observed["fresh_proof"] = check_fresh_proof(case, process.lines, fixture)
+            # Smoke 3: after the claim's READY_SOURCE handoff, the normal acknowledged transfer carries the assigned online
+            # passenger to the destination (W27A section 4.1: "or the destination after normal acknowledged transfer").
+            after = exit_fields(run.send(f"arce bay release-test exit state {fixture['logical']}", EXIT_LINE))
+            if (after.get("rider") != "online" or after.get("mounted") != "true" or after.get("transfer") != "COMMITTED"
+                    or after.get("rocketSeat") != "0"):
+                raise smoke.SmokeError(f"{case}: the assigned passenger did not arrive by the normal transfer: {after}")
+            observed["rider_after"] = after
+        if spec["end"] == "land-kill":
+            if observed["settled"]["transfer"] != "COMMITTED":
+                raise smoke.SmokeError(f"{case}: T is not COMMITTED at the landing: {observed['settled']}")
+    else:
+        observed["at_cut"] = run.status(fixture["logical"])
+        if observed["at_cut"]["claim"] == "NONE" or observed["at_cut"]["state"] != "TRANSIT":
+            raise smoke.SmokeError(f"{case}: the cut did not hold T in TRANSIT: {observed['at_cut']}")
+        if spec.get("registry_arm") and (len(observed["at_cut"]["receipts"]) != 1
+                                         or observed["at_cut"]["receipts"][0]["phase"] != "INTENT"
+                                         or not observed["at_cut"]["receipts"][0]["acknowledged"]):
+            raise smoke.SmokeError(f"{case}: the unresolved registry write moved the INTENT: {observed['at_cut']}")
+        if online:
+            observed["online_at_cut"] = online_state(run, fixture["logical"], at_cut=True)
+        if spec.get("copies"):
+            deadline = time.monotonic() + run.args.settle_timeout
+            while True:
+                line = run.send(f"arce bay release-test copies {fixture['logical']} {spec['copies']}",
+                                re.compile(r"ARCE_RELEASE_BAY_COPIES(?:_WAIT)? logical="))
+                if "_WAIT" not in line:
+                    if ("passenger=false" if online else "passenger=true") not in line:
+                        raise smoke.SmokeError(f"{case}: copy fixture seat identity changed: {line}")
+                    observed["copies"] = line.strip(); break
+                if time.monotonic() > deadline:
+                    raise smoke.SmokeError(f"{case}: destination did not load for copy fixture")
+                time.sleep(1)
+            census = run.send(f"arce bay release-test census {fixture['logical']}", re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
+            observed["copy_census"] = check_copy_census(census, fixture["logical"], 4 if spec["copies"] == "absent" else 5,
+                                                        assigned=not online)
+        if spec.get("predecommission"):
+            gone = DECOMMISSIONED.search(run.send(f"arce bay release-test decommission {fixture['solar']}", DECOMMISSIONED))
+            if gone.groups()[:4] != (fixture["solar"], "SUCCESS", "false", "true"):
+                raise smoke.SmokeError(f"{case}: X was not decommissioned durably before the end: {gone[0]}")
+            observed["decommissioned"] = gone[0]
+        if spec.get("copies"):
+            observed["saved"] = run.send("save-all flush", SAVED, 120)
+    code = run.end("kill" if spec["end"] in ("kill", "land-kill") else "stop", run.args.exit_timeout)
+    errors = evidence_tools.unexpected_errors(process.lines, registry_injection=bool(spec.get("registry_arm")),
+                                              journal_injection=spec.get("journal_arm") in ("STAGED FAIL", "MOVED UNKNOWN"))
+    if errors:
+        raise smoke.SmokeError(f"{case}: first start logged unexpected ERROR/FATAL: {errors}")
+    if spec["end"] in ("stop", "land") and code != 0:
+        raise smoke.SmokeError(f"{case}: the normal stop exited {code}")
+    if spec["end"] == "stop":
+        observed["stopped"] = w331_stopped(case, process.lines, fixture)
+    observed.update(exit_code=code, claims=[match.groups() for match in CLAIM.finditer("".join(process.lines))])
+    return fixture, observed
+
+
+def w331_stopped(case: str, lines: list[str], fixture: dict) -> dict:
+    """Family W's clean stops: one coordinator stop with L unresolved, no claim transition after it, and for a paused
+    receipt write its release by the stop."""
+    stops = [index for index, line in enumerate(lines) if STOPPED.search(line)]
+    if len(stops) != 1:
+        raise smoke.SmokeError(f"{case}: expected one coordinator stop line, found {len(stops)}")
+    claims, unresolved = (int(value) for value in STOPPED.search(lines[stops[0]]).groups())
+    if claims < 1 or unresolved < 1:
+        raise smoke.SmokeError(f"{case}: the stop did not find L unresolved: claims={claims} unresolved={unresolved}")
+    later = [line.strip() for line in lines[stops[0] + 1:] if CLAIM.search(line)]
+    if later:
+        raise smoke.SmokeError(f"{case}: the coordinator acted after it stopped: {later}")
+    if W331_CASES[case].get("cut") and not any("ARCE_RELEASE_BAY_RELEASED" in line for line in lines):
+        raise smoke.SmokeError(f"{case}: the clean stop did not release and drain the paused receipt write")
+    return dict(claims=claims, unresolved=unresolved)
+
+
+def w331_disk(case: str, world: Path, fixture: dict, restart: int, cut: dict | None = None) -> dict:
+    """The raw oracles of one stopped world (W331-DESIGN section 3): receipts, registry, journal and Moon entities."""
+    spec = W331_CASES[case]
+    data = world / "data"
+    receipts = [row for row in evidence_tools.bay_receipts(data / RECEIPTS)]
+    mine = [row for row in receipts if row["rocket"] == fixture["logical"]]
+    satellites = evidence_tools.registry_satellites(data / REGISTRY_FILE)
+    observed = dict(receipts=len(receipts), receipts_naming_l=[(row["satellite"], row["phase"]) for row in mine],
+                    registry=len(satellites))
+    if restart == 0:
+        if spec.get("reject") and mine:
+            raise smoke.SmokeError(f"{case}: a receipt names L on disk after the D0 rejection: {mine}")
+        if spec.get("successor") and spec["end"] == "stop":
+            phases = sorted(row["phase"] for row in receipts)
+            if len(mine) != 1 or len(receipts) != 2 or phases != ["INTENT", "INTENT"]:
+                raise smoke.SmokeError(f"{case}: the stop did not drain both INTENT writes: {receipts}")
+        if "disk_registered" in spec and [row["phase"] for row in mine] != ["REGISTERED"] * spec["disk_registered"]:
+            raise smoke.SmokeError(f"{case}: expected {spec['disk_registered']} REGISTERED receipts of L on disk: {mine}")
+        if spec.get("immutable"):
+            if len(mine) != 1 or mine[0]["phase"] != "INTENT" or mine[0]["satellite"] != fixture["data"]:
+                raise smoke.SmokeError(f"{case}: partial D1 is not exactly the first bay's INTENT: {mine}")
+            observed["intent"] = mine[0]
+        if spec["end"] == "land-kill":
+            if mine or entities_naming(world, fixture["logical"]):
+                raise smoke.SmokeError(f"{case}: the destination or a receipt of L is on disk at the kill")
+            # D6's barrier proof wrote the consumed source S' to its entity chunk; the transfer removed it only in RAM.
+            sources = entities_naming(world, fixture["logical"], Path("entities"))
+            if sources != [fixture["rocket"]]:
+                raise smoke.SmokeError(f"{case}: expected exactly the durable consumed source of L on disk: {sources}")
+            observed.update(destination_absent=True, durable_source=sources[0])
+    else:
+        if spec.get("immutable"):
+            if len(mine) != 1 or (mine[0]["phase"], mine[0]["reason"]) != INTERRUPTED:
+                raise smoke.SmokeError(f"{case}/{restart}: the interrupted receipt changed: {mine}")
+            for key in ("op", "satellite", "src_before", "dst_before", "package_sig"):
+                if mine[0][key] != cut["intent"][key]:
+                    raise smoke.SmokeError(f"{case}/{restart}: the group's {key} changed after the partial D1")
+        if spec["end"] == "land-kill":
+            moon, earth = entities_naming(world, fixture["logical"]), entities_naming(world, fixture["logical"], Path("entities"))
+            if moon or earth != [fixture["rocket"]]:
+                raise smoke.SmokeError(f"{case}/{restart}: expected only the kept consumed source of L: moon={moon} earth={earth}")
+            observed["survivor"] = earth[0]
+    if spec.get("registry_names_x") and satellites.count(fixture["data"]) != 1:
+        raise smoke.SmokeError(f"{case}/{restart}: the registry file does not name X exactly once: {satellites}")
+    if spec.get("predecommission") and fixture["solar"] in satellites:
+        raise smoke.SmokeError(f"{case}/{restart}: the decommissioned X is on disk: {satellites}")
+    if spec.get("stale") and not evidence_tools.raw_names(data / JOURNAL_FILE, fixture["logical"]):
+        raise smoke.SmokeError(f"{case}/{restart}: the stale assembly record of L is not in the journal file")
+    return observed
+
+
+def run_w331_case(run: Session, case: str) -> dict:
+    global ORIGIN
+    spec = W331_CASES[case]
+    ORIGIN = (8, 2, 8)
+    online = spec["fixture"] == "online_survey"
+    world = run.session / ("world-" + case)
+    properties = smoke.expected_server_properties(run.port, True)
+    properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat",
+                       "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}],
+                                                         "biome": "minecraft:plains"})})
+    (run.session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())),
+                                                   encoding="ascii")
+    row = dict(case=case, rows=list(spec["rows"]), spec=spec)
+    fixture, row["first_start"] = w331_first_start(run, case, world)
+    receipts = world / "data" / RECEIPTS
+    row["cut_disk"] = dict(receipts=digest(receipts) if receipts.is_file() else None,
+                           oracles=w331_disk(case, world, fixture, 0))
+    row["cut_disk"]["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
+    if spec.get("copies"):
+        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"],
+                                                      passenger=ONLINE_RIDER if online else OFFLINE_PASSENGER)
+    row["restarts"] = []
+    for restart in (1, 2):
+        hooked = fixture["data"] if restart == 1 and spec["durable"] == "INTENT" else None
+        process = run.start(case, restart, {"bayFirstTick": hooked} if hooked else {})
+        entry = dict(restart=restart)
+        if online:
+            entry["login"] = run.send(f"arce bay release-test exit login {fixture['logical']}",
+                                      re.compile(r"ARCE_RELEASE_BAY_EXIT_LOGIN "))
+        entry["settled"] = w331_await(run, case, restart, fixture)
+        if spec["end"] == "land-kill":
+            # Ordinary recovery keeps the durable consumed source S' (T's source UUID), with the landing's consumed op.
+            landed = row["first_start"]["settled"]
+            if entry["settled"]["rocket"] != fixture["rocket"] or entry["settled"]["consumed"] != landed["consumed"]:
+                raise smoke.SmokeError(f"{case}/{restart}: recovery did not keep the consumed source of L: "
+                                       f"{entry['settled']} {landed}")
+        if online:
+            entry["online_settled"] = online_state(run, fixture["logical"])
+        if spec.get("copies"):
+            census = run.send(f"arce bay release-test census {fixture['logical']}", re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
+            entry["census"] = check_copy_census(census, fixture["logical"], 1, assigned=not online)
+        if hooked:
+            found = [match.groups() for line in process.lines for match in [FIRST_TICK.search(line)] if match]
+            if len(found) != 1 or found[0][0] != hooked or found[0][2:] != ("DEPLOYMENT_PENDING", "DEPLOYMENT_PENDING"):
+                raise smoke.SmokeError(f"{case}: the first tick did not fence the durable INTENT: {found}")
+            entry["first_tick"] = found[0]
+        entry["pending"] = run.pending()
+        if "pending" in spec and (entry["pending"]["pending"], entry["pending"]["retained"]) != spec["pending"]:
+            raise smoke.SmokeError(f"{case}/{restart}: pending/retained {entry['pending']}, expected {spec['pending']}")
+        code = run.end("stop", run.args.exit_timeout)
+        if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
+            raise smoke.SmokeError(f"{case}/{restart}: the restart failed or logged ERROR/FATAL")
+        entry.update(exit_code=code, receipts=digest(receipts) if receipts.is_file() else None,
+                     oracles=w331_disk(case, world, fixture, restart, row["cut_disk"]["oracles"]))
+        row["restarts"].append(entry)
+        entry["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-restart-{restart}-raw")
+    row["fixture"] = fixture
+    row["status"] = "PASS"
+    return row
+
+
+def check_candidate(args) -> dict:
+    """W331: the candidate JAR, its SHA-256 and its production source commit, checked before Java starts."""
+    try:
+        return evidence_tools.candidate_pin(args.jar, args.jar_sha256, args.candidate_commit)
+    except evidence_tools.CandidateError as failure:
+        raise smoke.SmokeError(str(failure)) from failure
+
+
+def recheck_candidate(candidate: dict) -> None:
+    try:
+        evidence_tools.recheck_candidate(candidate)
+    except evidence_tools.CandidateError as failure:
+        raise smoke.SmokeError(str(failure)) from failure
+
+
+def add_candidate_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--jar-sha256", required=True, help="The candidate JAR's SHA-256; refused when the file differs")
+    parser.add_argument("--candidate-commit", required=True,
+                        help="The candidate's production source; refused unless HEAD has the same production files")
+
+
 def run(args) -> dict:
     assert_pin(args.source_commit)
+    candidate = check_candidate(args)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
     if session.parent != intended or session.exists() or smoke.is_link_or_junction(session):
@@ -923,17 +1459,18 @@ def run(args) -> dict:
     marker = session / ".arce-w170-bay-cuts-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=digest(args.jar), cases=[],
-                  lock_owner=args.lock_owner, tranche=args.tranche)
+                  lock_owner=args.lock_owner, tranche=args.tranche, candidate=candidate)
     runner = Session(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
         (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
-        for case in args.case or (TRANCHES[args.tranche] if args.tranche else list(CASES)):
+        tranches = {**TRANCHES, **W331_TRANCHES}
+        for case in args.case or (tranches[args.tranche] if args.tranche else list(CASES)):
             report["in_progress"] = case
             try:
-                report["cases"].append(run_case(runner, case))
+                report["cases"].append(run_w331_case(runner, case) if case in W331_CASES else run_case(runner, case))
                 print(f"{case}: PASS (cut, two restarts)", flush=True)
             except smoke.SmokeError as failure:
                 if runner.process is not None:
@@ -947,7 +1484,7 @@ def run(args) -> dict:
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
             if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
                 break
-        report.pop("in_progress", None); assert_pin(args.source_commit)
+        report.pop("in_progress", None); assert_pin(args.source_commit); recheck_candidate(candidate)
         report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
         return report
     except Exception as failure:
@@ -967,10 +1504,11 @@ def main() -> int:
     for key in ("jar", "session-dir", "evidence-dir"):
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
+    add_candidate_arguments(parser)
     parser.add_argument("--java", required=True)
     parser.add_argument("--lock-owner", required=True)
-    parser.add_argument("--case", action="append", choices=list(CASES))
-    parser.add_argument("--tranche", choices=sorted(TRANCHES))
+    parser.add_argument("--case", action="append", choices=list(CASES) + list(W331_CASES))
+    parser.add_argument("--tranche", choices=sorted(TRANCHES) + sorted(W331_TRANCHES))
     parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)

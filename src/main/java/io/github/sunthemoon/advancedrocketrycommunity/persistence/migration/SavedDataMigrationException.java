@@ -5,6 +5,7 @@ import java.util.Objects;
 public final class SavedDataMigrationException extends IllegalArgumentException {
     private final MigrationDiagnosticId diagnosticId;
     private ManagedSavedDataType dataType;
+    private boolean presenceUnknown;
 
     public SavedDataMigrationException(MigrationDiagnosticId diagnosticId, String message) {
         super(message);
@@ -27,6 +28,15 @@ public final class SavedDataMigrationException extends IllegalArgumentException 
     }
 
     public java.util.Optional<ManagedSavedDataType> dataType() { return java.util.Optional.ofNullable(dataType); }
+
+    /** W328F: marks a refusal whose cause is a failed status check, so the hint never parses the message. */
+    SavedDataMigrationException presenceUnknown() {
+        presenceUnknown = true;
+        return this;
+    }
+
+    /** Whether startup was refused because a managed file's or the data directory's presence is unknown. */
+    public boolean isPresenceUnknown() { return presenceUnknown; }
 
     public MigrationDiagnosticId diagnosticId() {
         return diagnosticId;
