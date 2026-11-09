@@ -389,7 +389,8 @@ class ManifestValidationTests(unittest.TestCase):
             # w179-tag-unreadable, w179-tag-missing-reference and w179-pattern-catalog-rejected): 135 + 43.
             # W193 logs the classic serializer's 36 refusals of that pack as one summary (w193-recipe-refusal-summary
             # replaces w179-recipe-text-bound to w179-recipe-identifier-bound): 178 - 36 + 1.
-            143, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            # W333 adds five blocked-root terminal replay operations, one per satellite kind.
+            148, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:

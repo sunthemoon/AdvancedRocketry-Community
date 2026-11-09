@@ -3,6 +3,26 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w333-blocked-data-replay",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Satellite launch operation failed",
+      "stack_contains": "SatelliteReplayRowGameTests.",
+      "counts": {"w333_replay_rows": 1},
+      "test": "SatelliteReplayRowGameTests.identityConflictsPrecedeReplay",
+      "reason": "The DATA terminal meets a deliberately future-schema registry and must retain its matching package. The manager reports the blocked operation once."
+    },
+    {
+      "id": "w333-blocked-idle-replays",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Satellite idle launch operation failed",
+      "stack_contains": "SatelliteReplayRowGameTests.",
+      "counts": {"w333_replay_rows": 4},
+      "test": "SatelliteReplayRowGameTests.identityConflictsPrecedeReplay",
+      "reason": "Each of the four non-DATA terminals meets a deliberately future-schema registry and must retain its matching package. The manager reports each blocked operation once."
+    },
+    {
       "id": "w287f-seat-release-update-refused",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
