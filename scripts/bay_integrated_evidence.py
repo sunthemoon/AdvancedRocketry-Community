@@ -69,6 +69,35 @@ def recheck_candidate(pin: dict) -> None:
     """At the end of an invocation: the same JAR bytes are still at the recorded path."""
     if file_sha256(Path(pin["jar"])) != pin["jar_sha256"]:
         raise CandidateError(f"Candidate JAR changed during the invocation: {pin['jar']}")
+    if "installed_jar" in pin:
+        recheck_installed(pin)
+
+
+def install_candidate(jar: Path, installed: Path, expected_sha256: str) -> dict:
+    """Copy into an owned session and pin the bytes Forge will actually load, before any process starts."""
+    jar, installed = Path(jar), Path(installed)
+    expected_sha256 = expected_sha256.lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise CandidateError("Installed JAR requires a SHA-256 pin")
+    if not jar.is_file() or jar.is_symlink() or installed.is_symlink():
+        raise CandidateError("Candidate or installed JAR is missing or linked")
+    shutil.copy2(jar, installed)
+    pin = dict(installed_jar=str(installed), installed_jar_sha256=expected_sha256)
+    recheck_installed(pin)
+    return pin
+
+
+def recheck_installed(pin: dict) -> str:
+    """Recheck the verified session copy at every launch boundary and before accepting results."""
+    if not pin or "installed_jar" not in pin or "installed_jar_sha256" not in pin:
+        raise CandidateError("No verified installed candidate JAR")
+    installed = Path(pin["installed_jar"])
+    if not installed.is_file() or installed.is_symlink():
+        raise CandidateError(f"Installed JAR is missing or linked: {installed}")
+    actual = file_sha256(installed)
+    if actual != pin["installed_jar_sha256"]:
+        raise CandidateError(f"Installed JAR SHA-256 {actual} differs from pinned SHA-256 {pin['installed_jar_sha256']}: {installed}")
+    return actual
 
 
 def unexpected_errors(lines: list[str], registry_injection: bool = False, crash_injection: bool = False,

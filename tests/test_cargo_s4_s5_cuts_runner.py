@@ -344,7 +344,8 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
                 process.wait_for.side_effect = [None, runner.smoke.SmokeError("exited without result marker"), None]
             disk = released_disk()
             with patch.object(runner, "assert_pin"), patch.object(runner, "require_lock"), \
-                    patch.object(runner, "preflight", return_value={}), patch.object(runner, "digest", return_value="hash"), \
+                    patch.object(runner, "preflight", return_value={}), \
+                    patch.object(runner, "digest", return_value=runner.evidence_tools.file_sha256(jar)), \
                     patch.object(runner.smoke, "CapturedProcess", return_value=process) as starts, \
                     patch.object(runner.smoke, "allocate_port", return_value=25565), \
                     patch.object(runner.smoke, "write_server_configuration"), \

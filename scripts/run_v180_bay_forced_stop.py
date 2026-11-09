@@ -388,6 +388,8 @@ class Session:
         self.args, self.session, self.evidence = args, session, evidence
         self.process: smoke.CapturedProcess | None = None
         self.port = 0
+        self.candidate = None
+        self.starts = []
 
     def start(self, case: str, restart: int, properties: dict[str, str]) -> smoke.CapturedProcess:
         require_lock(self.args.lock_owner)
@@ -398,6 +400,13 @@ class Session:
         command[2] = "-Xmx4G"
         for key, value in sorted(properties.items()):
             command.insert(4, f"-Dadvancedrocketrycommunity.{key}={value}")
+        try:
+            evidence_tools.recheck_installed(self.candidate)
+        except evidence_tools.CandidateError as failure:
+            raise smoke.SmokeError(str(failure)) from failure
+        self.starts.append(dict(case=case, restart=restart, installed_jar=self.candidate["installed_jar"],
+                                installed_jar_sha256=self.candidate["installed_jar_sha256"], command=command))
+        (self.evidence / "installed-starts.json").write_text(json.dumps(self.starts, indent=2), encoding="utf-8")
         self.process = smoke.CapturedProcess(command, self.session, self.evidence / f"{case}-{restart}.log")
         self.process.wait_for(smoke.READY_MARKER, self.args.startup_timeout)
         return self.process
@@ -452,10 +461,17 @@ class Session:
         assert self.process is not None
         process, self.process = self.process, None
         if how == "kill":
-            process.process.kill(); process.abort(); return None
-        if how == "stop":
-            process.command("stop")
-        return process.finish(timeout)
+            process.process.kill(); process.abort(); code = None
+        else:
+            if how == "stop":
+                process.command("stop")
+            code = process.finish(timeout)
+        if self.candidate is not None:
+            try:
+                evidence_tools.recheck_installed(self.candidate)
+            except evidence_tools.CandidateError as failure:
+                raise smoke.SmokeError(str(failure)) from failure
+        return code
 
 
 def launch_fixture(run: Session, survey: bool = False, online: bool = False) -> dict:
@@ -1515,7 +1531,9 @@ def run(args) -> dict:
     runner = Session(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        candidate.update(evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, args.jar_sha256))
+        runner.candidate = candidate
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
         tranches = {**TRANCHES, **W331_TRANCHES}
@@ -1570,7 +1588,7 @@ def main() -> int:
     try:
         report = run(args)
         return 0 if report["status"] == "PASS" else 1
-    except (OSError, smoke.SmokeError) as failure:
+    except (OSError, smoke.SmokeError, evidence_tools.CandidateError) as failure:
         print(f"FAIL: {failure}"); return 1
 
 

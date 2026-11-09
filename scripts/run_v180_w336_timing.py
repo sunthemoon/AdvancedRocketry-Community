@@ -179,6 +179,7 @@ def d6_retry(run, session):
 def family(run):
     args = run.args
     session = timing.TimedSession(args, run.session, run.evidence)
+    session.candidate = run.pin
     session.port = run.port
     try:
         if args.case == "TURNS":
