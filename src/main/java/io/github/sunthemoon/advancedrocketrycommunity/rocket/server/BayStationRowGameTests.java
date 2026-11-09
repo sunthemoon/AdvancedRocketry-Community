@@ -158,7 +158,10 @@ public final class BayStationRowGameTests {
             if (flight != null) {
                 RocketTransferEntities.releaseFlightTickets(server, flight.record());
                 flight.source().discard(); bays(h).forgetForTests(flight.record().logicalRocketId());
-                RocketTransferSavedData.get(server).remove(flight.record().transferId());
+                var journal = RocketTransferSavedData.get(server);
+                journal.find(flight.record().transferId()).flatMap(RocketTransferRecord::destinationEntityId)
+                        .map(h.getLevel()::getEntity).ifPresent(net.minecraft.world.entity.Entity::discard);
+                journal.remove(flight.record().transferId());
                 packages.forEach(pkg -> bays(h).sessionForTests().find(satellite(pkg)).ifPresent(row -> BayReceiptTestHooks.remove(server, row.op(), o -> { })));
             }
             forced.forEach(key -> space.setChunkForced(ChunkPos.getX(key), ChunkPos.getZ(key), false));
