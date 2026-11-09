@@ -66,10 +66,10 @@ public abstract class EscrowCargoCutProbe {
     }
 
     static boolean accepts(String name) {
-        return name != null && (EscrowCargoSettlementCuts.CASES.containsKey(name)
+        return name != null && (EscrowCargoOwnerCapProbe.CASES.containsKey(name) || EscrowCargoSettlementCuts.CASES.containsKey(name)
                 || EscrowCargoFlightCuts.CASES.containsKey(name) || EscrowCargoRecoveryCuts.CASES.containsKey(name));
     }
-    /** The whole gate: release-test hooks, a start or recover scenario, and an FS_ or FF_ case. */
+    /** The whole gate: release-test hooks, a start or recover scenario, and an inventoried cargo-cut case. */
     static boolean selected(boolean hooks, String scenario, String name) {
         return hooks && ("start".equals(scenario) || "recover".equals(scenario)) && accepts(name);
     }
@@ -79,6 +79,7 @@ public abstract class EscrowCargoCutProbe {
             return current;
         }
         String name = System.getProperty(CASE);
+        if (EscrowCargoOwnerCapProbe.CASES.containsKey(name)) { return new EscrowCargoOwnerCapProbe(server); }
         if (name.startsWith("FS_")) { return new EscrowCargoSettlementCuts(server); }
         if (EscrowCargoFlightCuts.CASES.containsKey(name)) { return new EscrowCargoFlightCuts(server); }
         if (EscrowCargoRecoveryCuts.CASES.containsKey(name)) { return new EscrowCargoRecoveryCuts(server); }
@@ -103,13 +104,14 @@ public abstract class EscrowCargoCutProbe {
         return policy.withCommitter((staged, target) -> {
             var type = ManagedSavedDataType.ROCKET_TRANSFERS;
             boolean removal = removal(CheckedSavedDataFile.readPayload(staged, type).orElseThrow(), CheckedSavedDataFile.readPayload(target, type).orElse(null));
-            if (removal && name.equals("FS_O3J_BEFORE")) { hardStop(name, "O3J_BEFORE"); }
+            if (removal && name.endsWith("O3J_BEFORE")) { hardStop(name, "O3J_BEFORE"); }
             policy.committer().commit(staged, target);
-            if (removal && name.equals("FS_O3J_AFTER")) { hardStop(name, "O3J_REPLACED"); }
+            if (removal && name.endsWith("O3J_AFTER")) { hardStop(name, "O3J_REPLACED"); }
         });
     }
     static boolean journalCut(boolean hooks, String scenario, String name) {
-        return hooks && "start".equals(scenario) && ("FS_O3J_BEFORE".equals(name) || "FS_O3J_AFTER".equals(name));
+        return hooks && "start".equals(scenario) && ("FS_O3J_BEFORE".equals(name) || "FS_O3J_AFTER".equals(name)
+                || "FS_LOAD_O3J_BEFORE".equals(name) || "FS_LOAD_O3J_AFTER".equals(name));
     }
     /** The candidate drops every record that the file on disk holds: the settlement's checked journal removal. */
     static boolean removal(CompoundTag candidate, CompoundTag previous) {
@@ -140,8 +142,12 @@ public abstract class EscrowCargoCutProbe {
 
     /** A stationary rocket at {@link #ROCKET}: one pressurized tank holding {@code cargo} mB of water, a seat, 1,000 mB of rocket fuel. */
     RocketEntity cargoRocket(int cargo) {
+        return cargoRocket(level, ROCKET, cargo);
+    }
+    static RocketEntity cargoRocket(ServerLevel level, BlockPos at, int cargo) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(),
-                new RocketPosition(ROCKET.getX(), ROCKET.getY(), ROCKET.getZ()),
+                new RocketPosition(at.getX(), at.getY(), at.getZ()),
                 List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(PressurizedTankRocketAdapter.TYPE, Map.of()),
                                 PressurizedTankRocketAdapter.payload(cargo == 0 ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, cargo))),
                         new RocketBlock(new RocketPosition(0, 1, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of()))),

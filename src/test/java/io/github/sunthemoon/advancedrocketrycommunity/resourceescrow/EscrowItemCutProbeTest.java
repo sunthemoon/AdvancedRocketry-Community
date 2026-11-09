@@ -33,7 +33,7 @@ class EscrowItemCutProbeTest {
     }
     @Test void probeNeedsHooksExactCaseAndScenario() {
         var cases = new java.util.ArrayList<>(EscrowItemSettlementCuts.CASES.keySet()); cases.addAll(EscrowItemRecoveryCuts.CASES);
-        assertEquals(18, cases.size());
+assertEquals(31, cases.size());
         for (var name : cases) {
             for (var scenario : List.of("start", "recover")) {
                 assertTrue(EscrowItemCutProbe.selected(true, scenario, name));

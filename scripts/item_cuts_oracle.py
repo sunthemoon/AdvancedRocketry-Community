@@ -36,6 +36,15 @@ CASES = {
                                    dict(rocket=NORMALIZED["rocket"], device=None), choice="ABANDON"),
 }
 
+# Load is the same typed transfer reversed: rocket 60 -> 64, device 10 -> 6.
+for _case, _spec in tuple(CASES.items()):
+    def _load_ends(ends):
+        return dict(rocket=None if ends["rocket"] is None else (70 - ends["rocket"][0], *ends["rocket"][1:]),
+                    device=None if ends["device"] is None else (70 - ends["device"][0], *ends["device"][1:]))
+    CASES[_case.replace("IS_", "IS_LOAD_", 1)] = dict(
+        _spec, load=True, cut=(_spec["cut"][0], _load_ends(_spec["cut"][1])),
+        final=(_spec["final"][0], _load_ends(_spec["final"][1])))
+
 def require(condition, message):
     if not condition:
         raise native.smoke.SmokeError(message)
@@ -94,7 +103,7 @@ def inspect(world: Path, case: str):
 def check_settlement(case: str, disk: dict, restarted: bool) -> None:
     spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
     landed = restarted and spec.get("landed")
-    require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == "UNLOAD"), "Settlement duplicated the rocket or changed the device")
+    require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == ("LOAD" if spec.get("load") else "UNLOAD")), "Settlement duplicated the rocket or changed the device")
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
     require([op["phase"] for op in root["records"]] == state["records"], "Ledger records differ from the boundary")
     require(all(("settlement" in op) == state["intent"] for op in root["records"]), "Frozen intent presence differs from the boundary")
@@ -142,10 +151,11 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
         require(device["amount"] == expected_device[0], f"Native cargo quantities: device expected {expected_device[0]}, got {device['amount']}")
         require((device["epoch"], len(device["markers"])) == expected_device[1:],
                 f"Markers: device section differs: {device['epoch']}/{len(device['markers'])}")
-    for endpoint, role in ((rocket, "SOURCE"), (device, "DESTINATION")):
+    for endpoint, role in ((rocket, "DESTINATION" if spec.get("load") else "SOURCE"),
+                           (device, "SOURCE" if spec.get("load") else "DESTINATION")):
         if endpoint is None or not endpoint["markers"]:
             continue
-        kind, identity = ("ENTITY", "uuid") if role == "SOURCE" else ("BLOCK_ENTITY", "id")
+        kind, identity = ("ENTITY", "uuid") if endpoint is rocket else ("BLOCK_ENTITY", "id")
         audit = [observation for receipt in root["tombstones"] for observation in receipt["before_choice"]
                  if not observation["missing"] and observation["endpoint"]["kind"] == kind
                  and observation["endpoint"]["identity"] == endpoint[identity]]

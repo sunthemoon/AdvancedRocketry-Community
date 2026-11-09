@@ -124,6 +124,10 @@ public abstract class EscrowItemCutProbe {
         return fuel.withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
     }
     RocketItemCargoBlockEntity device(BlockPos at, RocketEntity rocket, RocketCargoRole role, int count) {
+        return device(level, at, rocket, role, count);
+    }
+    static RocketItemCargoBlockEntity device(ServerLevel level, BlockPos at, RocketEntity rocket, RocketCargoRole role, int count) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
         level.setBlockAndUpdate(at, (role == RocketCargoRole.LOAD ? ModBlocks.ROCKET_ITEM_LOADER : ModBlocks.ROCKET_ITEM_UNLOADER).get().defaultBlockState());
         var device = (RocketItemCargoBlockEntity) java.util.Objects.requireNonNull(level.getBlockEntity(at));
         var slots = List.of(ItemCargoReconciliationFixtures.stack(count), new CompoundTag(), new CompoundTag(), new CompoundTag());
@@ -140,7 +144,7 @@ public abstract class EscrowItemCutProbe {
     static RocketEscrowSection section(RocketItemCargoBlockEntity device) { return device.root().orElseThrow().escrow(); }
 
     static boolean journalCut(boolean hooks, String scenario, String name) {
-        return hooks && "start".equals(scenario) && "IS_O3J_AFTER".equals(name);
+        return hooks && "start".equals(scenario) && ("IS_O3J_AFTER".equals(name) || "IS_LOAD_O3J_AFTER".equals(name));
     }
     public static CheckedSavedDataPolicy journalPolicy(MinecraftServer server, CheckedSavedDataPolicy policy) {
         String name = System.getProperty(CASE);
