@@ -47,16 +47,19 @@ def proof_turns(lines, logicals, slots):
     rows = []
     for logical in logicals:
         claims = [(i, m) for i, line in enumerate(lines) if (m := bay.CLAIM.search(line)) and m[2] == logical]
-        ready = [i for i, m in claims if m[3] == "READY_SOURCE"]
+        ready = [i for i, m in claims if m[4] == "READY_SOURCE"]
         waiting = [i for i, m in claims if m[4] == "BAY_PROOF_TURN"]
         native.require(len(ready) == 1, "Claim did not reach exactly one READY_SOURCE")
         # The uncontended first holder need not emit BAY_PROOF_TURN; do not fabricate that transition.
         start = waiting[0] if waiting else next((i for i, m in claims if m[4] == "BAY_SOURCE_PROOF"), None)
         native.require(start is not None and start < ready[0], "Claim lacks a pre-ready D6 observation")
         duration = elapsed(bracket(lines, start), bracket(lines, ready[0]))
+        service = next((i for i, m in claims if i >= start and m[4] == "BAY_SOURCE_PROOF"), start)
+        service_ticks = elapsed(bracket(lines, service), bracket(lines, ready[0]))
         rows.append(dict(logical=logical, queued=bool(waiting), first=bracket(lines, start),
                          ready=bracket(lines, ready[0]), wait_through_ready_ticks=duration,
-                         ticks_per_census_slot=[value / slots for value in duration], census_slots=slots))
+                         turn_ticks=service_ticks, ticks_per_census_slot=[value / slots for value in service_ticks],
+                         census_slots=slots))
     native.require(any(row["queued"] for row in rows), "No concurrent claim waited for a D6 turn")
     return rows
 

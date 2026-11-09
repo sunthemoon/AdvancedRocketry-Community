@@ -31,8 +31,8 @@ class TimingTest(unittest.TestCase):
     def test_ticks_use_vanilla_queries_not_log_clock(self):
         lines = [query(100), claim("a", "PROVE", "BAY_SOURCE_PROOF"), query(102),
                  claim("b", "PROVE", "BAY_PROOF_TURN"), query(104),
-                 claim("a", "READY_SOURCE", "NONE"), query(120),
-                 claim("b", "READY_SOURCE", "NONE"), query(145)]
+                 claim("a", "ENDED", "READY_SOURCE"), query(120),
+                 claim("b", "ENDED", "READY_SOURCE"), query(145)]
         rows = timing.proof_turns(lines, ["a", "b"], 4)
         self.assertEqual(rows[0]["wait_through_ready_ticks"], [2, 20])
         self.assertFalse(rows[0]["queued"])
@@ -51,7 +51,7 @@ class TimingTest(unittest.TestCase):
 
     def test_missing_ready_or_contention_refuses(self):
         lines = [query(0), claim("a", "PROVE", "BAY_SOURCE_PROOF"), query(2),
-                 claim("a", "READY_SOURCE", "NONE"), query(5)]
+                 claim("a", "ENDED", "READY_SOURCE"), query(5)]
         with self.assertRaises(ValueError):
             timing.proof_turns(lines, ["a", "b"], 2)
         with self.assertRaises(ValueError):

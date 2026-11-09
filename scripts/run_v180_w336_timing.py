@@ -11,7 +11,7 @@ import run_v180_bay_forced_stop as bay
 import w336_bay_timing as timing
 import w336_native as native
 
-CASES = ("B12_D4", "B12_D7", "B13_FAILED", "B13_UNKNOWN", "B16_MOTION", "B10_BLOCKED", "RECONNECT", "TURNS")
+CASES = ("B12_D4", "B12_D7", "B13_FAILED", "B13_UNKNOWN", "B16_MOTION", "B10_BLOCKED", "RECONNECT", "TURNS", "D6_RETRY")
 
 
 def configure(run, world):
@@ -108,7 +108,7 @@ def turns(run, session):
         session.query_tick()
         session.send("arce rocket release-test journal-hold-release", bay.JOURNAL_RELEASED)
         for row in fixtures:
-            session.wait(re.compile(rf"ARCE_BAY_CLAIM .*logical={row['logical']} state=READY_SOURCE"), run.args.settle_timeout)
+            session.wait(re.compile(rf"ARCE_BAY_CLAIM .*logical={row['logical']} .*reason=READY_SOURCE"), run.args.settle_timeout)
         proof = timing.proof_turns(session.process.lines, [row["logical"] for row in fixtures], sizes.pop())
         tickets = poll_tickets(run, session, list(dict.fromkeys(slots)))
         session.end("stop", run.args.exit_timeout)
@@ -122,12 +122,48 @@ def turns(run, session):
     return dict(turns=results, measured_starts=[timing.observations(lines) for lines in session.timed_starts])
 
 
+def d6_retry(run, session):
+    world = run.session / "world-retry"
+    configure(run, world.name)
+    session.start("retry", 0, {"bayCheckpoint": "B6_D5"})
+    row = fixture(session, (742008, 80, 742008))
+    session.wait(re.compile("ARCE_RELEASE_BAY_PAUSED cut=B6_D5"), run.args.flight_timeout)
+    session.send("save-all flush", native.SAVED, 180)
+    session.end("stop", run.args.exit_timeout)
+    seed = run.capture(world, "retry-seed")
+    session.start("retry", 1, dict(rocketJournalFailure="HOLD", rocketJournalHoldStartup="true"))
+    session.wait(bay.JOURNAL_HELD, 60)
+    start = len(session.process.lines)
+    session.send("arce rocket release-test journal-hold-release", bay.JOURNAL_RELEASED)
+    for attempt in range(3):
+        session.wait_after(re.compile(rf"ARCE_BAY_CLAIM .*logical={row['logical']} .*reason=BAY_SOURCE_PROOF"), start, 90)
+        # A new same-L source image makes the production D5 copy pass invalidate the in-progress D6 census.
+        start = len(session.process.lines)
+        session.send(f"arce bay release-test copy {row['logical']}", re.compile("ARCE_RELEASE_BAY_COPY .*added=true"))
+        refused = session.wait_after(re.compile(rf"ARCE_BAY_PROOF_REFUSED .*logical={row['logical']} .*retry=200"), start, 90)
+        native.require("retry=200" in refused, "D6 did not select its non-superseding retry spacing")
+        start = len(session.process.lines)
+    session.await_settled("B6_D5", 1, row)
+    session.end("stop", run.args.exit_timeout)
+    intervals = timing.retry_spacing(session.timed_starts[-1], "ARCE_BAY_PROOF_REFUSED ")
+    native.require(all(value[1] >= 200 for value in intervals), "D6 repeated a non-superseding refusal too early")
+    session.start("retry", 2, {})
+    session.await_settled("B6_D5", 2, row)
+    session.end("stop", run.args.exit_timeout)
+    return dict(seed=seed, d6_refusal_intervals=intervals,
+                measured_starts=[timing.observations(lines) for lines in session.timed_starts])
+
+
 def family(run):
     args = run.args
     session = timing.TimedSession(args, run.session, run.evidence)
     session.port = run.port
     try:
-        return turns(run, session) if args.case == "TURNS" else standard(run, session)
+        if args.case == "TURNS":
+            return turns(run, session)
+        if args.case == "D6_RETRY":
+            return d6_retry(run, session)
+        return standard(run, session)
     finally:
         # Native's single owning finally terminates a failed adapter process before cleanup.
         run.process = session.process
