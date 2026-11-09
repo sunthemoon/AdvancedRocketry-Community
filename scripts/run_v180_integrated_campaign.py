@@ -340,6 +340,10 @@ def run_reuse_under_lock(args, pin):
     Only lock/session orchestration differs from cargo.run_loader: do not nest a
     lock or substitute its owner. Existing run_cut code, pins and oracles stay intact.
     """
+    # The ordinary wrapper permits no owner for reuse because it takes its own
+    # lock. Its private campaign dispatch must not inherit that permission.
+    if not args.lock_owner:
+        raise ValueError("Cargo reuse under the campaign lock requires a nonempty lock owner")
     runner = cargo.REUSE[args.family][0]
     args.session_parent = args.session_dir.resolve()
     if not args.session_parent.is_dir() or is_link(args.session_parent) or args.evidence_dir.exists():

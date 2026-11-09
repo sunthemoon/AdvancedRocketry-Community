@@ -387,6 +387,18 @@ class ExecutionTest(unittest.TestCase):
 
 
 class ReuseAdapterTest(unittest.TestCase):
+    def test_already_locked_reuse_refuses_the_wrappers_optional_owner_before_any_effect(self):
+        for owner in (None, ""):
+            args = argparse.Namespace(family="B3-S1-REUSE", lock_owner=owner)
+            with patch.object(campaign.cargo.fluid.native, "require_lock") as require, \
+                    patch.object(campaign.cargo, "verify_candidate") as candidate, \
+                    patch.object(campaign.cargo.loader, "run_cut") as cut:
+                with self.assertRaisesRegex(ValueError, "nonempty lock owner"):
+                    campaign.run_reuse_under_lock(args, {})
+                require.assert_not_called()
+                candidate.assert_not_called()
+                cut.assert_not_called()
+
     def test_reuse_keeps_exact_cut_pins_owner_and_first_contradiction_without_nested_lock(self):
         for family, (module, cases) in campaign.cargo.REUSE.items():
             with tempfile.TemporaryDirectory() as directory:
