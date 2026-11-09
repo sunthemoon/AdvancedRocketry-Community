@@ -54,7 +54,8 @@ public final class CargoRecoveryAcceptanceGameTests {
         boolean done;
         Scenario(GameTestHelper helper, int mode) {
             this.helper = helper; this.mode = mode; origin = new BlockPos(670_008 + mode * 512, 100, 670_008);
-            world = new EscrowCargoGameTestWorld(helper, List.of(origin, origin.offset(32, 0, 0)));
+            // The stale journal's other end is x + 8, on a column boundary; own both discovery-margin columns.
+            world = new EscrowCargoGameTestWorld(helper, List.of(origin, origin.offset(16, 0, 0), origin.offset(32, 0, 0)));
             pacer = new GameTestTickPacer(world.server);
         }
         void tick() {
