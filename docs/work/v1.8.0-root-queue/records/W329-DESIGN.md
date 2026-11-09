@@ -187,6 +187,18 @@ worst case is 128 WARNs per 1,200 ticks server-wide, and the reevaluation WARNs 
 is no per-session total: the count grows with the number of joins and leaves.
 `RocketTransferFencesTest.fenceWarnsRepeatOnEachReasonChangeButNotForAStableReason` pins this behaviour (W328F item 5).
 
+**Correction (W328G, 2026-11-09): cycle bound, not a rolling-window cap.** The preceding "at most two WARNs per
+record per 1,200-tick reevaluation interval" is a steady-state bound per reevaluation-aligned cycle: one reevaluation
+and at most one join or leave reason transition between successive reevaluations. Only reevaluation is throttled,
+to one per record per 1,200 ticks and at most two per server tick; joins and leaves reach `fence` without that throttle.
+Count the first fence separately. Transitions on either side of a cycle boundary can also fall in the same rolling
+window: after the first fence and an observation at tick 0, joins at ticks 1,199 and 1,201 and the reevaluation at tick
+1,200 each log one WARN; repeating the stable join reason adds none. Thus the preceding "worst case is 128 WARNs per
+1,200 ticks server-wide" is not a hard server-wide rolling-window maximum. The 128 figure only sums the steady-state
+two-WARN cycle bound over 64 records, excluding first fences and with each record's cycles aligned to its own
+reevaluations. It does not cap join/leave WARNs per server tick. There is no per-session total. R397's deduplication
+and retry budgets are unchanged.
+
 The assembly fence is a separate mechanism. `ARCE_ROCKET_RECOVERY_FENCED` is logged once per pending transaction while
 it stays fenced (`RocketTransactionRecoveryService.fence`, lines 141 to 147, through `fencedTransactions.add`), so the
 Logs row's 256 bound for assembly transactions stands. That once-per-transaction rule does not apply to transfer fences.
@@ -227,6 +239,14 @@ NOT_LOADED, and the omitted bay-claim repair WARNs add at most one per claim for
 The assembly bound stands. "保持不改动任何文件，保存照常进行" should say that the hold writes no ledger while normal saving still writes every
 other file. "保持原有判定" before ServerStartingEvent should name the manifest filter as an immediate change that is not
 rechecked later: it removes only passengers whose release is already recorded and moves no fuel or cargo.
+
+**Correction (W328G, 2026-11-09): qualification of the proposed WARN rate.** The preceding "at most two per record
+per 1,200 ticks under NOT_LOADED" means a steady-state bound per reevaluation-aligned cycle, not a maximum in every
+rolling 1,200-tick window. Reevaluation runs at most once per record per 1,200 ticks and twice per server tick; between
+successive reevaluations at most one join or leave changes the stored reason. Count first fences separately, and
+account for transitions on both sides of a cycle boundary (WARNs at ticks 1,199, 1,200 and 1,201 are possible).
+There is no unqualified server-wide 128-WARN rolling-window cap and no per-session total. The assembly and bay-claim
+bounds above are separate and unchanged.
 
 ## 6. Tests
 
