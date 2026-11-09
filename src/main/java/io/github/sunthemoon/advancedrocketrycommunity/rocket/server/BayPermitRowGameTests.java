@@ -29,6 +29,9 @@ public final class BayPermitRowGameTests {
                 List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
         var record = flight.record();
         var journal = RocketTransferSavedData.get(server); journal.put(record); journal.flush(server);
+        // Existing gated hold: keep ordinary recovery and D0 from editing this record while the negative steps run.
+        bays(h).ascentComplete(server, journal, record, flight.source());
+        bays(h).unqueueForTests(record.logicalRocketId());
         var intent = intent(server, record, pkg, 0);
         var after = BayRegisteredGameTests.consumed(record, List.of(intent));
         var registered = BayRegisteredGameTests.registered(intent, after.source().contentHash(), after.destination().contentHash());
@@ -37,6 +40,7 @@ public final class BayPermitRowGameTests {
         var index = new int[1]; var claim = new BayClaim[1]; var ticks = new int[1];
         Runnable close = () -> {
             coordinator.forget(record.logicalRocketId()); flight.source().discard(); journal.remove(record.transferId());
+            bays(h).forgetForTests(record.logicalRocketId());
             RocketTransferEntities.releaseFlightTickets(server, record);
         };
         h.onEachTick(() -> {
