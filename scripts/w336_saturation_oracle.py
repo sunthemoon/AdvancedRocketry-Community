@@ -18,7 +18,8 @@ DEVICES = {
 }
 BACKGROUND = [(8192 + (i % 16) * 16, 80, 8192 + (i // 16) * 16) for i in range(255)]
 TARGET = (8704, 80, 8192)
-OVERFLOW = (8736, 80, 8192)
+# Stay outside the target's load/ticking halo: a nearby root would enter the pool early.
+OVERFLOW = (9216, 80, 8192)
 TERRAIN = (1024, 80, 1024)
 
 

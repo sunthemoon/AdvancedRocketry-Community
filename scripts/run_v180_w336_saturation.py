@@ -51,16 +51,24 @@ def disk_terrain(run, expected):
     return actual
 
 
+def observed_denials(run):
+    return {tuple(map(int, match.groups())) for line in run.process.lines
+            if (match := re.search(r"_(?:UNSUPPORTED|GUARDED) pos=(-?\d+), (-?\d+), (-?\d+) (?:status|guard)=", line))}
+
+
 def await_denials(run, positions):
     expected = set(positions)
     deadline = time.monotonic() + 60
     while True:
-        observed = {tuple(map(int, match.groups())) for line in run.process.lines
-                    if (match := re.search(r"_(?:UNSUPPORTED|GUARDED) pos=(-?\d+), (-?\d+), (-?\d+) (?:status|guard)=", line))}
+        observed = observed_denials(run)
         if expected <= observed:
             return
         native.require(time.monotonic() < deadline, "Missing distinct unsupported loads: " + str(expected - observed))
         time.sleep(0.1)
+
+
+def exact_denials(run, positions):
+    native.require(observed_denials(run) == set(positions), "Unexpected collateral unsupported-device load")
 
 
 def family(run):
@@ -86,10 +94,13 @@ def family(run):
     # Every distinct background coordinate must have been observed by its own live loader.
     await_denials(run, oracle.BACKGROUND)
     mutate(run, "minecraft:gold_block")
+    exact_denials(run, oracle.BACKGROUND)
     observed[255] = disk_terrain(run, "minecraft:gold_block")
     run.load([oracle.TARGET]); await_denials(run, [oracle.TARGET]); mutate(run, "minecraft:diamond_block")
+    exact_denials(run, oracle.BACKGROUND + [oracle.TARGET])
     observed[256] = disk_terrain(run, "minecraft:diamond_block")
     run.load([oracle.OVERFLOW]); await_denials(run, [oracle.OVERFLOW]); mutate(run, "minecraft:emerald_block")
+    exact_denials(run, oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW])
     observed[257] = disk_terrain(run, "minecraft:diamond_block")
     # Avoid reload immediately re-saturating the new Level: persist removal of vanilla tickets.
     run.send("forceload remove all"); save(run)

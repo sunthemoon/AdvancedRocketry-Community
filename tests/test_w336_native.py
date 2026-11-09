@@ -90,6 +90,9 @@ class SaturationTest(unittest.TestCase):
     def test_exact_distinct_boundary(self):
         self.assertEqual(len({(x >> 4, z >> 4) for x, _, z in pool.BACKGROUND}), 255)
         self.assertNotIn(pool.TARGET, pool.BACKGROUND)
+        fixtures = pool.BACKGROUND + [pool.TARGET]
+        for x, _, z in fixtures:
+            self.assertGreater(max(abs(x - pool.OVERFLOW[0]), abs(z - pool.OVERFLOW[2])), 16 * 8)
         valid = {255: "minecraft:gold_block", 256: "minecraft:diamond_block", 257: "minecraft:diamond_block"}
         self.assertEqual(pool.check_boundary(valid)["saturation_denial"], 257)
         for at in (255, 256, 257):
@@ -132,6 +135,14 @@ class SaturationTest(unittest.TestCase):
                 "ARCE_SATELLITE_BAY_GUARDED pos=1, 2, 3 guard=FUTURE keepable=false",
                 "ARCE_ITEM_CARGO_UNSUPPORTED pos=4, 5, 6 status=FUTURE keepable=false"]})()
         saturation.await_denials(Fake(), [(1, 2, 3), (4, 5, 6)])
+
+    def test_collateral_load_invalidates_boundary(self):
+        fake = SimpleNamespace(process=SimpleNamespace(lines=[
+            "ARCE_ITEM_CARGO_UNSUPPORTED pos=1, 2, 3 status=FUTURE",
+            "ARCE_ITEM_CARGO_UNSUPPORTED pos=4, 5, 6 status=FUTURE"]))
+        saturation.exact_denials(fake, [(1, 2, 3), (4, 5, 6)])
+        with self.assertRaisesRegex(ValueError, "collateral"):
+            saturation.exact_denials(fake, [(1, 2, 3)])
 
     def test_protection_disabled_is_rejected_by_terrain_oracle(self):
         with patch.object(pool, "check_roots"), patch.object(pool, "terrain", return_value="minecraft:emerald_block"):
