@@ -13,7 +13,8 @@ import net.minecraft.server.MinecraftServer;
  *
  * <p>Before that classification runs at ServerStartingEvent, a missing root is UNCLASSIFIED and the reads keep their
  * no-ledger answer, as the bay receipts do before they start (R390): only rocket joins while the spawn chunks load read
- * then, a loadable ledger is already visible through vanilla's lazy load, and every action rechecks after startup. A
+ * then, a loadable ledger is already visible through vanilla's lazy load, and every action rechecks after startup,
+ * except the release manifest filter, which removes already-released passengers at once (W328F correction). A
  * missing root read without the runtime answers NOT_LOADED, and so does any read off the server thread or without an
  * Overworld, before it touches storage (W328F). The lookup never creates a ledger or a file.
  */
@@ -36,7 +37,7 @@ public record EscrowLedgerLookup(State state, @Nullable ResourceEscrowSavedData 
                 () -> ResourceEscrowSavedData.existing(server), () -> missingState(server));
     }
 
-    /** {@link #of(MinecraftServer)} over its three inputs, in its order; unit tests observe each storage access. */
+    /** {@link #of(MinecraftServer)} over its four inputs, in its order; unit tests observe each storage access. */
     static EscrowLedgerLookup of(boolean serverThread, boolean overworld, Supplier<ResourceEscrowSavedData> storage,
                                  Supplier<State> missing) {
         if (!serverThread || !overworld) { return new EscrowLedgerLookup(State.NOT_LOADED, null); }
