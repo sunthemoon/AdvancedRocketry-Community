@@ -4,7 +4,7 @@ import sys
 import tempfile
 import unittest
 from copy import deepcopy
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as bay
@@ -14,6 +14,20 @@ import run_v180_bay_exit_cuts as exit_runner
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_online_copy_disk_requires_the_online_rider_on_every_saved_image(self):
+        census = dict(rows=["copy:minecraft:overworld:hash:0:0:NONE:0:false"])
+        entity = dict(UUID="copy", RocketEntityData=dict(assembly_transaction_id="logical",
+            snapshot=dict(content_hash="hash"), resource_escrow=dict(resource_epoch=0),
+            flight_data=dict(passengers=dict(assignments=[dict(passenger_id=bay.ONLINE_RIDER)]))))
+        root = dict(Position=[0, 0], Entities=[entity])
+        with patch.object(bay, "chunk_record", return_value=root):
+            self.assertEqual(1, len(bay.inspect_copy_disk(Path("fixture"), "logical", census,
+                                                        passenger=bay.ONLINE_RIDER)))
+        for seats in ([], [dict(passenger_id="00000000-0000-4000-8000-000000185001")]):
+            entity["RocketEntityData"]["flight_data"]["passengers"]["assignments"] = seats
+            with patch.object(bay, "chunk_record", return_value=root), self.assertRaises(bay.smoke.SmokeError):
+                bay.inspect_copy_disk(Path("fixture"), "logical", census, passenger=bay.ONLINE_RIDER)
+
     def test_snapshot_keeps_authority_and_entities_not_server_or_generated_terrain(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

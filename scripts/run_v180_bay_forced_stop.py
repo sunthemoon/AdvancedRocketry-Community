@@ -768,7 +768,8 @@ def run_case(run: Session, case: str) -> dict:
                            staging=(world / "data" / STAGING).exists())
     row["cut_disk"]["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
     if spec.get("copies"):
-        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"])
+        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"],
+            passenger=ONLINE_RIDER if spec.get("online") else "00000000-0000-4000-8000-000000185001")
     row["restarts"] = []
     for restart in (1, 2):
         hooked = first_tick_satellite(case, fixture) if fixture is not None and restart == 1 else None
@@ -856,7 +857,8 @@ def copy_row(row: str) -> dict:
                 ledger=parts[6], epoch=int(parts[7]))
 
 
-def inspect_copy_disk(world: Path, logical: str, census: dict) -> list[dict]:
+def inspect_copy_disk(world: Path, logical: str, census: dict,
+                      passenger: str = "00000000-0000-4000-8000-000000185001") -> list[dict]:
     """After the kill, prove the actual fixture images were saved before testing their restart disposition."""
     expected = {copy["uuid"]: copy for copy in map(copy_row, census["rows"])}
     dimensions = {"minecraft:overworld": world, "advancedrocketrycommunity:moon": world / "dimensions/advancedrocketrycommunity/moon"}
@@ -878,7 +880,7 @@ def inspect_copy_disk(world: Path, logical: str, census: dict) -> list[dict]:
                           ledger=uuid_of(wrapper.get("ledger_id")) or "NONE", epoch=wrapper.get("resource_epoch"))
             seats = data.get("flight_data", {}).get("passengers", {}).get("assignments", [])
             if actual != expected.get(identity) or not any(uuid_of(seat.get("passenger_id"))
-                    == "00000000-0000-4000-8000-000000185001" for seat in seats):
+                    == passenger for seat in seats):
                 raise smoke.SmokeError(f"Saved copy differs from the observed fixture: {actual}")
             found.append(actual)
     if len(found) != len(expected) or {row["uuid"] for row in found} != set(expected):
