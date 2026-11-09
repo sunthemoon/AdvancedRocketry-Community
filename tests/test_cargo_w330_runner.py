@@ -56,7 +56,7 @@ class CargoW330RunnerTest(unittest.TestCase):
             return dict(id=owner, logical=owner, owner=owner, amount=quantity, epoch=epoch, markers=[], role="LOAD" if load else "UNLOAD")
         return dict(rockets=[rocket("A", 64.5, before[0], 0), rocket("B", 68.5, after[0] if restarted else before[0], int(restarted))],
                     device=device("A", before[1], 0), second=device("B", after[1] if restarted else before[1], int(restarted)), journal=0,
-                    ledger=dict(records=[dict(op_id=n, owner="A", phase="REPAIR", reason="OTHER_STATE", transfer_guard=dict(rocket_id=n)) for n in range(16)],
+                    ledger=dict(ledger_id="fixture-ledger", records=[dict(op_id=n, owner="A", phase="REPAIR", reason="OTHER_STATE", transfer_guard=dict(rocket_id=n)) for n in range(16)],
                                 issued_through=17 if restarted else 16, tombstones=[], floors=[], rocket_authorities=[], armed_flights=[]))
 
     def test_all_four_caps_require_refusal_and_one_independent_transfer_after_both_restarts(self):
