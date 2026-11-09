@@ -87,6 +87,18 @@ final class R042ReleaseTestGateTest {
         }
     }
 
+    @Test void theR042RegistrationItselfRequiresPermissionTwo() throws Exception {
+        // Register this subtree alone: earlier registrations must not supply its permission predicate.
+        var dispatcher = new CommandDispatcher<CommandSourceStack>();
+        R042ReleaseTestCommands.register(new RegisterCommandsEvent(dispatcher, Commands.CommandSelection.DEDICATED, null));
+        var releaseTest = dispatcher.getRoot().getChild("arce").getChild("bay").getChild("release-test");
+        MinecraftServer server = servers.server(directory, false);
+        for (int permission = 0; permission <= 4; permission++) {
+            var source = source(server).withPermission(permission);
+            assertEquals(permission >= 2, releaseTest.canUse(source), "permission " + permission);
+        }
+    }
+
     private static CommandSourceStack source(MinecraftServer server) {
         return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null, 4, "gate-test", Component.literal("gate-test"),
                 server, null);

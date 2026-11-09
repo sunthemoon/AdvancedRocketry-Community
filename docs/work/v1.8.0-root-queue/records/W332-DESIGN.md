@@ -76,7 +76,8 @@ both envelopes, the ledger and the authority counts unchanged.
 
 ### 3.1 `U_BAY`: bay receipts, unknown presence (TASK item 2, first trigger)
 
-**Correction (smoke 2):** NOT_COVERED on this host; see section 6, item 1. Sections 3.1 and 3.2 are kept as designed.
+**Historical correction (smoke 2), superseded by the W343 correction below:** the original ACL fixture was NOT_COVERED.
+Sections 3.1 and 3.2 retain that original design for the historical smoke records.
 
 - **Setup.** A typed seed of two REJECTED, unreleased receipts (W325's seeder; retained 2, pending 0).
 - **S0.** Normal start: one `ARCE_BAY_RECEIPTS_INDEX state=LOADED receipts=2`, no NOT_LOADED WARN. Stop. The runner
@@ -205,7 +206,8 @@ cases run on C2 with the rest of the matrix, R386).
 These were added after native smokes 1 and 2 on local JARs. No oracle was weakened; each correction is a harness or
 fixture defect, or a case this host cannot reach.
 
-1. **`U_BAY` and `U_LEDGER` (sections 3.1 and 3.2) are NOT_COVERED on this host, and the runner no longer has them.**
+1. **Historical W332 observation, superseded by the W343 correction below:** `U_BAY` and `U_LEDGER` were NOT_COVERED
+   with the ACL fixture, and W332 removed them from its runner.
    What was tried (smokes 1 and 2, and probes under `D:/GitHub/ARCE-Task-Evidence/root-queue/W332/acl-probe/`):
    - A deny entry for the server's user on the receipt file alone does not make the status check fail. The harness
      token has SeBackupPrivilege enabled and bypasses deny entries. A basic-user token of the same user
@@ -216,9 +218,8 @@ fixture defect, or a case this host cannot reach.
      created and fails with `AccessDeniedException: .\world-U_BAY\data` ("Failed to start the minecraft server"). That is
      before `ServerAboutToStartEvent`, so W328's pre-start check never runs, and the JVM did not exit within the runner's
      420-second window.
-   - So, while vanilla can list the world folder, the no-follow status check of a managed file succeeds whatever the
-     file's own access list says. W328's unit tests (`UnknownPresenceStartupTest`, `EscrowLedgerStartupTest`,
-     `BayReceiptsStartupReasonTest`) remain the only evidence of the refusal.
+   - Those ACL experiments did not reach UNKNOWN while allowing vanilla's walk. They do not establish that every
+     possible Windows trigger is impossible. At W332's conclusion only its cited unit tests covered this refusal.
    - The disabled-protection check of family U (section 4) is dropped with the family.
 2. **Admission attempts wait for the transfer journal** (smoke 1). Fresh cells and fresh restarts answered
    `TRANSFER_JOURNAL_UNPROVED` before the journal's checked write covered their rockets. The probe now waits, as
@@ -232,3 +233,23 @@ fixture defect, or a case this host cannot reach.
 6. **`L_LEDGER`'s dismount row** (section 3.4) took its NOT_COVERED branch in smoke 2: the rider's login under the
    hold did not seat it (seat 0 stayed assigned). The hold starts only at startup and every mount is vetoed under it,
    so no player can be seated on a rocket during the session; the vanilla dismount cannot be exercised natively.
+
+## 7. W343 labelled correction (2026-11-10, W340 finding F3)
+
+W340's independent probes disproved the broader host-impossibility inference in section 6. A retained Windows handle
+with `FileDispositionInfo.DeleteFile=true` leaves the directory entry visible to vanilla's walk while making the
+no-follow attribute query fail. Clearing that disposition before closing the handle restores access without deleting
+the file. No production seam or ACL change is needed.
+
+The restored `U_BAY` and `U_LEDGER` cases use that harness-only handle on valid current-schema bytes. A separate Java
+probe uses the pinned packaged JAR and installed libraries to observe the actual vanilla validator, actual ARCE
+presence query, migration diagnostic, managed type and `isPresenceUnknown()`. S1 then starts the native server with the
+same handle held. Its oracle requires one typed `ARCE-BETA-2000` refusal with the storage instruction first, no READY or
+receipt-index line, and identical SHA-256 manifests for every world file after restoration. The handle is cleared in
+a `finally` before closing, and the file hash is verified. S2 and S3 are clean recovery starts, so the restored cases
+include a second clean restart in addition to the refused restart. An unreachable native refusal remains NOT_COVERED;
+the metadata probe alone cannot pass the native case. Actual W343 results belong in [W343](W343.md).
+
+W343 also tightens L_LEDGER's S2 oracle to require a present, changed ledger, and the P cases to require data-bay menu
+`NONE / DEPLOYMENT_CAPACITY` (server) or `NONE / OWNER_PENDING_FULL` (owner), in addition to all existing byte, package
+and receipt checks. W332's older smoke results retain their original identity and limitations.

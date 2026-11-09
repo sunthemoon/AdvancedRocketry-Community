@@ -7,13 +7,13 @@ checks each start's logs, console answers and stopped-world bytes:
 * ``N_BAY``: the gated load-failure seam keeps the bay receipts NOT_LOADED for S1, with the audit's server-wide effects,
   and S2 recovers;
 * ``L_LEDGER``: the same for the escrow ledger and W329's protective answers;
+* ``U_BAY`` and ``U_LEDGER``: a reversible Windows delete-pending handle reaches UNKNOWN presence; startup refuses
+  without changing any world file, then two clean starts recover after the handle is released;
 * ``P_SERVER`` and ``P_OWNER``: released and REPAIR receipts hold the shared pending pool over both restarts; fuel, the
   four cargo kinds and a bay deployment are refused with nothing changed, another owner is admitted, and no online
   command releases them.
 
-Production admission stays off: every fixture is a gated release-test command or start property. W328's refusal of an
-unknown presence (TASK item 2, first trigger) is not a case here: this host cannot make a managed file's status check fail
-before vanilla's own world-folder walk refuses the start (records/W332-DESIGN.md, section 6).
+Production admission stays off: every fixture is a gated release-test command, start property or harness-only OS handle.
 """
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ import bay_integrated_evidence as evidence_tools
 import loader_cut_nbt as nbt
 import run_dedicated_server_smoke as smoke
 import run_v180_bay_forced_stop as bay
+import r042_windows_presence as presence
 from run_v180_escrow_forced_stop import digest
 from run_v180_escrow_pre_f2 import assert_pin
 
@@ -83,12 +84,14 @@ PLAIN_STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) ho
 
 # One family per case; rows name the TASK items (records/W332-DESIGN.md section 3).
 CASES = {
+    "U_BAY": dict(family="U", file="receipts", type="BAY_RECEIPTS", rows=("TASK 2: unknown bay presence",)),
+    "U_LEDGER": dict(family="U", file="ledger", type="RESOURCE_ESCROW", rows=("TASK 2: unknown ledger presence",)),
     "N_BAY": dict(family="N", rows=("TASK 2: present but not loaded",)),
     "L_LEDGER": dict(family="L", rows=("TASK 3: the escrow ledger NOT_LOADED",)),
-    "P_SERVER": dict(family="P", pending=64, refusal="ESCROW_FULL", rows=("TASK 4: the server pool",)),
-    "P_OWNER": dict(family="P", pending=16, refusal="OWNER_PENDING_FULL", other=True, rows=("TASK 4: per owner",)),
+    "P_SERVER": dict(family="P", pending=64, refusal="ESCROW_FULL", bay_reason="DEPLOYMENT_CAPACITY", rows=("TASK 4: the server pool",)),
+    "P_OWNER": dict(family="P", pending=16, refusal="OWNER_PENDING_FULL", bay_reason="OWNER_PENDING_FULL", other=True, rows=("TASK 4: per owner",)),
 }
-SCRATCH = {"N": "N_BAY", "L": "L_LEDGER", "P": "P_SERVER"}
+SCRATCH = {"U": "U_BAY", "N": "N_BAY", "L": "L_LEDGER", "P": "P_SERVER"}
 
 
 def require(condition: bool, message: str) -> None:
@@ -399,7 +402,14 @@ def bay_refused(run: Run, case: str) -> dict:
     require(status["consumed"] == [None, None] and not status["receipts"] and status["packages"] == fixture["packages"],
             f"{case}: a refused deployment consumed a bay or wrote a receipt: {status}")
     shown = bay.DEPLOYMENT_STATUS.search(run.send(f"arce bay release-test deployment-status {fixture['data']}", bay.DEPLOYMENT_STATUS))
-    return dict(logical=fixture["logical"], status=status, menu=dict(phase=shown[2], reason=shown[3]))
+    menu = dict(phase=shown[2], reason=shown[3])
+    check_bay_menu(case, menu)
+    return dict(logical=fixture["logical"], status=status, menu=menu)
+
+
+def check_bay_menu(case: str, menu: dict) -> None:
+    expected = dict(phase="NONE", reason=CASES[case]["bay_reason"])
+    require(menu == expected, f"{case}: the data bay answered {menu}, expected {expected}")
 
 
 def new_world(run: Run, case: str) -> Path:
@@ -414,6 +424,121 @@ def new_world(run: Run, case: str) -> Path:
 
 def snapshot(run: Run, world: Path, case: str, label: str) -> dict:
     return evidence_tools.snapshot_world(world, run.evidence / f"{case}-{label}-raw")
+
+
+# Family U --------------------------------------------------------------------------------------------------------------
+
+UNKNOWN_REFUSAL = re.compile(r"\[ARCE-BETA-2000\] Beta world data check blocked startup;")
+STORAGE_HINT = "Fix storage access to the world folder and restart; never delete, move or restore single files. If repair is still needed after that:"
+# Forge/vanilla report the exception again after the one ARCE diagnostic. These exact shutdown diagnostics are audited.
+START_FAILURE = re.compile(r"/ERROR\].*(?:Encountered an unexpected exception|Failed to start the minecraft server)")
+
+
+def world_manifest(world: Path) -> dict:
+    files = sorted(world.rglob("*"))
+    require(len(files) <= 100000, "World manifest exceeds the fixture bound")
+    require(not any(smoke.is_link_or_junction(file) for file in files), "World manifest contains a link")
+    return {file.relative_to(world).as_posix(): digest(file) for file in files if file.is_file()}
+
+
+def check_unknown_probe(text: str, type_name: str) -> None:
+    for expected in ("VANILLA_VALIDATE=[]", "ACTUAL_ARCE_PRESENCE=UNKNOWN", "PRESENCE_UNKNOWN=true",
+                     f"DATA_TYPE=Optional[{type_name}]", "DIAGNOSTIC=ARCE-BETA-2000"):
+        require(expected in text.splitlines(), f"UNKNOWN-presence probe missing {expected}")
+
+
+def check_unknown_refusal(lines: list[str], case: str) -> dict:
+    spec = CASES[case]
+    refused = [line.strip() for line in lines if UNKNOWN_REFUSAL.search(line)]
+    require(len(refused) == 1, f"{case}/1: expected one ARCE-BETA-2000 refusal: {refused}")
+    line = refused[0]
+    reason = f"type={spec['type']}; reason={FILES[spec['file']][:-4]} presence is unknown:"
+    require(reason in line and ". " + STORAGE_HINT + " Keep the world stopped." in line,
+            f"{case}/1: wrong type, reason or storage-first hint: {line}")
+    require(not any(smoke.READY_MARKER.search(line) for line in lines) and not matches(lines, BAY_INDEX),
+            f"{case}/1: refused startup reached world loading")
+    # Do not permit any unrelated error, or arbitrary repeats of an expected startup failure.
+    extras = sum(1 for line in lines if START_FAILURE.search(line))
+    require(extras <= 1, f"{case}/1: repeated startup errors")
+    errors = audit_errors(lines, {UNKNOWN_REFUSAL: 1, START_FAILURE: extras})
+    require(not errors, f"{case}/1: unexpected ERROR/FATAL: {errors}")
+    return dict(diagnostic="ARCE-BETA-2000", type=spec["type"], storage_hint_first=True, line=line)
+
+
+def run_u(run: Run, case: str) -> dict:
+    spec = CASES[case]
+    world = new_world(run, case)
+    row = dict(case=case, rows=list(spec["rows"]), starts=[])
+    if case == "U_BAY":
+        row["seed"] = evidence_tools.seed_capacity_world(world, 2, phase="REJECTED")
+    run.start(case, 0, {})
+    if case == "U_LEDGER":
+        run.forceload()
+        run.cell("S", P2)
+        check_admitted(run.attempt("S", "FUEL"))
+        run.await_completed("S", ("FUEL",))
+        run.save()
+    stopped = run.stop(case, 0)
+    require(not matches(stopped["lines"], BAY_NOT_LOADED) and not matches(stopped["lines"], LEDGER_NOT_LOADED),
+            f"{case}/0: NOT_LOADED before the trigger")
+    if case == "U_BAY":
+        require(matches(stopped["lines"], BAY_INDEX) == [("LOADED", "2")], f"{case}/0: seed did not load")
+    file = world / "data" / FILES[spec["file"]]
+    before = world_manifest(world)
+    require(file.relative_to(world).as_posix() in before, f"{case}/0: no fixture file")
+    row["starts"].append(dict(start=0, disk=disk(world)))
+    (run.evidence / f"{case}-before.json").write_text(json.dumps(before, indent=2), encoding="utf-8")
+    entry = dict(start=1)
+    try:
+        with presence.delete_pending(file) as held:
+            entry["handle"] = held
+            probe_text = presence.probe(run.args.java, run.args.jar, run.session, world, file.name,
+                                        run.evidence / f"{case}-presence.log")
+            check_unknown_probe(probe_text, spec["type"])
+            entry["isPresenceUnknown"] = True
+            bay.require_lock(run.args.lock_owner)
+            require(min(shutil.disk_usage(drive).free for drive in ("C:/", "D:/")) >= 10 * 1024**3,
+                    "Native refusal start: under 10 GiB free")
+            command = bay._server_command(run.args.java)
+            command[2] = "-Xmx4G"
+            if run.args.scratch:
+                command.insert(4, f"-Dadvancedrocketrycommunity.w332Scratch={run.args.scratch}")
+            process = smoke.CapturedProcess(command, run.session, run.evidence / f"{case}-1.log")
+            run.process = process
+            try:
+                # This start must stop itself before READY, not be made to stop by a console command.
+                entry["exit_code"] = process.finish(run.args.startup_timeout)
+                require(entry["exit_code"] != 0, f"{case}/1: refusal exited successfully")
+                entry["refusal"] = check_unknown_refusal(process.lines, case)
+            finally:
+                process.abort()
+                run.process = None
+    finally:
+        # Capture this even when the native oracle fails; the handle context has already restored the disposition.
+        after = world_manifest(world)
+        (run.evidence / f"{case}-after.json").write_text(json.dumps(after, indent=2), encoding="utf-8")
+        (run.evidence / f"{case}-restoration.json").write_text(json.dumps(dict(
+            file=str(file), sha256= digest(file), unchanged=before == after), indent=2), encoding="utf-8")
+        require(before == after, f"{case}/1: a world file changed during the refused start")
+    entry["world_unchanged"] = True
+    row["starts"].append(entry)
+    # A recovery start AND a second clean restart, in addition to the refused restart.
+    for restart in (2, 3):
+        run.start(case, restart, {})
+        entry = dict(start=restart)
+        if case == "U_LEDGER":
+            require(run.escrow_status() == "present", f"{case}/{restart}: ledger did not load")
+            entry["fill"] = run.report("S")["FUEL"]
+            require(completed(entry["fill"], "FUEL"), f"{case}/{restart}: earlier fill changed")
+        stopped = run.stop(case, restart)
+        require(not matches(stopped["lines"], BAY_NOT_LOADED) and not matches(stopped["lines"], LEDGER_NOT_LOADED)
+                and not any(UNKNOWN_REFUSAL.search(line) for line in stopped["lines"]), f"{case}/{restart}: not a clean start")
+        if case == "U_BAY":
+            require(matches(stopped["lines"], BAY_INDEX) == [("LOADED", "2")], f"{case}/{restart}: receipts did not load")
+        require(digest(file) == before[file.relative_to(world).as_posix()], f"{case}/{restart}: fixture bytes changed")
+        entry["disk"] = disk(world)
+        row["starts"].append(entry)
+    return row
 
 
 # Family N --------------------------------------------------------------------------------------------------------------
@@ -590,7 +715,8 @@ def run_l(run: Run, case: str) -> dict:
     stopped = run.stop(case, 2)
     require(not matches(stopped["lines"], LEDGER_NOT_LOADED), f"{case}/2: the ledger was NOT_LOADED")
     entry["disk"] = disk(world)
-    require(entry["disk"]["ledger"] != ledger0, f"{case}/2: the admitted transfers did not change the ledger")
+    require(entry["disk"]["ledger"] is not None and entry["disk"]["ledger"] != ledger0,
+            f"{case}/2: the admitted transfers did not leave a present, changed ledger")
     entry["raw"] = snapshot(run, world, case, "2")
     row["starts"].append(entry)
     return row
@@ -622,6 +748,7 @@ def run_p(run: Run, case: str) -> dict:
         entry["report"] = run.report("A")
         require(all(untouched(entry["report"][kind], kind) for kind in KINDS), f"{case}/{restart}: a refused cell changed")
         entry["bay"] = bay_refused(run, case)
+        check_bay_menu(case, entry["bay"]["menu"])
         entry["retire"] = {f"{phase}{'_RELEASED' if released else ''}": run.retire(satellite)
                            for (phase, released), satellite in sorted(by_kind.items())}
         for name, answer in entry["retire"].items():
@@ -644,7 +771,7 @@ def run_p(run: Run, case: str) -> dict:
     return row
 
 
-RUNNERS = dict(N=run_n, L=run_l, P=run_p)
+RUNNERS = dict(U=run_u, N=run_n, L=run_l, P=run_p)
 
 
 def run(args) -> dict:
@@ -688,6 +815,8 @@ def run(args) -> dict:
                 if runner.process is not None:
                     runner.process.abort(); runner.process = None
                 report["cases"].append(dict(case=case, status="FAILED", error=str(failure)))
+                if CASES[case]["family"] == "U":
+                    report["cases"][-1]["coverage"] = "NOT_COVERED"
                 world = session / ("world-" + case)
                 if world.is_dir():
                     report["cases"][-1]["raw"] = evidence_tools.snapshot_world(world, evidence / f"{case}-failure-raw")

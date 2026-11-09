@@ -1,5 +1,6 @@
 """W332: the R-042 native runner's seeds, parsers and oracles, without a server."""
 from pathlib import Path
+import os
 import re
 import sys
 import tempfile
@@ -115,6 +116,78 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(("PREPARED", "r", "TRANSIT", "50.0", "", "false", ""), match.groups()[5:12])
         self.assertIsNone(r042.bay.STATUS.search(line), "W325's status regex now accepts a rocket without bays")
 class OracleTests(unittest.TestCase):
+    def test_the_pool_bay_requires_its_own_phase_and_reason(self):
+        fixture = dict(logical="L", data="satellite", packages=["data", "solar"])
+        class Fake:
+            args = SimpleNamespace(flight_timeout=1, settle_timeout=1)
+            def __init__(self, phase, reason, **changes):
+                self.phase, self.reason, self.changes = phase, reason, changes
+            def status(self, logical):
+                return dict(dict(claim="NONE", state="LANDED", consumed=[None, None], receipts=[],
+                                 packages=fixture["packages"]), **self.changes)
+            def send(self, command, marker):
+                return f"ARCE_RELEASE_BAY_DEPLOYMENT_STATUS satellite=satellite phase={self.phase} reason={self.reason}"
+        with patch.object(r042.bay, "launch_fixture", return_value=fixture):
+            for case, expected in (("P_SERVER", "DEPLOYMENT_CAPACITY"), ("P_OWNER", "OWNER_PENDING_FULL")):
+                self.assertEqual(dict(phase="NONE", reason=expected), r042.bay_refused(Fake("NONE", expected), case)["menu"])
+                for phase, reason in (("NONE", "DEPLOYMENT_UNAVAILABLE"), ("NONE", "NONE"),
+                                      ("NONE", "OWNER_PENDING_FULL" if case == "P_SERVER" else "DEPLOYMENT_CAPACITY"),
+                                      ("REPAIR", expected)):
+                    with self.subTest(case=case, phase=phase, reason=reason), self.assertRaises(smoke.SmokeError):
+                        r042.bay_refused(Fake(phase, reason), case)
+                for changes in (dict(consumed=["s", None]), dict(receipts=["r"]), dict(packages=["different"])):
+                    with self.subTest(changes=changes), self.assertRaises(smoke.SmokeError):
+                        r042.bay_refused(Fake("NONE", expected, **changes), case)
+
+    def test_run_l_requires_a_present_changed_final_ledger(self):
+        class Fake:
+            restart = -1
+            def start(self, case, restart, properties): self.restart = restart
+            def forceload(self): pass
+            def cell(self, name, owner): return {}
+            def attempt(self, name, kinds="ALL"):
+                return {kind: attempt("ESCROW_PENDING" if self.restart == 1 else "READY",
+                                      admitted=self.restart != 1) for kind in (r042.KINDS if kinds == "ALL" else kinds.split(","))}
+            def await_completed(self, name, kinds=r042.KINDS):
+                return {kind: report(kind, r042.AFTER[kind], epochs=(1, 1)) for kind in r042.KINDS}
+            def plain(self): return dict(logical="L", rocket="R")
+            def rider(self, action, logical): return dict(mounted=action == "board", seat=0)
+            def save(self): pass
+            def escrow_status(self): return "not-loaded" if self.restart == 1 else "present"
+            def launch(self, rocket, checkpoint):
+                return dict(code="TRANSFER_JOURNAL_BLOCKED" if self.restart == 1 else "SUCCESS")
+            def report(self, name):
+                return self.await_completed(name) if name == "S" else {
+                    kind: report(kind, locked=True, protected=True, refusal="ESCROW_PENDING") for kind in r042.KINDS}
+            def stop(self, case, restart, allowed=None):
+                return dict(lines=[] if restart != 1 else [
+                    "ARCE_RELEASE_LOAD_FAILURE type=RESOURCE_ESCROW injected=true",
+                    "[x/ERROR] Error loading saved data: advancedrocketrycommunity_resource_escrow",
+                    "ARCE_ESCROW_LEDGER_NOT_LOADED reason=LOAD_FAILED file=advancedrocketrycommunity_resource_escrow.dat; test"])
+        for final in (None, "baseline", "changed"):
+            with self.subTest(final=final), patch.object(r042, "new_world", return_value=Path("unused")), \
+                    patch.object(r042, "snapshot", return_value={}), patch.object(r042, "disk", side_effect=[
+                        {"ledger": "baseline"}, {"ledger": "baseline"}, {"ledger": final}]):
+                if final == "changed":
+                    self.assertEqual(final, r042.run_l(Fake(), "L_LEDGER")["starts"][-1]["disk"]["ledger"])
+                else:
+                    with self.assertRaisesRegex(smoke.SmokeError, "present, changed ledger"):
+                        r042.run_l(Fake(), "L_LEDGER")
+
+    def test_run_p_also_requires_the_case_specific_bay_reason(self):
+        class Fake:
+            def start(self, *args): pass
+            def forceload(self): pass
+            def cell(self, *args): return {}
+            def pending(self): return dict(pending=64, retained=64)
+            def attempt(self, name): return {kind: attempt() for kind in r042.KINDS}
+            def report(self, name): return {kind: report(kind) for kind in r042.KINDS}
+        with patch.object(r042, "new_world", return_value=Path("unused")), \
+                patch.object(r042, "seed_pool", return_value=dict(rows=[], satellites=[])), \
+                patch.object(r042, "bay_refused", return_value=dict(menu=dict(phase="NONE", reason="NONE"))):
+            with self.assertRaisesRegex(smoke.SmokeError, "data bay answered"):
+                r042.run_p(Fake(), "P_SERVER")
+
     def test_refusals_must_change_nothing_and_answer_the_expected_status(self):
         rows = {kind: attempt() for kind in r042.KINDS}
         self.assertEqual({kind: "ESCROW_FULL" for kind in r042.KINDS}, r042.check_refused(rows, "ESCROW_FULL", "absent"))
@@ -185,7 +258,7 @@ class InvocationTests(unittest.TestCase):
 
     def test_every_family_has_a_runner_and_every_scratch_family_a_case(self):
         self.assertEqual(set(r042.RUNNERS), {spec["family"] for spec in r042.CASES.values()})
-        self.assertEqual({"N", "L", "P"}, set(r042.RUNNERS), "the U family is NOT_COVERED on this host (W332-DESIGN section 6)")
+        self.assertEqual({"U", "N", "L", "P"}, set(r042.RUNNERS))
         self.assertTrue(all(case in r042.CASES and r042.CASES[case]["family"] == family for family, case in r042.SCRATCH.items()))
 
     def test_the_candidate_arguments_are_required(self):
@@ -194,6 +267,82 @@ class InvocationTests(unittest.TestCase):
         self.assertIn("candidate = bay.check_candidate(args)", source)
         self.assertIn("bay.recheck_candidate(candidate)", source)
         self.assertTrue(re.search(r"--lock-owner\", required=True", source))
+
+
+class UnknownPresenceTests(unittest.TestCase):
+    def test_handle_is_restored_and_closed_in_order_even_if_the_body_or_set_fails(self):
+        for failure_at in (None, "body", "set"):
+            events = []
+            class Api:
+                def open(self, file): events.append("open"); return 7
+                def disposition(self, handle, pending):
+                    self_handle.assertEqual(7, handle)
+                    events.append(pending)
+                    if pending and failure_at == "set": raise RuntimeError("set failed")
+                def close(self, handle): events.append("close")
+            self_handle = self
+            with self.subTest(failure_at=failure_at), tempfile.TemporaryDirectory() as directory:
+                file = Path(directory) / "valid.dat"
+                file.write_bytes(b"valid")
+                def exercise():
+                    with r042.presence.delete_pending(file, Api()):
+                        if failure_at == "body": raise RuntimeError("body failed")
+                if failure_at:
+                    with self.assertRaises(RuntimeError): exercise()
+                else:
+                    exercise()
+                self.assertEqual(["open", True, False, "close"], events)
+                self.assertEqual(b"valid", file.read_bytes())
+
+    def test_a_handle_is_not_closed_if_clearing_the_disposition_fails(self):
+        events = []
+        class Api:
+            def open(self, file): return 7
+            def disposition(self, handle, pending):
+                if not pending: raise OSError("clear failed")
+            def close(self, handle): events.append("closed")
+        with tempfile.TemporaryDirectory() as directory:
+            file = Path(directory) / "valid.dat"
+            file.write_bytes(b"valid")
+            with self.assertRaisesRegex(OSError, "clear failed"):
+                with r042.presence.delete_pending(file, Api()): pass
+            self.assertEqual([], events)
+
+    @unittest.skipUnless(os.name == "nt", "Windows delete-pending trigger")
+    def test_real_delete_pending_handle_keeps_directory_entry_and_restores_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            file = Path(directory) / "valid.dat"
+            file.write_bytes(b"valid")
+            with r042.presence.delete_pending(file):
+                self.assertIn(file.name, os.listdir(directory))
+                with self.assertRaises(PermissionError): file.read_bytes()
+            self.assertEqual(b"valid", file.read_bytes())
+
+    def test_probe_requires_vanilla_walk_unknown_marker_type_and_diagnostic(self):
+        lines = ["VANILLA_VALIDATE=[]", "ACTUAL_ARCE_PRESENCE=UNKNOWN", "PRESENCE_UNKNOWN=true",
+                 "DATA_TYPE=Optional[BAY_RECEIPTS]", "DIAGNOSTIC=ARCE-BETA-2000"]
+        r042.check_unknown_probe("\n".join(lines), "BAY_RECEIPTS")
+        for index in range(len(lines)):
+            with self.subTest(index=index), self.assertRaises(smoke.SmokeError):
+                r042.check_unknown_probe("\n".join(lines[:index] + lines[index + 1:]), "BAY_RECEIPTS")
+        with self.assertRaises(smoke.SmokeError):
+            r042.check_unknown_probe("\n".join(lines), "RESOURCE_ESCROW")
+
+    def test_refusal_needs_correct_type_unknown_reason_storage_first_and_no_world_loading(self):
+        for case in ("U_BAY", "U_LEDGER"):
+            spec = r042.CASES[case]
+            line = ERROR + (f"[ARCE-BETA-2000] Beta world data check blocked startup; type={spec['type']}; "
+                            f"reason={r042.FILES[spec['file']][:-4]} presence is unknown: its file status check failed. "
+                            + r042.STORAGE_HINT + " Keep the world stopped. Whole-world recovery.")
+            self.assertEqual(spec["type"], r042.check_unknown_refusal([line], case)["type"])
+            for broken in ([line, line], [line.replace("presence is unknown", "unreadable")],
+                           [line.replace(spec["type"], "OTHER")], [line.replace(r042.STORAGE_HINT, "Fix it")],
+                           [line, PREFIX.replace("advancedrocketrycommunity/", "minecraft/DedicatedServer")
+                            + 'Done (2.3s)! For help, type "help"'],
+                           [line, PREFIX + "ARCE_BAY_RECEIPTS_INDEX state=LOADED receipts=2"],
+                           [line, ERROR + "unrelated failure"]):
+                with self.subTest(case=case, broken=broken), self.assertRaises(smoke.SmokeError):
+                    r042.check_unknown_refusal(broken, case)
 
 
 if __name__ == "__main__":
