@@ -85,6 +85,7 @@ def run_case(run, case):
         raise bay.smoke.SmokeError(f"Delegation before release acknowledgement: {at_cut} {cut_flags}")
     run.end("kill", run.args.exit_timeout)
     result = dict(case=case, fixture=fixture, seed=seed, at_cut=at_cut, cut_flags=cut_flags, restarts=[])
+    result["cut_raw"] = bay.evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
     for restart in (1, 2):
         # STAGED has not made released durable: the blocked view remains until the release can be acknowledged.
         process = run.start(case, restart, dict(bayRegistryBlocked="true"))
@@ -106,6 +107,8 @@ def run_case(run, case):
             raise bay.smoke.SmokeError(f"Released authority or pending charge changed: {observed} {pending}")
         result["restarts"].append(dict(restart=restart, status=status, flags=observed, pending=pending,
                                        exit_code=stop(run, process), receipts_sha256=bay.digest(world / "data" / bay.RECEIPTS)))
+        result["restarts"][-1]["raw"] = bay.evidence_tools.snapshot_world(
+            world, run.evidence / f"{case}-restart-{restart}-raw")
     result["status"] = "PASS"
     return result
 
@@ -144,13 +147,18 @@ def run(args):
                 if runner.process is not None:
                     runner.process.abort(); runner.process = None
                 report["cases"].append(dict(case=case, status="FAILED", error=str(failure)))
+                report["cases"][-1]["raw"] = bay.evidence_tools.snapshot_world(
+                    session / ("world-" + case), evidence / f"{case}-failure-raw")
                 print(f"{case}: FAIL {failure}", flush=True)
             # Each case's seed uses the same helper name; preserve all four distinct start logs.
             seed_log = evidence / "B18_INTENT-0.log"
             if seed_log.exists():
                 seed_log.rename(evidence / f"{case}-seed.log")
+            report["cases"][-1]["observed_ticks"] = bay.evidence_tools.case_observations(evidence, case)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
+            if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
+                break
         bay.assert_pin(args.source_commit)
         report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
         return report
@@ -170,6 +178,7 @@ def main():
     for key in ("source-commit", "java", "lock-owner"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     for key, default in (("startup-timeout", 240), ("exit-timeout", 180), ("flight-timeout", 120), ("settle-timeout", 180)):
         parser.add_argument("--" + key, type=float, default=default)
     args = parser.parse_args()

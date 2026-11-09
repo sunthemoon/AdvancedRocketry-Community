@@ -39,15 +39,16 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B3.10 | REGISTERED replaced, source present, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
 | B3.11 | REGISTERED replaced, source absent, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
 | B3.12 | Restart waits for checked startup journal, then resumes | F `B3_JOURNAL_HELD` |
-| B4.1 | Idle non-data X removed, source not explicitly forced, no passengers | F `B4_DECOMMISSION` |
-| B4.2 | X absent, source absent, offline seat | F `W185_B4_ABSENT` |
-| B4.3 | X absent, source present, offline seat | F `W325_B4_ABSENT_X_PRESENT_S` |
+| B4.1 | Idle non-data X decommissioned on first restart tick, source not explicitly forced, no passengers | F `B4_DECOMMISSION` (narrower than decommission-before-kill). |
+| B4.2 | X decommissioned on first restart tick, source absent, offline seat | F `W185_B4_ABSENT` (narrower than absent X on initial disk). |
+| B4.3 | X absent on initial disk, source present, offline seat | NOT_COVERED: existing decommission hook runs on restart's first tick, not before the initial kill. |
 | B4.4 | X live, source present, offline seat | F `W325_B4_LIVE_X_PRESENT_S` |
 | B4.5 | X live, source absent, offline seat | F `W325_B4_LIVE_X_ABSENT_S` |
 | B4.6 | X absent, source present, online passenger | NOT_COVERED: no online non-data cut fixture. |
 | B4.7 | X absent, source absent, online passenger | NOT_COVERED: no online non-data cut fixture. |
 | B4.8 | X live, source present, online passenger | NOT_COVERED: no online non-data cut fixture. |
 | B4.9 | X live, source absent, online passenger | NOT_COVERED: no online non-data cut fixture. |
+| B4.10 | X absent on initial disk, source absent, offline seat | NOT_COVERED: no packaged pre-kill decommission command. |
 | B5.1 | Mixed S'/T, neutral before/after copies at both ends, offline seat | F `W185_B5_SOURCE_AFTER` |
 | B5.2 | Mixed S/T', neutral before/after copies at both ends, offline seat | F `W185_B5_JOURNAL_AFTER` |
 | B5.3 | Boundary before either D5 image, offline seat | F `W185_B3_PRESENT` |
