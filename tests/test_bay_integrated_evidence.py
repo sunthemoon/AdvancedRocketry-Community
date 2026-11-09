@@ -63,6 +63,7 @@ class EvidenceTests(unittest.TestCase):
                     "W325_OWNER_FULL", "W325_OTHER_OWNER_ROOM", "W325_B3_STAGED_ONLINE_ABSENT",
                     "W325_B3_MOVED_ONLINE_ABSENT", "W325_RETAINED_GLOBAL", "W325_RETAINED_OWNER", "W325_REPAIR_FULL",
                     "W325_RELEASED_FULL", "W325_REPAIR_FAIR"}
+        expected.update(("W325_D4_FAILED", "W325_D7_FAILED"))
         self.assertEqual(expected, {key for key in bay.CASES if key.startswith("W325_")})
         for key in expected:
             self.assertEqual(2, len(bay.CASES[key]["restarts"]))
@@ -190,6 +191,19 @@ class EvidenceTests(unittest.TestCase):
         self.assertFalse(result["assigned"])
         with self.assertRaises(bay.smoke.SmokeError):
             bay.check_copy_census(line, "l", 1)
+
+    def test_definite_group_write_failures_keep_exact_authority_and_only_retry_later(self):
+        fixture = dict(packages="a+b")
+        status = dict(transfer="PREPARED", state="TRANSIT", locked="true", packages="a+b",
+                      consumed=[None, None], owned=1)
+        bay.check_failed_group_write(status, fixture, "D4", "same", "same")
+        consumed = dict(status, packages="c+b", consumed=["op", None])
+        bay.check_failed_group_write(consumed, fixture, "D7", "same", "same")
+        for changes in (dict(transfer="COMMITTED"), dict(locked="false"), dict(owned=2), dict(packages="c+b")):
+            with self.assertRaises(bay.smoke.SmokeError):
+                bay.check_failed_group_write(dict(status, **changes), fixture, "D4", "same", "same")
+        with self.assertRaises(bay.smoke.SmokeError):
+            bay.check_failed_group_write(status, fixture, "D4", "same", "changed")
 
 
 if __name__ == "__main__":

@@ -199,6 +199,13 @@ CASES.update({
                               restarts=("LANDED", "LANDED")),
 })
 TRANCHES["F"] = [case for case in CASES if case.startswith("W325_") and case not in TRANCHES["E"]]
+CASES.update({
+    "W325_D4_FAILED": dict(cut=None, registry="STAGED PAUSE", group_failed="D4", end="land", durable="NONE",
+                            first="LANDED", restarts=("LANDED", "LANDED")),
+    "W325_D7_FAILED": dict(cut="B6_D5", group_failed="D7", end="land", durable="NONE",
+                            first="LANDED", restarts=("LANDED", "LANDED")),
+})
+TRANCHES["G"] = ["W325_D4_FAILED", "W325_D7_FAILED"]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
@@ -498,6 +505,8 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             run.wait(re.compile(rf"ARCE_RELEASE_SRW_PAUSED point={spec['registry'].split()[0]}"), run.args.flight_timeout)
         elif spec.get("cut"):
             run.wait(re.compile(rf"ARCE_RELEASE_BAY_(PAUSED|INJECTED) cut={spec['cut']} op="), run.args.flight_timeout)
+        if spec.get("group_failed"):
+            observed["failed_group_write"] = failed_group_write(run, case, fixture, world)
         if spec.get("b16"):
             observed["b16"] = b16_guard(run, case, fixture, world)
         if spec["end"] == "land" or spec.get("staging"):
@@ -557,6 +566,43 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     if spec.get("at_stop"):
         observed["stopped"] = check_stopped_while_waiting(case, process.lines, fixture)
     return fixture, observed
+
+
+def check_failed_group_write(status: dict, fixture: dict, step: str, before: str, after: str) -> None:
+    if (before != after or status["transfer"] != "PREPARED" or status["state"] != "TRANSIT"
+            or status["locked"] != "true" or status["owned"] != 1):
+        raise smoke.SmokeError(f"{step}: definite receipt failure changed durable authority: {status}")
+    if step == "D4" and (status["packages"] != fixture["packages"] or status["consumed"] != [None, None]):
+        raise smoke.SmokeError(f"D4 consumed before its receipt acknowledgement: {status}")
+    if step == "D7" and (status["consumed"][0] is None or status["packages"] == fixture["packages"]):
+        raise smoke.SmokeError(f"D7 lost its consumed source: {status}")
+
+
+def failed_group_write(run: Session, case: str, fixture: dict, world: Path) -> dict:
+    """Block staging only after D1/D4 is acknowledged, then preserve and retry that boundary."""
+    step = CASES[case]["group_failed"]
+    receipts = world / "data" / RECEIPTS
+    before = digest(receipts)
+    staging = world / "data" / STAGING
+    staging.mkdir()  # Must be absent: never replace or remove an existing fixture file.
+    if step == "D4":
+        run.send("arce satellite release-test registry-writer release", SRW_DONE)
+        marker = re.compile(r"ARCE_BAY_RECEIPTS_UNAVAILABLE failures=3 generation=")
+    else:
+        run.send("arce bay release-test release", re.compile(r"ARCE_RELEASE_BAY_RELEASE_REQUESTED"))
+        marker = re.compile(rf"ARCE_BAY_RETIRE_REFUSED transfer={fixture['transfer']} logical={fixture['logical']} outcome=FAILED_BEFORE_REPLACE")
+    observed = run.wait(marker, run.args.flight_timeout)
+    status = run.status(fixture["logical"])
+    after = digest(receipts)
+    check_failed_group_write(status, fixture, step, before, after)
+    # This one authority file is immutable while staging is blocked. The full stopped-world
+    # authority snapshot is captured normally after the first start and each restart.
+    target = run.evidence / f"{case}-failed-receipt.dat"
+    shutil.copy2(receipts, target)
+    if digest(target) != before:
+        raise smoke.SmokeError("Failed-receipt evidence changed during capture")
+    staging.rmdir()
+    return dict(step=step, marker=observed.strip(), status=status, receipt_sha256=before, receipt_file=target.name)
 
 
 def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
