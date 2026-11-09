@@ -55,7 +55,18 @@ final class BayPassengerExitReleaseTest {
                     // The gate decides before the position is resolved against a Level, as the bay fixture does (W128R-R1).
                     EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
                     return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-                })))
+                })
+                        // W331 B4.6 to B4.9: the online rider with the survey second bay (a non-data X).
+                        .then(Commands.literal("survey").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"),
+                                    BayReleaseTestCommands.Variant.SURVEY);
+                        }))
+                        // W331 B7.3: the rider's seat is assigned, but the rider is not placed, so it can log in later.
+                        .then(Commands.literal("offline").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return offlineFixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
+                        }))))
                 .then(logical("ready", (view, context) -> ready(view)))
                 .then(Commands.literal("leave").then(Commands.argument("logical", UuidArgument.uuid())
                         .then(Commands.argument("mode", StringArgumentType.word())
@@ -93,6 +104,11 @@ final class BayPassengerExitReleaseTest {
 
     /** The bay forced-stop fixture with a facility-owned survival rider assigned the seat and aboard before the launch. */
     private static int fixture(CommandSourceStack source, BlockPos origin) {
+        return fixture(source, origin, BayReleaseTestCommands.Variant.STANDARD);
+    }
+
+    /** As above, with the given package layout (W331: the survey second bay). */
+    private static int fixture(CommandSourceStack source, BlockPos origin, BayReleaseTestCommands.Variant variant) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         BayPassengerExitReleaseDrive.listen();
@@ -103,11 +119,28 @@ final class BayPassengerExitReleaseTest {
         }
         ServerPlayer rider = ReleaseTestPlayers.place(server, RIDER, RIDER_NAME, level, Vec3.atBottomCenterOf(origin).add(0, 0, 2));
         rider.setGameMode(GameType.SURVIVAL);
-        int launched = BayReleaseTestCommands.fixture(source, origin, false, rider);
+        int launched = BayReleaseTestCommands.fixture(source, origin, variant, rider, null);
         var rocket = rider.getVehicle() instanceof RocketEntity boarded ? boarded : null;
         LOGGER.info("ARCE_RELEASE_BAY_EXIT_FIXTURE rider={} name={} mounted={} seat={} mode={}", RIDER, RIDER_NAME, rocket != null,
                 rocket == null ? -1 : seat(rocket.flightData().map(data -> data.passengers()).orElse(null)),
                 rider.gameMode.getGameModeForPlayer().getName());
+        return launched;
+    }
+
+    /**
+     * W331 B7.3: the bay forced-stop fixture with the facility rider's UUID assigned seat 0 while the rider stays offline,
+     * so {@code exit login} is that assigned passenger's real login later (the harness makes it at D7's paused guard).
+     */
+    private static int offlineFixture(CommandSourceStack source, BlockPos origin) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        if (server.getPlayerList().getPlayer(RIDER) != null) { throw new IllegalStateException("The offline rider is online"); }
+        if (!server.overworld().isPositionEntityTicking(origin)) {
+            LOGGER.info("ARCE_RELEASE_BAY_FIXTURE_WAIT origin={}", origin.toShortString());
+            return 0;
+        }
+        int launched = BayReleaseTestCommands.fixture(source, origin, BayReleaseTestCommands.Variant.STANDARD, null, RIDER);
+        LOGGER.info("ARCE_RELEASE_BAY_EXIT_OFFLINE_FIXTURE rider={} online={}", RIDER, server.getPlayerList().getPlayer(RIDER) != null);
         return launched;
     }
 
