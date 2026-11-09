@@ -322,8 +322,9 @@ What is still open:
   The owner's separate per-interaction acceptance or continued-disable decision is still pending
   for fuel, each cargo kind and the bay; the earlier scoped acceptance is not reopened or broadened.
   W27e's three decisions are made: the neutral-source limit (D1a), a safe passenger exit (D1b, Q1 = A;
-  W230-S1 merged, S2 in progress) and 16 pending operations per owner (D1c-N, R244, merged with W238);
-  W27e still needs the passenger exit and its integrated evidence. The full S1 campaign, current-source integration, reference workload, joint four-hour
+  W230-S1, S2 (W242, `b1c5a6ba5`) and the S3 native cuts (W254, W257 and W262, `bd0b3d080`) merged) and 16
+  pending operations per owner (D1c-N, R244, merged with W238); W27e still needs its integrated B1 to B18
+  evidence on one pinned JAR and the passenger exit's two-client V2 session. The full S1 campaign, current-source integration, reference workload, joint four-hour
   soak and real V1/V2 remain open; no Required Gate is approved by these implementations or tests.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
