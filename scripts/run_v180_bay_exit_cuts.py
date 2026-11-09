@@ -594,6 +594,7 @@ def session_root(root: Path) -> Path:
 
 def run(args) -> dict:
     bay.assert_pin(args.source_commit)
+    candidate = bay.check_candidate(args)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = session_root(args.session_root)
     if session.parent != intended or session.exists() or smoke.is_link_or_junction(session):
@@ -613,7 +614,7 @@ def run(args) -> dict:
     marker = session / ".arce-w254-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar=jar, lock_owner=args.lock_owner,
-                  counted_starts_planned=len(cases) * STARTS_PER_CASE, cases=[])
+                  counted_starts_planned=len(cases) * STARTS_PER_CASE, cases=[], candidate=candidate)
     runner = Run(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -639,6 +640,7 @@ def run(args) -> dict:
                 break
         report.pop("in_progress", None)
         bay.assert_pin(args.source_commit)
+        bay.recheck_candidate(candidate)
         report["control"] = compare_with_control(report["cases"])
         passed = all(row["status"] == "PASS" for row in report["cases"])
         report["status"] = "PASS" if passed and report["control"]["status"] != "FAILED" else "FAILED"
@@ -663,6 +665,7 @@ def main() -> int:
                         help="Existing non-linked parent for the new disposable session directory")
     for key in ("source-commit", "java", "lock-owner"):
         parser.add_argument("--" + key, required=True)
+    bay.add_candidate_arguments(parser)
     parser.add_argument("--case", action="append", choices=list(CASES))
     parser.add_argument("--stop-on-failure", action="store_true", help="Preserve the failed case and stop this family")
     for key, default in (("startup-timeout", 240), ("exit-timeout", 180), ("flight-timeout", 120), ("settle-timeout", 180)):
