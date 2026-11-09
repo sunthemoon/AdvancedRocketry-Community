@@ -967,9 +967,10 @@ W331_CASES = {
                                restarts=("CONSUMED_REST", "CONSUMED_REST"), owned=2, disk_registered=0),
     "W331_B17_PARTIAL_D1": dict(rows=("B17.4",), fixture="trio", cut="B1_MOVED", end="kill", durable="INTENT",
                                 restarts=("INTERRUPTED", "INTERRUPTED"), immutable=True),
-    # Family R, the destination absent after D7 (section 3.6).
+    # Family R, the destination absent after D7 (section 3.6). Smoke 3: D6's barrier proof made S' durable, so ordinary
+    # recovery keeps that consumed source (KEEP_SOURCE), as W27A's B8 row allows, instead of rebuilding the destination.
     "W331_B6_DESTINATION_ABSENT": dict(rows=("B6.5",), fixture="standard", end="land-kill", durable="NONE", first="LANDED",
-                                       restarts=("LANDED", "LANDED")),
+                                       restarts=("CONSUMED_REST", "CONSUMED_REST")),
     # Family L, a login while retirement is queued (section 3.7).
     "W331_B7_LOGIN_QUEUED": dict(rows=("B7.3",), fixture="offline_rider", cut="B16_GUARD", login=True, end="land",
                                  durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
@@ -1235,9 +1236,12 @@ def w331_first_start(run: Session, case: str, world: Path) -> tuple[dict, dict]:
         observed["settled"] = w331_await(run, case, 0, fixture)
         if spec.get("login"):
             observed["fresh_proof"] = check_fresh_proof(case, process.lines, fixture)
+            # Smoke 3: after the claim's READY_SOURCE handoff, the normal acknowledged transfer carries the assigned online
+            # passenger to the destination (W27A section 4.1: "or the destination after normal acknowledged transfer").
             after = exit_fields(run.send(f"arce bay release-test exit state {fixture['logical']}", EXIT_LINE))
-            if after.get("rider") != "online" or after.get("mounted") != "false":
-                raise smoke.SmokeError(f"{case}: the standing passenger was pulled back: {after}")
+            if (after.get("rider") != "online" or after.get("mounted") != "true" or after.get("transfer") != "COMMITTED"
+                    or after.get("rocketSeat") != "0"):
+                raise smoke.SmokeError(f"{case}: the assigned passenger did not arrive by the normal transfer: {after}")
             observed["rider_after"] = after
         if spec["end"] == "land-kill":
             if observed["settled"]["transfer"] != "COMMITTED":
@@ -1329,7 +1333,11 @@ def w331_disk(case: str, world: Path, fixture: dict, restart: int, cut: dict | N
         if spec["end"] == "land-kill":
             if mine or entities_naming(world, fixture["logical"]):
                 raise smoke.SmokeError(f"{case}: the destination or a receipt of L is on disk at the kill")
-            observed["destination_absent"] = True
+            # D6's barrier proof wrote the consumed source S' to its entity chunk; the transfer removed it only in RAM.
+            sources = entities_naming(world, fixture["logical"], Path("entities"))
+            if sources != [fixture["rocket"]]:
+                raise smoke.SmokeError(f"{case}: expected exactly the durable consumed source of L on disk: {sources}")
+            observed.update(destination_absent=True, durable_source=sources[0])
     else:
         if spec.get("immutable"):
             if len(mine) != 1 or (mine[0]["phase"], mine[0]["reason"]) != INTERRUPTED:
@@ -1338,10 +1346,10 @@ def w331_disk(case: str, world: Path, fixture: dict, restart: int, cut: dict | N
                 if mine[0][key] != cut["intent"][key]:
                     raise smoke.SmokeError(f"{case}/{restart}: the group's {key} changed after the partial D1")
         if spec["end"] == "land-kill":
-            found = entities_naming(world, fixture["logical"])
-            if len(found) != 1:
-                raise smoke.SmokeError(f"{case}/{restart}: expected one reconstructed destination entity of L: {found}")
-            observed["destination"] = found[0]
+            moon, earth = entities_naming(world, fixture["logical"]), entities_naming(world, fixture["logical"], Path("entities"))
+            if moon or earth != [fixture["rocket"]]:
+                raise smoke.SmokeError(f"{case}/{restart}: expected only the kept consumed source of L: moon={moon} earth={earth}")
+            observed["survivor"] = earth[0]
     if spec.get("registry_names_x") and satellites.count(fixture["data"]) != 1:
         raise smoke.SmokeError(f"{case}/{restart}: the registry file does not name X exactly once: {satellites}")
     if spec.get("predecommission") and fixture["solar"] in satellites:
@@ -1382,10 +1390,10 @@ def run_w331_case(run: Session, case: str) -> dict:
                                       re.compile(r"ARCE_RELEASE_BAY_EXIT_LOGIN "))
         entry["settled"] = w331_await(run, case, restart, fixture)
         if spec["end"] == "land-kill":
-            # Ordinary recovery rebuilds the absent destination with T's destination UUID from the consumed T'.
+            # Ordinary recovery keeps the durable consumed source S' (T's source UUID), with the landing's consumed op.
             landed = row["first_start"]["settled"]
-            if entry["settled"]["rocket"] != landed["rocket"] or entry["settled"]["consumed"] != landed["consumed"]:
-                raise smoke.SmokeError(f"{case}/{restart}: the rebuilt destination differs from the landed one: "
+            if entry["settled"]["rocket"] != fixture["rocket"] or entry["settled"]["consumed"] != landed["consumed"]:
+                raise smoke.SmokeError(f"{case}/{restart}: recovery did not keep the consumed source of L: "
                                        f"{entry['settled']} {landed}")
         if online:
             entry["online_settled"] = online_state(run, fixture["logical"])

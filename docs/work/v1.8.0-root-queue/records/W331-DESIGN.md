@@ -141,6 +141,16 @@ waits for LANDED with T COMMITTED, then kills the server without saving.
   consumed op unchanged, owned 1, no receipt (no package resurrection); after the restart's stop, Raw: exactly one
   entity naming L in the Moon regions.
 
+**Correction after smoke 3.** The restart found the source on disk (`source_count=1 destination_count=0
+action=KEEP_SOURCE`). D6's barrier proof writes the consumed S' to its entity chunk, and the transfer removes the source
+only in RAM, so after D7 a durable consumed S' always exists. Ordinary recovery therefore keeps that consumed source,
+stationary at its origin, as W27A's B8 row allows ("ordinary restart may choose stationary consumed-source recovery"),
+instead of rebuilding the destination. The oracle now requires: at the kill, no Moon entity and exactly the source S'
+of L in the Overworld regions; after each restart, CONSUMED_REST with T's source UUID and the landing's consumed op,
+owned 1, no receipt, no Moon entity and exactly one Overworld entity of L. A destination rebuild from T' would need S'
+absent too, which this list does not manufacture (W27A B7: never delete a forced S' to make an absence). Whether this
+reaches B6.5 as worded is for Root's review.
+
 ### 3.7 Family L: login while retirement is queued (B7.3)
 
 New fixture variant `arce bay release-test exit fixture <pos> offline`: the facility rider's UUID is assigned seat 0,
@@ -152,6 +162,13 @@ existing `copy` command) and releases the guard.
   guard then refuses (GUARD_REFUSED), a fresh D6 proof precedes READY_SOURCE (the existing `check_fresh_proof`), and
   the rocket lands; after the landing the rider is still not mounted (not pulled back).
 - After each restart: LANDED, consumed, owned 1.
+
+**Correction after smoke 3.** Every check during the queued retirement passed (the login was neither routed nor
+settled, T stayed PREPARED with seat 0, the guard refused, and a fresh D6 proof preceded READY_SOURCE). After the
+handoff, the normal acknowledged transfer carried the assigned online rider to the destination, as W27A section 4.1
+says ("routed to the ready source, or the destination after normal acknowledged transfer"); the GameTest checks the
+rider only at the handoff, before that transfer. The post-landing oracle now requires the rider aboard the landed rocket
+(mounted, transfer COMMITTED, seat 0) instead of standing.
 
 ### 3.8 Family U: the admission union, captured and successor copies (part of B11.7)
 
@@ -178,6 +195,7 @@ The oracle must fail, and the export is then deleted. The planned patches:
 | P | D0's step 2 skips `bayNeutral` | `W331_B6_PROTECTED` | the bays deploy |
 | D, G | `BayRestartRows.claims` resumes no REGISTERED group (REGISTERED receipts become restart INTENT rows) | `W331_B4_GONE_X_S_ABSENT`, `W331_B8_TRIO_STAGED` | X absent gives REJECTED/INTERRUPTED, or the trio holds, not LANDED |
 | R | none in production is narrower than ordinary reconstruction; the check removes the Moon reconstruction by having restart recovery skip a COMMITTED T with an absent destination | `W331_B6_DESTINATION_ABSENT` | the rocket is missing after the restart |
+| R (after smoke 3) | the KEEP_SOURCE branch never restores the surviving consumed source (a second scratch JAR) | `W331_B6_DESTINATION_ABSENT` | the restart never settles at the consumed source |
 | L | the D7 guard's token check always passes | `W331_B7_LOGIN_QUEUED` | no GUARD_REFUSED, no fresh proof |
 | U | none: it adds an oracle to existing controls; its negative check is a Python test with a double-counted pending line | - | - |
 

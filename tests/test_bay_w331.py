@@ -147,6 +147,22 @@ def world(directory: Path, receipts=(), satellites=(), journal_names=()) -> Path
     return directory
 
 
+def entity_region(folder: Path, entity_id: str, logical: str = L, chunk_x: int = 3, chunk_z: int = -2) -> None:
+    """One region file holding one stored chunk with one rocket entity naming ``logical``."""
+    folder.mkdir(parents=True, exist_ok=True)
+    entity = nbt.Tag(nbt.COMPOUND, dict(UUID=nbt.uuid_tag(uuid.UUID(entity_id)), RocketEntityData=nbt.Tag(nbt.COMPOUND, dict(
+        assembly_transaction_id=nbt.uuid_tag(uuid.UUID(logical))))))
+    chunk = nbt.Tag(nbt.COMPOUND, dict(Position=nbt.Tag(nbt.INTS, [chunk_x, chunk_z]),
+                                       Entities=nbt.Tag(nbt.LIST, (nbt.COMPOUND, [entity]))))
+    encoded = zlib.compress(nbt.write(b"", chunk))
+    record = struct.pack(">IB", len(encoded) + 1, 2) + encoded
+    sectors = -(-len(record) // nbt.SECTOR)
+    region = bytearray(2 * nbt.SECTOR + sectors * nbt.SECTOR)
+    struct.pack_into(">I", region, ((chunk_x & 31) + (chunk_z & 31) * 32) * 4, 2 << 8 | sectors)
+    region[2 * nbt.SECTOR:2 * nbt.SECTOR + len(record)] = record
+    (folder / f"r.{chunk_x >> 5}.{chunk_z >> 5}.mca").write_bytes(bytes(region))
+
+
 class RawReaderTests(unittest.TestCase):
     def test_receipts_registry_and_uuid_reads(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -170,20 +186,30 @@ class RawReaderTests(unittest.TestCase):
     def test_entities_naming_reads_every_stored_moon_chunk(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            folder = root / bay.MOON_ENTITIES
-            folder.mkdir(parents=True)
-            entity = nbt.Tag(nbt.COMPOUND, dict(UUID=nbt.uuid_tag(uuid.UUID(OP)), RocketEntityData=nbt.Tag(nbt.COMPOUND, dict(
-                assembly_transaction_id=nbt.uuid_tag(uuid.UUID(L))))))
-            chunk = nbt.Tag(nbt.COMPOUND, dict(Position=nbt.Tag(nbt.INTS, [3, -2]), Entities=nbt.Tag(nbt.LIST, (nbt.COMPOUND, [entity]))))
             self.assertEqual([], bay.entities_naming(root, L))
-            encoded = zlib.compress(nbt.write(b"", chunk))
-            record = struct.pack(">IB", len(encoded) + 1, 2) + encoded
-            region = bytearray(2 * nbt.SECTOR + -(-len(record) // nbt.SECTOR) * nbt.SECTOR)
-            struct.pack_into(">I", region, ((3 & 31) + (-2 & 31) * 32) * 4, 2 << 8 | -(-len(record) // nbt.SECTOR))
-            region[2 * nbt.SECTOR:2 * nbt.SECTOR + len(record)] = record
-            (folder / "r.0.-1.mca").write_bytes(bytes(region))
+            entity_region(root / bay.MOON_ENTITIES, OP)
             self.assertEqual([OP], bay.entities_naming(root, L))
             self.assertEqual([], bay.entities_naming(root, DATA))
+            self.assertEqual([], bay.entities_naming(root, L, Path("entities")))
+
+    def test_the_destination_absent_case_requires_only_the_kept_consumed_source(self):
+        standard = dict(fixture("standard"), rocket=SOLAR)
+        with tempfile.TemporaryDirectory() as directory:
+            cut = world(Path(directory) / "cut", [], [DATA])
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "durable consumed source"):
+                bay.w331_disk("W331_B6_DESTINATION_ABSENT", cut, standard, 0)
+            entity_region(cut / "entities", SOLAR)
+            self.assertEqual(SOLAR, bay.w331_disk("W331_B6_DESTINATION_ABSENT", cut, standard, 0)["durable_source"])
+            entity_region(cut / bay.MOON_ENTITIES, OP)
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "destination or a receipt"):
+                bay.w331_disk("W331_B6_DESTINATION_ABSENT", cut, standard, 0)
+            restarted = world(Path(directory) / "restart", [], [DATA])
+            entity_region(restarted / "entities", SOLAR)
+            self.assertEqual(SOLAR, bay.w331_disk("W331_B6_DESTINATION_ABSENT", restarted, standard, 1)["survivor"])
+            entity_region(restarted / bay.MOON_ENTITIES, OP)
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "only the kept consumed source"):
+                bay.w331_disk("W331_B6_DESTINATION_ABSENT", restarted, standard, 1)
+        self.assertEqual(("CONSUMED_REST", "CONSUMED_REST"), bay.W331_CASES["W331_B6_DESTINATION_ABSENT"]["restarts"])
 
 
 def fixture(kind: str = "trio") -> dict:
