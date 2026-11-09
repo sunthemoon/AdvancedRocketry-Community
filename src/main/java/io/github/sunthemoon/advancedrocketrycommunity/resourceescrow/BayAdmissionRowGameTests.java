@@ -165,6 +165,7 @@ public final class BayAdmissionRowGameTests {
                 try (var f = new BayAdmissionRowGameTestFiles(h, directory.resolve("cut-" + unknown), ledger(63), null)) {
                     var x = receipt(1, BayReceipt.Phase.INTENT); f.put(x); f.settle();
                     Path obstacle = f.bayFile.resolveSibling(f.bayFile.getFileName() + ".arce-pending");
+                    try {
                     var outcomes = new ArrayList<BayReceiptWriter.Outcome>();
                     if (unknown) { f.committer.set((a, b) -> { throw new java.io.IOException("W333 retirement UNKNOWN"); }); }
                     else { Files.createDirectory(obstacle); }
@@ -183,6 +184,10 @@ public final class BayAdmissionRowGameTests {
                     h.assertTrue(f.authority.pendingCount() == 63 && f.authority.checkReserve(id(100), id(9000), id(9000), BAY)
                             == EscrowAdmissionAuthority.Result.RESERVED && f.fluid(operation(100, 9000, 0)) == EscrowAdmissionAuthority.Result.RESERVED,
                             "Exact retirement did not release capacity for both consumers");
+                    } finally {
+                        f.committer.set(CheckedSavedDataFile::atomicMove);
+                        Files.deleteIfExists(obstacle);
+                    }
                 }
             }
         });
