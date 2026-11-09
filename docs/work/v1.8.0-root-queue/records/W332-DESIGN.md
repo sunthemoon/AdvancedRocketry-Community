@@ -226,6 +226,9 @@ fixture defect, or a case this host cannot reach.
 3. **A rocket without bays has empty `packages` and `consumed` fields** in W325's status line (smoke 1). The runner
    reads the plain rocket with its own pattern; W325's pattern is unchanged.
 4. **The insertion probe has its own feedback line** (smoke 2); the runner waits for it.
-5. **`L_LEDGER`'s dismount row** (section 3.4) took its NOT_COVERED branch in smoke 2: the rider's login under the
+5. **`N_BAY`'s S2 decommission** (smoke 3). X was registered by the release-test satellite launch, which gives it a
+   mission. Without the deployment fence, its decommission reaches the registry's own mission check and answers
+   `MISSION_BUSY` with X kept. S2 now accepts that or SUCCESS with X removed; S1 still requires `DEPLOYMENT_PENDING`.
+6. **`L_LEDGER`'s dismount row** (section 3.4) took its NOT_COVERED branch in smoke 2: the rider's login under the
    hold did not seat it (seat 0 stayed assigned). The hold starts only at startup and every mount is vetoed under it,
    so no player can be seated on a rocket during the session; the vanilla dismount cannot be exercised natively.
