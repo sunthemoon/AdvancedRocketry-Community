@@ -95,9 +95,11 @@ def turns(run, session):
             while session.status(row["logical"])["claim"] != "PROVE":
                 native.require(time.monotonic() < deadline, "Not every claim reached the D6 gate")
                 time.sleep(0.1)
-        session.send("forceload remove all", re.compile("[Uu]nmarked|No chunks"))
+        for index in range(run.args.claims):
+            session.send(f"forceload remove {742000 + offset + 64 * index} 742008", re.compile("[Uu]nmarked|not marked"))
         session.send("save-all flush", native.SAVED, 180)
         session.end("stop", run.args.exit_timeout)
+        native.require_unforced(world)
         data = nbt.plain(nbt.read_gzip(world / "data/advancedrocketrycommunity_rocket_transfers.dat")[1])["data"]
         records = data["transfers"]
         native.require(len(records) == run.args.claims, "D6 seed has a different number of transfers")

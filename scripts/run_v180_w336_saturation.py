@@ -37,6 +37,13 @@ def save(run):
     run.send("save-all flush", native.SAVED, 180)
 
 
+def unforce(run):
+    # Remove individually, then verify the stopped SavedData; remove-all left a live ticket in the native smoke.
+    for x, _, z in oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW, oracle.TERRAIN]:
+        run.send(f"forceload remove {x} {z}")
+    run.barrier()
+
+
 def mutate(run, block):
     at = " ".join(map(str, oracle.TERRAIN))
     run.send(f"setblock {at} {block}", r"Changed the block|Could not set the block")
@@ -83,8 +90,9 @@ def family(run):
         which = background_kind if at in oracle.BACKGROUND else kind
         run.send(f"setblock {' '.join(map(str, at))} {native.NS + oracle.DEVICES[which][0]}")
     mutate(run, "minecraft:stone")
-    run.send("forceload remove all")
+    unforce(run)
     save(run); run.stop("seed")
+    native.require_unforced(world)
     chunks = oracle.generated_chunks(world)
     native.write_json(run.evidence / "seed-chunks.json", sorted(chunks))
     audit_seed = lambda lines: audit(lines, chunks)
@@ -107,8 +115,9 @@ def family(run):
     exact_denials(run, oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW])
     observed[257] = disk_terrain(run, "minecraft:diamond_block")
     # Avoid reload immediately re-saturating the new Level: persist removal of vanilla tickets.
-    run.send("forceload remove all"); save(run)
+    unforce(run); save(run)
     run.stop("boundary", audit_seed)
+    native.require_unforced(world)
     boundary = oracle.check_boundary(observed)
     oracle.check_stage(world, fixtures, "minecraft:diamond_block")
     snapshots = [run.capture(world, "boundary-world")]
@@ -125,8 +134,9 @@ def family(run):
             run.load(positions); await_denials(run, positions)
             mutate(run, "minecraft:gold_block")
             disk_terrain(run, "minecraft:emerald_block")
-        run.send("forceload remove all"); save(run)
+        unforce(run); save(run)
         lines = run.stop(f"restart-{restart}", audit_seed if restart == 2 else None)
+        native.require_unforced(world)
         if restart == 1:
             native.require(not any("_UNSUPPORTED pos=" in line or "ARCE_SATELLITE_BAY_GUARDED pos=" in line
                                    for line in lines), "First restart reloaded device fixtures")

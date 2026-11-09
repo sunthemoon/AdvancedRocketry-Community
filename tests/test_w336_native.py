@@ -211,6 +211,18 @@ class DowngradeTest(unittest.TestCase):
 
 
 class HarnessTest(unittest.TestCase):
+    def test_remaining_vanilla_force_ticket_refuses_restart_fixture(self):
+        with tempfile.TemporaryDirectory() as folder:
+            world = Path(folder); (world / "data").mkdir()
+            def write(values):
+                nbt.write_gzip(world / "data/chunks.dat", b"", nbt.Tag(nbt.COMPOUND, {
+                    "data": nbt.Tag(nbt.COMPOUND, {"Forced": nbt.Tag(nbt.LONG_ARRAY, values)})}))
+            write([])
+            native.require_unforced(world)
+            write([2207613190666])
+            with self.assertRaisesRegex(ValueError, "persistent vanilla"):
+                native.require_unforced(world)
+
     def test_candidate_is_installed_before_an_adapter_can_start(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder); parent = root / "Temp"; parent.mkdir()

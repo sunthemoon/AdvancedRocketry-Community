@@ -32,6 +32,11 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
 
+def require_unforced(world):
+    forced = nbt.plain(nbt.read_gzip(world / "data/chunks.dat")[1])["data"]["Forced"]
+    require(not forced, "Fixture left persistent vanilla force-load tickets: " + str(forced))
+
+
 def parser(description):
     result = argparse.ArgumentParser(description=description)
     result.add_argument("source_server", type=Path)
