@@ -100,14 +100,23 @@ def family(run):
     restarts = []
     for restart in (1, 2):
         run.start(f"restart-{restart}"); run.ready()
-        # No unsupported device is loaded here: Level's transient denial pool is fresh.
-        run.load([oracle.TERRAIN]); mutate(run, "minecraft:emerald_block" if restart == 1 else "minecraft:gold_block")
+        run.load([oracle.TERRAIN])
+        if restart == 1:
+            # With all unsupported devices unloaded, the new Level can save again.
+            mutate(run, "minecraft:emerald_block")
+        else:
+            # Restart did not repair any root: re-observing them re-saturates this fresh Level.
+            positions = oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW]
+            run.load(positions); await_denials(run, positions)
+            mutate(run, "minecraft:gold_block")
+            disk_terrain(run, "minecraft:emerald_block")
         run.send("forceload remove all"); save(run)
-        lines = run.stop(f"restart-{restart}")
-        native.require(not any("_UNSUPPORTED pos=" in line or "ARCE_SATELLITE_BAY_GUARDED pos=" in line
-                               for line in lines), "Restart reloaded device fixtures")
-        expected = "minecraft:emerald_block" if restart == 1 else "minecraft:gold_block"
-        restarts.append(oracle.check_stage(world, fixtures, expected))
+        lines = run.stop(f"restart-{restart}", audit if restart == 2 else None)
+        if restart == 1:
+            native.require(not any("_UNSUPPORTED pos=" in line or "ARCE_SATELLITE_BAY_GUARDED pos=" in line
+                                   for line in lines), "First restart reloaded device fixtures")
+        restarts.append(dict(reloaded_unsupported=restart == 2,
+                             **oracle.check_stage(world, fixtures, "minecraft:emerald_block")))
         snapshots.append(run.capture(world, f"restart-{restart}-world"))
     return dict(kind=kind, background_kind=background_kind, boundary=boundary,
                 observed=observed, seed=seed, restarts=restarts, snapshots=snapshots)
