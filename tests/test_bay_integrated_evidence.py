@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from copy import deepcopy
+from unittest.mock import Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as bay
@@ -55,7 +56,8 @@ class EvidenceTests(unittest.TestCase):
 
     def test_new_cases_use_existing_cut_controls_and_two_restarts(self):
         expected = {"W325_B3_STAGED_PRESENT", "W325_B3_STAGED_ABSENT", "W325_B4_LIVE_X_PRESENT_S",
-                    "W325_B4_LIVE_X_ABSENT_S", "W325_B8_STAGED_OFFLINE", "W325_B8_MOVED_OFFLINE"}
+                    "W325_B4_LIVE_X_ABSENT_S", "W325_B8_STAGED_OFFLINE", "W325_B8_MOVED_OFFLINE",
+                    "W325_B3_STAGED_ONLINE", "W325_B3_MOVED_ONLINE", "W325_B8_STAGED_ONLINE", "W325_B8_MOVED_ONLINE"}
         self.assertEqual(expected, {key for key in bay.CASES if key.startswith("W325_")})
         for key in expected:
             self.assertEqual(2, len(bay.CASES[key]["restarts"]))
@@ -77,6 +79,30 @@ class EvidenceTests(unittest.TestCase):
                 bad.update(changes)
                 with self.assertRaises(bay.smoke.SmokeError):
                     bay.check_settled(case, 1, bad, fixture)
+
+    def test_online_fixture_uses_the_existing_survival_rider_command_and_checks_boarding(self):
+        run = Mock()
+        run.args.flight_timeout = 120
+        fixture = "ARCE_RELEASE_BAY_FIXTURE logical=l transfer=t rocket=r data=x solar=y launch=SUCCESS packages=a+b"
+        run.process.lines = [fixture]
+        rider = f"ARCE_RELEASE_BAY_EXIT_FIXTURE rider={bay.ONLINE_RIDER} name=W254Rider mounted=true seat=0 mode=survival"
+        run.send.side_effect = ["Marked chunk", rider]
+        result = bay.launch_fixture(run, online=True)
+        self.assertEqual(bay.ONLINE_RIDER, result["rider"])
+        self.assertIn("exit fixture", run.send.call_args_list[-1].args[0])
+        run.send.side_effect = ["Marked chunk", rider.replace("mounted=true", "mounted=false")]
+        with self.assertRaises(bay.smoke.SmokeError):
+            bay.launch_fixture(run, online=True)
+
+    def test_online_state_requires_a_live_rider_and_retained_rocket_seat(self):
+        good = "ARCE_RELEASE_BAY_EXIT_STATE rider=online mounted=true seat=0 rocketSeat=0 health=20.0"
+        run = Mock()
+        run.send.return_value = good
+        self.assertEqual("online", bay.online_state(run, "l", at_cut=True)["rider"])
+        for before, after in (("online", "offline"), ("rocketSeat=0", "rocketSeat=-1"), ("mounted=true", "mounted=false")):
+            run.send.return_value = good.replace(before, after)
+            with self.assertRaises(bay.smoke.SmokeError):
+                bay.online_state(run, "l", at_cut=True)
 
 
 if __name__ == "__main__":

@@ -54,6 +54,7 @@ CLAIM = re.compile(r"ARCE_BAY_CLAIM transfer=(\S+) logical=(\S+) state=(\w+) rea
 STOPPED = re.compile(r"ARCE_BAY_STOPPED claims=(\d+) unresolved=(\d+)")
 REGISTRY_BLOCKED = "ARCE_RELEASE_BAY_REGISTRY_BLOCKED session=true"
 ALTITUDE = 48
+ONLINE_RIDER = "00000000-0000-4000-8000-000000254001"
 TXW_PAUSED = re.compile(r"ARCE_RELEASE_TXW_PAUSED point=STAGED")
 TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(ARMED|MUTATED)")
 SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED")
@@ -165,6 +166,14 @@ CASES.update({
                                    restarts=("LANDED", "LANDED")),
     "W325_B8_MOVED_OFFLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", offline=True, save=True,
                                   restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    "W325_B3_STAGED_ONLINE": dict(cut="B3_STAGED", end="kill", durable="INTENT", online=True, save=True,
+                                  restarts=("LANDED", "LANDED")),
+    "W325_B3_MOVED_ONLINE": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", online=True, save=True,
+                                 restarts=("LANDED", "LANDED")),
+    "W325_B8_STAGED_ONLINE": dict(cut="B8_STAGED", end="kill", durable="REGISTERED", online=True, save=True,
+                                  restarts=("LANDED", "LANDED")),
+    "W325_B8_MOVED_ONLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", online=True, save=True,
+                                 restarts=("CONSUMED_REST", "CONSUMED_REST")),
 })
 TRANCHES["E"] = [case for case in CASES if case.startswith("W325_")]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
@@ -380,21 +389,47 @@ class Session:
         return process.finish(timeout)
 
 
-def launch_fixture(run: Session, survey: bool = False) -> dict:
+def launch_fixture(run: Session, survey: bool = False, online: bool = False) -> dict:
+    if online and survey:
+        raise smoke.SmokeError("C1's online rider fixture has no survey variant")
     run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
     variant = " survey" if survey else ""
+    command = "exit fixture" if online else "fixture"
+    marker = r"ARCE_RELEASE_BAY_EXIT_FIXTURE .*" if online else FIXTURE.pattern
     deadline = time.monotonic() + run.args.flight_timeout
     while True:
-        line = run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}",
-                        re.compile(FIXTURE.pattern + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
+        line = run.send(f"arce bay release-test {command} {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}",
+                        re.compile(marker + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
         if "ARCE_RELEASE_BAY_FIXTURE_WAIT" not in line:
-            fixture = parse_fixture(line); break
+            if online:
+                expected = f"rider={ONLINE_RIDER} name=W254Rider mounted=true seat=0 mode=survival"
+                if expected not in line:
+                    raise smoke.SmokeError(f"Survival rider did not board seat zero: {line}")
+                fixture = parse_fixture(next(value for value in reversed(run.process.lines) if FIXTURE.search(value)))
+                fixture["rider"] = ONLINE_RIDER
+            else:
+                fixture = parse_fixture(line)
+            break
         if time.monotonic() > deadline:
             raise smoke.SmokeError("The fixture source did not become entity-ticking")
         time.sleep(1)
     if fixture["launch"] not in ("SUCCESS", "JOURNAL_PENDING") or fixture["packages"].count("+") != 1:
         raise smoke.SmokeError(f"The fixture did not launch with two packaged bays: {fixture}")
     return fixture
+
+
+def online_state(run: Session, logical: str, at_cut: bool = False) -> dict:
+    line = run.send(f"arce bay release-test exit state {logical}", re.compile(r"ARCE_RELEASE_BAY_EXIT_STATE "))
+    state = {}
+    for key, value in re.findall(r"(\w+)=(\S+)", line.split("ARCE_RELEASE_BAY_EXIT_STATE ", 1)[1]):
+        if key in state:
+            raise smoke.SmokeError(f"Repeated online-state field {key}")
+        state[key] = value
+    if (state.get("rider") != "online" or state.get("rocketSeat") != "0"
+            or float(state.get("health", "0")) <= 0
+            or at_cut and (state.get("mounted") != "true" or state.get("seat") != "0")):
+        raise smoke.SmokeError(f"Online passenger or seat changed: {state}")
+    return state
 
 
 def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict]:
@@ -417,7 +452,7 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             run.send("arce rocket release-test transaction-writer arm STAGED PAUSE", TXW_DONE)
         if spec.get("registry"):
             run.send(f"arce satellite release-test registry-writer arm {spec['registry']}", SRW_DONE)
-        fixture = launch_fixture(run, spec.get("survey", False))
+        fixture = launch_fixture(run, spec.get("survey", False), spec.get("online", False))
         if spec.get("journal"):
             run.send("arce rocket release-test transaction-writer add", TXW_DONE)
             run.wait(TXW_PAUSED, run.args.flight_timeout)
@@ -444,6 +479,8 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             observed["at_cut"] = run.status(fixture["logical"])
             if observed["at_cut"]["claim"] == "NONE" or observed["at_cut"]["state"] != "TRANSIT":
                 raise smoke.SmokeError(f"{case}: the cut did not hold T in TRANSIT: {observed['at_cut']}")
+            if spec.get("online"):
+                observed["online_at_cut"] = online_state(run, fixture["logical"], at_cut=True)
             if spec.get("copies"):
                 deadline = time.monotonic() + run.args.settle_timeout
                 while True:
@@ -666,12 +703,17 @@ def run_case(run: Session, case: str) -> dict:
             properties.update(rocketJournalFailure="HOLD", rocketJournalHoldStartup="true")
         process = run.start(case, restart, properties)
         entry = dict(restart=restart)
+        if spec.get("online"):
+            entry["login"] = run.send(f"arce bay release-test exit login {fixture['logical']}",
+                                      re.compile(r"ARCE_RELEASE_BAY_EXIT_LOGIN "))
         if fixture is None and spec.get("fixture_restart") == restart:
             fixture = launch_fixture(run)
         if fixture is not None:
             if held:
                 entry["journal_hold"] = check_journal_hold(run, case, fixture)
             entry["settled"] = run.await_settled(case, restart, fixture)
+            if spec.get("online"):
+                entry["online_settled"] = online_state(run, fixture["logical"])
             if spec.get("copies") or spec.get("offline"):
                 census = run.send(f"arce bay release-test census {fixture['logical']}",
                                   re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))

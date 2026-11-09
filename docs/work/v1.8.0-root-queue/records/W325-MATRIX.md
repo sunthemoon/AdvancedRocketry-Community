@@ -34,9 +34,9 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B3.5 | REGISTERED replaced, source absent, offline seat, copies at both ends | F `W185_B3_ABSENT` |
 | B3.6 | REGISTERED staged-only, source present, offline seat | F `W325_B3_STAGED_PRESENT` |
 | B3.7 | REGISTERED staged-only, source absent, offline seat | F `W325_B3_STAGED_ABSENT` |
-| B3.8 | REGISTERED staged-only, source present, online passenger | NOT_COVERED: existing copy fixture creates an offline seat; no online rider variant at this cut. |
+| B3.8 | REGISTERED staged-only, source present, online facility passenger | F `W325_B3_STAGED_ONLINE` (real-client V2 remains separate). |
 | B3.9 | REGISTERED staged-only, source absent, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
-| B3.10 | REGISTERED replaced, source present, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
+| B3.10 | REGISTERED replaced, source present, online facility passenger | F `W325_B3_MOVED_ONLINE` (real-client V2 remains separate). |
 | B3.11 | REGISTERED replaced, source absent, online passenger | NOT_COVERED: online rider/reconnect fixture unavailable at this cut. |
 | B3.12 | Restart waits for checked startup journal, then resumes | F `B3_JOURNAL_HELD` |
 | B4.1 | Idle non-data X decommissioned on first restart tick, source not explicitly forced, no passengers | F `B4_DECOMMISSION` (narrower than decommission-before-kill). |
@@ -68,8 +68,8 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B8.2 | Retirement replaced before callback, no passengers | F `B8_MOVED` |
 | B8.3 | Retirement staged-only, offline seat | F `W325_B8_STAGED_OFFLINE` |
 | B8.4 | Retirement replaced before callback, offline seat | F `W325_B8_MOVED_OFFLINE` |
-| B8.5 | Retirement staged-only, online passenger | NOT_COVERED: no online rider variant at this cut. |
-| B8.6 | Retirement replaced before callback, online passenger | NOT_COVERED: no online rider variant at this cut. |
+| B8.5 | Retirement staged-only, online facility passenger | F `W325_B8_STAGED_ONLINE` (real-client V2 remains separate). |
+| B8.6 | Retirement replaced before callback, online facility passenger | F `W325_B8_MOVED_ONLINE` (real-client V2 remains separate). |
 | B8.7 | Partial multi-REGISTERED group retirement, before replacement | NOT_COVERED: packaged fixture has one accepted package and one rejected package, not a multi-REGISTERED group. |
 | B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED: no packaged partial-group fixture. |
 | B9.1 | Registration refused after INTENT, REJECTED staged-only | F `B9_STAGED` |
