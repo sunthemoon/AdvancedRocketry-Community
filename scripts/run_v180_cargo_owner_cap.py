@@ -43,10 +43,16 @@ def inspect(world: Path, case: str, restarted: bool):
                               epoch=section["resource_epoch"], markers=section["markers"])
     else:
         disk = fluid.inspect(world)
-        disk["second"] = fluid.device_state(fluid.record(world / "region/r.0.0.mca"), [64, 100, 68], disk["ledger"]["ledger_id"])
+        terrain = fluid.record(world / "region/r.0.0.mca")
+        disk["second"] = fluid.device_state(terrain, [64, 100, 68], disk["ledger"]["ledger_id"])
     check(case, disk, restarted)
+    key = "arce_rocket_item_cargo" if "_ITEM_" in case else "arce_rocket_fluid_cargo"
+    capped = [entry[key] for entry in terrain["block_entities"] if key in entry
+              and [entry.get(k) for k in ("x", "y", "z")] == [64, 100, 64]]
+    require(len(capped) == 1, "Missing/repeated capped device root")
     return dict(identity=dict(rockets=[(r["uuid"], r["logical"], r["owner"]) for r in sorted(disk["rockets"], key=lambda r: r["pos"][2])],
-                              devices=[(disk[k]["id"], disk[k]["owner"], disk[k]["logical"]) for k in ("device", "second")]), **disk)
+                              devices=[(disk[k]["id"], disk[k]["owner"], disk[k]["logical"]) for k in ("device", "second")]),
+                preserved=dict(pending_records=disk["ledger"]["records"], capped_device=capped[0]), **disk)
 
 
 def check(case, disk, restarted):

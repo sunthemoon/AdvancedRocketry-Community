@@ -87,6 +87,15 @@ class CargoW330RunnerTest(unittest.TestCase):
                 else: second["transfer_guard"][key] = first["transfer_guard"][key]
                 with self.assertRaises(fluid.smoke.SmokeError): cap.check(case, bad, False)
 
+    def test_cap_controller_compares_entire_pending_records_and_capped_device_after_restarts(self):
+        disk = self.cap_disk("CQ_FLUID_LOAD", False)
+        native_root = dict(buffer="opaque native payload", binding="retained identity")
+        terrain = dict(block_entities=[dict(x=64, y=100, z=64, arce_rocket_fluid_cargo=native_root)])
+        with patch.object(cap.fluid, "inspect", return_value=disk), patch.object(cap.fluid, "record", return_value=terrain), \
+                patch.object(cap.fluid, "device_state", return_value=disk["second"]):
+            observed = cap.inspect(Path("unused"), "CQ_FLUID_LOAD", False)
+        self.assertEqual(observed["preserved"], dict(pending_records=disk["ledger"]["records"], capped_device=native_root))
+
 
 if __name__ == "__main__":
     unittest.main()
