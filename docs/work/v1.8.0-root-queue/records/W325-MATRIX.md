@@ -81,7 +81,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B10.4 | Coherent REPAIR, release flag staged-only | R `B10_REPAIR_STAGED` |
 | B10.5 | Coherent REPAIR, release flag replaced | R `B10_REPAIR_MOVED` |
 | B10.6 | Incoherent signature authority remains frozen | NOT_COVERED natively: released conflict GameTests exist; packaged release fixture seeds coherent authority only. |
-| B11.1 | Shared global pending saturation, bay-only fill of 64/server | F `B11_FULL` (mixed-consumer coverage is separate). |
+| B11.1 | Shared global pending saturation, bay-only fill of 64/server | F `B11_FULL` (historical root split across four owners; mixed-consumer coverage is separate). |
 | B11.2 | Per-rocket mixed 7 escrow + 1 bay / 8 limit | NOT_COVERED natively: no mixed-authority packaged fixture. |
 | B11.3 | Retained 4,096/server independently of pending | NOT_COVERED: no packaged retained-store saturation fixture. |
 | B11.4 | Retained 128/owner independently of pending | NOT_COVERED: no packaged retained-owner saturation fixture. |
@@ -124,7 +124,9 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B18.5 | Crash teardown, no callback completion | F `B18_CRASH` |
 | B18.6 | Clean stop with successor write queued | NOT_COVERED: no packaged stop/successor fixture. |
 | B18.7 | Clean stop with unresolved UNKNOWN write | NOT_COVERED: UNKNOWN cases resolve before their stop; active UNKNOWN stop is distinct. |
-| CAP.1 | 16 pending operations per owner, refusal before loader capture, other owners retain room | NOT_COVERED natively: existing `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity`; no packaged per-owner command. |
+| CAP.1 | 16 pending operations per fixture owner refuse bay admission with unchanged packages | F `W325_OWNER_FULL` (historical root, no claim that setup performed live admissions). |
+| CAP.2 | Another owner retains bay admission room when one owner holds 16 | F `W325_OTHER_OWNER_ROOM` |
+| CAP.3 | The owner cap refuses a loader before native capture | NOT_COVERED natively: existing `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity` covers this in the hosted GameTest run. |
 | EXIT.0 | S3 control: held passenger, no exit | X `X0_CONTROL` |
 | EXIT.1 | Sneak-input exit, live fall offer | X `X1_OFFER` |
 | EXIT.2 | Ticked-connection descent, detached playerdata flushed | X `X2_DESCENT` |

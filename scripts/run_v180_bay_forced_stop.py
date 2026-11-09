@@ -174,6 +174,11 @@ CASES.update({
                                   restarts=("LANDED", "LANDED")),
     "W325_B8_MOVED_ONLINE": dict(cut="B8_MOVED", end="kill", durable="RETIRED", online=True, save=True,
                                  restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    "W325_OWNER_FULL": dict(cut=None, end="land", durable="NONE", fill=16,
+                             fill_owner="00000000-0000-4000-8000-000000128d01", first="LANDED_UNCONSUMED",
+                             restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "W325_OTHER_OWNER_ROOM": dict(cut=None, end="land", durable="NONE", fill=16, first="LANDED",
+                                   restarts=("LANDED", "LANDED")),
 })
 TRANCHES["E"] = [case for case in CASES if case.startswith("W325_")]
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
@@ -439,13 +444,17 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
         properties["bayOfflinePassenger"] = "true"
     if spec.get("refuse"):
         properties["bayRefuseRegistration"] = "true"
-    process = run.start(case, 0, properties)
     observed: dict = {}
+    if spec.get("fill"):
+        observed["capacity_fixture"] = evidence_tools.seed_capacity_world(world, spec["fill"], spec.get("fill_owner"))
+    process = run.start(case, 0, properties)
     if spec.get("staging"):
         # A directory at the staging path refuses the next receipt write before staging: FAILED_BEFORE_REPLACE.
         (world / "data" / STAGING).mkdir(parents=True)
     if spec.get("fill"):
-        observed["filled"] = run.fill(spec["fill"])
+        observed["filled"] = run.pending()
+        if observed["filled"]["pending"] != spec["fill"] or observed["filled"]["retained"] != spec["fill"]:
+            raise smoke.SmokeError(f"Capacity fixture did not load its exact pending/retained union: {observed['filled']}")
     fixture = None
     if spec.get("fixture_restart") is None:
         if spec.get("journal"):

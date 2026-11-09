@@ -9,6 +9,7 @@ from unittest.mock import Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as bay
 import bay_integrated_evidence as evidence
+import loader_cut_nbt as nbt
 
 
 class EvidenceTests(unittest.TestCase):
@@ -57,7 +58,8 @@ class EvidenceTests(unittest.TestCase):
     def test_new_cases_use_existing_cut_controls_and_two_restarts(self):
         expected = {"W325_B3_STAGED_PRESENT", "W325_B3_STAGED_ABSENT", "W325_B4_LIVE_X_PRESENT_S",
                     "W325_B4_LIVE_X_ABSENT_S", "W325_B8_STAGED_OFFLINE", "W325_B8_MOVED_OFFLINE",
-                    "W325_B3_STAGED_ONLINE", "W325_B3_MOVED_ONLINE", "W325_B8_STAGED_ONLINE", "W325_B8_MOVED_ONLINE"}
+                    "W325_B3_STAGED_ONLINE", "W325_B3_MOVED_ONLINE", "W325_B8_STAGED_ONLINE", "W325_B8_MOVED_ONLINE",
+                    "W325_OWNER_FULL", "W325_OTHER_OWNER_ROOM"}
         self.assertEqual(expected, {key for key in bay.CASES if key.startswith("W325_")})
         for key in expected:
             self.assertEqual(2, len(bay.CASES[key]["restarts"]))
@@ -103,6 +105,41 @@ class EvidenceTests(unittest.TestCase):
             run.send.return_value = good.replace(before, after)
             with self.assertRaises(bay.smoke.SmokeError):
                 bay.online_state(run, "l", at_cut=True)
+
+    def test_global_capacity_fixture_preserves_sixty_four_slots_and_all_lower_caps(self):
+        with tempfile.TemporaryDirectory() as temp:
+            world = Path(temp) / "world"
+            summary = evidence.seed_capacity_world(world, 64)
+            self.assertEqual(64, summary["count"])
+            _, root = nbt.read_gzip(world / "data" / bay.RECEIPTS)
+            payload = nbt.compound(root, "data")
+            rows = nbt.plain(nbt.compound(payload, "receipts"))
+            self.assertEqual(64, len(rows))
+            self.assertEqual(64, nbt.compound(payload, "issued_through").value)
+            from collections import Counter
+            owners = Counter(tuple(row["owner"]) for row in rows)
+            rockets = Counter(tuple(row["rocket"]) for row in rows)
+            self.assertEqual([16] * 4, sorted(owners.values()))
+            self.assertEqual([8] * 8, sorted(rockets.values()))
+            self.assertEqual(64, len({tuple(row["op"]) for row in rows}))
+            self.assertEqual(64, len({tuple(row["satellite"]) for row in rows}))
+            with self.assertRaises(FileExistsError):
+                evidence.seed_capacity_world(world, 64)
+
+    def test_owner_fixture_is_explicit_and_bounds_do_not_weaken_global_case(self):
+        with tempfile.TemporaryDirectory() as temp:
+            import uuid
+            owner = "00000000-0000-4000-8000-000000128d01"
+            world = Path(temp) / "world"
+            evidence.seed_capacity_world(world, 16, owner)
+            _, root = nbt.read_gzip(world / "data" / bay.RECEIPTS)
+            rows = nbt.compound(root, "data", "receipts").value[1]
+            self.assertTrue(all(nbt.compound(row, "owner") == nbt.uuid_tag(uuid.UUID(owner)) for row in rows))
+            for count in (0, 65):
+                with self.assertRaises(ValueError):
+                    evidence.seed_capacity_world(Path(temp) / f"bad{count}", count)
+            self.assertEqual(64, bay.CASES["B11_FULL"]["fill"])
+            self.assertEqual(56, bay.CASES["B17_FAIR"]["fill"])
 
 
 if __name__ == "__main__":
