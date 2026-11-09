@@ -14,8 +14,8 @@ import net.minecraft.server.MinecraftServer;
  * <p>Before that classification runs at ServerStartingEvent, a missing root is UNCLASSIFIED and the reads keep their
  * no-ledger answer, as the bay receipts do before they start (R390): only rocket joins while the spawn chunks load read
  * then, a loadable ledger is already visible through vanilla's lazy load, and every action rechecks after startup. A
- * missing root read off the server thread or without the runtime answers NOT_LOADED. The lookup never creates a ledger
- * or a file.
+ * missing root read without the runtime answers NOT_LOADED, and so does any read off the server thread or without an
+ * Overworld, before it touches storage (W328F). The lookup never creates a ledger or a file.
  */
 public record EscrowLedgerLookup(State state, @Nullable ResourceEscrowSavedData data) {
     public enum State { LOADED, NO_FILE, NOT_LOADED, UNCLASSIFIED }
@@ -25,13 +25,29 @@ public record EscrowLedgerLookup(State state, @Nullable ResourceEscrowSavedData 
         EscrowTags.require((state == State.LOADED) == (data != null), "Only a LOADED ledger lookup carries the ledger");
     }
 
-    /** The load-only lookup first; the runtime's classification only when it finds no root. */
+    /**
+     * The thread and the Overworld first (W328F, review check 5): off the server thread, or without an Overworld, the
+     * answer is NOT_LOADED and vanilla storage is never touched. Then the load-only lookup, and the runtime's
+     * classification only when it finds no root.
+     */
     public static EscrowLedgerLookup of(MinecraftServer server) {
-        var data = ResourceEscrowSavedData.existing(server);
+        boolean serverThread = server.isSameThread();
+        return of(serverThread, serverThread && server.overworld() != null,
+                () -> ResourceEscrowSavedData.existing(server), () -> missingState(server));
+    }
+
+    /** {@link #of(MinecraftServer)} over its three inputs, in its order; unit tests observe each storage access. */
+    static EscrowLedgerLookup of(boolean serverThread, boolean overworld, Supplier<ResourceEscrowSavedData> storage,
+                                 Supplier<State> missing) {
+        if (!serverThread || !overworld) { return new EscrowLedgerLookup(State.NOT_LOADED, null); }
+        var data = storage.get();
         if (data != null) { return new EscrowLedgerLookup(State.LOADED, data); }
-        if (!server.isSameThread()) { return new EscrowLedgerLookup(State.NOT_LOADED, null); }
+        return new EscrowLedgerLookup(missing.get(), null);
+    }
+
+    private static State missingState(MinecraftServer server) {
         var runtime = server.overworld().getCapability(EscrowRuntime.CAPABILITY).resolve().orElse(null);
-        return new EscrowLedgerLookup(runtime == null ? State.NOT_LOADED : runtime.missingLedger(server), null);
+        return runtime == null ? State.NOT_LOADED : runtime.missingLedger(server);
     }
 
     /**

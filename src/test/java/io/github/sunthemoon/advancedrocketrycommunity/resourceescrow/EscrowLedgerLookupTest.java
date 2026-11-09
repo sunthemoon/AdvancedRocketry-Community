@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 /**
  * W329 (R393): the ledger lookup's classification of a missing root, over real admission delegates. Only a proven
  * absence keeps the no-ledger answers after startup; before the startup classification nothing reads the delegate.
+ * W328F: off the server thread or without an Overworld, nothing touches storage.
  */
 final class EscrowLedgerLookupTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
@@ -43,6 +44,34 @@ final class EscrowLedgerLookupTest {
         assertEquals(EscrowAdmissionAuthority.Delegate.State.LOADED, attached.state());
         assertEquals(EscrowLedgerLookup.State.NOT_LOADED, EscrowLedgerLookup.missing(true, attached::state));
         assertTrue(new EscrowLedgerLookup(EscrowLedgerLookup.State.NOT_LOADED, null).notLoaded());
+    }
+
+    /** W328F (review check 5): off the server thread, or without an Overworld, the lookup never touches storage. */
+    @Test void offTheServerThreadOrWithoutAnOverworldTheLookupNeverTouchesStorage() {
+        java.util.function.Supplier<ResourceEscrowSavedData> storage = () -> {
+            throw new AssertionError("vanilla storage was touched");
+        };
+        java.util.function.Supplier<EscrowLedgerLookup.State> runtime = () -> {
+            throw new AssertionError("the runtime's classification was read");
+        };
+        for (boolean overworld : new boolean[] {true, false}) {
+            var offThread = EscrowLedgerLookup.of(false, overworld, storage, runtime);
+            assertEquals(EscrowLedgerLookup.State.NOT_LOADED, offThread.state());
+            assertNull(offThread.data());
+        }
+        assertEquals(EscrowLedgerLookup.State.NOT_LOADED, EscrowLedgerLookup.of(true, false, storage, runtime).state());
+
+        // On the server thread with an Overworld: storage first, and the runtime only when it finds no root.
+        var data = ResourceEscrowSavedData.create();
+        var reads = new java.util.concurrent.atomic.AtomicInteger();
+        var loaded = EscrowLedgerLookup.of(true, true, () -> { reads.incrementAndGet(); return data; }, runtime);
+        assertEquals(EscrowLedgerLookup.State.LOADED, loaded.state());
+        assertSame(data, loaded.data());
+        assertEquals(1, reads.get());
+        for (var state : List.of(EscrowLedgerLookup.State.NO_FILE, EscrowLedgerLookup.State.NOT_LOADED, EscrowLedgerLookup.State.UNCLASSIFIED)) {
+            assertEquals(state, EscrowLedgerLookup.of(true, true, () -> { reads.incrementAndGet(); return null; }, () -> state).state());
+        }
+        assertEquals(4, reads.get());
     }
 
     @Test void onlyALoadedLookupCarriesTheLedger() {
