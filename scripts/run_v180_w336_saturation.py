@@ -56,7 +56,7 @@ def await_denials(run, positions):
     deadline = time.monotonic() + 60
     while True:
         observed = {tuple(map(int, match.groups())) for line in run.process.lines
-                    if (match := re.search(r"_UNSUPPORTED pos=(-?\d+), (-?\d+), (-?\d+) status=", line))}
+                    if (match := re.search(r"_(?:UNSUPPORTED|GUARDED) pos=(-?\d+), (-?\d+), (-?\d+) (?:status|guard)=", line))}
         if expected <= observed:
             return
         native.require(time.monotonic() < deadline, "Missing distinct unsupported loads: " + str(expected - observed))
@@ -104,7 +104,8 @@ def family(run):
         run.load([oracle.TERRAIN]); mutate(run, "minecraft:emerald_block" if restart == 1 else "minecraft:gold_block")
         run.send("forceload remove all"); save(run)
         lines = run.stop(f"restart-{restart}")
-        native.require(not any("_UNSUPPORTED pos=" in line for line in lines), "Restart reloaded device fixtures")
+        native.require(not any("_UNSUPPORTED pos=" in line or "ARCE_SATELLITE_BAY_GUARDED pos=" in line
+                               for line in lines), "Restart reloaded device fixtures")
         expected = "minecraft:emerald_block" if restart == 1 else "minecraft:gold_block"
         restarts.append(oracle.check_stage(world, fixtures, expected))
         snapshots.append(run.capture(world, f"restart-{restart}-world"))

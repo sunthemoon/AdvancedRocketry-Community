@@ -125,6 +125,13 @@ class SaturationTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 saturation.await_denials(Fake(), [(1, 2, 3), (4, 5, 6)])
 
+    def test_bay_guarded_and_cargo_unsupported_both_identify_loads(self):
+        class Fake:
+            process = type("Process", (), {"lines": [
+                "ARCE_SATELLITE_BAY_GUARDED pos=1, 2, 3 guard=FUTURE keepable=false",
+                "ARCE_ITEM_CARGO_UNSUPPORTED pos=4, 5, 6 status=FUTURE keepable=false"]})()
+        saturation.await_denials(Fake(), [(1, 2, 3), (4, 5, 6)])
+
     def test_protection_disabled_is_rejected_by_terrain_oracle(self):
         with patch.object(pool, "check_roots"), patch.object(pool, "terrain", return_value="minecraft:emerald_block"):
             with self.assertRaisesRegex(ValueError, "Device-free terrain persisted"):
