@@ -44,9 +44,13 @@ public final class BayPassengerExitAreaGameTests {
             }
             helper.assertTrue(refused && level.getBlockState(marker).equals(markerBefore), "Refusal changed a cell or lost its diagnostic");
             var origin = BayPassengerExitGameTestArea.origin(helper);
-            var relative = helper.relativePos(origin);
-            helper.assertTrue(relative.getX() >= 5 && relative.getX() <= 10 && relative.getZ() >= 5 && relative.getZ() <= 10
-                    && relative.getY() == 4, "Chosen window leaves its allocation");
+            var minimum = helper.absolutePos(new BlockPos(5, 4, 5));
+            var maximum = helper.absolutePos(new BlockPos(10, 4, 10));
+            helper.assertTrue(origin.getX() >= Math.min(minimum.getX(), maximum.getX())
+                    && origin.getX() <= Math.max(minimum.getX(), maximum.getX())
+                    && origin.getZ() >= Math.min(minimum.getZ(), maximum.getZ())
+                    && origin.getZ() <= Math.max(minimum.getZ(), maximum.getZ())
+                    && origin.getY() == minimum.getY(), "Chosen window leaves its allocation");
             helper.assertTrue(Math.abs(origin.getX() - leftover.getX()) > 5 || Math.abs(origin.getZ() - leftover.getZ()) > 5,
                     "Window did not avoid the seeded leftover");
             try (var ignored = BayPassengerExitGameTestArea.prepare(level, origin)) {
