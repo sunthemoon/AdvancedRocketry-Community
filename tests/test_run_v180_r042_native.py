@@ -14,9 +14,6 @@ import run_v180_r042_native as r042  # noqa: E402
 
 PREFIX = "[12:00:00] [Server thread/INFO] [advancedrocketrycommunity/]: "
 ERROR = "[12:00:00] [Server thread/ERROR] [advancedrocketrycommunity/]: "
-REFUSAL = (ERROR + "[ARCE-BETA-2000] Beta world data check blocked startup; type=BAY_RECEIPTS; "
-           "reason=advancedrocketrycommunity_bay_receipts presence is unknown: its file status check failed, so its absence is "
-           "not proven. " + r042.STORAGE_HINT + " If repair is still needed after that: Keep the world stopped.\n")
 
 
 def attempt(status="ESCROW_FULL", admitted=False, unchanged=True, pending=(64, 64), retained=(64, 64), ledger=("absent", "absent")):
@@ -27,7 +24,6 @@ def report(kind, amounts=None, epochs=(0, 0), markers=(0, 0), watching=False, lo
     rocket, device = amounts or r042.BEFORE[kind]
     return dict(rocket=rocket, device=device, rocket_epoch=epochs[0], device_epoch=epochs[1], rocket_markers=markers[0],
                 device_markers=markers[1], locked=locked, protected=protected, refusal=refusal, watching=watching, logical="L")
-
 
 class SeedTests(unittest.TestCase):
     def test_the_server_pool_fills_64_slots_within_every_cap_and_every_row_is_pending(self):
@@ -72,7 +68,6 @@ class SeedTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 r042.seed_pool(world, r042.pool_rows("P_OWNER"))
 
-
 class ParserTests(unittest.TestCase):
     def test_the_probe_lines_parse(self):
         line = PREFIX + ("ARCE_RELEASE_R042_ATTEMPT cell=A kind=ITEM_LOAD found=true status=ESCROW_FULL admitted=false "
@@ -88,6 +83,9 @@ class ParserTests(unittest.TestCase):
             PREFIX + "ARCE_RELEASE_R042_CELL cell=A kind=FLUID_LOAD owner=o logical=l rocket=r device=d").groups()[1:])
         self.assertEqual("1", r042.INSERT.search(
             PREFIX + "ARCE_RELEASE_R042_INSERT satellite=s blocked=true valid=false remainder=1 held=false")[4])
+        self.assertIsNotNone(r042.INSERTED.search(PREFIX.replace("advancedrocketrycommunity/", "minecraft/MinecraftServer")
+                                                  + "R-042 insertion reported"))
+        self.assertIsNone(r042.INSERTED.search(PREFIX + "R-042 probe reported"), "the insertion waits for another probe's line")
         self.assertEqual("true", r042.RIDER.search(
             PREFIX + "ARCE_RELEASE_R042_RIDER action=board logical=l rider=online mounted=true vehicle=v seat=0 rocket=r")[4])
 
@@ -116,13 +114,6 @@ class ParserTests(unittest.TestCase):
         match = r042.PLAIN_STATUS.search(line)
         self.assertEqual(("PREPARED", "r", "TRANSIT", "50.0", "", "false", ""), match.groups()[5:12])
         self.assertIsNone(r042.bay.STATUS.search(line), "W325's status regex now accepts a rocket without bays")
-    def test_the_refusal_line_splits_reason_and_hint(self):
-        match = r042.REFUSAL.search(REFUSAL)
-        self.assertEqual("BAY_RECEIPTS", match[1])
-        self.assertTrue(match[2].endswith("so its absence is not proven"))
-        self.assertTrue(match[3].startswith(r042.STORAGE_HINT))
-
-
 class OracleTests(unittest.TestCase):
     def test_refusals_must_change_nothing_and_answer_the_expected_status(self):
         rows = {kind: attempt() for kind in r042.KINDS}
@@ -158,19 +149,6 @@ class OracleTests(unittest.TestCase):
         self.assertTrue(r042.audit_errors([load, ERROR + "something else\n"], allowed))
         self.assertTrue(r042.audit_errors(["[1] [Server thread/FATAL] [x/]: crash\n"], {}))
 
-    def test_the_refused_start_needs_one_refusal_with_the_storage_hint_no_world_and_a_failing_exit(self):
-        start = dict(exit_code=1, lines=[PREFIX + "Loading\n", REFUSAL,
-                                         "[1] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception\n"])
-        self.assertEqual("BAY_RECEIPTS", r042.check_refused_start("U_BAY", start)["type"])
-        for broken in (dict(start, exit_code=0),
-                       dict(start, lines=start["lines"] + [PREFIX + 'Done (3.2s)! For help, type "help"\n']),
-                       dict(start, lines=[REFUSAL.replace(r042.STORAGE_HINT, "Keep the world stopped.")]),
-                       dict(start, lines=[REFUSAL, REFUSAL]),
-                       dict(start, lines=[REFUSAL, ERROR + "ARCE_SOMETHING_ELSE failed\n"]),
-                       dict(start, lines=[REFUSAL.replace("type=BAY_RECEIPTS", "type=RESOURCE_ESCROW")])):
-            with self.subTest(broken=broken["lines"][-1][:60]), self.assertRaises(smoke.SmokeError):
-                r042.check_refused_start("U_BAY", broken)
-
     def test_the_injection_must_happen_once_with_vanillas_one_load_error(self):
         lines = [PREFIX + "ARCE_RELEASE_LOAD_FAILURE type=BAY_RECEIPTS injected=true\n",
                  "[1] [Server thread/ERROR] [minecraft/DimensionDataStorage]: Error loading saved data: advancedrocketrycommunity_bay_receipts\n"]
@@ -194,37 +172,6 @@ class OracleTests(unittest.TestCase):
                 with self.assertRaises(smoke.SmokeError):
                     r042.flight_hold(Fake([held, second], [100, 700, 700]), "N_BAY", "L")
 
-
-class AccessListTests(unittest.TestCase):
-    def test_deny_adds_the_file_and_folder_entries_and_restore_refuses_a_left_entry(self):
-        calls = []
-        def fake(*arguments):
-            calls.append(arguments)
-            return "D:/w/data BUILTIN\\Administrators:(I)(F)\n"
-        with patch.object(r042, "icacls", side_effect=fake):
-            r042.deny(Path("D:/w/data/file.dat"), "S-1-5-21-1")
-            self.assertIn((str(Path("D:/w/data/file.dat")), "/deny", "*S-1-5-21-1:(F)"), calls)
-            self.assertIn((str(Path("D:/w/data")), "/deny", "*S-1-5-21-1:(RD)"), calls)
-            deny_file = calls.index((str(Path("D:/w/data/file.dat")), "/deny", "*S-1-5-21-1:(F)"))
-            deny_folder = calls.index((str(Path("D:/w/data")), "/deny", "*S-1-5-21-1:(RD)"))
-            self.assertIn((str(Path("D:/w/data/file.dat")),), calls[deny_file + 1:deny_folder], "the file is listed after the folder entry")
-            r042.restore(Path("D:/w/data/file.dat"), "S-1-5-21-1")
-        with patch.object(r042, "icacls", return_value="D:/w/data DESKTOP\\Administrator:(DENY)(RD)\n"):
-            with self.assertRaises(smoke.SmokeError):
-                r042.restore(Path("D:/w/data/file.dat"), "S-1-5-21-1")
-
-    def test_the_manifest_sees_every_changed_or_new_file(self):
-        with tempfile.TemporaryDirectory() as directory:
-            world = Path(directory)
-            (world / "data").mkdir()
-            (world / "data" / "a.dat").write_bytes(b"1")
-            before = r042.manifest(world)
-            (world / "data" / "a.dat").write_bytes(b"2")
-            (world / "b").write_bytes(b"")
-            after = r042.manifest(world)
-            self.assertEqual({"data/a.dat", "b"}, {path for path in set(before) | set(after) if before.get(path) != after.get(path)})
-
-
 class InvocationTests(unittest.TestCase):
     def test_a_scratch_run_runs_only_its_familys_case(self):
         args = SimpleNamespace(source_commit="x", scratch="N", case=["P_SERVER"])
@@ -238,6 +185,7 @@ class InvocationTests(unittest.TestCase):
 
     def test_every_family_has_a_runner_and_every_scratch_family_a_case(self):
         self.assertEqual(set(r042.RUNNERS), {spec["family"] for spec in r042.CASES.values()})
+        self.assertEqual({"N", "L", "P"}, set(r042.RUNNERS), "the U family is NOT_COVERED on this host (W332-DESIGN section 6)")
         self.assertTrue(all(case in r042.CASES and r042.CASES[case]["family"] == family for family, case in r042.SCRATCH.items()))
 
     def test_the_candidate_arguments_are_required(self):

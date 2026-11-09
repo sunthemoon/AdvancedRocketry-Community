@@ -4,8 +4,6 @@
 Each case starts a fresh flat world on the pinned candidate JAR, makes a first start (S0) and two restarts (S1, S2), and
 checks each start's logs, console answers and stopped-world bytes:
 
-* ``U_BAY`` and ``U_LEDGER``: a deny entry makes the file's status check fail; W328's pre-start check must refuse the
-  start (``ARCE-BETA-2000``, the storage hint first) without changing a world file, and start cleanly after the restore;
 * ``N_BAY``: the gated load-failure seam keeps the bay receipts NOT_LOADED for S1, with the audit's server-wide effects,
   and S2 recovers;
 * ``L_LEDGER``: the same for the escrow ledger and W329's protective answers;
@@ -13,7 +11,9 @@ checks each start's logs, console answers and stopped-world bytes:
   four cargo kinds and a bay deployment are refused with nothing changed, another owner is admitted, and no online
   command releases them.
 
-Production admission stays off: every fixture is a gated release-test command or start property.
+Production admission stays off: every fixture is a gated release-test command or start property. W328's refusal of an
+unknown presence (TASK item 2, first trigger) is not a case here: this host cannot make a managed file's status check fail
+before vanilla's own world-folder walk refuses the start (records/W332-DESIGN.md, section 6).
 """
 from __future__ import annotations
 
@@ -23,7 +23,6 @@ import json
 from pathlib import Path
 import re
 import shutil
-import subprocess
 import time
 import uuid
 
@@ -31,7 +30,6 @@ import bay_integrated_evidence as evidence_tools
 import loader_cut_nbt as nbt
 import run_dedicated_server_smoke as smoke
 import run_v180_bay_forced_stop as bay
-from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest
 from run_v180_escrow_pre_f2 import assert_pin
 
@@ -51,10 +49,6 @@ KINDS = ("FUEL", "FLUID_LOAD", "FLUID_UNLOAD", "ITEM_LOAD", "ITEM_UNLOAD")
 BEFORE = dict(FUEL=(0, 1000), FLUID_LOAD=(0, 5000), FLUID_UNLOAD=(5000, 0), ITEM_LOAD=(60, 10), ITEM_UNLOAD=(10, 60))
 AFTER = dict(FUEL=(1000, 0), FLUID_LOAD=(1000, 4000), FLUID_UNLOAD=(4000, 1000), ITEM_LOAD=(64, 6), ITEM_UNLOAD=(6, 64))
 ADMITTED = ("READY", "PREPARING", "TRANSFERRING")
-STORAGE_HINT = "Fix storage access to the world folder and restart; never delete, move or restore single files."
-ICACLS = r"C:\Windows\System32\icacls.exe"
-RUNAS = r"C:\Windows\System32\runas.exe"
-WHOAMI = r"C:\Windows\System32\whoami.exe"
 
 REPORTED = re.compile(r"R-042 probe reported")
 WAIT = re.compile(r"ARCE_RELEASE_R042_WAIT ")
@@ -65,6 +59,7 @@ REPORT = re.compile(r"ARCE_RELEASE_R042_REPORT cell=(\w+) kind=(\w+) found=(true
                     r"rocketEpoch=(\d+) deviceEpoch=(\d+) rocketMarkers=(\d+) deviceMarkers=(\d+) locked=(true|false) "
                     r"protected=(true|false) refusal=(\w+) watching=(true|false) logical=(\S+))?")
 PLAIN = re.compile(r"ARCE_RELEASE_R042_PLAIN logical=(\S+) rocket=(\S+) owner=(\S+) fuel=(\d+)")
+INSERTED = re.compile(r"R-042 insertion reported|ARCE_RELEASE_R042_WAIT ")
 INSERT = re.compile(r"ARCE_RELEASE_R042_INSERT satellite=(\S+) blocked=(true|false) valid=(true|false) remainder=(\d+) held=(true|false)")
 RIDER = re.compile(r"ARCE_RELEASE_R042_RIDER action=(\w+) logical=(\S+) rider=(\w+) mounted=(true|false) vehicle=(\S+) seat=(-?\d+) rocket=(\S+)")
 LAUNCH = re.compile(r"ARCE_RELEASE_TEST_LAUNCH request=(\S+) entity=(\S+) logical=(\S+) source=\S+ destination=\S+ checkpoint=(\S+) code=(\w+)")
@@ -81,9 +76,6 @@ BAY_NOT_LOADED = re.compile(r"ARCE_BAY_RECEIPTS_NOT_LOADED reason=(\w+) file=(\S
 BAY_INDEX = re.compile(r"ARCE_BAY_RECEIPTS_INDEX state=(\w+) receipts=(\d+)")
 LEDGER_NOT_LOADED = re.compile(r"ARCE_ESCROW_LEDGER_NOT_LOADED reason=(\w+) file=(\S+);")
 FENCED = re.compile(r"ARCE_ROCKET_RECOVERY_FENCED transaction=(\S+) ")
-REFUSAL = re.compile(r"/ERROR\].*\[ARCE-BETA-2000\] Beta world data check blocked startup; type=(\w+); reason=(.*?presence is unknown"
-                     r"[^.]*)\. (.*)$")
-DONE = re.compile(r'Done \([^)]+\)! For help, type "help"')
 GATE_CLOSED = re.compile(r"ARCE_RELEASE_R042_GATE_CLOSED cell=(\w+) kind=(\w+) reason=(\w+)")
 # W325's status line for a rocket without bays: its packages and consumed fields are empty (W332 smoke 1).
 PLAIN_STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) hold=(\w+) reason=(\w+) receipts=\[([^\]]*)\] "
@@ -91,14 +83,12 @@ PLAIN_STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) ho
 
 # One family per case; rows name the TASK items (records/W332-DESIGN.md section 3).
 CASES = {
-    "U_BAY": dict(family="U", file="receipts", type="BAY_RECEIPTS", rows=("TASK 2: unknown presence",)),
-    "U_LEDGER": dict(family="U", file="ledger", type="RESOURCE_ESCROW", rows=("TASK 2: unknown presence (ledger)",)),
     "N_BAY": dict(family="N", rows=("TASK 2: present but not loaded",)),
     "L_LEDGER": dict(family="L", rows=("TASK 3: the escrow ledger NOT_LOADED",)),
     "P_SERVER": dict(family="P", pending=64, refusal="ESCROW_FULL", rows=("TASK 4: the server pool",)),
     "P_OWNER": dict(family="P", pending=16, refusal="OWNER_PENDING_FULL", other=True, rows=("TASK 4: per owner",)),
 }
-SCRATCH = {"U": "U_BAY", "N": "N_BAY", "L": "L_LEDGER", "P": "P_SERVER"}
+SCRATCH = {"N": "N_BAY", "L": "L_LEDGER", "P": "P_SERVER"}
 
 
 def require(condition: bool, message: str) -> None:
@@ -173,55 +163,6 @@ def seed_pool(world: Path, rows: list[dict]) -> dict:
     nbt.write_gzip(file, b"", root)
     require(nbt.read_gzip(file)[1] == root, "The pool seed failed typed readback")
     return dict(count=len(rows), satellites=satellites, rows=rows, sha256=digest(file))
-
-
-# Access lists (family U) -----------------------------------------------------------------------------------------------
-
-def user_sid() -> str:
-    result = subprocess.run([WHOAMI, "/user", "/fo", "csv", "/nh"], capture_output=True, text=True, check=False)
-    match = re.search(r'"(S-1-[0-9-]+)"', result.stdout)
-    require(result.returncode == 0 and match is not None, f"Cannot read the server user's SID: {result.stdout!r}")
-    return match.group(1)
-
-
-def icacls(*arguments: str) -> str:
-    result = subprocess.run([ICACLS, *arguments], capture_output=True, text=True, check=False)
-    require(result.returncode == 0, f"icacls {' '.join(arguments)} failed: {result.stdout} {result.stderr}")
-    return result.stdout
-
-
-def deny(file: Path, sid: str) -> dict:
-    """Full access on the file and list-folder on its folder, both denied to the server's user (this folder only).
-
-    Windows grants read-attributes on a file to a caller who may list its folder, so the file entry alone does not make
-    the status check fail."""
-    icacls(str(file), "/deny", f"*{sid}:(F)")
-    # Listed before the folder entry: with both entries even this token cannot read the file's list (W332 smoke 1).
-    listing = dict(file=icacls(str(file)))
-    icacls(str(file.parent), "/deny", f"*{sid}:(RD)")
-    listing["folder"] = icacls(str(file.parent))
-    return listing
-
-
-def restore(file: Path, sid: str) -> dict:
-    """Remove both deny entries (the folder's first, so the file's list can be changed) and prove none is left."""
-    icacls(str(file.parent), "/remove:d", f"*{sid}")
-    listing = dict(folder=icacls(str(file.parent)))
-    icacls(str(file), "/remove:d", f"*{sid}")
-    listing["file"] = icacls(str(file))
-    require("DENY" not in listing["folder"] and "(N)" not in listing["file"] and "DENY" not in listing["file"],
-            f"A deny entry is left after the restore: {listing}")
-    return listing
-
-
-def manifest(world: Path) -> dict:
-    rows = {}
-    for path in sorted(world.rglob("*")):
-        if path.is_symlink():
-            raise smoke.SmokeError(f"Linked world entry: {path}")
-        if path.is_file():
-            rows[path.relative_to(world).as_posix()] = digest(path)
-    return rows
 
 
 # The harness session ---------------------------------------------------------------------------------------------------
@@ -330,8 +271,15 @@ class Run(bay.Session):
         return dict(result=match[2], present=match[3] == "true")
 
     def insert(self) -> dict:
-        lines = self.probe(f"arce bay release-test r042 insert {INSERT_AT[0]} {INSERT_AT[1]} {INSERT_AT[2]}")
-        match = next(INSERT.search(line) for line in lines if INSERT.search(line))
+        """The insertion probe answers with its own feedback line (W332 smoke 2), or a WAIT line before its chunk ticks."""
+        deadline = time.monotonic() + 60
+        while True:
+            lines = self.window(f"arce bay release-test r042 insert {INSERT_AT[0]} {INSERT_AT[1]} {INSERT_AT[2]}", INSERTED)
+            match = next((INSERT.search(line) for line in lines if INSERT.search(line)), None)
+            if match:
+                break
+            require(time.monotonic() < deadline, "The insertion probe's position never became entity-ticking")
+            time.sleep(1.0)
         return dict(satellite=match[1], blocked=match[2] == "true", valid=match[3] == "true", remainder=int(match[4]),
                     held=match[5] == "true")
 
@@ -466,105 +414,6 @@ def new_world(run: Run, case: str) -> Path:
 
 def snapshot(run: Run, world: Path, case: str, label: str) -> dict:
     return evidence_tools.snapshot_world(world, run.evidence / f"{case}-{label}-raw")
-
-
-# Family U --------------------------------------------------------------------------------------------------------------
-
-def restricted_start(run: Run, case: str, restart: int) -> dict:
-    """One start under a basic-user token of the same user (runas /trustlevel:0x20000), with stop piped to the console."""
-    command = _server_command(run.args.java)
-    command[2] = "-Xmx4G"
-    if run.args.scratch:
-        command.insert(4, f"-Dadvancedrocketrycommunity.w332Scratch={run.args.scratch}")
-    log = run.evidence / f"{case}-{restart}.log"
-    exit_file = run.session / f"{case}-{restart}.exit"
-    script = run.session / f"{case}-{restart}.cmd"
-    quoted = " ".join(f'"{part}"' if " " in part else part for part in command)
-    script.write_text(f'@echo off\r\ncd /d "{run.session}"\r\necho stop| {quoted} > "{log}" 2>&1\r\n'
-                      f'echo %ERRORLEVEL%> "{exit_file}"\r\n', encoding="ascii")
-    require(" " not in str(script), f"{case}: the restricted start script path has a space: {script}")
-    launched = subprocess.run([RUNAS, "/trustlevel:0x20000", f"cmd /c {script}"], capture_output=True, text=True, check=False)
-    require(launched.returncode == 0, f"{case}: runas failed: {launched.stdout} {launched.stderr}")
-    deadline = time.monotonic() + run.args.startup_timeout + run.args.exit_timeout
-    while not exit_file.is_file() or not exit_file.read_text(encoding="ascii", errors="replace").strip():
-        require(time.monotonic() < deadline, f"{case}/{restart}: the restricted start did not end")
-        time.sleep(1.0)
-    time.sleep(1.0)
-    code = int(exit_file.read_text(encoding="ascii").strip())
-    return dict(exit_code=code, lines=log.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True),
-                command=command, script=script.read_text(encoding="ascii"))
-
-
-def check_refused_start(case: str, start: dict) -> dict:
-    spec = CASES[case]
-    lines = start["lines"]
-    refusals = matches(lines, REFUSAL)
-    require(len(refusals) == 1 and refusals[0][0] == spec["type"], f"{case}: expected one {spec['type']} ARCE-BETA-2000 refusal: {refusals}")
-    require(refusals[0][2].startswith(STORAGE_HINT), f"{case}: the refusal hint does not start with the storage instruction: {refusals[0][2]}")
-    require(not any(DONE.search(line) for line in lines) and not matches(lines, BAY_INDEX),
-            f"{case}: the refused start reached the world")
-    require(start["exit_code"] != 0, f"{case}: the refused start exited 0")
-    errors = audit_errors(lines, {re.compile(r"\[ARCE-BETA-2000\] Beta world data check blocked startup"): 1})
-    # Forge's crash path after the refusal logs its own lines; only the refusal line is an ARCE ERROR here.
-    unexpected = [line for line in errors if "ARCE" in line or line.startswith("expected")]
-    require(not unexpected, f"{case}: unexpected ARCE ERROR lines in the refused start: {unexpected}")
-    return dict(type=refusals[0][0], reason=refusals[0][1], hint=refusals[0][2][:200], exit_code=start["exit_code"])
-
-
-def run_u(run: Run, case: str) -> dict:
-    spec = CASES[case]
-    world = new_world(run, case)
-    row = dict(case=case, rows=list(spec["rows"]), starts=[])
-    if spec["file"] == "receipts":
-        row["seed"] = evidence_tools.seed_capacity_world(world, 2, phase="REJECTED")
-    run.start(case, 0, {})
-    entry = dict(start=0)
-    run.forceload()
-    if spec["file"] == "ledger":
-        entry["cell"] = run.cell("S", P2)
-        attempts = run.attempt("S", "FUEL")
-        check_admitted(attempts)
-        entry["fill"] = run.await_completed("S", ("FUEL",))["FUEL"]
-    stopped = run.stop(case, 0)
-    index = matches(stopped["lines"], BAY_INDEX)
-    require(index == [("LOADED", "2")] if spec["file"] == "receipts" else index == [("NO_FILE", "0")],
-            f"{case}/0: unexpected bay index {index}")
-    require(not matches(stopped["lines"], BAY_NOT_LOADED) and not matches(stopped["lines"], LEDGER_NOT_LOADED), f"{case}/0: NOT_LOADED at S0")
-    target = world / "data" / FILES[spec["file"]]
-    require(target.is_file(), f"{case}: S0 left no {spec['file']} file")
-    before = manifest(world)
-    entry.update(index=index, disk=disk(world), files=len(before), raw=snapshot(run, world, case, "0"))
-    row["starts"].append(entry)
-    sid = user_sid()
-    acl: dict = dict(sid=sid)
-    try:
-        acl["denied"] = deny(target, sid)
-        refused = restricted_start(run, case, 1)
-    finally:
-        acl["restored"] = restore(target, sid)
-    entry = dict(start=1, restricted=True, acl=acl, refusal=check_refused_start(case, refused))
-    after = manifest(world)
-    changed = sorted(path for path in set(before) | set(after) if before.get(path) != after.get(path))
-    require(not changed, f"{case}/1: the refused start changed world files: {changed}")
-    entry["world_unchanged"] = dict(files=len(after), changed=changed)
-    row["starts"].append(entry)
-    run.start(case, 2, {})
-    entry = dict(start=2)
-    if spec["file"] == "ledger":
-        entry["escrow_status"] = run.escrow_status()
-        require(entry["escrow_status"] == "present", f"{case}/2: the ledger did not load: {entry['escrow_status']}")
-        entry["fill"] = run.report("S")["FUEL"]
-        require(completed(entry["fill"], "FUEL"), f"{case}/2: the fill's result changed: {entry['fill']}")
-    stopped = run.stop(case, 2)
-    entry["index"] = matches(stopped["lines"], BAY_INDEX)
-    require(entry["index"] == index, f"{case}/2: the bay index differs from S0: {entry['index']}")
-    require(not matches(stopped["lines"], BAY_NOT_LOADED) and not matches(stopped["lines"], LEDGER_NOT_LOADED), f"{case}/2: NOT_LOADED")
-    entry["disk"] = disk(world)
-    require(entry["disk"][spec["file"]] == before[f"data/{FILES[spec['file']]}"] or spec["file"] == "ledger",
-            f"{case}/2: the {spec['file']} file changed")
-    entry["raw"] = snapshot(run, world, case, "2")
-    row["starts"].append(entry)
-    return row
 
 
 # Family N --------------------------------------------------------------------------------------------------------------
@@ -792,7 +641,7 @@ def run_p(run: Run, case: str) -> dict:
     return row
 
 
-RUNNERS = dict(U=run_u, N=run_n, L=run_l, P=run_p)
+RUNNERS = dict(N=run_n, L=run_l, P=run_p)
 
 
 def run(args) -> dict:
