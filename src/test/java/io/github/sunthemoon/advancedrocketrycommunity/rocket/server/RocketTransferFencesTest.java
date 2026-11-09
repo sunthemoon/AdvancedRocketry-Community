@@ -113,6 +113,45 @@ final class RocketTransferFencesTest {
         }
     }
 
+    /**
+     * W328G: joins on either side of a due reevaluation can log three WARNs in three ticks.
+     * Supplies the traced join/observation reasons through W328F's shared fence and reevaluation paths;
+     * this is not a native join-scheduling test or a rolling-window rate measurement.
+     */
+    @Test void fenceWarnCycleBoundDoesNotCapARollingWindowAcrossTheBoundary() {
+        var fences = new RocketTransferFences(ignored -> null);
+        var live = new HashSet<UUID>(); var settled = new HashSet<UUID>();
+        var record = GovernedTransferFixture.create().record(); var id = record.transferId();
+        var escrow = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "ESCROW_PENDING_OR_TOMBSTONE");
+        var joined = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "ENDPOINT_JOIN_PROOF_REQUIRED");
+        var reads = new AtomicInteger();
+        try (var logs = new FenceLogs()) {
+            fences.classifyGoverned(record, escrow, live, settled);
+            assertEquals(List.of(escrow.reason()), logs.reasons(id), "the first fence logs separately");
+            assertFalse(fences.reevaluate(id, 0, () -> { reads.incrementAndGet(); return escrow.reason(); }, live, settled));
+            assertEquals(List.of(escrow.reason()), logs.reasons(id), "the tick-0 observation keeps the stable reason");
+
+            assertFalse(fences.reevaluate(id, 1_199,
+                    () -> fail("observed before the reevaluation is due"), live, settled));
+            fences.classifyGoverned(record, joined, live, settled);
+            assertEquals(List.of(escrow.reason(), joined.reason()), logs.reasons(id), "join reason at tick 1199 logs");
+
+            assertFalse(fences.reevaluate(id, 1_200, () -> { reads.incrementAndGet(); return escrow.reason(); }, live, settled));
+            assertEquals(List.of(escrow.reason(), joined.reason(), escrow.reason()), logs.reasons(id),
+                    "the due reevaluation at tick 1200 logs");
+
+            assertFalse(fences.reevaluate(id, 1_201,
+                    () -> fail("observed inside the new reevaluation cycle"), live, settled));
+            fences.classifyGoverned(record, joined, live, settled);
+            var expected = List.of(escrow.reason(), joined.reason(), escrow.reason(), joined.reason());
+            assertEquals(expected, logs.reasons(id), "join reason at tick 1201 is the third boundary WARN");
+            fences.classifyGoverned(record, joined, live, settled);
+            assertEquals(expected, logs.reasons(id), "a repeated stable join reason adds no WARN");
+            assertEquals(joined.reason(), fences.reason(id));
+            assertEquals(2, reads.get(), "only ticks 0 and 1200 reevaluated; join reasons are not throttled");
+        }
+    }
+
     /** Captures {@code ARCE_TRANSFER_FENCED} WARNs. */
     private static final class FenceLogs extends org.apache.logging.log4j.core.appender.AbstractAppender implements AutoCloseable {
         private final org.apache.logging.log4j.core.Logger logger =
