@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonit
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketWarmupGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
@@ -87,6 +88,7 @@ public final class EscrowMonitorGameTests {
         boolean cutInstalled, revoked;
         long revokedAt;
         long warmupStarted;
+        boolean warmupObserved;
         boolean observingArrival;
         Flight(GameTestHelper helper, boolean disarmAfterPrepared, boolean coldDestination) {
             this(helper, disarmAfterPrepared, coldDestination, Revocation.NONE);
@@ -212,9 +214,17 @@ public final class EscrowMonitorGameTests {
             }
             if (step == 10) {
                 var warming = warmup(server, rocket);
-                helper.assertTrue(warming != null && warming.player().equals(monitor.root().owner()), "Offline owner lost its attributed warm-up");
                 helper.assertTrue(journal.findByLogicalRocket(logical(rocket)).isEmpty()
                         && rocket.flightData().orElseThrow().fuel().equals(quote.source().fuel()), "Held edge launched or debited");
+                // DESTINATION_LOADING may precede pad selection; only that bounded request may bridge the gap.
+                if (warming == null) {
+                    helper.assertTrue(!warmupObserved
+                            && RocketWarmupGameTestSupport.preparing(server, logical(rocket)),
+                            "The cold monitor request lost its bounded terrain allocation or warm-up");
+                    return;
+                }
+                warmupObserved = true;
+                helper.assertTrue(monitor.root().owner().equals(warming.player()), "Offline owner lost its attributed warm-up");
                 if (!warming.state().equals("READY") || server.getTickCount() - warmupStarted < 20) { return; }
                 if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
                 earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState()); monitor.signal(false);
