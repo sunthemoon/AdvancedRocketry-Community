@@ -102,7 +102,11 @@ It does not run:
 What is still open:
 
 - **Ledger.** 5 units are still PLANNED: C17a 4 and C17c 1, the five loader variants, which wait for the escrow
-  chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-04 Root closed the
+  chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-09 the owner chose
+  to target enabling all five in v1.8 after an integrated test on one candidate JAR
+  ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
+  W326 (the four cargo kinds) run it on candidate C1, the hosted build of `70dd5d43e`, and W327 audits R-042, R-043
+  and R-044. Production admission stays off, and no residual risk is accepted. On 2026-11-04 Root closed the
   ten sounds as IMPLEMENTED after the owner's listen (D5, R305) and the gas charge pad on O1 for every player (option
   A, R307); W174's automatic charging moves to v1.9. `modelBakeEvent` is REDESIGNED since the K1 to K4 imports. The
   backlog is in QUEUE.md.
