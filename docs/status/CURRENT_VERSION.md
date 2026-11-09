@@ -105,8 +105,13 @@ What is still open:
   chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-09 the owner chose
   to target enabling all five in v1.8 after an integrated test on one candidate JAR
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
-  W326 (the four cargo kinds) run it on candidate C1, the hosted build of `70dd5d43e`, and W327 audits R-042, R-043
-  and R-044. Production admission stays off, and no residual risk is accepted. On 2026-11-04 Root closed the
+  W326 (the four cargo kinds) run it on candidate C1, the hosted build of `70dd5d43e`. W327's read-only audit of
+  R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
+  receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
+  released and REPAIR receipts hold shared pending slots until offline repair; the D6 wait figures are estimates;
+  the downgrade rewrite and the 256-coordinate pool are shared by all devices. Root corrected R-035, R-038, R-042,
+  R-043 and R-044 (R390), and W328 (R391) fixes the misleading NOT_LOADED warning and the escrow ledger's unknown
+  presence. Production admission stays off, and no residual risk is accepted. On 2026-11-04 Root closed the
   ten sounds as IMPLEMENTED after the owner's listen (D5, R305) and the gas charge pad on O1 for every player (option
   A, R307); W174's automatic charging moves to v1.9. `modelBakeEvent` is REDESIGNED since the K1 to K4 imports. The
   backlog is in QUEUE.md.
