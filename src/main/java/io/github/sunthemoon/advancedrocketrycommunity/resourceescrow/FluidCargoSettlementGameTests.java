@@ -29,7 +29,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FluidCargoSettlementGameTests {
-    enum Mode { LOAD, UNLOAD, ABANDON, UNLOAD_NEUTRAL }
+    enum Mode { LOAD, UNLOAD, ABANDON, UNLOAD_NEUTRAL, ABANDON_DEVICE }
     private static Scenario running;
     private FluidCargoSettlementGameTests() { }
 
@@ -52,6 +52,11 @@ public final class FluidCargoSettlementGameTests {
     public static void abandonProvesTheMissingRocketAndTheSurvivingDevice(GameTestHelper helper) { start(helper, Mode.ABANDON); }
     @AfterBatch(batch = "fluid_cargo_settlement_abandon")
     public static void cleanupAbandon(ServerLevel level) { cleanup(); }
+
+    @GameTest(template = "empty", batch = "fluid_cargo_settlement_abandon_device", timeoutTicks = 1_600)
+    public static void abandonProvesTheMissingDeviceAndSurvivingRocket(GameTestHelper helper) { start(helper, Mode.ABANDON_DEVICE); }
+    @AfterBatch(batch = "fluid_cargo_settlement_abandon_device")
+    public static void cleanupAbandonDevice(ServerLevel level) { cleanup(); }
 
     private static void start(GameTestHelper helper, Mode mode) {
         running = new Scenario(helper, mode); helper.onEachTick(running::tick);
@@ -80,7 +85,7 @@ public final class FluidCargoSettlementGameTests {
 
         Scenario(GameTestHelper helper, Mode mode) {
             this.helper = helper; this.mode = mode; pacer = new GameTestTickPacer(helper.getLevel().getServer());
-            origin = new BlockPos(636_008 + 512 * (mode == Mode.UNLOAD_NEUTRAL ? 4 : mode.ordinal()), 100, 636_008);
+            origin = new BlockPos(636_008 + 512 * (mode == Mode.UNLOAD_NEUTRAL ? 4 : mode == Mode.ABANDON_DEVICE ? 5 : mode.ordinal()), 100, 636_008);
             world = new EscrowCargoGameTestWorld(helper, List.of(origin, origin.offset(32, 0, 0)));
         }
 
@@ -96,7 +101,7 @@ public final class FluidCargoSettlementGameTests {
                     rocket = world.rocket(origin, load ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5_000));
                     device = world.device(origin.offset(2, 0, 0), rocket, load ? RocketCargoRole.LOAD : RocketCargoRole.UNLOAD, load ? 5_000 : 0);
                     beforeHash = rocket.snapshot().orElseThrow().contentHash();
-                    if (mode == Mode.ABANDON || mode == Mode.UNLOAD_NEUTRAL) { world.pause(device, true); }
+                    if (abandon() || mode == Mode.UNLOAD_NEUTRAL) { world.pause(device, true); }
                     else {
                         // Hold the ordinary executor right after one endpoint (load) or both (unload) published.
                         String label = load ? "C2_SOURCE_AFTER" : "C2_DESTINATION_AFTER"; UUID id = EscrowCargoGameTestWorld.id(device);
@@ -115,7 +120,7 @@ public final class FluidCargoSettlementGameTests {
                         check(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete() && op.guard().transfer() == null,
                                 "Cargo admission did not reach a complete unguarded PREPARED");
                     }
-                    if (mode != Mode.ABANDON && mode != Mode.UNLOAD_NEUTRAL && !cut) { return; }
+                    if (!abandon() && mode != Mode.UNLOAD_NEUTRAL && !cut) { return; }
                     if (cutInstalled) { runtime.terminalCutForTests(server, null); cutInstalled = false; }
                     var coordinator = data.bind(server);
                     coordinator.transition(op.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 2;
@@ -147,7 +152,11 @@ public final class FluidCargoSettlementGameTests {
             }
             // ABANDON: the rocket goes missing a tick before the first observation.
             if (mode == Mode.ABANDON && !rocket.isRemoved()) { rocket.discard(); return; }
-            var choice = mode == Mode.ABANDON ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
+            if (mode == Mode.ABANDON_DEVICE && world.level.getBlockEntity(device.getBlockPos()) != null) {
+                world.level.removeBlockEntity(device.getBlockPos());
+                world.level.setBlockAndUpdate(device.getBlockPos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()); return;
+            }
+            var choice = abandon() ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
             preview = EscrowRuntime.of(server).settlement().preview(server, op.id(), choice, actor, "W131Cargo");
             check(EscrowOperatorDiagnostics.preview(preview).contains(" choice=" + choice + " members=1 ")
                     && EscrowOperatorDiagnostics.preview(preview).contains("accounting=UNKNOWN"), "Preview text changed");
@@ -155,6 +164,9 @@ public final class FluidCargoSettlementGameTests {
                 boolean isRocket = observation.endpoint().key().equals(op.rocket().key());
                 if (isRocket && mode == Mode.ABANDON) {
                     check(observation.missing(), "ABANDON lost the missing rocket"); continue;
+                }
+                if (!isRocket && mode == Mode.ABANDON_DEVICE) {
+                    check(observation.missing(), "ABANDON lost the missing device"); continue;
                 }
                 var expected = isRocket ? EscrowSignatureKind.FUEL_VECTOR_V1 : EscrowSignatureKind.FLUID_TANK_V1;
                 check(observation.signatureKind() == expected && observation.bound() == (isRocket ? rocketAfter : deviceAfter)
@@ -167,7 +179,7 @@ public final class FluidCargoSettlementGameTests {
         }
 
         private void confirm(net.minecraft.server.MinecraftServer server) {
-            if (queued || mode == Mode.ABANDON && server.getTickCount() - preview.previewTick() < 200) { return; }
+            if (queued || abandon() && server.getTickCount() - preview.previewTick() < 200) { return; }
             queued = EscrowRuntime.of(server).settlement().confirm(server, op.id(), preview.choice(), actor, preview.digest(), committed -> {
                 check(committed, "O1 was not acknowledged");
                 if (mode == Mode.UNLOAD_NEUTRAL) {
@@ -242,7 +254,7 @@ public final class FluidCargoSettlementGameTests {
             check(receipt.getBoolean("released") && receipt.getString("choice").equals(preview.choice().name())
                     && receipt.getInt("payload_amount") == 0 && receipt.getString("accounting_status").equals("UNKNOWN")
                     && receipt.getString("payload_hash").equals(op.payloadHash()) && receipt.getString("decision_digest").equals(preview.digest())
-                    && receipt.getList("survivors", 10).size() == (head ? 2 : 1) && receipt.getList("missing", 10).size() == (head ? 0 : 1)
+                    && receipt.getList("survivors", 10).size() == (abandon() ? 1 : 2) && receipt.getList("missing", 10).size() == (abandon() ? 1 : 0)
                     && receipt.equals(EscrowReceiptCodec.decode(EscrowReceiptCodec.encode(receipt))), "Receipt changed: " + receipt);
             for (var raw : receipt.getList("survivors", 10)) {
                 var survivor = (CompoundTag) raw; var reference = EscrowCodec.endpoint(survivor.getCompound("endpoint"));
@@ -258,6 +270,17 @@ public final class FluidCargoSettlementGameTests {
                     + (head ? "READY" : "NONE") + " accounting=UNKNOWN"), "Inspector output changed: " + lines);
             var logical = op.rocket().logicalRocket();
             var ready = root.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
+            if (mode == Mode.ABANDON_DEVICE) {
+                check(ready != null && ready.outcome() == EscrowFlightTables.Outcome.READY && ready.epoch() == 0
+                        && ready.physical().equals(rocket.getUUID()) && ready.owner().equals(rocket.ownerId().orElseThrow())
+                        && ready.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
+                        && ready.signature().equals(rocket.flightData().orElseThrow().fuel().resourceSignature())
+                        && ready.invariant().equals(EscrowInvariant.rocket(rocket)) && EscrowCargoGameTestWorld.cargo(rocket) == 5_000
+                        && rocket.escrowSection().equals(new RocketEscrowSection(root.id(), 0, List.of()))
+                        && world.level.getBlockEntity(device.getBlockPos()) == null && RocketEscrowGate.idle(rocket),
+                        "ABANDON changed or lost its exact rocket survivor");
+                finish(); return;
+            }
             if (mode == Mode.UNLOAD_NEUTRAL) {
                 var chosen = frozen.checkpointed().stream().filter(value -> value.endpoint().key().equals(op.source().key())).findFirst().orElseThrow();
                 check(normalized && jointlyProved && ready != null && ready.logical().equals(logical)
@@ -298,6 +321,7 @@ public final class FluidCargoSettlementGameTests {
             step = 6;
         }
 
+        private boolean abandon() { return mode == Mode.ABANDON || mode == Mode.ABANDON_DEVICE; }
         private void finish() { close(); done = true; helper.succeed(); }
         private void check(boolean value, String message) { helper.assertTrue(value, message); }
         @Override public void close() {

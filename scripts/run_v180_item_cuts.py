@@ -26,10 +26,10 @@ CASES.update(IC_PARTIAL_APPLY=dict(family="D-S1", probe="IC_LOAD_C2_DESTINATION_
              IC_PARTIAL_STORE=dict(family="D-S1", probe="IC_UNLOAD_SOURCE_ONLY_STORE", boundary="BARRIER_FORCE_AFTER"))
 CASES.update({name: dict(family="D-S2", probe=name, boundary="BEFORE_OFFLINE_DAMAGE") for name in fixture.CASES})
 for name in oracle.CASES:
-    boundary = name[3:]
+    boundary = name.removeprefix("IS_LOAD_") if name.startswith("IS_LOAD_") else name[3:]
     boundary = {"BIND_AFTER": "O_BIND_AFTER", "BIND_VETO": "NORMALIZATION_VETO", "O3J_AFTER": "O3J_REPLACED",
                 "ABANDON_ROCKET": "O1_AFTER", "ABANDON_DEVICE": "O1_AFTER"}.get(boundary, boundary)
-    CASES[name] = dict(family="D-S2", probe=name, boundary=boundary)
+    CASES[name] = dict(family="D-S2-LOAD" if name.startswith("IS_LOAD_") else "D-S2", probe=name, boundary=boundary)
 CASES.update(IR_DISASSEMBLY=dict(family="D-S2", probe="IR_DISASSEMBLY", boundary="K1"),
              IR_REBUILD=dict(family="D-S2", probe="IR_REBUILD", boundary="REBUILD_REFUSED"),
              IR_ROOT=dict(family="D-S2", probe="IR_ROOT", boundary="ROOT_PRESERVED"))
@@ -115,6 +115,7 @@ def run(args):
     session.mkdir(parents=True); evidence.mkdir(parents=True)
     token = uuid.uuid4().hex; owner = session / ".w143-owned"; owner.write_text(token, encoding="ascii")
     pins = dict(source_commit=args.source_commit, jar_sha256=native.digest(args.jar), hooks={p: native.digest(REPO / p) for p in HOOKS + HARNESS})
+    pins.update(getattr(args, "candidate_pin", {}))
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], cleanup=False); process = None
     try:
         shutil.copytree(libraries, session / "libraries"); (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
@@ -169,10 +170,10 @@ def run(args):
                                 previous, current = frozen[endpoint], disk[endpoint]
                                 require((previous is None) == (current is None), "Restart changed survivors")
                                 if previous is not None:
-                                    keys = ("logical", "owner", "id") if endpoint == "device" else ("logical", "owner") if case == "IS_O3_AFTER" else ("logical", "owner", "uuid")
+                                    keys = ("logical", "owner", "id") if endpoint == "device" else ("logical", "owner") if case in ("IS_O3_AFTER", "IS_LOAD_O3_AFTER") else ("logical", "owner", "uuid")
                                     require(all(previous[key] == current[key] for key in keys), "Restart changed survivor identity")
-                            if case == "IS_O3_AFTER" and restart == 1:
-                                proof = [line for line in lines if "ARCE_RELEASE_ITEM_CUT_PROOF cut=IS_O3_AFTER " in line]
+                            if case in ("IS_O3_AFTER", "IS_LOAD_O3_AFTER") and restart == 1:
+                                proof = [line for line in lines if "ARCE_RELEASE_ITEM_CUT_PROOF cut=" + case + " " in line]
                                 require(all(any("checkpoint=" + label in line and "digest=" + digest in line for line in proof)
                                             for label in ("O2_AFTER_0", "O2_AFTER_1", "O3J_AFTER", "O4_CAPTURE")), "O3 restart lacks exact reacquired proofs")
                     if not restart: frozen = disk

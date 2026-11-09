@@ -1,23 +1,35 @@
 #!/usr/bin/env python3
-"""Run the existing cargo cut families on the fixed integrated candidate, without building a JAR."""
+"""Run pinned cargo and shared-infrastructure families on a supplied candidate, without building a JAR."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import re
+import shutil
 import subprocess
+import time
 import zipfile
 
 import run_v180_cargo_cuts as fluid
 import run_v180_cargo_s4_s5_cuts as settlement
 import run_v180_item_cuts as item
+import run_v180_cargo_owner_cap as cap
+import run_v180_loader_cuts as loader
+import run_v180_loader_s6 as loader_s6
+import run_v180_fuel_loader_s1 as loader_s1
 
 REPO = Path(__file__).resolve().parents[1]
-CANDIDATE_COMMIT = "70dd5d43e"
-CANDIDATE_SHA256 = "fa5ec1812995ce3cca9d74e447301c66b6d5c9117789c2daae71cac4598e4832"
 PRODUCTION_PATHS = ("src/main", "src/generated", "build.gradle", "settings.gradle", "gradle.properties")
-RUNNERS = (fluid, settlement, item)
+RUNNERS = (fluid, settlement, item, cap)
+REUSE = {
+    "B3-S1-REUSE": (loader, tuple("LF_M_" + name for name in loader.oracle.CREATION if name != "N1") + ("LF_M_N3_ELIGIBILITY",)),
+    "B3-S4-REUSE": (loader, loader.oracle.S4),
+    "B3-S5-REUSE": (loader, tuple("LF_M_R3_LEDGER_" + name for name in ("MISSING", "REPLACED", "BEHIND")) + loader.oracle.S5_FLOORS),
+    "B3-S6-REUSE": (loader_s6, loader_s6.CASES),
+}
 RECOVERY_UNLOAD = frozenset(("FF_DISASSEMBLY_REMOVAL", "FF_DISASSEMBLY_RESTORATION", "FF_DISASSEMBLY_RELEASE",
                             "FF_REBUILD_DESTINATION", "FF_KEEP_SOURCE", "FF_REBUILD_SOURCE", "FF_STALE_PREPARED", "FF_RECONNECT"))
 
@@ -27,24 +39,67 @@ def inventory():
     for runner in RUNNERS:
         for case, spec in runner.CASES.items():
             probe = spec.get("probe", case)
-            unload = "_UNLOAD_" in probe or case.startswith(("FS_", "IS_", "IR_")) or case in RECOVERY_UNLOAD
+            unload = ("_UNLOAD_" in probe or case.startswith(("FS_", "IS_", "IR_")) or case in RECOVERY_UNLOAD) and "_LOAD_" not in case
             medium = "ITEM" if runner is item else "FLUID"
             boundary = spec.get("checkpoint", spec.get("boundary", settlement.BOUNDARIES.get(case, case[3:])))
             rows.append(dict(family=spec["family"], case=case, probe=probe, boundary=boundary,
-                             kind=f"{medium}_CARGO_{'UNLOAD' if unload else 'LOAD'}",
+                             kind=spec.get("kind", f"{medium}_CARGO_{'UNLOAD' if unload else 'LOAD'}"),
                              runner="scripts/" + Path(runner.__file__).name))
+    for family, (runner, cases) in REUSE.items():
+        rows.extend(dict(family=family, case=case, probe=case, boundary=case, kind="SHARED_INFRASTRUCTURE",
+                         runner="scripts/" + Path(runner.__file__).name) for case in cases)
+    # G2 is not exposed by loader_cuts or loader_s6. Preserve its existing S1 campaign and historical-JAR requirements.
+    rows.append(dict(family="G2-REUSE", case="G2_S1_CAMPAIGN", probe="G2_S1_CAMPAIGN", boundary="EXISTING_S1_STAGES",
+                     kind="SHARED_INFRASTRUCTURE", runner="scripts/run_v180_fuel_loader_s1.py"))
     return rows
 
 
-def verify_candidate(jar, source):
+def verify_candidate(jar, source, candidate_commit, candidate_sha256):
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", candidate_commit) or not re.fullmatch(r"[0-9a-fA-F]{64}", candidate_sha256):
+        raise ValueError("Candidate commit and JAR SHA-256 must be hexadecimal pins")
     fluid.native.assert_pin(source)
-    subprocess.run(["git", "diff", "--quiet", CANDIDATE_COMMIT, "HEAD", "--", *PRODUCTION_PATHS], cwd=REPO, check=True)
+    resolved = subprocess.run(["git", "rev-parse", "--verify", candidate_commit + "^{commit}"], cwd=REPO,
+                              check=True, capture_output=True, text=True).stdout.strip()
+    command = ["git", "diff", "--quiet", resolved, "HEAD", "--", *PRODUCTION_PATHS]
+    subprocess.run(command, cwd=REPO, check=True)
     actual = fluid.native.digest(jar)
-    if actual != CANDIDATE_SHA256:
-        raise ValueError("The supplied JAR is not candidate C1")
-    return dict(source_commit=source, candidate_commit=CANDIDATE_COMMIT, jar_sha256=actual,
-                production_diff_command=["git", "diff", "--quiet", CANDIDATE_COMMIT, "HEAD", "--", *PRODUCTION_PATHS],
+    if actual != candidate_sha256.lower():
+        raise ValueError("The supplied JAR does not match the required candidate SHA-256")
+    return dict(source_commit=source, candidate_commit=resolved, candidate_jar_sha256=candidate_sha256.lower(), jar_sha256=actual,
+                production_diff_command=command,
                 production_diff_exit=0)
+
+
+def run_loader(args, pin):
+    """Delegate exact run_cut inputs/oracles; no retry or nested lock, and stop at the first contradiction."""
+    runner = REUSE[args.family][0]
+    args.session_parent = args.session_dir.resolve()
+    if not args.session_parent.is_dir() or args.evidence_dir.exists():
+        raise ValueError("Loader reuse requires an existing session parent and new evidence directory")
+    args.evidence_dir.mkdir(parents=True)
+    args.follow_ups = False
+    args.require_initial_prefix = None
+    args.diagnose_unload = False
+    pins = dict(pin, hooks={p: fluid.native.digest(REPO / p) for p in (runner.HOOK_FILES if runner is loader else runner.HOOKS)},
+                harness={p: fluid.native.digest(REPO / p) for p in (runner.HARNESS_FILES if runner is loader else runner.HARNESSES)})
+    report = dict(status="IN_PROGRESS", pins=pins, cases=[])
+    try:
+        for index, case in enumerate(args.case):
+            if index:
+                time.sleep(90)
+            owner = f"W330-integrated {case} pid={os.getpid()}"
+            with loader.heavy_lock(owner):
+                verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.candidate_sha256)
+                row = runner.run_cut(args, case, args.evidence_dir / case, owner, pins)
+            report["cases"].append(row)
+            if row["status"] != "PASS":
+                raise ValueError("First contradictory shared-infrastructure cut: " + case)
+        report["status"] = "PASS_SELECTED"
+    except Exception:
+        report["status"] = "FAILED"
+        raise
+    finally:
+        (args.evidence_dir / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
 
 def archive_native(world, destination):
@@ -66,12 +121,15 @@ def archive_native(world, destination):
 
 
 def run(args):
-    pin = verify_candidate(args.jar, args.source_commit)
-    selected = [row for row in inventory() if row["family"] == args.family]
-    runner = next(module for module in RUNNERS if selected[0]["case"] in module.CASES)
+    pin = verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.candidate_sha256)
+    selected = [row for row in inventory() if row["family"] == args.family and (not getattr(args, "case", None) or row["case"] in args.case)]
+    if not selected or getattr(args, "case", None) and set(args.case) != {row["case"] for row in selected}:
+        raise ValueError("Selected case is not in the requested family")
     args.case = [row["case"] for row in selected]
+    runner = next((module for module in RUNNERS if selected[0]["case"] in module.CASES), None)
     args.startup_timeout = 420 if runner is settlement else 240
     args.dev = False
+    args.candidate_pin = pin
     # No oracle, fixture, checkpoint, timeout or Java property is changed by this wrapper.
     # The ordinary runners retain their own first-contradiction stop and both restarts.
     original = getattr(runner, "raw_snapshot", None)
@@ -85,7 +143,23 @@ def run(args):
     if original is not None:
         runner.raw_snapshot = retained
     try:
-        runner.run(args)
+        if args.family in REUSE:
+            run_loader(args, pin)
+        elif args.family == "G2-REUSE":
+            if any(getattr(args, key, None) is None for key in ("old_jar", "old_source_commit", "start_counter")):
+                raise ValueError("G2 reuse requires the existing campaign's old JAR/source and start counter")
+            if args.session_dir.exists():
+                raise ValueError("G2 session must be new")
+            try:
+                result = loader_s1.run(args)
+                if result["status"] != "PASS":
+                    raise ValueError("G2 S1 campaign failed")
+            finally:
+                sentinel = args.session_dir / ".arce-w176-owned"
+                if args.session_dir.resolve().parent == Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve() and not args.session_dir.is_symlink() and sentinel.is_file():
+                    shutil.rmtree(args.session_dir)
+        else:
+            runner.run(args)
     finally:
         if original is not None:
             runner.raw_snapshot = original
@@ -100,15 +174,18 @@ def main():
     parser.add_argument("source_server", type=Path, nargs="?")
     parser.add_argument("--inventory", action="store_true")
     parser.add_argument("--family", choices=tuple(dict.fromkeys(row["family"] for row in inventory())))
-    for key in ("jar", "session-dir", "evidence-dir"):
+    parser.add_argument("--case", action="append", help="Run only named cases in the selected family; not full-family evidence")
+    for key in ("jar", "session-dir", "evidence-dir", "old-jar", "start-counter"):
         parser.add_argument("--" + key, type=Path)
-    for key in ("source-commit", "java", "lock-owner"):
+    for key in ("source-commit", "java", "lock-owner", "candidate-commit", "candidate-sha256", "old-source-commit"):
         parser.add_argument("--" + key)
     args = parser.parse_args()
     if args.inventory:
         print(json.dumps(inventory(), indent=2)); return 0
-    if any(getattr(args, key) is None for key in ("source_server", "family", "jar", "session_dir", "evidence_dir", "source_commit", "java", "lock_owner")):
+    if any(getattr(args, key) is None for key in ("source_server", "family", "jar", "session_dir", "evidence_dir", "source_commit", "java", "candidate_commit", "candidate_sha256")):
         parser.error("Native execution requires the family, source server, pinned JAR/source, outputs, Java and lock owner")
+    if args.family not in REUSE and args.lock_owner is None:
+        parser.error("Cargo and G2 execution require the caller's heavy-JVM lock owner; loader reuse takes its own lock")
     try:
         run(args); return 0
     except (OSError, ValueError, subprocess.CalledProcessError, fluid.native.smoke.SmokeError) as failure:
