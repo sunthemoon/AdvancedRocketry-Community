@@ -34,6 +34,16 @@ public final class BayMissionRowGameTests {
 
     @GameTest(template = TEMPLATE, batch = "w333_mission_rows", timeoutTicks = 12000)
     public static void initialMissionProofReplayAndPromotionMatrix(GameTestHelper h) {
+        var server = h.getLevel().getServer();
+        var original = SatelliteMissionSavedData.get(server); original.awaitForTests(server);
+        var isolated = SatelliteMissionSavedData.create(server.overworld().getGameTime());
+        server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, isolated);
+        SatelliteMissionSavedData.get(server);
+        Runnable restore = () -> {
+            isolated.close();
+            server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, original);
+            original.setDirty(); original.flush(server);
+        };
         var queue = new ArrayDeque<Variant>();
         queue.add(new Variant(Change.NONE, Entry.BEFORE_PROOF));
         for (Change change : Change.values()) {
@@ -43,14 +53,14 @@ public final class BayMissionRowGameTests {
         var current = new Case[1];
         h.onEachTick(() -> {
             if (current[0] == null) {
-                if (queue.isEmpty()) { h.succeed(); return; }
+                if (queue.isEmpty()) { restore.run(); h.succeed(); return; }
                 current[0] = new Case(h, queue.remove());
             }
             try {
                 if (current[0].tick()) { current[0].close(); current[0] = null; }
             } catch (Exception failure) {
-                current[0].close(); throw new IllegalStateException("W333 " + current[0].variant, failure);
-            } catch (Error failure) { current[0].close(); throw failure; }
+                current[0].close(); restore.run(); throw new IllegalStateException("W333 " + current[0].variant, failure);
+            } catch (Error failure) { current[0].close(); restore.run(); throw failure; }
         });
     }
 
