@@ -160,6 +160,7 @@ public final class SatelliteReplayRowGameTests {
     public static void undiscoveredAllowedBodyAdmitsDataButNotNonData(GameTestHelper h) throws Exception {
         try (var f = new SatelliteReplayRowFixture(h)) {
             h.assertTrue(f.bodies.get(MARS).filter(d -> d.discoveryRequired() && d.capabilities().orbitable()).isPresent(), "Mars fixture is not gated orbitable");
+            f.catalogs("discovery");
             var data = f.identity(SatelliteKind.DATA);
             var validation = f.service.validate(f.server, data.ownerId(), data, MARS);
             h.assertTrue(validation.result().code() == SatelliteOperationCode.SUCCESS, "Undiscovered allowed DATA target refused");
@@ -173,6 +174,13 @@ public final class SatelliteReplayRowGameTests {
                 h.assertTrue(f.service.validate(f.server, nonData.ownerId(), nonData, MARS).result().code() == SatelliteOperationCode.TARGET_NOT_ALLOWED,
                         "Undiscovered non-DATA target bypassed discovery gate: " + kind);
                 h.assertTrue(before.equals(f.data.save(new CompoundTag())), "Refused discovery mutated registry");
+            }
+            io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData.get(f.server).discover(MARS, 0);
+            for (SatelliteKind kind : SatelliteKind.values()) {
+                if (kind == SatelliteKind.DATA) { continue; }
+                var control = f.identity(kind);
+                h.assertTrue(f.service.validate(f.server, control.ownerId(), control, MARS).result().code() == SatelliteOperationCode.RESEARCH_LOCKED,
+                        "Discovered control did not reach research after physical/blueprint admission: " + kind);
             }
         }
         h.succeed();

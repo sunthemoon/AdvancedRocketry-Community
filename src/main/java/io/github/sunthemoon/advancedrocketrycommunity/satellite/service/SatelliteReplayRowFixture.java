@@ -100,7 +100,8 @@ final class SatelliteReplayRowFixture implements AutoCloseable {
         var kinds = new ArrayList<SatelliteKindDefinition>();
         if (!change.equals("primary")) {
             for (var definition : baseline.kindDefinitions()) {
-                kinds.add(change.equals("research") ? new SatelliteKindDefinition(definition.id(), definition.kind(), definition.primaryComponent(),
+                kinds.add(change.equals("discovery") ? new SatelliteKindDefinition(definition.id(), definition.kind(), definition.primaryComponent(),
+                        100000, List.of(MARS), definition.parameters()) : change.equals("research") ? new SatelliteKindDefinition(definition.id(), definition.kind(), definition.primaryComponent(),
                         100000, definition.launchTargets(), definition.parameters()) : change.equals("target")
                         ? new SatelliteKindDefinition(definition.id(), definition.kind(), definition.primaryComponent(), definition.requiredLifetimeResearch(),
                         List.of(MOON), definition.parameters()) : definition);
