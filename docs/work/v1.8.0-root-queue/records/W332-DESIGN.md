@@ -76,6 +76,8 @@ both envelopes, the ledger and the authority counts unchanged.
 
 ### 3.1 `U_BAY`: bay receipts, unknown presence (TASK item 2, first trigger)
 
+**Correction (smoke 2):** NOT_COVERED on this host; see section 6, item 1. Sections 3.1 and 3.2 are kept as designed.
+
 - **Setup.** A typed seed of two REJECTED, unreleased receipts (W325's seeder; retained 2, pending 0).
 - **S0.** Normal start: one `ARCE_BAY_RECEIPTS_INDEX state=LOADED receipts=2`, no NOT_LOADED WARN. Stop. The runner
   hashes every file under the world folder (manifest M0).
@@ -197,3 +199,33 @@ The scratch export is deleted after its JAR is copied out. Its runs are negative
 Production behaviour and admission; D6 timing, the 256-coordinate saturation and the downgrade (W336); the bay's other
 native rows (W331) and GameTest rows (W333); the risk register, the status files and QUEUE; any candidate run (the
 cases run on C2 with the rest of the matrix, R386).
+
+## 6. Corrections after the smokes, before any candidate run
+
+These were added after native smokes 1 and 2 on local JARs. No oracle was weakened; each correction is a harness or
+fixture defect, or a case this host cannot reach.
+
+1. **`U_BAY` and `U_LEDGER` (sections 3.1 and 3.2) are NOT_COVERED on this host, and the runner no longer has them.**
+   What was tried (smokes 1 and 2, and probes under `D:/GitHub/ARCE-Task-Evidence/root-queue/W332/acl-probe/`):
+   - A deny entry for the server's user on the receipt file alone does not make the status check fail. The harness
+     token has SeBackupPrivilege enabled and bypasses deny entries. A basic-user token of the same user
+     (`runas /trustlevel:0x20000`) also still reads the file's attributes, because Windows grants read-attributes to a
+     caller who may list the folder.
+   - Adding a list-folder deny on `data` makes the basic-user stat fail (`AccessDeniedException`, so UNKNOWN), but then
+     vanilla 1.20.1 refuses the start itself: its world-folder validator walks every directory before the server is
+     created and fails with `AccessDeniedException: .\world-U_BAY\data` ("Failed to start the minecraft server"). That is
+     before `ServerAboutToStartEvent`, so W328's pre-start check never runs, and the JVM did not exit within the runner's
+     420-second window.
+   - So, while vanilla can list the world folder, the no-follow status check of a managed file succeeds whatever the
+     file's own access list says. W328's unit tests (`UnknownPresenceStartupTest`, `EscrowLedgerStartupTest`,
+     `BayReceiptsStartupReasonTest`) remain the only evidence of the refusal.
+   - The disabled-protection check of family U (section 4) is dropped with the family.
+2. **Admission attempts wait for the transfer journal** (smoke 1). Fresh cells and fresh restarts answered
+   `TRANSFER_JOURNAL_UNPROVED` before the journal's checked write covered their rockets. The probe now waits, as
+   W330's cap probe does, so a refusal is the admission's own answer.
+3. **A rocket without bays has empty `packages` and `consumed` fields** in W325's status line (smoke 1). The runner
+   reads the plain rocket with its own pattern; W325's pattern is unchanged.
+4. **The insertion probe has its own feedback line** (smoke 2); the runner waits for it.
+5. **`L_LEDGER`'s dismount row** (section 3.4) took its NOT_COVERED branch in smoke 2: the rider's login under the
+   hold did not seat it (seat 0 stayed assigned). The hold starts only at startup and every mount is vetoed under it,
+   so no player can be seated on a rocket during the session; the vanilla dismount cannot be exercised natively.
