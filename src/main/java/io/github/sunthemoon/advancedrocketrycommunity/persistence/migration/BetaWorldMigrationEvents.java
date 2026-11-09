@@ -1,8 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -87,14 +85,20 @@ public final class BetaWorldMigrationEvents {
 
     /**
      * A world with an escrow ledger or bay receipts (R-039) must never roll back managed files alone, whichever type
-     * refused startup.
+     * refused startup. W328: a ledger or receipt file whose presence is unknown counts as present.
      */
     static String recoveryHint(Path worldRoot) {
-        Path rejoins = worldRoot.resolve("data").resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName());
-        if (CheckedSavedDataFile.presence(rejoins) != CheckedSavedDataFile.Presence.ABSENT) { return REJOIN_HINT; }
-        Path ledger = worldRoot.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-        Path receipts = worldRoot.resolve("data").resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName());
-        return Files.exists(ledger, LinkOption.NOFOLLOW_LINKS) || Files.exists(receipts, LinkOption.NOFOLLOW_LINKS)
+        return recoveryHint(worldRoot, CheckedSavedDataFile::presence);
+    }
+
+    /** The hint over a given presence check; unit tests inject a failing status check. */
+    static String recoveryHint(Path worldRoot, java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence) {
+        Path data = worldRoot.resolve("data");
+        if (presence.apply(data.resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName())) != CheckedSavedDataFile.Presence.ABSENT) {
+            return REJOIN_HINT;
+        }
+        return presence.apply(data.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName())) != CheckedSavedDataFile.Presence.ABSENT
+                || presence.apply(data.resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName())) != CheckedSavedDataFile.Presence.ABSENT
                 ? ESCROW_HINT : MIGRATION_HINT;
     }
 }
