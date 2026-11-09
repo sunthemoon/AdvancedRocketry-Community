@@ -2298,6 +2298,57 @@ Root chose it under the owner's delegation of 2026-11-01 (R298, with the wording
 
 This is a development implementation note, not owner acceptance, campaign evidence or a Gate result.
 
+### W328 and W329 implementation note: unknown file presence at startup and protective reads under NOT_LOADED (W328, W329, W328F and W328G, merged with W334 as `0a877b4c6`)
+
+This note records mechanics and Root decisions R390, R393, R396, R397 and R400; it accepts no risk. It follows W327's
+audit findings L1, L2 and L5 (section 7 of
+[INTEGRATED-C1-REPORT-20261109](../work/v1.8.0-root-queue/records/INTEGRATED-C1-REPORT-20261109.md)). The register text
+is in R-035 (the ledger), R-039 (the pre-start check) and R-042 (the bay's NOT_LOADED triggers).
+
+- **The pre-start check.** `WorldDataMigrationService` treats only a no-follow `NoSuchFileException` as absence, for
+  every managed root and for the `data` directory. After the existing rejoin-sidecar and data-directory checks, a
+  metadata-only preflight (the safe child path, the presence check and the regular-file check) covers every managed
+  path before any file is decoded. Any other status failure refuses startup with `ARCE-BETA-2000`, typed with the
+  file's type, before any read, backup, staging or commit. The ERROR line first asks the operator to fix storage
+  access to the world folder and restart, never deleting, moving or restoring single files. Then it gives today's
+  rejoin, escrow or migration hint, in that precedence. A typed marker on the exception identifies these refusals;
+  the message is never parsed. Any world can be refused, including one without ARCE data; a restart at which the
+  status can be checked recovers.
+- **The ledger at ServerStartingEvent.** `EscrowLedgerStartup` binds a loaded root. Only a proven absence gives
+  NO_FILE. A present file that did not load, or a presence that becomes unknown after the pre-start check, stays
+  NOT_LOADED with one WARN `ARCE_ESCROW_LEDGER_NOT_LOADED reason=LOAD_FAILED|PRESENCE_UNKNOWN file=...`. Bay receipts
+  keep NOT_LOADED (R390), and their WARN gains the same reason and file fields.
+- **Protective reads (R393).** `EscrowLedgerLookup` tells LOADED, NO_FILE, NOT_LOADED and UNCLASSIFIED apart.
+  - After the startup classification, under NOT_LOADED, these answer protectively: `escrowIdle`,
+    `retirementUnprotected`, `bayNeutral`, `flightFrozen`, `escrowLogicalLocked`, the cargo device hold and the fuel
+    loader's progress. The status command reports `ledger=not-loaded`. Admission already refused.
+  - Before the classification the reads keep today's answers. The release manifest filter is the one immediate change
+    then: it removes only passengers whose release is recorded. It has a structural pin
+    (`RocketReleaseJoinStructureTest`) but no cold-start test.
+  - Off the server thread or without an Overworld, the lookup answers NOT_LOADED without touching storage.
+- **The hold.** Server-wide for the session: no launch, boarding through the seats, fuel or cargo change,
+  disassembly, retirement, command kill or teleport, and no flight-data change. Legacy flights pause, and devices
+  holding a root refuse removal. Vanilla dismount still works. The hold writes no ledger, and normal saving still
+  writes every other file.
+- **Logs (R397).** Transfer-fence WARNs are deduplicated against the record's stored reason, not once per record.
+  - In steady state there are at most two per record per reevaluation cycle. The first fence counts separately, and
+    transitions on both sides of a cycle boundary can give three in three ticks.
+  - Joins and leaves are not throttled, so there is no rolling-window cap and no per-session total.
+  - The assembly fence logs once per transaction. A bay claim adds at most one REPAIR WARN for these refusals.
+- **Reviews and evidence.**
+  - Two independent Codex reviews. W328R found no data-loss path and asked for changes: the relaunch audit, the read
+    order and the WARN bound. W328FR approved W328 and W329, and asked for one wording fix, which W328G made.
+  - At W329's head, 6,435 unit tests and 1,818 GameTests passed. At W328G's head, 6,447 unit tests and the selected
+    escrow and bay batches passed.
+  - The same merge carries W334, a test-only fixture fix. W329's new batches had moved `bay_exit_local` onto a
+    generated dungeon chest above the height vanilla clears, and the first branch run failed there in both attempts.
+    The fixture now selects a window free of block entities inside its own allocation and deletes nothing. At W334's
+    head, 6,447 unit tests and 1,821 GameTests passed.
+  - Hosted regression 42670495292 passed. See `records/W328.md`, `records/W329.md`, `records/W328F.md`,
+    `records/W328G.md` and `records/W334.md`.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table
