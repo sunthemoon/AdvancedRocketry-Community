@@ -2,6 +2,7 @@ import copy
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_cargo_owner_cap as cap
@@ -11,6 +12,13 @@ from test_cargo_s4_s5_cuts_runner import released_disk
 
 
 class CargoW330RunnerTest(unittest.TestCase):
+    def test_cap_controller_waits_for_its_fixture_marker_on_all_three_starts(self):
+        with patch.object(cap.cuts, "CASES", cap.CASES):
+            for case in cap.CASES:
+                for restart in (0, 1, 2):
+                    prefix = "ARCE_RELEASE_CARGO_CUT_RESULT" if restart else "ARCE_RELEASE_CARGO_CUT_PAUSED"
+                    self.assertEqual(cap.cuts.boundary_marker(case, restart), prefix + " cut=" + case + " ")
+
     def test_load_quantities_roles_and_retirement_are_not_unload_evidence(self):
         for typed in (False, True):
             oracle = item if typed else fluid

@@ -161,6 +161,11 @@ def offline_damage(world: Path, case: str, evidence: Path, start: dict, sentinel
     return edit
 
 
+def boundary_marker(case: str, restart: int) -> str:
+    prefix = CASES[case].get("log_prefix", "ARCE_RELEASE_CARGO")
+    return prefix + ("_RESULT" if restart else "_PAUSED") + " cut=" + case + " "
+
+
 def run(args) -> None:
     native.assert_pin(args.source_commit); native.require_lock(args.lock_owner); native.preflight()
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
@@ -198,8 +203,7 @@ def run(args) -> None:
                     if not restart and CASES[case]["cut"].startswith("G3_"):
                         process.wait_for(re.compile("ARCE_CARGO_DRAIN_READY cut=" + case + " "), args.startup_timeout)
                         process.command("stop"); start["stop_command_before_kill"] = True
-                    prefix = "ARCE_RELEASE_CARGO_RESULT" if restart else "ARCE_RELEASE_CARGO_PAUSED"
-                    process.wait_for(re.compile(prefix + " cut=" + case + " "), args.startup_timeout)
+                    process.wait_for(re.compile(boundary_marker(case, restart)), args.startup_timeout)
                     if restart:
                         process.command("stop"); start["exit_code"] = process.finish()
                     else:

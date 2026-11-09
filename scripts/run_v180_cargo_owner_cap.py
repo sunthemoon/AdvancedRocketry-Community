@@ -10,7 +10,7 @@ import run_v180_cargo_cuts as cuts
 import run_v180_cargo_s4_s5_cuts as fluid
 import item_cuts_oracle as item
 
-CASES = {f"CQ_{medium}_{direction}": dict(family="C-Q", cut="OWNER_PENDING_REFUSED",
+CASES = {f"CQ_{medium}_{direction}": dict(family="C-Q", cut="OWNER_PENDING_REFUSED", log_prefix="ARCE_RELEASE_CARGO_CUT",
          kind=f"{medium}_CARGO_{direction}") for medium in ("FLUID", "ITEM") for direction in ("LOAD", "UNLOAD")}
 HOOKS = cuts.HOOKS + tuple(cuts.HOOK_DIR + name for name in
                          ("EscrowCargoCutProbe.java", "EscrowItemCutProbe.java", "EscrowCargoOwnerCapProbe.java"))
