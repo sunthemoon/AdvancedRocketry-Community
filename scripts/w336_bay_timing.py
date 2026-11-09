@@ -74,7 +74,8 @@ def retry_probe_tick(lines, index):
     """Schedule the next fixture impulse from a logged retry, not a repeated stage-transition line."""
     match = re.search(r"ARCE_BAY_PROOF_REFUSED .* retry=(\d+)\s*$", lines[index])
     native.require(match is not None and 0 < int(match[1]) <= 200, "Missing bounded non-superseding D6 retry")
-    return bracket(lines, index)[1] + int(match[1]) + 1
+    # Begin before the earliest due tick. Bounded reload impulses span query/command-delivery uncertainty.
+    return bracket(lines, index)[0] + int(match[1]) - 6
 
 
 class TimedSession(bay.Session):

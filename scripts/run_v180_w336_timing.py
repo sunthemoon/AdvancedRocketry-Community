@@ -126,6 +126,20 @@ def turns(run, session):
     return dict(turns=results, measured_starts=[timing.observations(lines) for lines in session.timed_starts])
 
 
+def refuse_d6(session, logical):
+    """Perturb only the claimed source with the existing reload fixture, without creating a pending-copy hold."""
+    start = len(session.process.lines)
+    refused = re.compile(rf"ARCE_BAY_PROOF_REFUSED .*logical={logical} .*retry=200")
+    for _ in range(16):
+        session.send(f"arce bay release-test reload {logical}", re.compile("ARCE_RELEASE_BAY_RELOADED .*added=true"))
+        found = next(((i, line) for i, line in enumerate(session.process.lines[start:], start) if refused.search(line)), None)
+        if found is not None:
+            return found
+        native.require(not any(f"logical={logical} " in line and "reason=READY_SOURCE" in line
+                               for line in session.process.lines[start:]), "D6 retired before a refusal was observed")
+    raise ValueError("No D6 refusal within sixteen bounded source reload impulses")
+
+
 def d6_retry(run, session):
     world = run.session / "world-retry"
     configure(run, world.name)
@@ -148,12 +162,8 @@ def d6_retry(run, session):
             while session.query_tick() < next_probe:
                 native.require(time.monotonic() < deadline, "Game time did not reach the next D6 fixture impulse")
                 time.sleep(0.1)
-        # A new same-L source image makes the production D5 copy pass invalidate the in-progress D6 census.
-        start = len(session.process.lines)
-        session.send(f"arce bay release-test copy {row['logical']}", re.compile("ARCE_RELEASE_BAY_COPY .*added=true"))
-        refused = session.wait_after(re.compile(rf"ARCE_BAY_PROOF_REFUSED .*logical={row['logical']} .*retry=200"), start, 90)
+        index, refused = refuse_d6(session, row["logical"])
         native.require("retry=200" in refused, "D6 did not select its non-superseding retry spacing")
-        index = next(i for i in range(start, len(session.process.lines)) if session.process.lines[i] == refused)
         next_probe = timing.retry_probe_tick(session.process.lines, index)
     session.await_settled("B6_D5", 1, row)
     session.end("stop", run.args.exit_timeout)

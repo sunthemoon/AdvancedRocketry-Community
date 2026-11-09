@@ -67,11 +67,29 @@ class TimingTest(unittest.TestCase):
 
     def test_retry_impulse_uses_logged_delay_and_tick_bracket_not_repeated_stage(self):
         lines = [query(100), "ARCE_BAY_PROOF_REFUSED transfer=t logical=a reason=BARRIER_UNSTABLE retry=200", query(103)]
-        self.assertEqual(timing.retry_probe_tick(lines, 1), 304)
+        self.assertEqual(timing.retry_probe_tick(lines, 1), 294)
         for value in (0, 201):
             lines[1] = f"ARCE_BAY_PROOF_REFUSED transfer=t logical=a reason=X retry={value}"
             with self.assertRaises(ValueError):
                 timing.retry_probe_tick(lines, 1)
+
+    def test_reload_impulses_stop_at_observed_refusal_and_have_a_hard_bound(self):
+        class Session:
+            def __init__(self, refusal_at):
+                self.process = SimpleNamespace(lines=[])
+                self.sent = []
+                self.refusal_at = refusal_at
+            def send(self, command, marker):
+                self.sent.append(command)
+                if len(self.sent) == self.refusal_at:
+                    self.process.lines.append("ARCE_BAY_PROOF_REFUSED transfer=t logical=a reason=X retry=200")
+        observed = Session(2)
+        self.assertIn("retry=200", runner.refuse_d6(observed, "a")[1])
+        self.assertEqual(observed.sent, ["arce bay release-test reload a"] * 2)
+        missing = Session(100)
+        with self.assertRaisesRegex(ValueError, "sixteen bounded"):
+            runner.refuse_d6(missing, "a")
+        self.assertEqual(len(missing.sent), 16)
 
     def test_reconnect_compares_login_with_expiry(self):
         lines = [query(10), "ARCE_RELEASE_BAY_EXIT_LOGIN logical=a", query(12),
