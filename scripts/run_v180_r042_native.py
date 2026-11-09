@@ -496,7 +496,10 @@ def run_n(run: Run, case: str) -> dict:
     entry["satellite_launch"] = run.satellite()
     require(entry["satellite_launch"]["code"] == "SUCCESS", f"{case}/2: {entry['satellite_launch']}")
     entry["decommission"] = run.decommission(row["starts"][0]["satellite"]["satellite"])
-    require(entry["decommission"] == dict(result="SUCCESS", present=False), f"{case}/2: {entry['decommission']}")
+    # Smoke 3: X keeps its release-test mission, so without the deployment fence the registry's own mission check answers
+    # (MISSION_BUSY, X kept); an idle X would be removed (SUCCESS). Either way the fence no longer answers.
+    require(entry["decommission"] in (dict(result="SUCCESS", present=False), dict(result="MISSION_BUSY", present=True)),
+            f"{case}/2: the decommission is still fenced or failed otherwise: {entry['decommission']}")
     entry["insert"] = run.insert()
     require(not entry["insert"]["blocked"] and entry["insert"]["valid"] and entry["insert"]["remainder"] == 0
             and entry["insert"]["held"], f"{case}/2: the package did not enter the bay: {entry['insert']}")
