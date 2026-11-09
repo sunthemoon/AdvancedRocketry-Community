@@ -132,6 +132,16 @@ class SaturationTest(unittest.TestCase):
 
 
 class DowngradeTest(unittest.TestCase):
+    def test_placed_roots_are_claimed_and_role_specific(self):
+        for index, kind in enumerate(old.KINDS):
+            command = old.placed_command(old.PLACED[index], kind, index)
+            self.assertIn("schema_version:1,owner:[I;0,336,0,1]", command)
+            self.assertIn(pool.DEVICES[kind][1] + ":{", command)
+            if "unload" in kind:
+                self.assertIn('role:"UNLOAD"', command)
+            elif "load" in kind:
+                self.assertIn('role:"LOAD"', command)
+
     def test_exact_historical_artifact_is_pinned(self):
         self.assertEqual(len(old.OLD_SHA256), 64)
         self.assertEqual(old.OLD_COMMIT, "ba046688b0df59ce89181475be8c9d237ea33a26")

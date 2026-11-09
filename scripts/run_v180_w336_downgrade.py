@@ -35,13 +35,13 @@ def family(run):
     adapter.process = run.process
     fixture = bay.launch_fixture(adapter)
     adapter.wait(native.re.compile("ARCE_RELEASE_BAY_PAUSED cut=B18_INTENT op="), run.args.flight_timeout)
-    positions = [(128 + i * 16, 80, 128) for i in range(5)]
-    run.load(positions)
-    for at, kind in zip(positions, ("bay", "item-load", "item-unload", "fluid-load", "fluid-unload")):
-        run.send(f"setblock {' '.join(map(str, at))} {native.NS + DEVICES[kind][0]}", "Changed the block")
+    run.load(oracle.PLACED)
+    for index, (at, kind) in enumerate(zip(oracle.PLACED, oracle.KINDS)):
+        run.send(oracle.placed_command(at, kind, index), "Changed the block")
     run.send("save-all flush", native.SAVED, 180)
     run.stop("seed")
     seed_ledger(world)
+    devices = oracle.device_roots(world)
     for name in oracle.STORES:
         native.require((world / "data" / name).is_file(), "Missing seeded store: " + name)
     backup = run.session / "whole-world-backup"
@@ -61,6 +61,7 @@ def family(run):
         shutil.copy2(run.session / "logs/latest.log", latest)
         live = w176.check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines(), attempt == 0)
         after = w176.world_hashes(world)
+        native.require(oracle.device_roots(world) == devices, "Downgrade changed placed device roots")
         after_level = run.evidence / f"old-{attempt}-after-level.dat"
         shutil.copy2(world / "level.dat", after_level)
         # Registry removals occur only once; repeats retain W176's exact byte oracle.
@@ -79,11 +80,12 @@ def family(run):
         status = adapter.await_settled("B18_INTENT", restart, fixture)
         run.send("save-all flush", native.SAVED, 180)
         run.stop(f"restored-{restart}")
+        native.require(oracle.device_roots(world) == devices, "Restored candidate changed placed device roots")
         restored.append(dict(status=status, world=run.capture(world, f"restored-{restart}-world")))
     # An expected historical defect is still a failed storage-safety row, not a passing downgrade.
     return dict(status="FAILED", reason="W176 whole-world byte-preservation oracle failed; not waived",
                 old_commit=oracle.OLD_COMMIT, old_sha256=oracle.OLD_SHA256, fixture=fixture,
-                seed=archive, downgrade=rows, candidate_restored=restored)
+                seed=archive, devices=devices, downgrade=rows, candidate_restored=restored)
 
 
 def main():
