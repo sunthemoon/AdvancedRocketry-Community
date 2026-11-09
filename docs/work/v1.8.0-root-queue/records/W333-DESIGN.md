@@ -20,18 +20,20 @@ own and delete their temporary directories. Restart rows use `load`, startup ind
 
 ## Row plan
 
-Names below are relative to `io.github.sunthemoon.advancedrocketrycommunity`. Each row starts `planned`.
+Names below are relative to `io.github.sunthemoon.advancedrocketrycommunity`. The initial plan was committed in
+`6d6a85d9c`. Execution consolidated the F2 variants into one serial matrix, added a separate Space fixture,
+and composed RT.7 with the coordinator's consumption step. These are implementation mappings, not pass claims.
 The final record will distinguish complete rows from partial coverage and failures. Several variants
 may share one method, but each variant must have its own fixture checks and assertions.
 
 | Row | Class.method | Fixture and distinguishing assertions | Restart/reload |
 |---|---|---|---|
-| F2.2 | `rocket.server.BayMissionRowGameTests.freshDataHasOneDeterministicInitialMission` | Live DATA bay; initial mission ID, satellite, owner, definition and captured body all match; exactly one registry entry and mission; own operation consumes the bay. | No. |
-| F2.3 | `rocket.server.BayMissionRowGameTests.cancelledInitialMissionDoesNotBlockProofReplayOrPromotion` | Cancel initial mission before D3/D4, preexisting replay, and INTENT promotion; snapshot missions after mutation and require equality after registration/proof. | Promotion uses `restartForTests`. |
-| F2.4 | `rocket.server.BayMissionRowGameTests.claimedInitialMissionDoesNotBlockProofReplayOrPromotion` | Complete and claim initial mission in the same three entry variants; no extra reward, mission or satellite. | Same seam. |
-| F2.5 | `rocket.server.BayMissionRowGameTests.prunedInitialMissionDoesNotBlockProofReplayOrPromotion` | Make initial history eligible and prune it using lowered fixture retention; assert initial is actually absent before proof and stays absent. | Same seam. |
-| F2.6 | `rocket.server.BayMissionRowGameTests.replacedInitialMissionDoesNotBlockProofReplayOrPromotion` | Cancel initial and start a different mission; require the successor remains current and unchanged through all three entries. | Same seam. |
-| F2.7 | `satellite.persistence.SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | Failed checkpoint followed by coalesced request and autosave; prove exact identity, no recreated initial mission, and promotion proof independent of history. | Checked-file reload; coordinator cross-product is separately credited only if reached. |
+| F2.2 | `rocket.server.BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix`, NONE/BEFORE_PROOF | Live DATA bay; initial mission ID, satellite, owner, definition and captured body all match; exactly one registry entry and mission; own operation consumes the bay. | No. |
+| F2.3 | Same method, CANCEL with BEFORE_PROOF/REPLAY/PROMOTION | Cancel initial mission before D3/D4, preexisting replay, and INTENT promotion; snapshot missions, satellite and research after mutation and require equality after registration/proof. | Promotion uses `restartForTests`. |
+| F2.4 | Same method, CLAIM with all three entries | Complete and claim initial mission in the same three entry variants; no extra reward, mission or satellite. | Same seam. |
+| F2.5 | Same method, PRUNE with all three entries | Make initial history eligible and prune it using lowered fixture retention; assert initial is actually absent before proof and stays absent. | Same seam. |
+| F2.6 | Same method, REPLACE with all three entries | Cancel initial and start a different mission; require the successor remains current and unchanged through all three entries. | Same seam. |
+| F2.7 | Same method, PRUNE with REPLAY_COALESCED/REPLAY_AUTOSAVE/PROMOTE_COALESCED/PROMOTE_AUTOSAVE; also `SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | Failed checkpoint followed by coalesced request and autosave; prove exact identity, no recreated initial mission, and both replay and promotion independent of pruned history. | Existing restart promotion seam, plus terminal checked-file fixture. |
 | F2.8 | `satellite.service.SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` | Every kind; changed owner, definition and kind, caller authorization; exact result and unchanged registry/package. | No. |
 | F3.2 | `resourceescrow.BayAdmissionRowGameTests.mixedConsumersShareGlobalAndRocketLimits` | Real ledger and bay delegates share one authority; 63+1 in both directions, both consumers refuse next; 7+1 shares eight per rocket. | No. |
 | F3.3 | `resourceescrow.BayAdmissionRowGameTests.writerCopiesChargeOnePendingSlot` | Durable receipt, captured UNKNOWN and queued successor; count remains 64, duplicate is ALREADY_HELD, next consumer refuses. | No. |
@@ -44,13 +46,13 @@ may share one method, but each variant must have its own fixture checks and asse
 | F4.5 | `satellite.persistence.SatelliteReplayBarrierRowGameTests.dirtyReplayKeepsPackageUntilExactAcknowledgement` | Dirty matching identity, injected failed write, terminal pending entry; package retained through failure and consumed only when exact watch is proved. | Checked-file readback. |
 | F4.6 | `satellite.persistence.SatelliteReplayBarrierRowGameTests.replaceThenThrowCompletesReplayOnceFromFrozenReadback` | Move staged file then throw; readback proves frozen identity, one epoch advance, one extraction, unchanged mission/account. | Checked-file reload. |
 | F4.8 | `satellite.service.SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` and barrier fixture | Conflict, wrong caller, blocked root and other-operation INTENT; shared result agrees with terminal refusal; package/registry unchanged. | Future root via existing `load`. |
-| F5.5 | `rocket.server.BayMissionRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | Station orbit differs from destination and later changes; actual captured plan remains authoritative for DATA receipt/mission and solar receipt/orbit. | No. If existing station fixture cannot reach both kinds, leave the untested variant NOT_COVERED. |
-| F5.6 | `satellite.service.SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | Known orbitable discovery-required body; DATA starts discovery, non-data refuses before research, with unchanged package/registry. | No. |
-| F5.7 | `rocket.server.BayMissionRowGameTests.registeredReplayIgnoresLaterPhysicalCatalogRemoval` | REGISTERED receipt, captured body subsequently absent; restart claim consumes without repeating fresh physical validation or registering a second X. | Existing restart dispatch seam. |
+| F5.5 | `rocket.server.BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | Real Space source with station target; real region resolver captures Earth, destination is Moon, checked station relocation changes orbit to Mars before D0; DATA receipt/mission and fresh survey receipt/orbit remain Earth. | No. Fresh survey represents the non-DATA branch without granting solar research. |
+| F5.6 | `satellite.service.SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | Known orbitable discovery-required body; DATA starts discovery. All four non-DATA definitions explicitly allow Mars but require research: discovery refuses first, and a discovered control reaches RESEARCH_LOCKED. Refused registry is unchanged. | No. |
+| F5.7 | `rocket.server.BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix`, REGISTERED_REMOVED_DATA/SOLAR | Durable REGISTERED receipt, physical catalog subsequently unavailable; restart claim consumes without repeating fresh physical validation or registering a second X. | Existing restart dispatch seam. |
 | RT.4 | `satellite.persistence.SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | Clean current root; literal format epoch, save epoch, file bytes and mutation sequence unchanged by proof/flush. | Checked-file reload. |
 | RT.5 | `satellite.persistence.SatelliteTransportRowGameTests.allWriteEntriesPreserveTaggedAndBlockedRoots` | Barrier/coalesced/autosave/stop, success/FAILED/UNKNOWN; mission/ground origin tags, survey, resources/accounts and blocked raw roots preserved. | Checked-file reload per variant. |
 | RT.6 | `satellite.persistence.SatelliteTransportRowGameTests.replaceThenThrowAdvancesOnceAndKeepsLaterPendingMutation` | Replace-then-throw readback, one epoch; mutate owner state after capture, require later change stays dirty/flushPending until successor commit. | Checked-file reload. |
-| RT.7 | `satellite.persistence.SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` plus bay authority fixture | Old-session callbacks/watches cannot cover current identity; stale source/destination before/after hashes cannot authorize consumption. Full coordinator-permit credit requires an actual permit assertion, not just journal refusal; otherwise explicitly NOT_COVERED. | New registry session. |
+| RT.7 | `satellite.persistence.SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` and `rocket.server.BayPermitRowGameTests.staleBeforeAndAfterHashesCannotPublishCoordinatorConsumption` | Old-session callbacks/watches cannot cover current identity. Each of four stale hashes is refused by the journal and real coordinator consumption step without publishing source/journal effects; an obsolete source permit refuses execution, while an exact permit succeeds once only. | New registry session; live coordinator step uses the existing constructor and owner ticks. |
 | N2.1 | `satellite.persistence.SatelliteEpochRowGameTests.unknownCheckpointResolvesFresh` | UNKNOWN, then mission start/delivery acknowledgement/ground survey mutations; fresh checkpoint includes them, skips carried epoch, reload cannot rematerialize reward. | Checked-file reload. |
 | N2.2 | `satellite.persistence.SatelliteEpochRowGameTests.unknownCoalescedWriteResolvesFresh` | Same fixture; resolve through coalesced request. | Same. |
 | N2.3 | `satellite.persistence.SatelliteEpochRowGameTests.unknownAutosaveResolvesFresh` | Same fixture; resolve through SavedData save entry. | Same. |
@@ -60,8 +62,8 @@ may share one method, but each variant must have its own fixture checks and asse
 
 ## Work and verification
 
-- [ ] `W333-PLAN` Commit this plan before code; status: ready.
-- [ ] `W333-TESTS` Implement row fixtures and assertions; status: planned. Keep new batches few and unchanged existing tests intact.
+- [x] `W333-PLAN` Commit this plan before code; status: committed as `6d6a85d9c`.
+- [x] `W333-TESTS` Implement row fixtures and assertions; status: implemented, awaiting GameTest execution. Six new batches keep existing tests unchanged.
 - [ ] `W333-NEGATIVE` For F2/F3/F4/F5/RT/N2, disable one relevant protection in an external scratch copy, run its new GameTest, retain failing assertion/log and patch, then delete the scratch copy; status: planned.
 - [ ] `W333-TARGETED` Compile and run all new batches under the heavy-JVM lock; status: planned.
 - [ ] `W333-REGRESSION` Full offline build/unit suite, full GameTest run and log checker, and strict repository validation; status: planned.
