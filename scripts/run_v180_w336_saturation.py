@@ -14,9 +14,10 @@ REASONS = tuple("Refusing chunk save with " + name + " root that native serializ
 SATURATED = "Refusing chunk save after denial capacity exhausted; back up and repair first"
 
 
-def audit(lines):
-    """Allow only the expected guard exceptions and ChunkMap failures at fixture coordinates."""
-    allowed = {(x >> 4, z >> 4) for x, _, z in oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW, oracle.TERRAIN]}
+def audit(lines, allowed=None):
+    """Allow exact guard exceptions and failed saves only within the stopped seed's chunk allowlist."""
+    if allowed is None:
+        allowed = {(x >> 4, z >> 4) for x, _, z in oracle.BACKGROUND + [oracle.TARGET, oracle.OVERFLOW, oracle.TERRAIN]}
     errors = 0
     for line in lines:
         if "/ERROR]" not in line and "/FATAL]" not in line:
@@ -84,6 +85,9 @@ def family(run):
     mutate(run, "minecraft:stone")
     run.send("forceload remove all")
     save(run); run.stop("seed")
+    chunks = oracle.generated_chunks(world)
+    native.write_json(run.evidence / "seed-chunks.json", sorted(chunks))
+    audit_seed = lambda lines: audit(lines, chunks)
     fixtures = oracle.inject(world, oracle.BACKGROUND, background_kind)
     fixtures += oracle.inject(world, [oracle.TARGET, oracle.OVERFLOW], kind)
     native.write_json(run.evidence / "offline-fixtures.json", fixtures)
@@ -104,7 +108,7 @@ def family(run):
     observed[257] = disk_terrain(run, "minecraft:diamond_block")
     # Avoid reload immediately re-saturating the new Level: persist removal of vanilla tickets.
     run.send("forceload remove all"); save(run)
-    run.stop("boundary", audit)
+    run.stop("boundary", audit_seed)
     boundary = oracle.check_boundary(observed)
     oracle.check_stage(world, fixtures, "minecraft:diamond_block")
     snapshots = [run.capture(world, "boundary-world")]
@@ -122,7 +126,7 @@ def family(run):
             mutate(run, "minecraft:gold_block")
             disk_terrain(run, "minecraft:emerald_block")
         run.send("forceload remove all"); save(run)
-        lines = run.stop(f"restart-{restart}", audit if restart == 2 else None)
+        lines = run.stop(f"restart-{restart}", audit_seed if restart == 2 else None)
         if restart == 1:
             native.require(not any("_UNSUPPORTED pos=" in line or "ARCE_SATELLITE_BAY_GUARDED pos=" in line
                                    for line in lines), "First restart reloaded device fixtures")

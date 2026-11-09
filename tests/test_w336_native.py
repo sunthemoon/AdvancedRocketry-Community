@@ -121,6 +121,17 @@ class SaturationTest(unittest.TestCase):
         for line in (event + "foreign error", chunk + "[1, 1]", "[Server thread/FATAL] [forge/]: bad"):
             with self.assertRaises(ValueError):
                 saturation.audit([line])
+        self.assertEqual(saturation.audit([chunk + "575,511"], {(575, 511)}), 1)
+        with self.assertRaises(ValueError):
+            saturation.audit([chunk + "575,511"], {(576, 512)})
+
+    def test_chunk_allowlist_is_read_from_stopped_seed_header(self):
+        with tempfile.TemporaryDirectory() as folder:
+            world = Path(folder); (world / "region").mkdir()
+            header = bytearray(4096); header[0:4] = bytes.fromhex("00000201")
+            header[1023 * 4:4096] = bytes.fromhex("00000301")
+            (world / "region/r.-1.2.mca").write_bytes(header)
+            self.assertEqual(pool.generated_chunks(world), {(-32, 64), (-1, 95)})
 
     def test_distinct_loaded_positions_cannot_be_replaced_by_repeated_warning(self):
         class Fake:

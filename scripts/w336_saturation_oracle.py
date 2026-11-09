@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import struct
 
 import cargo_s1_oracle
@@ -21,6 +22,25 @@ TARGET = (8704, 80, 8192)
 # Stay outside the target's load/ticking halo: a nearby root would enter the pool early.
 OVERFLOW = (9216, 80, 8192)
 TERRAIN = (1024, 80, 1024)
+
+
+def generated_chunks(world):
+    """Closed allowlist from the stopped seed, including vanilla's generated load halos."""
+    result = set()
+    files = list((world / "region").glob("r.*.*.mca"))
+    require(len(files) <= 128, "Unexpectedly large saturation fixture")
+    for path in files:
+        match = re.fullmatch(r"r\.(-?\d+)\.(-?\d+)\.mca", path.name)
+        require(match is not None, "Invalid fixture region name")
+        rx, rz = map(int, match.groups())
+        with path.open("rb") as stream:
+            header = stream.read(4096)
+        require(len(header) == 4096, "Truncated fixture region header")
+        for slot in range(1024):
+            if header[slot * 4:slot * 4 + 4] != b"\x00" * 4:
+                result.add((rx * 32 + slot % 32, rz * 32 + slot // 32))
+    require(1 <= len(result) <= 16384, "Unexpected fixture chunk count")
+    return result
 
 
 def raw_root(root):
