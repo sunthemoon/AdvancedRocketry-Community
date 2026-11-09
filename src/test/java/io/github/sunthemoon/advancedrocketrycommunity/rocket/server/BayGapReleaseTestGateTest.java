@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * W331: the new bay release-test entries (the decommission, deployment-status and stale-assembly probes, and the
- * protected, trio, exit survey and exit offline fixture variants) exist only with the release-test property, and each is
+ * W331: the new bay release-test entries (the decommission, deployment-status and stale-assembly probes, and the trio,
+ * exit survey and exit offline fixture variants) exist only with the release-test property, and each is
  * refused by the complete {@link EscrowTestEndpoints} gate before its first read or write, with RCON enabled or with a
  * connected player the facility did not create. The open gate's control shows the refusal is the gate's. The new cut
  * value B15_D1 is a one-shot INTENT replace-then-throw that stays inert without the hooks property.
@@ -54,7 +54,7 @@ final class BayGapReleaseTestGateTest {
     private static List<String> commands() {
         UUID id = UUID.randomUUID();
         return List.of("arce bay release-test decommission " + id, "arce bay release-test deployment-status " + id,
-                "arce bay release-test stale-assembly " + id, "arce bay release-test fixture 8 2 8 protected",
+                "arce bay release-test stale-assembly " + id,
                 "arce bay release-test fixture 8 2 8 trio", "arce bay release-test exit fixture 8 2 8 survey",
                 "arce bay release-test exit fixture 8 2 8 offline");
     }

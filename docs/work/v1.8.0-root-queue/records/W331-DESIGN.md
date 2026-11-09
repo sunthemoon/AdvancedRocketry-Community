@@ -57,6 +57,13 @@ record (`transaction-writer add`) while the writer is paused.
 | B14.4 | F `W331_B14_STALE`: new gated command `arce bay release-test stale-assembly <logical>` writes one ASSEMBLY record whose transaction ID is L, in the never-loaded `w129a_absent` dimension (as `transaction-writer add` does, so restart recovery never touches it). Order: `arm STAGED PAUSE`, launch, `add`, wait for D0's request, `stale-assembly`, release. | D0 finds the record for L and rejects every bay. | Claim reason ASSEMBLY_JOURNAL_PENDING for L; no receipt for L; no D1. | LANDED_UNCONSUMED; Raw: the journal still holds the record for L (its 16 UUID bytes); no claim and no receipt. |
 | B15.5 | F `W331_B15_JOURNAL`: `transaction-writer arm MOVED UNKNOWN` before the launch, then `add`. Each write replaces the file, then throws, and its readback throws. | The bay's D0 journal write is replaced, then throws (UNKNOWN); D0's request gets UNKNOWN again; the claim rejects every bay. Then the one-shot re-arm and release, and the landing. | At least two `TXW_INJECTED point=MOVED mode=UNKNOWN` before the rejection; claim reason ASSEMBLY_JOURNAL_UNPROVED; no receipt for L; the journal file was replaced (its digest changed from before `add`). | LANDED_UNCONSUMED; Raw: the replaced journal reads back at restart (no ERROR); no receipt. |
 
+**Correction after smoke 2 (both before any candidate run).** D0 records its reason on each bay member, which the bay
+menu reads (`BayTransferRecovery.reject`); the claim line only reports its wait reasons and the READY_SOURCE handoff. So
+family T's oracle waits for that handoff and requires the reason on every bay through `deployment-status`, instead of
+a claim line with the reason. For B15.5 the smoke showed exactly one injection: the write that D0 itself requested was
+replaced, then unknown, and D0 then rejected every bay. The oracle therefore requires at least one injection between
+D0's request and the handoff (the requested write), not two.
+
 ### 3.2 Family W: replace-then-throw and the stop (B15.3, B15.4, B18.6, B18.7)
 
 | Row | Composition or fixture | Boundary of the cut | Oracle at the cut | Oracle after each restart |
@@ -78,6 +85,13 @@ and B18.7, as in W325's `B13_UNKNOWN`. Any other first-start ERROR fails the cas
 The GameTest binds a random ledger ID instead. Natively a ledger-bound rocket cannot launch without a real loader
 fill, because `escrowIdle` then refuses; the epoch-only wrapper is the non-neutral state the hand-fuelled fixture can
 reach. This is a choice for Root's review.
+
+**Correction after smoke 2: family P is withdrawn and B6.8 stays NOT_COVERED.** The `protected` fixture command threw
+before its launch line. The escrow model requires an unbound wrapper to have epoch 0
+(`EscrowSettlementIntent.Observation`: "Invalid neutral observation"), so an epoch-only wrapper is an invalid state,
+not a reachable non-neutral one; this is the likely cause (the command's exception is logged only at DEBUG). The
+variant, its case and its scratch patch are removed from C2's fixtures. A ledger-bound source needs a real
+fluid-loader fill before the launch (section 5).
 
 ### 3.4 Family D: X absent on the initial disk, and online non-data (B4.3, B4.6 to B4.10)
 
@@ -173,6 +187,7 @@ If a patch does not apply cleanly to the code as it stands, the record names the
 
 | Row | Reason |
 |---|---|
+| B6.8 | Added after smoke 2 (section 3.3): a non-neutral source that can still launch needs a real ledger binding from a fluid-loader fill before the launch. That needs the loader fixture family (shared with CAP.3); not built in W331. |
 | B10.6 | Reachable with a new gated variant of `seed-repair` that writes an incoherent REPAIR row (hashes that disagree with T). Not built in W331: the released-authority coherence rules need their own read and review. |
 | B11.2 | A live rocket with seven escrow operations is escrow-locked, so D0 refuses its bays as BAY_SOURCE_PROTECTED before admission (W27A F3's note: production interlocks refuse earlier and are not bypassed). Only the authority unit fixture reaches the shared 8/rocket count. |
 | B11.7 | Partial: see section 3.8. |

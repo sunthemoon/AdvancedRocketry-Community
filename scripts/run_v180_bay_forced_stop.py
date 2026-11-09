@@ -913,7 +913,6 @@ JOURNAL_FILE = "advancedrocketrycommunity_rocket_transactions.dat"
 OFFLINE_PASSENGER = "00000000-0000-4000-8000-000000185001"
 MOON_ENTITIES = Path("dimensions/advancedrocketrycommunity/moon/entities")
 TRIO = re.compile(r"ARCE_RELEASE_BAY_TRIO logical=(\S+) data=(\S+) survey=(\S+) solar=(\S+)")
-PROTECTED = re.compile(r"ARCE_RELEASE_BAY_PROTECTED logical=(\S+) epoch=(\d+) ledger=(\S+)")
 DECOMMISSIONED = re.compile(r"ARCE_RELEASE_BAY_DECOMMISSIONED satellite=(\S+) result=(\w+) present=(true|false) "
                             r"flushed=(true|false) sequence=(\d+)")
 DEPLOYMENT_STATUS = re.compile(r"ARCE_RELEASE_BAY_DEPLOYMENT_STATUS satellite=(\S+) phase=(\w+) reason=(\w+)")
@@ -922,7 +921,7 @@ TXW_INJECTED = re.compile(r"ARCE_RELEASE_TXW_INJECTED point=(\w+) mode=(\w+)")
 SRW_MOVED_UNKNOWN = re.compile(r"ARCE_RELEASE_SRW_INJECTED point=MOVED mode=UNKNOWN")
 EXIT_LINE = re.compile(r"ARCE_RELEASE_BAY_EXIT_(LOGIN|STATE) logical=(\S+) ")
 COPY_ADDED = re.compile(r"ARCE_RELEASE_BAY_COPY logical=\S+ copy=\S+ added=true")
-ROLES = dict(standard=("data", "solar"), protected=("data", "solar"), offline_rider=("data", "solar"),
+ROLES = dict(standard=("data", "solar"), offline_rider=("data", "solar"),
              survey=("data", "survey"), online_survey=("data", "survey"), trio=("data", "survey", "solar"))
 W331_CASES = {
     # Family T, the transaction journal at D0 (section 3.1).
@@ -933,7 +932,7 @@ W331_CASES = {
                            reject="ASSEMBLY_JOURNAL_PENDING", end="land", durable="NONE", first="LANDED_UNCONSUMED",
                            restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
     "W331_B15_JOURNAL": dict(rows=("B15.5",), fixture="standard", journal_arm="MOVED UNKNOWN", reject="ASSEMBLY_JOURNAL_UNPROVED",
-                             injected=("MOVED", "UNKNOWN", 2), journal_at_reject="replaced", end="land", durable="NONE",
+                             injected=("MOVED", "UNKNOWN", 1), journal_at_reject="replaced", end="land", durable="NONE",
                              first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
     # Family W, replace-then-throw and the clean stop (section 3.2).
     "W331_B15_D1": dict(rows=("B15.3",), fixture="standard", cut="B15_D1", end="land", durable="NONE", first="LANDED",
@@ -944,9 +943,8 @@ W331_CASES = {
                                durable="INTENT", restarts=("INTERRUPTED", "INTERRUPTED"), pending=(1, 2)),
     "W331_B18_UNKNOWN": dict(rows=("B18.7",), fixture="standard", registry_arm="MOVED UNKNOWN", unproved=True, end="stop",
                              durable="INTENT", registry_names_x=True, restarts=("LANDED", "LANDED")),
-    # Family P, a non-neutral source (section 3.3).
-    "W331_B6_PROTECTED": dict(rows=("B6.8",), fixture="protected", reject="BAY_SOURCE_PROTECTED", end="land", durable="NONE",
-                              first="LANDED_UNCONSUMED", restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    # Family P (section 3.3) was removed after smoke 2: an unbound wrapper with a non-zero epoch is invalid in the escrow
+    # model, so B6.8 needs a ledger-bound source from a real loader fill (W331-DESIGN section 5).
     # Family D, X absent on the initial disk and the online non-data rider (section 3.4).
     "W331_B4_GONE_X_S_PRESENT": dict(rows=("B4.3",), fixture="survey", cut="B6_D5", copies="source-before", predecommission=True,
                                      end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED"), owned=1),
@@ -982,7 +980,6 @@ W331_CASES = {
 W331_TRANCHES = {
     "W331_T": ["W331_B14_FAILED", "W331_B14_STALE", "W331_B15_JOURNAL"],
     "W331_W": ["W331_B15_D1", "W331_B15_REGISTRY", "W331_B18_SUCCESSOR", "W331_B18_UNKNOWN"],
-    "W331_P": ["W331_B6_PROTECTED"],
     "W331_D": [case for case in W331_CASES if case.startswith("W331_B4_")],
     "W331_G": ["W331_B8_TRIO_STAGED", "W331_B8_TRIO_MOVED", "W331_B17_PARTIAL_D1"],
     "W331_R": ["W331_B6_DESTINATION_ABSENT"],
@@ -1056,8 +1053,7 @@ def w331_launch(run: Session, kind: str) -> dict:
     """The fixture of one layout; exit variants print the bay FIXTURE line before their own line."""
     run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
     exit_kind = kind in ("online_survey", "offline_rider")
-    suffix = {"survey": " survey", "protected": " protected", "trio": " trio", "online_survey": " survey",
-              "offline_rider": " offline"}.get(kind, "")
+    suffix = {"survey": " survey", "trio": " trio", "online_survey": " survey", "offline_rider": " offline"}.get(kind, "")
     marker = {"online_survey": r"ARCE_RELEASE_BAY_EXIT_FIXTURE .*",
               "offline_rider": r"ARCE_RELEASE_BAY_EXIT_OFFLINE_FIXTURE .*"}.get(kind, FIXTURE.pattern)
     assert run.process is not None
@@ -1086,10 +1082,6 @@ def w331_launch(run: Session, kind: str) -> dict:
         if trio[1] != fixture["logical"] or trio[2] != fixture["data"] or trio[3] != fixture["solar"]:
             raise smoke.SmokeError(f"The trio line names other bays: {trio[0]}")
         fixture["satellites"].append(trio[4])
-    if kind == "protected":
-        wrapper = PROTECTED.search(next(value for value in lines if PROTECTED.search(value)))
-        if wrapper[1] != fixture["logical"] or wrapper[2] != "1" or wrapper[3] != "NONE":
-            raise smoke.SmokeError(f"The protected wrapper is not epoch 1 without a ledger: {wrapper[0]}")
     if fixture["launch"] not in ("SUCCESS", "JOURNAL_PENDING") or fixture["packages"].count("+") != len(fixture["roles"]) - 1:
         raise smoke.SmokeError(f"The fixture did not launch with its {len(fixture['roles'])} bays: {fixture}")
     return fixture
@@ -1143,11 +1135,16 @@ def w331_rejection(run: Session, case: str, fixture: dict, start: int, data: Pat
             raise smoke.SmokeError(f"{case}: the bay of {satellite} does not show D0's {reason}: {shown[0]}")
         observed["menu"].append(shown[0])
     if spec.get("injected"):
+        # The injected write must be D0's own requested checkpoint: between its request and the handoff (W331 smoke 2).
         point, mode, minimum = spec["injected"]
-        injected = [match.groups() for line in lines[start:at] if (match := TXW_INJECTED.search(line))]
-        if len(injected) < minimum or any(row != (point, mode) for row in injected):
-            raise smoke.SmokeError(f"{case}: expected at least {minimum} {point} {mode} journal injections: {injected}")
-        observed["injected"] = len(injected)
+        requested = next(index for index in range(start, at) if (match := CLAIM.search(lines[index]))
+                         and match.group(2) == fixture["logical"] and match.group(4) == "ASSEMBLY_JOURNAL_CHECKPOINT")
+        injected = [match.groups() for line in lines[requested:at] if (match := TXW_INJECTED.search(line))]
+        everywhere = [match.groups() for line in lines[start:at] if (match := TXW_INJECTED.search(line))]
+        if len(injected) < minimum or any(row != (point, mode) for row in everywhere):
+            raise smoke.SmokeError(f"{case}: expected at least {minimum} {point} {mode} injection of D0's requested "
+                                   f"write: {injected} of {everywhere}")
+        observed["injected"] = dict(after_request=len(injected), total=len(everywhere))
     if spec.get("journal_at_reject"):
         now = digest(data / JOURNAL_FILE) if (data / JOURNAL_FILE).is_file() else None
         if (now == before) != (spec["journal_at_reject"] == "unchanged"):

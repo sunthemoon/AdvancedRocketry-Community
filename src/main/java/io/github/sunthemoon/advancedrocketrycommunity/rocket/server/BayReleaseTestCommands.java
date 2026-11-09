@@ -71,12 +71,6 @@ public final class BayReleaseTestCommands {
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
                             return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true, null);
                         }))
-                        // W331 B6.8: the same rocket with a non-neutral escrow wrapper (epoch 1, no ledger binding).
-                        .then(Commands.literal("protected").executes(context -> {
-                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
-                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), Variant.PROTECTED,
-                                    null, null);
-                        }))
                         // W331 B8.7, B8.8 and B17.4: three bays (data, survey, research-locked solar), two of which register.
                         .then(Commands.literal("trio").executes(context -> {
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
@@ -101,8 +95,8 @@ public final class BayReleaseTestCommands {
                 .then(Commands.literal("pending").executes(context -> pending(context.getSource()))))));
     }
 
-    /** The fixture's package layout and escrow wrapper; STANDARD and SURVEY are C1's, the others W331's. */
-    enum Variant { STANDARD, SURVEY, PROTECTED, TRIO }
+    /** The fixture's package layout; STANDARD and SURVEY are C1's, TRIO is W331's. */
+    enum Variant { STANDARD, SURVEY, TRIO }
 
     /** W254: a non-null {@code rider}, a facility-owned test player, is assigned the seat and boards before the launch. */
     static int fixture(CommandSourceStack source, BlockPos origin, boolean survey,
@@ -112,8 +106,8 @@ public final class BayReleaseTestCommands {
 
     /**
      * W331: as above for every variant, and a non-null {@code offlineRider} is assigned seat 0 without being placed, so it
-     * is an offline passenger who can log in later (B7.3). PROTECTED gives the source a non-neutral wrapper (B6.8); TRIO
-     * adds a third bay, so the group has two registering bays and one research-locked bay (B8.7, B8.8, B17.4).
+     * is an offline passenger who can log in later (B7.3). TRIO adds a third bay, so the group has two registering bays
+     * and one research-locked bay (B8.7, B8.8, B17.4).
      */
     static int fixture(CommandSourceStack source, BlockPos origin, Variant variant,
                        @javax.annotation.Nullable net.minecraft.server.level.ServerPlayer rider, @javax.annotation.Nullable UUID offlineRider) {
@@ -154,7 +148,6 @@ public final class BayReleaseTestCommands {
         RocketEntity rocket = ModEntities.ROCKET.get().create(level);
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID();
         rocket.initialize(snapshot, logical, OWNER);
-        if (variant == Variant.PROTECTED) { rocket = protectedWrapper(level, rocket); }
         if (!level.addFreshEntity(rocket)) { throw new IllegalStateException("The bay fixture rocket was not added"); }
         var flight = rocket.flightData().orElseThrow();
         if (Boolean.getBoolean("advancedrocketrycommunity.bayOfflinePassenger")) {
@@ -169,36 +162,11 @@ public final class BayReleaseTestCommands {
             LOGGER.info("ARCE_RELEASE_BAY_TRIO logical={} data={} survey={} solar={}", logical, BayDeploymentGameTestSupport.satellite(data),
                     BayDeploymentGameTestSupport.satellite(solar), BayDeploymentGameTestSupport.satellite(locked));
         }
-        if (variant == Variant.PROTECTED) {
-            LOGGER.info("ARCE_RELEASE_BAY_PROTECTED logical={} epoch={} ledger={}", logical, rocket.escrowSection().epoch(),
-                    rocket.escrowSection().ledger() == null ? "NONE" : rocket.escrowSection().ledger());
-        }
         LOGGER.info("ARCE_RELEASE_BAY_FIXTURE logical={} transfer={} rocket={} data={} solar={} launch={} packages={}", logical,
                 transfer, rocket.getUUID(), BayDeploymentGameTestSupport.satellite(data), BayDeploymentGameTestSupport.satellite(solar),
                 launched.code(), signatures(snapshot));
         source.sendSuccess(() -> Component.literal("Bay fixture launched"), false);
         return 1;
-    }
-
-    /**
-     * W331 B6.8: the same rocket with {@code resource_epoch=1} and no ledger binding, loaded as a saved entity would be.
-     * {@code RocketEscrowGate.escrowIdle} still admits the launch while no ledger exists, and {@code bayNeutral} refuses any
-     * non-zero epoch, so D0 must refuse the bays with BAY_SOURCE_PROTECTED.
-     */
-    private static RocketEntity protectedWrapper(ServerLevel level, RocketEntity rocket) {
-        CompoundTag saved = new CompoundTag();
-        rocket.saveWithoutId(saved);
-        CompoundTag data = saved.getCompound("RocketEntityData");
-        CompoundTag wrapper = data.getCompound("resource_escrow");
-        wrapper.putLong("resource_epoch", 1);
-        data.put("resource_escrow", wrapper);
-        saved.put("RocketEntityData", data);
-        RocketEntity patched = ModEntities.ROCKET.get().create(level);
-        patched.load(saved);
-        if (patched.escrowSection().epoch() != 1 || patched.escrowSection().ledger() != null) {
-            throw new IllegalStateException("The protected fixture wrapper did not load");
-        }
-        return patched;
     }
 
     private static int status(CommandSourceStack source, UUID logical) {

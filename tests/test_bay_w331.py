@@ -207,8 +207,9 @@ class OracleTests(unittest.TestCase):
         self.assertEqual(sorted(bay.W331_CASES), sorted(listed))
         self.assertFalse(set(bay.W331_TRANCHES) & set(bay.TRANCHES))
         rows = {row for spec in bay.W331_CASES.values() for row in spec["rows"]}
-        self.assertEqual({"B4.3", "B4.6", "B4.7", "B4.8", "B4.9", "B4.10", "B6.5", "B6.8", "B7.3", "B8.7", "B8.8", "B11.7", "B14.3",
+        self.assertEqual({"B4.3", "B4.6", "B4.7", "B4.8", "B4.9", "B4.10", "B6.5", "B7.3", "B8.7", "B8.8", "B11.7", "B14.3",
                           "B14.4", "B15.3", "B15.4", "B15.5", "B17.4", "B18.6", "B18.7"}, rows)
+        self.assertNotIn("protected", bay.ROLES, "the epoch-only wrapper is an invalid escrow state, not a fixture")
         cuts = {"B1_MOVED", "B3_STAGED", "B3_MOVED", "B6_D5", "B8_STAGED", "B8_MOVED", "B16_GUARD", "B18_INTENT", "B15_D1"}
         for case, spec in bay.W331_CASES.items():
             self.assertIn(spec["fixture"], bay.ROLES, case)
@@ -311,6 +312,18 @@ class OracleTests(unittest.TestCase):
             unrequested.process.lines.pop(1)
             with self.assertRaisesRegex(bay.smoke.SmokeError, "never requested"):
                 bay.w331_rejection(unrequested, "W331_B14_STALE", standard, 0, data, None)
+            # B15.5: the replaced-then-unknown write must be D0's own requested checkpoint (W331 smoke 2 saw exactly one).
+            injected = "[x] ARCE_RELEASE_TXW_INJECTED point=MOVED mode=UNKNOWN"
+            after = Stub("ASSEMBLY_JOURNAL_UNPROVED")
+            after.process.lines.insert(2, injected)
+            observed = bay.w331_rejection(after, "W331_B15_JOURNAL", standard, 0, data, "before-add")
+            self.assertEqual(dict(after_request=1, total=1), observed["injected"])
+            early = Stub("ASSEMBLY_JOURNAL_UNPROVED")
+            early.process.lines.insert(1, injected)
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "injection of D0's requested write"):
+                bay.w331_rejection(early, "W331_B15_JOURNAL", standard, 0, data, "before-add")
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "not replaced"):
+                bay.w331_rejection(after, "W331_B15_JOURNAL", standard, 0, data, None)
             world(Path(directory), [receipt(OP, L, DATA, "INTENT")])
             with self.assertRaisesRegex(bay.smoke.SmokeError, "a receipt names L"):
                 bay.w331_rejection(Stub("ASSEMBLY_JOURNAL_PENDING"), "W331_B14_STALE", standard, 0, data, None)
