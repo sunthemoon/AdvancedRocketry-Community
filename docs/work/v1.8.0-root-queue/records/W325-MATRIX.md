@@ -3,7 +3,7 @@
 This matrix is committed before any W325 native run. Authority is [TASK-W325](../TASK-W325-BAY-INTEGRATED-EVIDENCE.md)
 and [the owner's decision and R386/R387](OWNER-DECISIONS-20261109.md). It claims coverage, not results or acceptance.
 The contract is [W27A section 9](W27A-DESIGN.md), [W127](W127-PLAN.md), [W230](W230-DESIGN.md),
-[W231](W231.md), [W238](W238.md), [W254](W254.md), [W257](W257.md), [W262](W262.md) and [W196](W196.md).
+[W238, including the W231 work](W238.md), [W254](W254.md), [W257](W257.md), [W262](W262.md) and [W196](W196.md).
 
 C1 is hosted run 42499122646, production source `70dd5d43e7b24a19cf5c674fe745749a090662a2`, JAR SHA-256
 `fa5ec1812995ce3cca9d74e447301c66b6d5c9117789c2daae71cac4598e4832`. Every native case uses that file and two
@@ -81,7 +81,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B10.4 | Coherent REPAIR, release flag staged-only | R `B10_REPAIR_STAGED` |
 | B10.5 | Coherent REPAIR, release flag replaced | R `B10_REPAIR_MOVED` |
 | B10.6 | Incoherent signature authority remains frozen | NOT_COVERED natively: released conflict GameTests exist; packaged release fixture seeds coherent authority only. |
-| B11.1 | Mixed shared global pending saturation, 64/server | F `B11_FULL` (bay fill; mixed-consumer coverage is GameTest-only below). |
+| B11.1 | Shared global pending saturation, bay-only fill of 64/server | F `B11_FULL` (mixed-consumer coverage is separate). |
 | B11.2 | Per-rocket mixed 7 escrow + 1 bay / 8 limit | NOT_COVERED natively: no mixed-authority packaged fixture. |
 | B11.3 | Retained 4,096/server independently of pending | NOT_COVERED: no packaged retained-store saturation fixture. |
 | B11.4 | Retained 128/owner independently of pending | NOT_COVERED: no packaged retained-owner saturation fixture. |
@@ -89,6 +89,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B11.6 | Released operations retain saturated capacity across restart | NOT_COVERED: no saturated released-flight packaged fixture. |
 | B11.7 | UNKNOWN/captured/successor copies counted once across restart | NOT_COVERED: no packaged admission-union fixture. |
 | B11.8 | REJECTED re-arm refuses at full capacity and later reuses its op | NOT_COVERED: no packaged capacity/re-arm fixture. |
+| B11.9 | Mixed-consumer 63 escrow + 1 bay global saturation and reverse consumers | NOT_COVERED natively: the packaged fill command creates bay receipts only. |
 | B12.1 | D1 receipt definite failed-before-replace | F `B12_FAILED` |
 | B12.2 | D1 receipt UNKNOWN, exact retry | F `B12_UNKNOWN` |
 | B12.3 | D4 receipt UNKNOWN, exact retry | F `B12_D4` |
