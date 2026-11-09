@@ -48,7 +48,9 @@ final class BayDeploymentCuts {
         // W170-R22: B16's pause of D7's guard on the IO thread, before it reads the proof, lease and group token.
         B16_GUARD(null, null, null),
         B10_RELEASE_STAGED(null, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.PAUSE),
-        B10_RELEASE_MOVED(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE);
+        B10_RELEASE_MOVED(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
+        // W331 B15.3: D1's INTENT replaced, then the committer throws; the writer's readback resolves it (as B15_D4 for D4).
+        B15_D1(BayReceipt.Phase.INTENT, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.UNKNOWN);
 
         @Nullable final BayReceipt.Phase phase;
         @Nullable final BayReceiptCommitCut.Point point;
