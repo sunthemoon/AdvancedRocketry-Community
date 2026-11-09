@@ -83,6 +83,8 @@ def poll_tickets(run, session, slots):
 
 def turns(run, session):
     results = []
+    # The stock invariant counts all satellites of the fixture owner, not only this logical rocket.
+    bay.CASES["W336_TURNS"] = dict(bay.CASES["B6_D5"], owned=run.args.claims)
     for offset in (8, 15):
         world = run.session / f"world-turns-{offset}"
         configure(run, world.name)
@@ -114,7 +116,7 @@ def turns(run, session):
         session.end("stop", run.args.exit_timeout)
         # The second restart is independent of the proof run and checks settled package/receipt invariants.
         session.start(f"turns-{offset}", 2, {})
-        settled = [session.await_settled("B6_D5", 2, row) for row in fixtures]
+        settled = [session.await_settled("W336_TURNS", 2, row) for row in fixtures]
         session.end("stop", run.args.exit_timeout)
         results.append(dict(offset=offset, seed=seed, proof=proof, tickets=tickets, restart2=settled,
                             raw=run.capture(world, f"turns-{offset}-restart2")))
