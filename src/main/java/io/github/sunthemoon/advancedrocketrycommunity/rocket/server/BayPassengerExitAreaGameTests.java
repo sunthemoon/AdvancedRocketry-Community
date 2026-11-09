@@ -55,6 +55,7 @@ public final class BayPassengerExitAreaGameTests {
             helper.assertTrue(level.getChunkSource().getLoadedChunksCount() == chunks && level.getForcedChunks().equals(forced),
                     "Window selection or preparation loaded or forced a chunk");
         } finally {
+            if (level.getBlockEntity(leftover) instanceof ChestBlockEntity chest) { chest.clearContent(); }
             level.setBlock(leftover, before, FLAGS);
         }
         helper.succeed();
