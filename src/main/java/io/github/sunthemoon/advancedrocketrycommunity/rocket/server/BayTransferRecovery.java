@@ -228,7 +228,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     /**
      * While held, an in-session claim renews T's recorded flight tickets on both ends, and from CONSUME on each admissible
      * end's census columns (W185-R2, R150), without a load; a healthy restart group renews the existing tickets on T's
-     * census columns of both ends (R1). REPAIR adds no ticket.
+     * census columns of both ends (R1). REPAIR stops the census and restart-group renewals only: a checkpoint claim held
+     * for REPAIR still renews T's origin and destination flight tickets every tick while T exists (R-043, W328).
      */
     private void renewTickets() {
         var journal = RocketTransferSavedData.get(server);

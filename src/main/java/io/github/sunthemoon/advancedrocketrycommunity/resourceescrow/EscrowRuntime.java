@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
-import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class EscrowRuntime {
     public static final Capability<EscrowRuntime> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() { });
-    private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
     private EscrowAdmissionAuthority admission;
     private EscrowAdmissionAuthority.Delegate propulsion;
     private BayReceipts bay;
@@ -44,6 +42,8 @@ public final class EscrowRuntime {
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
     private boolean stopping;
+    /** Set once the startup lookup has classified the PROPULSION delegate (W329). */
+    private boolean ledgerClassified;
     final EscrowCargoSwitches cargoSwitches = new EscrowCargoSwitches();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargo;
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations() {
@@ -265,19 +265,23 @@ public final class EscrowRuntime {
     }
     /**
      * Startup lookup, before the first tick: the load-only {@code existing} never creates a file. An existing ledger
-     * binds at once, so its coordinator's index is LOADED before any admission; no file means NO_FILE. A file that did
-     * not load (the pre-start check normally refuses startup first) keeps the delegate NOT_LOADED, so admission refuses.
-     * The bay receipts then load and index the same way (W27c1, N6); until both are loaded, admission is UNAVAILABLE.
+     * binds at once, so its coordinator's index is LOADED before any admission; only a proven absence means NO_FILE. A
+     * file that did not load, or whose presence is unknown (the pre-start check normally refuses startup first), keeps
+     * the delegate NOT_LOADED, so admission refuses ({@link EscrowLedgerStartup}, W328). The bay receipts then load and
+     * index the same way (W27c1, N6); until both are loaded, admission is UNAVAILABLE.
      */
     @SubscribeEvent public static void starting(ServerStartingEvent event) {
         var server = event.getServer(); var runtime = of(server); var delegate = runtime.propulsion(server);
-        if (delegate.state() == EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) {
-            var data = ResourceEscrowSavedData.existing(server);
-            if (data != null) { data.bind(server); }
-            else if (!java.nio.file.Files.exists(ResourceEscrowSavedData.file(server))) { delegate.noFile(); }
-            else { LOGGER.warn("ARCE_ESCROW_LEDGER_NOT_LOADED; the ledger file did not load, so escrow admission stays refused"); }
-        }
+        var data = delegate.state() == EscrowAdmissionAuthority.Delegate.State.NOT_LOADED ? ResourceEscrowSavedData.existing(server) : null;
+        EscrowLedgerStartup.start(delegate, data, root -> root.bind(server),
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::presence,
+                ResourceEscrowSavedData.file(server));
+        runtime.ledgerClassified = true;
         runtime.bay.start(server);
+    }
+    /** {@link EscrowLedgerLookup}'s state for a missing root, on the server thread (W329). */
+    EscrowLedgerLookup.State missingLedger(MinecraftServer server) {
+        return EscrowLedgerLookup.missing(ledgerClassified, () -> propulsion(server).state());
     }
     /** N6 evidence: the BAY index state at the START of the first tick, before any level, login or command runs. */
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void bayFirstTick(TickEvent.ServerTickEvent event) {

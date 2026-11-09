@@ -10,6 +10,10 @@
 # The Forge subscriber initializes its logger and empty lifecycle map before server startup;
 # Selection is an immutable record constructed only during opt-in startup, with no static initializer.
 # No first-use preload entry or safety assertion is removed or changed.
+# W329: RocketEscrowGate's protective reads -> EscrowLedgerLookup and its State enum (R393).
+# The record has no static initializer; State's initializer only constructs its four constants.
+# Rocket joins (fence classification through logicalLocked) and boarding (idle) reach the same
+# reads before a relaunch; first use was not remeasured. No preload entry or assertion changes.
 AdvancedRocketryCommunity
 ModIdentity
 celestial.CelestialIds
@@ -103,6 +107,8 @@ resourceescrow.EscrowItemStackCodec$Refusal
 resourceescrow.EscrowItemStackCodec$Status
 resourceescrow.EscrowLaunchDiscard
 resourceescrow.EscrowLedger
+resourceescrow.EscrowLedgerLookup
+resourceescrow.EscrowLedgerLookup$State
 resourceescrow.EscrowLedgerWriter
 resourceescrow.EscrowLedgerWriter$Request
 resourceescrow.EscrowLedgerWriter$Snapshot

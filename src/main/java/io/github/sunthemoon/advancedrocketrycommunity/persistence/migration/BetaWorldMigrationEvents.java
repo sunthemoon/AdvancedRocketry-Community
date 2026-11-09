@@ -1,8 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -13,6 +11,11 @@ public final class BetaWorldMigrationEvents {
     static final String ESCROW_HINT = "Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.";
     private final WorldDataMigrationService migrations;
     static final String REJOIN_HINT = "Keep the world stopped. Use compatible software or validated whole-world repair including all Levels, entities, POI, journals, rejoins, player data and metadata; never delete the sidecar or restore isolated files.";
+    /**
+     * W328F (review check 1): leads the hint of a refusal whose cause is a failed status check. The type-specific hint
+     * still follows it, so an escrow or rejoin world keeps its whole-world restrictions.
+     */
+    static final String STORAGE_HINT = "Fix storage access to the world folder and restart; never delete, move or restore single files. If repair is still needed after that:";
 
     public BetaWorldMigrationEvents() {
         this(new WorldDataMigrationService());
@@ -34,27 +37,41 @@ public final class BetaWorldMigrationEvents {
                     report.backupDirectory().orElse("none")
             );
         } catch (SavedDataMigrationException exception) {
-            if (logSatelliteBoundsRefusal(exception)) { throw exception; }
-            if (exception.dataType().orElse(null) == ManagedSavedDataType.ROCKET_REJOINS
-                    || recoveryHint(worldRoot).equals(REJOIN_HINT)) {
-                AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
-                        exception.diagnosticId().code(), exception.dataType().map(Enum::name).orElse("WORLD"),
-                        boundedReason(exception.getMessage()), REJOIN_HINT, exception);
-                throw exception;
-            }
-            if (recoveryHint(worldRoot).equals(ESCROW_HINT)) {
-                logEscrowRefusal(exception);
-                throw exception;
-            }
-            AdvancedRocketryCommunity.LOGGER.error(
-                    "[{}] Beta world data check blocked startup: {}. {}",
-                    exception.diagnosticId().code(),
-                    exception.getMessage(),
-                    recoveryHint(worldRoot),
-                    exception
-            );
+            logRefusal(worldRoot, exception, CheckedSavedDataFile::presence);
             throw exception;
         }
+    }
+
+    /**
+     * The one ERROR line of a refused start; the caller rethrows. The rejoin hint wins over the escrow hint, which wins
+     * over the migration hint. W328F: when a status check failed, the hint first asks for storage access to be fixed.
+     */
+    static void logRefusal(Path worldRoot, SavedDataMigrationException exception,
+                           java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence) {
+        if (logSatelliteBoundsRefusal(exception)) { return; }
+        String hint = recoveryHint(worldRoot, presence);
+        if (exception.dataType().orElse(null) == ManagedSavedDataType.ROCKET_REJOINS || hint.equals(REJOIN_HINT)) {
+            AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
+                    exception.diagnosticId().code(), exception.dataType().map(Enum::name).orElse("WORLD"),
+                    boundedReason(exception.getMessage()), withStorageHint(exception, REJOIN_HINT), exception);
+            return;
+        }
+        if (hint.equals(ESCROW_HINT)) {
+            logEscrowRefusal(exception);
+            return;
+        }
+        AdvancedRocketryCommunity.LOGGER.error(
+                "[{}] Beta world data check blocked startup: {}. {}",
+                exception.diagnosticId().code(),
+                exception.getMessage(),
+                withStorageHint(exception, hint),
+                exception
+        );
+    }
+
+    /** The storage instruction first for a failed status check (the exception's typed marker); else the hint alone. */
+    static String withStorageHint(SavedDataMigrationException exception, String hint) {
+        return exception.isPresenceUnknown() ? STORAGE_HINT + ' ' + hint : hint;
     }
 
     /** D15: one fixed-field diagnostic, before generic/whole-world hints could obscure the named record. */
@@ -72,7 +89,7 @@ public final class BetaWorldMigrationEvents {
     static void logEscrowRefusal(SavedDataMigrationException exception) {
         AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
                 exception.diagnosticId().code(), exception.dataType().map(Enum::name).orElse("WORLD"),
-                boundedReason(exception.getMessage()), ESCROW_HINT);
+                boundedReason(exception.getMessage()), withStorageHint(exception, ESCROW_HINT));
     }
     private static String boundedReason(String message) {
         if (message == null) { return "No diagnostic message"; }
@@ -87,14 +104,20 @@ public final class BetaWorldMigrationEvents {
 
     /**
      * A world with an escrow ledger or bay receipts (R-039) must never roll back managed files alone, whichever type
-     * refused startup.
+     * refused startup. W328: a ledger or receipt file whose presence is unknown counts as present.
      */
     static String recoveryHint(Path worldRoot) {
-        Path rejoins = worldRoot.resolve("data").resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName());
-        if (CheckedSavedDataFile.presence(rejoins) != CheckedSavedDataFile.Presence.ABSENT) { return REJOIN_HINT; }
-        Path ledger = worldRoot.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-        Path receipts = worldRoot.resolve("data").resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName());
-        return Files.exists(ledger, LinkOption.NOFOLLOW_LINKS) || Files.exists(receipts, LinkOption.NOFOLLOW_LINKS)
+        return recoveryHint(worldRoot, CheckedSavedDataFile::presence);
+    }
+
+    /** The hint over a given presence check; unit tests inject a failing status check. */
+    static String recoveryHint(Path worldRoot, java.util.function.Function<Path, CheckedSavedDataFile.Presence> presence) {
+        Path data = worldRoot.resolve("data");
+        if (presence.apply(data.resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName())) != CheckedSavedDataFile.Presence.ABSENT) {
+            return REJOIN_HINT;
+        }
+        return presence.apply(data.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName())) != CheckedSavedDataFile.Presence.ABSENT
+                || presence.apply(data.resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName())) != CheckedSavedDataFile.Presence.ABSENT
                 ? ESCROW_HINT : MIGRATION_HINT;
     }
 }

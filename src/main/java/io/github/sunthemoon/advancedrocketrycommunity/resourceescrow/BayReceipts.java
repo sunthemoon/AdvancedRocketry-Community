@@ -24,6 +24,7 @@ public final class BayReceipts {
     private BayReceiptStore store;
     @Nullable private EscrowAdmissionAuthority.Store substitute; // W95's synthetic index while its fixture holds it
     private EscrowAdmissionAuthority.Delegate.State firstTick;
+    @Nullable private EscrowNotLoadedReason notLoaded; // why the startup lookup kept NOT_LOADED, for its WARN (W328)
     @Nullable private BayDeploymentSession session;
     @Nullable private BayReceiptCommitCut commitCut; // only on a GameTestServer or a gated release-test server
     private boolean started;
@@ -38,7 +39,8 @@ public final class BayReceipts {
     /**
      * ServerStartingEvent, after the Levels exist and before the first tick: the storage's load-only lookup never
      * creates a file. An existing root binds and indexes at once (LOADED); a proven-absent file gives NO_FILE; a file
-     * that exists but did not load keeps NOT_LOADED, so admission and insertion of every package stay refused.
+     * that exists but did not load, or whose presence is unknown (R390), keeps NOT_LOADED, so admission and insertion of
+     * every package stay refused. The WARN names which of the two it was (W328).
      */
     void start(MinecraftServer server) {
         Path file = BayReceiptSavedData.file(server);
@@ -53,7 +55,9 @@ public final class BayReceipts {
         } else if (presence == CheckedSavedDataFile.Presence.ABSENT) {
             bay.noFile();
         } else {
-            LOGGER.warn("ARCE_BAY_RECEIPTS_NOT_LOADED; the receipt file exists but did not load, so bay admission and package insertion stay refused");
+            notLoaded = EscrowNotLoadedReason.of(presence);
+            LOGGER.warn("ARCE_BAY_RECEIPTS_NOT_LOADED reason={} file={}; {}, so bay admission and package insertion stay refused "
+                    + "for this session", notLoaded, file.getFileName(), notLoaded.description());
         }
         LOGGER.info("ARCE_BAY_RECEIPTS_INDEX state={} receipts={}", bay.state(), store == null ? 0 : store.receipts().size());
     }
@@ -177,6 +181,8 @@ public final class BayReceipts {
     }
 
     public EscrowAdmissionAuthority.Delegate.State state() { return bay.state(); }
+    /** Why the startup lookup kept NOT_LOADED; null when it bound a root, proved the file absent or has not run. */
+    @Nullable EscrowNotLoadedReason notLoadedReason() { return notLoaded; }
     @Nullable public BayReceiptStore store() { return store; }
     EscrowAdmissionAuthority.Delegate delegate() { return bay; }
     /** The BAY delegate's state at the START of the server's first tick, for the N6 startup check. */
