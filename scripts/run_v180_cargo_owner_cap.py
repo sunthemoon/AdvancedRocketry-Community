@@ -57,7 +57,7 @@ def check(case, disk, restarted):
     require(capped["pos"] == [68.5, 100.0, 64.5] and other["pos"] == [68.5, 100.0, 68.5], "Owner-cap rocket placement changed")
     require(len(root["records"]) == 16 and len({json.dumps(op["op_id"]) for op in root["records"]}) == 16
             and all(op["owner"] == capped["owner"] and op["phase"] == "REPAIR" and op["reason"] == "OTHER_STATE" for op in root["records"])
-            and len({json.dumps(op["guard"]["rocket_id"]) for op in root["records"]}) == 16, "Owner cap no longer has sixteen independent pending charges")
+            and len({json.dumps(op["transfer_guard"]["rocket_id"]) for op in root["records"]}) == 16, "Owner cap no longer has sixteen independent pending charges")
     require(root["issued_through"] == (17 if restarted else 16) and not root["tombstones"] and not root["floors"]
             and not root["rocket_authorities"] and not root["armed_flights"] and not disk["journal"], "Cap refusal/independent transfer changed authority")
     before = (60 if load else 10, 10 if load else 60) if typed else (0 if load else 5000, 5000 if load else 0)
