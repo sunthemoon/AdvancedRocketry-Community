@@ -12,7 +12,8 @@ import item_cuts_oracle as item
 
 CASES = {f"CQ_{medium}_{direction}": dict(family="C-Q", cut="OWNER_PENDING_REFUSED",
          kind=f"{medium}_CARGO_{direction}") for medium in ("FLUID", "ITEM") for direction in ("LOAD", "UNLOAD")}
-HOOKS = cuts.HOOKS + (cuts.HOOK_DIR + "EscrowCargoOwnerCapProbe.java",)
+HOOKS = cuts.HOOKS + tuple(cuts.HOOK_DIR + name for name in
+                         ("EscrowCargoCutProbe.java", "EscrowItemCutProbe.java", "EscrowCargoOwnerCapProbe.java"))
 HARNESS = cuts.HARNESS + ("scripts/run_v180_cargo_owner_cap.py", "scripts/run_v180_cargo_s4_s5_cuts.py", "scripts/item_cuts_oracle.py")
 raw_snapshot = cuts.raw_snapshot
 require = fluid.require

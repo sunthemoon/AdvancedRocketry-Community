@@ -68,11 +68,12 @@ class EscrowProbeRoutingTest {
         }
         // W220: two governed publication cases; producer rules are unchanged.
         // W221: seven named-pad selections under unchanged producer rules.
-        assertEquals(620, seen.size());
+// W330: four owner-cap and 33 load-direction settlement cases.
+        assertEquals(657, seen.size());
         assertTrue(seen.containsAll(List.of(EscrowLoaderS6PublicationProbe.RETURN, EscrowLoaderS6PublicationProbe.HELD)));
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
-        assertEquals(expected, items); assertEquals(18, items.size());
+assertEquals(expected, items); assertEquals(31, items.size());
     }
 
     @Test void legacyStoreFaultAndUnenumeratedNamesStillReachTheGenericFallback() throws Exception {
