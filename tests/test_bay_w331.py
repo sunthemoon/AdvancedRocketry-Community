@@ -279,6 +279,42 @@ class OracleTests(unittest.TestCase):
         self.assertEqual((0, 0), bay.W331_CASES["W331_B11_UNION"]["pending"])
         self.assertEqual((1, 2), bay.W331_CASES["W331_B18_SUCCESSOR"]["pending"])
 
+    def test_the_d0_rejection_oracle_reads_each_bays_remembered_reason_after_the_handoff(self):
+        claim = f"[x] ARCE_BAY_CLAIM transfer={OP} logical={L} state=OWNED_WAIT reason="
+        lines = [claim + "BAY_VALIDATION", claim + "ASSEMBLY_JOURNAL_CHECKPOINT", claim + "BAY_RECEIPT_WRITE",
+                 f"[x] ARCE_BAY_CLAIM transfer={OP} logical={L} state=READY_SOURCE reason=READY_SOURCE"]
+
+        class Stub:
+            def __init__(self, shown: str):
+                self.args = SimpleNamespace(flight_timeout=1)
+                self.process = SimpleNamespace(lines=list(lines))
+                self.shown = shown
+
+            def wait_after(self, marker, start, timeout):
+                return next(line for line in self.process.lines[start:] if marker.search(line))
+
+            def send(self, command, marker):
+                satellite = command.rsplit(" ", 1)[1]
+                return f"[x] ARCE_RELEASE_BAY_DEPLOYMENT_STATUS satellite={satellite} phase=NONE reason={self.shown}"
+
+            def status(self, logical):
+                return dict(receipts=[], packages="p0+p1")
+
+        standard = fixture("standard")
+        with tempfile.TemporaryDirectory() as directory:
+            data = Path(directory) / "data"
+            observed = bay.w331_rejection(Stub("ASSEMBLY_JOURNAL_PENDING"), "W331_B14_STALE", standard, 0, data, None)
+            self.assertEqual(2, len(observed["menu"]))
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "does not show D0's ASSEMBLY_JOURNAL_PENDING"):
+                bay.w331_rejection(Stub("NONE"), "W331_B14_STALE", standard, 0, data, None)
+            unrequested = Stub("ASSEMBLY_JOURNAL_PENDING")
+            unrequested.process.lines.pop(1)
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "never requested"):
+                bay.w331_rejection(unrequested, "W331_B14_STALE", standard, 0, data, None)
+            world(Path(directory), [receipt(OP, L, DATA, "INTENT")])
+            with self.assertRaisesRegex(bay.smoke.SmokeError, "a receipt names L"):
+                bay.w331_rejection(Stub("ASSEMBLY_JOURNAL_PENDING"), "W331_B14_STALE", standard, 0, data, None)
+
     def test_exit_fields_refuse_a_repeated_field(self):
         line = f"[x] ARCE_RELEASE_BAY_EXIT_LOGIN logical={L} tick=4 rider=online mounted=false seat=0"
         self.assertEqual(dict(tick="4", rider="online", mounted="false", seat="0"), bay.exit_fields(line))

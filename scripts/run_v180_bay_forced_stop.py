@@ -1120,21 +1120,28 @@ def entities_naming(world: Path, logical: str, directory: Path = MOON_ENTITIES) 
 
 
 def w331_rejection(run: Session, case: str, fixture: dict, start: int, data: Path, before: str | None) -> dict:
-    """Family T and P: D0 rejects every bay of L with the case's reason, before any receipt names L."""
+    """Family T and P: D0 rejects every bay of L with the case's reason, before any receipt names L.
+
+    D0's reason is recorded on each bay member and remembered by the session (``BayTransferRecovery.reject``), which is
+    what the bay menu shows; the claim line itself only reports the claim's wait reasons and its READY_SOURCE handoff.
+    """
     spec = W331_CASES[case]
     reason = spec["reject"]
-    marker = re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} logical={fixture['logical']} state=\w+ reason={reason}\b")
+    marker = re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} logical={fixture['logical']} state=READY_SOURCE\b")
     run.wait_after(marker, start, run.args.flight_timeout + 60)
     assert run.process is not None
     lines = run.process.lines
     at = next(index for index in range(start, len(lines)) if marker.search(lines[index]))
     reasons = [match.group(4) for line in lines[start:at + 1] if (match := CLAIM.search(line))
                and match.group(2) == fixture["logical"]]
-    if any(reason_ in ("BAY_RECEIPT_WRITE", "BAY_REGISTRY_PROOF") for reason_ in reasons):
-        raise smoke.SmokeError(f"{case}: D1 began before the rejection: {reasons}")
     if spec.get("journal_arm") and "ASSEMBLY_JOURNAL_CHECKPOINT" not in reasons:
         raise smoke.SmokeError(f"{case}: D0 never requested its journal checkpoint: {reasons}")
-    observed = dict(reasons=reasons)
+    observed = dict(reasons=reasons, menu=[])
+    for satellite in fixture["satellites"]:
+        shown = DEPLOYMENT_STATUS.search(run.send(f"arce bay release-test deployment-status {satellite}", DEPLOYMENT_STATUS))
+        if shown.groups() != (satellite, "NONE", reason):
+            raise smoke.SmokeError(f"{case}: the bay of {satellite} does not show D0's {reason}: {shown[0]}")
+        observed["menu"].append(shown[0])
     if spec.get("injected"):
         point, mode, minimum = spec["injected"]
         injected = [match.groups() for line in lines[start:at] if (match := TXW_INJECTED.search(line))]
@@ -1209,11 +1216,6 @@ def w331_first_start(run: Session, case: str, world: Path) -> tuple[dict, dict]:
             if spec["journal_arm"] != "STAGED PAUSE":
                 run.send("arce rocket release-test transaction-writer arm STAGED PAUSE", TXW_DONE)
             run.send("arce rocket release-test transaction-writer release", TXW_DONE)
-        if spec["reject"] == "BAY_SOURCE_PROTECTED":
-            shown = DEPLOYMENT_STATUS.search(run.send(f"arce bay release-test deployment-status {fixture['data']}", DEPLOYMENT_STATUS))
-            if shown.groups()[1:] != ("NONE", "BAY_SOURCE_PROTECTED"):
-                raise smoke.SmokeError(f"{case}: the bay menu does not show BAY_SOURCE_PROTECTED: {shown[0]}")
-            observed["menu"] = shown[0]
     elif spec.get("registry_arm"):
         run.wait_after(SRW_MOVED_UNKNOWN, start, run.args.flight_timeout)
         if spec.get("unproved"):
@@ -1382,6 +1384,12 @@ def run_w331_case(run: Session, case: str) -> dict:
             entry["login"] = run.send(f"arce bay release-test exit login {fixture['logical']}",
                                       re.compile(r"ARCE_RELEASE_BAY_EXIT_LOGIN "))
         entry["settled"] = w331_await(run, case, restart, fixture)
+        if spec["end"] == "land-kill":
+            # Ordinary recovery rebuilds the absent destination with T's destination UUID from the consumed T'.
+            landed = row["first_start"]["settled"]
+            if entry["settled"]["rocket"] != landed["rocket"] or entry["settled"]["consumed"] != landed["consumed"]:
+                raise smoke.SmokeError(f"{case}/{restart}: the rebuilt destination differs from the landed one: "
+                                       f"{entry['settled']} {landed}")
         if online:
             entry["online_settled"] = online_state(run, fixture["logical"])
         if spec.get("copies"):
