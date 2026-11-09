@@ -2125,6 +2125,24 @@
       "counts": {"bay_deployment_hook81": 1},
       "test": "BayDeploymentHoldGameTests.aHeldClaimWithARealBayFollowsSection81Tests6123",
       "reason": "W128R-R2 (section 8.1 test 2): a second, unclaimed record gets the ordinary stationary recovery while the bay claim holds T."
+    },
+    {
+      "id": "w342-bay-committed-rebuild-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {"bay_rebuild_destination": 2},
+      "test": "BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime, BayRebuildDestinationGameTests.anUnconsumedCommittedRecordRebuildsItsDestinationWithThePackagesAboard",
+      "reason": "W342 (W27A B6.5): a committed bay transfer with neither entity is rebuilt at its destination once, from the consumed T' (no package back) and, as the control, from an unconsumed T whose packages fly on."
+    },
+    {
+      "id": "w342-bay-committed-consumed-source-kept",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"bay_rebuild_destination": 1},
+      "test": "BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource",
+      "reason": "W342 control (W27A B8): the same committed, consumed state with S' present keeps the consumed source, reported once after its survivor proof retires T."
     }
   ]
 }
