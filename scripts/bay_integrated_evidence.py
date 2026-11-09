@@ -11,6 +11,25 @@ import uuid
 import loader_cut_nbt as nbt
 
 
+def unexpected_errors(lines: list[str], registry_injection: bool = False, crash_injection: bool = False) -> list[str]:
+    """Audit the first start too; selected failure tests do not permit unrelated errors."""
+    injected = crash_injection and any("W129a injected tick exception" in line for line in lines)
+    crash_messages = ("Exception caught during firing event: W129a injected tick exception",
+                      "Encountered an unexpected exception", "Preparing crash report with UUID ",
+                      "This crash report has been saved to: ")
+    unexpected = []
+    for line in lines:
+        if "/ERROR]" not in line and "/FATAL]" not in line:
+            continue
+        if registry_injection and re.search(
+                r"ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=(FAILED|UNKNOWN) sequence=\d+ epoch=\d+ durable=\d+; retained dirty state", line):
+            continue
+        if injected and any(message in line for message in crash_messages):
+            continue
+        unexpected.append(line.rstrip())
+    return unexpected
+
+
 def snapshot_world(world: Path, destination: Path, max_bytes: int = 8 * 1024**2) -> dict:
     """Keep journal/registry/player/entity bytes after stop, not a disposable server copy."""
     if destination.exists():

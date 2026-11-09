@@ -60,12 +60,20 @@ def stop(run, process):
     return code
 
 
+def server_properties(port, world_name):
+    properties = bay.smoke.expected_server_properties(port, True)
+    properties.update({"level-name": world_name, "level-type": "minecraft:flat",
+        "view-distance": "3", "simulation-distance": "3",
+        "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}],
+                                           "biome": "minecraft:plains"})})
+    return properties
+
+
 def run_case(run, case):
     world = run.session / ("world-" + case)
     (run.session / "server.properties").write_text(
-        f"online-mode=false\nserver-port={run.port}\nlevel-name={world.name}\nlevel-type=minecraft:flat\n"
-        "generate-structures=false\nspawn-protection=0\nview-distance=3\nsimulation-distance=3\n"
-        "enable-rcon=false\nmax-tick-time=60000\n", encoding="utf-8")
+        "".join(f"{key}={value}\n" for key, value in sorted(server_properties(run.port, world.name).items())),
+        encoding="ascii")
     fixture, seed = bay.first_start(run, "B18_INTENT", world)
     phase = "REPAIR" if "REPAIR" in case else "INTENT"
     cut = "B10_RELEASE_" + case.rsplit("_", 1)[1]

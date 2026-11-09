@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import json
 from copy import deepcopy
 from unittest.mock import Mock, patch
 
@@ -11,9 +12,32 @@ import run_v180_bay_forced_stop as bay
 import bay_integrated_evidence as evidence
 import loader_cut_nbt as nbt
 import run_v180_bay_exit_cuts as exit_runner
+import run_v180_bay_released_flight as released
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_released_seed_has_a_valid_flat_generator(self):
+        properties = released.server_properties(25565, "fixture")
+        self.assertEqual("fixture", properties["level-name"])
+        self.assertEqual("minecraft:flat", properties["level-type"])
+        self.assertEqual([dict(block="minecraft:bedrock", height=1)],
+                         json.loads(properties["generator-settings"])["layers"])
+        self.assertEqual("127.0.0.1", properties["server-ip"])
+
+    def test_d7_failure_uses_a_releasable_durable_registered_cut_not_the_permanent_d5_stall(self):
+        self.assertEqual("B3_MOVED", bay.CASES["W325_D7_FAILED"]["cut"])
+
+    def test_error_audit_allows_only_the_selected_injections(self):
+        failure = "[Server thread/ERROR] ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=9 epoch=2 durable=1; retained dirty state"
+        ordinary = "[main/ERROR] No key layers in MapLike[{}]"
+        crash = "[Server thread/ERROR] Exception caught during firing event: W129a injected tick exception"
+        self.assertEqual([ordinary], evidence.unexpected_errors([ordinary]))
+        self.assertEqual([failure], evidence.unexpected_errors([failure]))
+        self.assertEqual([ordinary], evidence.unexpected_errors([failure, ordinary], registry_injection=True))
+        self.assertEqual([crash], evidence.unexpected_errors([crash]))
+        self.assertEqual([], evidence.unexpected_errors([crash], crash_injection=True))
+        self.assertEqual([ordinary], evidence.unexpected_errors([crash, ordinary], crash_injection=True))
+
     def test_retired_offline_recovery_requires_the_exact_stationary_crew_wait(self):
         case = "W325_B8_MOVED_OFFLINE"
         fixture = dict(logical="l", data="data", solar="solar", packages="a+b")

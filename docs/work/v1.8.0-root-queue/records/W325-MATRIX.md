@@ -95,7 +95,7 @@ each row separately. NOT_COVERED means the indicated requirement is not establis
 | B12.3 | D4 receipt UNKNOWN, exact retry | F `B12_D4` |
 | B12.4 | D7 receipt UNKNOWN, exact retry | F `B12_D7` |
 | B12.5 | D4 receipt definite failed-before-replace | F `W325_D4_FAILED` (block staging after the acknowledged INTENT while the registry checkpoint is paused). |
-| B12.6 | D7 receipt definite failed-before-replace | F `W325_D7_FAILED` (block staging after D5, before releasing the coordinator). |
+| B12.6 | D7 receipt definite failed-before-replace | F `W325_D7_FAILED` (block staging at the releasable, replaced D4 cut, then require the D7 failure and consumed source). |
 | B13.1 | Registry checkpoint definite FAILED, later successful checkpoint | F `B13_FAILED` |
 | B13.2 | Registry checkpoint UNKNOWN, later successful checkpoint | F `B13_UNKNOWN` |
 | B13.3 | Durable INTENT restart, first-tick launch/decommission fences | F `B2_STAGED` |

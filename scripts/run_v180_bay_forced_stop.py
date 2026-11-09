@@ -202,7 +202,7 @@ TRANCHES["F"] = [case for case in CASES if case.startswith("W325_") and case not
 CASES.update({
     "W325_D4_FAILED": dict(cut=None, registry="STAGED PAUSE", group_failed="D4", end="land", durable="NONE",
                             first="LANDED", restarts=("LANDED", "LANDED")),
-    "W325_D7_FAILED": dict(cut="B6_D5", group_failed="D7", end="land", durable="NONE",
+    "W325_D7_FAILED": dict(cut="B3_MOVED", group_failed="D7", end="land", durable="NONE",
                             first="LANDED", restarts=("LANDED", "LANDED")),
 })
 TRANCHES["G"] = ["W325_D4_FAILED", "W325_D7_FAILED"]
@@ -565,6 +565,10 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     code = run.end("wait" if spec["end"] == "crash" else spec["end"] if spec["end"] != "land" else "stop",
                    run.args.exit_timeout)
     text = "".join(process.lines)
+    errors = evidence_tools.unexpected_errors(process.lines, registry_injection=spec.get("unproved", False),
+                                              crash_injection=spec["end"] == "crash")
+    if errors:
+        raise smoke.SmokeError(f"{case}: first start logged unexpected ERROR/FATAL: {errors}")
     if spec["end"] in ("stop", "land") and code != 0:
         raise smoke.SmokeError(f"{case}: the normal stop exited {code}")
     if spec["end"] == "stop" and spec.get("cut") and "ARCE_RELEASE_BAY_RELEASED" not in text:
