@@ -110,6 +110,11 @@ public final class R042AdmissionProbe {
         EscrowTestEndpoints.requireEnabled(server);
         int cell = cellIndex(name); ServerLevel level = server.overworld();
         if (!ticking(level, cell)) { LOGGER.info("ARCE_RELEASE_R042_WAIT cell={}", name); return 0; }
+        // As W330's cap probe: attempt only once the transfer journal's checked write covers the cell's rockets, so a
+        // refusal is the admission's own answer and not the journal's TRANSFER_JOURNAL_UNPROVED (W332 smoke 1).
+        if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server).retryChecked(server)) {
+            LOGGER.info("ARCE_RELEASE_R042_WAIT cell={} reason=TRANSFER_JOURNAL", name); return 0;
+        }
         var runtime = EscrowRuntime.of(server); var authority = runtime.propulsion(server).authority();
         for (Kind kind : kinds(selected)) {
             View view = view(level, cell, kind);
