@@ -165,7 +165,7 @@ final class BayPassengerExitGameTestFixture {
     }
     private void setup() {
         var level = helper.getLevel(); var server = level.getServer();
-        origin = helper.absolutePos(new BlockPos(3, 4, 3));
+        origin = helper.absolutePos(new BlockPos(5, 4, 5));
         boolean ready = true;
         for (int x = (origin.getX() >> 4) - 1; x <= (origin.getX() >> 4) + 1; x++) {
             for (int z = (origin.getZ() >> 4) - 1; z <= (origin.getZ() >> 4) + 1; z++) {
@@ -175,6 +175,7 @@ final class BayPassengerExitGameTestFixture {
             }
         }
         if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
+        origin = BayPassengerExitGameTestArea.origin(helper);
         player = join(BayPassengerExitTickedGameTests.drives(scenario) ? BayPassengerExitReleaseTest.RIDER : UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
         var pkg = dataPackage(owner);

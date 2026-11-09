@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -26,11 +27,41 @@ final class BayPassengerExitGameTestArea implements AutoCloseable {
         this.level = level; this.origin = origin.immutable();
     }
 
-    static BayPassengerExitGameTestArea prepare(ServerLevel level, BlockPos origin) {
-        var area = new BayPassengerExitGameTestArea(level, origin);
+    /** Keep every column in the 16x16 allocation, avoiding even BEs above vanilla's cleared height. */
+    static BlockPos origin(GameTestHelper helper) {
+        var level = helper.getLevel();
+        // At most 36 candidates, each with the same 7,139-cell window used by prepare. No writes or tickets.
+        for (int x = RADIUS; x < 16 - RADIUS; x++) { for (int z = RADIUS; z < 16 - RADIUS; z++) {
+            var candidate = helper.absolutePos(new BlockPos(x, 4, z));
+            BlockPos occupied = occupied(level, candidate);
+            if (occupied == null) { return candidate; }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_BAY_EXIT_AREA skipped origin={} blockEntity={}", candidate, occupied);
+        } }
+        throw new IllegalStateException("Bay exit fixture has no BE-free window inside its allocation");
+    }
+
+    private static BlockPos occupied(ServerLevel level, BlockPos origin) {
+        requireHeight(level, origin);
+        for (int x = -RADIUS; x <= RADIUS; x++) { for (int z = -RADIUS; z <= RADIUS; z++) {
+            var chunk = level.getChunkSource().getChunkNow((origin.getX() + x) >> 4, (origin.getZ() + z) >> 4);
+            if (chunk == null) { throw new IllegalStateException("Bay exit fixture area would load a column at " + origin.offset(x, 0, z)); }
+            for (int y = BOTTOM; y <= TOP; y++) {
+                var at = origin.offset(x, y, z);
+                if (level.getBlockEntity(at) != null) { return at; }
+            }
+        } }
+        return null;
+    }
+
+    private static void requireHeight(ServerLevel level, BlockPos origin) {
         if (origin.getY() + BOTTOM < level.getMinBuildHeight() || origin.getY() + TOP >= level.getMaxBuildHeight()) {
             throw new IllegalArgumentException("Bay exit fixture area exceeds build height at " + origin);
         }
+    }
+
+    static BayPassengerExitGameTestArea prepare(ServerLevel level, BlockPos origin) {
+        var area = new BayPassengerExitGameTestArea(level, origin);
+        requireHeight(level, origin);
         // Validate and record the entire bounded area before changing any cell. Never request a chunk load.
         for (int x = -RADIUS; x <= RADIUS; x++) { for (int z = -RADIUS; z <= RADIUS; z++) {
             var chunk = level.getChunkSource().getChunkNow((origin.getX() + x) >> 4, (origin.getZ() + z) >> 4);
