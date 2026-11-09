@@ -87,11 +87,13 @@ public final class SatelliteTransportRowGameTests {
             }, cut.reader());
             f.data.writePolicy(policy);
             if (entry.equals("stop")) {
+                // A freshly decoded detached blocked root has no server-derived target until its first request.
+                h.assertTrue(f.data.requestWrite(f.file, policy), "Could not bind the stop fixture's checked target");
                 f.data.latchShutdown();
                 // A live GameTest server cannot set vanilla's stopped flag. Unload/close invokes the same bounded stop drain.
                 f.data.close();
                 h.assertTrue(f.data.drainReport().orElseThrow().success(), "Stop drain did not cover final RAM");
-                h.assertTrue(outcome.equals("COMMITTED") || calls.get() > 0, "Stop drain did not reach its injected cut");
+                h.assertTrue(outcome.equals("COMMITTED") || calls.get() >= 2, "Stop drain did not retry its injected cut");
                 CompoundTag disk = CheckedSavedDataFile.readPayload(f.file, TYPE).orElseThrow();
                 assertSections(h, expected, disk, blocked, entry + "/" + outcome);
             } else {
