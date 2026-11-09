@@ -42,6 +42,8 @@ public final class EscrowRuntime {
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
     private boolean stopping;
+    /** Set once the startup lookup has classified the PROPULSION delegate (W329). */
+    private boolean ledgerClassified;
     final EscrowCargoSwitches cargoSwitches = new EscrowCargoSwitches();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargo;
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations() {
@@ -274,7 +276,12 @@ public final class EscrowRuntime {
         EscrowLedgerStartup.start(delegate, data, root -> root.bind(server),
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::presence,
                 ResourceEscrowSavedData.file(server));
+        runtime.ledgerClassified = true;
         runtime.bay.start(server);
+    }
+    /** {@link EscrowLedgerLookup}'s state for a missing root, on the server thread (W329). */
+    EscrowLedgerLookup.State missingLedger(MinecraftServer server) {
+        return EscrowLedgerLookup.missing(ledgerClassified, () -> propulsion(server).state());
     }
     /** N6 evidence: the BAY index state at the START of the first tick, before any level, login or command runs. */
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void bayFirstTick(TickEvent.ServerTickEvent event) {

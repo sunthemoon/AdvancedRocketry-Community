@@ -66,6 +66,17 @@ public final class EscrowAdmissionAuthority {
         }
         boolean holdsWork() { authority.owner(); return store != null && store.holdsWork(); }
         /**
+         * W329's GameTest seam, called only after {@code EscrowTestEndpoints.requireEnabled}: back to NOT_LOADED, as
+         * after a ledger that did not load, so the shared authority answers UNAVAILABLE. False, with nothing changed,
+         * while the attached store holds work. {@link #retarget} later attaches a store or returns to NO_FILE.
+         */
+        boolean unloadForTests() {
+            authority.owner();
+            if (holdsWork()) { return false; }
+            store = null; state = State.NOT_LOADED; authority.refresh();
+            return true;
+        }
+        /**
          * Attaches a store, or with null returns to NO_FILE. Refuses, changing nothing, while a different attached store
          * still holds queued, captured or UNKNOWN work, so no reservation disappears with it.
          */
