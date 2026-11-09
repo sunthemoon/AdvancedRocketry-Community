@@ -22,7 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * W328 (W327 audit L2): the pre-start check never reads an unknown status as absent. An unknown presence of any managed
  * file, or of the data directory, refuses startup before anything is read, backed up, staged or committed, and a later
- * start with a working status check passes over the very same bytes.
+ * start with a working status check passes over the very same bytes. W328F: every status check runs before any read.
  */
 final class UnknownPresenceStartupTest {
     @TempDir Path temp;
@@ -80,6 +80,41 @@ final class UnknownPresenceStartupTest {
             assertEquals(2, clean.managedFileCount(), "the ledger and the receipt root load");
             assertEquals(before, tree(world), "the clean start found the very same bytes and wrote nothing");
         }
+    }
+
+    /**
+     * W328F (review F2): every managed path's status is checked before any file is decoded. A malformed earlier root
+     * (the celestial file) and an unknown presence of a later one (the bay receipts) refuse with the later file's
+     * unknown presence, and the read seam, which is the only decoder of managed files, saw no read at all.
+     */
+    @Test void everyStatusCheckRunsBeforeAnyManagedFileIsRead() throws Exception {
+        Path world = world("order");
+        Path data = world.resolve("data");
+        Files.writeString(data.resolve(ManagedSavedDataType.CELESTIAL.fileName()), "not compressed NBT");
+        var before = tree(world);
+        var reads = new java.util.ArrayList<ManagedSavedDataType>();
+        java.util.function.BiFunction<Path, ManagedSavedDataType, net.minecraft.nbt.CompoundTag> recording = (path, type) -> {
+            reads.add(type);
+            return BoundedSavedDataIo.read(path, type);
+        };
+
+        var refusal = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService(Clock.systemUTC(),
+                (staged, target) -> fail("No commit"), (target, bytes) -> fail("No staging"),
+                failing(data.resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName())), recording).migrate(world));
+        assertEquals(ManagedSavedDataType.BAY_RECEIPTS, refusal.dataType().orElseThrow());
+        assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, refusal.diagnosticId());
+        assertTrue(refusal.getMessage().startsWith(ManagedSavedDataType.BAY_RECEIPTS.dataName() + " presence is unknown"),
+                refusal::getMessage);
+        assertEquals(java.util.List.of(), reads, "a managed file was read before the later status check refused");
+        assertEquals(before, tree(world));
+
+        // The same seam does decode: with every status known, the malformed celestial root is read first and refuses.
+        var malformed = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService(Clock.systemUTC(),
+                (staged, target) -> fail("No commit"), (target, bytes) -> fail("No staging"),
+                CheckedSavedDataFile::presence, recording).migrate(world));
+        assertEquals(ManagedSavedDataType.CELESTIAL, malformed.dataType().orElseThrow());
+        assertEquals(java.util.List.of(ManagedSavedDataType.CELESTIAL), reads);
+        assertEquals(before, tree(world));
     }
 
     @Test void anUnknownDataDirectoryRefusesStartupInsteadOfReportingNoData() throws Exception {
