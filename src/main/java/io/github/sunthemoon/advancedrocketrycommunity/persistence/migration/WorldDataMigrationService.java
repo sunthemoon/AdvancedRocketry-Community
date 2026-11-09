@@ -185,7 +185,8 @@ public final class WorldDataMigrationService {
         if (state == CheckedSavedDataFile.Presence.UNKNOWN) {
             String name = type == null ? "The world data directory" : type.dataName();
             var failure = new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
-                    name + " presence is unknown: its file status check failed, so its absence is not proven");
+                    name + " presence is unknown: its file status check failed, so its absence is not proven")
+                    .presenceUnknown();
             throw type == null ? failure : failure.forType(type);
         }
         return state;
