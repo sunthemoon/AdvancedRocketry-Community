@@ -70,6 +70,33 @@ public final class BayPassengerExitAreaGameTests {
     }
 
     @GameTest(template = "rocket_test", batch = "w334_bay_exit_area", timeoutTicks = 20)
+    public static void unsealedDescentAvoidsRejectingBlockEntitiesOutsideItsSmallerFootprint(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var leftover = helper.absolutePos(new BlockPos(5, 56, 8));
+        var before = level.getBlockState(leftover);
+        helper.assertTrue(level.getBlockEntity(leftover) == null, "Regression seed would replace a block entity");
+        try {
+            level.setBlock(leftover, Blocks.CHEST.defaultBlockState(), FLAGS);
+            var chest = level.getBlockEntity(leftover);
+            boolean refused = false;
+            try { BayPassengerExitGameTestArea.origin(helper); }
+            catch (IllegalStateException expected) { refused = expected.getMessage().contains("no BE-free window"); }
+            helper.assertTrue(refused, "Control BE must obstruct every full-size window");
+            var origin = BayPassengerExitGameTestArea.origin(helper, 3);
+            var minimum = helper.absolutePos(new BlockPos(3, 4, 3));
+            var maximum = helper.absolutePos(new BlockPos(12, 4, 12));
+            helper.assertTrue(origin.getX() >= minimum.getX() && origin.getX() <= maximum.getX()
+                    && origin.getZ() >= minimum.getZ() && origin.getZ() <= maximum.getZ() && origin.getY() == minimum.getY(),
+                    "Descent window leaves its allocation");
+            helper.assertTrue((Math.abs(origin.getX() - leftover.getX()) > 3 || Math.abs(origin.getZ() - leftover.getZ()) > 3)
+                    && level.getBlockEntity(leftover) == chest, "Descent selection touched or retained the BE in its footprint");
+        } finally {
+            level.setBlock(leftover, before, FLAGS);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "rocket_test", batch = "w334_bay_exit_area", timeoutTicks = 20)
     public static void blockEntitySharedByEveryCandidateRefusesWithoutAnyWrite(GameTestHelper helper) {
         var level = helper.getLevel();
         var leftover = helper.absolutePos(new BlockPos(8, 58, 8));

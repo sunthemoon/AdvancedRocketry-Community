@@ -175,7 +175,7 @@ final class BayPassengerExitGameTestFixture {
             }
         }
         if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
-        origin = BayPassengerExitGameTestArea.origin(helper);
+        origin = BayPassengerExitGameTestArea.origin(helper, sealedAreaCase() || scenario == Case.AMBIENT_FLUID ? 5 : 3);
         player = join(BayPassengerExitTickedGameTests.drives(scenario) ? BayPassengerExitReleaseTest.RIDER : UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
         var pkg = dataPackage(owner);
@@ -196,7 +196,7 @@ final class BayPassengerExitGameTestFixture {
         pause(); exits = RocketRuntime.passengerExits().orElseThrow();
         exits.probeLocationForTests((rider, rocket) -> BayPassengerExitGameTestAudit.probe(this, rider, rocket));
         helper.assertTrue(exits.motion.generation(player) != null && exits.landing.available(), "Pinned mapped observers unavailable");
-        if (arbitrationCase() || Set.of(Case.SAFE, Case.MENU, Case.CREW, Case.GANTRY, Case.LOCAL_ONLY).contains(scenario)) {
+        if (sealedAreaCase()) {
             exitArea = BayPassengerExitGameTestArea.prepare(level, origin);
         }
         for (int x = -3; x <= 3; x++) { for (int z = -3; z <= 3; z++) {
@@ -223,6 +223,9 @@ final class BayPassengerExitGameTestFixture {
         BayPassengerExitGameTestDescentAudit.enclose(this);
         cacheListenerCleanup = BayPassengerExitGameTestAudit.observeDispatchEnd(this, BayPassengerExitGameTestDescentAudit.evictOnDismount(this));
         joinedTick = server.getTickCount(); stage = 1;
+    }
+    private boolean sealedAreaCase() {
+        return arbitrationCase() || Set.of(Case.SAFE, Case.MENU, Case.CREW, Case.GANTRY, Case.LOCAL_ONLY).contains(scenario);
     }
     void pad(BlockPos feet) {
         for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
