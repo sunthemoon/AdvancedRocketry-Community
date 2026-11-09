@@ -332,6 +332,7 @@ public final class EscrowGovernedWarmupGameTests {
                 case 0 -> setup(server, journal);
                 case 1 -> fillWhenCold(server, journal);
                 case 2 -> afterRemoval(server);
+                case 20 -> stationWarmup(server);
                 case 3 -> afterLogout(server, journal);
                 case 4 -> freshWhenCold(server, journal);
                 case 5 -> expiry(server);
@@ -396,10 +397,23 @@ public final class EscrowGovernedWarmupGameTests {
             if (warmup(server, admin.get(0)) != null) { return; }
             helper.assertTrue(tickets(server, admin.get(0)).isEmpty(), "The removed rocket kept a warm-up ticket");
             var ninth = RocketRuntime.requestAdminStationFlight(admin.get(6), station.stationId(), UUID.randomUUID());
-            var started = warmup(server, admin.get(6));
-            helper.assertTrue(ninth.code() == RocketFlightRequestCode.DESTINATION_LOADING && started != null
-                    && started.level().equals(space.dimension().location()) && tickets(server, admin.get(6)).size() == started.columns().size(),
+            helper.assertTrue(ninth.code() == RocketFlightRequestCode.DESTINATION_LOADING,
                     "The ninth did not start after a release: " + ninth.code());
+            step = 20;
+            stationWarmup(server);
+        }
+
+        private void stationWarmup(MinecraftServer server) {
+            var started = warmup(server, admin.get(6));
+            // Unlike the initial requests, this retry can outlive the station pad's predicted FULL terrain.
+            if (started == null) {
+                helper.assertTrue(RocketWarmupGameTestSupport.preparing(server, logical(admin.get(6))),
+                        "The ninth request lost its bounded terrain allocation");
+                return;
+            }
+            helper.assertTrue(started.level().equals(space.dimension().location())
+                    && tickets(server, admin.get(6)).size() == started.columns().size(),
+                    "The ninth did not warm the station after a release");
             helper.assertTrue(RocketWarmupGameTestSupport.live(server).size() == 8, "The cap count differs after the release");
             pilot.leave(); pilot = null; step = 3;
         }
