@@ -273,11 +273,39 @@ def expected_receipt(case: str, restart: int, relaunched: bool = False) -> tuple
     return ("REGISTERED", "NONE") if name == "COPY_HELD" else HELD_INTENT if name == "HELD" else OUTCOMES[name][0]
 
 
+def receipt_set_matches(receipts: list[dict], expected: dict[str, tuple[str, str]], acknowledged: bool = True) -> bool:
+    """Compare the complete group, including duplicates and released rows, not just its data member."""
+    return (len(receipts) == len(expected) and {row["satellite"] for row in receipts} == set(expected)
+            and all((row["phase"], row["reason"]) == expected[row["satellite"]]
+                    and not row.get("released", False) and (not acknowledged or row["acknowledged"])
+                    for row in receipts))
+
+
+def data_receipt_set(fixture: dict, expected: tuple[str, str] | None) -> dict:
+    return {} if expected is None else {fixture["data"]: expected}
+
+
+def settled_disk(case: str, world: Path, fixture: dict, expected: tuple[str, str] | None) -> dict:
+    rows = [row for row in evidence_tools.bay_receipts(world / "data" / RECEIPTS)
+            if row["rocket"] == fixture["logical"]]
+    if not receipt_set_matches(rows, data_receipt_set(fixture, expected), acknowledged=False):
+        raise smoke.SmokeError(f"{case}: unexpected complete receipt set on disk: {rows}")
+    return dict(receipts_naming_l=rows)
+
+
+def check_retired_pending(case: str, pending: dict, expected: tuple[int, int] = (0, 0)) -> None:
+    """The fixture's retired group releases its charge; unrelated seeded groups retain theirs."""
+    if (pending["pending"], pending["retained"]) != expected or pending["work"]:
+        raise smoke.SmokeError(f"{case}: retired group retained bay authority/reservations: {pending}, expected {expected}")
+
+
 def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bool = False) -> bool:
     """No claim, the receipt resolved as expected, the rocket at rest (landed, or stationary at its origin) with the data
     bay consumed or not as expected; for a hold case, the claim held for offline repair, the INTENT unchanged and the
     rocket locked in TRANSIT at altitude."""
     name = outcome(case, restart, relaunched)
+    if not receipt_set_matches(status["receipts"], data_receipt_set(fixture, expected_receipt(case, restart, relaunched))):
+        return False
     if name == "COPY_HELD":
         data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
         return (status["hold"] == "REPAIR" and status["reason"] == CASES[case]["copy_hold"]
@@ -289,7 +317,7 @@ def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bo
                 and status["locked"] == "true" and len(data) == 1 and (data[0]["phase"], data[0]["reason"]) == HELD_INTENT
                 and data[0]["acknowledged"] and status["transfer"] == "PREPARED" and status["state"] == "TRANSIT"
                 and float(status["y"]) == float(ORIGIN[1] + ALTITUDE))
-    if status["claim"] != "NONE":
+    if status["claim"] != "NONE" or status["locked"] != "false":
         return False
     expected, rest, consumed, _ = OUTCOMES[name]
     data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
@@ -314,6 +342,8 @@ def check_settled(case: str, restart: int, status: dict, fixture: dict, relaunch
     """The invariants of every settled start: the second package byte-equal (consumed with its own op for B4), each
     satellite registered at most once by the bay, and only the fixture's satellites named."""
     name = outcome(case, restart, relaunched)
+    if not settled(case, restart, status, fixture, relaunched):
+        raise smoke.SmokeError(f"{case}/{restart}: incomplete receipt retirement or unsettled authority: {status}")
     if name == "COPY_HELD":
         if not settled(case, restart, status, fixture) or status["owned"] != 1:
             raise smoke.SmokeError(f"{case}/{restart}: copy repair changed the registration or authority: {status}")
@@ -520,6 +550,9 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             observed["b16"] = b16_guard(run, case, fixture, world)
         if spec["end"] == "land" or spec.get("staging"):
             observed["settled"] = run.await_settled(case, 0, fixture)
+            if OUTCOMES[outcome(case, 0)][2]:
+                observed["pending"] = run.pending()
+                check_retired_pending(case, observed["pending"], (spec.get("pending_count", spec.get("fill", 0)), spec.get("fill", 0)))
             if spec.get("b16"):
                 observed["fresh_proof"] = check_fresh_proof(case, process.lines, fixture)
         else:
@@ -779,6 +812,8 @@ def run_case(run: Session, case: str) -> dict:
     receipts = world / "data" / RECEIPTS
     row["cut_disk"] = dict(receipts=digest(receipts) if receipts.is_file() else None,
                            staging=(world / "data" / STAGING).exists())
+    if spec["end"] == "land" and fixture is not None:
+        row["cut_disk"]["oracles"] = settled_disk(case, world, fixture, expected_receipt(case, 0))
     row["cut_disk"]["raw"] = evidence_tools.snapshot_world(world, run.evidence / f"{case}-cut-raw")
     if spec.get("copies"):
         row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"],
@@ -831,6 +866,9 @@ def run_case(run: Session, case: str) -> dict:
                                            f"{op} {relaunched['consumed']}")
                 entry["relaunched"] = relaunched
         entry["pending"] = run.pending()
+        if fixture is not None and (outcome(case, restart, "relaunched" in entry) in
+                                    ("LANDED", "CONSUMED_REST", "CONSUMED_CREW_WAIT")):
+            check_retired_pending(case, entry["pending"], (spec.get("pending_count", spec.get("fill", 0)), spec.get("fill", 0)))
         if outcome(case, restart) == "CONSUMED_CREW_WAIT" and entry["pending"] != dict(pending=0, retained=0, work=False):
             raise smoke.SmokeError(f"{case}/{restart}: retired crew wait retained bay authority: {entry['pending']}")
         if spec.get("fill") and (entry["pending"]["pending"] != spec.get("pending_count", spec["fill"])
@@ -840,6 +878,8 @@ def run_case(run: Session, case: str) -> dict:
         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
             raise smoke.SmokeError(f"{case}/{restart}: the restart failed or logged ERROR/FATAL")
         entry.update(exit_code=code, receipts=digest(receipts) if receipts.is_file() else None)
+        if fixture is not None:
+            entry["oracles"] = settled_disk(case, world, fixture, expected_receipt(case, restart, "relaunched" in entry))
         if spec.get("copy_hold") and entry["receipts"] != row["cut_disk"]["receipts"]:
             raise smoke.SmokeError(f"{case}/{restart}: repair changed the receipt file")
         if spec.get("hold"):
@@ -994,15 +1034,11 @@ def w331_outcome(spec: dict, restart: int) -> str:
 
 
 def w331_settled(spec: dict, name: str, status: dict, fixture: dict) -> bool:
-    """settled() for any fixture layout: no claim, the data receipt as expected, the rocket at rest."""
-    if status["claim"] != "NONE":
+    """settled() for any layout: the complete receipt set, unlocked rocket and no claim."""
+    if status["claim"] != "NONE" or status["locked"] != "false":
         return False
     expected, rest, consumed, _ = OUTCOMES[name]
-    data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
-    if expected is None:
-        if data:
-            return False
-    elif len(data) != 1 or (data[0]["phase"], data[0]["reason"]) != expected or not data[0]["acknowledged"]:
+    if not receipt_set_matches(status["receipts"], data_receipt_set(fixture, expected)):
         return False
     if len(status["consumed"]) != len(fixture["roles"]) or (status["consumed"][0] is not None) != consumed:
         return False
@@ -1014,6 +1050,8 @@ def w331_settled(spec: dict, name: str, status: dict, fixture: dict) -> bool:
 def w331_check(case: str, spec: dict, name: str, status: dict, fixture: dict) -> None:
     """check_settled() for any layout: registering bays consumed exactly when the outcome consumes, the research-locked
     solar bay always byte-equal with no receipt, the owner's satellites, and no foreign or premature receipt."""
+    if not w331_settled(spec, name, status, fixture):
+        raise smoke.SmokeError(f"{case}: incomplete receipt retirement or unsettled authority: {status}")
     expected, actual = fixture["packages"].split("+"), status["packages"].split("+")
     roles, consumed = fixture["roles"], OUTCOMES[name][2]
     if len(actual) != len(roles) or len(status["consumed"]) != len(roles):
@@ -1234,6 +1272,9 @@ def w331_first_start(run: Session, case: str, world: Path) -> tuple[dict, dict]:
         observed["login"] = w331_login(run, case, fixture, world)
     if spec["end"] in ("land", "land-kill"):
         observed["settled"] = w331_await(run, case, 0, fixture)
+        if OUTCOMES[spec["first"]][2]:
+            observed["pending"] = run.pending()
+            check_retired_pending(case, observed["pending"])
         if spec.get("login"):
             observed["fresh_proof"] = check_fresh_proof(case, process.lines, fixture)
             # Smoke 3: after the claim's READY_SOURCE handoff, the normal acknowledged transfer carries the assigned online
@@ -1339,6 +1380,7 @@ def w331_disk(case: str, world: Path, fixture: dict, restart: int, cut: dict | N
                 raise smoke.SmokeError(f"{case}: expected exactly the durable consumed source of L on disk: {sources}")
             observed.update(destination_absent=True, durable_source=sources[0])
     else:
+        settled_disk(f"{case}/{restart}", world, fixture, OUTCOMES[w331_outcome(spec, restart)][0])
         if spec.get("immutable"):
             if len(mine) != 1 or (mine[0]["phase"], mine[0]["reason"]) != INTERRUPTED:
                 raise smoke.SmokeError(f"{case}/{restart}: the interrupted receipt changed: {mine}")
@@ -1356,6 +1398,14 @@ def w331_disk(case: str, world: Path, fixture: dict, restart: int, cut: dict | N
         raise smoke.SmokeError(f"{case}/{restart}: the decommissioned X is on disk: {satellites}")
     if spec.get("stale") and not evidence_tools.raw_names(data / JOURNAL_FILE, fixture["logical"]):
         raise smoke.SmokeError(f"{case}/{restart}: the stale assembly record of L is not in the journal file")
+    if restart == 0:
+        if spec["durable"] == "REGISTERED":
+            expected = {satellite: ("REGISTERED", "NONE") for satellite, role in zip(fixture["satellites"], fixture["roles"])
+                        if role != "solar"}
+        else:
+            expected = data_receipt_set(fixture, HELD_INTENT if spec["durable"] == "INTENT" else None)
+        if not receipt_set_matches(mine, expected, acknowledged=False):
+            raise smoke.SmokeError(f"{case}: unexpected complete receipt set on cut disk: {mine}")
     return observed
 
 
@@ -1406,6 +1456,8 @@ def run_w331_case(run: Session, case: str) -> dict:
                 raise smoke.SmokeError(f"{case}: the first tick did not fence the durable INTENT: {found}")
             entry["first_tick"] = found[0]
         entry["pending"] = run.pending()
+        if OUTCOMES[w331_outcome(spec, restart)][2]:
+            check_retired_pending(case, entry["pending"])
         if "pending" in spec and (entry["pending"]["pending"], entry["pending"]["retained"]) != spec["pending"]:
             raise smoke.SmokeError(f"{case}/{restart}: pending/retained {entry['pending']}, expected {spec['pending']}")
         code = run.end("stop", run.args.exit_timeout)
