@@ -56,7 +56,8 @@ final class EscrowCargoOwnerCapProbe extends EscrowCargoCutProbe {
             }
             step = 1; return;
         }
-        if (step == 1 && !EscrowItemCutProbe.baseline(data, server)) { return; }
+        if (step == 1 && (!EscrowItemCutProbe.baseline(data, server)
+                || !io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server).retryChecked(server))) { return; }
         if (step == 1) {
             requireRefused();
             if (!recovery) { save(); pause("OWNER_PENDING_REFUSED"); return; }
