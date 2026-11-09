@@ -201,18 +201,18 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
-      "counts": {"fluid_cargo_reconciliation": 4},
+      "counts": {"fluid_cargo_reconciliation": 4, "w330_cargo_stale": 2, "w330_cargo_reconnect": 2},
       "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
-      "reason": "After each actual cargo direction, a detached stale PREPARED journal observes the changed native source's nonzero epoch and fences it."
+      "reason": "The existing directional tests and CargoRecoveryAcceptanceGameTests stale/reconnect tests each exercise detached stale PREPARED source-only and both-entity fences after actual cargo."
     },
     {
       "id": "w124-cargo-stale-prepared-conflict",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=FLOOR_CONFLICT repair=offline-whole-world",
-      "counts": {"fluid_cargo_reconciliation": 4},
+      "counts": {"fluid_cargo_reconciliation": 4, "w330_cargo_stale": 2, "w330_cargo_reconnect": 2},
       "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
-      "reason": "Independent source-only and both-entity recovery lifecycles in each direction refuse replacing the cargo-protected source; the assigned reconnect stays fenced."
+      "reason": "The existing directional tests and CargoRecoveryAcceptanceGameTests stale/reconnect tests refuse replacing the cargo-protected source in independent source-only and both-entity recovery lifecycles."
     },
     {
       "id": "w124-cargo-named-f1-hold",

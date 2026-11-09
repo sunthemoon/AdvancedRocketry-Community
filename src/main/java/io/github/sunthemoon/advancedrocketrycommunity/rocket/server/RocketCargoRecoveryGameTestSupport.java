@@ -19,6 +19,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 public final class RocketCargoRecoveryGameTestSupport {
     private RocketCargoRecoveryGameTestSupport() { }
     public static void verify(GameTestHelper helper, RocketEntity rocket, RocketStructureSnapshot before) {
+        verify(helper, rocket, before, true);
+    }
+    public static void verify(GameTestHelper helper, RocketEntity rocket, RocketStructureSnapshot before, boolean reconnect) {
         var server = helper.getLevel().getServer(); EscrowTestEndpoints.requireEnabled(server);
         helper.assertTrue(!before.contentHash().equals(rocket.snapshot().orElseThrow().contentHash())
                 && before.snapshotId().equals(rocket.snapshot().orElseThrow().snapshotId()) && rocket.escrowSection().epoch() > 0,
@@ -27,6 +30,27 @@ public final class RocketCargoRecoveryGameTestSupport {
         helper.assertTrue(RocketTransferEntities.isCommittedAuthority(rocket, committed)
                 && RocketTransferEntities.isReplaceableLandedAuthority(rocket, committed)
                 && RocketTransferEntities.loadedMatches(server, committed, true).equals(List.of(rocket)), "Changed native arrival was not recognized");
+        var current = rocket.snapshot().orElseThrow();
+        helper.assertTrue(!RocketTransferEntities.recognizes(before, RocketTransferRecognitionFixtures.reissued(current),
+                () -> RocketTransferEntities.currentLedgerBinding(rocket), rocket.escrowSection().epoch())
+                && !RocketTransferEntities.recognizes(current, RocketTransferRecognitionFixtures.reissued(current), () -> true, 1),
+                "Cargo recognition stopped requiring the snapshot UUID");
+        var staleKeeper = ModEntities.ROCKET.get().create(helper.getLevel());
+        helper.assertTrue(staleKeeper != null, "No protected-keeper fixture entity");
+        try {
+            staleKeeper.initializeTransferred(before, committed.logicalRocketId(), committed.ownerId(), committed.destinationFlightData().land(200));
+            helper.assertTrue(helper.getLevel().addFreshEntity(staleKeeper), "Stale keeper publication failed");
+            var preferringStale = committed.rebindDestination(staleKeeper.getUUID());
+            var matches = RocketTransferEntities.loadedMatches(server, preferringStale, true);
+            helper.assertTrue(matches.equals(List.of(staleKeeper, rocket)), "Actual cargo authority was not the non-first keeper");
+            var reason = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRecoveryFence.reason(
+                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.existing(server).ledger(),
+                    committed.logicalRocketId(), committed.transferId(),
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction.KEEP_DESTINATION,
+                    List.of(), matches.stream().map(RocketTransferFences::state).toList());
+            helper.assertTrue("FLOOR_CONFLICT".equals(reason) && rocket.isAlive() && staleKeeper.isAlive(),
+                    "Protected non-first cargo keeper did not veto removal");
+        } finally { staleKeeper.discard(); }
         var passenger = UUID.randomUUID();
         var stale = EscrowCargoTransferFixtures.record(rocket, before, true, passenger);
         var journal = new RocketTransferSavedData(); var recovery = new RocketTransferRecoveryService(new HashSet<>(), new HashSet<>());
@@ -55,6 +79,7 @@ public final class RocketCargoRecoveryGameTestSupport {
             helper.assertTrue(result.status() == RocketTransferRecoveryService.Status.RETRY_LATER
                     && recovery.fencedDiagnostics().contains("reason=FLOOR_CONFLICT") && duplicate.isAlive() && rocket.isAlive(),
                     "Both-entity recovery discarded a protected cargo authority");
+            if (!reconnect) { return; }
             player = FirstEventGameTestPlayers.join(server, passenger, "CargoReconnect", helper.getLevel(), rocket.blockPosition().above());
             helper.assertTrue(stale.sourceFlightData().passengers().assignment(player.getUUID()).isPresent(),
                     "Reconnect fixture must have a durable passenger assignment");
