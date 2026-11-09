@@ -69,7 +69,7 @@ public abstract class EscrowCargoCutProbe {
         return name != null && (EscrowCargoOwnerCapProbe.CASES.containsKey(name) || EscrowCargoSettlementCuts.CASES.containsKey(name)
                 || EscrowCargoFlightCuts.CASES.containsKey(name) || EscrowCargoRecoveryCuts.CASES.containsKey(name));
     }
-    /** The whole gate: release-test hooks, a start or recover scenario, and an FS_ or FF_ case. */
+    /** The whole gate: release-test hooks, a start or recover scenario, and an inventoried cargo-cut case. */
     static boolean selected(boolean hooks, String scenario, String name) {
         return hooks && ("start".equals(scenario) || "recover".equals(scenario)) && accepts(name);
     }

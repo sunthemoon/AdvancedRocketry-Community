@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * C-S4 (FS_ cases): operator settlement of a real fluid cargo unload (5,000 mB rocket tank, empty device, 1,000 mB),
+ * C-S4 (FS_ cases): operator settlement of a real 1,000 mB fluid cargo load or unload,
  * cut at each boundary of W11CD section 3.3. APPLIED holds the unload after both sides published; NEUTRAL, NAMED and
  * the ABANDON scenarios hold it at PREPARED; NAMED adds a COMMITTED landed record, so O3J removes it; VETO stores only
  * the device before the hold and then vetoes the rocket's O2 store; BIND_VETO moves the neutral survivor after O1.
@@ -93,7 +93,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             default -> false;
         };
     }
-    /** VETO's ordinary reconciliation stores only the device (the destination); every other run keeps production order. */
+    /** VETO's ordinary reconciliation stores only the destination; every other run keeps production order. */
     static boolean storeAllowed(boolean selecting, boolean ours, boolean destination) { return !selecting || !ours || destination; }
 
     @Override void checkpoint(String label) {
@@ -279,13 +279,13 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             EscrowTags.require(op.phase() == EscrowOperation.Phase.REPAIR && op.reason() == EscrowReason.OTHER_STATE && op.settlement().isEmpty()
                     && root.tombstones().isEmpty() && root.rocketAuthorities().isEmpty(), "Pre-O1 restart invented or lost a decision");
             requireRocket(rocket, afterRocket(), 1, 1, true); requireDevice(device, afterDevice(), 1, 1); requireLocked();
-            result("PRE_O1", "records=1 intent=absent rocket=4000 device=1000 locked=true"); return;
+            result("PRE_O1", "records=1 intent=absent rocket=" + afterRocket() + " device=" + afterDevice() + " locked=true"); return;
         }
         if (cut.scenario() == Scenario.VETO) {
             var view = view(single(root)); if (view.reason().equals("NONE")) { return; }
             EscrowTags.require(view.reason().equals("Frozen settlement endpoint changed") && root.tombstones().isEmpty(),
                     "The O-veto restart released or changed its hold: " + view.reason());
-            // Raw stores hold 5,000 + 1,000 mB, and both endpoints stay locked: 6,000 mB never becomes available.
+            // Raw stores hold 5,000 + 1,000 mB in direction-specific endpoints; both stay locked.
             requireRocket(rocket, load ? afterRocket() : beforeRocket(), load ? 1 : 0, load ? 1 : 0, load);
             requireDevice(device, load ? beforeDevice() : afterDevice(), load ? 0 : 1, load ? 0 : 1); requireLocked();
             result("HELD", "reason=FROZEN_ENDPOINT_CHANGED rocket=" + cargo(rocket) + " device=" + tank(device) + " raw=6000 spendable=0 locked=true"); return;
