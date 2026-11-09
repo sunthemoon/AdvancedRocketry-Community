@@ -26,9 +26,11 @@ DECLARED = (
 SPECIAL = ("cargo_native_benchmark", "cargo_reconciliation", "escrow_benchmark", "f3_n2_cuts", "fill_countdown",
            "governed_benchmark", "item_cuts", "loader_cuts", "retire_before_fill", "transfer_concurrency")
 DELEGATED = {"run_v180_" + name for name in ("escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning")}
+# Wrappers which substitute a direct producer's CASES table and call its run (W330 owner-cap cases).
+PATCHED = ("cargo_owner_cap",)
 SUPPLIERS = {"run_v180_" + name for name in DECLARED + SPECIAL}
-RELATED = SUPPLIERS | {"loader_cut_oracle", "cargo_storage_oracle", "cargo_contention_oracle",
-                       "cargo_recovery_oracle", "item_cuts_oracle", "item_cut_fixture", "loader_s6_named_pad"}
+RELATED = SUPPLIERS | {"run_v180_" + name for name in PATCHED} | {
+    "loader_cut_oracle", "cargo_storage_oracle", "cargo_contention_oracle", "cargo_recovery_oracle", "item_cuts_oracle", "item_cut_fixture", "loader_s6_named_pad"}
 TOKEN = re.compile(r"(?:K\d+|C[123]|E[1-5](?:_[A-Z0-9_]+|L[12]_[A-Z0-9_]+)?|G3(?:L2)?|BENCH|GOVERNED_BENCH|"
                    r"(?:FC|FS|FF|IC|LF|FT|RT|FP|FD|DP|SC|PF|SR|SO|RA|IS|IR)_[A-Z0-9_]+)")
 
@@ -77,6 +79,9 @@ def inventory():
         else:
             values = ["BENCH" if name == "escrow_benchmark" else "GOVERNED_BENCH"]
         add(values, "scripts/" + module.__name__ + ".py")
+    for name in PATCHED:
+        module = importlib.import_module("run_v180_" + name)
+        add(module.CASES, "scripts/" + module.__name__ + ".py")
     tests = []
     for path in sorted((ROOT / "tests").glob("test_*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))

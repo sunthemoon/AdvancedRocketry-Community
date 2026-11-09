@@ -33,9 +33,7 @@ public final class EscrowCargoTransferFixtures {
     }
     public static RocketTransferRecord record(RocketEntity rocket, RocketStructureSnapshot recorded, boolean source, UUID passenger) {
         EscrowTestEndpoints.requireEnabled(rocket.getServer());
-        var fuel = RocketFuelState.empty(recorded.propulsion().orElseThrow())
-                .withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000);
-        return record(rocket, recorded, source, passenger, fuel);
+        return record(rocket, recorded, source, passenger, rocket.flightData().orElseThrow().fuel());
     }
 
     /** A legacy arrival with this fixture rocket's legal native fuel, retaining its pre-cargo snapshot. */

@@ -16,10 +16,12 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         self.assertEqual(inventory.TARGET.read_text(encoding="utf-8"), inventory.render(self.rows))
         # W220 adds two governed publication cases.
         # W221: seven governed named-pad selectors.
-        self.assertEqual(620, len(self.rows))
+        # W330: four owner-cap cases (a patched wrapper), 33 load-direction settlement cases and the
+        # FS_LOAD_ and IS_LOAD_ prefix tokens of tests/test_cargo_w330_runner.py.
+        self.assertEqual(659, len(self.rows))
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
-        self.assertEqual(35, len(self.coverage["tests"]))  # W221 R208: native-reader/runner regressions.
+        self.assertEqual(36, len(self.coverage["tests"]))  # W221 R208 native-reader regressions; W330 runner test.
         self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
 
     def test_s6_producer_and_related_tests_are_registered(self):
@@ -43,7 +45,9 @@ class EscrowProbeInventoryTest(unittest.TestCase):
                              ("LF_M_E1_OWN_STORE", "loader_cuts")):
             self.assertIn("scripts/run_v180_" + origin + ".py", self.rows[case])
         items = {name for name in self.rows if name.startswith(("IS_", "IR_"))}
-        self.assertEqual(18, len(items))
+        # W330: 13 IS_LOAD_ settlement cases and the IS_LOAD_ prefix token; the Java routing test counts 31 item cases.
+        self.assertEqual(32, len(items))
+        self.assertIn("scripts/run_v180_cargo_owner_cap.py", self.rows["CQ_ITEM_UNLOAD"])
 
 
 if __name__ == "__main__":

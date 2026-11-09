@@ -204,7 +204,7 @@ class EscrowCargoCutProbeTest {
                 assertFalse(EscrowCargoSettlementCuts.pauses(boundary, label, "O4", true, 0, 1));
             }
         }
-        assertEquals(20, EscrowCargoSettlementCuts.CASES.size());
+        assertEquals(40, EscrowCargoSettlementCuts.CASES.size());
         var known = Set.of("O1_BEFORE", "O1_AFTER", "O_BIND_BEFORE", "O_BIND_AFTER", "O2_ROCKET_BEFORE", "O2_ROCKET_AFTER",
                 "O2_DEVICE_BEFORE", "O2_DEVICE_AFTER", "O3_BEFORE", "O3_AFTER", "O3J_BEFORE", "O3J_REPLACED", "O4_BEFORE", "O4_AFTER",
                 "PRUNE_BEFORE", "PRUNE_AFTER", "O_VETO", "NORMALIZATION_VETO");
