@@ -17,7 +17,10 @@ public final class RocketCargoDeviceHold {
     public static boolean locked(ServerLevel level, UUID device, UUID ledger, String type, BlockPos position,
                                  EscrowEndpoint.Unit unit) {
         if (!level.getServer().isSameThread()) { return true; }
-        var data = ResourceEscrowSavedData.existing(level.getServer());
+        // W329 (R393): an unloaded ledger may name the device in a record, a frozen proof or an endpoint lock.
+        var lookup = EscrowLedgerLookup.of(level.getServer());
+        if (lookup.notLoaded()) { return true; }
+        var data = lookup.data();
         if (data == null) { return ledger != null; }
         if (ledger != null && !ledger.equals(data.ledger().id())) { return true; }
         var coordinator = data.bind(level.getServer());

@@ -261,13 +261,16 @@ public final class EscrowLoaderAdmission {
      * The device's escrow progress, or null when escrow names nothing for it. PREPARING lasts until the device's own
      * debit is applied (the creation baseline, L1 or an UNKNOWN L1 outcome); TRANSFERRING follows through the proofs
      * and L2; ESCROW_PENDING is a held or retired-but-unpruned state, never a claim that no fuel moved; LEDGER_UNAVAILABLE
-     * appears only before the debit. Reading never creates a ledger.
+     * appears only before the debit. While the ledger is NOT_LOADED every device is ESCROW_PENDING, because the ledger
+     * may name it (W329, R393). Reading never creates a ledger.
      */
     public static FluidFuelLoaderStatus progress(FluidFuelLoaderBlockEntity loader) {
         var root = loader.root().orElse(null);
         if (root == null || !(loader.getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return null; }
         var server = level.getServer();
-        var data = ResourceEscrowSavedData.existing(server);
+        var lookup = EscrowLedgerLookup.of(server);
+        if (lookup.notLoaded()) { return FluidFuelLoaderStatus.ESCROW_PENDING; }
+        var data = lookup.data();
         if (data == null) { return root.escrow().locked() ? FluidFuelLoaderStatus.ESCROW_PENDING : null; }
         var coordinator = data.bind(server);
         var named = coordinator.unresolvedNaming(root.device());
