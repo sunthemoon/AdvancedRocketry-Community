@@ -67,6 +67,10 @@ public final class BayStationRowGameTests {
             h.assertTrue(space != null, "Station fixture has no Space Level");
             original = SatelliteMissionSavedData.get(server); original.awaitForTests(server);
             originalStations = StationRegistrySavedData.get(server);
+            // Establish ownership of an initially absent root before the detached fixture writes that file.
+            // Otherwise restoring the original session correctly rejects the fixture's file as an external arrival.
+            originalStations.setDirty(); originalStations.flush(server);
+            h.assertTrue(!originalStations.isDirty(), "Original station root was not saved before fixture replacement");
             data = SatelliteMissionSavedData.create(server.overworld().getGameTime());
             server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, data);
             SatelliteMissionSavedData.get(server);
