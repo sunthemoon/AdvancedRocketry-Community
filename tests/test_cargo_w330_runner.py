@@ -73,6 +73,20 @@ class CargoW330RunnerTest(unittest.TestCase):
                 for lines in ([], [line, line], [line, "[thread/ERROR] error"]):
                     with self.assertRaises(fluid.smoke.SmokeError): cap.observations(lines, case, restarted)
 
+    def test_cap_identity_uniqueness_uses_native_nbt_uuid_arrays(self):
+        for case in cap.CASES:
+            disk = self.cap_disk(case, False)
+            for op in disk["ledger"]["records"]:
+                op["op_id"] = [0, 0, 333, op["op_id"]]
+                op["guard"]["rocket_id"] = [0, 0, 330, op["guard"]["rocket_id"]]
+            cap.check(case, disk, False)
+            for key in ("op_id", "rocket_id"):
+                bad = copy.deepcopy(disk)
+                first, second = bad["ledger"]["records"][:2]
+                if key == "op_id": second[key] = first[key]
+                else: second["guard"][key] = first["guard"][key]
+                with self.assertRaises(fluid.smoke.SmokeError): cap.check(case, bad, False)
+
 
 if __name__ == "__main__":
     unittest.main()
