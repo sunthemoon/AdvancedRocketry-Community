@@ -110,6 +110,12 @@ class ParserTests(unittest.TestCase):
             "[12:00:00] [Server thread/ERROR] [minecraft/DimensionDataStorage]: Error loading saved data: "
             "advancedrocketrycommunity_bay_receipts").groups())
 
+    def test_the_status_of_a_rocket_without_bays_parses_with_empty_packages(self):
+        line = PREFIX + ("ARCE_RELEASE_BAY_STATUS logical=l claim=NONE hold=NONE reason=NONE receipts=[] transfer=PREPARED rocket=r "
+                         "state=TRANSIT y=50.0 packages= locked=false consumed= owned=0")
+        match = r042.PLAIN_STATUS.search(line)
+        self.assertEqual(("PREPARED", "r", "TRANSIT", "50.0", "", "false", ""), match.groups()[5:12])
+        self.assertIsNone(r042.bay.STATUS.search(line), "W325's status regex now accepts a rocket without bays")
     def test_the_refusal_line_splits_reason_and_hint(self):
         match = r042.REFUSAL.search(REFUSAL)
         self.assertEqual("BAY_RECEIPTS", match[1])
@@ -178,7 +184,7 @@ class OracleTests(unittest.TestCase):
         class Fake:
             def __init__(self, statuses, times):
                 self.statuses, self.times = list(statuses), list(times)
-            def status(self, logical):
+            def plain_status(self, logical):
                 return self.statuses.pop(0)
             def gametime(self):
                 return self.times.pop(0)
@@ -199,6 +205,9 @@ class AccessListTests(unittest.TestCase):
             r042.deny(Path("D:/w/data/file.dat"), "S-1-5-21-1")
             self.assertIn((str(Path("D:/w/data/file.dat")), "/deny", "*S-1-5-21-1:(F)"), calls)
             self.assertIn((str(Path("D:/w/data")), "/deny", "*S-1-5-21-1:(RD)"), calls)
+            deny_file = calls.index((str(Path("D:/w/data/file.dat")), "/deny", "*S-1-5-21-1:(F)"))
+            deny_folder = calls.index((str(Path("D:/w/data")), "/deny", "*S-1-5-21-1:(RD)"))
+            self.assertIn((str(Path("D:/w/data/file.dat")),), calls[deny_file + 1:deny_folder], "the file is listed after the folder entry")
             r042.restore(Path("D:/w/data/file.dat"), "S-1-5-21-1")
         with patch.object(r042, "icacls", return_value="D:/w/data DESKTOP\\Administrator:(DENY)(RD)\n"):
             with self.assertRaises(smoke.SmokeError):

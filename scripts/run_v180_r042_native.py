@@ -85,6 +85,9 @@ REFUSAL = re.compile(r"/ERROR\].*\[ARCE-BETA-2000\] Beta world data check blocke
                      r"[^.]*)\. (.*)$")
 DONE = re.compile(r'Done \([^)]+\)! For help, type "help"')
 GATE_CLOSED = re.compile(r"ARCE_RELEASE_R042_GATE_CLOSED cell=(\w+) kind=(\w+) reason=(\w+)")
+# W325's status line for a rocket without bays: its packages and consumed fields are empty (W332 smoke 1).
+PLAIN_STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) hold=(\w+) reason=(\w+) receipts=\[([^\]]*)\] "
+                          r"transfer=(\w+) rocket=(\S+) state=(\w+) y=(\S+) packages=(\S*) locked=(true|false) consumed=(\S*) owned=(-?\d+)")
 
 # One family per case; rows name the TASK items (records/W332-DESIGN.md section 3).
 CASES = {
@@ -193,15 +196,19 @@ def deny(file: Path, sid: str) -> dict:
     Windows grants read-attributes on a file to a caller who may list its folder, so the file entry alone does not make
     the status check fail."""
     icacls(str(file), "/deny", f"*{sid}:(F)")
+    # Listed before the folder entry: with both entries even this token cannot read the file's list (W332 smoke 1).
+    listing = dict(file=icacls(str(file)))
     icacls(str(file.parent), "/deny", f"*{sid}:(RD)")
-    return dict(file=icacls(str(file)), folder=icacls(str(file.parent)))
+    listing["folder"] = icacls(str(file.parent))
+    return listing
 
 
 def restore(file: Path, sid: str) -> dict:
     """Remove both deny entries (the folder's first, so the file's list can be changed) and prove none is left."""
     icacls(str(file.parent), "/remove:d", f"*{sid}")
+    listing = dict(folder=icacls(str(file.parent)))
     icacls(str(file), "/remove:d", f"*{sid}")
-    listing = dict(file=icacls(str(file)), folder=icacls(str(file.parent)))
+    listing["file"] = icacls(str(file))
     require("DENY" not in listing["folder"] and "(N)" not in listing["file"] and "DENY" not in listing["file"],
             f"A deny entry is left after the restore: {listing}")
     return listing
@@ -246,6 +253,12 @@ class Run(bay.Session):
 
     def forceload(self) -> None:
         self.send(FORCELOAD, re.compile(r"[Mm]arked|already|forceload|chunk"))
+
+    def plain_status(self, logical: str) -> dict:
+        match = PLAIN_STATUS.search(self.send(f"arce bay release-test status {logical}", PLAIN_STATUS))
+        keys = ("logical", "claim", "hold", "reason", "receipts", "transfer", "rocket", "state", "y", "packages", "locked",
+                "consumed", "owned")
+        return dict(zip(keys, match.groups()))
 
     def gametime(self) -> int:
         return int(GAMETIME.search(self.send("time query gametime", GAMETIME)).group(1))
@@ -402,12 +415,12 @@ def disk(world: Path) -> dict:
 
 def flight_hold(run: Run, case: str, logical: str) -> dict:
     """Two status reads at least 600 game ticks apart: no claim, T PREPARED, the rocket in TRANSIT at one altitude, locked."""
-    first, start = run.status(logical), run.gametime()
+    first, start = run.plain_status(logical), run.gametime()
     deadline = time.monotonic() + 180
     while run.gametime() - start < 600:
         require(time.monotonic() < deadline, f"{case}: 600 game ticks did not pass within 180 seconds")
         time.sleep(2.0)
-    second, end = run.status(logical), run.gametime()
+    second, end = run.plain_status(logical), run.gametime()
     for status in (first, second):
         require(status["claim"] == "NONE" and status["transfer"] == "PREPARED" and status["state"] == "TRANSIT"
                 and status["locked"] == "true", f"{case}: the ordinary flight moved or was claimed: {status}")
@@ -418,7 +431,7 @@ def flight_hold(run: Run, case: str, logical: str) -> dict:
 def await_rest(run: Run, case: str, logical: str) -> dict:
     deadline = time.monotonic() + run.args.settle_timeout
     while True:
-        status = run.status(logical)
+        status = run.plain_status(logical)
         if status["claim"] == "NONE" and status["transfer"] == "NONE" and status["state"] in ("FUELED", "LANDED"):
             return status
         require(time.monotonic() < deadline, f"{case}: the ordinary flight never came to rest: {status}")
@@ -580,7 +593,7 @@ def run_n(run: Run, case: str) -> dict:
     require(entry["launch"]["code"] in ("SUCCESS", "JOURNAL_PENDING"), f"{case}/0: the plain flight did not launch: {entry['launch']}")
     paused = PAUSED.search(run.wait(PAUSED, run.args.flight_timeout))
     require(paused[1] == "TRANSIT_PREPARED", f"{case}/0: the plain flight paused at {paused[1]}")
-    entry["at_pause"] = run.status(plain["logical"])
+    entry["at_pause"] = run.plain_status(plain["logical"])
     require(entry["at_pause"]["transfer"] == "PREPARED" and entry["at_pause"]["state"] == "TRANSIT", f"{case}/0: {entry['at_pause']}")
     entry["satellite"] = run.satellite()
     require(entry["satellite"]["code"] == "SUCCESS", f"{case}/0: the satellite launch failed: {entry['satellite']}")
