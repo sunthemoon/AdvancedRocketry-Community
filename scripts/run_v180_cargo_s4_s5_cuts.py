@@ -65,6 +65,19 @@ CASES = {
     "FS_VETO_DESTINATION_SAVED": settlement(ACCEPT, VETOED, ACCEPT, VETOED),
     "FS_BIND_VETO": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED, cut_x=68.75),
 }
+# W330: keep the unload oracle intact and enumerate the direction-specific load states.
+def load_ends(ends):
+    return dict(rocket=None if ends["rocket"] is None else (5000 - ends["rocket"][0], *ends["rocket"][1:]),
+                device=None if ends["device"] is None else (5000 - ends["device"][0], *ends["device"][1:]))
+
+for _case, _spec in tuple(CASES.items()):
+    _load = dict(_spec, family="C-S4-LOAD", load=True,
+                 cut=(_spec["cut"][0], load_ends(_spec["cut"][1])),
+                 final=(_spec["final"][0], load_ends(_spec["final"][1])))
+    if _case == "FS_VETO_DESTINATION_SAVED":
+        _load["cut"] = _load["final"] = (ACCEPT, dict(rocket=(1000, 1, 1, True), device=(5000, 0, 0)))
+    CASES[_case.replace("FS_", "FS_LOAD_", 1)] = _load
+
 LANDED = "advancedrocketrycommunity.landedDisassemblyProbe"
 SECOND_POS = [76, 100, 64]
 PAD = 80.5
@@ -108,6 +121,7 @@ BOUNDARIES = dict(zip(tuple(CASES)[:20], (
     "O1_BEFORE", "O1_AFTER", "O_BIND_BEFORE", "O_BIND_AFTER", "O2_ROCKET_BEFORE", "O2_ROCKET_AFTER",
     "O2_DEVICE_BEFORE", "O2_DEVICE_AFTER", "O3_BEFORE", "O3_AFTER", "O3J_BEFORE", "O3J_REPLACED",
     "O4_BEFORE", "O4_AFTER", "PRUNE_BEFORE", "PRUNE_AFTER", "O1_AFTER", "O1_AFTER", "O_VETO", "NORMALIZATION_VETO")))
+BOUNDARIES.update({case.replace("FS_", "FS_LOAD_", 1): value for case, value in tuple(BOUNDARIES.items())})
 BOUNDARIES["FF_F6_AFTER_CARGO"] = "F6_JOINT_PROVED"
 HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/"
 HOOKS = tuple(HOOK_DIR + path + ".java" for path in (
@@ -191,7 +205,7 @@ def inspect(world: Path) -> dict:
 def check_settlement(case: str, disk: dict, restarted: bool) -> None:
     spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
     landed = restarted and spec.get("landed")
-    require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == "UNLOAD"), "Settlement duplicated the rocket or changed the device")
+    require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == ("LOAD" if spec.get("load") else "UNLOAD")), "Settlement duplicated the rocket or changed the device")
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
     require([op["phase"] for op in root["records"]] == state["records"], "Ledger records differ from the boundary")
     require(all(("settlement" in op) == state["intent"] for op in root["records"]), "Frozen intent presence differs from the boundary")
@@ -239,10 +253,11 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
         require(device["amount"] == expected_device[0], f"Native cargo quantities: device expected {expected_device[0]}, got {device['amount']}")
         require((device["epoch"], len(device["markers"])) == expected_device[1:],
                 f"Markers: device section differs: {device['epoch']}/{len(device['markers'])}")
-    for endpoint, role in ((rocket, "SOURCE"), (device, "DESTINATION")):
+    for endpoint, role in ((rocket, "DESTINATION" if spec.get("load") else "SOURCE"),
+                           (device, "SOURCE" if spec.get("load") else "DESTINATION")):
         if endpoint is None or not endpoint["markers"]:
             continue
-        kind, identity = ("ENTITY", "uuid") if role == "SOURCE" else ("BLOCK_ENTITY", "id")
+        kind, identity = ("ENTITY", "uuid") if endpoint is rocket else ("BLOCK_ENTITY", "id")
         audit = [observation for receipt in root["tombstones"] for observation in receipt["before_choice"]
                  if not observation["missing"] and observation["endpoint"]["kind"] == kind
                  and observation["endpoint"]["identity"] == endpoint[identity]]
@@ -322,7 +337,7 @@ def fences(lines: list[str]) -> list[str]:
 
 
 def check(case: str, disk: dict, restarted: bool) -> None:
-    if CASES[case]["family"] == "C-S4":
+    if CASES[case]["family"] in ("C-S4", "C-S4-LOAD"):
         check_settlement(case, disk, restarted)
     else:
         check_flight(case, disk, restarted)
@@ -388,9 +403,9 @@ def observations(lines: list[str], case: str, restart: int) -> None:
     require(wanted is None or wanted in fences(lines), "The stale record was not fenced " + str(wanted) + ": " + str(fences(lines)))
 
 
-def recovered_proofs(lines: list[str], frozen_digest: str) -> None:
+def recovered_proofs(lines: list[str], frozen_digest: str, case="FS_O3_AFTER") -> None:
     """O3-after must reacquire both proofs and the checked journal lease before O4 on restart 1."""
-    prefix = "ARCE_RELEASE_CARGO_CUT_PROOF cut=FS_O3_AFTER checkpoint="
+    prefix = "ARCE_RELEASE_CARGO_CUT_PROOF cut=" + case + " checkpoint="
     checkpoints = [line.split(prefix, 1)[1].rstrip("\r\n") for line in lines if prefix in line]
     for checkpoint in ("O2_AFTER_0", "O2_AFTER_1", "O3J_AFTER", "O4_CAPTURE"):
         require(any(line.startswith(checkpoint + " digest=" + frozen_digest + " ") for line in checkpoints),
@@ -413,6 +428,7 @@ def run(args) -> None:
     token = uuid.uuid4().hex; sentinel = session / ".w142-owned"; sentinel.write_text(token, encoding="ascii")
     pins = dict(source_commit=args.source_commit if pin else "DEV-UNPINNED", jar_sha256=digest(args.jar),
                 hooks={path: digest(REPO / path) for path in HOOKS + HARNESS})
+    pins.update(getattr(args, "candidate_pin", {}))
     report = dict(status="IN_PROGRESS", development=not pin, cases=[], pins=pins, cleanup=False)
     process = None
     try:
@@ -464,9 +480,9 @@ def run(args) -> None:
                     require(execution_error is None, "Start execution: " + str(execution_error))
                     require("error" not in start["raw"], "Raw decoding: " + str(start["raw"].get("error")))
                     observations(lines, case, restart)
-                    if case == "FS_O3_AFTER" and restart == 1:
+                    if case in ("FS_O3_AFTER", "FS_LOAD_O3_AFTER") and restart == 1:
                         first_raw = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))
-                        recovered_proofs(lines, first_raw["ledger"]["records"][0]["settlement"]["digest"])
+                        recovered_proofs(lines, first_raw["ledger"]["records"][0]["settlement"]["digest"], case)
                     require(not restart or start["exit_code"] == 0, "Restart exited unsuccessfully")
                     disk = inspect(world); check(case, disk, bool(restart))
                     start["disk"] = dict(ledger=dict(records=[(op["phase"], op["reason"], "settlement" in op) for op in disk["ledger"]["records"]],
@@ -477,7 +493,7 @@ def run(args) -> None:
                                          tank=disk["tank"], blocks=disk["blocks"], fences=fences(lines), files=disk["files"])
                     if restart and "disk" in row["starts"][0]:
                         require(same_identity(row["starts"][0]["disk"], disk), "Restart changed the logical rocket, owner or device")
-                    if case == "FS_O3_AFTER" and restart:
+                    if case in ("FS_O3_AFTER", "FS_LOAD_O3_AFTER") and restart:
                         first = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))["ledger"]["tombstones"][0]
                         receipt = disk["ledger"]["tombstones"][0]
                         require(all(receipt[key] == first[key] for key in ("op_id", "before_choice", "decision_digest", "payload_hash")),

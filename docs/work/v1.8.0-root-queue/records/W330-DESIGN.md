@@ -64,7 +64,7 @@ the exact 6-item remainder. Their totals are 5,000 mB and 70 typed items.
 | `O4_BEFORE` (fluid only), `O4_AFTER` | Before/after released receipt and READY replacement. | One released UNKNOWN receipt, direction-independent READY head, no live record or extra authority. |
 | `PRUNE_BEFORE` (fluid only), `PRUNE_AFTER` | Before/after wrapper storage of the retired prefix. | Exact released group prunes idempotently; resources and epoch are preserved. |
 | `ABANDON_ROCKET`, `ABANDON_DEVICE` | Acknowledged O1 with one absent endpoint. | Only exact survivor and absence are proved. Missing rocket yields no READY head; surviving rocket yields its frozen READY head. No invented quantity/loss accounting. |
-| `VETO_DESTINATION_SAVED` (fluid only) | Rocket destination stored, device source O2 store vetoed. | Mixed raw total is a deficit rather than unload's surplus. Both resources remain locked; frozen mismatch never releases. |
+| `VETO_DESTINATION_SAVED` (fluid only) | Rocket destination stored, device source O2 store vetoed. | The raw stores contain 1,000 + 5,000 mB, the same surplus as unload with endpoint roles reversed. Both resources remain locked; frozen mismatch never releases. |
 
 All 20 C-S4 boundaries apply to a fluid load (the veto's endpoint roles reverse).
 All 13 D-S2 settlement boundaries apply to an item load. D-S2's changed-container,
@@ -81,7 +81,7 @@ claims. The existing normalization veto is retained.
 | B3-S4-REUSE | Complete existing `oracle.S4` selection. | Existing storage/reconciliation cuts and their exact failure/UNKNOWN/proof checks. |
 | B3-S5-REUSE | Missing/replaced/behind ledger plus all distinct/coalesced/saturated floor variants. | Existing native orphan/floor reservation, refusal and retirement checks. |
 | B3-S6-REUSE | Complete existing loader S6 selection, including P1-N2/P1-F9 coverage. | Existing checkpoint-specific proof, recovery, shutdown, settlement and flight oracles, without timeout or fixture changes. |
-| G2-REUSE | Existing loader G2 entry point, if exposed by the two named runners. | Reuse only an actual exposed case; absence is reported rather than inventing a passing row. |
+| G2-REUSE | The existing `run_v180_fuel_loader_s1.py` S1 campaign. | G2 is not exposed by the two cut runners. Delegate the existing complete S1 campaign, requiring its historical JAR/source and persistent start counter, without changing its migration, downgrade, protected-root or two-restart oracles. |
 
 The wrapper requires caller-supplied candidate commit and JAR SHA-256 for native
 execution, pins both in every invocation, and requires production equality against

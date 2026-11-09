@@ -26,7 +26,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         boolean prepared() { return this != APPLIED && this != VETO; }
     }
     record Cut(Scenario scenario, String boundary) { }
-    static final Map<String, Cut> CASES = Map.ofEntries(
+    private static final Map<String, Cut> UNLOAD_CASES = Map.ofEntries(
             Map.entry("FS_O1_BEFORE", new Cut(Scenario.APPLIED, "O1_BEFORE")),
             Map.entry("FS_O1_AFTER", new Cut(Scenario.APPLIED, "O1_AFTER")),
             Map.entry("FS_BIND_BEFORE", new Cut(Scenario.NEUTRAL, "O_BIND_BEFORE")),
@@ -47,6 +47,13 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             Map.entry("FS_ABANDON_DEVICE", new Cut(Scenario.ABANDON_DEVICE, "O1_AFTER")),
             Map.entry("FS_VETO_DESTINATION_SAVED", new Cut(Scenario.VETO, "O_VETO")),
             Map.entry("FS_BIND_VETO", new Cut(Scenario.BIND_VETO, "NORMALIZATION_VETO")));
+    static final Map<String, Cut> CASES = cases();
+    private static Map<String, Cut> cases() {
+        var values = new java.util.LinkedHashMap<>(UNLOAD_CASES);
+        UNLOAD_CASES.forEach((key, value) -> values.put(key.replace("FS_", "FS_LOAD_"), value));
+        return Map.copyOf(values);
+    }
+    private final boolean load;
     private final Cut cut;
     private ResourceEscrowSavedData data;
     private EscrowCoordinator coordinator;
@@ -65,7 +72,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
 
     EscrowCargoSettlementCuts(MinecraftServer server) {
         super(server);
-        cut = CASES.get(name);
+        load = name.startsWith("FS_LOAD_"); cut = CASES.get(name);
         EscrowTags.require(cut != null, "Unknown W142 settlement cut");
     }
 
@@ -154,22 +161,22 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
     private void create(RocketTransferSavedData journal) {
         if (data.ledger().writerGeneration() == 0 || !coordinator.writerIdle()) { coordinator.autosave(); return; }
         if (rocket == null) {
-            rocket = cargoRocket(5_000); logical = rocket.assemblyTransactionId().orElseThrow();
+            rocket = cargoRocket(beforeRocket()); logical = rocket.assemblyTransactionId().orElseThrow();
             if (cut.scenario() == Scenario.NAMED) {
                 journal.put(EscrowCargoTransferFixtures.landedRecord(rocket, rocket.snapshot().orElseThrow())); journal.flushChecked(server);
             }
             return;
         }
         if (cut.scenario() == Scenario.NAMED && (!journal.acknowledgedCurrent() || !RocketRuntime.resourceMutationAllowed(rocket))) { return; }
-        device = device(DEVICE, rocket, RocketCargoRole.UNLOAD, 0); deviceId = id(device);
+        device = device(DEVICE, rocket, load ? RocketCargoRole.LOAD : RocketCargoRole.UNLOAD, beforeDevice()); deviceId = id(device);
         save(); // The BEFORE baseline; nothing saves an applied endpoint before the hold.
         if (cut.scenario().prepared()) { EscrowCargoSwitches.pauseReconciliationForTests(server, deviceId, true); }
-        EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_UNLOAD, deviceId, true); step = 1;
+        EscrowCargoSwitches.forTests(server, kind(), deviceId, true); step = 1;
     }
 
     private void admitted() {
         var op = member(); if (op == null) { return; }
-        EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_UNLOAD, deviceId, false);
+        EscrowCargoSwitches.forTests(server, kind(), deviceId, false);
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete()
                 && (cut.scenario() == Scenario.NAMED) == (op.guard().transfer() != null), "W142 cargo admission did not reach the expected PREPARED");
         opId = op.id(); step = 2;
@@ -187,8 +194,8 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         if (op == null || op.phase() != EscrowOperation.Phase.REPAIR || !coordinator.writerIdle()) { return; }
         if (!heldChecked) {
             boolean applied = !cut.scenario().prepared();
-            requireRocket(rocket, applied ? 4_000 : 5_000, applied ? 1 : 0, applied ? 1 : 0, applied);
-            requireDevice(device, applied ? 1_000 : 0, applied ? 1 : 0, applied ? 1 : 0);
+            requireRocket(rocket, applied ? afterRocket() : beforeRocket(), applied ? 1 : 0, applied ? 1 : 0, applied);
+            requireDevice(device, applied ? afterDevice() : beforeDevice(), applied ? 1 : 0, applied ? 1 : 0);
             heldChecked = true;
         }
         if (cut.scenario() == Scenario.ABANDON_ROCKET && !rocket.isRemoved()) { rocket.discard(); return; }
@@ -196,11 +203,17 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             level.removeBlockEntity(DEVICE); level.setBlock(DEVICE, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); return;
         }
         if (cut.scenario() == Scenario.VETO) {
-            // The rocket's entity slot refuses capture, so O2 can never store the rocket (the source) after the device.
-            var poison = new net.minecraft.world.entity.decoration.ArmorStand(level, ROCKET.getX() + 2.5D, ROCKET.getY(), ROCKET.getZ() + 2.5D) {
-                @Override public boolean save(CompoundTag tag) { return false; }
-            };
-            poison.setNoGravity(true); EscrowTags.require(level.addFreshEntity(poison), "W142 veto entity was not added"); vetoInstalled = true;
+            // Veto the source store after only the destination was made durable.
+            if (load) {
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.recordObservedDenial(
+                        level, new net.minecraft.world.level.ChunkPos(DEVICE), "Release-test load settlement source veto");
+            } else {
+                var poison = new net.minecraft.world.entity.decoration.ArmorStand(level, ROCKET.getX() + 2.5D, ROCKET.getY(), ROCKET.getZ() + 2.5D) {
+                    @Override public boolean save(CompoundTag tag) { return false; }
+                };
+                poison.setNoGravity(true); EscrowTags.require(level.addFreshEntity(poison), "W142 veto entity was not added");
+            }
+            vetoInstalled = true;
         } else { save(); }
         var choice = cut.scenario().abandon() ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
         preview = EscrowRuntime.of(server).settlement().preview(server, opId, choice, ACTOR, "Server");
@@ -265,7 +278,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             var op = single(root);
             EscrowTags.require(op.phase() == EscrowOperation.Phase.REPAIR && op.reason() == EscrowReason.OTHER_STATE && op.settlement().isEmpty()
                     && root.tombstones().isEmpty() && root.rocketAuthorities().isEmpty(), "Pre-O1 restart invented or lost a decision");
-            requireRocket(rocket, 4_000, 1, 1, true); requireDevice(device, 1_000, 1, 1); requireLocked();
+            requireRocket(rocket, afterRocket(), 1, 1, true); requireDevice(device, afterDevice(), 1, 1); requireLocked();
             result("PRE_O1", "records=1 intent=absent rocket=4000 device=1000 locked=true"); return;
         }
         if (cut.scenario() == Scenario.VETO) {
@@ -273,14 +286,15 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             EscrowTags.require(view.reason().equals("Frozen settlement endpoint changed") && root.tombstones().isEmpty(),
                     "The O-veto restart released or changed its hold: " + view.reason());
             // Raw stores hold 5,000 + 1,000 mB, and both endpoints stay locked: 6,000 mB never becomes available.
-            requireRocket(rocket, 5_000, 0, 0, false); requireDevice(device, 1_000, 1, 1); requireLocked();
-            result("HELD", "reason=FROZEN_ENDPOINT_CHANGED rocket=5000 device=1000 raw=6000 spendable=0 locked=true"); return;
+            requireRocket(rocket, load ? afterRocket() : beforeRocket(), load ? 1 : 0, load ? 1 : 0, load);
+            requireDevice(device, load ? beforeDevice() : afterDevice(), load ? 0 : 1, load ? 0 : 1); requireLocked();
+            result("HELD", "reason=FROZEN_ENDPOINT_CHANGED rocket=" + cargo(rocket) + " device=" + tank(device) + " raw=6000 spendable=0 locked=true"); return;
         }
         if (cut.scenario() == Scenario.BIND_VETO && !root.records().isEmpty()) {
             if (restored) { return; }
             var view = view(single(root)); if (view.reason().equals("NONE")) { return; }
             EscrowTags.require(view.reason().startsWith("Rocket placement") && root.tombstones().isEmpty() && view.provedSlots() == 0
-                    && rocket.getX() == ROCKET.getX() + 0.75D && rocket.escrowSection().equals(RocketEscrowSection.neutral()) && cargo(rocket) == 5_000,
+                    && rocket.getX() == ROCKET.getX() + 0.75D && rocket.escrowSection().equals(RocketEscrowSection.neutral()) && cargo(rocket) == beforeRocket(),
                     "The durable placement veto did not hold normalization: " + view.reason());
             io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
                     "ARCE_RELEASE_CARGO_CUT_HELD cut={} reason=PLACEMENT normalized=false proved=0 receipts=0", name);
@@ -314,7 +328,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         }
         if (rocket == null) {
             EscrowTags.require(root.rocketAuthorities().isEmpty() && EscrowSettlementTombstones.logicalLocked(root, device.root().orElseThrow().binding().logicalRocket())
-                    && tank(device) == 0 && section(device).equals(RocketEscrowSection.neutral()) && !device.escrowLocked(),
+                    && tank(device) == beforeDevice() && section(device).equals(RocketEscrowSection.neutral()) && !device.escrowLocked(),
                     "ABANDON fabricated a head, unlocked the missing rocket or changed the device");
             return;
         }
@@ -322,10 +336,10 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         EscrowTags.require(head.physical().equals(rocket.getUUID()) && head.epoch() == (applied ? 1 : 0) && head.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
                 && head.signature().equals(rocket.flightData().orElseThrow().fuel().resourceSignature()) && head.invariant().equals(EscrowInvariant.rocket(rocket))
                 && head.outcome() == EscrowFlightTables.Outcome.READY, "O4 did not derive READY from the frozen fuel projection");
-        requireRocket(rocket, applied ? 4_000 : 5_000, applied ? 1 : 0, 0, true);
+        requireRocket(rocket, applied ? afterRocket() : beforeRocket(), applied ? 1 : 0, 0, true);
         EscrowTags.require(RocketEscrowGate.idle(rocket), "The released rocket stayed locked");
         if (device != null) {
-            requireDevice(device, applied ? 1_000 : 0, applied ? 1 : 0, 0);
+            requireDevice(device, applied ? afterDevice() : beforeDevice(), applied ? 1 : 0, 0);
             EscrowTags.require(!device.escrowLocked() && cargo(rocket) + tank(device) == 5_000, "The released device stayed locked or broke conservation");
         }
     }
@@ -354,7 +368,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
                 && head.epoch() == 0 && head.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
                 && head.signature().equals(flight.fuel().resourceSignature()) && head.invariant().equals(EscrowInvariant.rocket(rocket))
                 && head.issued() == 1 && head.completed() == 1, "O3 launch head identity: latest successor identity differs");
-        EscrowTags.require(cargo(rocket) == 4_000 && tank(device) == 1_000 && flight.fuel().totalAmount() == 700,
+        EscrowTags.require(cargo(rocket) == afterRocket() && tank(device) == afterDevice() && flight.fuel().totalAmount() == 700,
                 "O3 launch native quantities: rocket=" + cargo(rocket) + " device=" + tank(device) + " fuel=" + flight.fuel().totalAmount());
         EscrowTags.require(root.tombstones().size() == 1, "O3 launch receipt: expected one retained receipt");
         var receipt = root.tombstones().get(0);
@@ -368,8 +382,14 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         EscrowTags.require(flight.state() == RocketFlightState.LANDED && RocketEscrowGate.idle(rocket) && !device.escrowLocked()
                 && root.records().isEmpty() && root.floors().isEmpty() && root.armedFlights().isEmpty()
                 && root.issuedLaunchSerial() == 1 && journal.entries().isEmpty(), "O3 launch lifecycle: landed successor is not idle");
-        result("LANDED", "rocket=4000 device=1000 fuel=700 serial=1 armed=0 journal=idle");
+        result("LANDED", "rocket=" + afterRocket() + " device=" + afterDevice() + " fuel=700 serial=1 armed=0 journal=idle");
     }
+
+    private int beforeRocket() { return load ? 0 : 5_000; }
+    private int afterRocket() { return load ? 1_000 : 4_000; }
+    private int beforeDevice() { return load ? 5_000 : 0; }
+    private int afterDevice() { return load ? 4_000 : 1_000; }
+    private EscrowOperation.Kind kind() { return load ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD; }
 
     private void requireRocket(RocketEntity value, int cargo, long epoch, int markers, boolean bound) {
         var section = value.escrowSection();

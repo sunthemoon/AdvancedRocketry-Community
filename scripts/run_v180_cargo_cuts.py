@@ -172,6 +172,7 @@ def run(args) -> None:
     token = uuid.uuid4().hex; sentinel = session / ".w138-owned"; sentinel.write_text(token, encoding="ascii")
     pins = dict(source_commit=args.source_commit, jar_sha256=native.digest(args.jar),
                 hooks={path: native.digest(REPO / path) for path in HOOKS + HARNESS})
+    pins.update(getattr(args, "candidate_pin", {}))
     report = dict(status="IN_PROGRESS", cases=[], pins=pins, cleanup=False)
     process = None
     try:
