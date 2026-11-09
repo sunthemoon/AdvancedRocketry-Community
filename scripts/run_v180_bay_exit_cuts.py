@@ -345,6 +345,11 @@ class Run(bay.Session):
 
 def launch(run: Run) -> dict:
     run.send(f"forceload add {bay.ORIGIN[0]} {bay.ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
+    # The embedded connection starts ticking only when the exit drive is armed. Its initial
+    # login must use the fixture chunk, not a randomized spawn chunk whose player tickets
+    # would catch up during the vertical-only descent. Keep every ticket assertion intact.
+    run.send(f"setworldspawn {bay.ORIGIN[0]} {bay.ORIGIN[1]} {bay.ORIGIN[2]}", re.compile(r"Set the world spawn point"))
+    run.send("gamerule spawnRadius 0", re.compile(r"spawnRadius.*0"))
     run.send("arce satellite release-test registry-writer arm STAGED PAUSE", bay.SRW_DONE)
     deadline = time.monotonic() + run.args.flight_timeout
     while True:

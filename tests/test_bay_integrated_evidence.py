@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as bay
 import bay_integrated_evidence as evidence
 import loader_cut_nbt as nbt
+import run_v180_bay_exit_cuts as exit_runner
 
 
 class EvidenceTests(unittest.TestCase):
@@ -140,6 +141,20 @@ class EvidenceTests(unittest.TestCase):
                     evidence.seed_capacity_world(Path(temp) / f"bad{count}", count)
             self.assertEqual(64, bay.CASES["B11_FULL"]["fill"])
             self.assertEqual(56, bay.CASES["B17_FAIR"]["fill"])
+
+    def test_exit_fixture_initial_login_is_in_the_same_chunk_as_the_vertical_descent(self):
+        run = Mock()
+        run.args.flight_timeout = 120
+        fixture = "ARCE_RELEASE_BAY_FIXTURE logical=l transfer=t rocket=r data=x solar=y launch=SUCCESS packages=a+b"
+        run.process.lines = [fixture]
+        rider = f"ARCE_RELEASE_BAY_EXIT_FIXTURE rider={bay.ONLINE_RIDER} name=W254Rider mounted=true seat=0 mode=survival"
+        run.send.side_effect = ["Marked chunk", "Set the world spawn point to 8, 2, 8", "spawnRadius is now set to 0",
+                                "ARCE_RELEASE_SRW_ARMED", rider]
+        exit_runner.launch(run)
+        commands = [call.args[0] for call in run.send.call_args_list]
+        self.assertEqual("setworldspawn 8 2 8", commands[1])
+        self.assertEqual("gamerule spawnRadius 0", commands[2])
+        self.assertIn("exit fixture", commands[-1])
 
 
 if __name__ == "__main__":
