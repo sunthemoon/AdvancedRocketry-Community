@@ -188,6 +188,17 @@ class CompleteInventoryTests(unittest.TestCase):
             with patch.object(runner, "MAX_INVENTORY_FILES", 1), self.assertRaisesRegex(t.bay.smoke.SmokeError, "file budget"):
                 runner.cut_disk(world, t.fixture(), t.first())
 
+    def test_opened_but_never_written_region_has_no_persisted_inventory_slots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            world = t.world(Path(directory))
+            # The native D6 census opens neighboring Moon and overworld entity regions without storing any record.
+            path = world / runner.OVERWORLD_ENTITIES / "r.-1.-1.mca"
+            path.touch()
+            observed = runner.cut_disk(world, t.fixture(), t.first())["inventories"]
+            row = next(row for row in observed["files"] if row["path"] == "entities/r.-1.-1.mca")
+            self.assertEqual(0, row["stored_chunks"])
+            self.assertEqual(t.evidence.file_sha256(path), row["sha256"])
+
 
 if __name__ == "__main__":
     unittest.main()

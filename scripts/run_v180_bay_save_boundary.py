@@ -236,7 +236,10 @@ def inventory_evidence(world: Path, fixture: dict, *, held_moon: bool) -> dict:
             if path.suffix == ".dat":
                 check(nbt_file(path, TRANSFERS_LIMIT), row["path"])
             else:
-                if not 8192 <= path.stat().st_size <= MAX_INVENTORY_REGION_BYTES:
+                # Opening an untouched region can leave a zero-byte file until its first write. It has no persisted
+                # slots, unlike a nonempty short header, which could hide a truncated inventory record.
+                size = path.stat().st_size
+                if size != 0 and not 8192 <= size <= MAX_INVENTORY_REGION_BYTES:
                     raise smoke.SmokeError(f"Truncated or oversized inventory region: {relative}")
                 _, x, z, _ = path.name.split(".")
                 row["stored_chunks"] = 0
