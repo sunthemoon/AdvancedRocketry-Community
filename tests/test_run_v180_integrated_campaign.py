@@ -66,15 +66,15 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(len(inventory), 285)
         self.assertEqual(Counter(entry["case"] for entry in inventory), Counter(entry["case"] for entry in campaign.cargo.inventory()))
         self.assertEqual(len({row["name"] for row in rows}), len(rows))
-        # W339 appends ten timing, six saturation and one downgrade family after W337's 34.
-        self.assertEqual(len(rows), 51)
+        # W339 adds 17 W336 families; W345 appends six R-042 cases after those 51.
+        self.assertEqual(len(rows), 57)
 
     def test_w336_coverage_and_order_append_every_case_and_kind_exactly(self):
         rows = campaign.family_specs()
         self.assertFalse(any("w336_family" in row for row in rows[:34]))
         timing = rows[34:44]
         saturation = rows[44:50]
-        downgrade = rows[50:]
+        downgrade = rows[50:51]
         self.assertTrue(all(row["w336_family"] == "timing" for row in timing))
         self.assertEqual(Counter(case for row in timing for case in row["cases"]),
                          Counter(campaign.timing.CASES) + Counter(["TURNS"]))
@@ -87,6 +87,18 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(Counter(case for row in saturation for case in row["cases"]), Counter(campaign.saturation.oracle.DEVICES.keys()))
         self.assertEqual([row["name"] for row in downgrade], ["w336-downgrade"])
         self.assertEqual(downgrade[0]["w336_family"], "downgrade")
+
+    def test_r042_coverage_and_order_append_every_case_exactly_once(self):
+        rows = campaign.family_specs()
+        self.assertFalse(any("r042_case" in row for row in rows[:51]))
+        expected = ["N_BAY", "L_LEDGER", "P_SERVER", "P_OWNER", "U_BAY", "U_LEDGER"]
+        self.assertEqual([row["name"] for row in rows[51:]], ["r042-" + case for case in expected])
+        self.assertEqual(Counter(row["r042_case"] for row in rows[51:]), Counter(campaign.r042.CASES.keys()))
+        for row, case in zip(rows[51:], expected):
+            self.assertEqual(row["runner"], "scripts/run_v180_r042_native.py")
+            self.assertEqual(row["cases"], [case])
+            self.assertEqual(row["arguments"], ["--case", case])
+            self.assertFalse(row.get("stop_on_failure", False))
 
     def test_candidate_arguments_and_reuse_session_parent_match_runner_forms(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", side_effect=lambda ref: SOURCE if ref == "HEAD" else CANDIDATE):
@@ -101,7 +113,7 @@ class PlanTest(unittest.TestCase):
                     self.assertEqual(row["session"], str(campaign.TEMP))
                     self.assertIn("--cargo-under-lock", command)
                 self.assertNotIn("--smoke", command)
-                if "cargo_family" not in row and "w336_family" not in row:
+                if row.get("stop_on_failure"):
                     self.assertIn("--stop-on-failure", command)
                 else:
                     self.assertNotIn("--stop-on-failure", command)
@@ -156,8 +168,8 @@ class PlanTest(unittest.TestCase):
             self.assertEqual(plan["requirements"], [])
             modules = {"scripts/" + Path(module.__file__).name: module for module in (
                 campaign.forced, campaign.released, campaign.exits, campaign.cargo,
-                campaign.timing, campaign.saturation, campaign.downgrade)}
-            self.assertEqual(len(plan["families"]), 51)
+                campaign.timing, campaign.saturation, campaign.downgrade, campaign.r042)}
+            self.assertEqual(len(plan["families"]), 57)
             for row in plan["families"]:
                 command = row["command"]
                 module = campaign.cargo if command[2] == campaign.SELF else modules[command[2]]
@@ -173,6 +185,13 @@ class PlanTest(unittest.TestCase):
                     self.assertEqual(parsed.source_commit, SOURCE)
                     self.assertEqual(parsed.candidate_commit, SOURCE)
                     self.assertEqual(parsed.lock_owner, row["lock_owner"])
+                    if "r042_case" in row:
+                        self.assertEqual(parsed.case, row["cases"])
+                        self.assertIsNone(parsed.scratch)
+                        self.assertEqual((parsed.startup_timeout, parsed.exit_timeout, parsed.flight_timeout,
+                                          parsed.settle_timeout), (240, 180, 120, 180))
+                        self.assertEqual(parsed.jar_sha256, HASH)
+                        self.assertNotIn("--stop-on-failure", command)
                     if "w336_family" in row:
                         self.assertFalse(parsed.smoke)
                         self.assertEqual((parsed.startup_timeout, parsed.exit_timeout), (240, 180))
@@ -511,9 +530,9 @@ class ExecutionTest(unittest.TestCase):
                     fake.assert_not_called()
             plan = json.loads((root / "plan.json").read_text())
             self.assertEqual(json.loads(output.getvalue()), plan)
-            # W339 adds 17 families to the original 34 without executing any of them.
-            self.assertEqual(len(plan["families"]), 51)
-            self.assertEqual(len(list(root.glob("*/invocation.json"))), 51)
+            # W345 adds six R-042 families to W339's 51, without executing any of them.
+            self.assertEqual(len(plan["families"]), 57)
+            self.assertEqual(len(list(root.glob("*/invocation.json"))), 57)
             self.assertEqual(json.loads((root / "campaign-attempt1.done").read_text())["status"], "DRY_RUN")
             self.assertTrue(all(row["command"] for row in plan["families"]))
 

@@ -1,5 +1,6 @@
 """W332: the R-042 native runner's seeds, parsers and oracles, without a server."""
 from pathlib import Path
+from contextlib import contextmanager
 import os
 import re
 import sys
@@ -270,6 +271,106 @@ class InvocationTests(unittest.TestCase):
 
 
 class UnknownPresenceTests(unittest.TestCase):
+    def test_r416_run_u_preserves_only_the_allowed_metadata_boundary_and_keeps_both_recoveries(self):
+        nbt = r042.nbt
+        variants = ("rotation", "old_unchanged", "timestamp_unchanged", "other_tag", "timestamp_decreased",
+                    "timestamp_type", "timestamp_missing", "root_name", "metadata_missing", "non_metadata_changed",
+                    "non_metadata_added", "non_metadata_removed", "old_other_content", "old_removed")
+        for variant in variants:
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                world, output = root / "world", root / "evidence"
+                (world / "data").mkdir(parents=True); output.mkdir()
+                file = world / "data" / r042.FILES["receipts"]
+                file.write_bytes(b"fixture receipts")
+                other = world / "data" / "other.dat"
+                other.write_bytes(b"player/world data")
+                def write_level(timestamp=100, tag_type=nbt.LONG, game_type=0, name=b"", missing=False):
+                    data = dict(GameType=nbt.Tag(nbt.INT, game_type))
+                    if not missing:
+                        data["LastPlayed"] = nbt.Tag(tag_type, timestamp)
+                    nbt.write_gzip(world / "level.dat", name, nbt.Tag(nbt.COMPOUND, dict(Data=nbt.Tag(nbt.COMPOUND, data))))
+                write_level()
+                original = (world / "level.dat").read_bytes()
+                old = world / "level.dat_old"
+                old.write_bytes(b"original old metadata")
+
+                def mutation():
+                    old.write_bytes(original)
+                    write_level(timestamp=101)
+                    if variant == "old_unchanged": old.write_bytes(b"original old metadata")
+                    if variant == "timestamp_unchanged": write_level()
+                    if variant == "other_tag": write_level(timestamp=101, game_type=1)
+                    if variant == "timestamp_decreased": write_level(timestamp=99)
+                    if variant == "timestamp_type": write_level(timestamp=101, tag_type=nbt.INT)
+                    if variant == "timestamp_missing": write_level(missing=True)
+                    if variant == "root_name": write_level(timestamp=101, name=b"other")
+                    if variant == "metadata_missing": (world / "level.dat").unlink()
+                    if variant == "non_metadata_changed": other.write_bytes(b"changed")
+                    if variant == "non_metadata_added": (world / "new.dat").write_bytes(b"added")
+                    if variant == "non_metadata_removed": other.unlink()
+                    if variant == "old_other_content": old.write_bytes(b"not either baseline")
+                    if variant == "old_removed": old.unlink()
+
+                class Process:
+                    lines = [ERROR + "[ARCE-BETA-2000] Beta world data check blocked startup;"]
+                    def wait_for(self, *args): return 0
+                    def finish(self, *args): mutation(); return 0
+                    def abort(self): pass
+                class Fake:
+                    evidence, session = output, root
+                    args = SimpleNamespace(startup_timeout=1)
+                    candidate = {}
+                    process = None
+                    def __init__(self): self.restarts = []
+                    def start(self, case, restart, properties): self.restarts.append(restart)
+                    def stop(self, case, restart): return dict(lines=[PREFIX + "ARCE_BAY_RECEIPTS_INDEX state=LOADED receipts=2"])
+                    def probe_unknown(self, *args):
+                        return "\n".join(["VANILLA_VALIDATE=[]", "ACTUAL_ARCE_PRESENCE=UNKNOWN", "PRESENCE_UNKNOWN=true",
+                                          "DATA_TYPE=Optional[BAY_RECEIPTS]", "DIAGNOSTIC=ARCE-BETA-2000"])
+                    def start_refused(self, case): self.process = Process(); return self.process
+                @contextmanager
+                def held(*args): yield dict(file=str(file))
+                fake = Fake()
+                with patch.object(r042, "new_world", return_value=world), \
+                        patch.object(evidence, "seed_capacity_world", return_value={}), \
+                        patch.object(r042.presence, "delete_pending", side_effect=held), \
+                        patch.object(evidence, "recheck_installed"), \
+                        patch.object(r042, "check_unknown_refusal", return_value=dict(diagnostic="ARCE-BETA-2000")), \
+                        patch.object(r042, "snapshot", return_value={}):
+                    if variant in ("rotation", "old_unchanged", "timestamp_unchanged"):
+                        result = r042.run_u(fake, "U_BAY")
+                        self.assertEqual([0, 1, 2, 3], [row["start"] for row in result["starts"]])
+                    else:
+                        with self.assertRaisesRegex(smoke.SmokeError, "world data changed"):
+                            r042.run_u(fake, "U_BAY")
+                self.assertEqual([0, 2, 3], fake.restarts)
+                comparison = r042.json.loads((output / "U_BAY-metadata-comparison.json").read_text())
+                self.assertEqual("PASS" if variant in ("rotation", "old_unchanged", "timestamp_unchanged") else "FAILED",
+                                 comparison["status"])
+                self.assertTrue((output / "U_BAY-observations.json").is_file())
+                self.assertEqual(b"fixture receipts", file.read_bytes())
+                if variant == "rotation":
+                    self.assertEqual(["/Data/LastPlayed"], [row["path"] for row in comparison["decoded_differences"]])
+                    self.assertEqual(dict(before=100, after=101, before_type=nbt.LONG, after_type=nbt.LONG), comparison["last_played"])
+                    self.assertFalse(comparison["whole_world_byte_identical"])
+                    self.assertEqual(original, (output / "U_BAY-S0-level.dat").read_bytes())
+
+    def test_metadata_diff_keeps_types_nested_lists_missing_tags_and_scalar_bits(self):
+        nbt = r042.nbt
+        def compound(**values): return nbt.Tag(nbt.COMPOUND, values)
+        before = compound(nested=compound(value=nbt.Tag(nbt.LIST, (nbt.INT, [nbt.Tag(nbt.INT, 1)]))),
+                          scalar=nbt.Tag(nbt.DOUBLE, 0.0), removed=nbt.Tag(nbt.BYTE, 1))
+        after = compound(nested=compound(value=nbt.Tag(nbt.LIST, (nbt.INT, [nbt.Tag(nbt.INT, 2), nbt.Tag(nbt.INT, 3)]))),
+                         scalar=nbt.Tag(nbt.DOUBLE, -0.0), added=nbt.Tag(nbt.BYTE, 1))
+        self.assertEqual(["/added", "/nested/value/0", "/nested/value/1", "/removed", "/scalar"],
+                         [row["path"] for row in r042.metadata_differences(before, after)])
+        self.assertEqual([], r042.metadata_differences(before, before))
+        self.assertEqual(["/"], [row["path"] for row in r042.metadata_differences(
+            nbt.Tag(nbt.LIST, (nbt.INT, [])), nbt.Tag(nbt.LIST, (nbt.LONG, [])))])
+        self.assertEqual(["/Data~1LastPlayed"], [row["path"] for row in r042.metadata_differences(
+            compound(), compound(**{"Data/LastPlayed": nbt.Tag(nbt.LONG, 101)}))])
+
     def test_world_manifest_keeps_level_metadata_and_every_nested_file(self):
         with tempfile.TemporaryDirectory() as directory:
             world = Path(directory)

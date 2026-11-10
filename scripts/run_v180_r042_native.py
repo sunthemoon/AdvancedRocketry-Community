@@ -8,7 +8,8 @@ checks each start's logs, console answers and stopped-world bytes:
   and S2 recovers;
 * ``L_LEDGER``: the same for the escrow ledger and W329's protective answers;
 * ``U_BAY`` and ``U_LEDGER``: a reversible Windows delete-pending handle reaches UNKNOWN presence; startup refuses
-  without changing any world file, then two clean starts recover after the handle is released;
+  preserving world data except vanilla's monotonic LastPlayed timestamp and metadata rotation (R416), then two clean
+  starts recover after the handle is released;
 * ``P_SERVER`` and ``P_OWNER``: released and REPAIR receipts hold the shared pending pool over both restarts; fuel, the
   four cargo kinds and a bay deployment are refused with nothing changed, another owner is admitted, and no online
   command releases them.
@@ -178,6 +179,27 @@ class Run(bay.Session):
         if self.args.scratch:
             properties = dict(properties, w332Scratch=self.args.scratch)
         return super().start(case, restart, properties)
+
+    def probe_unknown(self, world: Path, filename: str, log: Path) -> str:
+        evidence_tools.recheck_installed(self.candidate)
+        text = presence.probe(self.args.java, self.candidate, self.session, world, filename, log)
+        evidence_tools.recheck_installed(self.candidate)
+        return text
+
+    def start_refused(self, case: str) -> smoke.CapturedProcess:
+        bay.require_lock(self.args.lock_owner)
+        require(min(shutil.disk_usage(drive).free for drive in ("C:/", "D:/")) >= 10 * 1024**3,
+                "Native refusal start: under 10 GiB free")
+        command = bay._server_command(self.args.java)
+        command[2] = "-Xmx4G"
+        if self.args.scratch:
+            command.insert(4, f"-Dadvancedrocketrycommunity.w332Scratch={self.args.scratch}")
+        evidence_tools.recheck_installed(self.candidate)
+        self.starts.append(dict(case=case, restart=1, installed_jar=self.candidate["installed_jar"],
+                                installed_jar_sha256=self.candidate["installed_jar_sha256"], command=command))
+        (self.evidence / "installed-starts.json").write_text(json.dumps(self.starts, indent=2), encoding="utf-8")
+        self.process = smoke.CapturedProcess(command, self.session, self.evidence / f"{case}-1.log")
+        return self.process
 
     def window(self, command: str, marker: re.Pattern[str] = REPORTED, timeout: float = 60.0) -> list[str]:
         assert self.process is not None
@@ -440,6 +462,60 @@ def world_manifest(world: Path) -> dict:
     return {file.relative_to(world).as_posix(): digest(file) for file in files if file.is_file()}
 
 
+def metadata_differences(before: nbt.Tag | None, after: nbt.Tag | None, path: str = "") -> list[dict]:
+    """Typed decoded differences, retaining scalar bits (including signed zero) and list element types."""
+    if before is not None and after is not None and before.type == after.type == nbt.COMPOUND:
+        return [difference for name in sorted(set(before.value) | set(after.value))
+                for difference in metadata_differences(before.value.get(name), after.value.get(name),
+                                                       path + "/" + name.replace("~", "~0").replace("/", "~1"))]
+    if before is not None and after is not None and before.type == after.type == nbt.LIST and before.value[0] == after.value[0]:
+        left, right = before.value[1], after.value[1]
+        return [difference for index in range(max(len(left), len(right)))
+                for difference in metadata_differences(left[index] if index < len(left) else None,
+                                                       right[index] if index < len(right) else None, f"{path}/{index}")]
+
+    def encoded(tag):
+        return nbt.write(b"", nbt.Tag(nbt.COMPOUND, dict(value=tag))) if tag is not None else None
+
+    def summary(tag):
+        if tag is None:
+            return None
+        value = tag.value if tag.type in (nbt.BYTE, nbt.SHORT, nbt.INT, nbt.LONG) else repr(tag.value)[:512]
+        return dict(type=tag.type, value=value, sha256=hashlib.sha256(encoded(tag)).hexdigest())
+
+    return [] if encoded(before) == encoded(after) else [dict(path=path or "/", before=summary(before), after=summary(after))]
+
+
+def unknown_world_check(world: Path, before: dict, after: dict, baseline: tuple[bytes, nbt.Tag]) -> dict:
+    """R416: exact non-metadata bytes, decoded level.dat except monotonic LONG LastPlayed, exact old-file rotation."""
+    metadata = {"level.dat", "level.dat_old"}
+    changed = [name for name in sorted(set(before) | set(after)) if before.get(name) != after.get(name)]
+    errors = [f"Non-metadata file changed, added or removed: {name}" for name in changed if name not in metadata]
+    differences = []
+    last_played = None
+    try:
+        name, root = nbt.read_gzip(world / "level.dat")
+        if name != baseline[0]:
+            errors.append(f"level.dat root name changed: {baseline[0]!r} -> {name!r}")
+        differences = metadata_differences(baseline[1], root)
+        errors.extend(f"level.dat tag changed: {row['path']}" for row in differences if row["path"] != "/Data/LastPlayed")
+        old_time = nbt.compound(baseline[1], "Data", "LastPlayed")
+        new_time = nbt.compound(root, "Data", "LastPlayed")
+        last_played = dict(before=old_time.value, after=new_time.value, before_type=old_time.type, after_type=new_time.type)
+        if old_time.type != nbt.LONG or new_time.type != nbt.LONG or new_time.value < old_time.value:
+            errors.append("/Data/LastPlayed must remain a LONG not smaller than S0")
+    except (OSError, nbt.NbtError) as failure:
+        errors.append(f"level.dat could not be compared: {failure}")
+    if "level.dat" not in before or "level.dat" not in after:
+        errors.append("level.dat must exist at S0 and after refusal")
+    old_allowed = {before[name] for name in metadata if name in before}
+    if "level.dat_old" not in after or after["level.dat_old"] not in old_allowed:
+        errors.append("level.dat_old is neither S0 level.dat nor S0 level.dat_old")
+    return dict(status="FAILED" if errors else "PASS", errors=errors, changed_files=changed,
+                whole_world_byte_identical=before == after, decoded_differences=differences, last_played=last_played,
+                level_dat_old_sha256=after.get("level.dat_old"), allowed_old_sha256=sorted(old_allowed))
+
+
 def check_unknown_probe(text: str, type_name: str) -> None:
     for expected in ("VANILLA_VALIDATE=[]", "ACTUAL_ARCE_PRESENCE=UNKNOWN", "PRESENCE_UNKNOWN=true",
                      f"DATA_TYPE=Optional[{type_name}]", "DIAGNOSTIC=ARCE-BETA-2000"):
@@ -535,30 +611,26 @@ def run_u(run: Run, case: str) -> dict:
     file = world / "data" / FILES[spec["file"]]
     before = world_manifest(world)
     require(file.relative_to(world).as_posix() in before, f"{case}/0: no fixture file")
+    baseline = nbt.read_gzip(world / "level.dat")
+    for name in ("level.dat", "level.dat_old"):
+        if name in before:
+            shutil.copy2(world / name, run.evidence / f"{case}-S0-{name}")
     row["starts"].append(dict(start=0, disk=disk(world)))
     (run.evidence / f"{case}-before.json").write_text(json.dumps(before, indent=2), encoding="utf-8")
     entry = dict(start=1)
     try:
         with presence.delete_pending(file) as held:
             entry["handle"] = held
-            probe_text = presence.probe(run.args.java, run.args.jar, run.session, world, file.name,
-                                        run.evidence / f"{case}-presence.log")
+            probe_text = run.probe_unknown(world, file.name, run.evidence / f"{case}-presence.log")
             check_unknown_probe(probe_text, spec["type"])
             entry["isPresenceUnknown"] = True
-            bay.require_lock(run.args.lock_owner)
-            require(min(shutil.disk_usage(drive).free for drive in ("C:/", "D:/")) >= 10 * 1024**3,
-                    "Native refusal start: under 10 GiB free")
-            command = bay._server_command(run.args.java)
-            command[2] = "-Xmx4G"
-            if run.args.scratch:
-                command.insert(4, f"-Dadvancedrocketrycommunity.w332Scratch={run.args.scratch}")
-            process = smoke.CapturedProcess(command, run.session, run.evidence / f"{case}-1.log")
-            run.process = process
+            process = run.start_refused(case)
             try:
                 # This start must stop itself before READY, not be made to stop by a console command.
                 process.wait_for(re.compile(UNKNOWN_REFUSAL.pattern + r'|Done \(.*For help, type "help"'), run.args.startup_timeout)
                 require(not any(smoke.READY_MARKER.search(line) for line in process.lines), f"{case}/1: startup was not refused")
                 entry["exit_code"] = process.finish(run.args.startup_timeout)
+                evidence_tools.recheck_installed(run.candidate)
                 # The pinned Forge/vanilla pre-Level refusal reports its crash and exits with code 0 (also W157).
                 require(entry["exit_code"] == 0, f"{case}/1: abnormal process exit {entry['exit_code']}")
                 entry["refusal"] = check_unknown_refusal(process.lines, case, run.session)
@@ -568,9 +640,13 @@ def run_u(run: Run, case: str) -> dict:
     finally:
         # Capture this even when the native oracle fails; the handle context has already restored the disposition.
         after = world_manifest(world)
+        entry["world_preservation"] = unknown_world_check(world, before, after, baseline)
+        (run.evidence / f"{case}-metadata-comparison.json").write_text(
+            json.dumps(entry["world_preservation"], indent=2), encoding="utf-8")
         (run.evidence / f"{case}-after.json").write_text(json.dumps(after, indent=2), encoding="utf-8")
         (run.evidence / f"{case}-restoration.json").write_text(json.dumps(dict(
-            file=str(file), sha256= digest(file), unchanged=before == after), indent=2), encoding="utf-8")
+            file=str(file), sha256=digest(file), unchanged=before == after,
+            protected_data_unchanged=entry["world_preservation"]["status"] == "PASS"), indent=2), encoding="utf-8")
     entry["world_unchanged"] = before == after
     entry["changed_files"] = [name for name in sorted(set(before) | set(after)) if before.get(name) != after.get(name)]
     entry["raw"] = snapshot(run, world, case, "1")
@@ -591,9 +667,10 @@ def run_u(run: Run, case: str) -> dict:
         require(digest(file) == before[file.relative_to(world).as_posix()], f"{case}/{restart}: fixture bytes changed")
         entry["disk"] = disk(world)
         row["starts"].append(entry)
-    # Keep recovery observations even when vanilla's pre-event metadata write violates the strict whole-world oracle.
+    # Keep both recovery observations even when the protected-world comparison fails.
     (run.evidence / f"{case}-observations.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
-    require(row["starts"][1]["world_unchanged"], f"{case}/1: world files changed: {row['starts'][1]['changed_files']}")
+    preservation = row["starts"][1]["world_preservation"]
+    require(preservation["status"] == "PASS", f"{case}/1: world data changed: {preservation['errors']}")
     return row
 
 
@@ -857,7 +934,9 @@ def run(args) -> dict:
     bay.ORIGIN = (8, 2, 8)
     try:
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        candidate.update(evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, args.jar_sha256))
+        runner.candidate = candidate
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
         for case in cases:
@@ -913,7 +992,7 @@ def main() -> int:
     try:
         report = run(args)
         return 0 if report["status"] == "PASS" else 1
-    except (OSError, smoke.SmokeError) as failure:
+    except (OSError, smoke.SmokeError, evidence_tools.CandidateError) as failure:
         print(f"FAIL: {failure}"); return 1
 
 
