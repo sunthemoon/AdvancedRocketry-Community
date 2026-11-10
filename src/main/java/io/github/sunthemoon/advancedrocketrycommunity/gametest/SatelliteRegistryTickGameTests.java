@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -61,30 +62,45 @@ public final class SatelliteRegistryTickGameTests {
     static final String REQUEST_BATCH = "satellite_registry_tick";
     static final String TERMINAL_BATCH = "satellite_terminal_tick";
     private static final String KEY = "SatelliteTerminal";
+    static final int REQUEST_TICKS = 300;
+    static final int REQUEST_SETUP_TICKS = 2 * REQUEST_TICKS + 1;
 
     private SatelliteRegistryTickGameTests() { }
 
     /** ADR-074 items 6 and 9: the coalesced request and an autosave's DataStorage save each return before their commit. */
-    @GameTest(template = "empty", batch = REQUEST_BATCH, timeoutTicks = 300)
+    @GameTest(template = "empty", batch = REQUEST_BATCH, timeoutTicks = REQUEST_TICKS + REQUEST_SETUP_TICKS)
     public static void coalescedAndAutosaveRequestsArePublishedOnLaterTicks(GameTestHelper helper) {
+        requests(helper, () -> true);
+    }
+
+    /** Register the whole sequence at test start, including when a regression prepares an inherited request. */
+    static void requests(GameTestHelper helper, BooleanSupplier prepared) {
         MinecraftServer server = helper.getLevel().getServer();
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         UUID solar = UUID.randomUUID(), receiver = UUID.randomUUID();
-        data.launchIdle(time -> SatelliteState.launchIdle(solar, ModIdentity.id("solar_satellite"), UUID.randomUUID(),
-                time, CelestialIds.EARTH_ID, new SatelliteBlueprint(List.of(ModIdentity.id("satellite_chassis"),
-                        ModIdentity.id("solar_transmitter_module")), false, new SatelliteStats(4, 720, 0, 0, 10)),
-                new SatelliteKindState.Solar(100, Optional.empty())), server.overworld().getGameTime());
-        data.updateKindState(solar, new SatelliteKindState.Solar(100, Optional.of(receiver)));
-        long coalescedBefore = SatelliteRuntime.coalescedFlushes();
-        SatelliteRegistryProof.Token linked = data.token();
-        helper.assertTrue(data.flushPending() && !data.covers(linked), "The link change was not left for the coalesced request");
+        var window = new SatelliteRegistryTestWindow(REQUEST_TICKS);
+        helper.onEachTick(() -> window.checkBudget(helper));
+        long[] coalescedBefore = new long[1];
+        SatelliteRegistryProof.Token[] linked = new SatelliteRegistryProof.Token[1];
         SatelliteRegistryProof.Token[] saved = new SatelliteRegistryProof.Token[1];
         long[] coalescedAtSave = new long[1];
         helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(data.covers(linked) && !data.flushPending(),
+                .thenWaitUntil(() -> helper.assertTrue(prepared.getAsBoolean() && window.open(helper, data),
+                        "The registry writer is not idle or an autosave falls inside the measured window"))
+                .thenExecute(() -> {
+                    data.launchIdle(time -> SatelliteState.launchIdle(solar, ModIdentity.id("solar_satellite"), UUID.randomUUID(),
+                            time, CelestialIds.EARTH_ID, new SatelliteBlueprint(List.of(ModIdentity.id("satellite_chassis"),
+                                    ModIdentity.id("solar_transmitter_module")), false, new SatelliteStats(4, 720, 0, 0, 10)),
+                            new SatelliteKindState.Solar(100, Optional.empty())), server.overworld().getGameTime());
+                    data.updateKindState(solar, new SatelliteKindState.Solar(100, Optional.of(receiver)));
+                    coalescedBefore[0] = SatelliteRuntime.coalescedFlushes();
+                    linked[0] = data.token();
+                    helper.assertTrue(data.flushPending() && !data.covers(linked[0]), "The link change was not left for the coalesced request");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(data.covers(linked[0]) && !data.flushPending(),
                         "No later tick has published the coalesced commit yet"))
                 .thenExecute(() -> {
-                    helper.assertTrue(SatelliteRuntime.coalescedFlushes() > coalescedBefore,
+                    helper.assertTrue(SatelliteRuntime.coalescedFlushes() > coalescedBefore[0],
                             "The commit was not requested by the coalesced flush");
                     helper.assertTrue(disk(server).satellite(solar).orElseThrow().kindState()
                             .equals(new SatelliteKindState.Solar(100, Optional.of(receiver))), "The commit did not carry the link");
