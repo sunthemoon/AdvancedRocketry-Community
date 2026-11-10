@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 254bff121 (W347 merged, R417 and R420: the W159 Temp and Replace fixtures open their fault windows only when no autosave falls inside them; with W344 merged before it at `8eca70809`, the bay exit fixture's loading outside the measured ticks, and W346 with W349 at `6dc594c8e`, B6.5's gated save-boundary control, its native case with the inventory check and the 58th driver family; their branch runs 42823540208, 42824122723 and 42824294274 passed with 1,856, 1,855 and 1,857 GameTests, and their dispatched governance runs passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 67c310530 (W350 merged, R420: the satellite registry coalesced-flush test and one sibling open their measured window only when the registry writer is idle and no autosave falls inside it; GameTest classes and a read-only test-support accessor only, so candidate C2 at `ade1538c3` is unchanged in production behavior; branch run 42849035668 passed with 1,859 GameTests and governance run 42849038794 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 42831910740 at ade1538c3 (W344, W346 with W349 and W347 merged, with Root's records; the build of candidate C2) passed on its first attempt: build 11.7 minutes, shards 0 to 3 in 13.6, 17.2, 21.5 and 17.1 minutes, 1,858 GameTests, with 3, 3, 2 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42831910850 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
@@ -495,15 +495,16 @@ What is still open:
   W347 established the cause: the batch started one to three ticks after the autosave of tick 84,000,
   whose registry write and the same tick's coalesced-flush request left a request pending under the
   writer's 10-tick cadence, and that request captured the test's change. No production defect is
-  indicated. W350 (R420) opens the test's window only when the writer is idle; it stays open until W350
-  merges and later runs show no recurrence.
+  indicated. W350 (R420, merged at `67c310530` after branch run 42849035668 passed) opens the test's
+  window only when the writer is idle; it stays open until later runs show no recurrence.
 - **I/O-completion budgets, local full run (2026-11-10).** W350's local full GameTest run had three failures in
   tests it did not change, between 22:53 and 22:56: both `EscrowProofRetryGameTests` superseded-proof tests
   ("Retry fixture proof exceeded its explicit force/IO completion budget") and
   `SealedSpecialHostAutomationGameTests.tankAndBayStaySealedUnderTickingAutomation` (400-tick timeout), with an
   unexpected `ARCE_DISASSEMBLY_DURABILITY_HELD` `PREPARE` `DEADLINE` warning in batch `w152_special_resources`.
   All four wait for disk I/O within tick budgets, and none falls near an autosave tick. The cause is not
-  established. W350's hosted branch run and later runs decide whether they recur; it stays open until then.
+  established. W350's hosted branch run 42849035668 passed all four tests' batches; it stays open until
+  later local full runs show no recurrence.
 - **Monitor cold warm-up check, local full run (2026-11-09).**
   `EscrowMonitorGameTests.offlineMonitorWarmsAColdDestinationAndLaunchesOnlyOnAFreshEdge` (batch
   `monitor_governed_cold`) failed once in W330's local full run with `Offline owner lost its attributed warm-up`. The
