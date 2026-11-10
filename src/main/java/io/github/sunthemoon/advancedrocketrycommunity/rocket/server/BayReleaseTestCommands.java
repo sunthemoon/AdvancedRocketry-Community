@@ -59,6 +59,7 @@ public final class BayReleaseTestCommands {
         BayPassengerExitReleaseTest.register(event);
         BayGapReleaseTestCommands.register(event);
         BaySaveBoundaryReleaseTestCommands.register(event);
+        R042ReleaseTestCommands.register(event); // W332: R-042's NOT_LOADED and held-pool probes
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())
