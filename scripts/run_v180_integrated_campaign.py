@@ -24,6 +24,7 @@ import time
 import uuid
 
 import run_v180_bay_forced_stop as forced
+import run_v180_bay_save_boundary as save_boundary
 import run_v180_bay_released_flight as released
 import run_v180_bay_exit_cuts as exits
 import run_v180_cargo_integrated as cargo
@@ -64,7 +65,8 @@ def resolve_commit(value):
 
 
 def family_specs():
-    """Keep the original 34 families and W336 observations in order, then append R-042 cases."""
+    """Keep the original 34 families and W336 observations in order, then append R-042 cases, then W346's save-boundary
+    family."""
     rows = []
 
     def bay(name, module, cases, arguments=()):
@@ -115,6 +117,9 @@ def family_specs():
     for case in ("N_BAY", "L_LEDGER", "P_SERVER", "P_OWNER", "U_BAY", "U_LEDGER"):
         rows.append(dict(name="r042-" + case, runner="scripts/" + Path(r042.__file__).name,
                          r042_case=case, cases=[case], arguments=["--case", case]))
+    # W346: B6.5 at the source-save boundary, a forced-stop family in its own runner.
+    for key, cases in save_boundary.W346_TRANCHES.items():
+        bay("forced-" + key.replace("_", "-"), save_boundary, cases, ("--tranche", key))
     return rows
 
 
