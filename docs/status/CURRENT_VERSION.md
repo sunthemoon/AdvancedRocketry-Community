@@ -107,8 +107,9 @@ What is still open:
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
   W326 (the four cargo kinds) ran it on candidate C1, the hosted build of `70dd5d43e`. The rerun on candidate C2,
   the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
-  2026-11-10 with the 58-family campaign driver (R421); its family `cargo-C-S3` failed on a test-fixture
-  regression (open item below), so all 58 families rerun on a candidate C3 after W352's fix (R424). W327's
+  2026-11-10 with the 58-family campaign driver (R421); its families `cargo-C-S3` and `cargo-C-S4-LOAD` failed
+  on a test-fixture regression and a harness gap (open items below), so all 58 families rerun on a candidate C3
+  after W352's and W353's fixes (R424, R425). W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
@@ -522,5 +523,10 @@ What is still open:
   rocket's own fuel, and the C-S3 R1 branch calls it on an unfueled rocket. It is a test-fixture regression, not a
   production defect; the other nine C-S3 cases did not run. W352 (R424) restores C1's fixture fuel for that branch
   and runs the family natively; it stays open until all ten cases pass on candidate C3.
+- **C2 campaign family `cargo-C-S4-LOAD` (2026-11-11).** `FS_LOAD_VETO_DESTINATION_SAVED` failed with "Native run
+  logged ERROR or FATAL": the ERROR is the case's injected load veto (`Release-test load settlement source veto`,
+  through `GuardedChunkSaves.recordObservedDenial`), which the cargo settlement runner does not expect. It is a
+  harness gap, not a production defect; `FS_LOAD_BIND_VETO` and the family `cargo-C-S5` did not run. W353 (R425)
+  makes the runner accept exactly that injected ERROR; it stays open until both families pass on candidate C3.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
