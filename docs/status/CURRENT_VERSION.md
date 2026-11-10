@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c7bca5eed (W352 merged, R424: the C-S3 R1 release-test fixture builds its record with C1's synthetic fuel again; gated fixture and a unit test only, no production change; branch run 42895288778 passed with 1,859 GameTests and governance run 42895315123 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42857400883 at 863bb76a7 (W350 merged as 67c310530, with Root's records) passed on its first attempt: build 14.3 minutes, shards 0 to 3 in 16.4, 19.5, 20.6 and 17.1 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42857400892 there passed. Later pushes up to `40bb7a423` change documents only. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: b4dd5f320 (W353 merged, R425: the cargo settlement runner accepts the load veto's injected ERROR only in its exact form for `FS_LOAD_VETO_DESTINATION_SAVED` at its first start; Python and tests only; branch run 42904479477 passed with 1,859 GameTests and governance run 42904480512 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 42904621772 at c7bca5eed (W352 merged) passed on its first attempt: build 9.7 minutes, shards 0 to 3 in 13.5, 20.9, 19.5 and 17.2 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42904621590 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -528,7 +528,9 @@ What is still open:
   logged ERROR or FATAL": the ERROR is the case's injected load veto (`Release-test load settlement source veto`,
   through `GuardedChunkSaves.recordObservedDenial`), which the cargo settlement runner does not expect. It is a
   harness gap, not a production defect; `FS_LOAD_BIND_VETO` and the family `cargo-C-S5` did not run. W353 (R425)
-  makes the runner accept exactly that injected ERROR; it stays open until both families pass on candidate C3.
+  makes the runner accept exactly that injected ERROR (merged at `b4dd5f320` after branch run 42904479477
+  passed; all 20 cases passed natively on the C2 JAR with it); it stays open until both families pass on
+  candidate C3.
 - **C2 campaign family `cargo-B3-S1-REUSE` (2026-11-11).** `LF_M_N3_FULL`, the fuel loader's reused full-pool
   refusal, failed at its first start: the gated probe's "Refusal did not visit the queue" check found that the
   loader's attempt no longer answers `READY` with 64 pending BAY operations. It last passed on `1f674080` (W27C1)
