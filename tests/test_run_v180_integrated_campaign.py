@@ -55,6 +55,22 @@ class PlanTest(unittest.TestCase):
         self.assertIn(("B11.7", "Partial, NOT_COVERED", "W331_B11_UNION"), mappings)
         self.assertFalse(any("B6.8" in spec["rows"] for spec in campaign.forced.W331_CASES.values()))
 
+    def test_w346_save_boundary_family_runs_its_own_runner_with_its_tranche_and_stops_on_failure(self):
+        families = {row["name"]: row for row in campaign.family_specs()}
+        row = families["forced-W346-R"]
+        self.assertEqual(row["runner"], "scripts/run_v180_bay_save_boundary.py")
+        self.assertEqual(row["cases"], ["W346_B6_SAVE_BOUNDARY"])
+        self.assertEqual(row["arguments"], ["--tranche", "W346_R"])
+        self.assertTrue(row["stop_on_failure"])
+        self.assertEqual(campaign.save_boundary.W346_CASES["W346_B6_SAVE_BOUNDARY"]["rows"], ("B6.5",))
+        self.assertFalse(set(row["cases"]) & (set(campaign.forced.CASES) | set(campaign.forced.W331_CASES)))
+        with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE):
+            planned = next(item for item in campaign.make_plan(arguments(Path(directory)))["families"] if item["name"] == row["name"])
+        command = planned["command"]
+        self.assertEqual(command[2], "scripts/run_v180_bay_save_boundary.py")
+        self.assertEqual(command[command.index("--jar-sha256") + 1], HASH)
+        self.assertEqual(command[-3:], ["--tranche", "W346_R", "--stop-on-failure"])
+
     def test_c1_names_order_and_every_cargo_inventory_row_are_preserved(self):
         rows = campaign.family_specs()
         self.assertEqual([row["name"] for row in rows[:12]], [
@@ -66,15 +82,16 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(len(inventory), 285)
         self.assertEqual(Counter(entry["case"] for entry in inventory), Counter(entry["case"] for entry in campaign.cargo.inventory()))
         self.assertEqual(len({row["name"] for row in rows}), len(rows))
-        # W339 appends ten timing, six saturation and one downgrade family after W337's 34.
-        self.assertEqual(len(rows), 51)
+        # W339 appends ten timing, six saturation and one downgrade family after W337's 34; W346 appends one after them.
+        self.assertEqual(len(rows), 52)
 
     def test_w336_coverage_and_order_append_every_case_and_kind_exactly(self):
         rows = campaign.family_specs()
         self.assertFalse(any("w336_family" in row for row in rows[:34]))
         timing = rows[34:44]
         saturation = rows[44:50]
-        downgrade = rows[50:]
+        downgrade = rows[50:51]
+        self.assertEqual([row["name"] for row in rows[51:]], ["forced-W346-R"])
         self.assertTrue(all(row["w336_family"] == "timing" for row in timing))
         self.assertEqual(Counter(case for row in timing for case in row["cases"]),
                          Counter(campaign.timing.CASES) + Counter(["TURNS"]))
@@ -155,9 +172,9 @@ class PlanTest(unittest.TestCase):
                                                downgrade_old_jar=Path("w176.jar"), downgrade_old_jar_sha256=OLD_HASH))
             self.assertEqual(plan["requirements"], [])
             modules = {"scripts/" + Path(module.__file__).name: module for module in (
-                campaign.forced, campaign.released, campaign.exits, campaign.cargo,
+                campaign.forced, campaign.save_boundary, campaign.released, campaign.exits, campaign.cargo,
                 campaign.timing, campaign.saturation, campaign.downgrade)}
-            self.assertEqual(len(plan["families"]), 51)
+            self.assertEqual(len(plan["families"]), 52)
             for row in plan["families"]:
                 command = row["command"]
                 module = campaign.cargo if command[2] == campaign.SELF else modules[command[2]]
@@ -511,9 +528,9 @@ class ExecutionTest(unittest.TestCase):
                     fake.assert_not_called()
             plan = json.loads((root / "plan.json").read_text())
             self.assertEqual(json.loads(output.getvalue()), plan)
-            # W339 adds 17 families to the original 34 without executing any of them.
-            self.assertEqual(len(plan["families"]), 51)
-            self.assertEqual(len(list(root.glob("*/invocation.json"))), 51)
+            # W339 adds 17 families to the original 34, and W346 one more, without executing any of them.
+            self.assertEqual(len(plan["families"]), 52)
+            self.assertEqual(len(list(root.glob("*/invocation.json"))), 52)
             self.assertEqual(json.loads((root / "campaign-attempt1.done").read_text())["status"], "DRY_RUN")
             self.assertTrue(all(row["command"] for row in plan["families"]))
 

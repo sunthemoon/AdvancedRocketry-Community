@@ -24,6 +24,7 @@ import time
 import uuid
 
 import run_v180_bay_forced_stop as forced
+import run_v180_bay_save_boundary as save_boundary
 import run_v180_bay_released_flight as released
 import run_v180_bay_exit_cuts as exits
 import run_v180_cargo_integrated as cargo
@@ -63,7 +64,7 @@ def resolve_commit(value):
 
 
 def family_specs():
-    """Keep the original 34 families in order, then append W336 observations."""
+    """Keep the original 34 families in order, then append W336 observations, then W346's save-boundary family."""
     rows = []
 
     def bay(name, module, cases, arguments=()):
@@ -111,6 +112,9 @@ def family_specs():
                          w336_family="saturation", cases=[kind], arguments=["--kind", kind]))
     rows.append(dict(name="w336-downgrade", runner="scripts/" + Path(downgrade.__file__).name,
                      w336_family="downgrade", cases=["downgrade"], arguments=[]))
+    # W346: B6.5 at the source-save boundary, a forced-stop family in its own runner.
+    for key, cases in save_boundary.W346_TRANCHES.items():
+        bay("forced-" + key.replace("_", "-"), save_boundary, cases, ("--tranche", key))
     return rows
 
 
