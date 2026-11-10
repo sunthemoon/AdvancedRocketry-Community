@@ -274,7 +274,7 @@ class UnknownPresenceTests(unittest.TestCase):
     def test_r416_run_u_preserves_only_the_allowed_metadata_boundary_and_keeps_both_recoveries(self):
         nbt = r042.nbt
         variants = ("rotation", "old_unchanged", "timestamp_unchanged", "other_tag", "timestamp_decreased",
-                    "timestamp_type", "timestamp_missing", "root_name", "metadata_missing", "non_metadata_changed",
+                    "timestamp_type", "timestamp_compound", "timestamp_list", "timestamp_missing", "root_name", "metadata_missing", "non_metadata_changed",
                     "non_metadata_added", "non_metadata_removed", "old_other_content", "old_removed")
         for variant in variants:
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
@@ -303,6 +303,10 @@ class UnknownPresenceTests(unittest.TestCase):
                     if variant == "other_tag": write_level(timestamp=101, game_type=1)
                     if variant == "timestamp_decreased": write_level(timestamp=99)
                     if variant == "timestamp_type": write_level(timestamp=101, tag_type=nbt.INT)
+                    if variant == "timestamp_compound":
+                        write_level(timestamp={"unexpected": nbt.Tag(nbt.INT, 1)}, tag_type=nbt.COMPOUND)
+                    if variant == "timestamp_list":
+                        write_level(timestamp=(nbt.INT, [nbt.Tag(nbt.INT, 1)]), tag_type=nbt.LIST)
                     if variant == "timestamp_missing": write_level(missing=True)
                     if variant == "root_name": write_level(timestamp=101, name=b"other")
                     if variant == "metadata_missing": (world / "level.dat").unlink()

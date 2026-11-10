@@ -501,7 +501,9 @@ def unknown_world_check(world: Path, before: dict, after: dict, baseline: tuple[
         errors.extend(f"level.dat tag changed: {row['path']}" for row in differences if row["path"] != "/Data/LastPlayed")
         old_time = nbt.compound(baseline[1], "Data", "LastPlayed")
         new_time = nbt.compound(root, "Data", "LastPlayed")
-        last_played = dict(before=old_time.value, after=new_time.value, before_type=old_time.type, after_type=new_time.type)
+        last_played = dict(before=old_time.value if old_time.type == nbt.LONG else repr(old_time.value)[:512],
+                           after=new_time.value if new_time.type == nbt.LONG else repr(new_time.value)[:512],
+                           before_type=old_time.type, after_type=new_time.type)
         if old_time.type != nbt.LONG or new_time.type != nbt.LONG or new_time.value < old_time.value:
             errors.append("/Data/LastPlayed must remain a LONG not smaller than S0")
     except (OSError, nbt.NbtError) as failure:
