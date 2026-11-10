@@ -37,8 +37,14 @@ public final class BayReceiptSavedData extends SavedData {
     public static Path file(MinecraftServer server) {
         return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName());
     }
-    /** Load-only lookup: it never creates a root or a file. */
+    /**
+     * Load-only lookup: it never creates a root or a file. Vanilla runs the loader only when it reads the file; W332's gated
+     * seam ({@link ReleaseTestLoadFailure}) may make that one read fail on a release-test server.
+     */
     public static BayReceiptSavedData existing(MinecraftServer server) {
-        return server.overworld().getDataStorage().get(BayReceiptSavedData::load, ManagedSavedDataType.BAY_RECEIPTS.dataName());
+        return server.overworld().getDataStorage().get(payload -> {
+            ReleaseTestLoadFailure.beforeLoad(server, ManagedSavedDataType.BAY_RECEIPTS);
+            return load(payload);
+        }, ManagedSavedDataType.BAY_RECEIPTS.dataName());
     }
 }

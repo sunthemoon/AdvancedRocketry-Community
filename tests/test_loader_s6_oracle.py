@@ -34,12 +34,13 @@ class LoaderS6OracleTest(unittest.TestCase):
                 root = Path(temporary); sessions = root / "sessions"; sessions.mkdir()
                 template = root / "template"; (template / "libraries").mkdir(parents=True)
                 jar = root / "fixture.jar"; jar.write_bytes(b"test-only")
+                jar_sha256 = runner.evidence_tools.file_sha256(jar)
                 args = SimpleNamespace(source_commit="pinned", java="java", jar=jar, session_parent=sessions,
                                        source_server=template, startup_timeout=240)
                 process = Mock(lines=[], **{"finish.return_value": 0})
                 process.process.pid = 123
                 with patch.object(runner.shared, "assert_pin"), patch.object(runner.shared, "require_lock"), \
-                        patch.object(runner.shared, "digest", return_value="hash"), \
+                        patch.object(runner.shared, "digest", return_value=jar_sha256), \
                         patch.object(runner.shared, "disk_space", return_value={}), \
                         patch.object(runner.shared, "physical_memory", return_value=0), \
                         patch.object(runner, "allocate_port", return_value=25565), \
@@ -48,7 +49,7 @@ class LoaderS6OracleTest(unittest.TestCase):
                         patch.object(runner.flight, "inspect", side_effect=images), \
                         patch.object(runner, "check_log"), \
                         patch.object(publication, "witness", side_effect=witnesses):
-                    result = runner.run_cut(args, cut, root / "evidence", "test-owner", {"jar_sha256": "hash"})
+                    result = runner.run_cut(args, cut, root / "evidence", "test-owner", {"jar_sha256": jar_sha256})
                 self.assertEqual("PASS", result["status"], result["findings"])
                 self.assertEqual(3, start.call_count)
                 for restart, call in enumerate(start.call_args_list):

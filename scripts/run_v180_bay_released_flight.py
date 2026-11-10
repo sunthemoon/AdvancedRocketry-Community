@@ -145,7 +145,9 @@ def run(args):
     runner = bay.Session(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        candidate.update(bay.evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, args.jar_sha256))
+        runner.candidate = candidate
         runner.port = bay.smoke.allocate_port()
         bay.smoke.write_server_configuration(session, runner.port, True)
         for case in cases:
@@ -172,6 +174,8 @@ def run(args):
         bay.recheck_candidate(candidate)
         report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
         return report
+    except Exception as failure:
+        report.update(status="FAILED", error=str(failure)); raise
     finally:
         if runner.process is not None:
             runner.process.abort()
@@ -195,7 +199,7 @@ def main():
     args = parser.parse_args()
     try:
         return 0 if run(args)["status"] == "PASS" else 1
-    except (OSError, bay.smoke.SmokeError) as failure:
+    except (OSError, bay.smoke.SmokeError, bay.evidence_tools.CandidateError) as failure:
         print(f"FAIL: {failure}", flush=True)
         return 1
 

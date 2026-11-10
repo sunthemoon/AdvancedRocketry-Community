@@ -94,7 +94,9 @@ class TimedSession(bay.Session):
 
     def start(self, case, restart, properties):
         process = super().start(case, restart, properties)
-        self.launches.append(dict(case=case, restart=restart, command=process.process.args, properties=properties))
+        self.launches.append(dict(case=case, restart=restart, command=process.process.args, properties=properties,
+                                  installed_jar=self.candidate["installed_jar"],
+                                  installed_jar_sha256=self.candidate["installed_jar_sha256"]))
         self.query_tick()
         return process
 

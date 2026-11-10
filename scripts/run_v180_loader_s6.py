@@ -28,6 +28,7 @@ import loader_s6_ordinary as ordinary
 import loader_s6_publication as publication
 import loader_s6_named_pad as named_pad
 import run_v180_loader_cuts as shared
+import bay_integrated_evidence as evidence_tools
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
@@ -147,7 +148,8 @@ def run_cut(args, cut, evidence, owner, pins):
                               "Unsafe Forge template")
         shutil.copytree(libraries, session / "libraries")
         (session / "mods").mkdir()
-        shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        installed = evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, pins["jar_sha256"])
+        row["installed_candidate"] = installed
         port = allocate_port()
         write_server_configuration(session, port, True)
         properties = expected_server_properties(port, True)
@@ -185,6 +187,8 @@ def run_cut(args, cut, evidence, owner, pins):
             row["starts"].append(start)
             write(evidence / "result.json", row)
             # Count before launch, including failed startup attempts.
+            start.update(installed)
+            evidence_tools.recheck_installed(installed)
             process = CapturedProcess(command, session, evidence / f"start-{restart}.log")
             start["pid"] = process.process.pid
             try:
@@ -305,6 +309,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 except SmokeError as failure:
                     row["findings"].append(dict(restart=restart, kind=kind, error=str(failure)))
             write(evidence / "result.json", row)
+        evidence_tools.recheck_installed(installed)
         row["status"] = "FAILED" if row["findings"] else ("DIAGNOSTIC_OBSERVED" if diagnostic else "PASS")
     except Exception as failure:
         row["status"] = "FAILED"

@@ -33,6 +33,7 @@ def family(run):
     world = run.session / "world"
     run.start("seed", properties={"bayCheckpoint": "B18_INTENT"}); run.ready()
     adapter = bay.Session(run.args, run.session, run.evidence)
+    adapter.candidate = run.pin
     adapter.process = run.process
     fixture = bay.launch_fixture(adapter)
     adapter.wait(native.re.compile("ARCE_RELEASE_BAY_PAUSED cut=B18_INTENT op="), run.args.flight_timeout)
@@ -54,7 +55,7 @@ def family(run):
         before = w176.world_hashes(world)
         before_level = run.evidence / f"old-{attempt}-before-level.dat"
         shutil.copy2(world / "level.dat", before_level)
-        process = run.start(f"old-{attempt}", jar=run.args.old_jar)
+        process = run.start(f"old-{attempt}", jar=run.args.old_jar, jar_sha256=oracle.OLD_SHA256)
         process.wait_for(w176.DOWNGRADE_GUARD, run.args.startup_timeout)
         code = process.finish(run.args.exit_timeout)
         run.process = None
