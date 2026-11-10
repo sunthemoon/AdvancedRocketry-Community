@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: b4dd5f320 (W353 merged, R425: the cargo settlement runner accepts the load veto's injected ERROR only in its exact form for `FS_LOAD_VETO_DESTINATION_SAVED` at its first start; Python and tests only; branch run 42904479477 passed with 1,859 GameTests and governance run 42904480512 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42904621772 at c7bca5eed (W352 merged) passed on its first attempt: build 9.7 minutes, shards 0 to 3 in 13.5, 20.9, 19.5 and 17.2 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42904621590 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 42911718480 at b4dd5f320 (W353 merged) passed on its first attempt: build 9.7 minutes, shards 0 to 3 in 14.6, 21.2, 20.4 and 15.2 minutes, 1,859 GameTests, with 3, 4, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 42911718637 there passed. Later pushes up to `0bbb663d7` change documents only. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
