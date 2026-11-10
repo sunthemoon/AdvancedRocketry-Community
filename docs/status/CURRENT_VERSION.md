@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 67c310530 (W350 merged, R420: the satellite registry coalesced-flush test and one sibling open their measured window only when the registry writer is idle and no autosave falls inside it; GameTest classes and a read-only test-support accessor only, so candidate C2 at `ade1538c3` is unchanged in production behavior; branch run 42849035668 passed with 1,859 GameTests and governance run 42849038794 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: c7bca5eed (W352 merged, R424: the C-S3 R1 release-test fixture builds its record with C1's synthetic fuel again; gated fixture and a unit test only, no production change; branch run 42895288778 passed with 1,859 GameTests and governance run 42895315123 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 42857400883 at 863bb76a7 (W350 merged as 67c310530, with Root's records) passed on its first attempt: build 14.3 minutes, shards 0 to 3 in 16.4, 19.5, 20.6 and 17.1 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42857400892 there passed. Later pushes up to `40bb7a423` change documents only. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
@@ -107,9 +107,9 @@ What is still open:
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
   W326 (the four cargo kinds) ran it on candidate C1, the hosted build of `70dd5d43e`. The rerun on candidate C2,
   the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
-  2026-11-10 with the 58-family campaign driver (R421); its families `cargo-C-S3` and `cargo-C-S4-LOAD` failed
-  on a test-fixture regression and a harness gap (open items below), so all 58 families rerun on a candidate C3
-  after W352's and W353's fixes (R424, R425). W327's
+  2026-11-10 with the 58-family campaign driver (R421); its families `cargo-C-S3`, `cargo-C-S4-LOAD` and
+  `cargo-B3-S1-REUSE` failed (open items below), so all 58 families rerun on a candidate C3 after the fixes
+  (R424 to R426). W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
@@ -521,12 +521,19 @@ What is still open:
   server at its first start on C2 with `Only a fueled rocket may accept a flight plan`, in the gated release-test
   fixture before any production cargo step: W330's `7753cfd78` made `EscrowCargoTransferFixtures.record` use the
   rocket's own fuel, and the C-S3 R1 branch calls it on an unfueled rocket. It is a test-fixture regression, not a
-  production defect; the other nine C-S3 cases did not run. W352 (R424) restores C1's fixture fuel for that branch
-  and runs the family natively; it stays open until all ten cases pass on candidate C3.
+  production defect; the other nine C-S3 cases did not run. W352 (R424, merged at `c7bca5eed` after branch run
+  42895288778 passed) restores C1's fixture fuel for that branch, and all ten cases passed natively on its JAR;
+  it stays open until they pass on candidate C3.
 - **C2 campaign family `cargo-C-S4-LOAD` (2026-11-11).** `FS_LOAD_VETO_DESTINATION_SAVED` failed with "Native run
   logged ERROR or FATAL": the ERROR is the case's injected load veto (`Release-test load settlement source veto`,
   through `GuardedChunkSaves.recordObservedDenial`), which the cargo settlement runner does not expect. It is a
   harness gap, not a production defect; `FS_LOAD_BIND_VETO` and the family `cargo-C-S5` did not run. W353 (R425)
   makes the runner accept exactly that injected ERROR; it stays open until both families pass on candidate C3.
+- **C2 campaign family `cargo-B3-S1-REUSE` (2026-11-11).** `LF_M_N3_FULL`, the fuel loader's reused full-pool
+  refusal, failed at its first start: the gated probe's "Refusal did not visit the queue" check found that the
+  loader's attempt no longer answers `READY` with 64 pending BAY operations. It last passed on `1f674080` (W27C1)
+  and did not run at C1. The cause is not established: a deliberate production change or a stale fixture. Three
+  later cases and the families `cargo-B3-S4-REUSE` and `cargo-B3-S5-REUSE` did not run. W354 (R426) diagnoses
+  it; it stays open until the family passes on candidate C3.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
