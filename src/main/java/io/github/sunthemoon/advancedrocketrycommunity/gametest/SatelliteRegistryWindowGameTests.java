@@ -29,6 +29,7 @@ public final class SatelliteRegistryWindowGameTests {
     public static void anInheritedCadenceRequestDrainsBeforeTheMeasuredWindow(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         var data = SatelliteMissionSavedData.get(server);
+        var cadencePacer = new GameTestTickPacer(server);
         boolean[] prepared = {false};
         long[] coalesced = {SatelliteRuntime.coalescedFlushes()};
         int[] quietSince = {server.getTickCount()}, requestedAt = {-1};
@@ -57,7 +58,10 @@ public final class SatelliteRegistryWindowGameTests {
                 // A later sequence keeps END's request pending when the first capture publishes.
                 data.updateKindState(seed, new SatelliteKindState.Solar(100, Optional.of(UUID.randomUUID())));
                 requestedAt[0] = now;
+                cadencePacer.pace();
             } else {
+                // Only setup is paced: ten GameTest ticks must span the dedicated server's ten ticks of IO time.
+                cadencePacer.pace();
                 helper.assertTrue(SatelliteRuntime.coalescedFlushes() == coalesced[0] + 1,
                         "The END-phase coalesced request was not issued after the autosave-style capture");
                 helper.assertTrue(now - requestedAt[0] < 10,
