@@ -82,6 +82,12 @@ oracle therefore reads nothing from the destination Level except its entity regi
 absence that the case is about. It does not read the destination's terrain, landing pad, atmosphere or other data
 files. The overworld holds the transfer journal, the bay receipts and the satellite registry, so those are unaffected.
 
+**W349 correction (2026-11-10, W348 finding 3).** The preceding statement's inclusion of POI is incorrect:
+`ChunkMap.tick` calls `poiManager.tick` before checking `noSave`, and `SectionStorage.tick` writes dirty POI columns
+through `writeColumn` and `IOWorker.store` without a `noSave` check. Thus `noSave` does not stop those per-tick POI
+writes. The case uses no POI data as evidence. This corrects only the POI claim; the skipped Level save and the
+separate entity-unload qualification above are unchanged.
+
 ### 2.4 What retires a COMMITTED transfer record after the destination spawns
 
 Nothing in the forward flight. `RocketTransferService.tickLive` moves T' through DESTINATION_SPAWNED,

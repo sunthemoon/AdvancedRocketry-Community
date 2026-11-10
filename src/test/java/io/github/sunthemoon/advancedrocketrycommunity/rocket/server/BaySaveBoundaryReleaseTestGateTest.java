@@ -78,6 +78,17 @@ final class BaySaveBoundaryReleaseTestGateTest {
         assertTrue(BaySaveBoundaryReleaseTestCommands.heldFor(open).isEmpty());
     }
 
+    @Test void theSaveBoundaryRegistrationItselfRequiresPermissionTwo() throws Exception {
+        // Register this subtree alone: earlier registrations must not supply its permission predicate.
+        var dispatcher = new CommandDispatcher<CommandSourceStack>();
+        BaySaveBoundaryReleaseTestCommands.register(new RegisterCommandsEvent(dispatcher, Commands.CommandSelection.DEDICATED, null));
+        var releaseTest = dispatcher.getRoot().getChild("arce").getChild("bay").getChild("release-test");
+        MinecraftServer server = servers.server(directory, false);
+        for (int permission = 0; permission <= 4; permission++) {
+            assertEquals(permission >= 2, releaseTest.canUse(source(server, permission)), "permission " + permission);
+        }
+    }
+
     @Test void everyEntryIsRefusedByTheGateBeforeItsFirstEffect() throws Exception {
         property(HOOKS, "true");
         var dispatcher = registered();

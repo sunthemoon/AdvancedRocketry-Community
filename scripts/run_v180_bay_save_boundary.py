@@ -15,8 +15,9 @@ with the gated save-boundary control and the existing ``B16_GUARD`` cut:
   back and no receipt; restart 2 must keep that rebuilt destination (KEEP_DESTINATION) without forcing a source back.
 
 The candidate pin (``--jar-sha256``, ``--candidate-commit`` and the installed-JAR checks), the session and the fixture
-helpers are the forced-stop runner's. The oracle reads nothing that the Moon's held saves stopped except the Moon's
-entity regions, whose absence of L is the state under test (no pad, atmosphere or other Moon data file).
+helpers are the forced-stop runner's. At the kill the oracle reads nothing that the Moon's held saves stopped except
+its entity regions, whose absence of L is the state under test. After clean restart stops, terrain saves resume and
+the inventory scan includes the Moon's terrain too.
 """
 from __future__ import annotations
 
@@ -39,6 +40,8 @@ TRANSFERS_LIMIT = 4 * 1024 * 1024
 BAY_FIELDS = {"schema_version", "owner", "package", "consumed_op"}
 BAY_ADAPTER = "advancedrocketrycommunity:satellite_bay_v1"
 OVERWORLD_ENTITIES = Path("entities")
+MAX_INVENTORY_FILES = 256
+MAX_INVENTORY_REGION_BYTES = 128 * 1024 * 1024
 # The overworld's queued region writes of the autosave pass finish on the IO worker; the kill waits this long for them,
 # far inside the destination column's flight-ticket bound (400 ticks after the landing; W346-DESIGN section 3).
 WRITE_SETTLE_SECONDS = 2.0
@@ -182,6 +185,74 @@ def item_entities(world: Path, directory: Path) -> int:
     return sum(1 for entity in stored_entities(world, directory) if entity.get("id") == "minecraft:item")
 
 
+def registered_package_paths(value: object, satellite: str, path: str):
+    """Find the registered identity anywhere in bounded decoded NBT, including nested/modded inventories.
+
+    Do not select by item name, adapter or inventory key: packages keep their SatelliteIdentity even when nested in
+    another item or a non-bay payload. A matching raw identity is refused even if its other fields are malformed.
+    The deliberately unregistered solar identity is not the group's registered data identity.
+    """
+    if isinstance(value, dict):
+        identity = value.get("SatelliteIdentity")
+        if isinstance(identity, dict) and uuid_of(identity.get("satellite_id")) == satellite:
+            yield path + ".SatelliteIdentity"
+        for key, child in value.items():
+            yield from registered_package_paths(child, satellite, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            if isinstance(child, (dict, list)):
+                yield from registered_package_paths(child, satellite, f"{path}[{index}]")
+
+
+def inventory_evidence(world: Path, fixture: dict, *, held_moon: bool) -> dict:
+    """Scan all saved players, journal snapshots, and entity/terrain records, not just fixture coordinates.
+
+    At the kill only the held Moon's terrain is excluded: its unsaved contents cannot prove anything. The Moon's
+    entity sections remain the intended absence evidence. After either clean restart stop all terrain is eligible.
+    POI is never inventory evidence. Existing NBT readers bound bytes, tags, depth and each region's 1,024 slots;
+    excess files, oversized/truncated regions and unreadable NBT fail instead of silently reducing coverage.
+    """
+    files = sorted((world / "playerdata").glob("*.dat")) + [world / "data" / TRANSFERS_FILE]
+    region_files = sorted(path for path in world.rglob("r.*.*.mca") if path.parent.name in ("entities", "region"))
+    if len(files) + len(region_files) > MAX_INVENTORY_FILES:
+        raise smoke.SmokeError("Inventory scan exceeds its file budget")
+    observed = dict(files=[], skipped_held_terrain=[], registered_packages=[])
+
+    def check(root: object, location: str) -> None:
+        found = next(registered_package_paths(root, fixture["data"], location), None)
+        if found is not None:
+            raise smoke.SmokeError(f"A registered package ({fixture['data']}) persists at {found}")
+
+    for path in files + region_files:
+        relative = path.relative_to(world)
+        if any(parent.is_symlink() or getattr(parent, "is_junction", lambda: False)()
+               for parent in (path, *path.parents) if parent.is_relative_to(world)):
+            raise smoke.SmokeError(f"Linked inventory evidence: {relative}")
+        if held_moon and relative.parent == forced.MOON_ENTITIES.parent / "region":
+            observed["skipped_held_terrain"].append(relative.as_posix())
+            continue
+        row = dict(path=relative.as_posix())
+        try:
+            if path.suffix == ".dat":
+                check(nbt_file(path, TRANSFERS_LIMIT), row["path"])
+            else:
+                if not 8192 <= path.stat().st_size <= MAX_INVENTORY_REGION_BYTES:
+                    raise smoke.SmokeError(f"Truncated or oversized inventory region: {relative}")
+                _, x, z, _ = path.name.split(".")
+                row["stored_chunks"] = 0
+                for slot in range(1024):
+                    chunk_x, chunk_z = int(x) * 32 + slot % 32, int(z) * 32 + slot // 32
+                    root = chunk_record(path, chunk_x, chunk_z)
+                    if root is not None:
+                        row["stored_chunks"] += 1
+                        check(root, f"{row['path']}[{chunk_x},{chunk_z}]")
+            row["sha256"] = evidence_tools.file_sha256(path)
+        except (OSError, ValueError) as failure:
+            raise smoke.SmokeError(f"Unreadable inventory evidence {relative}: {failure}") from failure
+        observed["files"].append(row)
+    return observed
+
+
 def entity_files(world: Path) -> list[str]:
     return sorted(path.relative_to(world).as_posix() for path in world.rglob("*.mca") if "entities" in path.relative_to(world).parts)
 
@@ -228,6 +299,7 @@ def cut_disk(world: Path, fixture: dict, first: dict) -> dict:
     observed["item_entities"] = item_entities(world, OVERWORLD_ENTITIES) + item_entities(world, forced.MOON_ENTITIES)
     if observed["item_entities"]:
         raise smoke.SmokeError(f"{observed['item_entities']} item entities are on disk at the kill")
+    observed["inventories"] = inventory_evidence(world, fixture, held_moon=True)
     observed["entity_files"] = entity_files(world)
     return observed
 
@@ -257,6 +329,7 @@ def restart_disk(world: Path, fixture: dict, cut: dict, previous: list[str], res
     observed["item_entities"] = item_entities(world, OVERWORLD_ENTITIES) + item_entities(world, forced.MOON_ENTITIES)
     if observed["item_entities"]:
         raise smoke.SmokeError(f"{label}: {observed['item_entities']} item entities are on disk")
+    observed["inventories"] = inventory_evidence(world, fixture, held_moon=False)
     observed["entity_files"] = entity_files(world)
     removed = sorted(set(previous) - set(observed["entity_files"]))
     if removed:
