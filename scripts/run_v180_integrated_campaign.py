@@ -30,6 +30,7 @@ import run_v180_cargo_integrated as cargo
 import run_v180_w336_timing as timing
 import run_v180_w336_saturation as saturation
 import run_v180_w336_downgrade as downgrade
+import run_v180_r042_native as r042
 
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path(r"D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm")
@@ -63,7 +64,7 @@ def resolve_commit(value):
 
 
 def family_specs():
-    """Keep the original 34 families in order, then append W336 observations."""
+    """Keep the original 34 families and W336 observations in order, then append R-042 cases."""
     rows = []
 
     def bay(name, module, cases, arguments=()):
@@ -111,6 +112,9 @@ def family_specs():
                          w336_family="saturation", cases=[kind], arguments=["--kind", kind]))
     rows.append(dict(name="w336-downgrade", runner="scripts/" + Path(downgrade.__file__).name,
                      w336_family="downgrade", cases=["downgrade"], arguments=[]))
+    for case in ("N_BAY", "L_LEDGER", "P_SERVER", "P_OWNER", "U_BAY", "U_LEDGER"):
+        rows.append(dict(name="r042-" + case, runner="scripts/" + Path(r042.__file__).name,
+                         r042_case=case, cases=[case], arguments=["--case", case]))
     return rows
 
 
