@@ -497,6 +497,13 @@ What is still open:
   writer's 10-tick cadence, and that request captured the test's change. No production defect is
   indicated. W350 (R420) opens the test's window only when the writer is idle; it stays open until W350
   merges and later runs show no recurrence.
+- **I/O-completion budgets, local full run (2026-11-10).** W350's local full GameTest run had three failures in
+  tests it did not change, between 22:53 and 22:56: both `EscrowProofRetryGameTests` superseded-proof tests
+  ("Retry fixture proof exceeded its explicit force/IO completion budget") and
+  `SealedSpecialHostAutomationGameTests.tankAndBayStaySealedUnderTickingAutomation` (400-tick timeout), with an
+  unexpected `ARCE_DISASSEMBLY_DURABILITY_HELD` `PREPARE` `DEADLINE` warning in batch `w152_special_resources`.
+  All four wait for disk I/O within tick budgets, and none falls near an autosave tick. The cause is not
+  established. W350's hosted branch run and later runs decide whether they recur; it stays open until then.
 - **Monitor cold warm-up check, local full run (2026-11-09).**
   `EscrowMonitorGameTests.offlineMonitorWarmsAColdDestinationAndLaunchesOnlyOnAFreshEdge` (batch
   `monitor_governed_cold`) failed once in W330's local full run with `Offline owner lost its attributed warm-up`. The
