@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin;
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.*;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
@@ -36,16 +38,28 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class RocketRejoinReadbackGameTests {
     private RocketRejoinReadbackGameTests() { }
+    /** The measured timeout of every fixture: its own {@link Fixture#MEASURED_TICKS} assertion and ten ticks of margin. */
+    private static final int MEASURED_TIMEOUT_TICKS = 240;
+    /**
+     * W347: Temp and Replace may first wait, unmeasured, for vanilla's autosave to pass (at most
+     * {@link Fixture#AUTOSAVE_WAIT_TICKS}). Only that wait is added; the measured budget and its assertion are unchanged.
+     */
+    private static final int FAULT_TIMEOUT_TICKS = MEASURED_TIMEOUT_TICKS + Fixture.AUTOSAVE_WAIT_TICKS;
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_quit", timeoutTicks = 240)
     public static void quitBetweenPinsSavesExactPositionAndCompletesOffline(GameTestHelper helper) { new Fixture(helper, "Quit").start(); }
-    @GameTest(template = "rocket_test", batch = "rocket_rejoin_temp_failure", timeoutTicks = 240)
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_temp_failure", timeoutTicks = FAULT_TIMEOUT_TICKS)
     public static void realTemporaryWriteFailureKeepsObligationUntilNextPrompt(GameTestHelper helper) { new Fixture(helper, "Temp").start(); }
-    @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_failure", timeoutTicks = 240)
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_failure", timeoutTicks = FAULT_TIMEOUT_TICKS)
     public static void realReplacementFailureEventCannotProveOldFile(GameTestHelper helper) { new Fixture(helper, "Replace").start(); }
-    @GameTest(template = "rocket_test", batch = "rocket_rejoin_temp_ordinary", timeoutTicks = 240)
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_temp_ordinary", timeoutTicks = FAULT_TIMEOUT_TICKS)
     public static void ordinarySaveAfterTemporaryFailureCanCompleteReadback(GameTestHelper helper) { new Fixture(helper, "Temp", true).start(); }
-    @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_ordinary", timeoutTicks = 240)
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_ordinary", timeoutTicks = FAULT_TIMEOUT_TICKS)
     public static void ordinarySaveAfterReplacementFailureCanCompleteReadback(GameTestHelper helper) { new Fixture(helper, "Replace", true).start(); }
+    // W347: a simulated clock puts vanilla's next autosave inside the fixture's window; nothing is installed or logged.
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_autosave_window", timeoutTicks = 40)
+    public static void replaceFixtureWaitsWhileTheNextAutosaveFallsInsideItsWindow(GameTestHelper helper) { autosaveWindow(helper, "Replace"); }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_autosave_window", timeoutTicks = 40)
+    public static void tempFixtureWaitsWhileTheNextAutosaveFallsInsideItsWindow(GameTestHelper helper) { autosaveWindow(helper, "Temp"); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_unsafe", timeoutTicks = 240)
     public static void noSafeCandidateEndsAtProtectedDeadline(GameTestHelper helper) { new Fixture(helper, "Unsafe").start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_vehicle", timeoutTicks = 240)
@@ -65,11 +79,54 @@ public final class RocketRejoinReadbackGameTests {
     @AfterBatch(batch = "rocket_rejoin_vehicle") public static void afterVehicle(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
     @AfterBatch(batch = "rocket_rejoin_vehicle_first") public static void afterVehicleFirst(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
     @AfterBatch(batch = "rocket_rejoin_clone") public static void afterClone(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+    @AfterBatch(batch = "rocket_rejoin_autosave_window") public static void afterAutosaveWindow(ServerLevel level) { RocketRejoinFixturePad.closeAbandoned(); }
+
+    /**
+     * W347 regression: the real fixture's tick, driven with a simulated clock, at the first tick whose window holds the
+     * autosave, inside the window, just before it and in the autosave's own tick. The fixture must not run setup, connect
+     * its player, block a file or start its measured count; its window opens only once the autosave has passed or lies
+     * past the window.
+     */
+    private static void autosaveWindow(GameTestHelper helper, String mode) {
+        var server = helper.getLevel().getServer();
+        int autosave = 10 * GameTestAutosave.PERIOD_TICKS;
+        int[] simulated = {0};
+        var fixture = new Fixture(helper, mode, false, () -> simulated[0]);
+        int[] ticks = {autosave - Fixture.MEASURED_TICKS, autosave - 100, autosave - 1, autosave};
+        int[] step = {0};
+        helper.onEachTick(() -> {
+            if (step[0] == ticks.length) { return; }
+            try {
+                simulated[0] = ticks[step[0]];
+                fixture.tick();
+                var playerDirectory = server.getWorldPath(LevelResource.PLAYER_DATA_DIR);
+                helper.assertTrue(fixture.phase == 0 && fixture.ticks == 0 && fixture.data == null && fixture.player == null
+                                && fixture.autosaveWaits == step[0] + 1 && !fixture.blockedBackup && !fixture.blockedDirectory
+                                && !Files.exists(playerDirectory.resolve(fixture.id + ".dat_old"))
+                                && (!Files.exists(playerDirectory) || Files.isDirectory(playerDirectory))
+                                && server.getPlayerList().getPlayer(fixture.id) == null,
+                        mode + " fixture opened its window at simulated tick " + simulated[0] + " with the autosave of tick "
+                                + autosave + " inside it");
+                if (++step[0] == ticks.length) {
+                    simulated[0] = autosave + 1; boolean passed = fixture.windowFits();
+                    simulated[0] = autosave - Fixture.MEASURED_TICKS - 1; boolean beyond = fixture.windowFits();
+                    helper.assertTrue(passed && beyond, mode + " fixture's window stays closed after the autosave=" + passed
+                            + " or with the autosave past its window=" + beyond);
+                    fixture.close(); helper.succeed();
+                }
+            } catch (RuntimeException | Error failure) { fixture.close(); throw failure; }
+        });
+    }
 
     private static final class Fixture {
+        /** The fixture's measured tick budget, checked by its own assertion in {@link #tick}. */
+        static final int MEASURED_TICKS = 230;
+        /** W347: the longest unmeasured wait for an autosave, from the first tick whose window holds it to the tick after it. */
+        static final int AUTOSAVE_WAIT_TICKS = MEASURED_TICKS + 1;
         final GameTestHelper helper;
         final MinecraftServer server;
         final GameTestTickPacer pacer;
+        final IntSupplier clock;
         final String mode;
         final boolean ordinarySave;
         final java.util.ArrayList<Long> prompts = new java.util.ArrayList<>();
@@ -86,21 +143,27 @@ public final class RocketRejoinReadbackGameTests {
         Boat boat;
         boolean closed, blockedDirectory, blockedBackup, borderChanged, quit;
         double borderX, borderZ, borderSize;
-        int phase, ticks, saves;
+        int phase, ticks, saves, autosaveWaits;
         long ordinarySavedAt = -1;
         Fixture(GameTestHelper helper, String mode) {
             this(helper, mode, false);
         }
         Fixture(GameTestHelper helper, String mode, boolean ordinarySave) {
+            this(helper, mode, ordinarySave, null);
+        }
+        /** {@code clock} replaces the server tick count only in the W347 regression. */
+        Fixture(GameTestHelper helper, String mode, boolean ordinarySave, IntSupplier clock) {
             this.ordinarySave = ordinarySave;
             this.helper = helper; this.mode = mode; server = helper.getLevel().getServer(); pacer = new GameTestTickPacer(server);
+            this.clock = clock != null ? clock : server::getTickCount;
         }
         void start() { helper.onEachTick(this::tick); }
         void tick() {
             if (closed) { return; }
             try {
+                if (phase == 0 && !windowClear()) { return; }
                 if (data != null) { observePrompt(); }
-                helper.assertTrue(++ticks < 230, "Rejoin fixture did not finish at phase " + phase + " mode=" + mode);
+                helper.assertTrue(++ticks < MEASURED_TICKS, "Rejoin fixture did not finish at phase " + phase + " mode=" + mode);
                 if (phase == 0) { setup(); phase = 1; }
                 else if (mode.equals("Unsafe")) { unsafe(); }
                 else if (phase == 1) { placed(); }
@@ -110,6 +173,25 @@ public final class RocketRejoinReadbackGameTests {
             } catch (IOException failure) { close(); throw new java.io.UncheckedIOException(failure); }
             catch (RuntimeException | Error failure) { close(); throw failure; }
         }
+        /**
+         * W347: vanilla's autosave saves every player. Temp and Replace block this player's file from setup until placement,
+         * and the log manifest counts exactly one failed save, so they open their window only when the next autosave falls
+         * after the whole measured budget. The ticks waited here come before setup and are not measured.
+         */
+        boolean windowClear() {
+            if (!mode.equals("Temp") && !mode.equals("Replace")) { return true; }
+            if (windowFits()) {
+                if (autosaveWaits > 0) {
+                    io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                            "ARCE_W347_AUTOSAVE_WAIT mode={} ordinary={} waited={} opened_at={}", mode, ordinarySave, autosaveWaits,
+                            clock.getAsInt());
+                }
+                return true;
+            }
+            helper.assertTrue(++autosaveWaits <= AUTOSAVE_WAIT_TICKS, "Rejoin fixture waited past the autosave bound mode=" + mode);
+            return false;
+        }
+        boolean windowFits() { return !GameTestAutosave.within(clock.getAsInt(), MEASURED_TICKS); }
         void setup() throws IOException {
             original = RocketRejoinEvents.get(server); RocketRuntime.rejoinAdmissions(server);
             sidecar = ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE);
