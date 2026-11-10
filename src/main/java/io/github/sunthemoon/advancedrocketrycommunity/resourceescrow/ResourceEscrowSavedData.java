@@ -51,10 +51,15 @@ public final class ResourceEscrowSavedData extends SavedData {
     static java.nio.file.Path file(MinecraftServer server) {
         return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
     }
-    /** Load-only lookup: it never creates a ledger or a file. */
+    /**
+     * Load-only lookup: it never creates a ledger or a file. Vanilla runs the loader only when it reads the file; W332's
+     * gated seam ({@link ReleaseTestLoadFailure}) may make that one read fail on a release-test server.
+     */
     public static ResourceEscrowSavedData existing(MinecraftServer server) {
-        return server.overworld().getDataStorage().get(ResourceEscrowSavedData::load,
-                ManagedSavedDataType.RESOURCE_ESCROW.dataName());
+        return server.overworld().getDataStorage().get(payload -> {
+            ReleaseTestLoadFailure.beforeLoad(server, ManagedSavedDataType.RESOURCE_ESCROW);
+            return load(payload);
+        }, ManagedSavedDataType.RESOURCE_ESCROW.dataName());
     }
     /**
      * Production creation (W11B3-DESIGN section 2, step 2), only from a first fill that the authority has already
