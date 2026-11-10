@@ -14,7 +14,7 @@ def veto_error():
     # C2 cargo-C-S4-LOAD-attempt1/native/FS_LOAD_VETO_DESTINATION_SAVED-0.log,
     # from the ERROR header through its throwable, without the following INFO event.
     data = (Path(__file__).parent / "fixtures/cargo/load-settlement-veto-event.log").read_bytes()
-    assert hashlib.sha256(data).hexdigest() == "bf639b6eb7f4004181b0ac3a5dc638140479f97f032abdbf274b571206e06add"
+    assert hashlib.sha256(data).hexdigest() == "cefa17d04116160ff680861dd5956abf5f7dd7758c4e96e7b2f33617dcc7b806"
     return data.decode().splitlines()
 
 
@@ -44,6 +44,7 @@ class CargoLoadVetoLogTest(unittest.TestCase):
         for lines in (
             [], original[1:], original + original, original + [original[0]],
             [line.replace("source veto", "another veto") for line in original],
+            [line.replace("source veto", "another veto") if line.startswith("java.lang.") else line for line in original],
             [line.replace("/ERROR]", "/FATAL]") for line in original],
             [original[0].replace("Server thread", "Worker thread")] + original[1:],
             [original[0].replace("ne.mi.ev.EventBus/EVENTBUS", "foreign/logger")] + original[1:],
@@ -63,6 +64,7 @@ class CargoLoadVetoLogTest(unittest.TestCase):
             [line.replace("\tIndex: 2", "\tIndex: 1") for line in original],
             [line.replace("\t\t2: ASM:", "\t\t3: ASM:") for line in original],
             [line.replace("GuardedChunkSaves beforeSave", "ForeignGuard beforeSave") for line in original],
+            [line.replace("EventBus$$Lambda$3991", "ForeignBus$$Lambda$3991") for line in original],
             [line.replace("IllegalStateException:", "RuntimeException:") for line in original],
             [line.replace("EscrowSaveMonitor.postOwn", "EscrowSaveMonitor.observed") for line in original],
             original + ["Caused by: java.lang.IllegalStateException: unrelated failure"],
@@ -76,6 +78,13 @@ class CargoLoadVetoLogTest(unittest.TestCase):
         changed = [line.replace("Lambda$3991/0x0000000801638d38@69c63f47", "Lambda$42/0xabcdef@123abc")
                    .replace("lambda$tick$12", "lambda$tick$99") for line in original]
         fluid.check_load_veto_error(changed)
+
+    def test_allowance_does_not_replace_the_cut_marker_or_stop_boundary(self):
+        case = "FS_LOAD_VETO_DESTINATION_SAVED"
+        marker = observation(case, 0)
+        for markers in ([], [marker, marker], [marker.replace("boundary=O_VETO", "boundary=O1_AFTER")]):
+            with self.subTest(markers=markers), self.assertRaises(fluid.smoke.SmokeError):
+                fluid.observations(veto_error() + markers, case, 0)
 
     def test_other_w330_cases_have_no_error_allowance(self):
         error = veto_error()

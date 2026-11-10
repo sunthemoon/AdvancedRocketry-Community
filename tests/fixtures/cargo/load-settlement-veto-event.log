@@ -48,4 +48,3 @@ java.lang.IllegalStateException: Release-test load settlement source veto
 	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:661)
 	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251)
 	at java.base/java.lang.Thread.run(Thread.java:833)
-
