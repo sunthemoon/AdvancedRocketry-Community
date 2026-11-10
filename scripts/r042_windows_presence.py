@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import subprocess
 
+import bay_integrated_evidence as evidence_tools
 from run_v180_escrow_forced_stop import digest
 from run_dedicated_server_smoke import SmokeError, is_link_or_junction
 
@@ -96,7 +97,8 @@ class R042WindowsPresenceProbe {
 '''
 
 
-def probe(java: str, jar: Path, session: Path, world: Path, filename: str, log: Path) -> str:
+def probe(java: str, candidate: dict, session: Path, world: Path, filename: str, log: Path) -> str:
+    jar = Path(candidate["installed_jar"])
     source = session / "R042WindowsPresenceProbe.java"
     source.write_text(PROBE_SOURCE, encoding="ascii")
     # Forge's installed srg server JAR precedes the installer/bundler and vanilla obfuscated copies.
@@ -106,6 +108,7 @@ def probe(java: str, jar: Path, session: Path, world: Path, filename: str, log: 
     arguments.write_text('\n'.join('"' + arg.replace('\\', '/') + '"' for arg in
         ["-cp", classpath, "--source", "17", str(source), str(world), filename]), encoding="utf-8")
     try:
+        evidence_tools.recheck_installed(candidate)
         result = subprocess.run([java, "@" + str(arguments)], cwd=session, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", timeout=60)
     except subprocess.TimeoutExpired as failure:
