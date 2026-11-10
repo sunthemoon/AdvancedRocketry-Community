@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 254bff121 (W347 merged, R417 and R420: the W159 Temp and Replace fixtures open their fault windows only when no autosave falls inside them; with W344 merged before it at `8eca70809`, the bay exit fixture's loading outside the measured ticks, and W346 with W349 at `6dc594c8e`, B6.5's gated save-boundary control, its native case with the inventory check and the 58th driver family; their branch runs 42823540208, 42824122723 and 42824294274 passed with 1,856, 1,855 and 1,857 GameTests, and their dispatched governance runs passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42768172114 at bbb707ab2 (W345 merged as 6beee754c, with Root's records) passed on its first attempt: build 13.9 minutes, shards 0 to 3 in 13.2, 19.7, 19.6 and 19.1 minutes, 1,855 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42768172023 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 42831910740 at ade1538c3 (W344, W346 with W349 and W347 merged, with Root's records; the build of candidate C2) passed on its first attempt: build 11.7 minutes, shards 0 to 3 in 13.6, 17.2, 21.5 and 17.1 minutes, 1,858 GameTests, with 3, 3, 2 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42831910850 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -105,7 +105,9 @@ What is still open:
   chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-09 the owner chose
   to target enabling all five in v1.8 after an integrated test on one candidate JAR
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
-  W326 (the four cargo kinds) run it on candidate C1, the hosted build of `70dd5d43e`. W327's read-only audit of
+  W326 (the four cargo kinds) ran it on candidate C1, the hosted build of `70dd5d43e`. The rerun on candidate C2,
+  the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
+  2026-11-10 with the 58-family campaign driver (R421). W327's read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
   released and REPAIR receipts hold shared pending slots until offline repair; the D6 wait figures are estimates;
