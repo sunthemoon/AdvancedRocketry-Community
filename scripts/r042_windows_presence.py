@@ -105,8 +105,11 @@ def probe(java: str, jar: Path, session: Path, world: Path, filename: str, log: 
     arguments = session / "presence-probe.args"
     arguments.write_text('\n'.join('"' + arg.replace('\\', '/') + '"' for arg in
         ["-cp", classpath, "--source", "17", str(source), str(world), filename]), encoding="utf-8")
-    result = subprocess.run([java, "@" + str(arguments)], cwd=session, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", timeout=60)
+    try:
+        result = subprocess.run([java, "@" + str(arguments)], cwd=session, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", timeout=60)
+    except subprocess.TimeoutExpired as failure:
+        raise SmokeError("Presence probe exceeded 60 seconds") from failure
     log.write_text(result.stdout, encoding="utf-8")
     if result.returncode:
         raise SmokeError(f"Presence probe exited {result.returncode}: {log}")

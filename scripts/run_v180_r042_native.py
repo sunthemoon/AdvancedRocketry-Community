@@ -31,6 +31,7 @@ import loader_cut_nbt as nbt
 import run_dedicated_server_smoke as smoke
 import run_v180_bay_forced_stop as bay
 import r042_windows_presence as presence
+import run_w157_rejoin_startup as refusal_log
 from run_v180_escrow_forced_stop import digest
 from run_v180_escrow_pre_f2 import assert_pin
 
@@ -430,8 +431,6 @@ def snapshot(run: Run, world: Path, case: str, label: str) -> dict:
 
 UNKNOWN_REFUSAL = re.compile(r"\[ARCE-BETA-2000\] Beta world data check blocked startup;")
 STORAGE_HINT = "Fix storage access to the world folder and restart; never delete, move or restore single files. If repair is still needed after that:"
-# Forge/vanilla report the exception again after the one ARCE diagnostic. These exact shutdown diagnostics are audited.
-START_FAILURE = re.compile(r"/ERROR\].*(?:Encountered an unexpected exception|Failed to start the minecraft server)")
 
 
 def world_manifest(world: Path) -> dict:
@@ -447,7 +446,7 @@ def check_unknown_probe(text: str, type_name: str) -> None:
         require(expected in text.splitlines(), f"UNKNOWN-presence probe missing {expected}")
 
 
-def check_unknown_refusal(lines: list[str], case: str) -> dict:
+def check_unknown_refusal(lines: list[str], case: str, session: Path | None = None) -> dict:
     spec = CASES[case]
     refused = [line.strip() for line in lines if UNKNOWN_REFUSAL.search(line)]
     require(len(refused) == 1, f"{case}/1: expected one ARCE-BETA-2000 refusal: {refused}")
@@ -457,12 +456,62 @@ def check_unknown_refusal(lines: list[str], case: str) -> dict:
             f"{case}/1: wrong type, reason or storage-first hint: {line}")
     require(not any(smoke.READY_MARKER.search(line) for line in lines) and not matches(lines, BAY_INDEX),
             f"{case}/1: refused startup reached world loading")
-    # Do not permit any unrelated error, or arbitrary repeats of an expected startup failure.
-    extras = sum(1 for line in lines if START_FAILURE.search(line))
-    require(extras <= 1, f"{case}/1: repeated startup errors")
-    errors = audit_errors(lines, {UNKNOWN_REFUSAL: 1, START_FAILURE: extras})
-    require(not errors, f"{case}/1: unexpected ERROR/FATAL: {errors}")
-    return dict(diagnostic="ARCE-BETA-2000", type=spec["type"], storage_hint_first=True, line=line)
+    if session is None:
+        errors = audit_errors(lines, {UNKNOWN_REFUSAL: 1})
+        require(not errors, f"{case}/1: unexpected ERROR/FATAL: {errors}")
+        audit = None
+    else:
+        audit = audit_unknown_start(lines, case, session)
+    return dict(diagnostic="ARCE-BETA-2000", type=spec["type"], storage_hint_first=True, line=line, audit=audit)
+
+
+def audit_unknown_start(lines: list[str], case: str, session: Path) -> dict:
+    """Exact pinned Forge refusal propagation, including exception identities (same shutdown boundary as W157)."""
+    spec = CASES[case]
+    reason = FILES[spec["file"]][:-4] + " presence is unknown: its file status check failed, so its absence is not proven"
+    exception = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
+    message = (f"[ARCE-BETA-2000] Beta world data check blocked startup; type={spec['type']}; reason={reason}. "
+               + STORAGE_HINT + " Keep the world stopped. Escrow recovery requires a consistent whole-world backup "
+               "including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.")
+    expected = [
+        (refusal_log.PROJECT_LOGGERS, "ERROR", re.escape(message), ()),
+        (("ne.mi.ev.EventBus/EVENTBUS", "net.minecraftforge.eventbus.EventBus/EVENTBUS"), "ERROR",
+         re.escape("Exception caught during firing event: " + reason), (exception,)),
+        (("minecraft/MinecraftServer",), "ERROR", re.escape("Encountered an unexpected exception"), (exception,)),
+        (("ne.mi.co.ForgeMod/", "net.minecraftforge.common.ForgeMod/"), "FATAL",
+         r"Preparing crash report with UUID [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", ()),
+        (("minecraft/MinecraftServer",), "ERROR", re.escape("This crash report has been saved to: " + session.as_posix())
+         + r"/(?:\./)?crash-reports/crash-\d{4}-\d{2}-\d{2}_\d{2}\.\d{2}\.\d{2}-server\.txt", ()),
+        (("minecraft/MinecraftServer",), "ERROR", re.escape("Exception stopping the server"), (refusal_log.VANILLA_NPE,)),
+    ]
+    counts = [0] * len(expected)
+    headers = [(i, match) for i, line in enumerate(lines) if (match := refusal_log.HEADER.fullmatch(line.rstrip()))]
+    for position, (start, header) in enumerate(headers):
+        if header["level"] not in ("ERROR", "FATAL"):
+            continue
+        end = headers[position + 1][0] if position + 1 < len(headers) else len(lines)
+        body = [line.strip() for line in lines[start + 1:end]]
+        found = False
+        for index, (loggers, level, pattern, causes) in enumerate(expected):
+            text = header["message"].replace("\\", "/") if index == 4 else header["message"]
+            if header["thread"] == "Server thread" and header["logger"] in loggers and header["level"] == level and re.fullmatch(pattern, text):
+                require(tuple(line for line in body if refusal_log.EXCEPTION.fullmatch(line)) == causes,
+                        f"{case}/1: unexpected exception under diagnostic {index}")
+                if index == 5:
+                    frames = [line for line in body if line.startswith("at ")]
+                    require(bool(frames) and re.fullmatch(re.escape(refusal_log.VANILLA_FRAME) + r"(?: ~\[[^\r\n]+\] \{[^\r\n]*\})?", frames[0])
+                            and not any("advancedrocketrycommunity" in line.lower() for line in body),
+                            f"{case}/1: unexpected shutdown origin")
+                counts[index] += 1
+                found = True
+                break
+        require(found, f"{case}/1: unexpected ERROR/FATAL: {lines[start].strip()}")
+    require(counts == [1] * len(expected), f"{case}/1: refusal propagation counts differ: {counts}")
+    # Reject malformed ERROR/FATAL lines that the structured header parser did not recognize.
+    parsed = {i for i, _ in headers}
+    require(not any(("/ERROR]" in line or "/FATAL]" in line) and i not in parsed for i, line in enumerate(lines)),
+            f"{case}/1: unparsed ERROR/FATAL")
+    return dict(expected_counts=[1] * len(expected), observed_counts=counts)
 
 
 def run_u(run: Run, case: str) -> dict:
@@ -507,9 +556,12 @@ def run_u(run: Run, case: str) -> dict:
             run.process = process
             try:
                 # This start must stop itself before READY, not be made to stop by a console command.
+                process.wait_for(re.compile(UNKNOWN_REFUSAL.pattern + r'|Done \(.*For help, type "help"'), run.args.startup_timeout)
+                require(not any(smoke.READY_MARKER.search(line) for line in process.lines), f"{case}/1: startup was not refused")
                 entry["exit_code"] = process.finish(run.args.startup_timeout)
-                require(entry["exit_code"] != 0, f"{case}/1: refusal exited successfully")
-                entry["refusal"] = check_unknown_refusal(process.lines, case)
+                # The pinned Forge/vanilla pre-Level refusal reports its crash and exits with code 0 (also W157).
+                require(entry["exit_code"] == 0, f"{case}/1: abnormal process exit {entry['exit_code']}")
+                entry["refusal"] = check_unknown_refusal(process.lines, case, run.session)
             finally:
                 process.abort()
                 run.process = None
@@ -519,8 +571,9 @@ def run_u(run: Run, case: str) -> dict:
         (run.evidence / f"{case}-after.json").write_text(json.dumps(after, indent=2), encoding="utf-8")
         (run.evidence / f"{case}-restoration.json").write_text(json.dumps(dict(
             file=str(file), sha256= digest(file), unchanged=before == after), indent=2), encoding="utf-8")
-        require(before == after, f"{case}/1: a world file changed during the refused start")
-    entry["world_unchanged"] = True
+    entry["world_unchanged"] = before == after
+    entry["changed_files"] = [name for name in sorted(set(before) | set(after)) if before.get(name) != after.get(name)]
+    entry["raw"] = snapshot(run, world, case, "1")
     row["starts"].append(entry)
     # A recovery start AND a second clean restart, in addition to the refused restart.
     for restart in (2, 3):
@@ -538,6 +591,9 @@ def run_u(run: Run, case: str) -> dict:
         require(digest(file) == before[file.relative_to(world).as_posix()], f"{case}/{restart}: fixture bytes changed")
         entry["disk"] = disk(world)
         row["starts"].append(entry)
+    # Keep recovery observations even when vanilla's pre-event metadata write violates the strict whole-world oracle.
+    (run.evidence / f"{case}-observations.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
+    require(row["starts"][1]["world_unchanged"], f"{case}/1: world files changed: {row['starts'][1]['changed_files']}")
     return row
 
 
@@ -811,7 +867,7 @@ def run(args) -> dict:
                 result["status"] = "PASS"
                 report["cases"].append(result)
                 print(f"{case}: PASS (S0 and two restarts)", flush=True)
-            except smoke.SmokeError as failure:
+            except (smoke.SmokeError, OSError) as failure:
                 if runner.process is not None:
                     runner.process.abort(); runner.process = None
                 report["cases"].append(dict(case=case, status="FAILED", error=str(failure)))

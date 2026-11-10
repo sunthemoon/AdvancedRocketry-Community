@@ -253,3 +253,10 @@ the metadata probe alone cannot pass the native case. Actual W343 results belong
 W343 also tightens L_LEDGER's S2 oracle to require a present, changed ledger, and the P cases to require data-bay menu
 `NONE / DEPLOYMENT_CAPACITY` (server) or `NONE / OWNER_PENDING_FULL` (owner), in addition to all existing byte, package
 and receipt checks. W332's older smoke results retain their original identity and limitations.
+
+**W343 first native observation:** both U types reach the exact refusal on this host. Pinned Forge/vanilla exits with
+code 0 after propagating the startup exception and its known pre-Level shutdown error, as in the existing W157 runner;
+the harness audits all six diagnostics and their exception identities. The original non-zero-exit assumption in section
+3.1 was incorrect. However, vanilla updates `/Data/LastPlayed` in `level.dat` and rotates `level.dat_old` before this
+Forge event. The full-world manifest assertion remains strict: these changes fail it. Recovery observations are retained
+separately, and neither a passing metadata probe nor unchanged managed files can turn that failure into a case PASS.

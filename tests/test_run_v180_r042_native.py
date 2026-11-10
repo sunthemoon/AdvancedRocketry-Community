@@ -270,6 +270,42 @@ class InvocationTests(unittest.TestCase):
 
 
 class UnknownPresenceTests(unittest.TestCase):
+    def test_world_manifest_keeps_level_metadata_and_every_nested_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            world = Path(directory)
+            (world / "data").mkdir()
+            (world / "data/root.dat").write_bytes(b"valid")
+            (world / "level.dat").write_bytes(b"metadata")
+            before = r042.world_manifest(world)
+            self.assertEqual({"data/root.dat", "level.dat"}, set(before))
+            (world / "level.dat").write_bytes(b"changed metadata")
+            self.assertNotEqual(before, r042.world_manifest(world))
+            (world / "new-file").write_bytes(b"added")
+            self.assertNotEqual(before, r042.world_manifest(world))
+
+    def test_native_refusal_audits_every_propagation_and_its_exception(self):
+        session = Path("D:/fixture")
+        case = "U_BAY"
+        reason = "advancedrocketrycommunity_bay_receipts presence is unknown: its file status check failed, so its absence is not proven"
+        exception = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
+        def header(logger, level, message): return f"[12:00:00] [Server thread/{level}] [{logger}]: {message}"
+        lines = [header("io.gi.su.ad.AdvancedRocketryCommunity/", "ERROR",
+                        "[ARCE-BETA-2000] Beta world data check blocked startup; type=BAY_RECEIPTS; reason=" + reason
+                        + ". " + r042.STORAGE_HINT + " Keep the world stopped. Escrow recovery requires a consistent "
+                        "whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file."),
+                 header("ne.mi.ev.EventBus/EVENTBUS", "ERROR", "Exception caught during firing event: " + reason), exception,
+                 header("minecraft/MinecraftServer", "ERROR", "Encountered an unexpected exception"), exception,
+                 header("ne.mi.co.ForgeMod/", "FATAL", "Preparing crash report with UUID 00000000-0000-0000-0000-000000000000"),
+                 header("minecraft/MinecraftServer", "ERROR", "This crash report has been saved to: D:/fixture/./crash-reports/crash-2026-11-10_08.01.53-server.txt"),
+                 header("minecraft/MinecraftServer", "ERROR", "Exception stopping the server"), r042.refusal_log.VANILLA_NPE,
+                 "    " + r042.refusal_log.VANILLA_FRAME]
+        self.assertEqual([1] * 6, r042.check_unknown_refusal(lines, case, session)["audit"]["observed_counts"])
+        for broken in (lines + [lines[5]], lines[:5] + lines[6:], lines[:2] + ["java.lang.IllegalStateException: other"] + lines[3:],
+                       lines[:-1] + ["at some.other.frame(Source.java:1)"],
+                       lines + [header("minecraft/MinecraftServer", "ERROR", "another error")]):
+            with self.subTest(broken=broken), self.assertRaises(smoke.SmokeError):
+                r042.check_unknown_refusal(broken, case, session)
+
     def test_handle_is_restored_and_closed_in_order_even_if_the_body_or_set_fails(self):
         for failure_at in (None, "body", "set"):
             events = []
