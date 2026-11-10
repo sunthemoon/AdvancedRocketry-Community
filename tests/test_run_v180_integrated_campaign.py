@@ -15,13 +15,14 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_integrated_campaign as campaign
 
-SOURCE, CANDIDATE, HASH = "a" * 40, "b" * 40, "c" * 64
+SOURCE, CANDIDATE, HASH, OLD_HASH = "a" * 40, "b" * 40, "c" * 64, "d" * 64
 
 
 def arguments(root, **changes):
     values = dict(candidate_commit=CANDIDATE, jar=Path("placeholder.jar"), jar_sha256=HASH,
                   template=Path("placeholder-server"), evidence_root=root / "evidence", only=None,
-                  suffix="unit", dry_run=False, java="java17.exe", old_jar=None, old_source_commit=None)
+                  suffix="unit", dry_run=False, java="java17.exe", old_jar=None, old_source_commit=None,
+                  downgrade_old_jar=None, downgrade_old_jar_sha256=None)
     values.update(changes)
     return argparse.Namespace(**values)
 
@@ -65,7 +66,27 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(len(inventory), 285)
         self.assertEqual(Counter(entry["case"] for entry in inventory), Counter(entry["case"] for entry in campaign.cargo.inventory()))
         self.assertEqual(len({row["name"] for row in rows}), len(rows))
-        self.assertEqual(len(rows), 34)
+        # W339 appends ten timing, six saturation and one downgrade family after W337's 34.
+        self.assertEqual(len(rows), 51)
+
+    def test_w336_coverage_and_order_append_every_case_and_kind_exactly(self):
+        rows = campaign.family_specs()
+        self.assertFalse(any("w336_family" in row for row in rows[:34]))
+        timing = rows[34:44]
+        saturation = rows[44:50]
+        downgrade = rows[50:]
+        self.assertTrue(all(row["w336_family"] == "timing" for row in timing))
+        self.assertEqual(Counter(case for row in timing for case in row["cases"]),
+                         Counter(campaign.timing.CASES) + Counter(["TURNS"]))
+        expected = [(case, str(claims)) if case == "TURNS" else (case, None)
+                    for case in campaign.timing.CASES for claims in ((2, 3) if case == "TURNS" else (None,))]
+        self.assertEqual([(row["arguments"][1], row["arguments"][3] if "--claims" in row["arguments"] else None)
+                          for row in timing], expected)
+        self.assertTrue(all(row["w336_family"] == "saturation" for row in saturation))
+        self.assertEqual([row["arguments"] for row in saturation], [["--kind", kind] for kind in campaign.saturation.oracle.DEVICES])
+        self.assertEqual(Counter(case for row in saturation for case in row["cases"]), Counter(campaign.saturation.oracle.DEVICES.keys()))
+        self.assertEqual([row["name"] for row in downgrade], ["w336-downgrade"])
+        self.assertEqual(downgrade[0]["w336_family"], "downgrade")
 
     def test_candidate_arguments_and_reuse_session_parent_match_runner_forms(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", side_effect=lambda ref: SOURCE if ref == "HEAD" else CANDIDATE):
@@ -79,15 +100,47 @@ class PlanTest(unittest.TestCase):
                 if row.get("cargo_family") in campaign.cargo.REUSE:
                     self.assertEqual(row["session"], str(campaign.TEMP))
                     self.assertIn("--cargo-under-lock", command)
-                if "cargo_family" not in row:
+                self.assertNotIn("--smoke", command)
+                if "cargo_family" not in row and "w336_family" not in row:
                     self.assertIn("--stop-on-failure", command)
-            self.assertEqual(plan["requirements"], ["--old-jar", "--old-source-commit"])
+                else:
+                    self.assertNotIn("--stop-on-failure", command)
+            self.assertEqual(plan["requirements"], ["--old-jar", "--old-source-commit",
+                                                   "--downgrade-old-jar", "--downgrade-old-jar-sha256"])
+
+    def test_downgrade_requirements_are_selected_and_independent_of_g2(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE):
+            base = Path(directory)
+            for only, expected in ((["released"], []), (["cargo-G2-REUSE"], ["--old-jar", "--old-source-commit"]),
+                                   (["w336-downgrade"], ["--downgrade-old-jar", "--downgrade-old-jar-sha256"])):
+                with self.subTest(only=only):
+                    self.assertEqual(campaign.make_plan(arguments(base, only=only))["requirements"], expected)
+            for changes, missing in (({}, ["--downgrade-old-jar", "--downgrade-old-jar-sha256"]),
+                                     ({"downgrade_old_jar": Path("w176.jar")}, ["--downgrade-old-jar-sha256"]),
+                                     ({"downgrade_old_jar_sha256": OLD_HASH}, ["--downgrade-old-jar"])):
+                args = arguments(base, only=["w336-downgrade"], old_jar=Path("g2.jar"), old_source_commit=CANDIDATE, **changes)
+                self.assertEqual(campaign.make_plan(args)["requirements"], missing)
+                with patch.object(campaign, "preflight") as preflight, patch.object(campaign, "HeavyLock") as lock:
+                    with self.assertRaisesRegex(ValueError, "explicit historical inputs"):
+                        campaign.run_campaign(args)
+                    preflight.assert_not_called()
+                    lock.assert_not_called()
+                self.assertFalse(args.evidence_root.exists())
+            plan = campaign.make_plan(arguments(base, old_jar=Path("g2.jar"), old_source_commit=CANDIDATE,
+                                               downgrade_old_jar=Path("w176.jar"), downgrade_old_jar_sha256=OLD_HASH.upper()))
+            self.assertEqual(plan["requirements"], [])
+            self.assertEqual(plan["downgrade_old_jar_sha256"], OLD_HASH)
+            for row in plan["families"]:
+                if row.get("cargo_family") == "G2-REUSE" or row.get("w336_family") == "downgrade":
+                    path = "w176.jar" if row.get("w336_family") == "downgrade" else "g2.jar"
+                    self.assertEqual(row["command"][row["command"].index("--old-jar") + 1], str(Path(path).resolve()))
 
     def test_bad_family_suffix_hash_and_missing_g2_inputs_refuse_before_execution(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE), \
                 patch.object(campaign, "run_command") as run, patch.object(campaign, "HeavyLock") as lock:
             base = Path(directory)
-            for changes in ({"only": ["unknown"]}, {"suffix": "../escape"}, {"jar_sha256": "bad"}):
+            for changes in ({"only": ["unknown"]}, {"suffix": "../escape"}, {"jar_sha256": "bad"},
+                            {"downgrade_old_jar_sha256": "bad"}, {"downgrade_old_jar_sha256": ""}):
                 with self.assertRaises(ValueError):
                     campaign.make_plan(arguments(base, **changes))
             with self.assertRaisesRegex(ValueError, "explicit historical inputs"):
@@ -98,14 +151,19 @@ class PlanTest(unittest.TestCase):
 
     def test_every_command_is_accepted_by_its_real_cli_parser_with_execution_faked(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE):
-            plan = campaign.make_plan(arguments(Path(directory), old_jar=Path("historical.jar"), old_source_commit=CANDIDATE))
+            plan = campaign.make_plan(arguments(Path(directory), old_jar=Path("historical.jar"), old_source_commit=CANDIDATE,
+                                               downgrade_old_jar=Path("w176.jar"), downgrade_old_jar_sha256=OLD_HASH))
             self.assertEqual(plan["requirements"], [])
             modules = {"scripts/" + Path(module.__file__).name: module for module in (
-                campaign.forced, campaign.released, campaign.exits, campaign.cargo)}
+                campaign.forced, campaign.released, campaign.exits, campaign.cargo,
+                campaign.timing, campaign.saturation, campaign.downgrade)}
+            self.assertEqual(len(plan["families"]), 51)
             for row in plan["families"]:
                 command = row["command"]
                 module = campaign.cargo if command[2] == campaign.SELF else modules[command[2]]
-                with self.subTest(family=row["name"]), patch.object(module, "run", return_value={"status": "PASS"}) as run:
+                fake = (patch.object(module.native, "execute", return_value=0) if "w336_family" in row
+                        else patch.object(module, "run", return_value={"status": "PASS"}))
+                with self.subTest(family=row["name"]), fake as run:
                     if command[2] == campaign.SELF:
                         self.assertEqual(campaign.main(command[3:]), 0)
                     else:
@@ -115,6 +173,20 @@ class PlanTest(unittest.TestCase):
                     self.assertEqual(parsed.source_commit, SOURCE)
                     self.assertEqual(parsed.candidate_commit, SOURCE)
                     self.assertEqual(parsed.lock_owner, row["lock_owner"])
+                    if "w336_family" in row:
+                        self.assertFalse(parsed.smoke)
+                        self.assertEqual((parsed.startup_timeout, parsed.exit_timeout), (240, 180))
+                        self.assertNotIn("--stop-on-failure", command)
+                    if row.get("w336_family") == "timing":
+                        self.assertEqual(parsed.case, row["cases"][0])
+                        self.assertEqual((parsed.window_ticks, parsed.ticket_timeout, parsed.flight_timeout, parsed.settle_timeout),
+                                         (240, 120, 120, 180))
+                        self.assertEqual(parsed.claims, int(row["arguments"][3]) if parsed.case == "TURNS" else 2)
+                    if row.get("w336_family") == "saturation":
+                        self.assertEqual(parsed.kind, row["cases"][0])
+                    if row.get("w336_family") == "downgrade":
+                        self.assertEqual(parsed.old_jar, Path("w176.jar").resolve())
+                        self.assertEqual((parsed.flight_timeout, parsed.settle_timeout), (120, 180))
                     if row.get("cargo_family") == "G2-REUSE":
                         self.assertEqual(parsed.old_jar, Path("historical.jar").resolve())
                         self.assertEqual(parsed.old_source_commit, SOURCE)
@@ -123,7 +195,7 @@ class PlanTest(unittest.TestCase):
 
 class PreflightTest(unittest.TestCase):
     def setUp(self):
-        self.plan = dict(jar="candidate.jar", jar_sha256=HASH, source_commit=SOURCE, candidate_commit=CANDIDATE)
+        self.plan = dict(jar="candidate.jar", jar_sha256=HASH, source_commit=SOURCE, candidate_commit=CANDIDATE, families=[])
         self.hash = patch.object(campaign, "digest", return_value=HASH).start()
         self.git = patch.object(campaign, "git", side_effect=[SOURCE, ""]).start()
         self.diff = patch.object(campaign.subprocess, "run", return_value=Mock(returncode=0, stderr="")).start()
@@ -141,6 +213,21 @@ class PreflightTest(unittest.TestCase):
         self.hash.return_value = "d" * 64
         with self.assertRaisesRegex(campaign.PreconditionError, "hash mismatch"):
             campaign.preflight(self.plan)
+        self.diff.assert_not_called()
+        self.disk.assert_not_called()
+
+    def test_selected_downgrade_hash_is_verified_separately_before_git_or_disk(self):
+        self.plan.update(families=[dict(w336_family="downgrade")], downgrade_old_jar="w176.jar", downgrade_old_jar_sha256=OLD_HASH)
+        self.hash.side_effect = [HASH, OLD_HASH]
+        result = campaign.preflight(self.plan)
+        self.assertEqual(result["downgrade_old_jar_sha256"], OLD_HASH)
+        self.assertEqual([call.args[0] for call in self.hash.call_args_list], ["candidate.jar", "w176.jar"])
+        self.diff.reset_mock()
+        self.disk.reset_mock()
+        self.hash.side_effect = [HASH, "e" * 64]
+        with self.assertRaisesRegex(campaign.PreconditionError, "Downgrade old JAR hash mismatch") as raised:
+            campaign.preflight(self.plan)
+        self.assertEqual(raised.exception.checks["downgrade_old_jar_sha256"], "e" * 64)
         self.diff.assert_not_called()
         self.disk.assert_not_called()
 
@@ -296,6 +383,69 @@ class ExecutionTest(unittest.TestCase):
                 self.assertEqual(campaign.run_campaign(args), 1)
             self.assertEqual([call.args[0]["name"] for call in run.call_args_list], ["cargo-C-S1", "cargo-D-S1"])
 
+    def test_failed_timing_stops_later_timing_families_but_not_saturation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            selected = campaign.family_specs()[34:37] + campaign.family_specs()[44:46]
+            args = arguments(Path(directory), only=[row["name"] for row in selected])
+            with patch.object(campaign, "preflight", return_value=dict(production_diff_exit=0)), \
+                    patch.object(campaign, "HeavyLock"), patch.object(campaign, "run_command", side_effect=[1, 0, 0]) as run, \
+                    redirect_stdout(io.StringIO()):
+                self.assertEqual(campaign.run_campaign(args), 1)
+            summary = json.loads((args.evidence_root / "campaign-unit.json").read_text())
+            self.assertEqual([row["status"] for row in summary["families"]], ["FAILED", "NOT_RUN", "NOT_RUN", "PASS", "PASS"])
+            self.assertEqual([call.args[0]["name"] for call in run.call_args_list], [selected[i]["name"] for i in (0, 3, 4)])
+
+    def test_downgrade_keeps_failed_verdict_and_exit_code_without_blocking_other_runners(self):
+        for exit_code in (0, 1):
+            with self.subTest(exit_code=exit_code), tempfile.TemporaryDirectory() as directory:
+                args = arguments(Path(directory), only=["w336-downgrade", "w336-timing-B12_D4", "w336-saturation-bay", "cargo-C-S1"],
+                                 downgrade_old_jar=Path("w176.jar"), downgrade_old_jar_sha256=OLD_HASH)
+                original = campaign.make_plan
+                def downgrade_first(args):
+                    plan = original(args)
+                    # Put the normally last family first to observe failure isolation.
+                    plan["families"].sort(key=lambda row: row.get("w336_family") != "downgrade")
+                    return plan
+                def execute(row):
+                    if row.get("w336_family") == "downgrade":
+                        native = Path(row["output"]) / "native"
+                        native.mkdir()
+                        (native / "results.json").write_text(json.dumps(dict(status="FAILED")), encoding="utf-8")
+                        return exit_code
+                    return 0
+                with patch.object(campaign, "make_plan", side_effect=downgrade_first), \
+                        patch.object(campaign, "preflight", return_value=dict(production_diff_exit=0)), \
+                        patch.object(campaign, "HeavyLock"), patch.object(campaign, "run_command", side_effect=execute) as run, \
+                        redirect_stdout(io.StringIO()):
+                    self.assertEqual(campaign.run_campaign(args), 1)
+                summary = json.loads((args.evidence_root / "campaign-unit.json").read_text())
+                self.assertEqual(summary["status"], "FAILED")
+                self.assertEqual([row["status"] for row in summary["families"]], ["FAILED", "PASS", "PASS", "PASS"])
+                self.assertEqual(summary["families"][0]["exit_code"], exit_code)
+                self.assertEqual(summary["families"][0]["runner_status"], "FAILED")
+                self.assertEqual(run.call_count, 4)
+                self.assertEqual(json.loads((args.evidence_root / "campaign-unit.done").read_text())["status"], "FAILED")
+
+    def test_downgrade_hash_refusal_before_or_after_lock_never_starts_a_runner(self):
+        for after_lock in (False, True):
+            with self.subTest(after_lock=after_lock), tempfile.TemporaryDirectory() as directory:
+                args = arguments(Path(directory), only=["w336-downgrade"],
+                                 downgrade_old_jar=Path("w176.jar"), downgrade_old_jar_sha256=OLD_HASH)
+                hashes = [HASH, OLD_HASH, HASH, "e" * 64] if after_lock else [HASH, "e" * 64]
+                with patch.object(campaign, "digest", side_effect=hashes), \
+                        patch.object(campaign, "git", side_effect=[SOURCE, ""]), \
+                        patch.object(campaign.subprocess, "run", return_value=Mock(returncode=0, stderr="")), \
+                        patch.object(campaign.shutil, "disk_usage", return_value=Mock(free=campaign.MIN_FREE + 1)), \
+                        patch.object(campaign, "HeavyLock") as lock, patch.object(campaign, "run_command") as run, \
+                        redirect_stdout(io.StringIO()):
+                    self.assertEqual(campaign.run_campaign(args), 1)
+                run.assert_not_called()
+                self.assertEqual(lock.return_value.acquire.call_count, int(after_lock))
+                self.assertEqual(lock.return_value.release.call_count, int(after_lock))
+                row = json.loads(next(args.evidence_root.glob("*/invocation.json")).read_text())
+                self.assertEqual(row["refusal"]["downgrade_old_jar_sha256"], "e" * 64)
+                self.assertEqual(row["status"], "DRIVER_FAILED")
+
     def test_refusals_before_and_after_lock_never_start_a_runner(self):
         for after_lock in (False, True):
             with tempfile.TemporaryDirectory() as directory:
@@ -361,8 +511,9 @@ class ExecutionTest(unittest.TestCase):
                     fake.assert_not_called()
             plan = json.loads((root / "plan.json").read_text())
             self.assertEqual(json.loads(output.getvalue()), plan)
-            self.assertEqual(len(plan["families"]), 34)
-            self.assertEqual(len(list(root.glob("*/invocation.json"))), 34)
+            # W339 adds 17 families to the original 34 without executing any of them.
+            self.assertEqual(len(plan["families"]), 51)
+            self.assertEqual(len(list(root.glob("*/invocation.json"))), 51)
             self.assertEqual(json.loads((root / "campaign-attempt1.done").read_text())["status"], "DRY_RUN")
             self.assertTrue(all(row["command"] for row in plan["families"]))
 
