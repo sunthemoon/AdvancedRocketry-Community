@@ -5,6 +5,7 @@ Run real campaigns as detached processes, as required by WORKER-RULES.md. Each
 invocation needs a new external evidence directory. --only is partial evidence,
 not a substitute for rerunning the complete matrix after a production change.
 G2-REUSE additionally requires --old-jar and --old-source-commit.
+W336 downgrade separately requires --downgrade-old-jar and its --downgrade-old-jar-sha256.
 """
 from __future__ import annotations
 
@@ -26,6 +27,9 @@ import run_v180_bay_forced_stop as forced
 import run_v180_bay_released_flight as released
 import run_v180_bay_exit_cuts as exits
 import run_v180_cargo_integrated as cargo
+import run_v180_w336_timing as timing
+import run_v180_w336_saturation as saturation
+import run_v180_w336_downgrade as downgrade
 
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path(r"D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm")
@@ -59,12 +63,12 @@ def resolve_commit(value):
 
 
 def family_specs():
-    """Keep C1 names/order; add the omitted initial A tranche and W331 groups."""
+    """Keep the original 34 families in order, then append W336 observations."""
     rows = []
 
     def bay(name, module, cases, arguments=()):
         rows.append(dict(name=name, runner="scripts/" + Path(module.__file__).name,
-                         cases=list(cases), arguments=list(arguments)))
+                         cases=list(cases), arguments=list(arguments), stop_on_failure=True))
 
     def tranche(name, key):
         cases = {**forced.TRANCHES, **forced.W331_TRANCHES}[key]
@@ -97,6 +101,16 @@ def family_specs():
             raise ValueError("Cargo family has multiple underlying runners: " + family)
         rows.append(dict(name="cargo-" + family, runner=cases[0]["runner"], cargo_family=family,
                          cases=[row["case"] for row in cases], inventory=cases, arguments=["--family", family]))
+    for case in timing.CASES:
+        for claims in (2, 3) if case == "TURNS" else (None,):
+            rows.append(dict(name="w336-timing-" + case + ("-" + str(claims) if claims else ""),
+                             runner="scripts/" + Path(timing.__file__).name, w336_family="timing",
+                             cases=[case], arguments=["--case", case] + (["--claims", str(claims)] if claims else [])))
+    for kind in saturation.oracle.DEVICES:
+        rows.append(dict(name="w336-saturation-" + kind, runner="scripts/" + Path(saturation.__file__).name,
+                         w336_family="saturation", cases=[kind], arguments=["--kind", kind]))
+    rows.append(dict(name="w336-downgrade", runner="scripts/" + Path(downgrade.__file__).name,
+                     w336_family="downgrade", cases=["downgrade"], arguments=[]))
     return rows
 
 
@@ -108,18 +122,22 @@ def command_for(row, plan):
                "--source-commit", plan["source_commit"], "--candidate-commit", plan["candidate_commit"],
                "--candidate-sha256" if cargo_family else "--jar-sha256", plan["jar_sha256"],
                "--java", plan["java"], "--lock-owner", row["lock_owner"], *row["arguments"]]
-    if not cargo_family:
+    if row.get("stop_on_failure"):
         command.append("--stop-on-failure")
     if cargo_family == "G2-REUSE":
         command.extend(["--old-jar", plan["old_jar"] or "<required-old-jar>",
                         "--old-source-commit", plan["old_source_commit"] or "<required-old-source-commit>",
                         "--start-counter", str(Path(row["output"]) / "start-counter.json")])
+    if row.get("w336_family") == "downgrade":
+        command.extend(["--old-jar", plan["downgrade_old_jar"] or "<required-downgrade-old-jar>"])
     return command
 
 
 def make_plan(args):
     if not re.fullmatch(r"[0-9a-fA-F]{64}", args.jar_sha256):
         raise ValueError("--jar-sha256 must be 64 hexadecimal characters")
+    if args.downgrade_old_jar_sha256 is not None and not re.fullmatch(r"[0-9a-fA-F]{64}", args.downgrade_old_jar_sha256):
+        raise ValueError("--downgrade-old-jar-sha256 must be 64 hexadecimal characters")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,47}", args.suffix):
         raise ValueError("--suffix must be a short filename component")
     specs = family_specs()
@@ -135,6 +153,8 @@ def make_plan(args):
                 evidence_root=str(root), java=args.java, suffix=args.suffix, partial=bool(only),
                 old_jar=str(args.old_jar.resolve()) if args.old_jar else None,
                 old_source_commit=resolve_commit(args.old_source_commit) if args.old_source_commit else None,
+                downgrade_old_jar=str(args.downgrade_old_jar.resolve()) if args.downgrade_old_jar else None,
+                downgrade_old_jar_sha256=args.downgrade_old_jar_sha256.lower() if args.downgrade_old_jar_sha256 else None,
                 omitted_families=[row["name"] for row in specs if only and row["name"] not in only], families=[])
     campaign_id = uuid.uuid4().hex
     for spec in specs:
@@ -149,8 +169,11 @@ def make_plan(args):
         plan["families"].append(row)
     plan["requirements"] = []
     if any(row.get("cargo_family") == "G2-REUSE" for row in plan["families"]):
-        plan["requirements"] = [flag for flag, value in (("--old-jar", plan["old_jar"]),
-                                                       ("--old-source-commit", plan["old_source_commit"])) if not value]
+        plan["requirements"].extend(flag for flag, value in (("--old-jar", plan["old_jar"]),
+                                                            ("--old-source-commit", plan["old_source_commit"])) if not value)
+    if any(row.get("w336_family") == "downgrade" for row in plan["families"]):
+        plan["requirements"].extend(flag for flag, value in (("--downgrade-old-jar", plan["downgrade_old_jar"]),
+                                                            ("--downgrade-old-jar-sha256", plan["downgrade_old_jar_sha256"])) if not value)
     return plan
 
 
@@ -170,6 +193,9 @@ def preflight(plan):
 
     checks["jar_sha256"] = digest(plan["jar"])
     require(checks["jar_sha256"] == plan["jar_sha256"], "Candidate JAR hash mismatch")
+    if any(row.get("w336_family") == "downgrade" for row in plan["families"]):
+        checks["downgrade_old_jar_sha256"] = digest(plan["downgrade_old_jar"])
+        require(checks["downgrade_old_jar_sha256"] == plan["downgrade_old_jar_sha256"], "Downgrade old JAR hash mismatch")
     command = ["git", "diff", "--quiet", plan["candidate_commit"], "HEAD", "--", *PRODUCTION_PATHS]
     checks["production_diff_command"] = command
     result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
@@ -262,7 +288,7 @@ def run_campaign(args):
     plan = make_plan(args)
     root = Path(plan["evidence_root"])
     if not args.dry_run and plan["requirements"]:
-        raise ValueError("G2-REUSE requires explicit historical inputs before any native start: "
+        raise ValueError("Selected families require explicit historical inputs before any native start: "
                          + ", ".join(plan["requirements"]))
     # Validate the caller's spelling too: resolve() alone would hide junctions.
     prepare_evidence(args.evidence_root.absolute())
@@ -301,6 +327,12 @@ def run_campaign(args):
                 write_json(invocation, row)
                 row["exit_code"] = run_command(family)
                 row["status"] = "PASS" if row["exit_code"] == 0 else "FAILED"
+                if family.get("w336_family") == "downgrade":
+                    # Preserve the historical whole-world verdict, not an expected-failure pass.
+                    report = output / "native/results.json"
+                    row["runner_status"] = json.loads(report.read_text(encoding="utf-8"))["status"] if report.is_file() else None
+                    if row["runner_status"] != "PASS":
+                        row["status"] = "FAILED"
                 row["after_runner"] = preflight(plan)
             except Exception as failure:
                 row.update(status="DRIVER_FAILED", error=str(failure))
@@ -401,6 +433,8 @@ def main(argv=None):
     parser.add_argument("--java", default=str(Path(os.environ.get("JAVA_HOME", "C:/Program Files/Java/jdk-17.0.7")) / "bin/java.exe"))
     parser.add_argument("--old-jar", type=Path, help="Explicit historical G2 JAR; never guessed")
     parser.add_argument("--old-source-commit", help="Historical G2 JAR's source commit")
+    parser.add_argument("--downgrade-old-jar", type=Path, help="W176 historical JAR for W336; separate from G2")
+    parser.add_argument("--downgrade-old-jar-sha256", help="SHA-256 of the W176 historical JAR")
     args = parser.parse_args(argv)
     if args.only:
         args.only = [name for group in args.only for name in group]

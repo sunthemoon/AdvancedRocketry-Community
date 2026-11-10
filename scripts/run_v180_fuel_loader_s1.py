@@ -14,6 +14,7 @@ import re
 import shutil
 import uuid
 
+import bay_integrated_evidence as evidence_tools
 import fuel_loader_s1_oracle as oracle
 import run_dedicated_server_smoke as smoke
 import run_v050_rocket_server_smoke as old_smoke
@@ -120,6 +121,8 @@ def run(args):
     libraries = args.source_server.resolve() / "libraries"
     oracle.require(libraries.is_dir() and not any(smoke.is_link_or_junction(path) for path in libraries.rglob("*")), "Unsafe Forge template")
     jars = dict(old=oracle.check_jar(args.old_jar, True), new=oracle.check_jar(args.jar, False))
+    oracle.require(jars["new"]["sha256"] == getattr(args, "candidate_pin", {}).get("jar_sha256", jars["new"]["sha256"]),
+                   "Candidate JAR changed since wrapper pinning")
     session.mkdir(); evidence.mkdir(parents=True)
     token = uuid.uuid4().hex; (session / ".arce-w176-owned").write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, old_source_commit=args.old_source_commit,
@@ -131,10 +134,11 @@ def run(args):
         old_before = new_before = None
         for index, stage in enumerate(STAGES):
             assert_pin(args.source_commit); require_lock(args.lock_owner); resources = preflight()
+            oracle.require(smoke.digest_file(args.jar) == jars["new"]["sha256"], "Candidate JAR changed")
             old_jar = stage in ("old-seed", "downgrade"); old_world = stage.startswith("old-") or stage == "downgrade"
             jar = args.old_jar if old_jar else args.jar
             oracle.require(smoke.digest_file(jar) == jars["old" if old_jar else "new"]["sha256"], "JAR changed")
-            shutil.copy2(jar, session / "mods/arce-s1.jar")
+            installed = evidence_tools.install_candidate(jar, session / "mods/arce-s1.jar", jars["old" if old_jar else "new"]["sha256"])
             world_name = "world-W176-" + ("old" if old_world else "new")
             properties = smoke.expected_server_properties(port, True)
             properties.update({"level-name": world_name, "level-type": "minecraft:flat", "max-tick-time": "60000",
@@ -145,6 +149,7 @@ def run(args):
             if not old_jar:
                 command[1:1] = ["-Dadvancedrocketrycommunity.fuelLoaderS1Stage=" + stage]
             row = dict(index=index, stage=stage, command=command, preflight=resources, commands=[], jar_sha256=smoke.digest_file(jar))
+            row.update(installed)
             row["counted_start"] = count_start(args.start_counter, dict(evidence=str(evidence), index=index, stage=stage))
             report["starts"].append(row)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -153,10 +158,12 @@ def run(args):
                 (evidence / f"{index}-world-before.json").write_text(json.dumps(before_refusal, indent=2) + "\n", encoding="utf-8")
                 for name in ("level.dat", "level.dat_old"):
                     shutil.copy2(session / world_name / name, evidence / f"{index}-before-{name}")
+            evidence_tools.recheck_installed(installed)
             process = smoke.CapturedProcess(command, session, evidence / f"{index}-{stage}.log")
             if stage == "downgrade":
                 process.wait_for(DOWNGRADE_GUARD, args.startup_timeout)
                 row["exit_code"] = process.finish()
+                evidence_tools.recheck_installed(installed)
                 latest = evidence / f"{index}-{stage}-latest.log"; shutil.copy2(session / "logs/latest.log", latest)
                 row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines(), index == 3); process = None
                 after_refusal = world_hashes(session / world_name)
@@ -199,6 +206,7 @@ def run(args):
             row["status"] = "PASS"
             print(f"{index}/{stage}: PASS", flush=True)
         assert_pin(args.source_commit)
+        evidence_tools.recheck_installed(installed)
         failed = [row["index"] for row in report["starts"] if row["status"] != "PASS"]
         oracle.require(not failed, "Native row assertions failed: " + ", ".join(map(str, failed)))
         report["status"] = "PASS"

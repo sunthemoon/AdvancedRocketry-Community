@@ -618,7 +618,9 @@ def run(args) -> dict:
     runner = Run(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        candidate.update(bay.evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, args.jar_sha256))
+        runner.candidate = candidate
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
         for case in cases:
@@ -673,7 +675,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return 0 if run(args)["status"] == "PASS" else 1
-    except (OSError, smoke.SmokeError) as failure:
+    except (OSError, smoke.SmokeError, bay.evidence_tools.CandidateError) as failure:
         print(f"FAIL: {failure}", flush=True)
         return 1
 
