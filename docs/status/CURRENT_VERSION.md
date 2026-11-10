@@ -107,7 +107,9 @@ What is still open:
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
   W326 (the four cargo kinds) ran it on candidate C1, the hosted build of `70dd5d43e`. The rerun on candidate C2,
   the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
-  2026-11-10 with the 58-family campaign driver (R421). W327's read-only audit of
+  2026-11-10 with the 58-family campaign driver (R421); its family `cargo-C-S3` failed on a test-fixture
+  regression (open item below), so all 58 families rerun on a candidate C3 after W352's fix (R424). W327's
+  read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
   released and REPAIR receipts hold shared pending slots until offline repair; the D6 wait figures are estimates;
@@ -514,5 +516,11 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **C2 campaign family `cargo-C-S3` (2026-11-11).** Its first case, `FC_LOAD_R1_255`, passed on C1 but crashed the
+  server at its first start on C2 with `Only a fueled rocket may accept a flight plan`, in the gated release-test
+  fixture before any production cargo step: W330's `7753cfd78` made `EscrowCargoTransferFixtures.record` use the
+  rocket's own fuel, and the C-S3 R1 branch calls it on an unfueled rocket. It is a test-fixture regression, not a
+  production defect; the other nine C-S3 cases did not run. W352 (R424) restores C1's fixture fuel for that branch
+  and runs the family natively; it stays open until all ten cases pass on candidate C3.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
