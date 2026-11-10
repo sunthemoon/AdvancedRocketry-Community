@@ -50,6 +50,13 @@ def replace_during_libraries(jar):
 
 
 class InstalledCandidateTests(unittest.TestCase):
+    def setUp(self):
+        # The runners check C: and D: free space before a start; the hosted Linux runner has neither drive.
+        # Report ample space so these tests reach the installed-JAR checks on every host (R414).
+        usage = patch("shutil.disk_usage", return_value=SimpleNamespace(total=1 << 50, used=0, free=1 << 50))
+        usage.start()
+        self.addCleanup(usage.stop)
+
     def test_shared_helper_records_copied_bytes_and_refuses_later_mutation(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
