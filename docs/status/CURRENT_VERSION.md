@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 6beee754c (W345 merged, R416: the U cases' exact metadata boundary, W341's installed-JAR verification in W332's runner including the presence probe, and W332's six families in the campaign driver, 57 families; branch run 42763504065 passed with 1,855 GameTests and governance run 42763505356 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42757197465 at 8e6520547 (W342 merged as cdd573aee and W332 with W343 as 138bb535d, with Root's records) passed on its first attempt: build 14.5 minutes, shards 0 to 3 in 16.1, 17.0, 21.6 and 15.1 minutes, 1,855 GameTests, with 3, 3, 4 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 42757197494 there passed. The run before it, 42748839833 at `3a82236e8`, failed only shard 0's log count (open item: player backup count). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 42768172114 at bbb707ab2 (W345 merged as 6beee754c, with Root's records) passed on its first attempt: build 13.9 minutes, shards 0 to 3 in 13.2, 19.7, 19.6 and 19.1 minutes, 1,855 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42768172023 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -475,22 +475,25 @@ What is still open:
   `bay_exit_delayed_one_box`) failed in shard 3 of W341's branch run 42723245823 with "Didn't succeed or fail
   within 400 ticks": the 400 ticks passed in 1.6 seconds of wall time while the fixture still waited for its
   chunks' entities to load. The branch changed only Python, and the same Java passed on the shared head (run
-  42723457801). W344 (R414) fixes the fixture's readiness wait; it stays open until W344 merges and later runs
-  show no recurrence.
+  42723457801). W344 (R414, delivered, branch runs pending) moves the fixture's loading into a bounded setup
+  wait that spends no measured tick; it stays open until W344 merges and later runs show no recurrence.
 - **Player backup count, hosted shared run (2026-11-10).** Shard 0 of shared run 42748839833 at `3a82236e8`
   passed all 398 tests but failed its log check: batch `rocket_rejoin_replace_failure` logged two failed player
   backups (20 WARN, 20 ERROR, 2 aborts) where the W159 expectations allow one. Its prompt ticks were
   `[12000, 12100]`, and vanilla autosaves every player when `tickCount % 6000 == 0`, so the autosave at tick
-  12,000 fell inside the window in which the fixture blocks the backup. No production defect is indicated. W347
-  (R417) keeps such fixture windows clear of autosave ticks; it stays open until W347 merges and later runs show
-  no recurrence.
+  12,000 fell inside the window in which the fixture blocks the backup (W347 confirmed it from the stack).
+  No production defect is indicated. W347 (R417, delivered, branch runs pending) opens those fixtures'
+  windows only when no autosave falls inside them; it stays open until W347 merges and later runs show no
+  recurrence.
 - **Satellite registry coalesced flush, local full run (2026-11-10).**
   `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` failed once in W342's
   first local full run with "The commit was not requested by the coalesced flush", 47 minutes after W342's
   new batch had finished. It passed in a filtered run right after that batch and in W342's second full run.
-  W342 suggests that an autosave landing in the test's short window would cause it; W347 (R417) checks
-  that against the same mechanism as the player backup count. It stays open until hosted and local runs
-  show no recurrence or W347 establishes and fixes the cause.
+  W347 established the cause: the batch started one to three ticks after the autosave of tick 84,000,
+  whose registry write and the same tick's coalesced-flush request left a request pending under the
+  writer's 10-tick cadence, and that request captured the test's change. No production defect is
+  indicated. W350 (R420) opens the test's window only when the writer is idle; it stays open until W350
+  merges and later runs show no recurrence.
 - **Monitor cold warm-up check, local full run (2026-11-09).**
   `EscrowMonitorGameTests.offlineMonitorWarmsAColdDestinationAndLaunchesOnlyOnAFreshEdge` (batch
   `monitor_governed_cold`) failed once in W330's local full run with `Offline owner lost its attributed warm-up`. The
