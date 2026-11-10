@@ -1509,7 +1509,10 @@ def add_candidate_arguments(parser: argparse.ArgumentParser) -> None:
                         help="The candidate's production source; refused unless HEAD has the same production files")
 
 
-def run(args) -> dict:
+def run(args, extra_cases: dict | None = None, extra_tranches: dict | None = None) -> dict:
+    """One invocation. W346: a sibling runner passes its own case functions (``extra_cases``, name to function) and
+    tranches; they reuse this session, candidate pin and cleanup, and no case of this runner changes."""
+    extra_cases, extra_tranches = extra_cases or {}, extra_tranches or {}
     assert_pin(args.source_commit)
     candidate = check_candidate(args)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
@@ -1536,11 +1539,12 @@ def run(args) -> dict:
         runner.candidate = candidate
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
-        tranches = {**TRANCHES, **W331_TRANCHES}
+        tranches = {**TRANCHES, **W331_TRANCHES, **extra_tranches}
         for case in args.case or (tranches[args.tranche] if args.tranche else list(CASES)):
             report["in_progress"] = case
             try:
-                report["cases"].append(run_w331_case(runner, case) if case in W331_CASES else run_case(runner, case))
+                report["cases"].append(extra_cases[case](runner, case) if case in extra_cases
+                                       else run_w331_case(runner, case) if case in W331_CASES else run_case(runner, case))
                 print(f"{case}: PASS (cut, two restarts)", flush=True)
             except smoke.SmokeError as failure:
                 if runner.process is not None:
