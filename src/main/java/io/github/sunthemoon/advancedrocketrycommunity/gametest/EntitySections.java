@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +14,7 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
  * later still while about 100 tests of one batch start in the same tick. Tests that need entities to be loaded there
  * (rocket authority recovery, the fuel loader's nearby-rocket rule) wait for it instead of asserting it once.
  */
-final class EntitySections {
+public final class EntitySections {
     private EntitySections() {
     }
 
@@ -52,11 +53,20 @@ final class EntitySections {
      * GameTest timeout counts ticks, not this time. Server thread only.
      */
     static boolean loadNow(ServerLevel level, ChunkPos chunk, long deadlineNanos) {
+        return awaitReady(level, () -> level.areEntitiesLoaded(chunk.toLong()), deadlineNanos);
+    }
+
+    /**
+     * Setup-only wait for already held chunks, including callers that also need entity ticking. Uses the same server,
+     * chunk-source and entity-management steps as {@link #loadNow}; does not add tickets or advance measured test ticks.
+     * The caller must check the result and keep its existing timed assertions outside this wait. Server thread only.
+     */
+    public static boolean awaitReady(ServerLevel level, BooleanSupplier ready, long deadlineNanos) {
         // ServerLevel.entityManager in the 1.20.1 SRG mappings.
         PersistentEntitySectionManager<Entity> entities =
                 ObfuscationReflectionHelper.getPrivateValue(ServerLevel.class, level, "f_143244_");
         level.getServer().managedBlock(() -> {
-            if (level.areEntitiesLoaded(chunk.toLong()) || System.nanoTime() - deadlineNanos > 0) {
+            if (ready.getAsBoolean() || System.nanoTime() - deadlineNanos > 0) {
                 return true;
             }
             int ran = 0;
@@ -64,8 +74,8 @@ final class EntitySections {
                 ran++;
             }
             entities.tick();
-            return level.areEntitiesLoaded(chunk.toLong());
+            return ready.getAsBoolean();
         });
-        return level.areEntitiesLoaded(chunk.toLong());
+        return ready.getAsBoolean();
     }
 }

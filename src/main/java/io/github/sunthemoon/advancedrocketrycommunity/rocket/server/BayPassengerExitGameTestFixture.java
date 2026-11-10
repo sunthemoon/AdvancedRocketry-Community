@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
@@ -36,6 +37,7 @@ final class BayPassengerExitGameTestFixture {
     final GameTestHelper helper;
     final Case scenario;
     final boolean tickConnection;
+    private final BooleanSupplier readinessGate;
     final List<ServerPlayer> players = new ArrayList<>();
     final List<EmbeddedChannel> channels = new ArrayList<>();
     final Set<Long> forcedColumns = new HashSet<>();
@@ -67,7 +69,11 @@ final class BayPassengerExitGameTestFixture {
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this(helper, scenario, false); }
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario, boolean tickConnection) {
+        this(helper, scenario, tickConnection, () -> true);
+    }
+    BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario, boolean tickConnection, BooleanSupplier readinessGate) {
         this.helper = helper; this.scenario = scenario; this.tickConnection = tickConnection;
+        this.readinessGate = readinessGate;
     }
     // W242-R9: GameTest-thread fixtures that have not cleaned up; each batch's @AfterBatch hook closes its leftovers.
     private static final Set<BayPassengerExitGameTestFixture> OPEN = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -166,15 +172,7 @@ final class BayPassengerExitGameTestFixture {
     private void setup() {
         var level = helper.getLevel(); var server = level.getServer();
         origin = helper.absolutePos(new BlockPos(5, 4, 5));
-        boolean ready = true;
-        for (int x = (origin.getX() >> 4) - 1; x <= (origin.getX() >> 4) + 1; x++) {
-            for (int z = (origin.getZ() >> 4) - 1; z <= (origin.getZ() >> 4) + 1; z++) {
-                long key = net.minecraft.world.level.ChunkPos.asLong(x, z);
-                if (!level.getForcedChunks().contains(key)) { level.setChunkForced(x, z, true); forcedColumns.add(key); }
-                ready &= level.areEntitiesLoaded(key) && level.isPositionEntityTicking(new BlockPos(x * 16, origin.getY(), z * 16));
-            }
-        }
-        if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
+        BayPassengerExitGameTestReadiness.prepare(helper, origin, forcedColumns, readinessGate, scenario.name());
         origin = BayPassengerExitGameTestArea.origin(helper, sealedAreaCase() || scenario == Case.AMBIENT_FLUID ? 5 : 3);
         player = join(BayPassengerExitTickedGameTests.drives(scenario) ? BayPassengerExitReleaseTest.RIDER : UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
