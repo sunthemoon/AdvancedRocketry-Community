@@ -8,6 +8,7 @@ import re
 import shutil
 import uuid
 import zipfile
+import bay_integrated_evidence as evidence_tools
 import run_v180_cargo_reconciliation as native
 import run_v180_cargo_cuts as fluid
 import item_cuts_oracle as oracle
@@ -118,7 +119,9 @@ def run(args):
     pins.update(getattr(args, "candidate_pin", {}))
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], cleanup=False); process = None
     try:
-        shutil.copytree(libraries, session / "libraries"); (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        shutil.copytree(libraries, session / "libraries"); (session / "mods").mkdir()
+        installed = evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, pins["jar_sha256"])
+        report["installed_candidate"] = installed
         port = native.smoke.allocate_port(); native.smoke.write_server_configuration(session, port, True)
         for case in args.case:
             spec = CASES[case]; row = dict(case=case, **spec, pins=pins, starts=[], findings=[]); report["cases"].append(row)
@@ -136,6 +139,8 @@ def run(args):
                 if not restart and case == "IR_DISASSEMBLY":
                     command.insert(1, "-Dadvancedrocketrycommunity.landedDisassemblyProbe=LANDED_DISASSEMBLY:K1")
                 start = dict(restart=restart, command=command, preflight=native.preflight()); row["starts"].append(start)
+                start.update(installed)
+                evidence_tools.recheck_installed(installed)
                 process = native.smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
                 try:
                     process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
@@ -184,6 +189,7 @@ def run(args):
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (forced stop and two restarts)", flush=True)
+        evidence_tools.recheck_installed(installed)
         report["status"] = "PASS"
     except Exception as failure:
         report.update(status="FAILED", error=str(failure)); raise

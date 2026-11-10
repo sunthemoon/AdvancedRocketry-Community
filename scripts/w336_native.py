@@ -11,6 +11,7 @@ import time
 import uuid
 import zipfile
 
+import bay_integrated_evidence as evidence_tools
 import loader_cut_nbt as nbt
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
@@ -71,19 +72,27 @@ class Native:
         self.session.mkdir()
         (self.session / ".w336-owned").write_text(self.token, encoding="ascii")
         self.evidence.mkdir(parents=True)
-        shutil.copytree(libraries, self.session / "libraries")
-        (self.session / "mods").mkdir()
-        # Bay adapters start their own CapturedProcess; they must see the same pinned mod too.
-        shutil.copy2(args.jar, self.session / "mods/w336.jar")
-        smoke.write_server_configuration(self.session, self.port, True)
+        try:
+            shutil.copytree(libraries, self.session / "libraries")
+            (self.session / "mods").mkdir()
+            # Bay adapters start their own CapturedProcess; they must see the same verified mod too.
+            self.installed = evidence_tools.install_candidate(args.jar, self.session / "mods/w336.jar", args.jar_sha256)
+            self.pin.update(self.installed)
+            smoke.write_server_configuration(self.session, self.port, True)
+        except Exception as failure:
+            write_json(self.evidence / "results.json", dict(status="FAILED", error=str(failure), pins=self.pin))
+            self.close()
+            raise
 
-    def start(self, label, world="world", properties=None, jar=None):
+    def start(self, label, world="world", properties=None, jar=None, jar_sha256=None):
         require(self.process is None, "A W336 process is already running")
         require_lock(self.args.lock_owner)
         require(min(shutil.disk_usage(d).free for d in ("C:/", "D:/")) >= 10 * 1024**3,
                 "Native start refused: less than 10 GiB free")
         require(smoke.digest_file(self.args.jar) == self.args.jar_sha256.lower(), "Candidate JAR changed")
-        shutil.copy2(jar or self.args.jar, self.session / "mods/w336.jar")
+        require(jar is None or jar_sha256 is not None, "Historical JAR start requires its SHA-256 pin")
+        self.installed = evidence_tools.install_candidate(jar or self.args.jar, self.session / "mods/w336.jar",
+                                                          jar_sha256 if jar is not None else self.args.jar_sha256)
         config = smoke.expected_server_properties(self.port, True)
         config.update({"level-name": world, "level-type": "minecraft:flat", "view-distance": "2",
                        "simulation-distance": "2", "spawn-protection": "0", "max-tick-time": "60000",
@@ -94,8 +103,9 @@ class Native:
         command = _server_command(self.args.java)
         command[2] = "-Xmx4G"
         command[4:4] = [f"-Dadvancedrocketrycommunity.{k}={v}" for k, v in sorted((properties or {}).items())]
-        self.starts.append(dict(label=label, jar_sha256=smoke.digest_file(jar or self.args.jar), command=command))
+        self.starts.append(dict(label=label, jar_sha256=self.installed["installed_jar_sha256"], command=command, **self.installed))
         write_json(self.evidence / "starts.json", self.starts)
+        evidence_tools.recheck_installed(self.installed)
         self.process = smoke.CapturedProcess(command, self.session, self.evidence / (label + ".log"))
         return self.process
 
@@ -139,6 +149,7 @@ class Native:
         self.send("stop")
         process, self.process = self.process, None
         code = process.finish(self.args.exit_timeout)
+        evidence_tools.recheck_installed(self.installed)
         require(code == 0, f"Native stop exited {code}")
         lines = (self.session / "logs/latest.log").read_text(encoding="utf-8", errors="replace").splitlines()
         shutil.copy2(self.session / "logs/latest.log", self.evidence / (label + "-latest.log"))
@@ -183,6 +194,7 @@ def execute(args, family):
     report = dict(status="IN_PROGRESS", pins=run.pin, local_smoke=args.smoke)
     try:
         report.update(family(run))
+        evidence_tools.recheck_installed(run.installed)
         report.setdefault("status", "PASS")
         if report["status"] == "IN_PROGRESS":
             report["status"] = "PASS"

@@ -135,7 +135,7 @@ class EvidenceTests(unittest.TestCase):
     def test_live_survey_cases_require_two_registrations_and_both_consumed_packages(self):
         fixture = dict(logical="l", data="data", solar="solar", packages="a+b")
         status = dict(claim="NONE", transfer="COMMITTED", state="LANDED", y="70", packages="c+d",
-                      consumed=["op-data", "op-survey"], receipts=[], owned=2)
+                      consumed=["op-data", "op-survey"], receipts=[], owned=2, locked="false")
         for case in ("W325_B4_LIVE_X_PRESENT_S", "W325_B4_LIVE_X_ABSENT_S"):
             bay.check_settled(case, 1, status, fixture)
             for changes in (dict(owned=1), dict(consumed=["op-data", None]), dict(packages="c+b")):
