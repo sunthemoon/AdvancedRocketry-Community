@@ -113,7 +113,8 @@ class CargoCutsRunnerTest(unittest.TestCase):
                                    case=["FC_LOAD_PREPARING", "FC_LOAD_L1_BEFORE"])
             process = Mock(); process.finish.return_value = 0; process.lines = []
             with patch.object(runner.native, "assert_pin"), patch.object(runner.native, "require_lock"), \
-                    patch.object(runner.native, "preflight", return_value={}), patch.object(runner.native, "digest", return_value="hash"), \
+                    patch.object(runner.native, "preflight", return_value={}), \
+                    patch.object(runner.native, "digest", return_value=runner.evidence_tools.file_sha256(jar)), \
                     patch.object(runner.native.smoke, "CapturedProcess", return_value=process) as starts, \
                     patch.object(runner.native.smoke, "allocate_port", return_value=25565), \
                     patch.object(runner.native.smoke, "write_server_configuration"), \

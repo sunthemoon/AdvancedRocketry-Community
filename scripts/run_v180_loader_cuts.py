@@ -18,6 +18,7 @@ import shutil
 import time
 import uuid
 
+import bay_integrated_evidence as evidence_tools
 import loader_cut_nbt as nbt
 import loader_cut_oracle as oracle
 import run_dedicated_server_smoke as smoke
@@ -233,7 +234,9 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
         libraries = args.source_server.resolve() / "libraries"
         oracle.require(libraries.is_dir() and not any(p.is_symlink() for p in libraries.rglob("*")), "Unsafe Forge template")
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        installed = evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, pins["jar_sha256"])
+        row["installed_candidate"] = installed
         port = smoke.allocate_port(); smoke.write_server_configuration(session, port, True)
         properties = smoke.expected_server_properties(port, True)
         properties.update({"level-name": "world", "level-type": "minecraft:flat", "max-tick-time": "60000",
@@ -255,6 +258,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowLoaderRetry=true")
             start = dict(restart=restart, command=command, free_bytes=free, free_physical_memory=physical_memory(), lock_owner=owner)
             row["starts"].append(start)
+            start.update(installed)
+            evidence_tools.recheck_installed(installed)
             process = smoke.CapturedProcess(command, session, evidence / f"start-{restart}.log")
             if restart == 0:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=" + re.escape(cut) + r" "), args.startup_timeout)
@@ -342,6 +347,7 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 previous = row["edited"] = oracle.inspect(session / "world", cut)
                 identity = None  # Identities are compared between the restarts of the edited copy.
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
+        evidence_tools.recheck_installed(installed)
         row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
         if row["status"] == "PASS" and getattr(args, "follow_ups", False) and cut in FOLLOW_UPS:
             row.update(status="KNOWN_LIMITATION", conservation="PASS",

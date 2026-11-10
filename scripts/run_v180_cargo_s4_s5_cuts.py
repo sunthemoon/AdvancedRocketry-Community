@@ -10,6 +10,7 @@ import re
 import shutil
 import uuid
 
+import bay_integrated_evidence as evidence_tools
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_cargo_reconciliation import preflight
@@ -433,7 +434,9 @@ def run(args) -> None:
     process = None
     try:
         shutil.copytree(libraries, session / "libraries")
-        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        (session / "mods").mkdir()
+        installed = evidence_tools.install_candidate(args.jar, session / "mods" / args.jar.name, pins["jar_sha256"])
+        report["installed_candidate"] = installed
         port = smoke.allocate_port(); smoke.write_server_configuration(session, port, True)
         for case in args.case:
             row = dict(case=case, family=CASES[case]["family"], pins=pins, starts=[], findings=[]); report["cases"].append(row)
@@ -452,6 +455,8 @@ def run(args) -> None:
                 if not restart:
                     command[1:1] = [f"-D{key}={value}" for key, value in sorted(CASES[case].get("properties", {}).items())]
                 start = dict(restart=restart, preflight=preflight(), command=command); row["starts"].append(start)
+                start.update(installed)
+                evidence_tools.recheck_installed(installed)
                 process = smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
                 execution_error = None
                 try:
@@ -507,6 +512,7 @@ def run(args) -> None:
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (forced stop and two restarts)", flush=True)
         require(all(row["status"] == "PASS" for row in report["cases"]), "Development run had failing cuts")
+        evidence_tools.recheck_installed(installed)
         report["status"] = "PASS"
     except Exception as failure:
         report.update(status="FAILED", error=str(failure)); raise

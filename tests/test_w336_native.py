@@ -257,7 +257,7 @@ class HarnessTest(unittest.TestCase):
             source = root / "source"; (source / "libraries").mkdir(parents=True)
             jar = root / "candidate.jar"; jar.write_bytes(b"pinned candidate")
             args = SimpleNamespace(session_dir=parent / "session", evidence_dir=root / "evidence",
-                                   jar=jar, source_commit="a", candidate_commit="a", jar_sha256="b",
+                                   jar=jar, source_commit="a", candidate_commit="a", jar_sha256=hashlib.sha256(jar.read_bytes()).hexdigest(),
                                    lock_owner="test", source_server=source)
             with patch.object(native, "TEMP", parent), patch.object(native, "verify_candidate", return_value={}), \
                     patch.object(native, "require_lock"), patch.object(native.smoke, "allocate_port", return_value=32000):
