@@ -37,6 +37,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SatelliteLifecycleGameTests {
+    private static final int COALESCED_TICKS = 200;
+    private static final int COALESCED_SETUP_TICKS = 2 * COALESCED_TICKS + 1;
     private SatelliteLifecycleGameTests() {
     }
 
@@ -73,20 +75,29 @@ public final class SatelliteLifecycleGameTests {
     }
 
     /** ADR-050 section 2: a change waits for the coalesced flush, which the production tick runs within 120 ticks. */
-    @GameTest(template = "empty", batch = "satellite", timeoutTicks = 200)
+    @GameTest(template = "empty", batch = "satellite", timeoutTicks = COALESCED_TICKS + COALESCED_SETUP_TICKS)
     public static void aPendingChangeIsFlushedByTheServerTick(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         UUID solar = UUID.randomUUID();
-        data.launchIdle(time -> SatelliteState.launchIdle(solar, ModIdentity.id("solar_satellite"), UUID.randomUUID(),
-                time, CelestialIds.EARTH_ID, new SatelliteBlueprint(List.of(ModIdentity.id("satellite_chassis"),
-                        ModIdentity.id("solar_transmitter_module")), false, new SatelliteStats(4, 720, 0, 0, 10)),
-                new SatelliteKindState.Solar(100, Optional.empty())), server.overworld().getGameTime());
-        data.updateKindState(solar, new SatelliteKindState.Solar(100, Optional.of(UUID.randomUUID())));
-        long before = SatelliteRuntime.coalescedFlushes();
-        helper.assertTrue(data.flushPending(), "A link change was not marked flush pending");
-        helper.succeedWhen(() -> helper.assertTrue(SatelliteRuntime.coalescedFlushes() > before,
-                "The server tick has not run a coalesced flush yet"));
+        var window = new SatelliteRegistryTestWindow(COALESCED_TICKS);
+        helper.onEachTick(() -> window.checkBudget(helper));
+        long[] before = new long[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(window.open(helper, data),
+                        "The registry writer is not idle or an autosave falls inside the measured window"))
+                .thenExecute(() -> {
+                    data.launchIdle(time -> SatelliteState.launchIdle(solar, ModIdentity.id("solar_satellite"), UUID.randomUUID(),
+                            time, CelestialIds.EARTH_ID, new SatelliteBlueprint(List.of(ModIdentity.id("satellite_chassis"),
+                                    ModIdentity.id("solar_transmitter_module")), false, new SatelliteStats(4, 720, 0, 0, 10)),
+                            new SatelliteKindState.Solar(100, Optional.empty())), server.overworld().getGameTime());
+                    data.updateKindState(solar, new SatelliteKindState.Solar(100, Optional.of(UUID.randomUUID())));
+                    before[0] = SatelliteRuntime.coalescedFlushes();
+                    helper.assertTrue(data.flushPending(), "A link change was not marked flush pending");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(SatelliteRuntime.coalescedFlushes() > before[0],
+                        "The server tick has not run a coalesced flush yet"))
+                .thenSucceed();
     }
 
     /** ADR-050 sections 8 and 9: operators inspect, release, cancel and recover through audited commands. */
