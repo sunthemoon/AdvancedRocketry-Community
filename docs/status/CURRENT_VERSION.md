@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 26b1ecda9 (W355 merged, R427: the campaign's `B3-S6-REUSE` family leaves out W211 R203's structurally out-of-reach `LF_S6_F9_RESPAWN` through a named exclusion that the plan reports as not covered; Python and tests only; branch run 42941465712 passed with 1,859 GameTests and governance run 42941466990 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42911718480 at b4dd5f320 (W353 merged) passed on its first attempt: build 9.7 minutes, shards 0 to 3 in 14.6, 21.2, 20.4 and 15.2 minutes, 1,859 GameTests, with 3, 4, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 42911718637 there passed. Later pushes up to `0bbb663d7` change documents only. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 42947784467 at 9a15e1f42 (W355 merged at `26b1ecda9`) passed on its first attempt: build 14.6 minutes, shards 0 to 3 in 14.6, 21.3, 21.4 and 18.2 minutes, 1,859 GameTests, with 3, 4, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42947784571 there passed. Its build is candidate C3. Run 42944723421 at `5ccff48bf` (W354 merged at `266df4cc3`) also passed on its first attempt with 1,859 GameTests (shards 14.5, 18.8, 21.9 and 15.2 minutes, 3, 3, 2 and 2 entries). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -106,11 +106,17 @@ What is still open:
   to target enabling all five in v1.8 after an integrated test on one candidate JAR
   ([OWNER-DECISIONS-20261109](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261109.md)): W325 (the bay) and
   W326 (the four cargo kinds) ran it on candidate C1, the hosted build of `70dd5d43e`. The rerun on candidate C2,
-  the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
-  2026-11-10 with the 58-family campaign driver (R421); its families `cargo-C-S3`, `cargo-C-S4-LOAD`,
-  `cargo-B3-S1-REUSE` and `cargo-B3-S6-REUSE` failed (open items below), so all 58 families rerun on a
-  candidate C3 after the fixes (R424 to R427). Its families `cargo-G2-REUSE` and `w336-downgrade` failed only
-  their historical-JAR downgrade checks, the known R-044 residual that R138 keeps failed (R428, R429). W327's
+  the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), ran on
+  2026-11-10 and 2026-11-11 with the 58-family campaign driver (R421) and ended with 49 families passed, 6
+  failed and 3 not run. `cargo-C-S3`, `cargo-C-S4-LOAD`, `cargo-B3-S1-REUSE` and `cargo-B3-S6-REUSE` failed on
+  test fixtures, a harness gap and a campaign selection, all fixed since (open items below, R424 to R427), and
+  `cargo-G2-REUSE` and `w336-downgrade` failed only their historical-JAR downgrade checks, the known R-044
+  residual that R138 keeps failed (R428, R429). On C2 the nine `cargo-B3-S6-REUSE` cases after the excluded F9
+  row then passed, and the three families not run (`cargo-C-S5`, `cargo-B3-S4-REUSE`, `cargo-B3-S5-REUSE`)
+  rerun under the suffix `attempt2`. All 58 families rerun on candidate C3, the hosted build of `9a15e1f42`
+  (shared run 42947784467; production paths equal to W355's merge `26b1ecda9`), JAR SHA-256
+  `459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b`, which the build's sealed identity
+  files confirm. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
