@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: b4dd5f320 (W353 merged, R425: the cargo settlement runner accepts the load veto's injected ERROR only in its exact form for `FS_LOAD_VETO_DESTINATION_SAVED` at its first start; Python and tests only; branch run 42904479477 passed with 1,859 GameTests and governance run 42904480512 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 266df4cc3 (W354 merged, R426: the fuel loader's N3 refusal cuts back their synthetic bay index with an empty, unwritten receipt store, so they test the shared pool rather than W128's deliberate unbacked-index hold; gated fixture and a unit test only, no production change; branch run 42939380895 passed with 1,859 GameTests and governance run 42939382362 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 42911718480 at b4dd5f320 (W353 merged) passed on its first attempt: build 9.7 minutes, shards 0 to 3 in 14.6, 21.2, 20.4 and 15.2 minutes, 1,859 GameTests, with 3, 4, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 42911718637 there passed. Later pushes up to `0bbb663d7` change documents only. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
@@ -537,7 +537,8 @@ What is still open:
   loader's attempt no longer answers `READY` with 64 pending BAY operations. It last passed on `1f674080` (W27C1)
   and did not run at C1. W354 (R426) traced it to a stale fixture: W128's `91de93e86` deliberately makes a
   LOADED bay index without a receipt store hold every rocket, and the probe's synthetic index has no store.
-  Its fixture correction (`0bbf3d9e9`) awaits its native run. Three later cases and the families
+  Its fixture correction was merged at `266df4cc3` after a diagnostic C2 start confirmed `ESCROW_PENDING` and
+  all seven cases passed natively on W354's JAR (branch run 42939380895 passed). Three later cases and the families
   `cargo-B3-S4-REUSE` and `cargo-B3-S5-REUSE` did not run. It stays open until the family passes on candidate
   C3.
 - **C2 campaign family `cargo-B3-S6-REUSE` (2026-11-11).** 87 of 88 run cases passed; `LF_S6_F9_RESPAWN` failed
