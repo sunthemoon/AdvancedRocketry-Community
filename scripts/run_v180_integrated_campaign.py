@@ -104,6 +104,10 @@ def family_specs():
             raise ValueError("Cargo family has multiple underlying runners: " + family)
         rows.append(dict(name="cargo-" + family, runner=cases[0]["runner"], cargo_family=family,
                          cases=[row["case"] for row in cases], inventory=cases, arguments=["--family", family]))
+        excluded = cargo.REUSE_EXCLUDED_CASES.get(family)
+        if excluded:
+            rows[-1]["excluded_cases"] = [dict(case=case, status="NOT_COVERED", reason=reason)
+                                           for case, reason in excluded.items()]
     for case in timing.CASES:
         for claims in (2, 3) if case == "TURNS" else (None,):
             rows.append(dict(name="w336-timing-" + case + ("-" + str(claims) if claims else ""),
