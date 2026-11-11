@@ -113,10 +113,11 @@ What is still open:
   `cargo-G2-REUSE` and `w336-downgrade` failed only their historical-JAR downgrade checks, the known R-044
   residual that R138 keeps failed (R428, R429). On C2 the nine `cargo-B3-S6-REUSE` cases after the excluded F9
   row then passed, and the three families not run (`cargo-C-S5`, `cargo-B3-S4-REUSE`, `cargo-B3-S5-REUSE`)
-  rerun under the suffix `attempt2`. All 58 families rerun on candidate C3, the hosted build of `9a15e1f42`
+  passed under the suffix `attempt2`, so apart from the four fixed families and the R-044 downgrade checks every
+  selected case passed on C2. All 58 families rerun on candidate C3, the hosted build of `9a15e1f42`
   (shared run 42947784467; production paths equal to W355's merge `26b1ecda9`), JAR SHA-256
   `459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b`, which the build's sealed identity
-  files confirm. W327's
+  files confirm; that run started at 12:27 on 2026-11-11. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
