@@ -1,10 +1,11 @@
-# Candidate C3: risks and evidence per switch for the satellite bay and the four cargo kinds (draft)
+# Candidate C3: risks and evidence per switch for the satellite bay and the four cargo kinds
 
 | Item | Value |
 |---|---|
-| Status | **Draft for Root.** Every C3 result cell says PENDING until Root fills it in from C3's campaign and hosted GameTest run. Nothing in this report is accepted, approved or passed for release. Production admission stays off for all five switches, and the owner decides whether to enable each one. |
+| Status | **Filled from C3 by Root on 2026-11-12.** Every C3 result cell comes from C3's campaign (all 58 families ran; 56 passed, and `cargo-G2-REUSE` and `w336-downgrade` failed only their historical-JAR downgrade checks, the known R-044 residual) and from C3's hosted GameTest run (1,859 GameTests, none failed); section 11 gives the method. Nothing in this report is accepted, approved or passed for release. Production admission stays off for all five switches, and the owner decides whether to enable each one. |
 | Written by | W351, a read-only headless Claude session, on 2026-11-11, for [TASK-W351](../TASK-W351-SWITCH-EVIDENCE-DRAFT.md) under Root decision R422 ([QUEUE](../QUEUE.md), row W351). |
 | Retargeted by | W356, a Codex worker session, on 2026-11-11, for [TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md) under Root decision R430 ([QUEUE](../QUEUE.md), row W356). |
+| Filled by | Root (Claude) on 2026-11-12, from C3's evidence (section 11), under Root decision R431 ([QUEUE](../QUEUE.md), row W351). |
 | Base | Branch `codex/v1.8.0-w351` at `b91fde1ef`, brought to the shared head for W356; the reported candidate is C3 at `9a15e1f42dbacf6c81b6332192f523cd25f59035` (section 2.1). |
 | Owner request | [OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md): test the bay and the four cargo kinds together on one candidate JAR, report each scenario as passed, failed or not covered with the remaining work, then give the applicable risks and evidence for each switch separately, and check R-042's server-wide effects, R-043's waiting times and R-044's attribution to each device. |
 | Earlier reports | [INTEGRATED-C1-REPORT-20261109](INTEGRATED-C1-REPORT-20261109.md), the results on candidate C1, and W327's read-only audit at C1, `D:/GitHub/ARCE-Task-Evidence/v18-integrated-20261109/risk/AUDIT.md` (outside Git). |
@@ -38,8 +39,8 @@
 - **V1** is a check with one real client and **V2** a check with two real clients. The **reference node** is the
   performance host of [docs/17](../../../17-V1PLUS-QUALITY-BUDGETS.md). All three belong to the owner's final campaign.
 - **M1 to M6** and **L1 to L5** are the findings of W327's audit.
-- Result words: PASS; FAIL; NOT_COVERED, meaning no evidence for that exact row; and PENDING, meaning C3's result,
-  which Root fills in.
+- Result words: PASS; FAIL; NOT_COVERED, meaning no evidence for that exact row. A number in parentheses counts the
+  row's cases. Root filled every C3 result cell from C3's evidence (section 11).
 
 ## 2. The candidate and what changed since C1
 
@@ -52,7 +53,8 @@
 - Shared hosted run 42947784467 passed on its first attempt with 1,859 GameTests; governance run 42947784571 passed.
 - The JAR is `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256
   `459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b`. The build's sealed identity files confirm it.
-- The 58-family run started at 12:27 on 2026-11-11 with C2's driver arguments and is in progress at this retargeting.
+- The 58-family run started at 12:27 on 2026-11-11 with C2's driver arguments and ended at 00:58 on 2026-11-12. All
+  58 families ran: 56 passed, and `cargo-G2-REUSE` and `w336-downgrade` failed (below).
   Its evidence root is `D:/GitHub/ARCE-Task-Evidence/root-queue/C3/` (outside Git): `campaign/` is the driver's
   evidence root, with suffix `attempt1`; `candidate/` and `hosted/regression/` hold the candidate and hosted evidence.
   These identities and run facts are cited, not independently re-derived by W356.
@@ -62,6 +64,10 @@
   `d9bf5f08cd65145090a23ac3ce577da5a0d14d51ba380eb253926fb3b0a038bd`). Their historical-JAR downgrade checks are
   expected to fail under R-044 until the owner decides it (R428, R429, [QUEUE](../QUEUE.md)); the assertions and
   selections are unchanged, and candidate restarts after backup restoration do not turn those checks into passes.
+- On C3 both failed exactly so. `cargo-G2-REUSE` passed six of its nine rows and failed its three old-JAR downgrade
+  rows; `w336-downgrade` failed W176's whole-world oracle on all three old-JAR starts. Each refusal changed only
+  `level.dat` and `level.dat_old` (43 other world files unchanged in `w336-downgrade`), and both restored-candidate
+  starts logged no ERROR. Production equality with the candidate held before and after each family.
 
 #### 2.1.1 C2's campaign is history, not this report's candidate evidence
 
@@ -81,7 +87,9 @@ rows W351 to W355 (R424 to R429) record C2's outcome at `ade1538c356d4cab914bbbf
 The three families skipped after runner failures, `cargo-C-S5`, `cargo-B3-S4-REUSE` and `cargo-B3-S5-REUSE`, then
 passed on C2 under suffix `attempt2`; the nine later S6 cases also passed there. These follow-up passes do not erase
 the main run's failures. **C2's results are history; C3's campaign and hosted run are this report's evidence.** Root
-fills the PENDING cells only from C3, not from the historical or corrected-fixture runs above.
+filled the result cells only from C3, not from the historical or corrected-fixture runs above. On C3 the four families
+fixed after C2 passed: `cargo-C-S3` (10 cases), `cargo-C-S4-LOAD` (20), `cargo-B3-S1-REUSE` (7) and
+`cargo-B3-S6-REUSE` (96 selected cases, with ordinary F9 NOT_COVERED).
 
 ### 2.2 Production changes between C1 and C3
 
@@ -137,15 +145,21 @@ The admission switches are unchanged at C3:
 
 | Switch | C1 native rows | C1 GameTest rows | Rows with a C3 family or named test | Rows with no C3 coverage | C3 result |
 |---|---|---|---|---|---|
-| Bay (`block_variant:loader/1`) | 88 PASS, 27 NOT_COVERED | 13 PASS, 31 NOT_COVERED | 107 of 115 native rows (B11.7 only in part) and all 44 GameTest rows; plus 19 families and W342's three GameTests added since C1 | 8 native rows and B11.7's UNKNOWN part (section 3.4) | PENDING |
-| ITEM_CARGO_LOAD (`loader/3`) | 6 PASS | 6 PASS | 20 native rows in this kind's families, 6 GameTest rows, and the shared rows of section 8 | X01, X02; no item before-write or store-veto cut | PENDING |
-| ITEM_CARGO_UNLOAD (`loader/2`) | 24 PASS | 11 PASS | 25 native rows, 11 GameTest rows, and section 8 | X01, X02; no item before-write or store-veto cut | PENDING |
-| FLUID_CARGO_LOAD (`loader/5`) | 44 PASS | 6 PASS, 1 NOT_COVERED | 65 native rows, 7 GameTest rows, and section 8 | X01, X02 | PENDING |
-| FLUID_CARGO_UNLOAD (`loader/4`) | 46 PASS | 9 PASS, 3 NOT_COVERED | 47 native rows, 12 GameTest rows, and section 8 | X01, X02, X03 | PENDING |
+| Bay (`block_variant:loader/1`) | 88 PASS, 27 NOT_COVERED | 13 PASS, 31 NOT_COVERED | 107 of 115 native rows (B11.7 only in part) and all 44 GameTest rows; plus 19 families and W342's three GameTests added since C1 | 8 native rows and B11.7's UNKNOWN part (section 3.4) | Native: 107 of 115 W325 rows PASS (B11.7 in part) and 8 NOT_COVERED; 9 of the 10 rows added since C1 PASS, and the downgrade row FAILS under R-044 (R429). GameTest: all 44 W325 rows and all 4 added rows PASS |
+| ITEM_CARGO_LOAD (`loader/3`) | 6 PASS | 6 PASS | 20 native rows in this kind's families, 6 GameTest rows, and the shared rows of section 8 | X01, X02; no item before-write or store-veto cut | All 21 native cases (the 20 rows and W336's pool case) and all 6 GameTest rows PASS; section 8 as stated below the table |
+| ITEM_CARGO_UNLOAD (`loader/2`) | 24 PASS | 11 PASS | 25 native rows, 11 GameTest rows, and section 8 | X01, X02; no item before-write or store-veto cut | All 26 native cases (the 25 rows and W336's pool case) and all 11 GameTest rows PASS; section 8 as stated below the table |
+| FLUID_CARGO_LOAD (`loader/5`) | 44 PASS | 6 PASS, 1 NOT_COVERED | 65 native rows, 7 GameTest rows, and section 8 | X01, X02 | All 66 native cases (the 65 rows and W336's pool case) and all 7 GameTest rows PASS; section 8 as stated below the table |
+| FLUID_CARGO_UNLOAD (`loader/4`) | 46 PASS | 9 PASS, 3 NOT_COVERED | 47 native rows, 12 GameTest rows, and section 8 | X01, X02, X03 | All 48 native cases (the 47 rows and W336's pool case) and all 12 GameTest rows PASS; X03 NOT_COVERED; section 8 as stated below the table |
 
 At C1, the per-owner cap (Q01 to Q04), the shared fuel-loader reuse rows (M02, M05, M07 and M08) and native
 load-direction settlement were NOT_COVERED for cargo. C3 has a family for each of them (sections 4 to 8), subject to
 the explicit uncovered ordinary F9 subcase and other limits below.
+
+**C3's outcome for the rows shared by the four cargo kinds (section 8).** M01 to M07 PASS. M08 FAILS only by
+`cargo-G2-REUSE`'s three historical-JAR downgrade rows (R-044, R428); its other six rows, `cargo-B3-S6-REUSE` and the
+C-S3 and D-S2 roots pass. The cap family and the B3 reuse families pass all 130 of their cases. The six R-042 families
+and W329's 16 GameTests pass. `w336-downgrade` FAILS under R-044 (R429), for all five devices. X01 and X02 (and X03
+for FLUID_CARGO_UNLOAD) stay NOT_COVERED. Nothing here is accepted: the R-044 failures wait for the owner's decision.
 
 ## 3. The satellite bay's deployment admission (`block_variant:loader/1`)
 
@@ -170,121 +184,121 @@ in both families, as at C1.
 
 | Row | Scenario | C1 | Changed since C1 | C3 family (case) | C3 |
 |---|---|---|---|---|---|
-| B1.1 | INTENT staged only | PASS | Common | `forced-A` (`B1_STAGED`) | PENDING |
-| B1.2 | INTENT replaced before the callback; interrupted restart and same-operation retry | PASS | Common | `forced-A` (`B1_MOVED`) | PENDING |
-| B2.1 | Registration in RAM, registry staged only | PASS | Common | `forced-B` (`B2_STAGED`) | PENDING |
-| B2.2 | Registry replaced before the callback; INTENT promotion | PASS | Common | `forced-B` (`B2_MOVED`) | PENDING |
-| B3.1 | REGISTERED staged only, source not forced, no passengers | PASS | Common | `forced-B` (`B3_STAGED`) | PENDING |
-| B3.2 | REGISTERED replaced, source not forced, no passengers | PASS | Common | `forced-B` (`B3_MOVED`) | PENDING |
-| B3.3 | REGISTERED replaced, source forced, no passengers | PASS | Common | `forced-B` (`B3_SAVED`) | PENDING |
-| B3.4 | REGISTERED replaced, source present, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PENDING |
-| B3.5 | REGISTERED replaced, source absent, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PENDING |
-| B3.6 | REGISTERED staged only, source present, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_PRESENT`) | PENDING |
-| B3.7 | REGISTERED staged only, source absent, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_ABSENT`) | PENDING |
-| B3.8 | REGISTERED staged only, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE`) | PENDING |
-| B3.9 | REGISTERED staged only, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE_ABSENT`) | PENDING |
-| B3.10 | REGISTERED replaced, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE`) | PENDING |
-| B3.11 | REGISTERED replaced, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE_ABSENT`) | PENDING |
-| B3.12 | A restart waits for the checked startup journal, then resumes | PASS | Common | `forced-CD` (`B3_JOURNAL_HELD`) | PENDING |
-| B4.1 | Idle non-data X decommissioned on the first restart tick (narrower than a decommission before the kill) | PASS | Common; W341 also checks this survey case's stopped world after both restarts | `forced-B` (`B4_DECOMMISSION`) | PENDING |
-| B4.2 | X decommissioned on the first restart tick, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-CD` (`W185_B4_ABSENT`) | PENDING |
-| B4.3 | X absent on the initial disk, source present, offline seat | NOT_COVERED | W331 built a pre-kill decommission; its composition carries T′ (the B5.2 mixed state) | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT`) | PENDING |
-| B4.4 | X live, source present, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_PRESENT_S`) | PENDING |
-| B4.5 | X live, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_ABSENT_S`) | PENDING |
-| B4.6 | X absent, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT_ONLINE`) | PENDING |
-| B4.7 | X absent, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT_ONLINE`) | PENDING |
-| B4.8 | X live, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_PRESENT_ONLINE`) | PENDING |
-| B4.9 | X live, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_ABSENT_ONLINE`) | PENDING |
-| B4.10 | X absent on the initial disk, source absent, offline seat | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT`) | PENDING |
-| B5.1 | Mixed S′ and T, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_SOURCE_AFTER`) | PENDING |
-| B5.2 | Mixed S and T′, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_JOURNAL_AFTER`) | PENDING |
-| B5.3 | Boundary before either D5 image, offline seat | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PENDING |
-| B5.4 | Boundary after both D5 images, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PENDING |
-| B6.1 | Source not forced at D5's completion | PASS | Common | `forced-B` (`B6_D5`) | PENDING |
-| B6.2 | Source forced at D5's completion | PASS | Common | `forced-B` (`B6_SAVED`) | PENDING |
-| B6.3 | Source absent, original T, offline seat | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PENDING |
-| B6.4 | Source absent, consumed T′, offline seat | PASS | Common | `forced-CD` (`W185_B6_AFTER_ABSENT`) | PENDING |
-| B6.5 | Destination absent after D7; reconstruction from the consumed record | NOT_COVERED | W331's case reaches the consumed-source recovery that production chooses when S′ is on disk; W338 (finding 3) showed the destination rebuild is reachable; W342 added three GameTests; W346, with W349's inventory scan, built the native save-boundary case | `forced-W331-R` (`W331_B6_DESTINATION_ABSENT`, keeps the consumed source) and `forced-W346-R` (`W346_B6_SAVE_BOUNDARY`, rebuilds the destination from T′) | PENDING |
-| B6.6 | Protected duplicate | PASS | Common | `forced-CD` (`W185_B6_PROTECTED`) | PENDING |
-| B6.7 | Conflicting or unrecognized duplicate | PASS | Common | `forced-CD` (`W185_B6_UNEXPECTED`) | PENDING |
+| B1.1 | INTENT staged only | PASS | Common | `forced-A` (`B1_STAGED`) | PASS |
+| B1.2 | INTENT replaced before the callback; interrupted restart and same-operation retry | PASS | Common | `forced-A` (`B1_MOVED`) | PASS |
+| B2.1 | Registration in RAM, registry staged only | PASS | Common | `forced-B` (`B2_STAGED`) | PASS |
+| B2.2 | Registry replaced before the callback; INTENT promotion | PASS | Common | `forced-B` (`B2_MOVED`) | PASS |
+| B3.1 | REGISTERED staged only, source not forced, no passengers | PASS | Common | `forced-B` (`B3_STAGED`) | PASS |
+| B3.2 | REGISTERED replaced, source not forced, no passengers | PASS | Common | `forced-B` (`B3_MOVED`) | PASS |
+| B3.3 | REGISTERED replaced, source forced, no passengers | PASS | Common | `forced-B` (`B3_SAVED`) | PASS |
+| B3.4 | REGISTERED replaced, source present, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PASS |
+| B3.5 | REGISTERED replaced, source absent, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PASS |
+| B3.6 | REGISTERED staged only, source present, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_PRESENT`) | PASS |
+| B3.7 | REGISTERED staged only, source absent, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_ABSENT`) | PASS |
+| B3.8 | REGISTERED staged only, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE`) | PASS |
+| B3.9 | REGISTERED staged only, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE_ABSENT`) | PASS |
+| B3.10 | REGISTERED replaced, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE`) | PASS |
+| B3.11 | REGISTERED replaced, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE_ABSENT`) | PASS |
+| B3.12 | A restart waits for the checked startup journal, then resumes | PASS | Common | `forced-CD` (`B3_JOURNAL_HELD`) | PASS |
+| B4.1 | Idle non-data X decommissioned on the first restart tick (narrower than a decommission before the kill) | PASS | Common; W341 also checks this survey case's stopped world after both restarts | `forced-B` (`B4_DECOMMISSION`) | PASS |
+| B4.2 | X decommissioned on the first restart tick, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-CD` (`W185_B4_ABSENT`) | PASS |
+| B4.3 | X absent on the initial disk, source present, offline seat | NOT_COVERED | W331 built a pre-kill decommission; its composition carries T′ (the B5.2 mixed state) | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT`) | PASS |
+| B4.4 | X live, source present, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_PRESENT_S`) | PASS |
+| B4.5 | X live, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_ABSENT_S`) | PASS |
+| B4.6 | X absent, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT_ONLINE`) | PASS |
+| B4.7 | X absent, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT_ONLINE`) | PASS |
+| B4.8 | X live, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_PRESENT_ONLINE`) | PASS |
+| B4.9 | X live, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_ABSENT_ONLINE`) | PASS |
+| B4.10 | X absent on the initial disk, source absent, offline seat | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT`) | PASS |
+| B5.1 | Mixed S′ and T, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_SOURCE_AFTER`) | PASS |
+| B5.2 | Mixed S and T′, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_JOURNAL_AFTER`) | PASS |
+| B5.3 | Boundary before either D5 image, offline seat | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PASS |
+| B5.4 | Boundary after both D5 images, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PASS |
+| B6.1 | Source not forced at D5's completion | PASS | Common | `forced-B` (`B6_D5`) | PASS |
+| B6.2 | Source forced at D5's completion | PASS | Common | `forced-B` (`B6_SAVED`) | PASS |
+| B6.3 | Source absent, original T, offline seat | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PASS |
+| B6.4 | Source absent, consumed T′, offline seat | PASS | Common | `forced-CD` (`W185_B6_AFTER_ABSENT`) | PASS |
+| B6.5 | Destination absent after D7; reconstruction from the consumed record | NOT_COVERED | W331's case reaches the consumed-source recovery that production chooses when S′ is on disk; W338 (finding 3) showed the destination rebuild is reachable; W342 added three GameTests; W346, with W349's inventory scan, built the native save-boundary case | `forced-W331-R` (`W331_B6_DESTINATION_ABSENT`, keeps the consumed source) and `forced-W346-R` (`W346_B6_SAVE_BOUNDARY`, rebuilds the destination from T′) | PASS |
+| B6.6 | Protected duplicate | PASS | Common | `forced-CD` (`W185_B6_PROTECTED`) | PASS |
+| B6.7 | Conflicting or unrecognized duplicate | PASS | Common | `forced-CD` (`W185_B6_UNEXPECTED`) | PASS |
 | B6.8 | Non-neutral source refused, packages byte-equal, menu reason | NOT_COVERED | W331 withdrew its `protected` fixture: an epoch-only wrapper is an invalid escrow state | None. GameTest `BayDeploymentGameTests.anEscrowBoundSourceIsRefusedWithBaySourceProtectedAndKeepsItsPackages` only | NOT_COVERED |
-| B7.1 | D6 complete before retirement, loaded source, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PENDING |
-| B7.2 | D6 complete before retirement, cold source chunk, offline seat | PASS | Common | `forced-CD` (`W185_B7_COLD`) | PENDING |
-| B7.3 | Login while retirement is queued: no settlement, fresh proofs | NOT_COVERED | W331; after the handoff the normal transfer carries the rider to the destination, unlike the GameTest's handoff-time view | `forced-W331-L` (`W331_B7_LOGIN_QUEUED`) | PENDING |
-| B8.1 | Retirement staged only, no passengers | PASS | Common | `forced-B` (`B8_STAGED`) | PENDING |
-| B8.2 | Retirement replaced before the callback, no passengers | PASS | Common | `forced-B` (`B8_MOVED`) | PENDING |
-| B8.3 | Retirement staged only, offline seat | PASS | Common | `forced-E` (`W325_B8_STAGED_OFFLINE`) | PENDING |
-| B8.4 | Retirement replaced, offline seat | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_OFFLINE`) | PENDING |
-| B8.5 | Retirement staged only, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_STAGED_ONLINE`) | PENDING |
-| B8.6 | Retirement replaced, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_ONLINE`) | PENDING |
-| B8.7 | Partial multi-REGISTERED group retirement, before replacement | NOT_COVERED | W331 (three bays: two register, one research-locked); W341's complete receipt set closes W338's finding 1 for this group | `forced-W331-G` (`W331_B8_TRIO_STAGED`) | PENDING |
-| B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B8_TRIO_MOVED`) | PENDING |
-| B9.1 | Registration refused after INTENT, REJECTED staged only | PASS | Common | `forced-A` (`B9_STAGED`) | PENDING |
-| B9.2 | REJECTED replaced before the callback | PASS | Common | `forced-A` (`B9_MOVED`) | PENDING |
-| B9.3 | A refused package later succeeds with the same operation | PASS | Common | `forced-GH-retry`, `forced-H` (`W325_B9_RETRY`) | PENDING |
-| B10.1 | Blocked registry, unreleased INTENT hold | PASS | Common | `forced-A`, `forced-A-retry` (`B10_BLOCKED`) | PENDING |
-| B10.2 | Coherent blocked INTENT, release flag staged only | PASS | Common | `released` (`B10_BLOCKED_STAGED`) | PENDING |
-| B10.3 | Coherent blocked INTENT, release flag replaced | PASS | Common | `released` (`B10_BLOCKED_MOVED`) | PENDING |
-| B10.4 | Coherent REPAIR, release flag staged only | PASS | Common | `released` (`B10_REPAIR_STAGED`) | PENDING |
-| B10.5 | Coherent REPAIR, release flag replaced | PASS | Common | `released` (`B10_REPAIR_MOVED`) | PENDING |
+| B7.1 | D6 complete before retirement, loaded source, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PASS |
+| B7.2 | D6 complete before retirement, cold source chunk, offline seat | PASS | Common | `forced-CD` (`W185_B7_COLD`) | PASS |
+| B7.3 | Login while retirement is queued: no settlement, fresh proofs | NOT_COVERED | W331; after the handoff the normal transfer carries the rider to the destination, unlike the GameTest's handoff-time view | `forced-W331-L` (`W331_B7_LOGIN_QUEUED`) | PASS |
+| B8.1 | Retirement staged only, no passengers | PASS | Common | `forced-B` (`B8_STAGED`) | PASS |
+| B8.2 | Retirement replaced before the callback, no passengers | PASS | Common | `forced-B` (`B8_MOVED`) | PASS |
+| B8.3 | Retirement staged only, offline seat | PASS | Common | `forced-E` (`W325_B8_STAGED_OFFLINE`) | PASS |
+| B8.4 | Retirement replaced, offline seat | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_OFFLINE`) | PASS |
+| B8.5 | Retirement staged only, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_STAGED_ONLINE`) | PASS |
+| B8.6 | Retirement replaced, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_ONLINE`) | PASS |
+| B8.7 | Partial multi-REGISTERED group retirement, before replacement | NOT_COVERED | W331 (three bays: two register, one research-locked); W341's complete receipt set closes W338's finding 1 for this group | `forced-W331-G` (`W331_B8_TRIO_STAGED`) | PASS |
+| B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B8_TRIO_MOVED`) | PASS |
+| B9.1 | Registration refused after INTENT, REJECTED staged only | PASS | Common | `forced-A` (`B9_STAGED`) | PASS |
+| B9.2 | REJECTED replaced before the callback | PASS | Common | `forced-A` (`B9_MOVED`) | PASS |
+| B9.3 | A refused package later succeeds with the same operation | PASS | Common | `forced-GH-retry`, `forced-H` (`W325_B9_RETRY`) | PASS |
+| B10.1 | Blocked registry, unreleased INTENT hold | PASS | Common | `forced-A`, `forced-A-retry` (`B10_BLOCKED`) | PASS |
+| B10.2 | Coherent blocked INTENT, release flag staged only | PASS | Common | `released` (`B10_BLOCKED_STAGED`) | PASS |
+| B10.3 | Coherent blocked INTENT, release flag replaced | PASS | Common | `released` (`B10_BLOCKED_MOVED`) | PASS |
+| B10.4 | Coherent REPAIR, release flag staged only | PASS | Common | `released` (`B10_REPAIR_STAGED`) | PASS |
+| B10.5 | Coherent REPAIR, release flag replaced | PASS | Common | `released` (`B10_REPAIR_MOVED`) | PASS |
 | B10.6 | Incoherent signature authority stays frozen | NOT_COVERED | W331: reachable with a gated variant of `seed-repair` that writes an incoherent REPAIR row; not built | None; released-conflict GameTests exist (W325-MATRIX) | NOT_COVERED |
-| B11.1 | Shared server pending saturation, bay-only fill of 64 | PASS | Common | `forced-A`, `forced-A-retry` (`B11_FULL`) | PENDING |
+| B11.1 | Shared server pending saturation, bay-only fill of 64 | PASS | Common | `forced-A`, `forced-A-retry` (`B11_FULL`) | PASS |
 | B11.2 | Per rocket: 7 escrow and 1 bay against the limit of 8 | NOT_COVERED | W331: a live rocket with seven escrow operations is escrow-locked, so D0 refuses its bays as BAY_SOURCE_PROTECTED before admission; W333's GameTest F3.2 covers the count | None natively | NOT_COVERED |
-| B11.3 | Retained 4,096 per server, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_GLOBAL`) | PENDING |
-| B11.4 | Retained 128 per owner, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_OWNER`) | PENDING |
-| B11.5 | REPAIR operations keep their charges across restarts | PASS | Common | `forced-F` (`W325_REPAIR_FULL`) | PENDING |
-| B11.6 | Released operations keep saturated capacity across restarts | PASS | Common | `forced-F` (`W325_RELEASED_FULL`) | PENDING |
-| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 counts the captured and successor copies; no gated control holds the UNKNOWN copy; W333's GameTest F3.3 covers the UNKNOWN copy. Only the captured and successor part is pending; the UNKNOWN part stays NOT_COVERED natively | `forced-W331-U` (`W331_B11_UNION`), in part | PENDING |
+| B11.3 | Retained 4,096 per server, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_GLOBAL`) | PASS |
+| B11.4 | Retained 128 per owner, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_OWNER`) | PASS |
+| B11.5 | REPAIR operations keep their charges across restarts | PASS | Common | `forced-F` (`W325_REPAIR_FULL`) | PASS |
+| B11.6 | Released operations keep saturated capacity across restarts | PASS | Common | `forced-F` (`W325_RELEASED_FULL`) | PASS |
+| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 counts the captured and successor copies; no gated control holds the UNKNOWN copy; W333's GameTest F3.3 covers the UNKNOWN copy. Only the captured and successor part is in C3; the UNKNOWN part stays NOT_COVERED natively | `forced-W331-U` (`W331_B11_UNION`), in part | PASS, in part (the UNKNOWN part is NOT_COVERED) |
 | B11.8 | A REJECTED re-arm is refused at full capacity and later reuses its operation | NOT_COVERED | W331: reachable with a gated owner fill and unfill pair and two relaunches; not built; W333's GameTest F3.5 covers it | None natively | NOT_COVERED |
 | B11.9 | Mixed consumers: 63 escrow and 1 bay, and the reverse | NOT_COVERED | W331: needs 63 live escrow operations or a typed ledger seed; not built; W333's GameTest F3.2 covers it | None natively | NOT_COVERED |
-| B12.1 | D1 receipt, definite failure before replacement | PASS | Common | `forced-A` (`B12_FAILED`) | PENDING |
-| B12.2 | D1 receipt UNKNOWN, exact retry | PASS | Common | `forced-A` (`B12_UNKNOWN`) | PENDING |
-| B12.3 | D4 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D4`) | PENDING |
-| B12.4 | D7 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D7`) | PENDING |
-| B12.5 | D4 receipt, definite failure before replacement | PASS | Common | `forced-G` (`W325_D4_FAILED`) | PENDING |
-| B12.6 | D7 receipt, definite failure before replacement | PASS | Common | `forced-G`, `forced-GH-retry` (`W325_D7_FAILED`) | PENDING |
-| B13.1 | Registry checkpoint definitely FAILED, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_FAILED`) | PENDING |
-| B13.2 | Registry checkpoint UNKNOWN, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_UNKNOWN`) | PENDING |
-| B13.3 | Durable INTENT at restart: first-tick launch and decommission fences | PASS | Common | `forced-B` (`B2_STAGED`) | PENDING |
-| B14.1 | Unproved transaction journal, stopped before the checkpoint completes | PASS | Common | `forced-A` (`B14_T1`) | PENDING |
-| B14.2 | A stop drains the journal request without the D1 callback | PASS | Common | `forced-A`, `forced-A-retry` (`B14_STOP`) | PENDING |
-| B14.3 | The journal request fails with no assembly record | NOT_COVERED | W331, through a definite failure of the checkpoint D0 requested; the REFUSED answer stays GameTest-only | `forced-W331-T` (`W331_B14_FAILED`) | PENDING |
-| B14.4 | A stale assembly record of L remains at D0 | NOT_COVERED | W331; the stale record names L in a dimension that never loads | `forced-W331-T` (`W331_B14_STALE`) | PENDING |
-| B15.1 | D4 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D4`) | PENDING |
-| B15.2 | D7 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D7`) | PENDING |
-| B15.3 | D1 receipt replaced, then an exception and readback | NOT_COVERED | W331 (new gated cut value `B15_D1`) | `forced-W331-W` (`W331_B15_D1`) | PENDING |
-| B15.4 | Registry replaced, then an exception and readback | NOT_COVERED | W331 | `forced-W331-W` (`W331_B15_REGISTRY`) | PENDING |
-| B15.5 | Transaction journal replaced, then an exception and readback | NOT_COVERED | W331; the oracle requires D0's own requested write | `forced-W331-T` (`W331_B15_JOURNAL`) | PENDING |
-| B16.1 | A captured retirement is invalidated by a superseding source save | PASS | Common | `forced-CD` (`B16_SAVE`) | PENDING |
-| B16.2 | ... by a late duplicate join | PASS | Common | `forced-CD` (`B16_JOIN`) | PENDING |
-| B16.3 | ... by the source leaving and reloading | PASS | Common | `forced-CD` (`B16_LEAVE`) | PENDING |
-| B16.4 | ... by source motion | PASS | Common | `forced-CD` (`B16_MOTION`) | PENDING |
-| B17.1 | Unresolved work ahead of a healthy group still lets it progress | PASS | Common | `forced-A`, `forced-A-retry` (`B17_FAIR`) | PENDING |
-| B17.2 | A REPAIR group ahead of healthy groups | PASS | Common | `forced-F` (`W325_REPAIR_FAIR`) | PENDING |
+| B12.1 | D1 receipt, definite failure before replacement | PASS | Common | `forced-A` (`B12_FAILED`) | PASS |
+| B12.2 | D1 receipt UNKNOWN, exact retry | PASS | Common | `forced-A` (`B12_UNKNOWN`) | PASS |
+| B12.3 | D4 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D4`) | PASS |
+| B12.4 | D7 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D7`) | PASS |
+| B12.5 | D4 receipt, definite failure before replacement | PASS | Common | `forced-G` (`W325_D4_FAILED`) | PASS |
+| B12.6 | D7 receipt, definite failure before replacement | PASS | Common | `forced-G`, `forced-GH-retry` (`W325_D7_FAILED`) | PASS |
+| B13.1 | Registry checkpoint definitely FAILED, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_FAILED`) | PASS |
+| B13.2 | Registry checkpoint UNKNOWN, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_UNKNOWN`) | PASS |
+| B13.3 | Durable INTENT at restart: first-tick launch and decommission fences | PASS | Common | `forced-B` (`B2_STAGED`) | PASS |
+| B14.1 | Unproved transaction journal, stopped before the checkpoint completes | PASS | Common | `forced-A` (`B14_T1`) | PASS |
+| B14.2 | A stop drains the journal request without the D1 callback | PASS | Common | `forced-A`, `forced-A-retry` (`B14_STOP`) | PASS |
+| B14.3 | The journal request fails with no assembly record | NOT_COVERED | W331, through a definite failure of the checkpoint D0 requested; the REFUSED answer stays GameTest-only | `forced-W331-T` (`W331_B14_FAILED`) | PASS |
+| B14.4 | A stale assembly record of L remains at D0 | NOT_COVERED | W331; the stale record names L in a dimension that never loads | `forced-W331-T` (`W331_B14_STALE`) | PASS |
+| B15.1 | D4 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D4`) | PASS |
+| B15.2 | D7 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D7`) | PASS |
+| B15.3 | D1 receipt replaced, then an exception and readback | NOT_COVERED | W331 (new gated cut value `B15_D1`) | `forced-W331-W` (`W331_B15_D1`) | PASS |
+| B15.4 | Registry replaced, then an exception and readback | NOT_COVERED | W331 | `forced-W331-W` (`W331_B15_REGISTRY`) | PASS |
+| B15.5 | Transaction journal replaced, then an exception and readback | NOT_COVERED | W331; the oracle requires D0's own requested write | `forced-W331-T` (`W331_B15_JOURNAL`) | PASS |
+| B16.1 | A captured retirement is invalidated by a superseding source save | PASS | Common | `forced-CD` (`B16_SAVE`) | PASS |
+| B16.2 | ... by a late duplicate join | PASS | Common | `forced-CD` (`B16_JOIN`) | PASS |
+| B16.3 | ... by the source leaving and reloading | PASS | Common | `forced-CD` (`B16_LEAVE`) | PASS |
+| B16.4 | ... by source motion | PASS | Common | `forced-CD` (`B16_MOTION`) | PASS |
+| B17.1 | Unresolved work ahead of a healthy group still lets it progress | PASS | Common | `forced-A`, `forced-A-retry` (`B17_FAIR`) | PASS |
+| B17.2 | A REPAIR group ahead of healthy groups | PASS | Common | `forced-F` (`W325_REPAIR_FAIR`) | PASS |
 | B17.3 | An unloaded group ahead of healthy groups | NOT_COVERED | W331: no gated control keeps one group's end unloaded while another runs; the order would be a race | None | NOT_COVERED |
-| B17.4 | Partial D1, immutable group hashes | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B17_PARTIAL_D1`) | PENDING |
+| B17.4 | Partial D1, immutable group hashes | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B17_PARTIAL_D1`) | PASS |
 | B17.5 | A mixed REGISTERED, REJECTED and REPAIR group | NOT_COVERED | W331: a REPAIR claim writes no further INTENT, so one live group cannot hold all three without forged receipts | None | NOT_COVERED |
-| B18.1 | Clean stop with an active INTENT | PASS | Common | `forced-A` (`B18_INTENT`) | PENDING |
-| B18.2 | Clean stop with an active REJECTED | PASS | Common | `forced-A` (`B18_REJECTED`) | PENDING |
-| B18.3 | Clean stop at the REGISTERED replacement | PASS | Common | `forced-B` (`B18_D4`) | PENDING |
-| B18.4 | Clean stop at the retirement replacement | PASS | Common | `forced-B` (`B18_D7`) | PENDING |
-| B18.5 | Crash teardown with no callback completion | PASS | Common | `forced-A` (`B18_CRASH`) | PENDING |
-| B18.6 | Clean stop with a successor write queued | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_SUCCESSOR`) | PENDING |
-| B18.7 | Clean stop with an unresolved UNKNOWN write | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_UNKNOWN`) | PENDING |
-| CAP.1 | 16 pending operations of one owner refuse bay admission, packages unchanged | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OWNER_FULL`) | PENDING |
-| CAP.2 | Another owner keeps bay admission room | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OTHER_OWNER_ROOM`) | PENDING |
+| B18.1 | Clean stop with an active INTENT | PASS | Common | `forced-A` (`B18_INTENT`) | PASS |
+| B18.2 | Clean stop with an active REJECTED | PASS | Common | `forced-A` (`B18_REJECTED`) | PASS |
+| B18.3 | Clean stop at the REGISTERED replacement | PASS | Common | `forced-B` (`B18_D4`) | PASS |
+| B18.4 | Clean stop at the retirement replacement | PASS | Common | `forced-B` (`B18_D7`) | PASS |
+| B18.5 | Crash teardown with no callback completion | PASS | Common | `forced-A` (`B18_CRASH`) | PASS |
+| B18.6 | Clean stop with a successor write queued | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_SUCCESSOR`) | PASS |
+| B18.7 | Clean stop with an unresolved UNKNOWN write | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_UNKNOWN`) | PASS |
+| CAP.1 | 16 pending operations of one owner refuse bay admission, packages unchanged | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OWNER_FULL`) | PASS |
+| CAP.2 | Another owner keeps bay admission room | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OTHER_OWNER_ROOM`) | PASS |
 | CAP.3 | The owner cap refuses a loader before native capture | NOT_COVERED | W331: reachable with a gated fluid-loader probe beside W325's owner-full seed; not built | None natively; GameTest F3.8 covers it | NOT_COVERED |
-| EXIT.0 | Control: held passenger, no exit | PASS | Common (the exit runner has the candidate argument and installed-JAR check) | `exit` (`X0_CONTROL`) | PENDING |
-| EXIT.1 | Sneak-input exit, live fall offer | PASS | Common | `exit` (`X1_OFFER`) | PENDING |
-| EXIT.2 | Ticked-connection descent, detached player data flushed | PASS | Common | `exit` (`X2_DESCENT`) | PENDING |
-| EXIT.3 | Correction window before the tracker acknowledges | PASS | Common | `exit` (`X3_CORRECTION`) | PENDING |
-| EXIT.4 | Landing timed like a real client: one protected FALL, exit flushed | PASS | Common | `exit` (`X4_LANDING`) | PENDING |
-| EXIT.5 | Fixed 200-tick expiry with a ticked connection, exit flushed | PASS | Common | `exit` (`X5_EXPIRY`) | PENDING |
-| EXIT.6 | Trusted movement revokes the slot without a remount | PASS | Common | `exit` (`X6_TRUSTED`) | PENDING |
-| EXIT.7 | A same-Level teleport revokes protection; a later landing is unprotected | PASS | Common | `exit` (`X7_REVOKED`) | PENDING |
-| EXIT.8 | Held-menu SAFE exit onto a loaded pad, exit flushed | PASS | Common | `exit` (`X8_SAFE_MENU`) | PENDING |
-| EXIT.9 | Same-tick protected landing, mapped-observer smoke | PASS | Common | `exit` (`X9_FIRST_TICK`) | PENDING |
-| EXIT.10 | Same-tick teleport-revoked landing, mapped-observer smoke | PASS | Common | `exit` (`X10_FIRST_TICK_REVOKED`) | PENDING |
+| EXIT.0 | Control: held passenger, no exit | PASS | Common (the exit runner has the candidate argument and installed-JAR check) | `exit` (`X0_CONTROL`) | PASS |
+| EXIT.1 | Sneak-input exit, live fall offer | PASS | Common | `exit` (`X1_OFFER`) | PASS |
+| EXIT.2 | Ticked-connection descent, detached player data flushed | PASS | Common | `exit` (`X2_DESCENT`) | PASS |
+| EXIT.3 | Correction window before the tracker acknowledges | PASS | Common | `exit` (`X3_CORRECTION`) | PASS |
+| EXIT.4 | Landing timed like a real client: one protected FALL, exit flushed | PASS | Common | `exit` (`X4_LANDING`) | PASS |
+| EXIT.5 | Fixed 200-tick expiry with a ticked connection, exit flushed | PASS | Common | `exit` (`X5_EXPIRY`) | PASS |
+| EXIT.6 | Trusted movement revokes the slot without a remount | PASS | Common | `exit` (`X6_TRUSTED`) | PASS |
+| EXIT.7 | A same-Level teleport revokes protection; a later landing is unprotected | PASS | Common | `exit` (`X7_REVOKED`) | PASS |
+| EXIT.8 | Held-menu SAFE exit onto a loaded pad, exit flushed | PASS | Common | `exit` (`X8_SAFE_MENU`) | PASS |
+| EXIT.9 | Same-tick protected landing, mapped-observer smoke | PASS | Common | `exit` (`X9_FIRST_TICK`) | PASS |
+| EXIT.10 | Same-tick teleport-revoked landing, mapped-observer smoke | PASS | Common | `exit` (`X10_FIRST_TICK_REVOKED`) | PASS |
 
 The bay exit GameTests changed too (W334 chooses an exit area free of block entities; W344 waits for setup readiness
 without advancing the test clock). They are hosted regression tests, not W325 rows, and both changes are test-side only.
@@ -295,70 +309,70 @@ None of these rows existed at C1. Their smokes ran on locally built JARs.
 
 | Scenario | Added by | Evidence before C3 | C3 family | C3 |
 |---|---|---|---|---|
-| B6.5 at the source-save boundary: the source's removal saved, the destination never saved, then a kill; restart 1 rebuilds the destination from T′, restart 2 keeps it | W346, with W349's stopped-world inventory scan after W348's review | PASS on W346's JAR (`5ef21e2aa`) and again on W349's JAR (`56668d542`); a scratch JAR with W342's mutation M1 failed at restart 1, as intended | `forced-W346-R` | PENDING |
-| Bay receipts present but not loaded: every rocket held, satellite launch and decommission DEPLOYMENT_PENDING, insertion refused, all five kinds refused; recovery at S2 | W332, W343 | PASS (W332 smoke 4; W343 `smoke-N`) | `r042-N_BAY` | PENDING |
-| Escrow ledger present but not loaded: bay admission refused with the four cargo kinds and fuel | W332, W343 | PASS; the vanilla-dismount row stays NOT_COVERED | `r042-L_LEDGER` | PENDING |
-| The shared pool full server-wide: the bay menu shows DEPLOYMENT_CAPACITY | W332, W343 | PASS at S0, S1 and S2 | `r042-P_SERVER` | PENDING |
-| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay uses a fixed owner, so its admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PENDING |
-| Receipt presence unknown at the pre-start check: startup refused, then clean recovery | W332 could not reach it; W340 showed a delete-pending handle reaches it; W343 restored it; W345 applied Root decision R416's metadata boundary | PASS on W345's JAR; whole-world byte equality stays false because vanilla updates `level.dat` | `r042-U_BAY` | PENDING |
-| Ledger presence unknown at the pre-start check | As above | As above | `r042-U_LEDGER` | PENDING |
-| Waiting-time observations for R-043 (section 9.2) | W336 | All nine timing profiles PASS with both restarts | `w336-timing-B12_D4`, `-B12_D7`, `-B13_FAILED`, `-B13_UNKNOWN`, `-B16_MOTION`, `-B10_BLOCKED`, `-RECONNECT`, `-TURNS-2`, `-TURNS-3`, `-D6_RETRY` | PENDING |
-| Unsupported bay roots in the per-Level 256-coordinate pool, with 255 fuel-loader denials as background | W336 | PASS with both restarts | `w336-saturation-bay`; the fuel control `w336-saturation-fuel` uses bay denials as background | PENDING |
-| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed. The historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429); W339 keeps a non-PASS status from being reported as PASS | `w336-downgrade` | PENDING |
+| B6.5 at the source-save boundary: the source's removal saved, the destination never saved, then a kill; restart 1 rebuilds the destination from T′, restart 2 keeps it | W346, with W349's stopped-world inventory scan after W348's review | PASS on W346's JAR (`5ef21e2aa`) and again on W349's JAR (`56668d542`); a scratch JAR with W342's mutation M1 failed at restart 1, as intended | `forced-W346-R` | PASS |
+| Bay receipts present but not loaded: every rocket held, satellite launch and decommission DEPLOYMENT_PENDING, insertion refused, all five kinds refused; recovery at S2 | W332, W343 | PASS (W332 smoke 4; W343 `smoke-N`) | `r042-N_BAY` | PASS |
+| Escrow ledger present but not loaded: bay admission refused with the four cargo kinds and fuel | W332, W343 | PASS; the vanilla-dismount row stays NOT_COVERED | `r042-L_LEDGER` | PASS |
+| The shared pool full server-wide: the bay menu shows DEPLOYMENT_CAPACITY | W332, W343 | PASS at S0, S1 and S2 | `r042-P_SERVER` | PASS |
+| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay uses a fixed owner, so its admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PASS |
+| Receipt presence unknown at the pre-start check: startup refused, then clean recovery | W332 could not reach it; W340 showed a delete-pending handle reaches it; W343 restored it; W345 applied Root decision R416's metadata boundary | PASS on W345's JAR; whole-world byte equality stays false because vanilla updates `level.dat` | `r042-U_BAY` | PASS |
+| Ledger presence unknown at the pre-start check | As above | As above | `r042-U_LEDGER` | PASS |
+| Waiting-time observations for R-043 (section 9.2) | W336 | All nine timing profiles PASS with both restarts | `w336-timing-B12_D4`, `-B12_D7`, `-B13_FAILED`, `-B13_UNKNOWN`, `-B16_MOTION`, `-B10_BLOCKED`, `-RECONNECT`, `-TURNS-2`, `-TURNS-3`, `-D6_RETRY` | PASS |
+| Unsupported bay roots in the per-Level 256-coordinate pool, with 255 fuel-loader denials as background | W336 | PASS with both restarts | `w336-saturation-bay`; the fuel control `w336-saturation-fuel` uses bay denials as background | PASS |
+| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed. The historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429); W339 keeps a non-PASS status from being reported as PASS | `w336-downgrade` | FAIL: W176's whole-world oracle failed on all three old-JAR starts, each changing only `level.dat` and `level.dat_old` (43 other world files unchanged); both restored-candidate starts logged no ERROR. The known R-044 residual (R429), not waived |
 
 #### GameTest rows of W325-MATRIX
 
 The tests below are in C3's commit. [TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md) records that run
 42947784467 passed with 1,859 GameTests; Root
-confirms each named test in that run's results before replacing PENDING. Class names are short; W333's packages are in
+confirmed each named test in that run's four shard results: every one ran, and none of the 1,859 failed. Class names are short; W333's packages are in
 [W333-DESIGN](W333-DESIGN.md).
 
 | Row | Variant | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
-| F2.1 | DATA replay after a removed definition; no recreated initial mission | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PENDING |
-| F2.2 | Fresh DATA deterministic initial mission | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (NONE) | PENDING |
-| F2.3 | Cancel the initial mission before D3 or D4, then replay and promotion | NOT_COVERED | W333 | Same method (CANCEL) | PENDING |
-| F2.4 | Claim the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (CLAIM) | PENDING |
-| F2.5 | Prune the initial mission's history before D3 or D4 | NOT_COVERED | W333 | Same method (PRUNE) | PENDING |
-| F2.6 | Replace the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (REPLACE) | PENDING |
-| F2.7 | A later coalesced flush or autosave succeeds after a failed checkpoint | NOT_COVERED | W333 | Same method (coalesced and autosave variants) and `SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | PENDING |
-| F2.8 | Changed owner, definition or kind conflicts | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` | PENDING |
-| F3.1 | The bay fills the shared 64; a loader is refused until capacity is released | PASS | None | `BayLoaderSaturationGameTests.bayIntentsFillingTheSharedPendingSlotsStopALoaderUntilTheyResolve` | PENDING |
-| F3.2 | 63 escrow and 1 bay, the reverse, and 7 escrow and 1 bay per rocket | NOT_COVERED | W333 | `BayAdmissionRowGameTests.mixedConsumersShareGlobalAndRocketLimits` | PENDING |
-| F3.3 | One count over durable, captured, successor and UNKNOWN copies | NOT_COVERED | W333 | `BayAdmissionRowGameTests.writerCopiesChargeOnePendingSlot` | PENDING |
-| F3.4 | 64 REPAIR or released operations keep capacity after a reload | NOT_COVERED | W333 | `BayAdmissionRowGameTests.repairAndReleasedReceiptsStayFullAfterReload` | PENDING |
-| F3.5 | A REJECTED re-arm is refused when full and later admitted with the same operation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.rejectedRearmWaitsForExactCapacityRelease` | PENDING |
-| F3.6 | Independent retained limits of 4,096 and 128; mixed-store startup | NOT_COVERED | W333 | `BayAdmissionRowGameTests.retainedLimitsAreIndependentAndStartupIndexesBothStores` | PENDING |
-| F3.7 | A failed or UNKNOWN retirement keeps its reservation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.failedAndUnknownRetirementKeepReservations` | PENDING |
-| F3.8 | 16 per owner: unchanged refusal, room for other owners | PASS | None | `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity` | PENDING |
-| F4.1 | Matching DATA identity, removed definition, terminal extraction | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PENDING |
-| F4.2 | Non-data terminal extraction, idempotent | PASS | None | `SatelliteKindTerminalGameTests.terminalLaunchesAnIdleSurveySatelliteAndConsumesAReplay` | PENDING |
-| F4.3 | Removed components, changed stats or research, changed or removed target | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesChangedDependenciesAtTerminalAndService` | PENDING |
-| F4.4 | Every satellite, mission, account and byte quota full | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesFullQuotasAtTerminalAndService` | PENDING |
-| F4.5 | Dirty matching X, failed persistence, exact barrier | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.dirtyReplayKeepsPackageUntilExactAcknowledgement` | PENDING |
-| F4.6 | Replace then throw, exact frozen readback | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.replaceThenThrowCompletesReplayOnceFromFrozenReadback` | PENDING |
-| F4.7 | Receipt-phase launch and decommission fences | PASS | None | `SatelliteRegistryProofGameTests.terminalLaunchAndDecommissionWaitForExactReceiptPhases` | PENDING |
-| F4.8 | Conflict, unauthorized caller, blocked registry, other-operation fence | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` and the barrier fixture | PENDING |
-| F5.1 | Missing physical body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesAMissingBodyForDataAndSolarBays` | PENDING |
-| F5.2 | Body that cannot be orbited, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesANonOrbitableBodyForDataAndSolarBays` | PENDING |
-| F5.3 | Legacy Space body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesTheLegacySpaceBodyForDataAndSolarBays` | PENDING |
-| F5.4 | The captured source body is the one the DATA receipt records | PASS | None | `BayDeploymentMatrixGameTests.theCapturedSourceBodyIsTheOneTheDataReceiptRecords` | PENDING |
-| F5.5 | Station orbit differs from the destination and changes later | NOT_COVERED | W333 | `BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | PENDING |
-| F5.6 | Undiscovered allowed body: DATA discovery against the non-data gate | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | PENDING |
-| F5.7 | REGISTERED replay after the physical catalog entry is removed | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (REGISTERED_REMOVED variants) | PENDING |
-| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 is in C3, so its hosted run includes the corrected window | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | PENDING |
-| RT.2 | Launch and decommission wait for the commit acknowledgement | PASS | None | `SatelliteRegistryTickGameTests.aTerminalLaunchAndDecommissionCompleteOnTicksAfterTheirCommits` | PENDING |
-| RT.3 | A DATA action shows its stored result only after its commit | PASS | None | `SatelliteRegistryTickGameTests.aDataActionShowsItsStoredResultAfterItsCommit` | PENDING |
-| RT.4 | A clean schema-4 reload leaves the literal and save epochs unchanged | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | PENDING |
-| RT.5 | Tagged origins, surveys, accounts and blocked roots across every write entry and outcome | NOT_COVERED | W333; a GameTest cannot stop its server, so the close drain is not a stopped-server autosave | `SatelliteTransportRowGameTests.allWriteEntriesPreserveTaggedAndBlockedRoots` | PENDING |
-| RT.6 | Replace then throw without a duplicate epoch or a lost pending flush | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.replaceThenThrowAdvancesOnceAndKeepsLaterPendingMutation` | PENDING |
-| RT.7 | Obsolete callbacks and stale hashes cannot obtain a permit | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` | PENDING |
-| N2.1 | UNKNOWN, then mission, claim or survey changes, a fresh checkpoint and a reload | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCheckpointResolvesFresh` | PENDING |
-| N2.2 | The same, resolved by a coalesced flush | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCoalescedWriteResolvesFresh` | PENDING |
-| N2.3 | The same, resolved by an autosave | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownAutosaveResolvesFresh` | PENDING |
-| N2.4 | A definite FAILED retries with a fresh capture | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.failedCheckpointRetriesFresh` | PENDING |
-| N2.5 | A second UNKNOWN skips another carried epoch | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.secondUnknownSkipsAnotherEpoch` | PENDING |
-| N2.6 | Every waiting consumer stays fenced until resolution; no rematerialized reward | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.waitingConsumersRemainFencedUntilResolution` | PENDING |
+| F2.1 | DATA replay after a removed definition; no recreated initial mission | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PASS |
+| F2.2 | Fresh DATA deterministic initial mission | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (NONE) | PASS |
+| F2.3 | Cancel the initial mission before D3 or D4, then replay and promotion | NOT_COVERED | W333 | Same method (CANCEL) | PASS |
+| F2.4 | Claim the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (CLAIM) | PASS |
+| F2.5 | Prune the initial mission's history before D3 or D4 | NOT_COVERED | W333 | Same method (PRUNE) | PASS |
+| F2.6 | Replace the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (REPLACE) | PASS |
+| F2.7 | A later coalesced flush or autosave succeeds after a failed checkpoint | NOT_COVERED | W333 | Same method (coalesced and autosave variants) and `SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | PASS |
+| F2.8 | Changed owner, definition or kind conflicts | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` | PASS |
+| F3.1 | The bay fills the shared 64; a loader is refused until capacity is released | PASS | None | `BayLoaderSaturationGameTests.bayIntentsFillingTheSharedPendingSlotsStopALoaderUntilTheyResolve` | PASS |
+| F3.2 | 63 escrow and 1 bay, the reverse, and 7 escrow and 1 bay per rocket | NOT_COVERED | W333 | `BayAdmissionRowGameTests.mixedConsumersShareGlobalAndRocketLimits` | PASS |
+| F3.3 | One count over durable, captured, successor and UNKNOWN copies | NOT_COVERED | W333 | `BayAdmissionRowGameTests.writerCopiesChargeOnePendingSlot` | PASS |
+| F3.4 | 64 REPAIR or released operations keep capacity after a reload | NOT_COVERED | W333 | `BayAdmissionRowGameTests.repairAndReleasedReceiptsStayFullAfterReload` | PASS |
+| F3.5 | A REJECTED re-arm is refused when full and later admitted with the same operation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.rejectedRearmWaitsForExactCapacityRelease` | PASS |
+| F3.6 | Independent retained limits of 4,096 and 128; mixed-store startup | NOT_COVERED | W333 | `BayAdmissionRowGameTests.retainedLimitsAreIndependentAndStartupIndexesBothStores` | PASS |
+| F3.7 | A failed or UNKNOWN retirement keeps its reservation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.failedAndUnknownRetirementKeepReservations` | PASS |
+| F3.8 | 16 per owner: unchanged refusal, room for other owners | PASS | None | `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity` | PASS |
+| F4.1 | Matching DATA identity, removed definition, terminal extraction | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PASS |
+| F4.2 | Non-data terminal extraction, idempotent | PASS | None | `SatelliteKindTerminalGameTests.terminalLaunchesAnIdleSurveySatelliteAndConsumesAReplay` | PASS |
+| F4.3 | Removed components, changed stats or research, changed or removed target | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesChangedDependenciesAtTerminalAndService` | PASS |
+| F4.4 | Every satellite, mission, account and byte quota full | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesFullQuotasAtTerminalAndService` | PASS |
+| F4.5 | Dirty matching X, failed persistence, exact barrier | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.dirtyReplayKeepsPackageUntilExactAcknowledgement` | PASS |
+| F4.6 | Replace then throw, exact frozen readback | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.replaceThenThrowCompletesReplayOnceFromFrozenReadback` | PASS |
+| F4.7 | Receipt-phase launch and decommission fences | PASS | None | `SatelliteRegistryProofGameTests.terminalLaunchAndDecommissionWaitForExactReceiptPhases` | PASS |
+| F4.8 | Conflict, unauthorized caller, blocked registry, other-operation fence | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` and the barrier fixture | PASS |
+| F5.1 | Missing physical body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesAMissingBodyForDataAndSolarBays` | PASS |
+| F5.2 | Body that cannot be orbited, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesANonOrbitableBodyForDataAndSolarBays` | PASS |
+| F5.3 | Legacy Space body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesTheLegacySpaceBodyForDataAndSolarBays` | PASS |
+| F5.4 | The captured source body is the one the DATA receipt records | PASS | None | `BayDeploymentMatrixGameTests.theCapturedSourceBodyIsTheOneTheDataReceiptRecords` | PASS |
+| F5.5 | Station orbit differs from the destination and changes later | NOT_COVERED | W333 | `BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | PASS |
+| F5.6 | Undiscovered allowed body: DATA discovery against the non-data gate | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | PASS |
+| F5.7 | REGISTERED replay after the physical catalog entry is removed | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (REGISTERED_REMOVED variants) | PASS |
+| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 is in C3, so its hosted run includes the corrected window | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | PASS |
+| RT.2 | Launch and decommission wait for the commit acknowledgement | PASS | None | `SatelliteRegistryTickGameTests.aTerminalLaunchAndDecommissionCompleteOnTicksAfterTheirCommits` | PASS |
+| RT.3 | A DATA action shows its stored result only after its commit | PASS | None | `SatelliteRegistryTickGameTests.aDataActionShowsItsStoredResultAfterItsCommit` | PASS |
+| RT.4 | A clean schema-4 reload leaves the literal and save epochs unchanged | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | PASS |
+| RT.5 | Tagged origins, surveys, accounts and blocked roots across every write entry and outcome | NOT_COVERED | W333; a GameTest cannot stop its server, so the close drain is not a stopped-server autosave | `SatelliteTransportRowGameTests.allWriteEntriesPreserveTaggedAndBlockedRoots` | PASS |
+| RT.6 | Replace then throw without a duplicate epoch or a lost pending flush | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.replaceThenThrowAdvancesOnceAndKeepsLaterPendingMutation` | PASS |
+| RT.7 | Obsolete callbacks and stale hashes cannot obtain a permit | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` | PASS |
+| N2.1 | UNKNOWN, then mission, claim or survey changes, a fresh checkpoint and a reload | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCheckpointResolvesFresh` | PASS |
+| N2.2 | The same, resolved by a coalesced flush | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCoalescedWriteResolvesFresh` | PASS |
+| N2.3 | The same, resolved by an autosave | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownAutosaveResolvesFresh` | PASS |
+| N2.4 | A definite FAILED retries with a fresh capture | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.failedCheckpointRetriesFresh` | PASS |
+| N2.5 | A second UNKNOWN skips another carried epoch | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.secondUnknownSkipsAnotherEpoch` | PASS |
+| N2.6 | Every waiting consumer stays fenced until resolution; no rematerialized reward | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.waitingConsumersRemainFencedUntilResolution` | PASS |
 
 W333 also ran each family against a scratch copy with one protection disabled, and every family's new tests failed
 there ([W333](W333.md), "Negative protection checks").
@@ -367,10 +381,10 @@ there ([W333](W333.md), "Negative protection checks").
 
 | Scenario | Added by | Test in C3's hosted run | C3 |
 |---|---|---|---|
-| B6.5 main case: a consumed, committed group with neither entity rebuilds the destination from T′, with the consumed operations, no package back and no receipt | W342 | `BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime` | PENDING |
-| B6.5 control: the same state with the source present keeps the consumed source | W342 | `BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource` | PENDING |
-| B6.5 control: an unconsumed committed record rebuilds the destination with the packages aboard | W342 | `BayRebuildDestinationGameTests.anUnconsumedCommittedRecordRebuildsItsDestinationWithThePackagesAboard` | PENDING |
-| The bay neutral-source check fails while the ledger is NOT_LOADED, and passes under NO_FILE | W329 | One test of each pair in `EscrowLedgerNotLoadedGameTests` (batches `w329_ledger_not_loaded` and `w329_ledger_no_file`); the other 14 tests are shared (section 8.4) | PENDING |
+| B6.5 main case: a consumed, committed group with neither entity rebuilds the destination from T′, with the consumed operations, no package back and no receipt | W342 | `BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime` | PASS |
+| B6.5 control: the same state with the source present keeps the consumed source | W342 | `BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource` | PASS |
+| B6.5 control: an unconsumed committed record rebuilds the destination with the packages aboard | W342 | `BayRebuildDestinationGameTests.anUnconsumedCommittedRecordRebuildsItsDestinationWithThePackagesAboard` | PASS |
+| The bay neutral-source check fails while the ledger is NOT_LOADED, and passes under NO_FILE | W329 | One test of each pair in `EscrowLedgerNotLoadedGameTests` (batches `w329_ledger_not_loaded` and `w329_ledger_no_file`); the other 14 tests are shared (section 8.4) | PASS (2) |
 
 ### 3.3 Applicable risks
 
@@ -462,20 +476,20 @@ candidate commit and JAR SHA-256. W341 added the installed-JAR rechecks. W337 ru
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
-| N091 to N095 | `IC_LOAD_K2` (K2), `IC_LOAD_K3` (C2_DESTINATION_AFTER), `IC_LOAD_K4` (source-only store), `IC_LOAD_K5` (destination-only store), `IC_LOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
-| N101 | `IC_PARTIAL_APPLY` (C2_DESTINATION_AFTER) | PASS | Common | `cargo-D-S1` | PENDING |
-| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; W330 did not smoke the other 12 cases. W355's audit later confirms all 13 passed on the historical second candidate | `cargo-D-S2-LOAD` | PENDING (13) |
-| Q03, per-owner cap | `CQ_ITEM_LOAD`: 16 durable pending operations charge owner A; this kind's real device is refused before preparation; owner B completes once | NOT_COVERED | W330; smoke PASS (section 8.2) | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported item-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-load` | PENDING |
+| N091 to N095 | `IC_LOAD_K2` (K2), `IC_LOAD_K3` (C2_DESTINATION_AFTER), `IC_LOAD_K4` (source-only store), `IC_LOAD_K5` (destination-only store), `IC_LOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PASS (5) |
+| N101 | `IC_PARTIAL_APPLY` (C2_DESTINATION_AFTER) | PASS | Common | `cargo-D-S1` | PASS |
+| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; W330 did not smoke the other 12 cases. W355's audit later confirms all 13 passed on the historical second candidate | `cargo-D-S2-LOAD` | PASS (13) |
+| Q03, per-owner cap | `CQ_ITEM_LOAD`: 16 durable pending operations charge owner A; this kind's real device is refused before preparation; owner B completes once | NOT_COVERED | W330; smoke PASS (section 8.2) | `cargo-C-Q` | PASS |
+| Shared pool, added since C1 | Unsupported item-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-load` | PASS |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
-| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PENDING |
-| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PENDING |
-| D-E-A05 | Load neutral normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PENDING |
-| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
+| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PASS |
+| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PASS |
+| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PASS |
+| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PASS |
+| D-E-A05 | Load neutral normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PASS |
+| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PASS |
 
 The shared rows of section 8 also apply to this kind: M01 to M09, the B3 and G2 reuse families, the six R-042 families,
 W329's GameTests (except the device-hold test, which uses a fluid device), the downgrade family, and the residuals X01
@@ -521,27 +535,27 @@ and X02.
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
-| N096 to N100 | `IC_UNLOAD_K2` (K2), `IC_UNLOAD_K3` (C2_DESTINATION_AFTER), `IC_UNLOAD_K4` (source-only store), `IC_UNLOAD_K5` (destination-only store), `IC_UNLOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
-| N102 | `IC_PARTIAL_STORE` (source-only store) | PASS | Common | `cargo-D-S1` | PENDING |
-| N103, N104 | `IR_CONTAINER` and `IR_LOOT` (before an offline damage edit); W143's earlier failures, rerun afresh at C1 | PASS (2) | Common | `cargo-D-S2` | PENDING (2) |
-| N105 to N117 | `IS_O1_AFTER`, `IS_O2_ROCKET_BEFORE`, `IS_O2_ROCKET_AFTER`, `IS_O2_DEVICE_BEFORE`, `IS_O2_DEVICE_AFTER`, `IS_O3_AFTER`, `IS_O3J_AFTER`, `IS_O4_AFTER`, `IS_PRUNE_AFTER`, `IS_BIND_AFTER`, `IS_BIND_VETO`, `IS_ABANDON_ROCKET`, `IS_ABANDON_DEVICE` | PASS (13) | Common; W330 extended the shared item settlement oracle for the load cuts | `cargo-D-S2` | PENDING (13) |
-| N118 to N120 | `IR_DISASSEMBLY` (K1), `IR_REBUILD` (rebuild refused), `IR_ROOT` (root preserved) | PASS (3) | Common | `cargo-D-S2` | PENDING (3) |
-| Q04, per-owner cap | `CQ_ITEM_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported item-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-unload` | PENDING |
+| N096 to N100 | `IC_UNLOAD_K2` (K2), `IC_UNLOAD_K3` (C2_DESTINATION_AFTER), `IC_UNLOAD_K4` (source-only store), `IC_UNLOAD_K5` (destination-only store), `IC_UNLOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PASS (5) |
+| N102 | `IC_PARTIAL_STORE` (source-only store) | PASS | Common | `cargo-D-S1` | PASS |
+| N103, N104 | `IR_CONTAINER` and `IR_LOOT` (before an offline damage edit); W143's earlier failures, rerun afresh at C1 | PASS (2) | Common | `cargo-D-S2` | PASS (2) |
+| N105 to N117 | `IS_O1_AFTER`, `IS_O2_ROCKET_BEFORE`, `IS_O2_ROCKET_AFTER`, `IS_O2_DEVICE_BEFORE`, `IS_O2_DEVICE_AFTER`, `IS_O3_AFTER`, `IS_O3J_AFTER`, `IS_O4_AFTER`, `IS_PRUNE_AFTER`, `IS_BIND_AFTER`, `IS_BIND_VETO`, `IS_ABANDON_ROCKET`, `IS_ABANDON_DEVICE` | PASS (13) | Common; W330 extended the shared item settlement oracle for the load cuts | `cargo-D-S2` | PASS (13) |
+| N118 to N120 | `IR_DISASSEMBLY` (K1), `IR_REBUILD` (rebuild refused), `IR_ROOT` (root preserved) | PASS (3) | Common | `cargo-D-S2` | PASS (3) |
+| Q04, per-owner cap | `CQ_ITEM_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS |
+| Shared pool, added since C1 | Unsupported item-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-unload` | PASS |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
-| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PENDING |
-| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PENDING |
-| D-E-A06 | Unload survivor proofs, typed readback, O3J, O4, pruning and a READY launch | PASS | None | `ItemCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PENDING |
-| D-E-A07 | Unload neutral source normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PENDING |
-| D-E-A08 | ABANDON with the rocket missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PENDING |
-| D-E-A09 | ABANDON with the device missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PENDING |
-| D-E-A10 | An unavailable item blocks before O2 normalization and readback | PASS | None | `ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2` | PENDING |
-| D-E-A11 | The latest item remainder is restored exactly once | PASS | None | `ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PENDING |
-| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
+| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PASS |
+| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PASS |
+| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PASS |
+| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PASS |
+| D-E-A06 | Unload survivor proofs, typed readback, O3J, O4, pruning and a READY launch | PASS | None | `ItemCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PASS |
+| D-E-A07 | Unload neutral source normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PASS |
+| D-E-A08 | ABANDON with the rocket missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PASS |
+| D-E-A09 | ABANDON with the device missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PASS |
+| D-E-A10 | An unavailable item blocks before O2 normalization and readback | PASS | None | `ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2` | PASS |
+| D-E-A11 | The latest item remainder is restored exactly once | PASS | None | `ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PASS |
+| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PASS |
 
 The shared rows of section 8 apply as listed for section 4.2.
 
@@ -576,25 +590,25 @@ owner's deferred campaign.
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
-| N001 to N014 | `FC_LOAD_PREPARING`, `FC_LOAD_L1_BEFORE` (K1), `FC_LOAD_L1_REPLACED` (K2), `FC_LOAD_L1_ACK`, `FC_LOAD_C2_SOURCE_AFTER`, `FC_LOAD_C2_DESTINATION_AFTER`, `FC_LOAD_SOURCE_ONLY_STORE`, `FC_LOAD_DESTINATION_ONLY_STORE`, `FC_LOAD_SECOND_FORCE_BEFORE`, `FC_LOAD_C6_JOINT_READBACK`, `FC_LOAD_K8`, `FC_LOAD_L2_REPLACED` (K9), `FC_LOAD_C7_ACKNOWLEDGED`, `FC_LOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
-| N029 to N032 | `FC_LOAD_D2_C2`, `FC_LOAD_D2_C5`, `FC_LOAD_D2_C6`, `FC_LOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
-| N037 to N044 | `FC_LOAD_E1_OWN_STORE`, `FC_LOAD_E2_CAPTURE`, `FC_LOAD_E2_ROCKET_EXTERNAL`, `FC_LOAD_E4L1_FAIL`, `FC_LOAD_E4L1_UNKNOWN`, `FC_LOAD_E4L2_UNKNOWN`, `FC_LOAD_E3_CACHE_CLOSE`, `FC_LOAD_E5_STALLED`; E3 and E5 were W138's earlier failures, rerun afresh at C1 | PASS (8) | Common | `cargo-C-S2` | PENDING (8) |
-| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common; W352 restores native R1's synthetic fixture fuel in C3; all ten cases passed on W352's JAR (section 2.1.1) | `cargo-C-S3` | PENDING (10) |
-| N075 to N078 | `FF_N1`, `FF_F1_AFTER_CARGO`, `FF_F6_AFTER_CARGO`, `FF_F8_AFTER_CARGO` | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
-| N087 to N090 | `FF_GOVERNED_MISSING`, `FF_GOVERNED_TERMINAL`, `FF_TWO_FLIGHTS`, `FF_CANCEL_AFTER_CARGO`; the last three were W142's earlier failures, rerun afresh at C1 | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
-| Load settlement, a C1 gap (Root decision R395) | 20 cases: `FS_LOAD_O1_BEFORE`, `FS_LOAD_O1_AFTER`, `FS_LOAD_BIND_BEFORE`, `FS_LOAD_BIND_AFTER`, `FS_LOAD_O2_ROCKET_BEFORE`, `FS_LOAD_O2_ROCKET_AFTER`, `FS_LOAD_O2_DEVICE_BEFORE`, `FS_LOAD_O2_DEVICE_AFTER`, `FS_LOAD_O3_BEFORE`, `FS_LOAD_O3_AFTER`, `FS_LOAD_O3J_BEFORE`, `FS_LOAD_O3J_AFTER`, `FS_LOAD_O4_BEFORE`, `FS_LOAD_O4_AFTER`, `FS_LOAD_PRUNE_BEFORE`, `FS_LOAD_PRUNE_AFTER`, `FS_LOAD_ABANDON_ROCKET`, `FS_LOAD_ABANDON_DEVICE`, `FS_LOAD_VETO_DESTINATION_SAVED`, `FS_LOAD_BIND_VETO` | No case at C1 | W330. Smoke: `FS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 19 cases were not smoked | `cargo-C-S4-LOAD` | PENDING (20) |
-| Q01, per-owner cap | `CQ_FLUID_LOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported fluid-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-load` | PENDING |
+| N001 to N014 | `FC_LOAD_PREPARING`, `FC_LOAD_L1_BEFORE` (K1), `FC_LOAD_L1_REPLACED` (K2), `FC_LOAD_L1_ACK`, `FC_LOAD_C2_SOURCE_AFTER`, `FC_LOAD_C2_DESTINATION_AFTER`, `FC_LOAD_SOURCE_ONLY_STORE`, `FC_LOAD_DESTINATION_ONLY_STORE`, `FC_LOAD_SECOND_FORCE_BEFORE`, `FC_LOAD_C6_JOINT_READBACK`, `FC_LOAD_K8`, `FC_LOAD_L2_REPLACED` (K9), `FC_LOAD_C7_ACKNOWLEDGED`, `FC_LOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PASS (14) |
+| N029 to N032 | `FC_LOAD_D2_C2`, `FC_LOAD_D2_C5`, `FC_LOAD_D2_C6`, `FC_LOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PASS (4) |
+| N037 to N044 | `FC_LOAD_E1_OWN_STORE`, `FC_LOAD_E2_CAPTURE`, `FC_LOAD_E2_ROCKET_EXTERNAL`, `FC_LOAD_E4L1_FAIL`, `FC_LOAD_E4L1_UNKNOWN`, `FC_LOAD_E4L2_UNKNOWN`, `FC_LOAD_E3_CACHE_CLOSE`, `FC_LOAD_E5_STALLED`; E3 and E5 were W138's earlier failures, rerun afresh at C1 | PASS (8) | Common | `cargo-C-S2` | PASS (8) |
+| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common; W352 restores native R1's synthetic fixture fuel in C3; all ten cases passed on W352's JAR (section 2.1.1) | `cargo-C-S3` | PASS (10) |
+| N075 to N078 | `FF_N1`, `FF_F1_AFTER_CARGO`, `FF_F6_AFTER_CARGO`, `FF_F8_AFTER_CARGO` | PASS (4) | Common | `cargo-C-S5` | PASS (4) |
+| N087 to N090 | `FF_GOVERNED_MISSING`, `FF_GOVERNED_TERMINAL`, `FF_TWO_FLIGHTS`, `FF_CANCEL_AFTER_CARGO`; the last three were W142's earlier failures, rerun afresh at C1 | PASS (4) | Common | `cargo-C-S5` | PASS (4) |
+| Load settlement, a C1 gap (Root decision R395) | 20 cases: `FS_LOAD_O1_BEFORE`, `FS_LOAD_O1_AFTER`, `FS_LOAD_BIND_BEFORE`, `FS_LOAD_BIND_AFTER`, `FS_LOAD_O2_ROCKET_BEFORE`, `FS_LOAD_O2_ROCKET_AFTER`, `FS_LOAD_O2_DEVICE_BEFORE`, `FS_LOAD_O2_DEVICE_AFTER`, `FS_LOAD_O3_BEFORE`, `FS_LOAD_O3_AFTER`, `FS_LOAD_O3J_BEFORE`, `FS_LOAD_O3J_AFTER`, `FS_LOAD_O4_BEFORE`, `FS_LOAD_O4_AFTER`, `FS_LOAD_PRUNE_BEFORE`, `FS_LOAD_PRUNE_AFTER`, `FS_LOAD_ABANDON_ROCKET`, `FS_LOAD_ABANDON_DEVICE`, `FS_LOAD_VETO_DESTINATION_SAVED`, `FS_LOAD_BIND_VETO` | No case at C1 | W330. Smoke: `FS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 19 cases were not smoked | `cargo-C-S4-LOAD` | PASS (20) |
+| Q01, per-owner cap | `CQ_FLUID_LOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS |
+| Shared pool, added since C1 | Unsupported fluid-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-load` | PASS |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
-| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
-| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PENDING |
-| C-E-A05 | Load neutral normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PENDING |
-| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
-| C-E-A14 | Exact-source cancellation after cargo | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.exactSourceCancellationPreservesTheLatestCargo` | PENDING |
+| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PASS |
+| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PASS |
+| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PASS |
+| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PASS |
+| C-E-A05 | Load neutral normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PASS |
+| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PASS |
+| C-E-A14 | Exact-source cancellation after cargo | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.exactSourceCancellationPreservesTheLatestCargo` | PASS |
 
 The shared rows of section 8 also apply, including W329's device-hold GameTest, which uses a fluid cargo device.
 
@@ -632,28 +646,28 @@ Scope, duration and recovery are as in section 4.3.
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
-| N015 to N028 | `FC_UNLOAD_PREPARING`, `FC_UNLOAD_L1_BEFORE` (K1), `FC_UNLOAD_L1_REPLACED` (K2), `FC_UNLOAD_L1_ACK`, `FC_UNLOAD_C2_SOURCE_AFTER`, `FC_UNLOAD_C2_DESTINATION_AFTER`, `FC_UNLOAD_SOURCE_ONLY_STORE`, `FC_UNLOAD_DESTINATION_ONLY_STORE`, `FC_UNLOAD_SECOND_FORCE_BEFORE`, `FC_UNLOAD_C6_JOINT_READBACK`, `FC_UNLOAD_K8`, `FC_UNLOAD_L2_REPLACED` (K9), `FC_UNLOAD_C7_ACKNOWLEDGED`, `FC_UNLOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
-| N033 to N036 | `FC_UNLOAD_D2_C2`, `FC_UNLOAD_D2_C5`, `FC_UNLOAD_D2_C6`, `FC_UNLOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
-| N055 to N074 | `FS_O1_BEFORE`, `FS_O1_AFTER`, `FS_BIND_BEFORE`, `FS_BIND_AFTER`, `FS_O2_ROCKET_BEFORE`, `FS_O2_ROCKET_AFTER`, `FS_O2_DEVICE_BEFORE`, `FS_O2_DEVICE_AFTER`, `FS_O3_BEFORE`, `FS_O3_AFTER`, `FS_O3J_BEFORE`, `FS_O3J_AFTER`, `FS_O4_BEFORE`, `FS_O4_AFTER`, `FS_PRUNE_BEFORE`, `FS_PRUNE_AFTER`, `FS_ABANDON_ROCKET`, `FS_ABANDON_DEVICE`, `FS_VETO_DESTINATION_SAVED`, `FS_BIND_VETO` | PASS (20) | Common; W330 extended the shared fluid settlement oracle for the load cuts | `cargo-C-S4` | PENDING (20) |
-| N079 to N086 | `FF_DISASSEMBLY_REMOVAL`, `FF_DISASSEMBLY_RESTORATION`, `FF_DISASSEMBLY_RELEASE`, `FF_REBUILD_DESTINATION`, `FF_KEEP_SOURCE`, `FF_REBUILD_SOURCE`, `FF_STALE_PREPARED`, `FF_RECONNECT` | PASS (8) | Common | `cargo-C-S5` | PENDING (8) |
-| Q02, per-owner cap | `CQ_FLUID_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported fluid-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-unload` | PENDING |
+| N015 to N028 | `FC_UNLOAD_PREPARING`, `FC_UNLOAD_L1_BEFORE` (K1), `FC_UNLOAD_L1_REPLACED` (K2), `FC_UNLOAD_L1_ACK`, `FC_UNLOAD_C2_SOURCE_AFTER`, `FC_UNLOAD_C2_DESTINATION_AFTER`, `FC_UNLOAD_SOURCE_ONLY_STORE`, `FC_UNLOAD_DESTINATION_ONLY_STORE`, `FC_UNLOAD_SECOND_FORCE_BEFORE`, `FC_UNLOAD_C6_JOINT_READBACK`, `FC_UNLOAD_K8`, `FC_UNLOAD_L2_REPLACED` (K9), `FC_UNLOAD_C7_ACKNOWLEDGED`, `FC_UNLOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PASS (14) |
+| N033 to N036 | `FC_UNLOAD_D2_C2`, `FC_UNLOAD_D2_C5`, `FC_UNLOAD_D2_C6`, `FC_UNLOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PASS (4) |
+| N055 to N074 | `FS_O1_BEFORE`, `FS_O1_AFTER`, `FS_BIND_BEFORE`, `FS_BIND_AFTER`, `FS_O2_ROCKET_BEFORE`, `FS_O2_ROCKET_AFTER`, `FS_O2_DEVICE_BEFORE`, `FS_O2_DEVICE_AFTER`, `FS_O3_BEFORE`, `FS_O3_AFTER`, `FS_O3J_BEFORE`, `FS_O3J_AFTER`, `FS_O4_BEFORE`, `FS_O4_AFTER`, `FS_PRUNE_BEFORE`, `FS_PRUNE_AFTER`, `FS_ABANDON_ROCKET`, `FS_ABANDON_DEVICE`, `FS_VETO_DESTINATION_SAVED`, `FS_BIND_VETO` | PASS (20) | Common; W330 extended the shared fluid settlement oracle for the load cuts | `cargo-C-S4` | PASS (20) |
+| N079 to N086 | `FF_DISASSEMBLY_REMOVAL`, `FF_DISASSEMBLY_RESTORATION`, `FF_DISASSEMBLY_RELEASE`, `FF_REBUILD_DESTINATION`, `FF_KEEP_SOURCE`, `FF_REBUILD_SOURCE`, `FF_STALE_PREPARED`, `FF_RECONNECT` | PASS (8) | Common | `cargo-C-S5` | PASS (8) |
+| Q02, per-owner cap | `CQ_FLUID_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS |
+| Shared pool, added since C1 | Unsupported fluid-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-unload` | PASS |
 | X03 | The operator's whole-world repair after REBUILD_SOURCE; `FF_REBUILD_SOURCE` shows a protected FLOOR_CONFLICT result, not a repair | NOT_COVERED | None | None | NOT_COVERED |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
-| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
-| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PENDING |
-| C-E-A06 | Both survivor proofs, readback, pruning and a READY launch | PASS | None | `FluidCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PENDING |
-| C-E-A07 | Unload neutral source normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PENDING |
-| C-E-A08 | ABANDON with the rocket missing | PASS | None | `FluidCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PENDING |
-| C-E-A09 | ABANDON with the device missing | NOT_COVERED | W330 | `FluidCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PENDING |
-| C-E-A10 | The latest cargo is restored exactly once under a retained legacy record | PASS | None | `FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PENDING |
-| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
-| C-E-A12 | Real cargo, then a stale PREPARED record with both entities and a protected keeper | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.stalePreparedWithBothEntitiesKeepsProtectedCargoAndRequiresSnapshotIdentity` | PENDING |
-| C-E-A13 | A disembarked passenger reconnects after cargo | NOT_COVERED | W330; a simulated reconnect is not V2 | `CargoRecoveryAcceptanceGameTests.disembarkedPassengerReconnectCannotReplayPreCargoAuthority` | PENDING |
+| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PASS |
+| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PASS |
+| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PASS |
+| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PASS |
+| C-E-A06 | Both survivor proofs, readback, pruning and a READY launch | PASS | None | `FluidCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PASS |
+| C-E-A07 | Unload neutral source normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PASS |
+| C-E-A08 | ABANDON with the rocket missing | PASS | None | `FluidCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PASS |
+| C-E-A09 | ABANDON with the device missing | NOT_COVERED | W330 | `FluidCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PASS |
+| C-E-A10 | The latest cargo is restored exactly once under a retained legacy record | PASS | None | `FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PASS |
+| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PASS |
+| C-E-A12 | Real cargo, then a stale PREPARED record with both entities and a protected keeper | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.stalePreparedWithBothEntitiesKeepsProtectedCargoAndRequiresSnapshotIdentity` | PASS |
+| C-E-A13 | A disembarked passenger reconnects after cargo | NOT_COVERED | W330; a simulated reconnect is not V2 | `CargoRecoveryAcceptanceGameTests.disembarkedPassengerReconnectCannotReplayPreCargoAuthority` | PASS |
 
 The shared rows of section 8 also apply, including W329's device-hold GameTest.
 
@@ -683,26 +697,26 @@ Scope, duration and recovery are as in section 4.3.
 
 | Row | Boundary | C1 | Changed since C1 | C3 coverage | C3 |
 |---|---|---|---|---|---|
-| M01 | Ordinary prefix and apply, both save orders | PASS | Common | The C-S1, C-S2 and D-S1 families and the reconciliation GameTests | PENDING |
-| M02 | Composite binding and floor; shared ledger and floor reuse | NOT_COVERED | W330 added the reuse family | `cargo-B3-S5-REUSE`: missing, replaced and behind ledger, and every distinct, coalesced and saturated floor variant | PENDING |
-| M03 | Neutral normalization and veto | PASS | W330 added the load counterparts | C-S4, D-S2, C-S4-LOAD and D-S2-LOAD, and the settlement GameTests | PENDING |
-| M04 | O2, O3, O3J, O4 and pruning | PASS | As M03 | As M03 | PENDING |
-| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including governed P1-N2 and P1-F9, not ordinary LF_S6_F9_RESPAWN, which is NOT_COVERED under W211 R203 and R427) | PENDING |
-| M06 | Latest-cargo disassembly | PASS | Common | The three C-S5 disassembly windows and `IR_DISASSEMBLY` | PENDING |
-| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); C-S5's N1 and C-S2's E3 and E5 | PENDING |
-| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR; its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it, R428) and `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); the C-S3 and D-S2 roots | PENDING |
+| M01 | Ordinary prefix and apply, both save orders | PASS | Common | The C-S1, C-S2 and D-S1 families and the reconciliation GameTests | PASS |
+| M02 | Composite binding and floor; shared ledger and floor reuse | NOT_COVERED | W330 added the reuse family | `cargo-B3-S5-REUSE`: missing, replaced and behind ledger, and every distinct, coalesced and saturated floor variant | PASS |
+| M03 | Neutral normalization and veto | PASS | W330 added the load counterparts | C-S4, D-S2, C-S4-LOAD and D-S2-LOAD, and the settlement GameTests | PASS |
+| M04 | O2, O3, O3J, O4 and pruning | PASS | As M03 | As M03 | PASS |
+| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including governed P1-N2 and P1-F9, not ordinary LF_S6_F9_RESPAWN, which is NOT_COVERED under W211 R203 and R427) | PASS |
+| M06 | Latest-cargo disassembly | PASS | Common | The three C-S5 disassembly windows and `IR_DISASSEMBLY` | PASS |
+| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); C-S5's N1 and C-S2's E3 and E5 | PASS |
+| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR; its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it, R428) and `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); the C-S3 and D-S2 roots | FAIL, only by `cargo-G2-REUSE`'s three historical-JAR downgrade rows (R-044, R428); every other named row PASS |
 | M09 | Cargo chains that do not apply | PASS (scope only) | None | No cargo chain is admitted, and no chain cut exists | Not applicable |
 
 ### 8.2 Shared families
 
 | Family | What it runs | Evidence before C3 | C3 |
 |---|---|---|---|
-| `cargo-C-Q` | The four cap cases of sections 4 to 7. Sixteen durable REPAIR operations on 16 other rockets charge owner A within the real 64, 8 and 16 limits. A's real device is refused with its complete ledger, device and rocket envelopes unchanged, across both restarts; owner B completes once without using A's capacity. | All four passed with both restarts (W330). One cap case also ran on a scratch JAR with the cap check disabled and was rejected, and all 12 retained archives passed the later complete-root comparison. | PENDING (4) |
-| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 or on C1; W354's corrected fixture passed all seven with both restarts before C3 (section 2.1.1) | PENDING (7) |
-| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (15) |
-| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (8) |
-| `cargo-B3-S6-REUSE` | 96 selected shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. LF_S6_F9_RESPAWN is excluded as NOT_COVERED under W211 R203 and R427. | Historical selected-case passes, including the nine later cases after the second candidate's main run; the excluded ordinary F9 attempts remain failed, not passes (section 2.1.1) | PENDING (96) |
-| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428). | Six historical rows passed; three downgrade rows failed and remain unwaived (section 2.1.1) | PENDING |
+| `cargo-C-Q` | The four cap cases of sections 4 to 7. Sixteen durable REPAIR operations on 16 other rockets charge owner A within the real 64, 8 and 16 limits. A's real device is refused with its complete ledger, device and rocket envelopes unchanged, across both restarts; owner B completes once without using A's capacity. | All four passed with both restarts (W330). One cap case also ran on a scratch JAR with the cap check disabled and was rejected, and all 12 retained archives passed the later complete-root comparison. | PASS (4) |
+| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 or on C1; W354's corrected fixture passed all seven with both restarts before C3 (section 2.1.1) | PASS (7) |
+| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PASS (15) |
+| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PASS (8) |
+| `cargo-B3-S6-REUSE` | 96 selected shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. LF_S6_F9_RESPAWN is excluded as NOT_COVERED under W211 R203 and R427. | Historical selected-case passes, including the nine later cases after the second candidate's main run; the excluded ordinary F9 attempts remain failed, not passes (section 2.1.1) | PASS (96) |
+| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428). | Six historical rows passed; three downgrade rows failed and remain unwaived (section 2.1.1) | 6 PASS, 3 FAIL: rows 3 to 5, the old JAR's starts, refused after changing only `level.dat` and `level.dat_old`; the known R-044 residual (R428), not waived |
 
 The shared fuel-loader limits above are those of [W355](W355.md). Ordinary `LF_S6_F9_RESPAWN` is NOT_COVERED
 ([W211](W211.md), R203; R427), not replaced by the governed P1-F9 evidence. The fuel loader's first BI veto attempt
@@ -720,8 +734,8 @@ what each one observed in its smoke.
 while the ledger is NOT_LOADED, and `w329_ledger_no_file` checks that NO_FILE answers are unchanged. The reads are
 `escrowIdle`, `flightFrozen`, `retirementUnprotected`, `bayNeutral`, `escrowLogicalLocked`,
 `RocketCargoDeviceHold.locked` (with a fluid cargo device), `EscrowLoaderAdmission.progress` and the status command. W329
-also showed that reverting its production change fails all eight NOT_LOADED tests. They are in C3's hosted run;
-C3 result PENDING.
+also showed that reverting its production change fails all eight NOT_LOADED tests. They ran in C3's hosted run,
+which had no failure: C3 result PASS (16).
 
 ### 8.5 The downgrade family
 
@@ -729,7 +743,9 @@ C3 result PENDING.
 actual bay receipts, a schema-3 transfer journal and a valid empty ledger, then starts W176's old JAR (section 9.3).
 Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429,
 [QUEUE](../QUEUE.md)); both restored-candidate restarts passing does not waive those failures.
-C3 result PENDING; W339 keeps a non-PASS status from being reported as PASS.
+C3 result FAIL, as expected: all three old-JAR starts refused the transfer journal's future schema 3 after rewriting
+`level.dat` and `level.dat_old` (43 other world files unchanged), and both restored-candidate starts logged no ERROR.
+W339 keeps this non-PASS status from being reported as PASS.
 
 ### 8.6 Residuals
 
@@ -834,6 +850,17 @@ The rows follow W327's numbering of the waits from D0 to D7 and in recovery. "Bo
 | 22 | Reconnect queue | 200 ticks | Bounded | Login to expiry: 198 to 203 and 197 to 202 ticks on the two restarts | `w336-timing-RECONNECT` |
 | 23 | Ticket expiry after a claim ends | 400 ticks after the last renewal (vanilla) | Bounded (code and vanilla) | Census columns: 4 columns all loaded at [298,303] and all unloaded by [789,794]; 6 columns at [322,329] and by [797,804]. Other tickets were present, so this is not an isolated bay-ticket expiry. | Recorded with the timing families |
 
+**C3's timing families.** All ten passed with both restarts on the candidate JAR, on the same development host; every
+result records `upper_bound` as NOT_ESTABLISHED. Their recorded intervals, in game ticks bracketed by console queries:
+row 3, hold windows of 399, 250 and 248 ticks; row 5, registry retry spacing 196 to 205 ticks (both B13 cases); rows 11
+and 12, the first holder's service turn 39 to 44 ticks with 2-slot censuses (19.5 to 22 per slot) and 42 to 47 with
+3-slot censuses (14 to 15.7 per slot), a queued claim's whole wait through READY_SOURCE 58 to 65 ticks (2 slots) and 79
+to 85 ticks (3 slots), and in `w336-timing-TURNS-3` a third claim's 78 to 84 and 120 to 125 ticks; row 13, D6 refusal
+spacing 201 to 203 ticks; row 22, login to expiry 199 to 204 and 198 to 202 ticks on the two restarts. Where W336
+reported the same interval, the two agree within a few ticks. Root did not re-derive rows 4, 7, 15, 16 or 23 from C3's
+event logs; for them the column above stays W336's observation. None of these is a reference-node figure or an upper
+bound.
+
 **Summary.** Only the per-attempt retry spacings (rows 2, 5 and 13), the 32-step budget (row 18), the reconnect queue
 (row 22) and ticket expiry (row 23) are bounded. W336's retry and reconnect observations (rows 5, 13 and 22) lie within
 a few ticks of their 200-tick rules. Its column sweeps cannot be compared with the 400-tick expiry, because other
@@ -853,7 +880,7 @@ D5 (row 6; W327-L3, now in R-043). No run measures this.
 | An unsupported device root: the device is protected and disabled, and ordinary removal is refused | **One device.** The fuel loader in R-044; each cargo device in R-035's cargo paragraph; the bay in R-038 | R-044, R-035, R-038 | Code (W327 section 3.1); the W336 saturation fixtures place unsupported roots of each device |
 | One chunk's terrain save refused | **One chunk**, per device as above | As above | As above |
 | The 256-coordinate denial pool | **Shared per ServerLevel** by about 15 device families: suit workstations, tanks, force fields, landing pads, solar arrays, combustion generators, pumps, classic and research machines, unlit torches, life-support devices, the bay, the four cargo devices and the fuel loader. Any family's denials use it up, and the 257th coordinate refuses every later terrain save in the Level. | R-044 (shared-pool text, W327-M5); R-038 and R-035's cargo paragraph refer to it | W336: each of the five bay and cargo controls ran against 255 fuel-loader denials, and the fuel control against bay denials. Terrain without a device saved at 255 and 256 and was refused after the 257th. All 257 unsupported roots stayed byte-identical. Restart 1 reset the in-memory pool; restart 2 loaded the roots, saturated again and refused a change. A scratch JAR without the pool was rejected. |
-| The downgrade rewrite | **The world.** It comes from the old JAR's transfer-journal refusal (R-035) | R-044 (W327-M4 text) | W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED; historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. |
+| The downgrade rewrite | **The world.** It comes from the old JAR's transfer-journal refusal (R-035) | R-044 (W327-M4 text) | W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED; historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. C3's `w336-downgrade` and `cargo-G2-REUSE` failed the same way (section 2.1). |
 | The pending pool of 64, 8 and 16 | **Shared** by the fuel loader, the four cargo kinds and the bay | R-039, R-042 | `cargo-C-Q`; CAP rows; `r042-P_SERVER`, `r042-P_OWNER`; F3 GameTests |
 | NOT_LOADED of the receipts or the ledger | **The whole server**: every rocket and every device holding a root | R-042, R-035 | `r042-N_BAY`, `r042-L_LEDGER`; W329's GameTests |
 | The shared cargo work budget | **Shared** by the four cargo kinds and the bay | R-043 (W327-L3 text) | Not measured |
@@ -891,7 +918,7 @@ does not change the register or decide admission.
    `SealedSpecialHostAutomationGameTests.tankAndBayStaySealedUnderTickingAutomation`, and QUEUE keeps that as an open
    item. The branch run 42849035668 passed them. W350 did not establish a cause.
 
-## 11. How this draft was made
+## 11. How this report was made
 
 ### W351's original C2 draft (historical method)
 
@@ -925,3 +952,21 @@ diff and preserved the row identifiers for Root's filler. The record is `docs/wo
 The two original result cells with commentary (B11.7 and the bay downgrade row) now say only PENDING, with their
 limits in the row text. The S6 reuse row counts 96 selected cases, with ordinary F9 explicitly NOT_COVERED.
 No C3 result was filled and no risk, switch or Gate was accepted by this edit.
+
+### Root's fill from C3 (2026-11-12)
+
+- **Evidence.** C3's campaign evidence root `D:/GitHub/ARCE-Task-Evidence/root-queue/C3/campaign/` (outside Git):
+  `plan.json`, `campaign-attempt1.json` (58 families, not partial, overall status FAILED because of the two R-044
+  families) and each family's `native/results.json`; and the four shard `result.json` files of hosted run
+  42947784467 under `D:/GitHub/ARCE-Task-Evidence/root-queue/C3/hosted/regression/` (1,859 executed, none failed).
+- **Script.** For each table row whose last cell was PENDING, Root's script (in Root's scratch directory, not tracked)
+  collected the row's backticked family names, case names and test methods, and wrote PASS only when every named
+  family passed, every named case passed in its family and every named test ran without failure. It filled 235 cells.
+- **By hand.** Root filled the rest from the same evidence: the five summary rows of section 2.4, counted from the
+  filled tables; M01, M03 and M04, whose families passed and whose GameTests ran in a run with no failure; W329's bay
+  pair (both tests ran) and section 8.4 (all 16 ran); B11.7's partial pass; the rows and paragraphs that cite
+  `cargo-G2-REUSE` or `w336-downgrade`, filled FAIL from their results; the C3 timing paragraph of section 9.2, from
+  the recorded intervals of the ten timing families; and the Status row and the statements that called the run in
+  progress.
+- **Not changed.** The risk register, the switches, and every case selection and oracle. Nothing in this report is
+  accepted, approved or passed for a Gate or release, and production admission stays off for all five switches.
