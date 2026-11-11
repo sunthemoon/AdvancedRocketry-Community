@@ -109,7 +109,7 @@ What is still open:
   the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), ran on
   2026-11-10 and 2026-11-11 with the 58-family campaign driver (R421) and ended with 49 families passed, 6
   failed and 3 not run. `cargo-C-S3`, `cargo-C-S4-LOAD`, `cargo-B3-S1-REUSE` and `cargo-B3-S6-REUSE` failed on
-  test fixtures, a harness gap and a campaign selection, all fixed since (open items below, R424 to R427), and
+  test fixtures, a harness gap and a campaign selection, all fixed since (R424 to R427) and passed on C3, and
   `cargo-G2-REUSE` and `w336-downgrade` failed only their historical-JAR downgrade checks, the known R-044
   residual that R138 keeps failed (R428, R429). On C2 the nine `cargo-B3-S6-REUSE` cases after the excluded F9
   row then passed, and the three families not run (`cargo-C-S5`, `cargo-B3-S4-REUSE`, `cargo-B3-S5-REUSE`)
@@ -117,7 +117,11 @@ What is still open:
   selected case passed on C2. All 58 families rerun on candidate C3, the hosted build of `9a15e1f42`
   (shared run 42947784467; production paths equal to W355's merge `26b1ecda9`), JAR SHA-256
   `459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b`, which the build's sealed identity
-  files confirm; that run started at 12:27 on 2026-11-11. W327's
+  files confirm. That run (12:27 on 2026-11-11 to 00:58 on 2026-11-12) ran all 58 families: 56 passed, including
+  the four families fixed after C2, and `cargo-G2-REUSE` and `w336-downgrade` again failed only their
+  historical-JAR downgrade checks (R431). C3's hosted run had no failure among 1,859 GameTests. Root filled the
+  owner's per-switch report from C3
+  ([C3-SWITCH-REPORT](../work/v1.8.0-root-queue/records/C3-SWITCH-REPORT.md)); nothing in it is accepted. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
@@ -525,42 +529,12 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **C2 campaign family `cargo-C-S3` (2026-11-11).** Its first case, `FC_LOAD_R1_255`, passed on C1 but crashed the
-  server at its first start on C2 with `Only a fueled rocket may accept a flight plan`, in the gated release-test
-  fixture before any production cargo step: W330's `7753cfd78` made `EscrowCargoTransferFixtures.record` use the
-  rocket's own fuel, and the C-S3 R1 branch calls it on an unfueled rocket. It is a test-fixture regression, not a
-  production defect; the other nine C-S3 cases did not run. W352 (R424, merged at `c7bca5eed` after branch run
-  42895288778 passed) restores C1's fixture fuel for that branch, and all ten cases passed natively on its JAR;
-  it stays open until they pass on candidate C3.
-- **C2 campaign family `cargo-C-S4-LOAD` (2026-11-11).** `FS_LOAD_VETO_DESTINATION_SAVED` failed with "Native run
-  logged ERROR or FATAL": the ERROR is the case's injected load veto (`Release-test load settlement source veto`,
-  through `GuardedChunkSaves.recordObservedDenial`), which the cargo settlement runner does not expect. It is a
-  harness gap, not a production defect; `FS_LOAD_BIND_VETO` and the family `cargo-C-S5` did not run. W353 (R425)
-  makes the runner accept exactly that injected ERROR (merged at `b4dd5f320` after branch run 42904479477
-  passed; all 20 cases passed natively on the C2 JAR with it); it stays open until both families pass on
-  candidate C3.
-- **C2 campaign family `cargo-B3-S1-REUSE` (2026-11-11).** `LF_M_N3_FULL`, the fuel loader's reused full-pool
-  refusal, failed at its first start: the gated probe's "Refusal did not visit the queue" check found that the
-  loader's attempt no longer answers `READY` with 64 pending BAY operations. It last passed on `1f674080` (W27C1)
-  and did not run at C1. W354 (R426) traced it to a stale fixture: W128's `91de93e86` deliberately makes a
-  LOADED bay index without a receipt store hold every rocket, and the probe's synthetic index has no store.
-  Its fixture correction was merged at `266df4cc3` after a diagnostic C2 start confirmed `ESCROW_PENDING` and
-  all seven cases passed natively on W354's JAR (branch run 42939380895 passed). Three later cases and the families
-  `cargo-B3-S4-REUSE` and `cargo-B3-S5-REUSE` did not run. It stays open until the family passes on candidate
-  C3.
-- **C2 campaign family `cargo-B3-S6-REUSE` (2026-11-11).** 87 of 88 run cases passed; `LF_S6_F9_RESPAWN` failed
-  because the recovery service kept the settled source and retired the seeded record, as in W211's two R203
-  attempts, which recorded the row as structurally out of reach and not a pass. The family should not have
-  selected it, and its nine later cases did not run. W355 (R427, merged at `26b1ecda9` after branch run 42941465712
-  passed) leaves the row out of the campaign family with a named exclusion that the plan reports as not covered;
-  it stays open until the family passes on candidate C3.
-- **C2 campaign family `cargo-G2-REUSE` (2026-11-11).** Six of its nine S1 rows passed; the three downgrade rows
-  on the historical JAR `ba046688` failed because the old JAR rewrites `level.dat` and `level.dat_old` before its
-  refusal, as W176 recorded. R428 classifies this as the known R-044 residual (R138), not a new finding; it stays
-  failed in C3's run and the owner's report until the owner decides R-044.
-- **C2 campaign family `w336-downgrade` (2026-11-11).** Its three old-JAR starts refused the transfer journal's
-  future schema 3 and changed `level.dat` and `level.dat_old` (43 other world files unchanged), so W176's
-  whole-world oracle failed as W336 recorded; both later candidate starts on the restored backup logged no ERROR.
-  R429 classifies it with R428 as the known R-044 residual; it stays failed until the owner decides R-044.
+- **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
+  each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
+  `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
+  three downgrade rows, and `w336-downgrade` failed W176's whole-world oracle on all three old-JAR starts (43 other
+  world files unchanged), while both later candidate starts on the restored backup logged no ERROR. R428, R429 and
+  R431 classify this as the known R-044 residual (R138), not a new finding; both stay failed until the owner
+  decides R-044.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
