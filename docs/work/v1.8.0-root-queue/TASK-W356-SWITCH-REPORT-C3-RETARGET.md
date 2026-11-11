@@ -25,7 +25,7 @@ task makes the draft describe C3, so that only those results remain.
   build's sealed identity files confirm. Evidence root `D:/GitHub/ARCE-Task-Evidence/root-queue/C3/` (outside Git):
   `campaign/` (the driver's evidence root, suffix `attempt1`), `candidate/` and `hosted/regression/`. The run started
   at 12:27 on 2026-11-11 with C2's driver arguments; its plan has 58 families, and `cargo-B3-S6-REUSE` selects 96
-  cases with `LF_S6_F9_RESPAWN` reported as NOT_COVERED ([W355](W355.md)).
+  cases with `LF_S6_F9_RESPAWN` reported as NOT_COVERED ([W355](records/W355.md)).
 - **C2's outcome** is in `docs/status/CURRENT_VERSION.md` (the ledger paragraph and the open items) and in the QUEUE
   rows W352 to W355 and W351 (decisions R424 to R429): 49 families passed, 6 failed and 3 did not run; the nine
   later `cargo-B3-S6-REUSE` cases and the three families not run then passed on C2.
@@ -59,9 +59,9 @@ task makes the draft describe C3, so that only those results remain.
    R203, R427). Update RT.1's text: W350 is in C3.
 6. **Limits from W355's audit.** Add any of these that the draft does not already state, in the section of the
    switch it concerns, citing the record: `forced-W331-R` passes KEEP_SOURCE, not destination reconstruction
-   ([W331](W331.md)); B11.7's UNKNOWN component is not covered; the `L_LEDGER` vanilla-dismount subrow is uncovered
-   (W332, carried by [W343](W343.md) and [W345](W345.md)); `P_OWNER` uses a fixed bay owner. The first BI veto
-   attempt stays failed ([W222](W222.md)); mention it only where the draft discusses the fuel loader.
+   ([W331](records/W331.md)); B11.7's UNKNOWN component is not covered; the `L_LEDGER` vanilla-dismount subrow is uncovered
+   (W332, carried by [W343](records/W343.md) and [W345](records/W345.md)); `P_OWNER` uses a fixed bay owner. The first BI veto
+   attempt stays failed ([W222](records/W222.md)); mention it only where the draft discusses the fuel loader.
 
 ## Verification
 
