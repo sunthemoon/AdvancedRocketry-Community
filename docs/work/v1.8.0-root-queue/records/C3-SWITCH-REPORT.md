@@ -1,10 +1,11 @@
-# Candidate C2: risks and evidence per switch for the satellite bay and the four cargo kinds (draft)
+# Candidate C3: risks and evidence per switch for the satellite bay and the four cargo kinds (draft)
 
 | Item | Value |
 |---|---|
-| Status | **Draft for Root.** Every C2 result cell says PENDING until Root fills it in from the C2 campaign and the hosted GameTest run. Nothing in this report is accepted, approved or passed for release. Production admission stays off for all five switches, and the owner decides whether to enable each one. |
+| Status | **Draft for Root.** Every C3 result cell says PENDING until Root fills it in from C3's campaign and hosted GameTest run. Nothing in this report is accepted, approved or passed for release. Production admission stays off for all five switches, and the owner decides whether to enable each one. |
 | Written by | W351, a read-only headless Claude session, on 2026-11-11, for [TASK-W351](../TASK-W351-SWITCH-EVIDENCE-DRAFT.md) under Root decision R422 ([QUEUE](../QUEUE.md), row W351). |
-| Base | Branch `codex/v1.8.0-w351` at `e5812cbf8`, the shared head when the task was queued. |
+| Retargeted by | W356, a Codex worker session, on 2026-11-11, for [TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md) under Root decision R430 ([QUEUE](../QUEUE.md), row W356). |
+| Base | Branch `codex/v1.8.0-w351` at `b91fde1ef`, brought to the shared head for W356; the reported candidate is C3 at `9a15e1f42dbacf6c81b6332192f523cd25f59035` (section 2.1). |
 | Owner request | [OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md): test the bay and the four cargo kinds together on one candidate JAR, report each scenario as passed, failed or not covered with the remaining work, then give the applicable risks and evidence for each switch separately, and check R-042's server-wide effects, R-043's waiting times and R-044's attribution to each device. |
 | Earlier reports | [INTEGRATED-C1-REPORT-20261109](INTEGRATED-C1-REPORT-20261109.md), the results on candidate C1, and W327's read-only audit at C1, `D:/GitHub/ARCE-Task-Evidence/v18-integrated-20261109/risk/AUDIT.md` (outside Git). |
 | Out of scope | The escrow fuel loader's admission, which the owner handles separately. It appears below only where it shares a risk with the five switches. |
@@ -12,8 +13,8 @@
 ## 1. Names used in this report
 
 - **C1** is the first candidate: the hosted build of run 42499122646 at `70dd5d43e`, JAR SHA-256
-  `fa5ec1812995ce3cca9d74e447301c66b6d5c9117789c2daae71cac4598e4832`. **C2** is the second candidate, described in
-  section 2.1.
+  `fa5ec1812995ce3cca9d74e447301c66b6d5c9117789c2daae71cac4598e4832`. **C3** is the third candidate and the one
+  whose results this report gives (section 2.1). **C2** is the historical second candidate (section 2.1.1).
 - **Wnnn** names a task and its record in this folder, for example [W331](W331.md). **Rnnn** without a hyphen is a Root
   decision, recorded in [QUEUE](../QUEUE.md) or an owner-decision record. **R-0nn** with a hyphen is an entry of the
   [risk register](../../../11-RISK-REGISTER.md).
@@ -22,7 +23,7 @@
   built JAR during development. A smoke shows that a fixture and its oracle work; it is not candidate evidence.
 - An **A1** row is a GameTest in the hosted regression run of the candidate's commit. A GameTest is not native restart
   evidence.
-- A **family** is one entry of the C2 campaign driver,
+- A **family** is one entry of the C3 campaign driver,
   [`scripts/run_v180_integrated_campaign.py`](../../../../scripts/run_v180_integrated_campaign.py). Its 58 family names
   are used exactly as the driver writes them, for example `forced-W331-D`, `cargo-C-S4-LOAD` or `r042-N_BAY`.
 - Bay row IDs come from [W325-MATRIX](W325-MATRIX.md): B1.1 to B18.7, CAP.1 to CAP.3 and EXIT.0 to EXIT.10 are native
@@ -37,30 +38,54 @@
 - **V1** is a check with one real client and **V2** a check with two real clients. The **reference node** is the
   performance host of [docs/17](../../../17-V1PLUS-QUALITY-BUDGETS.md). All three belong to the owner's final campaign.
 - **M1 to M6** and **L1 to L5** are the findings of W327's audit.
-- Result words: PASS; FAIL; NOT_COVERED, meaning no evidence for that exact row; and PENDING, meaning C2's result,
+- Result words: PASS; FAIL; NOT_COVERED, meaning no evidence for that exact row; and PENDING, meaning C3's result,
   which Root fills in.
 
 ## 2. The candidate and what changed since C1
 
-### 2.1 Candidate C2
+### 2.1 Candidate C3
 
-QUEUE row C2 (Root decision R421) records the following:
+[TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md), the ledger paragraph of
+[CURRENT_VERSION](../../../status/CURRENT_VERSION.md) and [QUEUE](../QUEUE.md) record these candidate facts:
 
-- The commit is `ade1538c356d4cab914bbbffdf3c1469fe3288d7`. Its production code is as at `254bff121`, with W344, W346
-  with W349, and W347 merged.
-- Hosted run 42831910740 passed with 1,858 GameTests, and governance run 42831910850 passed.
+- The commit is `9a15e1f42dbacf6c81b6332192f523cd25f59035`. Its production paths equal W355's merge `26b1ecda9`.
+- Shared hosted run 42947784467 passed on its first attempt with 1,859 GameTests; governance run 42947784571 passed.
 - The JAR is `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256
-  `1eea72ac442ea181806940c1288698abd7840fbfa0bce2b17f415550bff8ca57`.
-- Root runs all 58 families from a detached worktree at that commit, each under the heavy-JVM lock. `cargo-G2-REUSE`
-  and `w336-downgrade` also use W176's old JAR (`ba046688b`, SHA-256
-  `d9bf5f08cd65145090a23ac3ce577da5a0d14d51ba380eb253926fb3b0a038bd`). The run started on 2026-11-10 at 23:01, and its
-  evidence goes to `D:/GitHub/ARCE-Task-Evidence/root-queue/C2/`.
+  `459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b`. The build's sealed identity files confirm it.
+- The 58-family run started at 12:27 on 2026-11-11 with C2's driver arguments and is in progress at this retargeting.
+  Its evidence root is `D:/GitHub/ARCE-Task-Evidence/root-queue/C3/` (outside Git): `campaign/` is the driver's
+  evidence root, with suffix `attempt1`; `candidate/` and `hosted/regression/` hold the candidate and hosted evidence.
+  These identities and run facts are cited, not independently re-derived by W356.
+- `cargo-B3-S6-REUSE` selects 96 cases. Its excluded `LF_S6_F9_RESPAWN` is NOT_COVERED under W211 R203 and R427
+  ([W355](W355.md)); the other 57 families are unchanged by that selection correction.
+- `cargo-G2-REUSE` and `w336-downgrade` also use W176's historical JAR (`ba046688b`, SHA-256
+  `d9bf5f08cd65145090a23ac3ce577da5a0d14d51ba380eb253926fb3b0a038bd`). Their historical-JAR downgrade checks are
+  expected to fail under R-044 until the owner decides it (R428, R429, [QUEUE](../QUEUE.md)); the assertions and
+  selections are unchanged, and candidate restarts after backup restoration do not turn those checks into passes.
 
-Every delivered commit from W328 to W349 that this report relies on is an ancestor of `ade1538c3`; I checked each with
-`git merge-base --is-ancestor`. W350 is not: it merged afterwards as `67c310530`. QUEUE records that W350 adds GameTest
-classes and a read-only test accessor only, so C2's production behaviour is unchanged by it.
+#### 2.1.1 C2's campaign is history, not this report's candidate evidence
 
-### 2.2 Production changes between C1 and C2
+The ledger paragraph and open items of [CURRENT_VERSION](../../../status/CURRENT_VERSION.md) and [QUEUE](../QUEUE.md)
+rows W351 to W355 (R424 to R429) record C2's outcome at `ade1538c356d4cab914bbbffdf3c1469fe3288d7`:
+**49 families passed, 6 failed and 3 did not run** in its main campaign. The six failed families were:
+
+| C2 family | Cause and classification | Fix or disposition before C3 |
+|---|---|---|
+| `cargo-C-S3` | R424: the first case, `FC_LOAD_R1_255`, crashed while the gated fixture built a flight plan on an unfueled rocket. W330 had changed the builder to use the rocket's actual fuel; this was a test-fixture regression, before a production cargo step. | [W352](W352.md), merged as `c7bca5eed`, restores C1's synthetic 1,000 mB water fuel only for native R1. All ten cases passed natively on its corrected JAR. |
+| `cargo-C-S4-LOAD` | R425: 18 of 20 cases passed, then `FS_LOAD_VETO_DESTINATION_SAVED` failed because the runner rejected the exact ERROR injected by its source-save veto. `FS_LOAD_BIND_VETO` did not run. This was a harness gap, not a product defect. | [W353](W353.md), merged as `b4dd5f320`, accepts only that exact injected event in that case at start 0; all other ERROR/FATAL checks remain. All 20 cases then passed on the C2 JAR. |
+| `cargo-B3-S1-REUSE` | R426: `LF_M_N3_FULL` failed after three passing cases. Its synthetic LOADED bay index had no backing store, so W128's deliberate protective hold returned ESCROW_PENDING before the queue. This was a stale fixture, not a production regression. | [W354](W354.md), merged as `266df4cc3`, binds an empty, unwritten generation-zero bay store for the synthetic refusal cuts and checks that no BAY file appears. All seven cases passed with the forced stop and both restarts. |
+| `cargo-B3-S6-REUSE` | R427: 88 of 97 cases ran; 87 passed and `LF_S6_F9_RESPAWN` failed at its first start because recovery kept the source. W211 R203 already records ordinary F9 as structurally out of reach under the preservation policy. This was a campaign selection error. | [W355](W355.md), merged as `26b1ecda9`, selects 96 cases and explicitly reports F9 as NOT_COVERED, leaving the underlying cases and oracles unchanged. The nine later cases passed on C2 after the main run. |
+| `cargo-G2-REUSE` | R428: six of nine campaign rows passed; only the three historical-JAR downgrade checks failed because the old JAR rewrote `level.dat` and `level.dat_old` before refusing. | Known R-044 residual, not a new finding; no fix task or waiver. The unchanged checks are expected to fail until the owner's decision. |
+| `w336-downgrade` | R429: the same three old-JAR checks failed the whole-world byte-preservation oracle; 43 other files were unchanged and the restored candidate's two later starts were clean. | The same R-044 residual; no fix task or waiver. The unchanged checks are expected to fail until the owner's decision. |
+
+The three families skipped after runner failures, `cargo-C-S5`, `cargo-B3-S4-REUSE` and `cargo-B3-S5-REUSE`, then
+passed on C2 under suffix `attempt2`; the nine later S6 cases also passed there. These follow-up passes do not erase
+the main run's failures. **C2's results are history; C3's campaign and hosted run are this report's evidence.** Root
+fills the PENDING cells only from C3, not from the historical or corrected-fixture runs above.
+
+### 2.2 Production changes between C1 and C3
+
+**C1 to C2.** The original draft's comparison remains:
 
 `git diff 70dd5d43e ade1538c3` over `src/main`, `src/generated` and the three build files changes 56 files. Apart from
 GameTests and gated release-test fixtures, the changes are these:
@@ -76,7 +101,15 @@ GameTests and gated release-test fixtures, the changes are these:
 - **Gated release-test fixtures and probes.** W330 (the cargo owner cap and load settlement cuts), W331 (the bay gaps),
   W332 (the R-042 probes) and W346 (the save-boundary control).
 
-The admission switches are unchanged at C2:
+**C2 to C3.** The required comparison
+`git diff --stat ade1538c3 9a15e1f42 -- src/main src/generated build.gradle settings.gradle gradle.properties`
+changes eight files, with 217 insertions and 25 deletions. They are GameTest classes, GameTest-only support and gated
+release-test probes only: W350's registry test windows (`67c310530`), W352's C-S3 R1 fixture fuel (`c7bca5eed`) and
+W354's backed bay store for the loader refusal cuts (`266df4cc3`). No generated resource or Gradle file changes.
+W353 (`b4dd5f320`) and W355 (`26b1ecda9`) change Python and tests only. These are the task's recorded classifications,
+consistent with the file comparison; they do not describe a production admission change.
+
+The admission switches are unchanged at C3:
 
 - **Cargo.** `EscrowCargoSwitches.production` returns false for all four kinds (lines 16 to 19 of
   `resourceescrow/EscrowCargoSwitches.java`). A cargo operation opens only on the server thread, through the complete
@@ -96,10 +129,13 @@ The admission switches are unchanged at C2:
 - W330 extended the cargo controllers and the fluid and item settlement oracles for the new load cuts, and made the
   cargo wrapper require the candidate pins.
 - W343 and W345 strengthened the R-042 oracles. W349 added a stopped-world inventory scan to W346's case.
+- W353 adds the exact injected load-veto ERROR qualification (section 2.1.1). W355 excludes ordinary F9 from the
+  integrated selection and reports it as NOT_COVERED, without changing the underlying S6 cases or oracles
+  ([W355](W355.md)).
 
 ### 2.4 Summary per switch
 
-| Switch | C1 native rows | C1 GameTest rows | Rows with a C2 family or named test | Rows with no C2 coverage | C2 result |
+| Switch | C1 native rows | C1 GameTest rows | Rows with a C3 family or named test | Rows with no C3 coverage | C3 result |
 |---|---|---|---|---|---|
 | Bay (`block_variant:loader/1`) | 88 PASS, 27 NOT_COVERED | 13 PASS, 31 NOT_COVERED | 107 of 115 native rows (B11.7 only in part) and all 44 GameTest rows; plus 19 families and W342's three GameTests added since C1 | 8 native rows and B11.7's UNKNOWN part (section 3.4) | PENDING |
 | ITEM_CARGO_LOAD (`loader/3`) | 6 PASS | 6 PASS | 20 native rows in this kind's families, 6 GameTest rows, and the shared rows of section 8 | X01, X02; no item before-write or store-veto cut | PENDING |
@@ -108,7 +144,8 @@ The admission switches are unchanged at C2:
 | FLUID_CARGO_UNLOAD (`loader/4`) | 46 PASS | 9 PASS, 3 NOT_COVERED | 47 native rows, 12 GameTest rows, and section 8 | X01, X02, X03 | PENDING |
 
 At C1, the per-owner cap (Q01 to Q04), the shared fuel-loader reuse rows (M02, M05, M07 and M08) and native
-load-direction settlement were NOT_COVERED for cargo. C2 has a family for each of them (sections 4 to 8).
+load-direction settlement were NOT_COVERED for cargo. C3 has a family for each of them (sections 4 to 8), subject to
+the explicit uncovered ordinary F9 subcase and other limits below.
 
 ## 3. The satellite bay's deployment admission (`block_variant:loader/1`)
 
@@ -116,7 +153,7 @@ load-direction settlement were NOT_COVERED for cargo. C2 has a family for each o
 
 - **The switch.** The bay has no production admission constant. Admission answers only for the release-test gate, so
   enabling it needs a code change (section 2.2).
-- **Live with the switch off.** The bay is craftable at C2 (its recipe `rocket_satellite_bay` is in
+- **Live with the switch off.** The bay is craftable at C3 (its recipe `rocket_satellite_bay` is in
   `src/generated/v1.8`). So the code for its root protection and save refusal (R-038), the package insertion fences and
   NOT_LOADED (R-042) is active in production now, and recovery of receipts already in a world runs on every server
   (R-043; W327, section 4). The register states that production worlds create no receipt file while deployment is off
@@ -126,12 +163,12 @@ load-direction settlement were NOT_COVERED for cargo. C2 has a family for each o
 
 **Changes common to every native bay row since C1.** W331 made the runners take the candidate as an argument. W341
 added the complete receipt-set comparison and the installed-JAR rechecks. W337 runs every case through the campaign
-driver. "Common" in the table means that only these changes apply. A C2 family named twice means that the case runs
+driver. "Common" in the table means that only these changes apply. A C3 family named twice means that the case runs
 in both families, as at C1.
 
 #### Native rows of W325-MATRIX
 
-| Row | Scenario | C1 | Changed since C1 | C2 family (case) | C2 |
+| Row | Scenario | C1 | Changed since C1 | C3 family (case) | C3 |
 |---|---|---|---|---|---|
 | B1.1 | INTENT staged only | PASS | Common | `forced-A` (`B1_STAGED`) | PENDING |
 | B1.2 | INTENT replaced before the callback; interrupted restart and same-operation retry | PASS | Common | `forced-A` (`B1_MOVED`) | PENDING |
@@ -197,7 +234,7 @@ in both families, as at C1.
 | B11.4 | Retained 128 per owner, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_OWNER`) | PENDING |
 | B11.5 | REPAIR operations keep their charges across restarts | PASS | Common | `forced-F` (`W325_REPAIR_FULL`) | PENDING |
 | B11.6 | Released operations keep saturated capacity across restarts | PASS | Common | `forced-F` (`W325_RELEASED_FULL`) | PENDING |
-| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 counts the captured and successor copies; no gated control holds the UNKNOWN copy; W333's GameTest F3.3 covers the UNKNOWN copy | `forced-W331-U` (`W331_B11_UNION`), in part | PENDING for the captured and successor part; the UNKNOWN part stays NOT_COVERED natively |
+| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 counts the captured and successor copies; no gated control holds the UNKNOWN copy; W333's GameTest F3.3 covers the UNKNOWN copy. Only the captured and successor part is pending; the UNKNOWN part stays NOT_COVERED natively | `forced-W331-U` (`W331_B11_UNION`), in part | PENDING |
 | B11.8 | A REJECTED re-arm is refused at full capacity and later reuses its operation | NOT_COVERED | W331: reachable with a gated owner fill and unfill pair and two relaunches; not built; W333's GameTest F3.5 covers it | None natively | NOT_COVERED |
 | B11.9 | Mixed consumers: 63 escrow and 1 bay, and the reverse | NOT_COVERED | W331: needs 63 live escrow operations or a typed ledger seed; not built; W333's GameTest F3.2 covers it | None natively | NOT_COVERED |
 | B12.1 | D1 receipt, definite failure before replacement | PASS | Common | `forced-A` (`B12_FAILED`) | PENDING |
@@ -256,26 +293,27 @@ without advancing the test clock). They are hosted regression tests, not W325 ro
 
 None of these rows existed at C1. Their smokes ran on locally built JARs.
 
-| Scenario | Added by | Smoke before C2 | C2 family | C2 |
+| Scenario | Added by | Evidence before C3 | C3 family | C3 |
 |---|---|---|---|---|
 | B6.5 at the source-save boundary: the source's removal saved, the destination never saved, then a kill; restart 1 rebuilds the destination from T′, restart 2 keeps it | W346, with W349's stopped-world inventory scan after W348's review | PASS on W346's JAR (`5ef21e2aa`) and again on W349's JAR (`56668d542`); a scratch JAR with W342's mutation M1 failed at restart 1, as intended | `forced-W346-R` | PENDING |
 | Bay receipts present but not loaded: every rocket held, satellite launch and decommission DEPLOYMENT_PENDING, insertion refused, all five kinds refused; recovery at S2 | W332, W343 | PASS (W332 smoke 4; W343 `smoke-N`) | `r042-N_BAY` | PENDING |
 | Escrow ledger present but not loaded: bay admission refused with the four cargo kinds and fuel | W332, W343 | PASS; the vanilla-dismount row stays NOT_COVERED | `r042-L_LEDGER` | PENDING |
 | The shared pool full server-wide: the bay menu shows DEPLOYMENT_CAPACITY | W332, W343 | PASS at S0, S1 and S2 | `r042-P_SERVER` | PENDING |
-| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay's admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PENDING |
+| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay uses a fixed owner, so its admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PENDING |
 | Receipt presence unknown at the pre-start check: startup refused, then clean recovery | W332 could not reach it; W340 showed a delete-pending handle reaches it; W343 restored it; W345 applied Root decision R416's metadata boundary | PASS on W345's JAR; whole-world byte equality stays false because vanilla updates `level.dat` | `r042-U_BAY` | PENDING |
 | Ledger presence unknown at the pre-start check | As above | As above | `r042-U_LEDGER` | PENDING |
 | Waiting-time observations for R-043 (section 9.2) | W336 | All nine timing profiles PASS with both restarts | `w336-timing-B12_D4`, `-B12_D7`, `-B13_FAILED`, `-B13_UNKNOWN`, `-B16_MOTION`, `-B10_BLOCKED`, `-RECONNECT`, `-TURNS-2`, `-TURNS-3`, `-D6_RETRY` | PENDING |
 | Unsupported bay roots in the per-Level 256-coordinate pool, with 255 fuel-loader denials as background | W336 | PASS with both restarts | `w336-saturation-bay`; the fuel control `w336-saturation-fuel` uses bay denials as background | PENDING |
-| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed | `w336-downgrade` | PENDING; W339 keeps a non-PASS status from being reported as PASS |
+| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed. The historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429); W339 keeps a non-PASS status from being reported as PASS | `w336-downgrade` | PENDING |
 
 #### GameTest rows of W325-MATRIX
 
-The tests below are in C2's commit. QUEUE row C2 records that run 42831910740 passed with 1,858 GameTests; Root
+The tests below are in C3's commit. [TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md) records that run
+42947784467 passed with 1,859 GameTests; Root
 confirms each named test in that run's results before replacing PENDING. Class names are short; W333's packages are in
 [W333-DESIGN](W333-DESIGN.md).
 
-| Row | Variant | C1 | Changed since C1 | Test in C2's hosted run | C2 |
+| Row | Variant | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
 | F2.1 | DATA replay after a removed definition; no recreated initial mission | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PENDING |
 | F2.2 | Fresh DATA deterministic initial mission | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (NONE) | PENDING |
@@ -308,7 +346,7 @@ confirms each named test in that run's results before replacing PENDING. Class n
 | F5.5 | Station orbit differs from the destination and changes later | NOT_COVERED | W333 | `BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | PENDING |
 | F5.6 | Undiscovered allowed body: DATA discovery against the non-data gate | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | PENDING |
 | F5.7 | REGISTERED replay after the physical catalog entry is removed | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (REGISTERED_REMOVED variants) | PENDING |
-| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 merged after C2, so C2's run used the earlier version | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | PENDING |
+| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 is in C3, so its hosted run includes the corrected window | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | PENDING |
 | RT.2 | Launch and decommission wait for the commit acknowledgement | PASS | None | `SatelliteRegistryTickGameTests.aTerminalLaunchAndDecommissionCompleteOnTicksAfterTheirCommits` | PENDING |
 | RT.3 | A DATA action shows its stored result only after its commit | PASS | None | `SatelliteRegistryTickGameTests.aDataActionShowsItsStoredResultAfterItsCommit` | PENDING |
 | RT.4 | A clean schema-4 reload leaves the literal and save epochs unchanged | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | PENDING |
@@ -327,7 +365,7 @@ there ([W333](W333.md), "Negative protection checks").
 
 #### GameTests added since C1
 
-| Scenario | Added by | Test in C2's hosted run | C2 |
+| Scenario | Added by | Test in C3's hosted run | C3 |
 |---|---|---|---|
 | B6.5 main case: a consumed, committed group with neither entity rebuilds the destination from T′, with the consumed operations, no package back and no receipt | W342 | `BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime` | PENDING |
 | B6.5 control: the same state with the source present keeps the consumed source | W342 | `BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource` | PENDING |
@@ -350,7 +388,7 @@ the switch off.
 | R-043 | Registration, consumption, copy recovery and released flight. Every wait lacks a timeout. A stale copy outside the census, or a single-file rollback, can bring back a consumed package or register a satellite twice (the register's risk D items 1 to 4). Recovery of existing receipts is live now. | One rocket and its packages; the server (the D6 turn queue, the shared cargo work budget); chunks (tickets on up to 2 + 32 columns per claim) | No timeouts; tickets end up to 400 ticks after their last renewal | Automatic retries; a restart reclassifies; whole-world offline repair for conflicts | B5 to B8, B16, B10.2 to B10.5, EXIT.0 to EXIT.10, B6.5 (W342, W346); the ten `w336-timing-*` families; section 9.2 |
 | R-035 | The transfer journal: when it is unreadable, blocked or unacknowledged, all transfers pause and D0, RESUME, D5, D6 and released flights wait. Also the shared check columns and the exclusion of R-032. | The server | Until the journal is acknowledged; for an unreadable journal, the session until repair | As R-035 describes | B3.12 and the forced-stop rows that restart through the journal |
 | R-044, shared pool | Bay denials count toward the per-Level pool of 256 coordinates that about 15 device families share (W327-M5). | The Level | Until the Level closes; it saturates again after a restart once the roots load (W336) | As R-038 | `w336-saturation-bay`, and `w336-saturation-fuel`, which uses bay denials |
-| R-044, downgrade | An older JAR rewrites `level.dat` before its transfer-journal guard refuses, and removes the registry IDs of newer blocks, including `rocket_satellite_bay` (W327-M4). | The world | Permanent unless the world is restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade`; W176's whole-world verdict stays FAILED |
+| R-044, downgrade | An older JAR rewrites `level.dat` before its transfer-journal guard refuses, and removes the registry IDs of newer blocks, including `rocket_satellite_bay` (W327-M4). Historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). | The world | Permanent unless the world is restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade`; W176's whole-world verdict stays FAILED |
 | R-032 | Unobservable vanilla write failures, for example a stale source entity of an earlier flight, which R-043 names as the stale-copy trigger. | One rocket and its packages | Permanent once it happens | A whole-world backup | Cannot be shown natively; not accepted |
 
 The register also names these bay residuals, none accepted: the neutral-source limit (BAY_SOURCE_PROTECTED, for W27f);
@@ -360,7 +398,7 @@ reasons; and W196-R21.
 
 ### 3.4 Remaining work
 
-**Native rows with no C2 coverage.** Each needs a new gated Java fixture. W325-MATRIX estimates 0.5 to 2 engineering
+**Native rows with no C3 coverage.** Each needs a new gated Java fixture. W325-MATRIX estimates 0.5 to 2 engineering
 days per fixture family, and any production or fixture change then needs a new candidate and the whole bay and cargo
 matrix again (R386).
 
@@ -378,13 +416,20 @@ matrix again (R386).
 
 **Limits of the covered rows.**
 
+- B6.5: `forced-W331-R` passes KEEP_SOURCE with the consumed source on disk; it does not reconstruct the destination
+  ([W331](W331.md), "Findings from the smokes", item 4; [W355](W355.md), audit limit 2). W346's different
+  source-save-boundary case is the destination-reconstruction evidence, not a relabelling of W331's case.
+- B11.7: the UNKNOWN component remains NOT_COVERED even if the captured/successor union passes
+  ([W331](W331.md), "Not done"; [W355](W355.md), audit limit 2).
 - B6.5: W346's case does not show the natural timing of an autosave against the flight, a crash inside one Level's
   save, the order where the destination saves first, or passengers ([W346](W346.md), "Not done").
 - R-042 families: the vanilla-dismount row of `r042-L_LEDGER` is NOT_COVERED, because the hold vetoes every mount from
   startup. N_BAY and L_LEDGER inject the load failure over valid bytes, so they do not show a really corrupted file or
   one that keeps failing. The U fixture is Windows-only. A status check that fails after the pre-start check has unit
-  tests only (section 9.1).
-- Downgrade: W176's whole-world verdict stays FAILED and is not waived. Downgrading needs the pre-upgrade backup.
+  tests only (section 9.1). The P_OWNER bay owner is fixed, so another owner's bay admission is not demonstrated
+  there ([W332](W332.md), "Not done", carried by [W343](W343.md) and [W345](W345.md); [W355](W355.md), audit limit 3).
+- Downgrade: W176's whole-world verdict stays FAILED and is not waived. The historical-JAR checks are expected to
+  fail under R-044 until the owner's decision (R428, R429). Downgrading needs the pre-upgrade backup.
 
 **Deferred by the owner.** Multiplayer and performance stay last, and the owner confirms when the full campaign starts
 ([OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md)). For the bay this means:
@@ -403,7 +448,7 @@ R-043 step-timing measurement plan.
 ### 4.1 The switch, and what is live with it off
 
 - **The switch.** `EscrowCargoSwitches.production(ITEM_CARGO_LOAD)` returns false (line 18).
-- **Live with the switch off.** The item loader is craftable at C2 (`rocket_item_loader`), so its device protection
+- **Live with the switch off.** The item loader is craftable at C3 (`rocket_item_loader`), so its device protection
   (R-035's cargo paragraph) already applies. Reconciliation of existing ledger records runs on every server, and the
   kind is refused under either NOT_LOADED state (W327, section 4). The register states that production worlds have no
   ledger while admission is off (R-031, R-035).
@@ -415,15 +460,15 @@ implementations in the JAR, and the cargo controllers and settlement oracles in 
 candidate commit and JAR SHA-256. W341 added the installed-JAR rechecks. W337 runs the families through the wrapper.
 "Common" means only these changes.
 
-| Rows | Cases (boundary) | C1 | Changed since C1 | C2 family | C2 |
+| Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
 | N091 to N095 | `IC_LOAD_K2` (K2), `IC_LOAD_K3` (C2_DESTINATION_AFTER), `IC_LOAD_K4` (source-only store), `IC_LOAD_K5` (destination-only store), `IC_LOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
 | N101 | `IC_PARTIAL_APPLY` (C2_DESTINATION_AFTER) | PASS | Common | `cargo-D-S1` | PENDING |
-| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 12 cases were not smoked | `cargo-D-S2-LOAD` | PENDING (13) |
+| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; W330 did not smoke the other 12 cases. W355's audit later confirms all 13 passed on the historical second candidate | `cargo-D-S2-LOAD` | PENDING (13) |
 | Q03, per-owner cap | `CQ_ITEM_LOAD`: 16 durable pending operations charge owner A; this kind's real device is refused before preparation; owner B completes once | NOT_COVERED | W330; smoke PASS (section 8.2) | `cargo-C-Q` | PENDING |
 | Shared pool, added since C1 | Unsupported item-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-load` | PENDING |
 
-| GameTest row | Scenario | C1 | Changed since C1 | Test in C2's hosted run | C2 |
+| GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
 | D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
 | D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
@@ -442,12 +487,12 @@ and X02.
 |---|---|---|---|---|---|
 | R-035, cargo scope (W11c, W11d) | One active cargo operation per rocket; settlement O1 to O4 and C0 to C8 REPAIR; rockets with settlement history, a READY head or legacy scalar fuel are refused; cut-E2 (an entity record over the inline-sector limit keeps its operation and endpoints locked); device protection, live now; the shared journal-writer stall. Mod chest subclasses, containers with unresolved loot tables and over-cap stacks do not move. | One device and one rocket; its terrain chunk; the Level after 256 coordinates (shared pool); the journal-writer stall is R-035's server-wide transfer availability | Device protection until its cause is resolved (a restart alone does not clear it); escrow locks until proved reconciliation or operator settlement; no timeouts | Automatic retry for retryable IO; audited settlement; whole-world offline repair (keep every file and hash, repair a copy, two saves and restarts, replace the whole world) | N091 to N095, N101; `cargo-D-S2-LOAD`; D-E rows above |
 | R-035, ledger presence and NOT_LOADED (W328, W329) | A ledger that did not load, or whose presence becomes unknown after the pre-start check, holds the whole server: no rocket launches, fills, loads or unloads cargo, or is disassembled, and every device holding a root is locked. An unknown presence at the pre-start check refuses world start. | The whole server; the world for the startup refusal | The session | Fix storage access and restart; a restart that loads the ledger or proves it absent clears it | `r042-L_LEDGER`, `r042-U_LEDGER`; W329's GameTests; W328's unit tests |
-| R-031 | A future or invalid ledger root refuses world start. | The world | Until a supporting JAR or offline repair | Whole-world offline repair | No C2 cargo family targets it; R-035's cargo paragraph lists it as not accepted |
+| R-031 | A future or invalid ledger root refuses world start. | The world | Until a supporting JAR or offline repair | Whole-world offline repair | No C3 cargo family targets it; R-035's cargo paragraph lists it as not accepted |
 | R-039, shared admission authority | The authority answers UNAVAILABLE for every consumer until both stores have loaded. The pool of 64 per server, 8 per rocket and 16 per owner is shared with the fuel loader and the bay. | The server; one owner | While the pool is full; while either store is NOT_LOADED | Slots free as operations resolve; offline repair where bay receipts hold them (R-042) | `CQ_ITEM_LOAD`; `r042-P_SERVER`, `r042-P_OWNER` |
 | R-042, bay effects on cargo | Bay receipts NOT_LOADED refuse cargo binding and admission on the whole server; W332 observed the answer `TRANSFER_JOURNAL_UNPROVED`. Released and REPAIR bay receipts can hold the pool: eight such rockets refuse every cargo operation on the server, and two full rockets of one owner refuse that owner. | The whole server; one owner | The session (NOT_LOADED); until offline repair, across restarts (held pool) | A restart for a transient NOT_LOADED; whole-world offline repair | `r042-N_BAY`, `r042-P_SERVER`, `r042-P_OWNER` |
-| R-043, shared cargo work budget | One budget per tick (16 MiB and 16,384 visits) serves the preparation of all four cargo kinds and the bay's D4 snapshot job and D5 copies. Each D5 copy takes the whole tick's budget (W327-L3). | The server | Per tick, with no fairness, while bay recovery runs | None needed | No C2 family measures it; W327 notes that it needs concurrent bay and cargo load |
+| R-043, shared cargo work budget | One budget per tick (16 MiB and 16,384 visits) serves the preparation of all four cargo kinds and the bay's D4 snapshot job and D5 copies. Each D5 copy takes the whole tick's budget (W327-L3). | The server | Per tick, with no fairness, while bay recovery runs | None needed | No C3 family measures it; W327 notes that it needs concurrent bay and cargo load |
 | R-044, shared pool | Item-loader denials count toward the per-Level pool of 256 coordinates. | The Level | Until the Level closes; it saturates again after a restart once the roots load | Whole-world offline repair | `w336-saturation-item-load` |
-| R-044, downgrade | The old JAR removes the registry ID of `rocket_item_loader`, among others. | The world | Permanent unless restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade` |
+| R-044, downgrade | The old JAR removes the registry ID of `rocket_item_loader`, among others. Historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). | The world | Permanent unless restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade` |
 | Not accepted (R-035) | R-031, R-032, single-file rollback, OS crash and power loss, and UNKNOWN settlement loss. | One rocket to the world | Permanent once it happens | A whole-world backup | X01 and X02, NOT_COVERED |
 
 ### 4.4 Remaining work
@@ -467,14 +512,14 @@ and X02.
 ### 5.1 The switch, and what is live with it off
 
 - **The switch.** `EscrowCargoSwitches.production(ITEM_CARGO_UNLOAD)` returns false (line 19).
-- **Live with the switch off.** The item unloader is craftable at C2 (`rocket_item_unloader`); otherwise as in section
+- **Live with the switch off.** The item unloader is craftable at C3 (`rocket_item_unloader`); otherwise as in section
   4.1.
 
 ### 5.2 Scenarios
 
 "Common" has the meaning of section 4.2.
 
-| Rows | Cases (boundary) | C1 | Changed since C1 | C2 family | C2 |
+| Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
 | N096 to N100 | `IC_UNLOAD_K2` (K2), `IC_UNLOAD_K3` (C2_DESTINATION_AFTER), `IC_UNLOAD_K4` (source-only store), `IC_UNLOAD_K5` (destination-only store), `IC_UNLOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
 | N102 | `IC_PARTIAL_STORE` (source-only store) | PASS | Common | `cargo-D-S1` | PENDING |
@@ -484,7 +529,7 @@ and X02.
 | Q04, per-owner cap | `CQ_ITEM_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
 | Shared pool, added since C1 | Unsupported item-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-unload` | PENDING |
 
-| GameTest row | Scenario | C1 | Changed since C1 | Test in C2's hosted run | C2 |
+| GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
 | D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
 | D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
@@ -522,26 +567,26 @@ owner's deferred campaign.
 ### 6.1 The switch, and what is live with it off
 
 - **The switch.** `EscrowCargoSwitches.production(FLUID_CARGO_LOAD)` returns false (line 16).
-- **Live with the switch off.** The fluid loader is craftable at C2 (`rocket_fluid_loader`); otherwise as in section
+- **Live with the switch off.** The fluid loader is craftable at C3 (`rocket_fluid_loader`); otherwise as in section
   4.1.
 
 ### 6.2 Scenarios
 
 "Common" has the meaning of section 4.2.
 
-| Rows | Cases (boundary) | C1 | Changed since C1 | C2 family | C2 |
+| Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
 | N001 to N014 | `FC_LOAD_PREPARING`, `FC_LOAD_L1_BEFORE` (K1), `FC_LOAD_L1_REPLACED` (K2), `FC_LOAD_L1_ACK`, `FC_LOAD_C2_SOURCE_AFTER`, `FC_LOAD_C2_DESTINATION_AFTER`, `FC_LOAD_SOURCE_ONLY_STORE`, `FC_LOAD_DESTINATION_ONLY_STORE`, `FC_LOAD_SECOND_FORCE_BEFORE`, `FC_LOAD_C6_JOINT_READBACK`, `FC_LOAD_K8`, `FC_LOAD_L2_REPLACED` (K9), `FC_LOAD_C7_ACKNOWLEDGED`, `FC_LOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
 | N029 to N032 | `FC_LOAD_D2_C2`, `FC_LOAD_D2_C5`, `FC_LOAD_D2_C6`, `FC_LOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
 | N037 to N044 | `FC_LOAD_E1_OWN_STORE`, `FC_LOAD_E2_CAPTURE`, `FC_LOAD_E2_ROCKET_EXTERNAL`, `FC_LOAD_E4L1_FAIL`, `FC_LOAD_E4L1_UNKNOWN`, `FC_LOAD_E4L2_UNKNOWN`, `FC_LOAD_E3_CACHE_CLOSE`, `FC_LOAD_E5_STALLED`; E3 and E5 were W138's earlier failures, rerun afresh at C1 | PASS (8) | Common | `cargo-C-S2` | PENDING (8) |
-| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common | `cargo-C-S3` | PENDING (10) |
+| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common; W352 restores native R1's synthetic fixture fuel in C3; all ten cases passed on W352's JAR (section 2.1.1) | `cargo-C-S3` | PENDING (10) |
 | N075 to N078 | `FF_N1`, `FF_F1_AFTER_CARGO`, `FF_F6_AFTER_CARGO`, `FF_F8_AFTER_CARGO` | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
 | N087 to N090 | `FF_GOVERNED_MISSING`, `FF_GOVERNED_TERMINAL`, `FF_TWO_FLIGHTS`, `FF_CANCEL_AFTER_CARGO`; the last three were W142's earlier failures, rerun afresh at C1 | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
 | Load settlement, a C1 gap (Root decision R395) | 20 cases: `FS_LOAD_O1_BEFORE`, `FS_LOAD_O1_AFTER`, `FS_LOAD_BIND_BEFORE`, `FS_LOAD_BIND_AFTER`, `FS_LOAD_O2_ROCKET_BEFORE`, `FS_LOAD_O2_ROCKET_AFTER`, `FS_LOAD_O2_DEVICE_BEFORE`, `FS_LOAD_O2_DEVICE_AFTER`, `FS_LOAD_O3_BEFORE`, `FS_LOAD_O3_AFTER`, `FS_LOAD_O3J_BEFORE`, `FS_LOAD_O3J_AFTER`, `FS_LOAD_O4_BEFORE`, `FS_LOAD_O4_AFTER`, `FS_LOAD_PRUNE_BEFORE`, `FS_LOAD_PRUNE_AFTER`, `FS_LOAD_ABANDON_ROCKET`, `FS_LOAD_ABANDON_DEVICE`, `FS_LOAD_VETO_DESTINATION_SAVED`, `FS_LOAD_BIND_VETO` | No case at C1 | W330. Smoke: `FS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 19 cases were not smoked | `cargo-C-S4-LOAD` | PENDING (20) |
 | Q01, per-owner cap | `CQ_FLUID_LOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
 | Shared pool, added since C1 | Unsupported fluid-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-load` | PENDING |
 
-| GameTest row | Scenario | C1 | Changed since C1 | Test in C2's hosted run | C2 |
+| GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
 | C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
 | C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
@@ -562,7 +607,7 @@ Every row of section 4.3 applies, with these differences:
   N037 to N054, N075 to N078, N087 to N090, `cargo-C-S4-LOAD` and the C-E rows above. The item-only rules about
   containers and stacks do not apply.
 - R-035 lists per-fluid signed accounting ("按流体有符号记账") as needed before cargo admission. W327 found it not
-  implemented at C1, and none of the W328 to W350 records mentions it.
+  implemented at C1; the C1-to-C3 changes of section 2.2 do not implement it.
 - R-039 is evidenced by `CQ_FLUID_LOAD`; R-044's shared pool by `w336-saturation-fluid-load`; the downgrade removes
   `rocket_fluid_loader`'s ID.
 
@@ -578,14 +623,14 @@ Scope, duration and recovery are as in section 4.3.
 ### 7.1 The switch, and what is live with it off
 
 - **The switch.** `EscrowCargoSwitches.production(FLUID_CARGO_UNLOAD)` returns false (line 17).
-- **Live with the switch off.** The fluid unloader is craftable at C2 (`rocket_fluid_unloader`); otherwise as in
+- **Live with the switch off.** The fluid unloader is craftable at C3 (`rocket_fluid_unloader`); otherwise as in
   section 4.1.
 
 ### 7.2 Scenarios
 
 "Common" has the meaning of section 4.2.
 
-| Rows | Cases (boundary) | C1 | Changed since C1 | C2 family | C2 |
+| Rows | Cases (boundary) | C1 | Changed since C1 | C3 family | C3 |
 |---|---|---|---|---|---|
 | N015 to N028 | `FC_UNLOAD_PREPARING`, `FC_UNLOAD_L1_BEFORE` (K1), `FC_UNLOAD_L1_REPLACED` (K2), `FC_UNLOAD_L1_ACK`, `FC_UNLOAD_C2_SOURCE_AFTER`, `FC_UNLOAD_C2_DESTINATION_AFTER`, `FC_UNLOAD_SOURCE_ONLY_STORE`, `FC_UNLOAD_DESTINATION_ONLY_STORE`, `FC_UNLOAD_SECOND_FORCE_BEFORE`, `FC_UNLOAD_C6_JOINT_READBACK`, `FC_UNLOAD_K8`, `FC_UNLOAD_L2_REPLACED` (K9), `FC_UNLOAD_C7_ACKNOWLEDGED`, `FC_UNLOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
 | N033 to N036 | `FC_UNLOAD_D2_C2`, `FC_UNLOAD_D2_C5`, `FC_UNLOAD_D2_C6`, `FC_UNLOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
@@ -595,7 +640,7 @@ Scope, duration and recovery are as in section 4.3.
 | Shared pool, added since C1 | Unsupported fluid-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-unload` | PENDING |
 | X03 | The operator's whole-world repair after REBUILD_SOURCE; `FF_REBUILD_SOURCE` shows a protected FLOOR_CONFLICT result, not a repair | NOT_COVERED | None | None | NOT_COVERED |
 
-| GameTest row | Scenario | C1 | Changed since C1 | Test in C2's hosted run | C2 |
+| GameTest row | Scenario | C1 | Changed since C1 | Test in C3's hosted run | C3 |
 |---|---|---|---|---|---|
 | C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
 | C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
@@ -636,28 +681,33 @@ Scope, duration and recovery are as in section 4.3.
 
 ### 8.1 Changed-boundary rows of W326
 
-| Row | Boundary | C1 | Changed since C1 | C2 coverage | C2 |
+| Row | Boundary | C1 | Changed since C1 | C3 coverage | C3 |
 |---|---|---|---|---|---|
 | M01 | Ordinary prefix and apply, both save orders | PASS | Common | The C-S1, C-S2 and D-S1 families and the reconciliation GameTests | PENDING |
 | M02 | Composite binding and floor; shared ledger and floor reuse | NOT_COVERED | W330 added the reuse family | `cargo-B3-S5-REUSE`: missing, replaced and behind ledger, and every distinct, coalesced and saturated floor variant | PENDING |
 | M03 | Neutral normalization and veto | PASS | W330 added the load counterparts | C-S4, D-S2, C-S4-LOAD and D-S2-LOAD, and the settlement GameTests | PENDING |
 | M04 | O2, O3, O3J, O4 and pruning | PASS | As M03 | As M03 | PENDING |
-| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including P1-N2 and P1-F9) | PENDING |
+| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including governed P1-N2 and P1-F9, not ordinary LF_S6_F9_RESPAWN, which is NOT_COVERED under W211 R203 and R427) | PENDING |
 | M06 | Latest-cargo disassembly | PASS | Common | The three C-S5 disassembly windows and `IR_DISASSEMBLY` | PENDING |
-| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE`; C-S5's N1 and C-S2's E3 and E5 | PENDING |
-| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR) and `cargo-B3-S6-REUSE`; the C-S3 and D-S2 roots | PENDING |
+| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); C-S5's N1 and C-S2's E3 and E5 | PENDING |
+| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR; its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it, R428) and `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); the C-S3 and D-S2 roots | PENDING |
 | M09 | Cargo chains that do not apply | PASS (scope only) | None | No cargo chain is admitted, and no chain cut exists | Not applicable |
 
 ### 8.2 Shared families
 
-| Family | What it runs | Smoke before C2 | C2 |
+| Family | What it runs | Evidence before C3 | C3 |
 |---|---|---|---|
 | `cargo-C-Q` | The four cap cases of sections 4 to 7. Sixteen durable REPAIR operations on 16 other rockets charge owner A within the real 64, 8 and 16 limits. A's real device is refused with its complete ledger, device and rocket envelopes unchanged, across both restarts; owner B completes once without using A's capacity. | All four passed with both restarts (W330). One cap case also ran on a scratch JAR with the cap check disabled and was rejected, and all 12 retained archives passed the later complete-root comparison. | PENDING (4) |
-| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 and not run on C1; W326 records their earlier runs as fuel-loader evidence on older JARs | PENDING (7) |
-| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | As above | PENDING (15) |
-| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | As above | PENDING (8) |
-| `cargo-B3-S6-REUSE` | 97 shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. | As above | PENDING (97) |
-| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. | As above | PENDING |
+| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 or on C1; W354's corrected fixture passed all seven with both restarts before C3 (section 2.1.1) | PENDING (7) |
+| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (15) |
+| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (8) |
+| `cargo-B3-S6-REUSE` | 96 selected shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. LF_S6_F9_RESPAWN is excluded as NOT_COVERED under W211 R203 and R427. | Historical selected-case passes, including the nine later cases after the second candidate's main run; the excluded ordinary F9 attempts remain failed, not passes (section 2.1.1) | PENDING (96) |
+| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428). | Six historical rows passed; three downgrade rows failed and remain unwaived (section 2.1.1) | PENDING |
+
+The shared fuel-loader limits above are those of [W355](W355.md). Ordinary `LF_S6_F9_RESPAWN` is NOT_COVERED
+([W211](W211.md), R203; R427), not replaced by the governed P1-F9 evidence. The fuel loader's first BI veto attempt
+stays FAILED; its later passing attempt is separate evidence ([W222](W222.md), "Evidence, limits and remaining
+work"; [W355](W355.md), audit limit 3). Neither historical failure is relabelled by the C3 selection.
 
 ### 8.3 The R-042 families
 
@@ -670,18 +720,20 @@ what each one observed in its smoke.
 while the ledger is NOT_LOADED, and `w329_ledger_no_file` checks that NO_FILE answers are unchanged. The reads are
 `escrowIdle`, `flightFrozen`, `retirementUnprotected`, `bayNeutral`, `escrowLogicalLocked`,
 `RocketCargoDeviceHold.locked` (with a fluid cargo device), `EscrowLoaderAdmission.progress` and the status command. W329
-also showed that reverting its production change fails all eight NOT_LOADED tests. They are in C2's hosted run;
-C2 result PENDING.
+also showed that reverting its production change fails all eight NOT_LOADED tests. They are in C3's hosted run;
+C3 result PENDING.
 
 ### 8.5 The downgrade family
 
 `w336-downgrade` places all five devices (bay, item loader and unloader, fluid loader and unloader) with claimed roots,
 actual bay receipts, a schema-3 transfer journal and a valid empty ledger, then starts W176's old JAR (section 9.3).
-C2 result PENDING; W339 keeps a non-PASS status from being reported as PASS.
+Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429,
+[QUEUE](../QUEUE.md)); both restored-candidate restarts passing does not waive those failures.
+C3 result PENDING; W339 keeps a non-PASS status from being reported as PASS.
 
 ### 8.6 Residuals
 
-| Row | Kinds | C1 | Since C1 | C2 |
+| Row | Kinds | C1 | Since C1 | C3 |
 |---|---|---|---|---|
 | X01 | All four | NOT_COVERED: a forced Java-process stop does not simulate OS crash or power loss | Unchanged; needs a separately authorized destructive storage campaign and an owner decision | NOT_COVERED |
 | X02 | All four | NOT_COVERED: unobservable storage, cache and close failures | Unchanged; needs storage diagnostics and an owner decision | NOT_COVERED |
@@ -691,11 +743,11 @@ C2 result PENDING; W339 keeps a non-PASS status from being reported as PASS.
 
 ### 9.1 R-042: effects on the whole server
 
-**What holds, by trigger.** "Reachable at C2" says where the trigger can occur. The register states that production
+**What holds, by trigger.** "Reachable at C3" says where the trigger can occur. The register states that production
 worlds have neither a receipt file nor a ledger while admission is off (R-031, R-039), so the first and fourth rows are
 reachable in production only after a switch is enabled.
 
-| Trigger | Reachable at C2 | What holds | Duration | Logs | Recovery | Evidence |
+| Trigger | Reachable at C3 | What holds | Duration | Logs | Recovery | Evidence |
 |---|---|---|---|---|---|---|
 | Bay receipt file present but not loaded | On a world that has a receipt file | Every rocket, including ordinary flights with no bay and landed or idle rockets; every satellite launch and decommission answers DEPLOYMENT_PENDING; v0.5 assembly and disassembly recovery is fenced; package insertion is refused; fuel answers ESCROW_PENDING; all four cargo kinds are refused; `retire-rejected` is refused | The session | One WARN `ARCE_BAY_RECEIPTS_NOT_LOADED reason=LOAD_FAILED` and one INFO `ARCE_BAY_RECEIPTS_INDEX state=NOT_LOADED` per start; nothing per rocket or transfer | A restart that loads the file; if it keeps failing, the whole-world offline procedure of W11b1 | W327 section 1.2 (M1, M2); `r042-N_BAY` |
 | Bay receipt presence unknown at the pre-start check | On any world, including one with no ARCE data | The server does not start (`ARCE-BETA-2000`, typed `BAY_RECEIPTS`). No managed file is read, created or changed; vanilla still updates `level.dat` (W343, W345). | Until storage access is fixed | One ERROR per start, with the storage instruction first | Fix storage access to the world folder and restart; never delete, move or restore single files | W328 and W328F unit tests; `r042-U_BAY` |
@@ -705,7 +757,7 @@ reachable in production only after a switch is enabled.
 | Ledger presence becomes unknown after the pre-start check | In the same race window | As the fourth row, with `reason=PRESENCE_UNKNOWN` | The session | As the fourth row | A restart once the status check works | `EscrowLedgerStartupTest` (unit); no native case |
 | The pending pool held by released or REPAIR bay receipts | Only where such receipts exist; today only the gated test path writes them | With 64 held: every new fuel fill, cargo operation and bay deployment on the server is refused. With one owner's 16 held: that owner is refused everywhere. | Across every restart, until offline repair; there is no online release | No line per slot | Whole-world offline repair | W327-M3; `r042-P_SERVER`, `r042-P_OWNER`; B11.5, B11.6; GameTest F3.4 |
 
-**What the native smokes observed.** All ran on local JARs; C2's families give the candidate's results.
+**What the native smokes observed.** All ran on local JARs; C3's families give the candidate's results.
 
 - **`N_BAY`** ([W332](W332.md), smoke 4; rerun by [W343](W343.md)). The receipt file held two REJECTED receipts, and
   the seam made it fail to load at S1. The logs showed one injection line, vanilla's one load ERROR, one WARN with
@@ -727,8 +779,10 @@ reachable in production only after a switch is enabled.
   fixture landed unconsumed with the menu showing DEPLOYMENT_CAPACITY, and `retire-rejected` refused each kind of
   receipt. The receipt file equalled the seed after every stop.
 - **`P_OWNER`** (W332; W343 added the exact menu reason). 16 receipts of one owner on two rockets gave
-  OWNER_PENDING_FULL for all five kinds of that owner and in the bay menu, at every start. At S2, another owner's five
-  kinds were admitted and completed while the count stayed 16.
+  OWNER_PENDING_FULL for all five kinds of that owner and in the bay menu, at every start. At S2, another owner's
+  fuel loader and four cargo kinds were admitted and completed while the count stayed 16. The bay uses a fixed
+  owner, so this case does not show another owner's bay admission ([W332](W332.md), "Not done", carried by
+  [W343](W343.md) and [W345](W345.md); [W355](W355.md), audit limit 3).
 - **`U_BAY` and `U_LEDGER`** ([W345](W345.md), after W340 and W343). A delete-pending handle made the status check fail.
   Both cases reached the typed refusal with the storage instruction first and all six expected refusal diagnostics, and
   recovered cleanly at S2 and S3 with every managed file's hash unchanged. The only changed files were `level.dat`, whose
@@ -747,14 +801,14 @@ register's description accepts no risk.
 
 **About the figures.** W336's observations are vanilla game-time intervals, bracketed with `time query gametime` on the
 **development host**, on a locally built JAR (production inputs `b3e33720e`, SHA-256 `f9aca893…7cd5ab`), with small
-numbers of claims. They are not C2 results and **not reference-node figures**. W336 states that they do not establish
-worst-case timings and do not justify extrapolating the 64-claim, 34-slot estimate. C2's timing families repeat them on
+numbers of claims. They are not C3 results and **not reference-node figures**. W336 states that they do not establish
+worst-case timings and do not justify extrapolating the 64-claim, 34-slot estimate. C3's timing families repeat them on
 the candidate, still on the development host.
 
 The rows follow W327's numbering of the waits from D0 to D7 and in recovery. "Bounded" means bounded by code;
 "estimated" means a hand calculation with no run behind it; "measured" means a run recorded the time.
 
-| # | Step and wait | Bound in code | Stated figure and its kind | W336 observation (development host) | C2 family |
+| # | Step and wait | Bound in code | Stated figure and its kind | W336 observation (development host) | C3 family |
 |---|---|---|---|---|---|
 | 1 | D0 (B14): the journal write covering L's absence | None | R-040: P50 84 and P95 244 ticks near the 64 MiB cap (W129aF, measured on a development host) | Not observed | `forced-A` (B14.1, B14.2), `forced-W331-T` |
 | 2 | D1 and outcome writes: the exact acknowledgement | None overall; the writer retries every 200 ticks, an outcome write every tick | Bounded per attempt (R-039) | Not observed separately | `forced-A` (B12.1, B12.2) |
@@ -799,34 +853,37 @@ D5 (row 6; W327-L3, now in R-043). No run measures this.
 | An unsupported device root: the device is protected and disabled, and ordinary removal is refused | **One device.** The fuel loader in R-044; each cargo device in R-035's cargo paragraph; the bay in R-038 | R-044, R-035, R-038 | Code (W327 section 3.1); the W336 saturation fixtures place unsupported roots of each device |
 | One chunk's terrain save refused | **One chunk**, per device as above | As above | As above |
 | The 256-coordinate denial pool | **Shared per ServerLevel** by about 15 device families: suit workstations, tanks, force fields, landing pads, solar arrays, combustion generators, pumps, classic and research machines, unlit torches, life-support devices, the bay, the four cargo devices and the fuel loader. Any family's denials use it up, and the 257th coordinate refuses every later terrain save in the Level. | R-044 (shared-pool text, W327-M5); R-038 and R-035's cargo paragraph refer to it | W336: each of the five bay and cargo controls ran against 255 fuel-loader denials, and the fuel control against bay denials. Terrain without a device saved at 255 and 256 and was refused after the 257th. All 257 unsupported roots stayed byte-identical. Restart 1 reset the in-memory pool; restart 2 loaded the roots, saturated again and refused a change. A scratch JAR without the pool was rejected. |
-| The downgrade rewrite | **The world.** It comes from the old JAR's transfer-journal refusal (R-035) | R-044 (W327-M4 text) | W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED. Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. |
+| The downgrade rewrite | **The world.** It comes from the old JAR's transfer-journal refusal (R-035) | R-044 (W327-M4 text) | W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED; historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. |
 | The pending pool of 64, 8 and 16 | **Shared** by the fuel loader, the four cargo kinds and the bay | R-039, R-042 | `cargo-C-Q`; CAP rows; `r042-P_SERVER`, `r042-P_OWNER`; F3 GameTests |
 | NOT_LOADED of the receipts or the ledger | **The whole server**: every rocket and every device holding a root | R-042, R-035 | `r042-N_BAY`, `r042-L_LEDGER`; W329's GameTests |
 | The shared cargo work budget | **Shared** by the four cargo kinds and the bay | R-043 (W327-L3 text) | Not measured |
 | The transfer journal | **The whole server**: every transfer | R-035 | B3.12; the cargo cuts that restart through the journal |
 | Settlement REPAIR of one operation, cut-E2, one bay claim | **One device and one rocket** | R-035, R-042 | The cargo cuts; the bay B rows |
 
-Device protection is live with every switch off, because all five devices are craftable at C2 (section 3.1 and
+Device protection is live with every switch off, because all five devices are craftable at C3 (section 3.1 and
 sections 4.1 to 7.1).
 
 ## 10. Points for Root
 
-These are differences between the register or earlier records and the evidence, found while drafting. This draft
-changes none of them.
+These points came from W351's original drafting. Root has since disposed of some under R423
+([QUEUE](../QUEUE.md), row W351); the historical observations are retained with their disposition. This report
+does not change the register or decide admission.
 
-1. R-039 and R-035's ledger paragraph say that the pre-start refusal reads, creates and changes no file. W343 and W345
+1. R-039 and R-035's ledger paragraph originally said that the pre-start refusal reads, creates and changes no file. W343 and W345
    observed vanilla update `level.dat` (`/Data/LastPlayed`) and rotate `level.dat_old` before the refusal; the managed
-   files stay unchanged. Root decision R416 accepts that boundary in the U oracle, but the register text does not
-   mention it. The C1 report's "it writes nothing" (section 7) has the same gap.
-2. R-043 says that no native run has timed a step or used more than 3 slots (W327-M6). W336 has since observed several
-   waits natively on the development host (section 9.2); the limit of 3 slots still holds.
+   files stay unchanged. Root decision R416 accepts that boundary in the U oracle. R423 corrected the register;
+   the C1 report's "it writes nothing" (section 7) remains historical, not the C3 claim.
+2. R-043 originally said that no native run had timed a step or used more than 3 slots (W327-M6). W336 has since
+   observed several waits natively on the development host (section 9.2); R423 corrected the register's timing
+   statement. The limit of 3 observed slots still holds.
 3. R-043's summary column still says "共享 64/8 名额", without the 16-per-owner cap. Its later text marks the 64/8
    wording as historical.
 4. Under bay NOT_LOADED the cargo path answered `TRANSFER_JOURNAL_UNPROVED`, and under ledger NOT_LOADED the launch
-   answered `TRANSFER_JOURNAL_BLOCKED` (W332). Neither answer names the store that failed, and the register does not
-   record these answers; an operator sees the cause only in the startup WARN.
-5. W327's draft table lists R-040 for every cargo kind, but R-040's text does not mention cargo. Root decides whether
-   R-040 belongs in the cargo scope.
+   answered `TRANSFER_JOURNAL_BLOCKED` (W332). Neither answer names the store that failed; an operator sees the cause
+   only in the startup WARN. R423 keeps this as an owner-facing limitation, without a production change during
+   the second candidate's run.
+5. R423 confirmed W327's listing of R-040 for cargo: an unreadable transaction journal refuses disassembly of a
+   rocket carrying cargo. The cargo recovery cuts and landed-disassembly tests use that journal.
 6. R-044 records W176's 12 removed block and 11 item entries; W336 observed 13 and 12 with its JAR. The count depends
    on the JAR.
 7. W329's device-hold GameTest uses only a fluid cargo device; no GameTest exercises the item devices' hold.
@@ -835,6 +892,8 @@ changes none of them.
    item. The branch run 42849035668 passed them. W350 did not establish a cause.
 
 ## 11. How this draft was made
+
+### W351's original C2 draft (historical method)
 
 - **Read.** The TASK, WORKER-RULES and AGENTS.md sections 3, 5 and 13; [OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md);
   the C1 report; [W325-MATRIX](W325-MATRIX.md) and [W326-MATRIX](W326-MATRIX.md); the result tables of [W325](W325.md)
@@ -857,3 +916,12 @@ changes none of them.
   describes.
 - **Verification.** `python -B scripts/validate_repository.py --require-approved-identity`, run with this file staged:
   45 passed, 0 pending, 0 warnings, 0 failed.
+
+### W356's C3 retargeting
+
+[TASK-W356](../TASK-W356-SWITCH-REPORT-C3-RETARGET.md) (R430) supplies C3's identity and the campaign facts. W356
+renamed the draft, cited C2's final outcome and the W352 to W355 corrections, checked the C2-to-C3 production-path
+diff and preserved the row identifiers for Root's filler. The record is `docs/work/v1.8.0-root-queue/records/W356.md`.
+The two original result cells with commentary (B11.7 and the bay downgrade row) now say only PENDING, with their
+limits in the row text. The S6 reuse row counts 96 selected cases, with ordinary F9 explicitly NOT_COVERED.
+No C3 result was filled and no risk, switch or Gate was accepted by this edit.
