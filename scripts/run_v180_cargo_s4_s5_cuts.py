@@ -392,11 +392,76 @@ def disassembly_returns(lines: list[str], case: str) -> list[int]:
     return [int(match[1]) for line in lines for match in [disassembly_return_pattern(case).search(line)] if match]
 
 
+_LOAD_VETO_REASON = "Release-test load settlement source veto"
+_ROOT_PACKAGE = "io.github.sunthemoon.advancedrocketrycommunity."
+_EVENT_BUS = ("net.minecraftforge.eventbus.ASMEventHandler.invoke", "net.minecraftforge.eventbus.EventBus.post",
+              "net.minecraftforge.eventbus.EventBus.post")
+_LOAD_VETO_STACK = tuple(_ROOT_PACKAGE + "persistence." + method for method in
+    ("GuardedChunkSaves.fail", "GuardedChunkSaves.beforeSave", "__GuardedChunkSaves_beforeSave_Save.invoke")) + _EVENT_BUS + tuple(
+    _ROOT_PACKAGE + "resourceescrow." + method for method in
+    ("EscrowSaveMonitor.postOwn", "EscrowChunkStore.terrain", "EscrowChunkStore.captureAndStore", "EscrowBarrier.begin",
+     "EscrowBarrier.beginJoint", "EscrowSettlementRecovery.lambda$tick", "EscrowSettlementRecovery.begin",
+     "EscrowSettlementRecovery.tick", "EscrowRuntime.tick", "__EscrowRuntime_tick_ServerTickEvent.invoke")) + _EVENT_BUS + (
+    "net.minecraftforge.event.ForgeEventFactory.onPostServerTick", "net.minecraft.server.MinecraftServer.m_5705_",
+    "net.minecraft.server.MinecraftServer.m_130011_", "net.minecraft.server.MinecraftServer.m_206580_", "java.lang.Thread.run")
+_LOAD_VETO_HEADER = re.compile(r"(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/ERROR\] " + re.escape(
+    "[ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: " + _LOAD_VETO_REASON))
+_LOAD_VETO_FRAME = re.compile(r"\s+at (?:[^/\s]+/)*([\w.$]+)\(([^()\r\n]+)\)(?: ~\[[^\]\r\n]*\](?: \{[^}\r\n]*\})?)?")
+_SAVE_EVENT = "(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V"
+_LOAD_VETO_LISTENERS = (
+    "HIGHEST", "resourceescrow.EscrowRuntime saveAttempt", "persistence.GuardedChunkSaves beforeSave", "NORMAL", None, None,
+    "station.pad.LandingPadCommands saving", "rocket.fuel.loader.FluidFuelLoaderProtection chunkSave",
+    "rocket.cargo.device.RocketItemCargoProtection chunkSave", "rocket.cargo.device.RocketFluidCargoProtection chunkSave",
+    "rocket.bay.SatelliteBayProtection chunkSave", "machine.tank.TankProtection chunkSave", "machine.solar.SolarProtection chunkSave",
+    "machine.recipe.RecipeSignatureProtection chunkSave", "machine.pump.PumpProtection chunkSave",
+    "machine.combustion.CombustionProtection chunkSave", "machine.classic.runtime.ResearchRuntime save",
+    "machine.classic.runtime.ClassicRuntime save", "forcefield.ForceFieldProtection saving",
+    "equipment.workstation.SuitWorkstationProtection chunkSave", "atmosphere.torch.UnlitTorchProtection chunkSave",
+    "atmosphere.device.DeviceProtection chunkSave")
+
+
+def check_load_veto_error(lines: list[str]) -> None:
+    """Exactly one C2 own-store denial, never a general reason-string ERROR allowlist."""
+    lines = [line.rstrip("\r\n") for line in lines]
+    errors = [n for n, line in enumerate(lines) if "/ERROR" in line or "/FATAL" in line]
+    require(len(errors) == 1, "Load veto requires exactly one injected ERROR")
+    start = errors[0]
+    require(_LOAD_VETO_HEADER.fullmatch(lines[start]) is not None, "Unexpected load veto ERROR/FATAL")
+    end = next((n for n in range(start + 1, len(lines)) if lines[n].startswith(("[", "ARCE_"))), len(lines))
+    block = lines[start + 1:end]
+    throwable = "java.lang.IllegalStateException: " + _LOAD_VETO_REASON
+    require(len(block) <= 96 and block.count(throwable) == 1, "Changed load veto throwable or event bound")
+    root = block.index(throwable)
+    preamble = block[:root]
+    require(preamble[:2] == ["\tIndex: 2", "\tListeners:"] and len(preamble) == 2 + len(_LOAD_VETO_LISTENERS),
+            "Changed load veto listener list")
+    for index, listener in enumerate(_LOAD_VETO_LISTENERS):
+        prefix = "\t\t" + str(index) + ": "
+        if listener is None:
+            pattern = re.escape(prefix) + r"net\.minecraftforge\.eventbus\.EventBus\$\$Lambda\$[0-9]+/0x[0-9a-fA-F]+@[0-9a-fA-F]+"
+            require(re.fullmatch(pattern, preamble[index + 2]) is not None, "Foreign load veto listener")
+        else:
+            name = listener if " " not in listener else "ASM: class " + _ROOT_PACKAGE + listener + _SAVE_EVENT
+            require(preamble[index + 2] == prefix + name, "Foreign load veto listener")
+    methods = []
+    for line in block[root + 1:]:
+        if not line.strip():
+            continue
+        frame = _LOAD_VETO_FRAME.fullmatch(line)
+        require(frame is not None, "Foreign/nested load veto throwable or malformed stack")
+        # Synthetic lambda indices and JVM listener addresses are not stable between builds/starts.
+        methods.append(re.sub(r"(\.EscrowSettlementRecovery\.lambda\$tick)\$[0-9]+$", r"\1", frame[1]))
+    require(tuple(methods) == _LOAD_VETO_STACK, "Load veto is not the guarded settlement own-store refusal")
+
+
 def observations(lines: list[str], case: str, restart: int) -> None:
     require(len([line for line in lines if marker(case, restart) in line]) == 1, "Missing or repeated cut observation")
     if not restart and case in BOUNDARIES:
         require(any(marker(case, restart) + "boundary=" + BOUNDARIES[case] in line for line in lines), "Wrong stop boundary")
-    require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR or FATAL")
+    if case == "FS_LOAD_VETO_DESTINATION_SAVED" and restart == 0:
+        check_load_veto_error(lines)
+    else:
+        require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR or FATAL")
     if case.startswith("FF_DISASSEMBLY_"):
         codes = disassembly_returns(lines, case)
         require(codes == [1] or restart and not codes, "Production disassembly confirmation missing, repeated or refused: " + str(codes))

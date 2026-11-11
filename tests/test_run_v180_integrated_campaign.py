@@ -79,12 +79,35 @@ class PlanTest(unittest.TestCase):
         inventory = [entry for row in rows if "inventory" in row for entry in row["inventory"]]
         self.assertEqual(sorted(inventory, key=lambda row: row["case"]),
                          sorted(campaign.cargo.inventory(), key=lambda row: row["case"]))
-        self.assertEqual(len(inventory), 285)
+        # W355 excludes only W211 R203's unreachable ordinary F9 from campaign reuse.
+        self.assertEqual(len(inventory), 284)
         self.assertEqual(Counter(entry["case"] for entry in inventory), Counter(entry["case"] for entry in campaign.cargo.inventory()))
         self.assertEqual(len({row["name"] for row in rows}), len(rows))
         # W339 adds 17 W336 families; W345 appends six R-042 cases after those 51, and W346 one save-boundary
         # family after them.
         self.assertEqual(len(rows), 58)
+
+    def test_dry_run_plan_reports_ordinary_f9_as_not_covered_in_its_family(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE), \
+                patch.object(campaign, "preflight") as preflight, patch.object(campaign, "HeavyLock") as lock, \
+                patch.object(campaign, "run_command") as run, redirect_stdout(io.StringIO()):
+            args = arguments(Path(directory), dry_run=True)
+            self.assertEqual(campaign.run_campaign(args), 0)
+            plan = json.loads((args.evidence_root / "plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(plan["families"]), 58)
+            row = next(item for item in plan["families"] if item["name"] == "cargo-B3-S6-REUSE")
+            self.assertEqual(len(row["cases"]), 96)
+            self.assertEqual(row["cases"], list(campaign.cargo.REUSE["B3-S6-REUSE"][1]))
+            self.assertEqual(len(row["excluded_cases"]), 1)
+            exclusion = row["excluded_cases"][0]
+            self.assertEqual(exclusion["case"], "LF_S6_F9_RESPAWN")
+            self.assertEqual(exclusion["status"], "NOT_COVERED")
+            for phrase in ("structurally out of reach", "W211 R203", "not a pass"):
+                self.assertIn(phrase, exclusion["reason"])
+            self.assertFalse(any(item.get("excluded_cases") for item in plan["families"] if item is not row))
+            preflight.assert_not_called()
+            lock.assert_not_called()
+            run.assert_not_called()
 
     def test_w336_coverage_and_order_append_every_case_and_kind_exactly(self):
         rows = campaign.family_specs()

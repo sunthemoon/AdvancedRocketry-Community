@@ -41,8 +41,8 @@ public final class EscrowCargoTransferFixtures {
         return record(rocket, recorded, false, null, rocket.flightData().orElseThrow().fuel());
     }
 
-    private static RocketTransferRecord record(RocketEntity rocket, RocketStructureSnapshot recorded, boolean source,
-                                               UUID passenger, RocketFuelState fuel) {
+    static RocketTransferRecord record(RocketEntity rocket, RocketStructureSnapshot recorded, boolean source,
+                                       UUID passenger, RocketFuelState fuel) {
         EscrowTestEndpoints.requireEnabled(rocket.getServer());
         var at = recorded.sourceOrigin(); var dimension = recorded.sourceDimension();
         var other = recorded.relocated(UUID.randomUUID(), dimension, new RocketPosition(at.x() + 8, at.y(), at.z()), 0);

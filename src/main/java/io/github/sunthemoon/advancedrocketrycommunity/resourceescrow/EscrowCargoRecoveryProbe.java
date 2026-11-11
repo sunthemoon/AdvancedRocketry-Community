@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
@@ -53,7 +55,7 @@ final class EscrowCargoRecoveryProbe {
             data.acknowledged(new EscrowLedger(data.ledger().id(), count, data.ledger().writerGeneration(), List.of(), floors, List.of()), true);
             if (count == 256) { floorBaseline = new FloorBaseline(data.ledger()); }
             data.bind(server).autosave();
-            var record = EscrowCargoTransferFixtures.record(rocket, before, false);
+            var record = r1Record(rocket, before);
             rocket.updateFlightData(record.destinationFlightData().land(200));
             var journal = RocketTransferSavedData.get(server); journal.put(record); journal.flushChecked(server);
         } else if (duplicate()) {
@@ -66,6 +68,13 @@ final class EscrowCargoRecoveryProbe {
             else { root.getCompound("tank").putInt("Amount", -1); }
             device.fluidEntity().load(outer); device.fluidEntity().setChanged();
         }
+    }
+    /** R1 retains the synthetic arrival fuel used before native-propulsion GameTest fixtures. */
+    static RocketTransferRecord r1Record(RocketEntity rocket, RocketStructureSnapshot recorded) {
+        EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        var fuel = RocketFuelState.empty(recorded.propulsion().orElseThrow())
+                .withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000);
+        return EscrowCargoTransferFixtures.record(rocket, recorded, false, null, fuel);
     }
     void checkpoint(String label) {
         if (recovery) { return; }

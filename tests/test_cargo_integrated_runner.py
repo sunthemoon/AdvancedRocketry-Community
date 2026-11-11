@@ -30,10 +30,23 @@ class IntegratedCargoRunnerTest(unittest.TestCase):
         self.assertEqual(Counter(row["family"] for row in rows),
                          {"C-S1": 28, "C-S2": 16, "C-S3": 10, "C-S4": 20, "C-S5": 16, "D-S1": 12, "D-S2": 18,
                           "C-S4-LOAD": 20, "D-S2-LOAD": 13, "C-Q": 4, "B3-S1-REUSE": 7, "B3-S4-REUSE": len(runner.loader.oracle.S4),
-                          "B3-S5-REUSE": 8, "B3-S6-REUSE": len(runner.loader_s6.CASES), "G2-REUSE": 1})
+                          "B3-S5-REUSE": 8, "B3-S6-REUSE": 96, "G2-REUSE": 1})
         self.assertEqual(len({row["case"] for row in rows}), len(rows))
         self.assertEqual({row["case"] for row in rows}, set().union(*(set(module.CASES) for module in runner.RUNNERS),
                           *(set(cases) for _, cases in runner.REUSE.values()), {"G2_S1_CAMPAIGN"}))
+
+    def test_s6_reuse_excludes_only_ordinary_f9_and_preserves_order_and_later_cases(self):
+        module, cases = runner.REUSE["B3-S6-REUSE"]
+        self.assertIs(module, runner.loader_s6)
+        excluded = "LF_S6_F9_RESPAWN"
+        self.assertIn(excluded, runner.loader_s6.CASES)
+        self.assertEqual(len(runner.loader_s6.CASES), 97)
+        self.assertNotIn(excluded, cases)
+        self.assertEqual(cases, tuple(case for case in runner.loader_s6.CASES if case != excluded))
+        later = runner.loader_s6.publication.CASES + runner.loader_s6.named_pad.CASES
+        self.assertEqual(len(later), 9)
+        self.assertEqual(cases[-9:], later)
+        self.assertEqual([row["case"] for row in runner.inventory() if row["family"] == "B3-S6-REUSE"], list(cases))
 
     def test_direction_uses_actual_probe_and_recovery_role(self):
         kinds = {row["case"]: row["kind"] for row in runner.inventory()}

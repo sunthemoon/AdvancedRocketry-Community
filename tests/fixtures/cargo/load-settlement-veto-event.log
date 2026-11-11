@@ -1,0 +1,50 @@
+[03:27:29] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Release-test load settlement source veto
+	Index: 2
+	Listeners:
+		0: HIGHEST
+		1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime saveAttempt(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		2: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		3: NORMAL
+		4: net.minecraftforge.eventbus.EventBus$$Lambda$3991/0x0000000801638d38@69c63f47
+		5: net.minecraftforge.eventbus.EventBus$$Lambda$3991/0x0000000801638d38@77ce58df
+		6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadCommands saving(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		9: ASM: class io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		10: ASM: class io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		11: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		12: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		13: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		14: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		15: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		16: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchRuntime save(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		17: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicRuntime save(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		18: ASM: class io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProtection saving(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		19: ASM: class io.github.sunthemoon.advancedrocketrycommunity.equipment.workstation.SuitWorkstationProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		20: ASM: class io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+		21: ASM: class io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V
+java.lang.IllegalStateException: Release-test load settlement source veto
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:93)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:52)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.ASMEventHandler.invoke(ASMEventHandler.java:73)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:296)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSaveMonitor.postOwn(EscrowSaveMonitor.java:105)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore.terrain(EscrowChunkStore.java:72)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore.captureAndStore(EscrowChunkStore.java:58)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier.begin(EscrowBarrier.java:113)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier.beginJoint(EscrowBarrier.java:84)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementRecovery.lambda$tick$12(EscrowSettlementRecovery.java:133)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementRecovery.begin(EscrowSettlementRecovery.java:211)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementRecovery.tick(EscrowSettlementRecovery.java:133)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.tick(EscrowRuntime.java:377)
+	at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.__EscrowRuntime_tick_ServerTickEvent.invoke(.dynamic)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.ASMEventHandler.invoke(ASMEventHandler.java:73)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:315)
+	at MC-BOOTSTRAP/net.minecraftforge.eventbus/net.minecraftforge.eventbus.EventBus.post(EventBus.java:296)
+	at TRANSFORMER/forge@47.4.10/net.minecraftforge.event.ForgeEventFactory.onPostServerTick(ForgeEventFactory.java:975)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_5705_(MinecraftServer.java:835)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_130011_(MinecraftServer.java:661)
+	at TRANSFORMER/minecraft@1.20.1/net.minecraft.server.MinecraftServer.m_206580_(MinecraftServer.java:251)
+	at java.base/java.lang.Thread.run(Thread.java:833)

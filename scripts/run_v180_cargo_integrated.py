@@ -24,11 +24,17 @@ import run_v180_fuel_loader_s1 as loader_s1
 REPO = Path(__file__).resolve().parents[1]
 PRODUCTION_PATHS = ("src/main", "src/generated", "build.gradle", "settings.gradle", "gradle.properties")
 RUNNERS = (fluid, settlement, item, cap)
+# W211 R203: retaining the settled source prevents the ordinary F9 respawn.
+REUSE_EXCLUDED_CASES = {
+    "B3-S6-REUSE": {
+        "LF_S6_F9_RESPAWN": "structurally out of reach with the retained source (W211 R203); not a pass",
+    },
+}
 REUSE = {
     "B3-S1-REUSE": (loader, tuple("LF_M_" + name for name in loader.oracle.CREATION if name != "N1") + ("LF_M_N3_ELIGIBILITY",)),
     "B3-S4-REUSE": (loader, loader.oracle.S4),
     "B3-S5-REUSE": (loader, tuple("LF_M_R3_LEDGER_" + name for name in ("MISSING", "REPLACED", "BEHIND")) + loader.oracle.S5_FLOORS),
-    "B3-S6-REUSE": (loader_s6, loader_s6.CASES),
+    "B3-S6-REUSE": (loader_s6, tuple(case for case in loader_s6.CASES if case not in REUSE_EXCLUDED_CASES["B3-S6-REUSE"])),
 }
 RECOVERY_UNLOAD = frozenset(("FF_DISASSEMBLY_REMOVAL", "FF_DISASSEMBLY_RESTORATION", "FF_DISASSEMBLY_RELEASE",
                             "FF_REBUILD_DESTINATION", "FF_KEEP_SOURCE", "FF_REBUILD_SOURCE", "FF_STALE_PREPARED", "FF_RECONNECT"))
