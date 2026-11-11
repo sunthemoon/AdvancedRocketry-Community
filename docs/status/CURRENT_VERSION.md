@@ -109,7 +109,8 @@ What is still open:
   the hosted build of `ade1538c3` (JAR SHA-256 `1eea72ac442ea181...`, shared run 42831910740), started on
   2026-11-10 with the 58-family campaign driver (R421); its families `cargo-C-S3`, `cargo-C-S4-LOAD`,
   `cargo-B3-S1-REUSE` and `cargo-B3-S6-REUSE` failed (open items below), so all 58 families rerun on a
-  candidate C3 after the fixes (R424 to R427). W327's
+  candidate C3 after the fixes (R424 to R427). Its family `cargo-G2-REUSE` failed only the three historical-JAR
+  downgrade rows, the known R-044 residual that R138 keeps failed (R428). W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
@@ -544,5 +545,9 @@ What is still open:
   attempts, which recorded the row as structurally out of reach and not a pass. The family should not have
   selected it, and its nine later cases did not run. W355 (R427) leaves the row out of the campaign family with
   a named exclusion reported as not covered; it stays open until the family passes on candidate C3.
+- **C2 campaign family `cargo-G2-REUSE` (2026-11-11).** Six of its nine S1 rows passed; the three downgrade rows
+  on the historical JAR `ba046688` failed because the old JAR rewrites `level.dat` and `level.dat_old` before its
+  refusal, as W176 recorded. R428 classifies this as the known R-044 residual (R138), not a new finding; it stays
+  failed in C3's run and the owner's report until the owner decides R-044.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
