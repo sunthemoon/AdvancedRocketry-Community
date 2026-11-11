@@ -7,6 +7,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -402,6 +404,9 @@ final class EscrowLoaderCutProbe {
             }
         }
         if (substituted) {
+            // W128's bay lock fails closed for a LOADED delegate without its receipt store. Keep an empty,
+            // unwritten backing store so this synthetic index tests shared capacity, not that eligibility hold.
+            emptyBayForRefusal(runtime.bayReceipts(server), BayReceiptSavedData.file(server), server.getTickCount());
             EscrowTags.require(runtime.bayIndexForTests(server, new EscrowAdmissionAuthority.Store() {
                 @Override public EscrowAdmissionAuthority.Index index() { return new EscrowAdmissionAuthority.Index(!notLoaded, pending); }
                 @Override public boolean holdsWork() { return false; }
@@ -416,7 +421,8 @@ final class EscrowLoaderCutProbe {
             status = loader().attempt(); rider.stopRiding(); rider.discard();
             EscrowTags.require(status == FluidFuelLoaderStatus.ROCKET_BUSY, "Occupied rocket passed eligibility");
         } else {
-            EscrowTags.require(loader().attempt() == FluidFuelLoaderStatus.READY, "Refusal did not visit the queue");
+            var attempt = loader().attempt();
+            EscrowTags.require(attempt == FluidFuelLoaderStatus.READY, "Refusal did not visit the queue: " + attempt);
             runtime.fills(server).visit(); status = loader().lastAttempt();
             EscrowTags.require(status == (notLoaded ? FluidFuelLoaderStatus.LEDGER_UNAVAILABLE : FluidFuelLoaderStatus.ESCROW_FULL),
                     "Wrong shared-authority refusal");
@@ -430,7 +436,15 @@ final class EscrowLoaderCutProbe {
         pending.clear();
         if (substituted) { EscrowTags.require(runtime.bayIndexForTests(server, null), "Fixture BAY index restoration was refused"); }
         EscrowTags.require(authority.pendingCount() == 0, "Fixture bay left a reservation");
+        EscrowTags.require(!substituted || Files.notExists(BayReceiptSavedData.file(server)), "Refusal wrote a BAY receipt file");
         observe("refused"); pause(boundary);
+    }
+
+    /** Only a proven-empty fixture gets a backing store; binding generation zero never requests a receipt write. */
+    static void emptyBayForRefusal(BayReceipts receipts, Path file, long tick) {
+        EscrowTags.require(receipts.state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE && receipts.store() == null
+                && Files.notExists(file), "Refusal fixture requires a proven-absent BAY store");
+        receipts.createForAdmission(file, tick);
     }
 
     private void recover() {
