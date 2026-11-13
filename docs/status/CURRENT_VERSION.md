@@ -130,7 +130,8 @@ What is still open:
   changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
   W361 delivered its Slice A (row ceiling 2,048 bytes; 54 instead of 61 concurrent fluid operations; R443), which
   W361R reviews. Slice B (W362) built the saved form and migration behind an activation constant pinned off;
-  W362R reviews it and W362F finishes its relaunch inventory audit (R445). W358 built six of the uncovered bay rows natively and
+  W362R approved it with two changes needed before activation (R446), and W362F finishes its relaunch inventory
+  audit (R445). W358 (merged, R446) built six of the uncovered bay rows natively and
   found that a bay on a governed (escrow-fuelled) flight gets no D0 decision, which W363 fixes (R444). W360 builds
   the remaining cargo and ledger rows. W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
@@ -542,6 +543,11 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **Live-return discard in a branch regression (2026-11-13).** Attempt 1 of W358's branch run 43360946092 failed
+  `EscrowGovernedLiveReturnGameTests.countdownCancellationReachesReturnedF6WithPassenger` in shard 3 with "Live
+  return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
+  hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
+  every shard (R446). It stays open until later runs show no recurrence or a cause is found.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
