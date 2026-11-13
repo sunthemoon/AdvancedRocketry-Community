@@ -79,7 +79,7 @@ class Oracles(unittest.TestCase):
 
     def test_new_families_cover_only_the_implemented_rows_and_keep_existing_selections(self):
         rows = {r["name"]: r for r in campaign.family_specs()}
-        self.assertEqual({"B6.8", "B10.6", "B11.8", "B11.9", "B11.7", "CAP.3"}, set(sum((list(v) for v in runner.CASES.values()), [])))
+        self.assertEqual({"B6.8", "B10.6", "B11.8", "B11.9", "B11.7", "CAP.3", "B17.3"}, set(sum((list(v) for v in runner.CASES.values()), [])))
         for key, cases in runner.TRANCHES.items():
             row = rows["forced-" + key.replace("_", "-")]
             self.assertEqual(cases, row["cases"])
