@@ -103,9 +103,11 @@ class AccountingReadersTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "union"): a.read_row(row)
 
     def test_fresh_fluid_in_root3_cannot_silently_select_migrated_legacy_semantics(self):
-        root = nbt.plain(fixture("fuel-root2")); root.update(schema_version=3, format_epoch=a.EPOCHS[3], fluid_accounts=[])
-        a.validate_root(root)  # a legitimate migrated legacy record
-        with self.assertRaisesRegex(native.smoke.SmokeError, "legacy branch"): a.check(root)
+        for name in ("fuel-root2", "fuel-root2-receipt", "cargo-root2-receipt"):
+            root = native.ledger(FIXTURES / (name + ".dat"))
+            root.update(schema_version=3, format_epoch=a.EPOCHS[3], fluid_accounts=[])
+            a.validate_root(root)  # a legitimate migrated legacy record or receipt
+            with self.assertRaisesRegex(native.smoke.SmokeError, "legacy branch"): a.check(root)
 
     def test_root_reader_rejects_oversize_and_wrong_balance_even_with_recomputed_receipt_digest(self):
         for change in (lambda r: r.value["f"].value["e"].value[1][0].value["a"].__setattr__("value", 1),

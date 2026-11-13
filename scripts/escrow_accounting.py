@@ -227,6 +227,7 @@ def validate_root(root, typed_rows=None, fresh_fluid=False):
             require(bool(op.get("settlement")) == ("f" in row), "Operation account freeze mismatch")
     for receipt in receipts:
         row = receipt_account(receipt, accounts)
+        if fresh_fluid: require(row is not None, "Fresh fluid receipt took legacy branch")
         uid = identity(receipt["op_id"])
         live = next((op for op in operations if identity(op["op_id"]) == uid), None)
         require(live is None or (live["schema_version"] == 3) == (row is not None), "O3 receipt version mismatch")
