@@ -18,4 +18,13 @@ public final class EscrowLedgerBaseline {
                 && loaded.issuedLaunchSerial() == 0), "Escrow checked baseline differs from loaded authority");
         return first.isPresent() ? EscrowCodec.digest(expected) : null;
     }
+    /** During migration the source baseline and the new authority are two independent checks. */
+    public static void requireMigration(Path file, net.minecraft.nbt.CompoundTag target) {
+        var disk = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow();
+        if (disk.getInt("schema_version") == 2 && target.getInt("schema_version") == 3) {
+            var source = EscrowCodec.decode(disk);
+            require(file, source);
+            EscrowTags.require(EscrowCodec.upgradeRoot2(disk).equals(target), "Escrow migration target differs");
+        } else { require(file, EscrowCodec.decode(target)); }
+    }
 }
