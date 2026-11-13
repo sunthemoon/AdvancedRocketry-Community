@@ -32,8 +32,9 @@ class V180RocketCargoDataTest {
 
     @Test void bilingualNamesAndEveryStatusArePresent() {
         for (boolean chinese : new boolean[] {false, true}) {
-            var entries = V180RocketCargoData.language(chinese);
+            var entries = new java.util.LinkedHashMap<>(V180RocketCargoData.language(chinese));
             assertEquals(37, entries.size()); // R244 appends OWNER_PENDING_FULL without replacing any existing key.
+            entries.putAll(V180BayReceiptLanguage.entries(chinese));
             for (var role : RocketCargoRole.values()) { assertFalse(entries.get("block.advancedrocketrycommunity." + role.id()).isBlank()); }
             for (var status : RocketCargoStatus.values()) { assertFalse(entries.get(status.translationKey()).isBlank()); }
         }

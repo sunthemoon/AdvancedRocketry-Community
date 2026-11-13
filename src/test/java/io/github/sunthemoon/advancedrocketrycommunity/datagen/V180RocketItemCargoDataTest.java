@@ -48,7 +48,8 @@ class V180RocketItemCargoDataTest {
                 assertFalse(entries.get("block.advancedrocketrycommunity." + RocketItemCargoBlock.id(role)).isBlank());
             }
             for (var value : entries.values()) { assertFalse(value.isBlank()); }
-            var fluid = V180RocketCargoData.language(chinese);
+            var fluid = new java.util.LinkedHashMap<>(V180RocketCargoData.language(chinese));
+            fluid.putAll(V180BayReceiptLanguage.entries(chinese));
             for (var key : entries.keySet()) { assertFalse(fluid.containsKey(key), key); }
             // Every status the item devices show comes from W109's shared keys.
             for (var status : RocketCargoStatus.values()) { assertTrue(fluid.containsKey(status.translationKey())); }
