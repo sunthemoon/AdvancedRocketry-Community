@@ -127,7 +127,8 @@ What is still open:
   ([X01-X03-ISOLATION-PLAN](../work/v1.8.0-root-queue/records/X01-X03-ISOLATION-PLAN.md)), and the final campaign
   plan ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md), R432 to R438):
   W357's accounting design (ledger root 3, about 10 to 14.5 engineer-days) passed W357R's read-only review with
-  changes that W357F writes in (R440, R441), W358 builds the uncovered bay rows, W360 the remaining cargo and ledger rows, W359's draft campaign plan is
+  changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
+  W361 implements its Slice A, W358 builds the uncovered bay rows, W360 the remaining cargo and ledger rows, W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
   read-only audit of
