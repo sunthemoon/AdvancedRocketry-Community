@@ -18,11 +18,13 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # W221: seven governed named-pad selectors.
         # W330: four owner-cap cases (a patched wrapper), 33 load-direction settlement cases and the
         # FS_LOAD_ and IS_LOAD_ prefix tokens of tests/test_cargo_w330_runner.py.
-        self.assertEqual(659, len(self.rows))
+        # W360: seven item before-write and store-veto cuts in each direction (R448, R450).
+        self.assertEqual(673, len(self.rows))
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         # W353 adds the load-veto log regression test to the related-test inventory.
-        self.assertEqual(37, len(self.coverage["tests"]))
+        # W360 adds tests/test_w360_uncovered_rows.py.
+        self.assertEqual(38, len(self.coverage["tests"]))
         self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
         self.assertIn("tests/test_cargo_load_veto_log.py", self.coverage["tests"])
 
@@ -48,7 +50,8 @@ class EscrowProbeInventoryTest(unittest.TestCase):
             self.assertIn("scripts/run_v180_" + origin + ".py", self.rows[case])
         items = {name for name in self.rows if name.startswith(("IS_", "IR_"))}
         # W330: 13 IS_LOAD_ settlement cases and the IS_LOAD_ prefix token; the Java routing test counts 31 item cases.
-        self.assertEqual(32, len(items))
+        # W360: the fourteen item cuts above; the Java routing test counts 45 item cases.
+        self.assertEqual(46, len(items))
         self.assertIn("scripts/run_v180_cargo_owner_cap.py", self.rows["CQ_ITEM_UNLOAD"])
 
 
