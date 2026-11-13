@@ -111,6 +111,14 @@ def retained_files(world, destination):
         require(all(hashlib.sha256(archive.read(name)).hexdigest() == info["sha256"] for name, info in manifest.items()), "Native archival mismatch")
     return dict(file=destination.name, sha256=native.digest(destination), members=manifest)
 
+
+def check_frozen_progress(case, before, after):
+    """New pre-choice and veto rows must stay held; all previously enumerated cuts still require completion."""
+    if case in ("IS_O1_BEFORE", "IS_LOAD_O1_BEFORE", "IS_VETO_DESTINATION_SAVED", "IS_LOAD_VETO_DESTINATION_SAVED"):
+        require(native.same_typed(before, after), "Restart changed the held ledger")
+    else:
+        require_progress(before, after)
+
 def run(args):
     native.assert_pin(args.source_commit); native.require_lock(args.lock_owner); native.preflight()
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
@@ -173,7 +181,7 @@ def run(args):
                             require(native.same_typed(oracle.preservation(disk), oracle.preservation(frozen)), "Restart overwrote held typed roots")
                         elif case in oracle.CASES:
                             old = frozen["ledger"]
-                            require_progress(old, disk["ledger"])
+                            check_frozen_progress(case, old, disk["ledger"])
                             if case in ("IS_O1_BEFORE", "IS_LOAD_O1_BEFORE"):
                                 require(native.same_typed(old, disk["ledger"]), "Pre-O1 restart changed the undecided ledger")
                                 digest = None
