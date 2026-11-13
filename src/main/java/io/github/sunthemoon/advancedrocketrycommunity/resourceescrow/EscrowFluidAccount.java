@@ -509,8 +509,8 @@ public final class EscrowFluidAccount {
 
     /**
      * What a set of frozen rows proves without the operations: one group owner, one member set, the same knowledge, and
-     * for every key one owner whose row is present and, when KNOWN, stores the one adjustment. A group with a missing
-     * key-adjustment owner or a different member set cannot release.
+     * for every key the first owner in the stored sequence-ordered member list and, when KNOWN, exactly one adjustment.
+     * Caller row order is immaterial. A missing, split or reassigned key owner cannot release.
      */
     public static Status verifyGroup(List<Row> rows) {
         if (rows.isEmpty() || rows.size() > MAX_MEMBERS) { return Status.COMPONENT_LIMIT; }
@@ -524,18 +524,25 @@ public final class EscrowFluidAccount {
         Row ownerRow = byId.get(groupOwner);
         if (ownerRow == null || !new HashSet<>(ownerRow.frozen().members()).equals(byId.keySet())) { return Status.INVALID_MEMBERS; }
         int memberKeys = 0;
-        for (Row row : rows) {
+        var keyOwners = new TreeMap<Key, UUID>();
+        var adjustments = new TreeMap<Key, Integer>();
+        for (UUID member : ownerRow.frozen().members()) {
+            Row row = byId.get(member);
             if (!row.frozen().groupOwner().equals(groupOwner)) { return Status.INVALID_MEMBERS; }
             if (row.frozen().knowledge() != knowledge) { return Status.INVALID_KNOWLEDGE; }
             memberKeys += row.frozen().entries().size();
             for (FrozenEntry entry : row.frozen().entries()) {
-                Row keyOwner = byId.get(entry.owner());
-                if (keyOwner == null) { return Status.INVALID_OWNER; }
-                var owned = keyOwner.frozen().entries().stream().filter(other -> other.key().equals(entry.key())).findFirst();
-                // The owner's own entry names itself, so exactly one row can hold this key's adjustment.
-                if (owned.isEmpty() || !owned.get().owner().equals(entry.owner())) { return Status.INVALID_OWNER; }
+                keyOwners.putIfAbsent(entry.key(), member);
+                if (entry.adjustment().isPresent()) { adjustments.merge(entry.key(), 1, Integer::sum); }
             }
         }
+        for (Row row : rows) {
+            for (FrozenEntry entry : row.frozen().entries()) {
+                if (!entry.owner().equals(keyOwners.get(entry.key()))) { return Status.INVALID_OWNER; }
+            }
+        }
+        int expected = knowledge == Knowledge.KNOWN ? 1 : 0;
+        if (keyOwners.keySet().stream().anyMatch(key -> adjustments.getOrDefault(key, 0) != expected)) { return Status.INVALID_OWNER; }
         return memberKeys > MAX_MEMBER_KEYS ? Status.COMPONENT_LIMIT : Status.OK;
     }
 
