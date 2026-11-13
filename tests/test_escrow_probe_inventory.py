@@ -22,7 +22,8 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         # W353 adds the load-veto log regression test to the related-test inventory.
-        self.assertEqual(37, len(self.coverage["tests"]))
+        # W365 adds the accounting reader and oracle test modules; selectors stay at 659.
+        self.assertEqual(39, len(self.coverage["tests"]))
         self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
         self.assertIn("tests/test_cargo_load_veto_log.py", self.coverage["tests"])
 
