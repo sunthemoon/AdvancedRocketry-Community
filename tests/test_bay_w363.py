@@ -56,8 +56,20 @@ class Oracles(unittest.TestCase):
                 runner.healthy_while_held(self.session(DEPLOYED, dict(HELD, claim="CONSUME")), dict(logical="U"),
                                           dict(logical="H"), RECEIPTS, 2)
 
+    def test_governed_menus_need_the_refusal_first_and_nothing_remembered_after_a_restart(self):
+        refused = [dict(phase="NONE", reason="BAY_SOURCE_PROTECTED")] * 2
+        none = [dict(phase="NONE", reason="NONE")] * 2
+        runner.check_governed_menus(refused, [none, none])
+        for first, restarts in ((none, [none, none]), (refused[:1], [none, none]), (refused, [none]),
+                                (refused, [none, refused]), (refused, [none, [dict(phase="INTENT", reason="NONE")] * 2]),
+                                ([dict(phase="REJECTED", reason="BAY_SOURCE_PROTECTED")] * 2, [none, none])):
+            with self.subTest(first=first, restarts=restarts), self.assertRaises(runner.bay.smoke.SmokeError):
+                runner.check_governed_menus(first, restarts)
+
     def test_both_cases_are_campaign_families_of_the_shared_runner(self):
         rows = {row["name"]: row for row in campaign.family_specs()}
+        self.assertEqual(("B6.8",), runner.CASES["W363_B6_GOVERNED"])
+        self.assertEqual(["W363_B6_GOVERNED"], rows["forced-W363-B6-GOVERNED"]["cases"])
         for case in ("W363_B17_UNLOADED", "W363_B17_UNLOADED_RESTART"):
             self.assertEqual(("B17.3",), runner.CASES[case])
             row = rows["forced-" + case.replace("_", "-")]

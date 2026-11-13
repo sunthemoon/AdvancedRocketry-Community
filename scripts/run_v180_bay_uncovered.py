@@ -27,11 +27,15 @@ CASES = {
     "W358_CAP_OWNER": ("CAP.3",),
     # W363: a restart group whose end stays unready (the gated bayEndUnready seam), ahead of a healthy in-session
     # flight, and ahead of a healthy restart group.
+    # W363: W358_B6_BOUND's flow; the reason is required in the launching session and, the runtime rejection map being
+    # RAM only (W128), required absent after each restart. W358_B6_BOUND's own oracle is unchanged.
+    "W363_B6_GOVERNED": ("B6.8",),
     "W363_B17_UNLOADED": ("B17.3",),
     "W363_B17_UNLOADED_RESTART": ("B17.3",),
 }
 TRANCHES = {case: [case] for case in CASES}
 HEALTHY_ORIGIN = (40, 2, 8)  # two chunks east of the forced-stop fixture's origin
+B6 = ("W358_B6_BOUND", "W363_B6_GOVERNED")
 END_HELD = "ARCE_RELEASE_BAY_END_HELD transfer={transfer} logical={logical}"
 CONTROL = "arce bay release-test w358 "
 LOADER = re.compile(r"ARCE_W358_LOADER logical=\S+ action=\w+ .*|ARCE_W358_LOADER_WAIT logical=\S+")
@@ -341,7 +345,7 @@ def run_case(run, case):
         if case in ("W358_CAP_OWNER", "W358_B11_BAY_MAJOR", "W358_B11_UNKNOWN"):
             value = loader(run, fixture, "visit"); check_refusal(value, "OWNER_PENDING_FULL" if case == "W358_CAP_OWNER" else "ESCROW_FULL")
             row["first"]["loader_refused"] = value
-        if case == "W358_B6_BOUND":
+        if case in B6:
             value = loader(run, fixture, "visit")
             require(value["captured"] == "true" and value["status"] == "PREPARING", "Real loader fill did not start")
             bound = until(run, lambda: loader(run, fixture, "status"), lambda v: v["ledger"] != "null" and v["epoch"] == "1"
@@ -350,6 +354,11 @@ def run_case(run, case):
             launch(run, fixture)
             unchanged(landed(run, fixture), fixture)
             row["first"]["menu"] = deployment(run, fixture)
+            if case == "W363_B6_GOVERNED":
+                row["first"]["refused"] = run.wait(re.compile(r"ARCE_BAY_GOVERNED_REFUSED transfer=\S+ logical="
+                    + fixture["logical"] + r" reason=BAY_SOURCE_PROTECTED bays=2\b"), 10).strip()
+                require(not any(bay.CLAIM.search(line) and fixture["logical"] in line for line in process.lines),
+                        "The governed refusal started a bay claim")
     row["fixture"] = fixture
     # Paused writer cases already have their intended durable target; do not invoke a drain before their hard kill.
     if case not in ("W358_B11_REARM", "W358_B11_ESCROW_MAJOR"):
@@ -362,7 +371,7 @@ def run_case(run, case):
     for restart in (1, 2):
         process = run.start(case, restart, {})
         entry = dict(restart=restart)
-        if case == "W358_B6_BOUND":
+        if case in B6:
             released.ready(run, fixture["logical"])
         if case == "W358_B10_INCOHERENT":
             released.ready(run, fixture["logical"])
@@ -392,7 +401,7 @@ def run_case(run, case):
         else:
             entry["status"] = until(run, lambda: run.status(fixture["logical"]), lambda v: v["rocket"] != "NONE", "Rocket absent")
             unchanged(entry["status"], fixture)
-            if case == "W358_B6_BOUND":
+            if case in B6:
                 entry["menu"] = deployment(run, fixture)
             elif case == "W358_CAP_OWNER":
                 entry["loader"] = loader(run, fixture, "visit"); check_refusal(entry["loader"], "OWNER_PENDING_FULL")
@@ -412,8 +421,20 @@ def run_case(run, case):
         reports = row["first"]["menu"] + [menu for entry in row["restarts"] for menu in entry["menu"]]
         require(all(value["reason"] == "BAY_SOURCE_PROTECTED" for value in reports),
                 "B6.8 was not reached by the real bound flight; see the observed report")
+    if case == "W363_B6_GOVERNED":
+        (run.evidence / f"{case}-observed.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
+        check_governed_menus(row["first"]["menu"], [entry["menu"] for entry in row["restarts"]])
     row["status"] = "PASS"
     return row
+
+
+def check_governed_menus(first, restarts):
+    """D0's refusal in the launching session; no receipt and no remembered reason after a restart (RAM only)."""
+    refused = dict(phase="NONE", reason="BAY_SOURCE_PROTECTED")
+    require(len(first) == 2 and all(dict(phase=v["phase"], reason=v["reason"]) == refused for v in first),
+            "The governed flight's bays do not show BAY_SOURCE_PROTECTED: " + repr(first))
+    require(len(restarts) == 2 and all(len(menu) == 2 and all(v["phase"] == v["reason"] == "NONE" for v in menu)
+            for menu in restarts), "A restart shows a receipt or a remembered runtime reason: " + repr(restarts))
 
 
 def run(args):
