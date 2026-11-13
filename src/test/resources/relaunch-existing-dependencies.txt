@@ -14,6 +14,11 @@
 # The record has no static initializer; State's initializer only constructs its four constants.
 # Rocket joins (fence classification through logicalLocked) and boarding (idle) reach the same
 # reads before a relaunch; first use was not remeasured. No preload entry or assertion changes.
+# W362 (R445): saved-form validation/encoding -> EscrowFluidAccountCodec -> account value types.
+# All 20 added types were manually re-audited from source and JDK 17 bytecode; see records/W362.md.
+# Initializers only compile two fixed regexes or construct enums, empty values and two Limits records.
+# No Minecraft, world, registry, IO, thread or logging work occurs at initialization; hashing is method-only.
+# This records static reachability, not a first-use measurement. The measured 55-class preload list is unchanged.
 AdvancedRocketryCommunity
 ModIdentity
 celestial.CelestialIds
@@ -89,6 +94,26 @@ resourceescrow.EscrowFlightTables$Head
 resourceescrow.EscrowFlightWrites
 resourceescrow.EscrowFlightWrites$Admission
 resourceescrow.EscrowFlightWrites$Request
+resourceescrow.EscrowFluidAccount
+resourceescrow.EscrowFluidAccount$Baseline
+resourceescrow.EscrowFluidAccount$Delta
+resourceescrow.EscrowFluidAccount$Entry
+resourceescrow.EscrowFluidAccount$Frozen
+resourceescrow.EscrowFluidAccount$FrozenEntry
+resourceescrow.EscrowFluidAccount$Key
+resourceescrow.EscrowFluidAccount$Knowledge
+resourceescrow.EscrowFluidAccount$Link
+resourceescrow.EscrowFluidAccount$Member
+resourceescrow.EscrowFluidAccount$Result
+resourceescrow.EscrowFluidAccount$Row
+resourceescrow.EscrowFluidAccount$Scope
+resourceescrow.EscrowFluidAccount$Settlement
+resourceescrow.EscrowFluidAccount$Status
+resourceescrow.EscrowFluidAccount$Unit
+resourceescrow.EscrowFluidAccount$UnitRef
+resourceescrow.EscrowFluidAccount$Vector
+resourceescrow.EscrowFluidAccountCodec
+resourceescrow.EscrowFluidAccountCodec$Limits
 resourceescrow.EscrowFluidCodec
 resourceescrow.EscrowGovernedArrivalState
 resourceescrow.EscrowGovernedDispatch

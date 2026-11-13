@@ -152,7 +152,7 @@ public final class EscrowSettlementPruning {
     static List<Group> groups(EscrowLedger root) {
         var tags = new LinkedHashMap<String, List<CompoundTag>>();
         for (var tag : root.tombstones()) {
-            if (tag.getInt("schema_version") == EscrowSettlementTombstones.SCHEMA && tag.getBoolean("released")) {
+            if (EscrowSettlementTombstones.settlementReceipt(tag) && tag.getBoolean("released")) {
                 tags.computeIfAbsent(tag.getString("decision_digest"), ignored -> new ArrayList<>()).add(tag);
             }
         }

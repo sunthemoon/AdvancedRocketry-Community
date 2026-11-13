@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 /** Admission proves its component with the real codecs, then reserves every unsettled member's ceiling. */
-final class EscrowSettlementCapacity {
+public final class EscrowSettlementCapacity {
     // Admission only. Persisted sections/chains retain the eight-marker decode bound.
     static final int ADMISSION_PER_ROCKET = 5;
     // Cargo excludes retained markers and every other operation on its rocket at admission.
@@ -25,6 +25,10 @@ final class EscrowSettlementCapacity {
             if (!visited.add(selected.id())) { continue; }
             var component = EscrowSettlementIntent.component(prospective.records(), selected.id());
             component.forEach(op -> visited.add(op.id()));
+            if (prospective.schema() == 3 && candidate != null && component.stream().anyMatch(op -> op.id().equals(candidate))
+                    && component.stream().anyMatch(EscrowOperation::legacyFluid)) {
+                throw new StaleCapture("Legacy fluid component has no accounting baseline");
+            }
             if (component.stream().anyMatch(op -> !op.settlement().isEmpty())) {
                 continue;
             }
@@ -36,10 +40,18 @@ final class EscrowSettlementCapacity {
                 preview(prospective, component, selected.id(), false);
             }
         }
+        requireReservation(prospective, candidate != null);
+    }
+    /** Load/write validation: arithmetic reservations only, never a hypothetical operator preview. */
+    static void requireReservations(EscrowLedger root) {
+        EscrowFloors.preflight(root);
+        requireReservation(root, false);
+    }
+    private static void requireReservation(EscrowLedger prospective, boolean admission) {
         var reservation = reservation(prospective);
         // Fill admission always leaves room for one new retirement, even with no retained floor.
         // Only new work consumes that headroom; this is not an autosave/load restriction.
-        int headroom = candidate == null ? 0 : 1;
+        int headroom = admission ? 1 : 0;
         if (prospective.records().size() + headroom > EscrowLimits.OPERATIONS
                 || reservation.receipts() + headroom > EscrowLimits.TOMBSTONES
                 || reservation.bytes() + headroom * FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES) {
@@ -60,7 +72,7 @@ final class EscrowSettlementCapacity {
         catch (ReservationFull full) { throw new ReservationFull(FLOOR_FULL); }
         return candidate;
     }
-    static final class ReservationFull extends IllegalArgumentException {
+    public static final class ReservationFull extends IllegalArgumentException {
         ReservationFull(String message) { super(message); }
     }
     static final class StaleCapture extends IllegalArgumentException {
@@ -110,11 +122,26 @@ final class EscrowSettlementCapacity {
             if (admission) { throw ineligible; }
             return; // Existing ineligible components still receive the fixed charge, never a discount.
         }
+        var sizingRows = sizingRows(prospective, component);
+        if (!sizingRows.isEmpty()) { preview = preview.accounting(sizingRows); }
         var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
-        for (var member : hypothetical.records().stream().filter(op -> intent.ids().contains(op.id())).toList()) {
+        var accountedIntent = intent;
+        for (var member : hypothetical.records().stream().filter(op -> accountedIntent.ids().contains(op.id())).toList()) {
             EscrowCodec.operation(member.settle(intent));
-            EscrowSettlementTombstones.create(member, intent);
+            EscrowSettlementTombstones.create(member, intent, sizingRows.stream().filter(row -> row.operation().equals(member.id())).findFirst().orElse(null));
         }
+    }
+    /** Codec-only worst-case receipts. These rows are never installed as observations or authority. */
+    private static List<EscrowFluidAccount.Row> sizingRows(EscrowLedger root, List<EscrowOperation> component) {
+        var rows = component.stream().filter(op -> op.accountingBaseline() != null).map(op -> root.fluidAccounts().stream()
+                .filter(row -> row.operation().equals(op.id())).findFirst().orElseThrow()).toList();
+        if (rows.isEmpty()) { return rows; }
+        var ids = rows.stream().map(EscrowFluidAccount.Row::operation).toList();
+        return rows.stream().map(row -> new EscrowFluidAccount.Row(row.operation(), row.baseline(),
+                new EscrowFluidAccount.Frozen(EscrowFluidAccount.Knowledge.UNKNOWN_ENDPOINT, ids.get(0),
+                        row.operation().equals(ids.get(0)) ? ids : List.of(), row.baseline().entries().stream()
+                        .map(e -> new EscrowFluidAccount.FrozenEntry(e.key(), java.util.OptionalLong.empty(), java.util.OptionalLong.empty(),
+                                java.util.OptionalLong.empty(), row.operation())).toList()))).toList();
     }
     static void requireAdmission(EscrowLedger prospective, EscrowOperation candidate, RocketEscrowSection observed) {
         var markers = new java.util.HashSet<UUID>();
@@ -148,6 +175,10 @@ final class EscrowSettlementCapacity {
             // O1 freezes the complete operation permanently; until then reserve its ceiling.
             if (op.settlement().isEmpty()) { total += EscrowLimits.OP_BYTES - listBytes(EscrowCodec.operation(op)); }
             if (receiptIds.add(op.id())) { total += 2_048; }
+        }
+        for (var row : root.fluidAccounts()) {
+            // One full row charge even while O3 contains both the operation and the receipt.
+            total += EscrowFluidAccountCodec.SAVED.bytes() - listBytes(EscrowFluidAccountCodec.encode(row, EscrowFluidAccountCodec.SAVED).value());
         }
         // Occupied bytes are included in, not added to, each pre-reserved table slot.
         total += 128 * 1_024L;

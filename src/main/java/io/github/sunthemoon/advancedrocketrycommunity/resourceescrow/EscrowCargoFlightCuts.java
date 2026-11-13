@@ -286,8 +286,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         var handedOff = new EscrowFlightTables.Armed(a.ledger(), a.logical(), a.owner(), a.source(), a.epoch(), a.transfer(), a.serial(),
                 a.generation(), a.binding(), a.launch(), a.sourceEnvelope(), a.destinationEnvelope(), a.destination(), a.journal(),
                 a.anchor(), a.releaseGeneration(), EscrowFlightTables.Outcome.HANDED_OFF);
-        return new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(), root.records(), root.floors(), root.tombstones(),
-                a.serial(), root.rocketAuthorities(), List.of(handedOff));
+        return root.flightAuthority(a.serial(), root.rocketAuthorities(), List.of(handedOff));
     }
 
     static void requireGovernedReadback(EscrowLedger expectedLedger, CompoundTag expectedJournal, CompoundTag ledger, CompoundTag journal) {

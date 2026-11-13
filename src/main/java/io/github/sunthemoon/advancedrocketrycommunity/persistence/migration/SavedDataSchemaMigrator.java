@@ -86,6 +86,9 @@ public final class SavedDataSchemaMigrator {
         if (type == ManagedSavedDataType.ROCKET_TRANSFERS) {
             return migrateTransferJournal(type, source, schema);
         }
+        if (type == ManagedSavedDataType.RESOURCE_ESCROW) {
+            return new MigrationResult(MigrationStatus.MIGRATED, schema, migrateEscrow(source));
+        }
 
         if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
             try {
@@ -126,6 +129,19 @@ public final class SavedDataSchemaMigrator {
                 && source.contains(EPOCH_KEY, Tag.TAG_STRING)
                 && ManagedSavedDataType.STATION_PRE_RELEASE_EPOCH.equals(source.getString(EPOCH_KEY))
                 && !source.contains(ManagedSavedDataType.FIRST_STATION_WARP_KEY);
+    }
+
+    /** Explicit test seam; production reaches this only after the separately reviewed activation. */
+    public static CompoundTag migrateEscrow(CompoundTag source) {
+        try {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.upgradeRoot2(source);
+        } catch (io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementCapacity.ReservationFull full) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    "Escrow root-2 migration needs capacity before upgrade: " + full.getMessage(), full);
+        } catch (IllegalArgumentException invalid) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    "Escrow root-2 migration has invalid source or target: " + invalid.getMessage(), invalid);
+        }
     }
 
     /**

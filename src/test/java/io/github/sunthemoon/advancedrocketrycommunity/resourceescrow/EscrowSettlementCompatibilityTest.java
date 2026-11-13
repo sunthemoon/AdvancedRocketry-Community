@@ -28,6 +28,18 @@ class EscrowSettlementCompatibilityTest {
         assertTrue(installed.tombstones().stream().noneMatch(tag -> tag.getBoolean("released")));
     }
 
+    @Test void confirmationKeepsActorObservationAndTickChecksBeforeDuplicateCandidates() {
+        var intent = historicalIntent(duplicateCandidates());
+        assertEquals("Preview actor or digest changed", assertThrows(IllegalArgumentException.class,
+                () -> intent.confirm(EscrowTestFixtures.id(999), intent.digest(), 9, List.of())).getMessage());
+        assertEquals("Endpoint observations changed since preview", assertThrows(IllegalArgumentException.class,
+                () -> intent.confirm(intent.actor(), intent.digest(), 9, List.of())).getMessage());
+        assertEquals("Missing endpoints require observations at least 200 ticks apart", assertThrows(IllegalArgumentException.class,
+                () -> intent.confirm(intent.actor(), intent.digest(), 9, intent.observations())).getMessage());
+        assertEquals("Settlement has multiple physical candidates for one logical rocket", assertThrows(IllegalArgumentException.class,
+                () -> intent.confirm(intent.actor(), intent.digest(), 11, intent.observations())).getMessage());
+    }
+
     static EscrowLedger duplicateCandidates() {
         var first = EscrowSettlementCapacityTest.operation(1, 99, 0, true).withReason(EscrowReason.OTHER_STATE);
         var model = EscrowTestFixtures.operation(2); var old = first.destination();

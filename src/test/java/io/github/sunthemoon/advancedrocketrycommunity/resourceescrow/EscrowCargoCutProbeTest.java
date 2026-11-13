@@ -139,6 +139,19 @@ class EscrowCargoCutProbeTest {
         assertThrows(IllegalArgumentException.class, readback::run, "A different journal cannot qualify the cut");
     }
 
+    @Test void governedFixturePreservesExplicitAccountingSchemaAndRows() {
+        var initial = GovernedTransferFixture.create().record();
+        var arm = initial.nativeTransfer().orElseThrow().armed();
+        var planned = EscrowAccountingFormatTest.planned(EscrowTestFixtures.operation(1));
+        var root = new EscrowLedger(arm.ledger(), planned.issuedThrough(), 0, planned.records(), planned.floors(), planned.tombstones(),
+                0, List.of(), List.of(), 3, planned.fluidAccounts());
+        assertSame(root, EscrowCargoFlightCuts.governedRoot(root, initial, false));
+        var terminal = EscrowCargoFlightCuts.governedRoot(root, initial, true);
+        assertEquals(3, terminal.schema()); assertEquals(root.fluidAccounts(), terminal.fluidAccounts());
+        assertEquals(root.records(), terminal.records()); assertEquals(arm.serial(), terminal.issuedLaunchSerial());
+        assertEquals(terminal, EscrowCodec.decode(EscrowCodec.encode(terminal)));
+    }
+
     @Test void theGateNeedsTheHooksAScenarioAndAW142Case() {
         for (String scenario : List.of("start", "recover")) {
             assertTrue(EscrowCargoCutProbe.selected(true, scenario, "FS_O1_BEFORE"));

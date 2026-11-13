@@ -5,16 +5,32 @@ import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 
-/** Unreleased escrow root 2: direct replacement, no legacy reader or migration. */
+/** Exact root-2 reader and explicit root-3 accounting form. */
 public final class EscrowCodec {
     private EscrowCodec() { }
+    /** Lossless, pinned source validation; embedded encodings and their digest rules never change. */
+    public static CompoundTag upgradeRoot2(CompoundTag source) {
+        EscrowTags.require(source.getInt("schema_version") == 2, "Escrow migration requires root 2");
+        var legacy = decode(source);
+        EscrowTags.require(source.equals(encode(legacy)), "Noncanonical root-2 escrow source");
+        var target = new EscrowLedger(legacy.id(), legacy.issuedThrough(), legacy.writerGeneration(), legacy.records(), legacy.floors(),
+                legacy.tombstones(), legacy.issuedLaunchSerial(), legacy.rocketAuthorities(), legacy.armedFlights(), 3, List.of());
+        EscrowSettlementCapacity.preflight(target);
+        var encoded = encode(target);
+        EscrowTags.require(target.equals(decode(encoded)), "Escrow target round trip failed");
+        return encoded;
+    }
     static String digest(CompoundTag root) {
         EscrowTags.bound(root, EscrowLimits.ROOT_BYTES, 24, 131_072);
         return io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest.of(root, EscrowLimits.ROOT_BYTES, 24);
     }
     public static CompoundTag encode(EscrowLedger ledger) {
-        CompoundTag root = new CompoundTag(); root.putInt("schema_version", 2);
-        root.putString("format_epoch", EscrowLimits.EPOCH); root.putUUID("ledger_id", ledger.id());
+        CompoundTag root = new CompoundTag(); root.putInt("schema_version", ledger.schema());
+        root.putString("format_epoch", ledger.schema() == 2 ? EscrowAccountingFormat.ROOT_2_EPOCH : EscrowAccountingFormat.ROOT_3_EPOCH); root.putUUID("ledger_id", ledger.id());
+        if (ledger.schema() == 3) {
+            var rows = EscrowFluidAccountCodec.encodeRows(ledger.fluidAccounts(), EscrowFluidAccountCodec.SAVED);
+            EscrowTags.require(rows.ok(), "Invalid account rows"); root.put("fluid_accounts", rows.value());
+        }
         root.putLong("issued_through", ledger.issuedThrough()); root.putLong("writer_generation", ledger.writerGeneration());
         ListTag records = new ListTag(); ledger.records().forEach(op -> records.add(operation(op))); root.put("records", records);
         root.put("floors", list(ledger.floors()));
@@ -29,9 +45,15 @@ public final class EscrowCodec {
     }
     public static EscrowLedger decode(CompoundTag root) {
         EscrowTags.bound(root, EscrowLimits.ROOT_BYTES, 24, 131_072);
-        EscrowTags.fields(root, "schema_version", "format_epoch", "ledger_id", "issued_through", "writer_generation", "records", "floors", "tombstones", "issued_launch_serial", "rocket_authorities", "armed_flights");
-        EscrowTags.require(EscrowTags.integer(root, "schema_version") == 2
-                && EscrowLimits.EPOCH.equals(EscrowTags.string(root, "format_epoch")), "Unsupported escrow root");
+        EscrowTags.fields(root, "schema_version", "format_epoch", "ledger_id", "issued_through", "writer_generation", "records", "floors", "tombstones", "issued_launch_serial", "rocket_authorities", "armed_flights", "fluid_accounts");
+        int schema = EscrowTags.integer(root, "schema_version");
+        EscrowTags.require((schema == 2 || schema == 3) && (schema == 2 ? EscrowAccountingFormat.ROOT_2_EPOCH
+                : EscrowAccountingFormat.ROOT_3_EPOCH).equals(EscrowTags.string(root, "format_epoch")), "Unsupported escrow root");
+        EscrowTags.require(schema == 3 ? root.contains("fluid_accounts", net.minecraft.nbt.Tag.TAG_LIST) : !root.contains("fluid_accounts"), "Invalid account list presence");
+        var rows = schema == 3 ? EscrowFluidAccountCodec.decodeRows(root.getList("fluid_accounts", net.minecraft.nbt.Tag.TAG_COMPOUND), EscrowFluidAccountCodec.SAVED)
+                : EscrowFluidAccount.Result.ok(List.<EscrowFluidAccount.Row>of());
+        if (schema == 3) { EscrowTags.list(root, "fluid_accounts", EscrowFluidAccountCodec.MAX_ROWS); }
+        EscrowTags.require(rows.ok(), "Invalid account rows");
         var records = new ArrayList<EscrowOperation>();
         for (var tag : EscrowTags.list(root, "records", EscrowLimits.OPERATIONS)) { records.add(operation((CompoundTag) tag)); }
         var result = new EscrowLedger(EscrowTags.uuid(root, "ledger_id"), EscrowTags.number(root, "issued_through"),
@@ -39,12 +61,15 @@ public final class EscrowCodec {
                 sections(root, "floors", EscrowLimits.FLOORS), sections(root, "tombstones", EscrowLimits.TOMBSTONES).stream()
                         .map(EscrowReceiptCodec::decode).toList(), EscrowTags.number(root, "issued_launch_serial"),
                 sections(root, "rocket_authorities", 64).stream().map(EscrowFlightTables.Head::decode).toList(),
-                sections(root, "armed_flights", 64).stream().map(EscrowFlightTables.Armed::decode).toList());
-        EscrowSettlementIntent.reserve(result); return result;
+                sections(root, "armed_flights", 64).stream().map(EscrowFlightTables.Armed::decode).toList(), schema, rows.value());
+        EscrowSettlementIntent.reserve(result);
+        if (schema == 3) { EscrowSettlementCapacity.requireReservations(result); }
+        return result;
     }
     public static CompoundTag operation(EscrowOperation op) {
         requirePersistedBinding(op);
-        CompoundTag tag = new CompoundTag(); tag.putInt("schema_version", 2); tag.putUUID("op_id", op.id());
+        CompoundTag tag = new CompoundTag(); tag.putInt("schema_version", op.accountingBaseline() == null ? 2 : 3); tag.putUUID("op_id", op.id());
+        if (op.accountingBaseline() != null) { tag.putByteArray("accounting_baseline", java.util.HexFormat.of().parseHex(op.accountingBaseline())); }
         tag.putLong("seq", op.sequence()); tag.putUUID("owner", op.owner()); tag.putLong("created_tick", op.createdTick());
         tag.putString("kind", op.kind().name()); tag.putString("phase", op.phase().name());
         tag.putString("reason", op.reason().name()); tag.put("payload", op.payload()); tag.putString("payload_hash", op.payloadHash());
@@ -55,8 +80,11 @@ public final class EscrowCodec {
     }
     public static EscrowOperation operation(CompoundTag tag) {
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 16, 512);
-        EscrowTags.fields(tag, "schema_version", "op_id", "seq", "owner", "created_tick", "kind", "phase", "reason", "payload", "payload_hash", "source", "destination", "transfer_guard", "settlement", "native_binding");
-        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 2, "Unsupported escrow operation");
+        EscrowTags.fields(tag, "schema_version", "op_id", "seq", "owner", "created_tick", "kind", "phase", "reason", "payload", "payload_hash", "source", "destination", "transfer_guard", "settlement", "native_binding", "accounting_baseline");
+        int schema = EscrowTags.integer(tag, "schema_version");
+        EscrowTags.require(schema == 2 || schema == 3, "Unsupported escrow operation");
+        EscrowTags.require(schema == 3 ? tag.contains("accounting_baseline", net.minecraft.nbt.Tag.TAG_BYTE_ARRAY)
+                && tag.getByteArray("accounting_baseline").length == 32 : !tag.contains("accounting_baseline"), "Invalid baseline digest");
         var operation = new EscrowOperation(EscrowTags.uuid(tag, "op_id"), EscrowTags.number(tag, "seq"), EscrowTags.uuid(tag, "owner"),
                 EscrowTags.number(tag, "created_tick"), EscrowTags.enumeration(EscrowOperation.Phase.class, tag, "phase"),
                 EscrowTags.enumeration(EscrowReason.class, tag, "reason"), EscrowTags.compound(tag, "payload"),
@@ -64,7 +92,8 @@ public final class EscrowCodec {
                 endpoint(EscrowTags.compound(tag, "destination")), guard(EscrowTags.compound(tag, "transfer_guard")),
                 EscrowTags.enumeration(EscrowOperation.Kind.class, tag, "kind"),
                 tag.contains("settlement") ? EscrowTags.compound(tag, "settlement") : new CompoundTag(),
-                EscrowNativeBinding.decode(EscrowTags.compound(tag, "native_binding")));
+                EscrowNativeBinding.decode(EscrowTags.compound(tag, "native_binding")),
+                schema == 3 ? java.util.HexFormat.of().formatHex(tag.getByteArray("accounting_baseline")) : null);
         requirePersistedBinding(operation); return operation;
     }
     private static void requirePersistedBinding(EscrowOperation operation) {
@@ -128,9 +157,13 @@ public final class EscrowCodec {
     }
     private static void validateSettlementTombstone(CompoundTag tag) {
         EscrowTags.fields(tag, "schema_version", "op_id", "retired", "missing", "guards", "survivors", "before_choice", "payload_amount", "payload_hash",
-                "accounting_status", "decision_digest", "actor", "actor_name", "choice", "confirmed_tick", "released", "release_generation", "anchor_op");
-        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == EscrowSettlementTombstones.SCHEMA
-                && "UNKNOWN".equals(EscrowTags.string(tag, "accounting_status")), "Unsupported receipt schema or accounting");
+                "accounting_status", "decision_digest", "actor", "actor_name", "choice", "confirmed_tick", "released", "release_generation", "anchor_op", "accounting_digest");
+        EscrowTags.require(EscrowSettlementTombstones.settlementReceipt(tag), "Unsupported receipt schema");
+        boolean accounting = EscrowTags.integer(tag, "schema_version") == 4;
+        String status = EscrowTags.string(tag, "accounting_status");
+        EscrowTags.require(accounting ? status.equals("KNOWN") || status.equals("UNKNOWN") : status.equals("UNKNOWN"), "Unsupported receipt accounting");
+        EscrowTags.require(accounting == tag.contains("accounting_digest"), "Receipt digest presence mismatch");
+        if (accounting) { EscrowTags.digest(EscrowTags.string(tag, "accounting_digest")); }
         EscrowTags.uuid(tag, "anchor_op");
         EscrowTags.uuid(tag, "op_id"); EscrowTags.uuid(tag, "actor"); EscrowTags.digest(EscrowTags.string(tag, "payload_hash"));
         EscrowTags.digest(EscrowTags.string(tag, "decision_digest")); EscrowTags.enumeration(EscrowSettlementIntent.Choice.class, tag, "choice");

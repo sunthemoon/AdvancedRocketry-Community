@@ -42,6 +42,36 @@ class EscrowFlightAuthorityTest {
         assertEquals(cancelled, EscrowCodec.decode(EscrowCodec.encode(cancelled)));
     }
 
+    @Test void root3PlannedAndReceiptRowsSurviveArmBothFinishesAndPrune() {
+        var planned = EscrowAccountingFormatTest.planned(operation(2).withReason(EscrowReason.OTHER_STATE));
+        var rows = List.of(EscrowAccountingFormatTest.frozen(planned.records().get(0), EscrowFluidAccount.Knowledge.KNOWN));
+        var intent = EscrowAccountingFormatTest.intent(planned, rows);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(planned, rows), intent), intent);
+        var pending = operation(1).accounting(EscrowAccountingFormatTest.baseline(operation(1)));
+        var accounts = List.of(rows.get(0), new EscrowFluidAccount.Row(pending.id(), EscrowAccountingFormatTest.baseline(pending), null));
+        var logical = operation(2).guard().rocket();
+        var head = new EscrowFlightTables.Head(logical, id(99), operation(2).id(), 1, id(301), 2,
+                EscrowSignatureKind.FUEL_VECTOR_V1, hash(2), hash(3), 0, 0, EscrowFlightTables.Outcome.READY);
+        var root = released.accounting(List.of(pending), accounts).flightAuthority(0, List.of(head), List.of());
+        var launch = new EscrowFlightAuthority.Launch(logical, id(99), id(301), new RocketEscrowSection(root.id(), 2, List.of()),
+                hash(2), hash(3), id(401), id(501), hash(4), hash(5), hash(6), hash(7), new EscrowGuard(logical, null, 1, hash(8)), Set.of());
+        for (var outcome : List.of(EscrowFlightTables.Outcome.HANDED_OFF, EscrowFlightTables.Outcome.CANCELLED)) {
+            var armed = EscrowFlightAuthority.arm(root, launch, 1);
+            boolean handoff = outcome == EscrowFlightTables.Outcome.HANDED_OFF;
+            var finished = EscrowFlightAuthority.finish(armed, armed.armedFlights().get(0), outcome,
+                    handoff ? launch.destination() : launch.source(), handoff ? 0 : 2, hash(9), hash(10));
+            var pruned = EscrowFlightAuthority.prune(finished, finished.armedFlights().get(0));
+            for (var stage : List.of(root, armed, finished, pruned)) {
+                assertEquals(3, stage.schema()); assertEquals(accounts, stage.fluidAccounts());
+                assertEquals(root.records(), stage.records()); assertEquals(root.tombstones(), stage.tombstones());
+                assertEquals(root.floors(), stage.floors()); assertEquals(root.issuedThrough(), stage.issuedThrough());
+                assertEquals(root.writerGeneration(), stage.writerGeneration());
+                assertEquals(stage, EscrowCodec.decode(EscrowCodec.encode(stage)));
+            }
+            assertTrue(pruned.armedFlights().isEmpty()); assertEquals(1, pruned.issuedLaunchSerial());
+        }
+    }
+
     @Test void readyHandoffReplacesThePositiveIdentityWithoutEditingAnyReceipt() {
         var receipt = receipt(1); receipt.putBoolean("released", true); receipt.putLong("release_generation", 1);
         UUID logical = receipt.getList("guards", 10).getCompound(0).getUUID("rocket_id");

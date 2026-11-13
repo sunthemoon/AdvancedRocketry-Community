@@ -8,6 +8,14 @@ import org.junit.jupiter.api.Test;
 
 class EscrowFlightBenchmarkCeilingTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void accountingCeilingUsesTheAcceptedBlobAndStillExactlyOneMiB() {
+        var root = EscrowFlightBenchmarkCeiling.create(true);
+        assertEquals(1_048_576, RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root)));
+        assertEquals(7113, root.records().get(0).payload().getCompound("Tag").getByteArray("blob").length);
+        assertEquals(7120, root.records().get(63).payload().getCompound("Tag").getByteArray("blob").length);
+        assertEquals(64, root.fluidAccounts().size()); assertEquals(256, root.floors().size());
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));
+    }
     @Test void exactCeilingUsesTheRealEncoderButCannotBecomeAnAdmittedWorldRoot() {
         var root = EscrowFlightBenchmarkCeiling.create();
         assertEquals(1_048_576, RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root)));
