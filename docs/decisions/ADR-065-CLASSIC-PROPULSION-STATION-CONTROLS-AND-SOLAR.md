@@ -2349,6 +2349,70 @@ is in R-035 (the ledger), R-039 (the pre-start check) and R-042 (the bay's NOT_L
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W357 to W362 implementation note: per-fluid signed accounting, Slices A and B, not active (Root decisions R440 to R449)
+
+This note records mechanics and Root decisions; it accepts no risk and activates nothing. R-035 lists per-fluid
+signed accounting as needed before admission. The owner asked on 2026-11-13 for it to be implemented before any switch
+decision ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md)).
+
+- **Design.** [W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md). A Codex session wrote it. A read-only
+  Claude review (W357R) approved it with changes, and W357F wrote those changes in.
+  - Each new fluid fill and fluid cargo transfer keeps a bounded typed baseline and a signed account per fluid.
+  - Fuel observes the loader tank and both propulsion banks; cargo observes only the tank its cursor names.
+  - A key is the fluid ID plus a tag digest.
+  - Only a zero residual completes automatically. A non-zero residual, including a half-applied transfer, is recorded
+    only as a signed discrepancy the operator confirms by digest. An unknown amount is never zero.
+  - Item kinds get no count account in v1.8, because R-035 names only fluids.
+- **Slice A (W361, a Claude session).** The pure model `EscrowFluidAccount` and the row codec
+  `EscrowFluidAccountCodec`, with real-codec measurements.
+  - The largest component that can decode has 14 members.
+  - Root set the row ceiling at 2,048 bytes, depth 5, 65 nodes and 14 members (R443).
+  - Capacity counts moved only by the deliberate format growth were re-measured and re-pinned under R441's rule:
+    55, 53 and 54 concurrent fluid operations in place of 62, 60 and 61, and the 1 MiB benchmark blob at 7,113 bytes.
+    No ceiling, limit or assertion purpose changed.
+  - The 256-coordinate saturation families do not move, because they never touch the ledger.
+- **Slice B (W362, a Codex session; follow-ups W362F and W362G).** The saved forms are:
+  - escrow ledger root 3 with `fluid_accounts`;
+  - fluid operation schema 3 with `accounting_baseline`;
+  - intent schema 3 with `account_commitment`;
+  - receipt schema 4 with `accounting_digest` at wire key `f1b`.
+
+  The other changes:
+  - Every receipt-schema comparison in `EscrowSettlementTombstones` and `EscrowSettlementPruning` uses one shared
+    predicate that accepts schemas 3 and 4.
+  - The migration from root 2 is a dedicated, lossless branch with separately pinned epochs and a split baseline
+    check. It refuses root 1, a non-canonical source, an invalid target, a full target and `BACKUP_LIMIT`, each
+    keeping the original file.
+  - Flight-authority copies keep the schema and the rows (W362R finding 1).
+  - Root-3 decoding checks the fixed reservation arithmetic but not hypothetical settlement previews (finding 2).
+  - The 20 newly reachable account types passed a written initializer audit before entering the static relaunch
+    inventory; the measured 55-class preload list is unchanged.
+- **Activation.** `EscrowAccountingFormat.ENABLED` is false and a test pins it. While it is false, the writer emits
+  root 2, the pre-start check refuses root 3 as a future schema with the bytes unchanged and no backup, and no world
+  migrates. Before Root turns it on, in a separate reviewed commit:
+  - Slices C and D wire native capture, the C2, C6 and L2 checks, operator settlement and diagnostics;
+  - Slice E updates the native oracles, including three gated probe comparisons with `accounting_status`;
+  - the escrow-only migration and the old-JAR refusal of root 3 are run natively.
+
+  Candidate C4 then carries the format. No production admission switch changes.
+- **Evidence so far.**
+  - Slice A: 6,508 unit tests passed (W361), and branch regression 43354492289 passed.
+  - Slice B with its follow-ups: 6,545 unit tests passed, with 0 failures.
+  - After W361R's findings (W362H): 6,552 unit tests passed, and branch regression 43379196324 passed at the
+    integrated head `d957d7dce`.
+  - The reviews are:
+    - W357R of the design (Claude; APPROVE-WITH-CHANGES, SHA-256 `21f26acc…ddc14`);
+    - W361R of Slice A (Codex; APPROVE-WITH-CHANGES, SHA-256 `86ff4668…0ed5b`);
+    - W362R of Slice B (Claude; APPROVE-WITH-CHANGES, SHA-256 `710fc560…d76de2`).
+
+    W357F, W362G and W362H closed their findings. The largest frozen new-format component is 13 members, and the
+    14-member list bound and the 2,048-byte row ceiling are kept as conservative bounds.
+
+  The register text is R-035's accounting paragraph. R-044 gains the root-3 refusal as a second downgrade reason, and
+  the [R044-SIGNOFF-DRAFT](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) note covers it.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table

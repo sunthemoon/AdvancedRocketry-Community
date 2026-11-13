@@ -129,7 +129,8 @@ What is still open:
   W357's accounting design (ledger root 3, about 10 to 14.5 engineer-days) passed W357R's read-only review with
   changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
   W361 delivered its Slice A (row ceiling 2,048 bytes; 54 instead of 61 concurrent fluid operations; R443), which
-  W361R reviewed (R447). Slice B (W362) built the saved form and migration behind an activation constant pinned off;
+  W361R reviewed (R447). Slice B (W362) built the saved form and migration behind an activation constant pinned off
+  (Slices A and B merged as `b7fd85f74`, not active, R449);
   W362R approved it with two changes needed before activation (R446), and W362F finishes its relaunch inventory
   audit (R445). W358 (merged, R446) built six of the uncovered bay rows natively and
   found that a bay on a governed (escrow-fuelled) flight gets no D0 decision, which W363 fixes (R444). W360 builds
