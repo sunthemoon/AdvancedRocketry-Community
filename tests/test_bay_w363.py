@@ -76,8 +76,10 @@ class Oracles(unittest.TestCase):
             self.assertEqual([case], row["cases"])
             self.assertEqual("scripts/run_v180_bay_uncovered.py", row["runner"])
             self.assertEqual(["--tranche", case], row["arguments"])
-        # The existing W358 tranche names are unchanged by the simplified key expression.
-        self.assertEqual([case for case in runner.CASES], list(runner.TRANCHES))
+        # R451: W358_B6_BOUND stays a selectable case but is no campaign tranche; every other case is one.
+        self.assertIn("W358_B6_BOUND", runner.CASES)
+        self.assertNotIn("forced-W358-B6-BOUND", rows)
+        self.assertEqual([case for case in runner.CASES if case != "W358_B6_BOUND"], list(runner.TRANCHES))
 
 
 if __name__ == "__main__":

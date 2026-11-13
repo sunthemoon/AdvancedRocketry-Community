@@ -33,7 +33,10 @@ CASES = {
     "W363_B17_UNLOADED": ("B17.3",),
     "W363_B17_UNLOADED_RESTART": ("B17.3",),
 }
-TRANCHES = {case: [case] for case in CASES}
+# W363 (Root decision R451): W358_B6_BOUND is not a campaign tranche. Its oracle requires the runtime reason after a
+# restart, which contradicts W128 (the rejection map is RAM only), and it never passed. W363_B6_GOVERNED is B6.8's
+# evidence. The case and its fixture stay selectable with --case.
+TRANCHES = {case: [case] for case in CASES if case != "W358_B6_BOUND"}
 HEALTHY_ORIGIN = (40, 2, 8)  # two chunks east of the forced-stop fixture's origin
 B6 = ("W358_B6_BOUND", "W363_B6_GOVERNED")
 END_HELD = "ARCE_RELEASE_BAY_END_HELD transfer={transfer} logical={logical}"

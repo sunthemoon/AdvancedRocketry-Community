@@ -93,7 +93,7 @@ class Oracles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE):
             plan = campaign.make_plan(arguments(Path(directory)))
         rows = [r for r in plan["families"] if r["name"].startswith("forced-W358-")]
-        self.assertEqual(7, len(rows))
+        self.assertEqual(6, len(rows))  # W363 (R451): W358_B6_BOUND left the campaign selection
         for row in rows:
             command = row["command"]
             self.assertEqual(SOURCE, command[command.index("--candidate-commit") + 1])
