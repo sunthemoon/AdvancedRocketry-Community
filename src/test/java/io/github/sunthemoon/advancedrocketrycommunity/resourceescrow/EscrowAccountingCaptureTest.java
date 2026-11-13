@@ -92,6 +92,14 @@ class EscrowAccountingCaptureTest {
 
     @Test void changedPlanOrCollateralBankIsRefusedWithoutChangingAnyCapture() {
         var f = fuel(false); var before = f.before().copy(); var after = f.after().copy(); var source = f.deviceBefore().copy();
+        var sourceTank = EscrowLoaderEndpoint.root(f.deviceBefore()).tank();
+        var sourceAfter = EscrowLoaderEndpoint.root(f.deviceAfter()).tank();
+        var fuelBefore = RocketFlightNbtCodec.decode(f.before().getCompound("flight")).data().orElseThrow().fuel();
+        var fuelAfter = RocketFlightNbtCodec.decode(f.after().getCompound("flight")).data().orElseThrow().fuel();
+        assertEquals(f.admission().account(), EscrowAccountingCapture.fuel(f.admission().operation(), f.admission().before(),
+                sourceTank, sourceAfter, fuelBefore, fuelAfter).account());
+        assertThrows(IllegalArgumentException.class, () -> EscrowAccountingCapture.fuel(f.admission().operation(), f.admission().before(),
+                sourceTank, sourceAfter.withAmount(4899), fuelBefore, fuelAfter));
         var changed = f.after().copy(); var flight = RocketFlightNbtCodec.decode(changed.getCompound("flight")).data().orElseThrow();
         changed.put("flight", RocketFlightNbtCodec.encode(EscrowNativeEnvelope.fuelOnly(flight,
                 flight.fuel().withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 99))));

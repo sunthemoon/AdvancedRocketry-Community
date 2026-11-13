@@ -43,7 +43,8 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
             // The barrier supplies an AnvilRecordReader-bounded detached root. No live entity/Level crosses threads.
             var observed = EscrowSettlementDisk.ordinary(slot, expected.settlement().endpoint(), ledger,
                     capture ? captureWitness : null, operations);
-            accountingMismatch = !expected.fluids().equals(observed.fluids());
+            // Missing endpoints remain an unproved/unknown observation, never an invented zero vector.
+            accountingMismatch = !observed.settlement().missing() && !expected.fluids().equals(observed.fluids());
             if (capture) { return expected.equals(observed); }
             readback = observed;
             return true; // Comparison is owner-thread authority, not the IO worker's boolean.

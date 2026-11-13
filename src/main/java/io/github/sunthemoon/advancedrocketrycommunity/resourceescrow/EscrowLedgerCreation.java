@@ -14,6 +14,7 @@ final class EscrowLedgerCreation {
         if (EscrowTransferAdmission.invalid(op)) { return EscrowCoordinator.Transfer.INVALID; }
         if (op.sequence() != 1) { return EscrowCoordinator.Transfer.STALE; }
         var empty = EscrowLedger.empty(ledger);
+        if (empty.schema() == 3 && op.kind().fluid() && capture.account() == null) { return EscrowCoordinator.Transfer.INVALID; }
         var refusal = op.kind().cargo() ? EscrowTransferAdmission.refusal(empty, List.of(), capture)
                 : EscrowTransferPreparation.fillRefusal(empty, List.of(), capture).map(EscrowCoordinator.Transfer::of);
         if (refusal.isPresent()) { return refusal.get(); }

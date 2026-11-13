@@ -79,9 +79,9 @@ final class EscrowAccountingCapture {
     /** Fuel preparation already owns these immutable native values; do not decode the captured flight a second time. */
     static EscrowNativeBinding.Admission fuel(EscrowOperation op, RocketEscrowSection wrapper,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank source,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank sourceAfter,
             RocketFuelState before, RocketFuelState after) {
-        return bind(op, wrapper, tank(source.encode()), fuel(before),
-                tank(source.withAmount(source.amount() - op.payload().getInt("Amount")).encode()), fuel(after));
+        return bind(op, wrapper, tank(source.encode()), fuel(before), tank(sourceAfter.encode()), fuel(after));
     }
 
     private static EscrowNativeBinding.Admission bind(EscrowOperation op, RocketEscrowSection wrapper,

@@ -260,7 +260,8 @@ public final class EscrowLoaderAdmission {
                 && EscrowReconciliationChange.rocket(ledger, op, projected).getCompound("wrapper").equals(afterWrapper.encode())
                 && loader.saveWithFullMetadata().equals(sourceBefore), "Native capture changed during admission");
         var admission = coordinator != null && coordinator.ledger().schema() == 3 || EscrowAccountingFormat.ENABLED
-                ? EscrowAccountingCapture.fuel(op, beforeWrapper, tank, before, after)
+                ? EscrowAccountingCapture.fuel(op, beforeWrapper, EscrowLoaderEndpoint.root(sourceBefore).tank(),
+                        EscrowLoaderEndpoint.root(sourceAfter).tank(), before, after)
                 : new EscrowNativeBinding.Admission(op, beforeWrapper);
         return new Capture(admission, null);
     }

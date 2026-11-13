@@ -168,6 +168,10 @@ class EscrowAccountingReconciliationTest {
         var f = EscrowAccountingCaptureTest.fuel(false); var root = EscrowAccountingCaptureTest.empty();
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("queued.dat"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            assertEquals(EscrowCoordinator.Transfer.INVALID, coordinator.prepareTransfer(
+                    new EscrowNativeBinding.Admission(f.admission().operation(), f.admission().before()), ignored -> fail()));
+            assertEquals(1, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
+            assertTrue(coordinator.pendingAdmissions().isEmpty()); assertTrue(writer.idle()); assertFalse(data.isDirty());
             assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(f.admission(), ignored -> fail()));
             assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
             var candidate = coordinator.pendingLedger(); assertEquals(List.of(f.admission().account()), candidate.fluidAccounts());
@@ -229,6 +233,9 @@ class EscrowAccountingReconciliationTest {
         assertTrue(CompletableFuture.supplyAsync(() -> reader.test(changed)).join());
         assertFalse(reader.confirmed()); assertEquals(EscrowReason.ACCOUNTING_MISMATCH, reader.reason());
         assertTrue(CompletableFuture.supplyAsync(() -> reader.test(slot)).join()); assertTrue(reader.confirmed());
+        var missing = slot.copy(); missing.put(endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "Entities" : "block_entities", new net.minecraft.nbt.ListTag());
+        assertTrue(CompletableFuture.supplyAsync(() -> reader.test(missing)).join()); assertFalse(reader.confirmed());
+        assertEquals(EscrowReason.NONE, reader.reason(), "An unknown endpoint is not a known numeric mismatch");
     }
     static CompoundTag slot(EscrowEndpoint endpoint, CompoundTag envelope) {
         var slot = new CompoundTag(); slot.putInt("xPos", endpoint.x() >> 4); slot.putInt("zPos", endpoint.z() >> 4);
