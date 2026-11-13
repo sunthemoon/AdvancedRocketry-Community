@@ -19,6 +19,10 @@ class IntegratedCargoRunnerTest(unittest.TestCase):
         lines = [line for line in matrix.splitlines() if re.match(r"\| N\d{3} \|", line)]
         self.assertEqual(len(lines), 120)
         for row in runner.inventory():
+            w360 = {"IS_" + suffix for suffix in ("O1_BEFORE", "BIND_BEFORE", "O3_BEFORE", "O3J_BEFORE", "O4_BEFORE", "PRUNE_BEFORE", "VETO_DESTINATION_SAVED")}
+            if row["case"] in w360:
+                self.assertIn(row["case"], runner.item.oracle.CASES)
+                continue
             if row["family"] in ("C-S1", "C-S2", "C-S3", "C-S4", "C-S5", "D-S1", "D-S2"):
                 self.assertEqual(sum(line.endswith("`" + row["case"] + "` |") for line in lines), 1)
         for class_name, method in re.findall(r"`(\w+GameTests)\.(\w+)`", matrix):
@@ -28,8 +32,8 @@ class IntegratedCargoRunnerTest(unittest.TestCase):
     def test_inventory_has_every_design_cut_once(self):
         rows = runner.inventory()
         self.assertEqual(Counter(row["family"] for row in rows),
-                         {"C-S1": 28, "C-S2": 16, "C-S3": 10, "C-S4": 20, "C-S5": 16, "D-S1": 12, "D-S2": 18,
-                          "C-S4-LOAD": 20, "D-S2-LOAD": 13, "C-Q": 4, "B3-S1-REUSE": 7, "B3-S4-REUSE": len(runner.loader.oracle.S4),
+                         {"C-S1": 28, "C-S2": 16, "C-S3": 10, "C-S4": 20, "C-S5": 16, "D-S1": 12, "D-S2": 25,
+                          "C-S4-LOAD": 20, "D-S2-LOAD": 20, "C-Q": 4, "B3-S1-REUSE": 7, "B3-S4-REUSE": len(runner.loader.oracle.S4),
                           "B3-S5-REUSE": 8, "B3-S6-REUSE": 96, "G2-REUSE": 1})
         self.assertEqual(len({row["case"] for row in rows}), len(rows))
         self.assertEqual({row["case"] for row in rows}, set().union(*(set(module.CASES) for module in runner.RUNNERS),

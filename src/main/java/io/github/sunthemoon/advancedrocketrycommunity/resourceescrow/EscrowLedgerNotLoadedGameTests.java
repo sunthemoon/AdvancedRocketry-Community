@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.Rocket
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
@@ -108,6 +110,33 @@ public final class EscrowLedgerNotLoadedGameTests {
         withCargoDevice(helper, NOT_LOADED, device -> helper.assertTrue(device.escrowLocked() && device.protectedFromRemoval()
                         && device.deviceRefusal() == RocketCargoStatus.ESCROW_PENDING,
                 "An unmarked cargo device was not held: " + device.deviceRefusal()));
+    }
+
+    @GameTest(template = "empty", batch = NOT_LOADED, timeoutTicks = TIMEOUT)
+    public static void notLoadedItemLoaderIsHeld(GameTestHelper helper) { withItemDevice(helper, RocketCargoRole.LOAD); }
+
+    @GameTest(template = "empty", batch = NOT_LOADED, timeoutTicks = TIMEOUT)
+    public static void notLoadedItemUnloaderIsHeld(GameTestHelper helper) { withItemDevice(helper, RocketCargoRole.UNLOAD); }
+
+    private static void withItemDevice(GameTestHelper helper, RocketCargoRole role) {
+        withRocket(helper, NOT_LOADED, rocket -> {
+            var level = helper.getLevel(); var at = helper.absolutePos(DEVICE);
+            var block = role == RocketCargoRole.LOAD ? ModBlocks.ROCKET_ITEM_LOADER : ModBlocks.ROCKET_ITEM_UNLOADER;
+            level.setBlockAndUpdate(at, block.get().defaultBlockState());
+            try {
+                var device = (RocketItemCargoBlockEntity) Objects.requireNonNull(level.getBlockEntity(at));
+                var root = RocketItemCargoRoot.placed(rocket.ownerId().orElseThrow(), UUID.randomUUID(), role).withBinding(binding(rocket));
+                var tag = new CompoundTag(); tag.put(RocketItemCargoRoot.KEY, root.encode()); device.load(tag);
+                var before = device.saveWithoutMetadata();
+                helper.assertTrue(device.root().orElseThrow().escrow().equals(RocketEscrowSection.neutral()), "The item fixture carries escrow history");
+                helper.assertTrue(device.escrowLocked() && device.protectedFromRemoval()
+                                && device.deviceRefusal() == RocketCargoStatus.ESCROW_PENDING,
+                        "An unmarked item " + role + " device was not held: " + device.deviceRefusal());
+                helper.assertTrue(before.equals(device.saveWithoutMetadata()), "Protective reads mutated the item device");
+            } finally {
+                level.removeBlockEntity(at); level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        });
     }
 
     @GameTest(template = "empty", batch = NOT_LOADED, timeoutTicks = TIMEOUT)

@@ -21,6 +21,15 @@ def settlement(cut_ledger, cut_ends, final_ledger, final_ends, **extra):
     return dict(cut=(cut_ledger, cut_ends), final=(final_ledger, final_ends), **extra)
 
 CASES = {
+    "IS_O1_BEFORE": settlement(dict(records=["REPAIR"], intent=False, receipts=[], heads=0), APPLIED,
+                               dict(records=["REPAIR"], intent=False, receipts=[], heads=0), APPLIED),
+    "IS_BIND_BEFORE": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED),
+    "IS_O3_BEFORE": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "IS_O3J_BEFORE": settlement(RECEIPT, NORMALIZED, RELEASED, NORMALIZED, cut_journal=1),
+    "IS_O4_BEFORE": settlement(RECEIPT, APPLIED, RELEASED, PRUNED),
+    "IS_PRUNE_BEFORE": settlement(RELEASED, APPLIED, RELEASED, PRUNED),
+    "IS_VETO_DESTINATION_SAVED": settlement(ACCEPT, dict(rocket=(10, 0, 0, False), device=(64, 1, 1)),
+                                          ACCEPT, dict(rocket=(10, 0, 0, False), device=(64, 1, 1))),
     "IS_O1_AFTER": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
     **{f"IS_O2_{side}_{when}": settlement(ACCEPT, APPLIED, RELEASED, PRUNED)
        for side in ("ROCKET", "DEVICE") for when in ("BEFORE", "AFTER")},
@@ -44,6 +53,9 @@ for _case, _spec in tuple(CASES.items()):
     CASES[_case.replace("IS_", "IS_LOAD_", 1)] = dict(
         _spec, load=True, cut=(_spec["cut"][0], _load_ends(_spec["cut"][1])),
         final=(_spec["final"][0], _load_ends(_spec["final"][1])))
+    if _case == "IS_VETO_DESTINATION_SAVED":
+        CASES["IS_LOAD_VETO_DESTINATION_SAVED"]["cut"] = CASES["IS_LOAD_VETO_DESTINATION_SAVED"]["final"] = (
+            ACCEPT, dict(rocket=(64, 1, 1, True), device=(10, 0, 0)))
 
 def require(condition, message):
     if not condition:
@@ -176,7 +188,7 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
                     and marker["role"] == role and marker["epoch_after"] == endpoint["epoch"],
                     "A marker differs from its operation, sequence, role or epoch")
     raw = (rocket["cargo"] if rocket else 0) + (device["amount"] if device else 0)
-    # 6,000 mB can exist only as raw mixed stores while a record still locks both endpoints.
+    # A mixed pre/post store can contain 74 raw items, but never a released surplus.
     require(raw <= 70 or root["records"], "More than 70 items became spendable")
     if rocket and device:
         require(device["logical"] == rocket["logical"] and device["owner"] == rocket["owner"], "Device binding or owner changed")

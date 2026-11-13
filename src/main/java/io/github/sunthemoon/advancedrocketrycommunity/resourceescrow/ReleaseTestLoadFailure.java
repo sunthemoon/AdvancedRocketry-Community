@@ -34,11 +34,35 @@ public final class ReleaseTestLoadFailure {
             case REFUSED -> com.mojang.logging.LogUtils.getLogger().warn(
                     "ARCE_RELEASE_LOAD_FAILURE refused type={}: the release-test gate is closed", type);
             case INJECT -> {
+                if (type.name().equals(System.getProperty("advancedrocketrycommunity.releaseTestPresenceFailure", ""))) {
+                    awaitUnknown(server, type);
+                }
                 com.mojang.logging.LogUtils.getLogger().info("ARCE_RELEASE_LOAD_FAILURE type={} injected=true", type);
                 throw new IllegalStateException("Release-test injected load failure of " + type.dataName());
             }
             default -> { }
         }
+    }
+
+    /**
+     * W360: the ordinary pre-start validation has finished before vanilla invokes this loader. The external harness
+     * waits for this marker, holds a reversible delete-pending handle, then releases it after shutdown. Wait for the
+     * actual no-follow stat to fail, rather than replacing the production presence result. All gates above still apply.
+     */
+    private static void awaitUnknown(MinecraftServer server, ManagedSavedDataType type) {
+        var file = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("data").resolve(type.fileName());
+        com.mojang.logging.LogUtils.getLogger().info("ARCE_RELEASE_PRESENCE_WAIT type={}", type);
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(30);
+        while (System.nanoTime() < deadline) {
+            if (io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.presence(file)
+                    == io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Presence.UNKNOWN) {
+                com.mojang.logging.LogUtils.getLogger().info("ARCE_RELEASE_PRESENCE_UNKNOWN type={}", type);
+                return;
+            }
+            try { Thread.sleep(10); }
+            catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
+        }
+        throw new IllegalStateException("Release-test UNKNOWN-presence rendezvous exceeded 30 seconds");
     }
 
     /** The whole decision, without side effects; the gate is consulted only when everything else selects the type. */

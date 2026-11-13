@@ -174,6 +174,11 @@ public final class EscrowRuntime {
     }
     boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
     boolean cargoStoreAllowed(EscrowOperation op, EscrowEndpoint endpoint) {
+        // W360: the existing item fixture's store filter is a release-test-only seam, like the cargo-cut filter below.
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
+            var item = itemCutProbe;
+            if (item != null && !item.permitsStore(op, endpoint)) { return false; }
+        }
         var cuts = cargoCuts;
         return (cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint)) && (cuts == null || cuts.permitsStore(op, endpoint));
     }
