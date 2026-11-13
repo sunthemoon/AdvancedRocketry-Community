@@ -40,10 +40,18 @@ final class EscrowSettlementCapacity {
                 preview(prospective, component, selected.id(), false);
             }
         }
+        requireReservation(prospective, candidate != null);
+    }
+    /** Load/write validation: arithmetic reservations only, never a hypothetical operator preview. */
+    static void requireReservations(EscrowLedger root) {
+        EscrowFloors.preflight(root);
+        requireReservation(root, false);
+    }
+    private static void requireReservation(EscrowLedger prospective, boolean admission) {
         var reservation = reservation(prospective);
         // Fill admission always leaves room for one new retirement, even with no retained floor.
         // Only new work consumes that headroom; this is not an autosave/load restriction.
-        int headroom = candidate == null ? 0 : 1;
+        int headroom = admission ? 1 : 0;
         if (prospective.records().size() + headroom > EscrowLimits.OPERATIONS
                 || reservation.receipts() + headroom > EscrowLimits.TOMBSTONES
                 || reservation.bytes() + headroom * FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES) {

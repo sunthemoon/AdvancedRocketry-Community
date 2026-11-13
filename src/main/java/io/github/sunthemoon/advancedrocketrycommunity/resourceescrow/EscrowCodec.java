@@ -63,7 +63,7 @@ public final class EscrowCodec {
                 sections(root, "rocket_authorities", 64).stream().map(EscrowFlightTables.Head::decode).toList(),
                 sections(root, "armed_flights", 64).stream().map(EscrowFlightTables.Armed::decode).toList(), schema, rows.value());
         EscrowSettlementIntent.reserve(result);
-        if (schema == 3) { EscrowSettlementCapacity.preflight(result); }
+        if (schema == 3) { EscrowSettlementCapacity.requireReservations(result); }
         return result;
     }
     public static CompoundTag operation(EscrowOperation op) {
