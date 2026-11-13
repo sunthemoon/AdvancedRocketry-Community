@@ -114,15 +114,18 @@ def check_unknown(value):
 
 
 def launch(run, fixture):
-    transfer = str(uuid.uuid4())
+    accepted = []
     def attempt():
+        transfer = str(uuid.uuid4())
         line = run.send(CONTROL + f"launch {fixture['logical']} {transfer}", re.compile(r"ARCE_W358_LAUNCH "))
         result = fields(line, "ARCE_W358_LAUNCH ")["result"]
         require(result in ("SUCCESS", "JOURNAL_PENDING", "DESTINATION_LOADING"), "Launch fixture refused: " + line)
+        if result != "DESTINATION_LOADING":
+            accepted.append(transfer)
         return result
-    # Governed launches warm the destination before beginning F1. Reuse exactly the same request, not another flight.
+    # DESTINATION_LOADING is a completed refusal in the request ledger. A retry needs a fresh request ID.
     until(run, attempt, lambda v: v in ("SUCCESS", "JOURNAL_PENDING"), "Destination warm-up never completed")
-    return transfer
+    return accepted[0]
 
 
 def unchanged(status, fixture):
