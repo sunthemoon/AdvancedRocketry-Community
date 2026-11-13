@@ -121,7 +121,13 @@ What is still open:
   the four families fixed after C2, and `cargo-G2-REUSE` and `w336-downgrade` again failed only their
   historical-JAR downgrade checks (R431). C3's hosted run had no failure among 1,859 GameTests. Root filled the
   owner's per-switch report from C3
-  ([C3-SWITCH-REPORT](../work/v1.8.0-root-queue/records/C3-SWITCH-REPORT.md)); nothing in it is accepted. W327's
+  ([C3-SWITCH-REPORT](../work/v1.8.0-root-queue/records/C3-SWITCH-REPORT.md)); nothing in it is accepted. On
+  2026-11-13 the owner kept all five switches off and asked for per-fluid signed accounting and the uncovered rows
+  first, isolated plans for X01 to X03
+  ([X01-X03-ISOLATION-PLAN](../work/v1.8.0-root-queue/records/X01-X03-ISOLATION-PLAN.md)), and the final campaign
+  plan ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md), R432 to R438):
+  W357 designs the accounting, W358 builds the uncovered bay rows, W359 drafts the campaign plan, and after W360's
+  cargo rows the next hosted build is candidate C4, on which every family runs again. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
@@ -535,6 +541,8 @@ What is still open:
   three downgrade rows, and `w336-downgrade` failed W176's whole-world oracle on all three old-JAR starts (43 other
   world files unchanged), while both later candidate starts on the restored backup logged no ERROR. R428, R429 and
   R431 classify this as the known R-044 residual (R138), not a new finding; both stay failed until the owner
-  decides R-044.
+  decides R-044. On 2026-11-13 the owner asked for sign-off text on the complete-backup recovery with these
+  failures kept; Root's draft is
+  [R044-SIGNOFF-DRAFT](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) (R433), not signed.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
