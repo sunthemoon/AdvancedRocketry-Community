@@ -126,7 +126,8 @@ What is still open:
   first, isolated plans for X01 to X03
   ([X01-X03-ISOLATION-PLAN](../work/v1.8.0-root-queue/records/X01-X03-ISOLATION-PLAN.md)), and the final campaign
   plan ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md), R432 to R438):
-  W357 designs the accounting, W358 builds the uncovered bay rows, W359 drafts the campaign plan, and after W360's
+  W357 designs the accounting, W358 builds the uncovered bay rows, W359's draft campaign plan is
+  [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and after W360's
   cargo rows the next hosted build is candidate C4, on which every family runs again. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
