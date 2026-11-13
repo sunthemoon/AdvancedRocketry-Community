@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -149,9 +150,40 @@ class EscrowFluidAccountSizeTest {
 
     private record Frozen1(EscrowSettlementIntent intent, EscrowLedger root) { }
 
+    private static EscrowLedger accountingRoot(List<EscrowOperation> operations) {
+        var rows = operations.stream().map(op -> {
+            var key = EscrowFluidAccountCodec.key(op.payload()).value(); int quantity = op.payload().getInt("Amount");
+            return new Row(op.id(), new Baseline(Scope.FUEL, List.of(new Entry(key, 5000,
+                    op.destination().beforeEpoch() * quantity, -quantity, quantity))), null);
+        }).toList();
+        var ops = operations.stream().map(op -> op.accounting(rows.stream().filter(row -> row.operation().equals(op.id()))
+                .findFirst().orElseThrow().baseline())).toList();
+        return new EscrowLedger(id(500), ops.size(), 0, operations, List.of(), List.of()).accounting(ops, rows);
+    }
+
+    private static List<Row> frozenAccounts(EscrowLedger root, boolean present) {
+        var members = new ArrayList<EscrowFluidAccount.Member>();
+        var finals = new LinkedHashMap<EscrowFluidAccount.UnitRef, Optional<EscrowFluidAccount.Vector>>();
+        for (var op : root.records()) {
+            var base = root.fluidAccounts().stream().filter(row -> row.operation().equals(op.id())).findFirst().orElseThrow().baseline();
+            var source = new EscrowFluidAccount.UnitRef(op.source().key(), "tank");
+            var destination = new EscrowFluidAccount.UnitRef(op.destination().key(), "fuel");
+            members.add(new EscrowFluidAccount.Member(op.id(), op.sequence(), source, destination, base, false));
+            finals.put(source, present ? Optional.of(base.sourceAfter()) : Optional.empty());
+            finals.put(destination, present ? Optional.of(base.destinationAfter()) : Optional.empty());
+        }
+        var settled = EscrowFluidAccount.settle(members, finals);
+        assertEquals(Status.OK, settled.status());
+        return root.records().stream().map(op -> settled.value().rows().get(op.id())).toList();
+    }
+
     /** Runs the real preview, confirmation and O1 freeze; any refusal means the component does not fit. */
     private static Frozen1 freeze(List<EscrowOperation> ops, boolean present) {
-        var root = new EscrowLedger(id(500), ops.size(), 0, ops, List.of(), List.of());
+        return freeze(ops, present, false);
+    }
+    private static Frozen1 freeze(List<EscrowOperation> ops, boolean present, boolean accounting) {
+        var root = accounting ? accountingRoot(ops) : new EscrowLedger(id(500), ops.size(), 0, ops, List.of(), List.of());
+        var rows = accounting ? frozenAccounts(root, present) : List.<Row>of();
         var observations = new ArrayList<EscrowSettlementIntent.Observation>();
         for (var chain : EscrowPrefix.chains(ops).values()) {
             var first = chain.get(0).endpoint(); var last = chain.get(chain.size() - 1).endpoint();
@@ -164,43 +196,49 @@ class EscrowFluidAccountSizeTest {
         }
         var preview = EscrowSettlementIntent.preview(root, ops.get(0).id(), present ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
                 : EscrowSettlementIntent.Choice.ABANDON, id(700), "a", 0, observations);
+        if (accounting) { preview = preview.accounting(rows); }
         var intent = preview.confirm(preview.actor(), preview.digest(), 200, observations);
-        return new Frozen1(intent, intent.freeze(root));
+        return new Frozen1(intent, intent.freeze(root, rows));
     }
 
     private static int largest(java.util.function.IntFunction<List<EscrowOperation>> build, boolean present, String label) {
+        return largest(build, present, label, false);
+    }
+    private static int largest(java.util.function.IntFunction<List<EscrowOperation>> build, boolean present, String label, boolean accounting) {
         int largest = 0; String refusal = "none up to 64";
         for (int members = 1; members <= 64; members++) {
             try {
-                var frozen = freeze(build.apply(members), present);
+                // Include the baseline and commitment before testing the complete intent and operation envelopes.
+                var frozen = freeze(build.apply(members), present, accounting);
                 assertEquals(members, frozen.intent().members().size(), "One connected component");
                 largest = members;
             } catch (IllegalArgumentException refused) { refusal = refused.getClass().getSimpleName() + ": " + refused.getMessage(); break; }
         }
-        var fit = freeze(build.apply(largest), present); var intent = size(fit.intent().encode());
+        var fit = freeze(build.apply(largest), present, accounting); var intent = size(fit.intent().encode());
         long operation = 0; int nodes = 0;
         for (var op : fit.root().records()) {
             var encoded = size(EscrowCodec.operation(op)); operation = Math.max(operation, encoded.bytes()); nodes = Math.max(nodes, encoded.nodes());
         }
-        System.out.println("ACCOUNT_SIZE largest_component shape=" + label + " members=" + largest + " observations=" + fit.intent().observations().size()
+        System.out.println("ACCOUNT_SIZE largest_component format=" + (accounting ? "accounting" : "legacy")
+                + " shape=" + label + " members=" + largest + " observations=" + fit.intent().observations().size()
                 + " intent_bytes=" + intent.bytes() + " intent_nodes=" + intent.nodes() + " intent_depth=" + intent.depth()
                 + " largest_operation_bytes=" + operation + " largest_operation_nodes=" + nodes + " next_refusal=\"" + refusal + "\"");
         return largest;
     }
 
     @Test void largestRealComponentWhoseIntentFitsAnOperation() {
-        // An upper bound for every decodable root: the smallest members, with every endpoint missing (ABANDON).
+        // Historical root-2 frozen-fit measurements, not a bound on unsettled components that can decode.
         int smallestMissing = largest(EscrowFluidAccountSizeTest::smallestComponent, false, "smallest-ids-all-missing");
         int smallestPresent = largest(EscrowFluidAccountSizeTest::smallestComponent, true, "smallest-ids-all-present");
         int nativeMissing = largest(EscrowFluidAccountSizeTest::nativeComponent, false, "native-ids-all-missing");
         int nativePresent = largest(EscrowFluidAccountSizeTest::nativeComponent, true, "native-ids-all-present");
         assertEquals(14, smallestMissing); assertEquals(9, smallestPresent); assertEquals(12, nativeMissing); assertEquals(8, nativePresent);
-        // The worst real row: the worst key layout with the member list of the largest component that can exist.
+        // Historical layout at the largest frozen legacy component; not the new-format minimum.
         var row = EscrowFluidAccountCodec.encode(worstRow(smallestMissing), EscrowFluidAccountCodec.MAXIMUM).value(); var size = size(row);
         System.out.println("ACCOUNT_SIZE worst_real_row members=" + smallestMissing + " bytes=" + size.bytes() + " depth=" + size.depth()
                 + " nodes=" + size.nodes() + " margin_to_2048=" + (2_048 - size.bytes()));
         assertEquals(1_977, size.bytes());
-        // The proposed bounds are exactly this row: 1,977 bytes, depth 5, 65 nodes and at most 14 members.
+        // Preserve the old proposed-bound assertions; SAVED uses Root's conservative 2,048 / 14 decision.
         var proposed = new Limits(1_977, 5, 65, smallestMissing);
         assertEquals(Status.TOO_LARGE, EscrowFluidAccountCodec.decode(row, new Limits(1_976, 5, 65, smallestMissing)).status());
         assertEquals(worstRow(smallestMissing), EscrowFluidAccountCodec.decode(row, proposed).value());
@@ -210,6 +248,55 @@ class EscrowFluidAccountSizeTest {
         assertEquals(1_993, size(next).bytes());
         // A ceiling of 2,048 bytes would hold the member list of at most 18 members.
         assertEquals(2_041, size(EscrowFluidAccountCodec.encode(worstRow(18), EscrowFluidAccountCodec.MAXIMUM).value()).bytes());
+    }
+
+    @Test void newFormatFrozenFitIncludesBaselineAndCommitmentInsideTheSearch() {
+        int missing = largest(EscrowFluidAccountSizeTest::smallestComponent, false, "smallest-ids-all-missing", true);
+        int present = largest(EscrowFluidAccountSizeTest::smallestComponent, true, "smallest-ids-all-present", true);
+        int nativeMissing = largest(EscrowFluidAccountSizeTest::nativeComponent, false, "native-ids-all-missing", true);
+        int nativePresent = largest(EscrowFluidAccountSizeTest::nativeComponent, true, "native-ids-all-present", true);
+        assertEquals(13, missing); assertEquals(8, present); assertEquals(12, nativeMissing); assertEquals(8, nativePresent);
+        var fit = freeze(smallestComponent(missing), false, true);
+        assertEquals(3, fit.root().schema()); assertEquals(3, fit.intent().encode().getInt("schema_version"));
+        assertEquals(fit.root(), EscrowCodec.decode(EscrowCodec.encode(fit.root())));
+        var legacy = freeze(smallestComponent(missing), false);
+        for (int index = 0; index < missing; index++) {
+            var old = EscrowCodec.operation(legacy.root().records().get(index));
+            var actual = EscrowCodec.operation(fit.root().records().get(index));
+            assertEquals(size(schema3Operation(old)), size(actual), "Measured additions match the real new-format encoder");
+            assertEquals(115, size(actual).bytes() - size(old).bytes());
+        }
+        assertEquals(11_762, fit.root().records().stream().mapToLong(op -> size(EscrowCodec.operation(op)).bytes()).max().orElseThrow());
+        var worst = EscrowFluidAccountCodec.encode(worstRow(missing), EscrowFluidAccountCodec.SAVED).value();
+        var measured = size(worst);
+        long actualRow = fit.root().fluidAccounts().stream().mapToLong(row -> size(
+                EscrowFluidAccountCodec.encode(row, EscrowFluidAccountCodec.SAVED).value()).bytes()).max().orElseThrow();
+        System.out.println("ACCOUNT_SIZE worst_new_format_frozen_row members=" + missing + " bytes=" + measured.bytes()
+                + " depth=" + measured.depth() + " nodes=" + measured.nodes() + " margin_to_2048=" + (2048 - measured.bytes())
+                + " actual_minimal_fixture_row_bytes=" + actualRow);
+        assertEquals(new Size(1961, 5, 65), measured);
+        assertEquals(492, actualRow);
+        assertEquals(new Limits(2048, 5, 65, 14), EscrowFluidAccountCodec.SAVED);
+    }
+
+    @Test void largerUnsettledAndLegacyComponentsDecodeEvenWhenFreezingIsRefused() {
+        var ops = smallestComponent(15);
+        var legacy = new EscrowLedger(id(500), 15, 0, ops, List.of(), List.of());
+        var migrated = legacy.accounting(ops, List.of());
+        for (var root : List.of(legacy, migrated)) {
+            var decoded = EscrowCodec.decode(EscrowCodec.encode(root));
+            assertEquals(root, decoded);
+            assertEquals(15, EscrowSettlementIntent.component(decoded.records(), ops.get(0).id()).size());
+        }
+        assertThrows(IllegalArgumentException.class, () -> freeze(ops, false));
+        var unsettled = accountingRoot(smallestComponent(14));
+        assertEquals(unsettled, EscrowCodec.decode(EscrowCodec.encode(unsettled)));
+        assertThrows(IllegalArgumentException.class, () -> freeze(smallestComponent(14), false, true));
+        // This candidate passes all old-format checks; only the additions make its operation too large.
+        var oldFit = freeze(smallestComponent(14), false);
+        var grown = schema3Operation(EscrowCodec.operation(oldFit.root().records().get(0)));
+        assertEquals(12_402, size(grown).bytes());
+        assertFalse(BoundedNbt.fits(grown, EscrowLimits.OP_BYTES, 16, 512));
     }
 
     // ---- The new receipt, operation and root sizes of the W114 fixtures. ----
