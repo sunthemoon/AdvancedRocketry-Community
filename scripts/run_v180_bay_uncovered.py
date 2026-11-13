@@ -64,17 +64,12 @@ def owner_fill(run, count):
     return idle(run)
 
 
-def escrow_fill(run, count):
-    run.send(CONTROL + f"escrow-fill {count}", re.compile(r"ARCE_W358_ESCROW requested="))
-    # Every PREPARED write must be acknowledged; queued admission alone is not a live ledger row.
-    end = time.monotonic() + run.args.settle_timeout
-    while True:
-        acks = [line for line in run.process.lines if "ARCE_W358_ESCROW_ACK " in line]
-        require(not any("committed=false" in line for line in acks), "Escrow fixture write failed")
-        if len(acks) == count:
-            return acks
-        require(time.monotonic() < end, "Escrow fixture never acknowledged all operations")
-        time.sleep(0.5)
+def escrow_seed(run, count):
+    line = run.send(CONTROL + f"escrow-seed {count}", re.compile(r"ARCE_W358_ESCROW_SEED "))
+    value = fields(line, "ARCE_W358_ESCROW_SEED ")
+    # The command verifies the checked file before attaching its real startup index. This is not live admission.
+    require(value["count"] == str(count) and value["durable"] == "true", "Typed escrow seed failed: " + line)
+    return value
 
 
 def parked(run):
@@ -196,17 +191,17 @@ def run_case(run, case):
         op = run.status(fixture["logical"])["receipts"][0]["op"]
     elif case == "W358_B11_ESCROW_MAJOR":
         process = run.start(case, 0, dict(bayCheckpoint="B1_MOVED"))
-        row["first"]["escrow"] = escrow_fill(run, 63)
+        row["first"]["escrow"] = escrow_seed(run, 63)
         fixture = bay.launch_fixture(run)
         run.wait(re.compile(r"ARCE_RELEASE_BAY_PAUSED cut=B1_MOVED op="), run.args.flight_timeout)
         row["first"]["full"] = writer(run); check_full(row["first"]["full"], 63)
     else:
         process = run.start(case, 0, {})
         if case == "W358_B11_BAY_MAJOR":
-            row["first"]["escrow"] = escrow_fill(run, 1)
+            row["first"]["escrow"] = escrow_seed(run, 1)
             row["first"]["full"] = writer(run); check_full(row["first"]["full"], 1)
         elif case == "W358_B11_UNKNOWN":
-            row["first"]["escrow"] = escrow_fill(run, 62)
+            row["first"]["escrow"] = escrow_seed(run, 62)
             owner_fill(run, 1)
             run.send(CONTROL + "writer arm", WRITER)
             until(run, lambda: writer(run), lambda v: v["unknown"] == "true", "UNKNOWN never held")
@@ -243,6 +238,8 @@ def run_case(run, case):
     for restart in (1, 2):
         process = run.start(case, restart, {})
         entry = dict(restart=restart)
+        if case == "W358_B6_BOUND":
+            released.ready(run, fixture["logical"])
         if case == "W358_B10_INCOHERENT":
             released.ready(run, fixture["logical"])
             entry["frozen"] = frozen(run, fixture, op)

@@ -6,6 +6,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
@@ -40,7 +42,7 @@ public final class BayUncoveredReleaseTestCommands {
                 .then(Commands.literal("owner-fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 16))
                         .executes(c -> fill(c.getSource(), IntegerArgumentType.getInteger(c, "count")))))
                 .then(Commands.literal("unfill").executes(c -> unfill(c.getSource())))
-                .then(Commands.literal("escrow-fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 63))
+                .then(Commands.literal("escrow-seed").then(Commands.argument("count", IntegerArgumentType.integer(1, 63))
                         .executes(c -> escrow(c.getSource(), IntegerArgumentType.getInteger(c, "count")))))
                 .then(Commands.literal("loader").then(Commands.argument("logical", UuidArgument.uuid())
                         .then(Commands.argument("action", StringArgumentType.word()).executes(c -> loader(c.getSource(),
@@ -80,32 +82,41 @@ public final class BayUncoveredReleaseTestCommands {
         return queued;
     }
 
-    /** Real ledger writes of typed fixture operations, with absent endpoints so no native resources are changed. */
+    /** Typed seed, not admission: normal settlement headroom refuses the 63rd live operation. */
     private static int escrow(CommandSourceStack source, int count) {
         var server = source.getServer(); EscrowTestEndpoints.requireEnabled(server);
-        var data = ResourceEscrowSavedData.forTests(server);
-        var coordinator = data.bind(server);
-        EscrowTags.require(data.ledger().records().isEmpty(), "W358 escrow fill requires an empty ledger");
-        try {
+        var file = ResourceEscrowSavedData.file(server);
+        EscrowTags.require(ResourceEscrowSavedData.existing(server) == null
+                && CheckedSavedDataFile.presence(file) == CheckedSavedDataFile.Presence.ABSENT,
+                "W358 escrow seed requires a missing ledger");
+        var payload = EscrowCodec.encode(seedLedger(count));
+        CheckedSavedDataFile.replace(file, ManagedSavedDataType.RESOURCE_ESCROW, () -> payload);
+        var checked = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow();
+        EscrowTags.require(checked.equals(payload), "W358 escrow seed readback differs");
+        var data = ResourceEscrowSavedData.load(checked);
+        EscrowTags.require(EscrowRuntime.of(server).replaceLedgerForTests(server, data), "W358 escrow seed index refused");
+        LOGGER.info("ARCE_W358_ESCROW_SEED count={} pending={} durable=true", count, data.bind(server).admissionAuthority().pendingCount());
+        return count;
+    }
+
+    /** Bounded absent-endpoint records, validated by the same durable codecs as startup. */
+    static EscrowLedger seedLedger(int count) {
+        EscrowTags.require(count >= 1 && count <= 63, "W358 escrow seed count exceeds bounds");
+        var operations = new java.util.ArrayList<EscrowOperation>();
         for (int n = 1; n <= count; n++) {
             CompoundTag payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 1000);
             String hash = RocketNativeResources.hash("W358 escrow " + n);
             var logical = new UUID(35801, n);
-            var op = new EscrowOperation(new UUID(35802, n), coordinator.nextSequence(), new UUID(35803, (n - 1) / 16), 1,
+            var op = new EscrowOperation(new UUID(35802, n), n, new UUID(35803, (n - 1) / 16), 1,
                     EscrowOperation.Phase.PREPARED, EscrowReason.NONE, payload, RocketNativeResources.signature(payload),
                     new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, "minecraft:overworld", new UUID(35804, n), null,
                             "minecraft:chest", 2_000_000 + n * 16, 64, 2_000_000, EscrowEndpoint.Unit.TANK, 0, hash, hash),
                     new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, "minecraft:overworld", new UUID(35805, n), logical,
                             "minecraft:armor_stand", 2_000_000 + n * 16, 64, 2_000_000, EscrowEndpoint.Unit.PRIMARY, 0, hash, hash),
                     new EscrowGuard(logical, null, 1, hash));
-            coordinator.prepareTest(op, committed -> LOGGER.info("ARCE_W358_ESCROW_ACK op={} committed={}", op.id(), committed));
+            operations.add(op);
         }
-        } catch (RuntimeException failure) {
-            LOGGER.info("ARCE_W358_ESCROW_REFUSED pending={} reason={}", coordinator.admissionAuthority().pendingCount(), failure.toString(), failure);
-            throw failure;
-        }
-        LOGGER.info("ARCE_W358_ESCROW requested={} pending={}", count, coordinator.admissionAuthority().pendingCount());
-        return count;
+        return new EscrowLedger(new UUID(35806, count), count, 1, operations, List.of(), List.of());
     }
 
     private static RocketEntity rocket(MinecraftServer server, UUID logical) {

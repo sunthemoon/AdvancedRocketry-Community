@@ -57,7 +57,7 @@ final class BayGapReleaseTestGateTest {
                 "arce bay release-test stale-assembly " + id,
                 "arce bay release-test seed-repair " + id + " incoherent",
                 "arce bay release-test w358 owner-fill 16", "arce bay release-test w358 unfill",
-                "arce bay release-test w358 escrow-fill 63", "arce bay release-test w358 loader " + id + " visit",
+                "arce bay release-test w358 escrow-seed 63", "arce bay release-test w358 loader " + id + " visit",
                 "arce bay release-test w358 launch " + id + " " + id, "arce bay release-test w358 writer arm",
                 "arce bay release-test fixture 8 2 8 parked",
                 "arce bay release-test fixture 8 2 8 trio", "arce bay release-test exit fixture 8 2 8 survey",

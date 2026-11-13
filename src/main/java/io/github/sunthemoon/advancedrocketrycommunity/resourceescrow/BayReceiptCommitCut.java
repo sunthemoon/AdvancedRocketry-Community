@@ -26,7 +26,7 @@ public final class BayReceiptCommitCut implements CheckedSavedDataFile.Committer
     private final java.util.concurrent.atomic.AtomicBoolean guardPaused = new java.util.concurrent.atomic.AtomicBoolean();
     private volatile Armed armed;
 
-    /** One-shot: the next receipt replacement fires this cut. */
+    /** The next replacement fires this cut; HOLD_UNKNOWN also fires on retries until release. */
     public void arm(Point point, Mode mode, String cut, UUID op) {
         if (mode == Mode.HOLD_UNKNOWN && !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) { return; }
         armed = new Armed(Objects.requireNonNull(point), Objects.requireNonNull(mode), Objects.requireNonNull(cut), Objects.requireNonNull(op));
