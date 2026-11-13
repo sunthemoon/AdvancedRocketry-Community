@@ -110,6 +110,10 @@ public record EscrowLedger(UUID id, long issuedThrough, long writerGeneration,
         return new EscrowLedger(id, issuedThrough, writerGeneration, operations, floors, tombstones, issuedLaunchSerial,
                 rocketAuthorities, armedFlights, 3, rows);
     }
+    /** Replace flight authority only; never select a saved format from the activation default. */
+    public EscrowLedger flightAuthority(long serial, List<EscrowFlightTables.Head> heads, List<EscrowFlightTables.Armed> arms) {
+        return new EscrowLedger(id, issuedThrough, writerGeneration, records, floors, tombstones, serial, heads, arms, schema, fluidAccounts);
+    }
 
     private static void validateAccounts(int schema, List<EscrowOperation> records, List<CompoundTag> receipts,
             List<EscrowFluidAccount.Row> rows) {
