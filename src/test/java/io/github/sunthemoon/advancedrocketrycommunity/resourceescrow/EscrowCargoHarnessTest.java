@@ -47,7 +47,7 @@ final class EscrowCargoHarnessTest {
                 assertTrue(EscrowCargoCutProbe.selected(true, "start", load));
             }
         });
-        assertEquals(26, EscrowItemSettlementCuts.CASES.size());
+        assertEquals(40, EscrowItemSettlementCuts.CASES.size()); // W360 adds seven cuts in each direction.
         EscrowItemSettlementCuts.CASES.forEach((name, cut) -> {
             if (!name.startsWith("IS_LOAD_")) {
                 var load = name.replace("IS_", "IS_LOAD_");

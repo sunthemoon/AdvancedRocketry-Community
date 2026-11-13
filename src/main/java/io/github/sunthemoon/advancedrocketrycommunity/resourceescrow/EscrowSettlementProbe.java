@@ -132,6 +132,21 @@ final class EscrowSettlementProbe {
             done = true;
         }
     }
+    /** Gated harness check: receipt knowledge follows its validated saved account, not a status-string allowance. */
+    static boolean accountingMatches(EscrowLedger root, net.minecraft.nbt.CompoundTag receipt) {
+        if (receipt.getInt("schema_version") == 3) {
+            return receipt.getString("accounting_status").equals("UNKNOWN") && !receipt.contains("accounting_digest")
+                    && root.fluidAccounts().stream().noneMatch(row -> row.operation().equals(receipt.getUUID("op_id")));
+        }
+        if (root.schema() != 3 || receipt.getInt("schema_version") != 4) { return false; }
+        var row = root.fluidAccounts().stream().filter(r -> r.operation().equals(receipt.getUUID("op_id"))).findFirst().orElse(null);
+        if (row == null || row.frozen() == null || row.status() != EscrowFluidAccount.Status.OK) { return false; }
+        String status = row.knowledge() == EscrowFluidAccount.Knowledge.KNOWN ? "KNOWN" : "UNKNOWN";
+        return receipt.getString("accounting_status").equals(status)
+                && (status.equals("UNKNOWN") || receipt.getList("missing", 10).isEmpty())
+                && receipt.getString("accounting_digest").equals(EscrowFluidAccountCodec.digest(row, EscrowFluidAccountCodec.SAVED).value());
+    }
+
     private void released() {
         var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
         EscrowTags.require(data.ledger().tombstones().size() == (chain ? 2 : 1) && data.ledger().floors().isEmpty()
@@ -139,7 +154,7 @@ final class EscrowSettlementProbe {
         for (var receipt : data.ledger().tombstones()) {
             EscrowTags.require(receipt.getBoolean("released") && receipt.getUUID("actor").equals(ACTOR)
                     && receipt.getString("choice").equals(abandon ? "ABANDON" : "ACCEPT_CURRENT")
-                    && receipt.getString("accounting_status").equals("UNKNOWN"), "O1 continuation changed the frozen choice");
+                    && accountingMatches(data.ledger(), receipt), "O1 continuation changed the frozen choice");
             for (var raw : EscrowTags.list(receipt, "survivors", 2)) {
                 var endpoint = EscrowCodec.endpoint(((net.minecraft.nbt.CompoundTag) raw).getCompound("endpoint"));
                 if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY) { continue; }

@@ -16,12 +16,19 @@ import net.minecraft.world.level.block.Blocks;
 
 /** D-S2: frozen typed-item unload settlement with genuine replacement-before-callback cuts. */
 final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
-    enum Scenario { APPLIED, NEUTRAL, NAMED, ABANDON_ROCKET, ABANDON_DEVICE, BIND_VETO;
+    enum Scenario { APPLIED, NEUTRAL, NAMED, ABANDON_ROCKET, ABANDON_DEVICE, VETO, BIND_VETO;
         boolean abandon() { return this == ABANDON_ROCKET || this == ABANDON_DEVICE; }
-        boolean prepared() { return this != APPLIED; }
+        boolean prepared() { return this != APPLIED && this != VETO; }
     }
     record Cut(Scenario scenario, String boundary) { }
     private static final Map<String, Cut> UNLOAD_CASES = Map.ofEntries(
+            Map.entry("IS_O1_BEFORE", new Cut(Scenario.APPLIED, "O1_BEFORE")),
+            Map.entry("IS_BIND_BEFORE", new Cut(Scenario.NEUTRAL, "O_BIND_BEFORE")),
+            Map.entry("IS_O3_BEFORE", new Cut(Scenario.APPLIED, "O3_BEFORE")),
+            Map.entry("IS_O3J_BEFORE", new Cut(Scenario.NAMED, "O3J_BEFORE")),
+            Map.entry("IS_O4_BEFORE", new Cut(Scenario.APPLIED, "O4_BEFORE")),
+            Map.entry("IS_PRUNE_BEFORE", new Cut(Scenario.APPLIED, "PRUNE_BEFORE")),
+            Map.entry("IS_VETO_DESTINATION_SAVED", new Cut(Scenario.VETO, "O_VETO")),
             Map.entry("IS_O1_AFTER", new Cut(Scenario.APPLIED, "O1_AFTER")),
             Map.entry("IS_BIND_AFTER", new Cut(Scenario.NEUTRAL, "O_BIND_AFTER")),
             Map.entry("IS_O2_ROCKET_BEFORE", new Cut(Scenario.APPLIED, "O2_ROCKET_BEFORE")),
@@ -55,6 +62,9 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
     private volatile int rocketIndex = -1, deviceIndex = -1;
     private volatile boolean writingIntent, held, vetoInstalled, holdSeen;
     private volatile String phase = "";
+    private volatile boolean destinationSelected, destinationStored;
+    private boolean executorPaused;
+    private long since;
     private boolean heldChecked, moved, movedSaved, restored;
     private EscrowItemCutLaunch flight;
 
@@ -67,13 +77,16 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
     /** Which checkpoint ends the start run; the PRUNE and veto boundaries are decided by the owner tick instead. */
     static boolean pauses(String boundary, String label, String phase, boolean writingIntent, int rocket, int device) {
         return switch (boundary) {
+            case "O1_BEFORE" -> writingIntent && label.equals("K1");
             case "O1_AFTER" -> writingIntent && label.equals("K2");
-            case "O_BIND_AFTER" -> label.equals(boundary);
+            case "O_BIND_BEFORE", "O_BIND_AFTER" -> label.equals(boundary);
             case "O2_ROCKET_BEFORE" -> rocket >= 0 && label.equals("O2_BEFORE_" + rocket);
             case "O2_ROCKET_AFTER" -> rocket >= 0 && label.equals("O2_AFTER_" + rocket);
             case "O2_DEVICE_BEFORE" -> device >= 0 && label.equals("O2_BEFORE_" + device);
             case "O2_DEVICE_AFTER" -> device >= 0 && label.equals("O2_AFTER_" + device);
+            case "O3_BEFORE" -> phase.equals("O3") && label.equals("K1");
             case "O3_AFTER" -> phase.equals("O3") && label.equals("K2");
+            case "O4_BEFORE" -> phase.equals("O4") && (label.equals("K1") || label.equals("K8"));
             case "O4_AFTER" -> phase.equals("O4") && (label.equals("K2") || label.equals("K9"));
             default -> false;
         };
@@ -99,9 +112,23 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
             EscrowRuntime.of(server).cargoSwitches.pause(deviceId, true); held = true;
         }
 
+        if (cut.scenario() == Scenario.VETO) {
+            if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { destinationSelected = true; }
+            if (label.equals("BARRIER_FORCE_AFTER") && destinationSelected) { destinationStored = true; }
+        }
         if (label.equals("O3_CAPTURE") || label.equals("O4_CAPTURE")) { phase = label.substring(0, 2); }
         if (label.equals("O_VETO") && vetoInstalled) { holdSeen = true; }
         if (pauses(cut.boundary(), label, phase, writingIntent, rocketIndex, deviceIndex)) { pause(cut.boundary()); }
+    }
+
+    @Override void beforeReconciliation() {
+        if (recovery || done || stopped() || cut.scenario() != Scenario.VETO || !destinationStored || executorPaused) { return; }
+        EscrowRuntime.of(server).cargoSwitches.pause(deviceId, true); executorPaused = true; since = server.getTickCount();
+    }
+
+    @Override boolean permitsStore(EscrowOperation op, EscrowEndpoint endpoint) {
+        return EscrowCargoSettlementCuts.storeAllowed(cut.scenario() == Scenario.VETO && !recovery,
+                deviceId != null && op.device().identity().equals(deviceId), endpoint.key().equals(op.destination().key()));
     }
 
     @Override void tick() {
@@ -152,6 +179,7 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
 
     private void hold() {
         if (cut.scenario() == Scenario.APPLIED && !held) { return; }
+        if (cut.scenario() == Scenario.VETO && (!executorPaused || server.getTickCount() - since < 40)) { return; }
         coordinator.transition(opId, EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
     }
 
@@ -169,7 +197,18 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
         if (cut.scenario() == Scenario.ABANDON_DEVICE && level.getBlockEntity(DEVICE) != null) {
             level.removeBlockEntity(DEVICE); level.setBlock(DEVICE, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); return;
         }
-        save();
+        if (cut.scenario() == Scenario.VETO) {
+            if (load) {
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.recordObservedDenial(
+                        level, new net.minecraft.world.level.ChunkPos(DEVICE), "Release-test load settlement source veto");
+            } else {
+                var poison = new net.minecraft.world.entity.decoration.ArmorStand(level, ROCKET.getX() + 2.5D, ROCKET.getY(), ROCKET.getZ() + 2.5D) {
+                    @Override public boolean save(CompoundTag tag) { return false; }
+                };
+                poison.setNoGravity(true); EscrowTags.require(level.addFreshEntity(poison), "Item veto entity was not added");
+            }
+            vetoInstalled = true;
+        } else { save(); }
         var choice = cut.scenario().abandon() ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
         preview = EscrowRuntime.of(server).settlement().preview(server, opId, choice, ACTOR, "Server");
         for (int i = 0; i < preview.observations().size(); i++) {
@@ -201,8 +240,13 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
             var intent = EscrowSettlementIntent.decode(member().settlement());
             var view = EscrowRuntime.of(server).settlementRecovery().view(intent);
             if (view.reason().equals("NONE") || cut.scenario() == Scenario.BIND_VETO && !movedSaved) { return; }
-            EscrowTags.require(view.reason().startsWith("Rocket placement") && root.tombstones().isEmpty() && view.provedSlots() == 0
-                    && rocket.escrowSection().equals(RocketEscrowSection.neutral()), "The placement veto did not hold normalization: " + view.reason());
+            if (cut.scenario() == Scenario.VETO) {
+                EscrowTags.require(view.reason().equals("BARRIER_VETO") && root.tombstones().isEmpty() && view.provedSlots() <= 1,
+                        "The item source store veto did not hold O2: " + view.reason());
+            } else {
+                EscrowTags.require(view.reason().startsWith("Rocket placement") && root.tombstones().isEmpty() && view.provedSlots() == 0
+                        && rocket.escrowSection().equals(RocketEscrowSection.neutral()), "The placement veto did not hold normalization: " + view.reason());
+            }
             pause(cut.boundary()); return;
         }
         if (cut.boundary().startsWith("PRUNE_")) {
@@ -224,6 +268,21 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
         EscrowTags.require(found.size() <= 1, "W143 restart duplicated the cargo rocket");
         rocket = found.isEmpty() ? null : found.get(0); device = existingDevice(DEVICE);
         if (rocket == null && cut.scenario() != Scenario.ABANDON_ROCKET || device == null && cut.scenario() != Scenario.ABANDON_DEVICE) { return; }
+        if (cut.boundary().equals("O1_BEFORE")) {
+            var op = single(root);
+            EscrowTags.require(op.phase() == EscrowOperation.Phase.REPAIR && op.reason() == EscrowReason.OTHER_STATE && op.settlement().isEmpty()
+                    && root.tombstones().isEmpty() && root.rocketAuthorities().isEmpty(), "Pre-O1 item restart invented or lost a decision");
+            requireRocket(rocket, afterRocket(), 1, 1, true); requireDevice(device, afterDevice(), 1, 1); requireLocked();
+            result("PRE_O1", "records=1 intent=absent rocket=" + afterRocket() + " device=" + afterDevice() + " locked=true"); return;
+        }
+        if (cut.scenario() == Scenario.VETO) {
+            var view = view(single(root)); if (view.reason().equals("NONE")) { return; }
+            EscrowTags.require(view.reason().equals("Frozen settlement endpoint changed") && root.tombstones().isEmpty(),
+                    "The item veto restart released or changed its hold: " + view.reason());
+            requireRocket(rocket, load ? afterRocket() : beforeRocket(), load ? 1 : 0, load ? 1 : 0, load);
+            requireDevice(device, load ? beforeDevice() : afterDevice(), load ? 0 : 1, load ? 0 : 1); requireLocked();
+            result("HELD", "reason=FROZEN_ENDPOINT_CHANGED rocket=" + cargo(rocket) + " device=" + tank(device) + " raw=74 spendable=0 locked=true"); return;
+        }
         if (cut.scenario() == Scenario.BIND_VETO && !root.records().isEmpty()) {
             if (restored) { return; }
             var view = view(single(root)); if (view.reason().equals("NONE")) { return; }

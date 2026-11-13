@@ -388,12 +388,12 @@ O_HOOKS = dict(zip(OPERATOR, ("K1", "K2", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0",
                             "K1", "K2", "O3_AFTER", "K8", "K9", "O4_AFTER", "PLAIN_MOVE", "PLAIN_MOVED", "O3J_AFTER")))
 
 
-def pending_receipt(operation):
+def pending_receipt(operation, root=None):
     """Exact unreleased schema-3 receipt for this intact single-member decision."""
     intent = operation["settlement"]
     observations = [{key: value for key, value in item.items() if key != "normalized_wrapper"}
                     for item in intent["observations"]]
-    return dict(schema_version=3, op_id=operation["op_id"], retired=[dict(op_id=operation["op_id"])],
+    receipt = dict(schema_version=3, op_id=operation["op_id"], retired=[dict(op_id=operation["op_id"])],
                 guards=[operation["transfer_guard"]], before_choice=observations, payload_amount=1000,
                 payload_hash=operation["payload_hash"], accounting_status="UNKNOWN", decision_digest=intent["digest"],
                 actor=intent["actor"], actor_name=intent["actor_name"], choice=intent["choice"],
@@ -401,6 +401,8 @@ def pending_receipt(operation):
                 missing=[], survivors=[dict(endpoint=o["endpoint"], epoch=o["state"]["epoch"], signature=o["state"]["signature"],
                     signature_kind=o["signature_kind"], invariant_digest=o["invariant_digest"], quantity=o["quantity"], bound=True)
                     for o in observations])
+    if root is not None: receipt.update(integrity.accounting.receipt_fields(root, operation))
+    return receipt
 
 
 def check_o1(image, restart, identity=None, cut=O1_BEFORE):
@@ -416,6 +418,7 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
     try:
         disk = normalize_ids(image["native"]); identity = normalize_ids(identity)
         root = disk["ledger"]
+        integrity.accounting.check(root)
         released = bool(restart and cut != O1_BEFORE)
         legacy.require(root is not None and root["issued_through"] == 1 and root["issued_launch_serial"] == 0
                        and not root["floors"] and not root["armed_flights"], "Settlement changed unrelated authority")
@@ -425,6 +428,7 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
         # Validate the exact ordinary resource envelopes separately from the operator
         # tables. This private projection is not a modified native image or a verdict.
         resources = copy.deepcopy(disk)
+        resources["ledger"] = integrity.accounting.resource_projection(root)
         for field in ("tombstones", "rocket_authorities"):
             resources["ledger"][field] = []
         resource_identity = legacy.check(resources, "LF_M_K6", int(released))
@@ -447,7 +451,7 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
             if cut == O1_BEFORE:
                 legacy.require(not intent, "Pre-O1 invented an operator decision")
             else:
-                legacy.require(intent["schema_version"] == 2 and intent["choice"] == "ACCEPT_CURRENT"
+                legacy.require(intent["schema_version"] == (3 if root.get("schema_version") == 3 else 2) and intent["choice"] == "ACCEPT_CURRENT"
                                and intent["ledger_id"] == root["ledger_id"] and intent["actor"] == actor
                                and intent["actor_name"] == "Server" and re.fullmatch(r"[0-9a-f]{64}", intent["digest"])
                                and intent["confirmed_tick"] >= intent["preview_tick"] >= 0,
@@ -466,11 +470,11 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
                                    and state["markers"] == [dict(op_id=operation, seq=1, role=role, epoch_after=1)],
                                    "Wrong frozen survivor marker/epoch")
             if installed:
-                legacy.require(root["tombstones"] == [pending_receipt(authority)],
+                legacy.require(root["tombstones"] == [pending_receipt(authority, root)],
                                "Changed installed receipt or premature acknowledgement of release")
         else:
-            legacy.require(authority["schema_version"] == 3 and authority["released"] == 1
-                           and authority["accounting_status"] == "UNKNOWN" and "audited_loss" not in authority
+            legacy.require(authority["schema_version"] == (4 if root.get("schema_version") == 3 else 3) and authority["released"] == 1
+                           and authority["accounting_status"] == ("KNOWN" if root.get("schema_version") == 3 else "UNKNOWN") and "audited_loss" not in authority
                            and "loss_known" not in authority and authority["choice"] == "ACCEPT_CURRENT"
                            and authority["actor"] == actor and authority["actor_name"] == "Server"
                            and authority["payload_amount"] == 1000 and 0 < authority["release_generation"] <= root["writer_generation"],
@@ -478,7 +482,7 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
             legacy.require(identity is not None, "Released receipt needs its initial frozen decision")
             require_progress(identity["authority"], root)
             initial = identity["authority"]["records"][0]
-            legacy.require(authority == dict(pending_receipt(initial), released=1, release_generation=authority["release_generation"]),
+            legacy.require(authority == dict(pending_receipt(initial, identity["authority"]), released=1, release_generation=authority["release_generation"]),
                            "Release changed the complete immutable receipt")
             legacy.require(authority["retired"] == [dict(op_id=initial["op_id"])] and authority["anchor_op"] == initial["op_id"]
                            and authority["payload_hash"] == initial["payload_hash"] and not authority["missing"],
@@ -519,12 +523,14 @@ def check_o4_released(image, restart, identity, cut):
     try:
         disk = normalize_ids(image["native"]); identity = normalize_ids(identity)
         root = disk["ledger"]
+        integrity.accounting.check(root)
         legacy.require(root is not None and root["issued_through"] == 1 and root["issued_launch_serial"] == 0
                        and not root["records"] and not root["floors"] and not root["armed_flights"]
                        and len(root["tombstones"]) == 1 and len(root["rocket_authorities"]) == 1, "Wrong O4 authority tables")
         receipt = root["tombstones"][0]; operation = receipt["op_id"]
         legacy.require(str(UUID(operation)) == operation, "O4 operation identity is not a UUID")
         resources = copy.deepcopy(disk)
+        resources["ledger"] = integrity.accounting.resource_projection(root)
         resources["ledger"]["tombstones"] = []; resources["ledger"]["rocket_authorities"] = []
         # Reuse only its exact raw/retired-metadata checks, not its normal-retirement accounting claim.
         checked = _retired_resources(dict(read_status="KNOWN", native=resources), restart, operation=operation)
@@ -563,6 +569,7 @@ def check_o4_released(image, restart, identity, cut):
         expected = pending_receipt(dict(op_id=operation, transfer_guard=guard, payload_hash=payload_hash,
             settlement=dict(actor=canonical_uuid(ACTOR), actor_name="Server", choice="ACCEPT_CURRENT",
                 digest=receipt["decision_digest"], confirmed_tick=receipt["confirmed_tick"], observations=observations)))
+        expected.update(integrity.accounting.receipt_fields(root, dict(op_id=operation)))
         legacy.require(receipt == dict(expected, released=1, release_generation=receipt["release_generation"]), "O4 changed its complete receipt")
         chosen = next(o for o in observations if o["endpoint"]["kind"] == "ENTITY")
         head = root["rocket_authorities"][0]

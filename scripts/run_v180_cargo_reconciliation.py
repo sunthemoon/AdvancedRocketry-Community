@@ -92,6 +92,10 @@ def item_amount(stacks: list, slots: bool) -> int:
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
     root = ledger(world / "data" / LEDGER)
+    import escrow_accounting as accounting
+    accounting.check(root, fresh_fluid=not case.startswith("IC_"))
+    if root.get("schema_version") == 3 and not case.startswith("IC_"):
+        for op in root["records"]: accounting.expect_transfer(root, op)
     item = case.startswith("IC_")
     # Item cases decode with tag types for the stack comparison; the fluid oracle reads exactly as before.
     typed = dict(reader=TypedNbtReader) if item else {}

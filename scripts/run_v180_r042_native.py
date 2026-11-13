@@ -24,6 +24,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import threading
 import time
 import uuid
 
@@ -93,6 +94,11 @@ CASES = {
     "P_SERVER": dict(family="P", pending=64, refusal="ESCROW_FULL", bay_reason="DEPLOYMENT_CAPACITY", rows=("TASK 4: the server pool",)),
     "P_OWNER": dict(family="P", pending=16, refusal="OWNER_PENDING_FULL", bay_reason="OWNER_PENDING_FULL", other=True, rows=("TASK 4: per owner",)),
 }
+CASES.update(
+    X_BAY=dict(family="N", presence_unknown=True, rows=("post-prestart UNKNOWN bay presence",)),
+    X_LEDGER=dict(family="L", presence_unknown=True, rows=("post-prestart UNKNOWN ledger presence",)),
+    R031_FUTURE=dict(family="R", rows=("future ledger root refuses world start",)),
+    R031_INVALID=dict(family="R", rows=("invalid ledger root refuses world start",)))
 SCRATCH = {"U": "U_BAY", "N": "N_BAY", "L": "L_LEDGER", "P": "P_SERVER"}
 
 
@@ -178,7 +184,45 @@ class Run(bay.Session):
     def start(self, case: str, restart: int, properties: dict[str, str]) -> smoke.CapturedProcess:
         if self.args.scratch:
             properties = dict(properties, w332Scratch=self.args.scratch)
-        return super().start(case, restart, properties)
+        if CASES[case].get("presence_unknown") and restart == 1:
+            properties = dict(properties, releaseTestPresenceFailure=properties["releaseTestLoadFailure"])
+            self.presence_release = threading.Event()
+            self.presence_errors = []
+            log = self.evidence / f"{case}-{restart}.log"
+            file = self.session / ("world-" + case) / "data" / FILES["receipts" if case == "X_BAY" else "ledger"]
+
+            def hold():
+                try:
+                    deadline = time.monotonic() + self.args.startup_timeout
+                    while not self.presence_release.wait(0.01):
+                        if log.is_file() and "ARCE_RELEASE_PRESENCE_WAIT type=" in log.read_text(encoding="utf-8", errors="replace"):
+                            with presence.delete_pending(file):
+                                require(self.presence_release.wait(self.args.startup_timeout + self.args.exit_timeout + 300),
+                                        "UNKNOWN handle lifetime exceeded its bound")
+                            return
+                        require(time.monotonic() < deadline, "No post-prestart presence rendezvous")
+                except Exception as failure:
+                    self.presence_errors.append(str(failure))
+            self.presence_thread = threading.Thread(target=hold, name="w360-presence", daemon=True)
+            self.presence_thread.start()
+        try:
+            return super().start(case, restart, properties)
+        except Exception:
+            self.release_presence()
+            raise
+
+    def release_presence(self):
+        if getattr(self, "presence_thread", None) is not None:
+            self.presence_release.set()
+            self.presence_thread.join(10)
+            require(not self.presence_thread.is_alive(), "Presence handle thread did not finish")
+            self.presence_thread = None
+            require(not self.presence_errors, "Presence handle failed: " + "; ".join(self.presence_errors))
+
+    def snapshot_failure(self, world: Path, destination: Path) -> dict:
+        # A failed hold oracle still owns the UNKNOWN handle. Restore file access before copying raw evidence.
+        self.release_presence()
+        return evidence_tools.snapshot_world(world, destination)
 
     def probe_unknown(self, world: Path, filename: str, log: Path) -> str:
         evidence_tools.recheck_installed(self.candidate)
@@ -326,7 +370,10 @@ class Run(bay.Session):
     def stop(self, case: str, restart: int, allowed: dict | None = None) -> dict:
         assert self.process is not None
         process = self.process
-        code = self.end("stop", self.args.exit_timeout)
+        try:
+            code = self.end("stop", self.args.exit_timeout)
+        finally:
+            self.release_presence()
         require(code == 0, f"{case}/{restart}: the normal stop exited {code}")
         errors = audit_errors(process.lines, allowed or {})
         require(not errors, f"{case}/{restart}: unexpected ERROR/FATAL: {errors}")
@@ -543,19 +590,27 @@ def check_unknown_refusal(lines: list[str], case: str, session: Path | None = No
     return dict(diagnostic="ARCE-BETA-2000", type=spec["type"], storage_hint_first=True, line=line, audit=audit)
 
 
-def audit_unknown_start(lines: list[str], case: str, session: Path) -> dict:
+def audit_unknown_start(lines: list[str], case: str, session: Path, root_refusal: dict | None = None) -> dict:
     """Exact pinned Forge refusal propagation, including exception identities (same shutdown boundary as W157)."""
-    spec = CASES[case]
+    spec = CASES[case] if root_refusal is None else dict(file="ledger", type="RESOURCE_ESCROW")
     reason = FILES[spec["file"]][:-4] + " presence is unknown: its file status check failed, so its absence is not proven"
     exception = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
     message = (f"[ARCE-BETA-2000] Beta world data check blocked startup; type={spec['type']}; reason={reason}. "
                + STORAGE_HINT + " Keep the world stopped. Escrow recovery requires a consistent whole-world backup "
                "including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.")
+    causes = (exception,)
+    if root_refusal is not None:
+        reason = root_refusal["reason"]
+        exception = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
+        causes = (exception,) + tuple(root_refusal["causes"])
+        message = (f"[{root_refusal['diagnostic']}] Beta world data check blocked startup; type=RESOURCE_ESCROW; reason={reason}. "
+                   "Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, "
+                   "entities, POI, journals and player data; never restore or delete only the escrow file.")
     expected = [
         (refusal_log.PROJECT_LOGGERS, "ERROR", re.escape(message), ()),
         (("ne.mi.ev.EventBus/EVENTBUS", "net.minecraftforge.eventbus.EventBus/EVENTBUS"), "ERROR",
-         re.escape("Exception caught during firing event: " + reason), (exception,)),
-        (("minecraft/MinecraftServer",), "ERROR", re.escape("Encountered an unexpected exception"), (exception,)),
+         re.escape("Exception caught during firing event: " + reason), causes),
+        (("minecraft/MinecraftServer",), "ERROR", re.escape("Encountered an unexpected exception"), causes),
         (("ne.mi.co.ForgeMod/", "net.minecraftforge.common.ForgeMod/"), "FATAL",
          r"Preparing crash report with UUID [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", ()),
         (("minecraft/MinecraftServer",), "ERROR", re.escape("This crash report has been saved to: " + session.as_posix())
@@ -679,6 +734,11 @@ def run_u(run: Run, case: str) -> dict:
 # Family N --------------------------------------------------------------------------------------------------------------
 
 def check_injected(case: str, lines: list[str], type_name: str, data_name: str) -> dict:
+    if CASES[case].get("presence_unknown"):
+        waiting = [i for i, line in enumerate(lines) if f"ARCE_RELEASE_PRESENCE_WAIT type={type_name}" in line]
+        unknown = [i for i, line in enumerate(lines) if f"ARCE_RELEASE_PRESENCE_UNKNOWN type={type_name}" in line]
+        require(len(waiting) == len(unknown) == 1 and waiting[0] < unknown[0], "Missing ordered presence rendezvous")
+        require(not any(UNKNOWN_REFUSAL.search(line) for line in lines), "Presence failed before the pre-start check finished")
     injected = matches(lines, INJECTED)
     require(injected == [(type_name,)] and not matches(lines, INJECTION_REFUSED), f"{case}: the seam did not inject once: {injected}")
     require(matches(lines, VANILLA_LOAD_ERROR) == [(data_name,)], f"{case}: vanilla's load ERROR is not exactly one for {data_name}")
@@ -739,7 +799,8 @@ def run_n(run: Run, case: str) -> dict:
     entry["injection"] = check_injected(case, lines, "BAY_RECEIPTS", "advancedrocketrycommunity_bay_receipts")
     entry["warn"] = matches(lines, BAY_NOT_LOADED)
     entry["index"] = matches(lines, BAY_INDEX)
-    require(entry["warn"] == [("LOAD_FAILED", FILES["receipts"])] and entry["index"] == [("NOT_LOADED", "0")],
+    reason = "PRESENCE_UNKNOWN" if CASES[case].get("presence_unknown") else "LOAD_FAILED"
+    require(entry["warn"] == [(reason, FILES["receipts"])] and entry["index"] == [("NOT_LOADED", "0")],
             f"{case}/1: expected one LOAD_FAILED WARN and one NOT_LOADED INFO: {entry['warn']} {entry['index']}")
     entry["fenced"] = matches(lines, FENCED)
     require(entry["fenced"] == [(stale,)], f"{case}/1: assembly recovery was not fenced once for A: {entry['fenced']}")
@@ -832,7 +893,8 @@ def run_l(run: Run, case: str) -> dict:
     lines = stopped["lines"]
     entry["injection"] = check_injected(case, lines, "RESOURCE_ESCROW", "advancedrocketrycommunity_resource_escrow")
     entry["warn"] = matches(lines, LEDGER_NOT_LOADED)
-    require(entry["warn"] == [("LOAD_FAILED", FILES["ledger"])], f"{case}/1: expected one LOAD_FAILED ledger WARN: {entry['warn']}")
+    reason = "PRESENCE_UNKNOWN" if CASES[case].get("presence_unknown") else "LOAD_FAILED"
+    require(entry["warn"] == [(reason, FILES["ledger"])], f"{case}/1: expected one {reason} ledger WARN: {entry['warn']}")
     require(not matches(lines, BAY_NOT_LOADED), f"{case}/1: the bay receipts were NOT_LOADED too")
     entry["disk"] = disk(world)
     require(entry["disk"]["ledger"] == ledger0, f"{case}/1: the ledger file changed under the hold")
@@ -906,7 +968,70 @@ def run_p(run: Run, case: str) -> dict:
     return row
 
 
-RUNNERS = dict(U=run_u, N=run_n, L=run_l, P=run_p)
+def seed_bad_ledger(file: Path, future: bool) -> dict:
+    """The native ledger was emitted by the code's current encoder; advance its supported version, never pin root 2/3."""
+    name, root = nbt.read_gzip(file)
+    payload = nbt.compound(root, "data")
+    supported = nbt.compound(payload, "schema_version")
+    require(supported.type == nbt.INT and supported.value > 0, "Native ledger did not emit its supported root version")
+    current = supported.value
+    if future:
+        payload.value["schema_version"] = nbt.Tag(nbt.INT, current + 1)
+    else:
+        payload.value["issued_through"] = nbt.Tag(nbt.LONG, -1)
+    nbt.write_gzip(file, name, root)
+    require(nbt.read_gzip(file) == (name, root), "Invalid-root seed typed readback differs")
+    reason = FILES["ledger"][:-4] + (f" uses future schema {current + 1}" if future else " failed semantic validation")
+    return dict(supported_version=current, seeded_version=current + 1 if future else current, sha256=digest(file),
+                reason=reason, diagnostic="ARCE-BETA-2001" if future else "ARCE-BETA-2000",
+                causes=[] if future else ["Caused by: java.lang.IllegalArgumentException: Invalid ledger counters"])
+
+
+def run_r031(run: Run, case: str) -> dict:
+    world = new_world(run, case)
+    row = dict(case=case, rows=list(CASES[case]["rows"]), starts=[])
+    run.start(case, 0, {})
+    run.forceload(); run.cell("S", P2)
+    check_admitted(run.attempt("S", "FUEL")); run.await_completed("S", ("FUEL",)); run.save()
+    run.stop(case, 0)
+    file = world / "data" / FILES["ledger"]
+    good = file.read_bytes()
+    row["seed"] = seed_bad_ledger(file, case == "R031_FUTURE")
+    snapshot(run, world, case, "seed")
+    before = world_manifest(world); baseline = nbt.read_gzip(world / "level.dat")
+    for name in ("level.dat", "level.dat_old"):
+        if name in before: shutil.copy2(world / name, run.evidence / f"{case}-S0-{name}")
+    (run.evidence / f"{case}-before.json").write_text(json.dumps(before, indent=2), encoding="utf-8")
+    process = run.start_refused(case)
+    try:
+        process.wait_for(re.compile(r"Beta world data check blocked startup|Done \(.*For help"), run.args.startup_timeout)
+        require(not any(smoke.READY_MARKER.search(line) for line in process.lines), "Invalid ledger reached READY")
+        code = process.finish(run.args.startup_timeout)
+        require(code == 0, "Invalid-ledger refusal exited abnormally")
+        require(not matches(process.lines, BAY_INDEX), "Invalid ledger reached world loading")
+        audit = audit_unknown_start(process.lines, case, run.session, row["seed"])
+    finally:
+        process.abort(); run.process = None
+    after = world_manifest(world)
+    preservation = unknown_world_check(world, before, after, baseline)
+    row["starts"].append(dict(start=1, exit_code=code, audit=audit, world_preservation=preservation))
+    (run.evidence / f"{case}-after.json").write_text(json.dumps(after, indent=2), encoding="utf-8")
+    (run.evidence / f"{case}-metadata-comparison.json").write_text(json.dumps(preservation, indent=2), encoding="utf-8")
+    require(preservation["status"] == "PASS", "R-031 changed protected world bytes: " + str(preservation["errors"]))
+    snapshot(run, world, case, "refused")
+    # Offline fixture restoration is explicitly not an operator repair procedure. Both clean restarts load the original.
+    file.write_bytes(good)
+    for restart in (2, 3):
+        run.start(case, restart, {})
+        require(run.escrow_status() == "present", "Restored ledger did not load")
+        require(completed(run.report("S")["FUEL"], "FUEL"), "Restored fixture changed resource totals")
+        run.stop(case, restart)
+        require(file.read_bytes() == good, "A clean restart changed the restored ledger")
+        row["starts"].append(dict(start=restart, ledger_sha256=digest(file)))
+    return row
+
+
+RUNNERS = dict(U=run_u, N=run_n, L=run_l, P=run_p, R=run_r031)
 
 
 def run(args) -> dict:
@@ -956,7 +1081,7 @@ def run(args) -> dict:
                     report["cases"][-1]["coverage"] = "NOT_COVERED"
                 world = session / ("world-" + case)
                 if world.is_dir():
-                    report["cases"][-1]["raw"] = evidence_tools.snapshot_world(world, evidence / f"{case}-failure-raw")
+                    report["cases"][-1]["raw"] = runner.snapshot_failure(world, evidence / f"{case}-failure-raw")
                 print(f"{case}: FAIL {failure}", flush=True)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
@@ -968,6 +1093,7 @@ def run(args) -> dict:
     finally:
         if runner.process is not None:
             runner.process.abort()
+        runner.release_presence()
         (evidence / "results.json").write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
         if (session.parent == intended and not smoke.is_link_or_junction(session) and marker.is_file()
                 and marker.read_text(encoding="ascii") == token):

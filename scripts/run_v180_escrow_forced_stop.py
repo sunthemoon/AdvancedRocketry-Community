@@ -21,6 +21,8 @@ import zlib
 import run_dedicated_server_smoke as smoke
 from inspect_celestial_saved_data import NbtReader
 from inspect_escrow_receipt import decode_receipt
+import escrow_accounting as accounting
+import loader_cut_nbt as typed_nbt
 from run_v060_flight_server_smoke import _server_command
 
 
@@ -48,13 +50,52 @@ def ledger(path: Path) -> dict:
         raw = stream.read(1_114_113)
     if len(raw) > 1_114_112:
         raise smoke.SmokeError("Oversized expanded native ledger")
-    outer = NbtReader(raw).read_root()
-    data = outer.get("data")
-    if not isinstance(data, dict) or data.get("schema_version") != 2:
-        raise smoke.SmokeError("Wrong native escrow schema")
-    if any(key not in data for key in ("issued_launch_serial", "armed_flights", "rocket_authorities")):
-        raise smoke.SmokeError("Incomplete escrow authority tables")
+    try:
+        typed = typed_nbt.compound(typed_nbt.read(raw)[1], "data")
+        data = typed_nbt.plain(typed)
+        version = data.get("schema_version")
+        if version == 2:
+            return _ledger_root2(data)
+        if version == 3:
+            return _ledger_root3(data, typed)
+        raise ValueError("Wrong native escrow schema")
+    except (ValueError, KeyError, TypeError, IndexError, StopIteration) as failure:
+        raise smoke.SmokeError(f"Invalid native escrow ledger: {failure}") from failure
+
+
+def _ledger_header(data, version):
+    accounting.require(data.get("format_epoch") == accounting.EPOCHS[version], "Wrong native escrow epoch")
+    accounting.require(all(key in data for key in ("issued_launch_serial", "armed_flights", "rocket_authorities")),
+                       "Incomplete escrow authority tables")
+
+
+def _ledger_root2(data):
+    _ledger_header(data, 2)
     data["tombstones"] = [decode_receipt(receipt) for receipt in data["tombstones"]]
+    accounting.validate_root(data)
+    return data
+
+
+def _ledger_root3(data, typed):
+    _ledger_header(data, 3)
+    rows = typed_nbt.compound(typed, "fluid_accounts")
+    accounts = accounting.rows_by_id(data["fluid_accounts"], rows)
+    data["tombstones"] = [decode_receipt(receipt, accounts) for receipt in typed_nbt.compound(typed, "tombstones").value[1]]
+    accounting.validate_root(data, rows)
+    # Native Tag identity must use original types, never a guessed untyped JSON encoding.
+    for op in typed_nbt.compound(typed, "records").value[1]:
+        plain = typed_nbt.plain(op)
+        accounting.require(typed_nbt.compound(op, "schema_version").type == typed_nbt.INT, "Wrong operation schema type")
+        if plain["schema_version"] == 3:
+            baseline = typed_nbt.compound(op, "accounting_baseline")
+            accounting.require(baseline.type == typed_nbt.BYTES and len(baseline.value) == 32, "Wrong baseline digest type")
+        row = accounts.get(accounting.identity(plain["op_id"]))
+        if row is None: continue
+        fluid = typed_nbt.compound(op, "payload", *(() if row["b"]["s"] == 0 else ("fluid",)))
+        native_tag = fluid.value.get("Tag")
+        moved = next(e for e in row["b"]["e"] if e["x"])
+        envelope = "arce-escrow-fluid-key-1:" + moved["i"] + "\n" + ("absent" if native_tag is None else "tag:" + accounting.digest(native_tag))
+        accounting.require(bytes(moved["d"]).hex() == hashlib.sha256(envelope.encode()).hexdigest(), "Account native key mismatch")
     return data
 
 

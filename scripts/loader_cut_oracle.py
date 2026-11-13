@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import escrow_accounting as accounting
 from pathlib import Path
 
 import loader_cut_nbt as nbt
@@ -170,6 +171,7 @@ def check_section(section: dict, epoch: int, markers: int, root: dict | None, ro
 
 
 def check(disk: dict, cut: str, restart: int) -> dict:
+    accounting.check(disk["ledger"])
     if cut in NAMED:
         import loader_named_cut_oracle
         return loader_named_cut_oracle.check(disk, cut, restart)
@@ -229,6 +231,7 @@ def check(disk: dict, cut: str, restart: int) -> dict:
         identity["loaders"].append({key: loader[key] for key in ("owner", "device", "binding")})
     if root and root["records"]:
         op = root["records"][0]
+        accounting.expect_transfer(root, op)
         loader = devices[-1]["arce_fluid_fuel_loader"]
         require(op["source"]["identity"] == loader["device"] and op["source"]["type"] == LOADER
                 and op["destination"]["identity"] == rocket["UUID"] and op["payload"] == {"FluidName": OXYGEN if bi else FUEL, "Amount": 1000}
@@ -244,6 +247,7 @@ def check_chain(disk: dict, cut: str, restart: int) -> dict:
     """C1's mixed prefix is locked, not a claim that physical quantities alone are available."""
     name = cut.removeprefix(PREFIX).removesuffix("_BI"); bi = cut.endswith("_BI")
     root, devices, rocket = disk["ledger"], disk["loaders"], disk["rocket"]
+    accounting.check(root)
     prefix = 1 if name == "C1" and not restart else 2
     partial = name.startswith("C2_PARTIAL") and not restart
     require(root is not None and len(devices) == 2 and root["issued_through"] == 2, "Wrong chain authority/device count")

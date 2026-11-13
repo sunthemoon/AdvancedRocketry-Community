@@ -144,7 +144,8 @@ public abstract class EscrowItemCutProbe {
     static RocketEscrowSection section(RocketItemCargoBlockEntity device) { return device.root().orElseThrow().escrow(); }
 
     static boolean journalCut(boolean hooks, String scenario, String name) {
-        return hooks && "start".equals(scenario) && ("IS_O3J_AFTER".equals(name) || "IS_LOAD_O3J_AFTER".equals(name));
+        return hooks && "start".equals(scenario) && ("IS_O3J_BEFORE".equals(name) || "IS_LOAD_O3J_BEFORE".equals(name)
+                || "IS_O3J_AFTER".equals(name) || "IS_LOAD_O3J_AFTER".equals(name));
     }
     public static CheckedSavedDataPolicy journalPolicy(MinecraftServer server, CheckedSavedDataPolicy policy) {
         String name = System.getProperty(CASE);
@@ -155,6 +156,7 @@ public abstract class EscrowItemCutProbe {
             var previous = CheckedSavedDataFile.readPayload(target, type).orElse(null);
             var candidate = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
             boolean removal = previous != null && !previous.getList("transfers", 10).isEmpty() && candidate.getList("transfers", 10).isEmpty();
+            if (removal && name.endsWith("O3J_BEFORE")) { hardStop(name, "O3J_BEFORE"); }
             policy.committer().commit(staged, target);
             if (removal) { hardStop(name, "O3J_REPLACED"); }
         });
