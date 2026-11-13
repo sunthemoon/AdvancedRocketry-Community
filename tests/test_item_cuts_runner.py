@@ -19,10 +19,10 @@ from test_loader_cut_nbt import compound, string, region
 
 class ItemCutsRunnerTest(unittest.TestCase):
     def test_matrix_and_genuine_replacement_boundaries(self):
-        self.assertEqual(43, len(runner.CASES))
+        self.assertEqual(57, len(runner.CASES))
         self.assertEqual(12, sum(v["family"] == "D-S1" for v in runner.CASES.values()))
-        self.assertEqual(18, sum(v["family"] == "D-S2" for v in runner.CASES.values()))
-        self.assertEqual(13, sum(v["family"] == "D-S2-LOAD" for v in runner.CASES.values()))
+        self.assertEqual(25, sum(v["family"] == "D-S2" for v in runner.CASES.values()))
+        self.assertEqual(20, sum(v["family"] == "D-S2-LOAD" for v in runner.CASES.values()))
         self.assertEqual(["IR_CONTAINER", "IR_LOOT"], list(runner.CASES)[12:14])
         for direction in ("LOAD", "UNLOAD"):
             self.assertEqual("K2", runner.CASES[f"IC_{direction}_K2"]["boundary"])
@@ -49,6 +49,9 @@ class ItemCutsRunnerTest(unittest.TestCase):
             if probe.endswith("SOURCE_ONLY_STORE"): line += " selected=SOURCE"
             if probe.endswith("DESTINATION_ONLY_STORE"): line += " selected=DESTINATION"
             lines = [line]
+            if case == "IS_LOAD_VETO_DESTINATION_SAVED":
+                from test_cargo_load_veto_log import veto_error
+                lines += veto_error()
             if case == "IR_DISASSEMBLY": lines += ["ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=IR_DISASSEMBLY code=1"]
             runner.observations(lines, case, 0)
             for bad in ([], lines + [line], lines + ["[Server/ERROR] failure"]):
