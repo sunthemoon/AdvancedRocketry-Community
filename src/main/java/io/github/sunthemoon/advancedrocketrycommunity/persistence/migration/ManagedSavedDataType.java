@@ -63,7 +63,7 @@ public enum ManagedSavedDataType {
                     new RequiredTag("save_epoch", Tag.TAG_LONG)
             )
     ),
-    /** Unreleased D3-A root 2 replaces development root 1 without a migration reader. */
+    /** Explicit roots 2/3; root-2 migration is activated separately, and development root 1 stays unsupported. */
     RESOURCE_ESCROW(
             "v1.8.0", "advancedrocketrycommunity_resource_escrow", 1_048_576L,
             List.of(new RequiredTag("records", Tag.TAG_LIST), new RequiredTag("floors", Tag.TAG_LIST),

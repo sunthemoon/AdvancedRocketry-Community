@@ -162,4 +162,10 @@ class EscrowAccountingFormatTest {
         assertThrows(EscrowSettlementCapacity.StaleCapture.class, () -> EscrowSettlementCapacity.preflight(root, next.id()));
         assertEquals(encoded, EscrowCodec.encode(root)); assertEquals(0, root.writerGeneration()); assertEquals(2, root.issuedThrough());
     }
+    @Test void invalidBaselineCannotFallBackToLegacyEncoding() {
+        var op = operation(1); var base = baseline(op); var bad = new Baseline(Scope.FUEL,
+                List.of(new Entry(base.moved(), 5000, 0, 0, 0)));
+        assertThrows(IllegalArgumentException.class, () -> op.accounting(bad));
+        assertNull(op.accountingBaseline()); assertEquals(2, EscrowCodec.operation(op).getInt("schema_version"));
+    }
 }

@@ -26,8 +26,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * W357 section 4.1: account row schema 1 in its closed short-key form, with the bounds of section 5. Nothing reads or
- * writes this form yet (Slice A, W361). Every refusal is a bounded {@link Result}; no ordinary input throws.
+ * W357 section 4.1: account row schema 1 in its closed short-key form. Saved rows use {@link #SAVED}; the larger
+ * measurement envelope is not a persistence allowance. Row encode/decode refusals are bounded {@link Result}s.
  *
  * <pre>
  * v  int        schema, 1

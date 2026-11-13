@@ -34,7 +34,15 @@ class EscrowAccountingMigrationTest {
         var intent = EscrowAccountingFormatTest.intent(live, List.of());
         var o1 = intent.freeze(live); var o3 = EscrowSettlementTombstones.install(o1, intent);
         var o4 = EscrowSettlementTombstones.release(o3, intent);
-        for (var root : List.of(live, o1, o3, o4, EscrowCombinedReservationTest.retainedFloors(2))) {
+        var receipt = receipt(9); receipt.putBoolean("released", true); receipt.putLong("release_generation", 1);
+        var logical = receipt.getList("guards", 10).getCompound(0).getUUID("rocket_id");
+        var head = new EscrowFlightTables.Head(logical, id(99), receipt.getUUID("anchor_op"), 1, id(301), 2,
+                EscrowSignatureKind.FUEL_VECTOR_V1, hash(2), hash(3), 0, 0, EscrowFlightTables.Outcome.READY);
+        var ready = new EscrowLedger(id(500), 0, 1, List.of(), List.of(), List.of(receipt), 0, List.of(head), List.of());
+        var launch = new EscrowFlightAuthority.Launch(logical, id(99), id(301), new RocketEscrowSection(ready.id(), 2, List.of()),
+                hash(2), hash(3), id(401), id(501), hash(4), hash(5), hash(6), hash(7), new EscrowGuard(logical, null, 1, hash(8)), java.util.Set.of());
+        var armed = EscrowFlightAuthority.arm(ready, launch, 2);
+        for (var root : List.of(live, o1, o3, o4, ready, armed, EscrowCombinedReservationTest.retainedFloors(2))) {
             var source = EscrowCodec.encode(root); var original = source.copy();
             var target = SavedDataSchemaMigrator.migrateEscrow(source);
             assertEquals(original, source); assertEquals(3, target.getInt("schema_version"));
@@ -72,6 +80,35 @@ class EscrowAccountingMigrationTest {
         var source = EscrowCodec.encode(EscrowFlightBenchmarkCeiling.create(false)); var file = file(); write(file, source);
         var bytes = Files.readAllBytes(file); assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrateEscrow(source));
         assertArrayEquals(bytes, Files.readAllBytes(file));
+    }
+    @Test void validRoot2ReservationsCanBeFilledByOnlyTheNewHeader() throws Exception {
+        var floors = EscrowCombinedReservationTest.retainedFloors(20).floors();
+        int low = 0, high = 8000;
+        while (low < high) {
+            int middle = (low + high + 1) >>> 1;
+            try {
+                if (EscrowSettlementCapacity.reservedBytes(reservationEdge(middle, floors)) <= EscrowLimits.ROOT_BYTES) { low = middle; }
+                else { high = middle - 1; }
+            } catch (IllegalArgumentException full) { high = middle - 1; }
+        }
+        var root = reservationEdge(low, floors);
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root));
+        long bytes = EscrowSettlementCapacity.reservedBytes(root);
+        assertTrue(bytes <= EscrowLimits.ROOT_BYTES && bytes + 39 > EscrowLimits.ROOT_BYTES);
+        var source = EscrowCodec.encode(root); var file = file(); write(file, source); var original = Files.readAllBytes(file);
+        assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrateEscrow(source));
+        assertArrayEquals(original, Files.readAllBytes(file));
+    }
+    private static EscrowLedger reservationEdge(int blob, List<CompoundTag> floors) {
+        var ops = new java.util.ArrayList<EscrowOperation>();
+        for (int i = 1; i <= 62; i++) { ops.add(operation(i)); }
+        var original = operation(63).withReason(EscrowReason.OTHER_STATE); var payload = original.payload();
+        var tag = new CompoundTag(); tag.putByteArray("blob", new byte[blob]); payload.put("Tag", tag);
+        var op = new EscrowOperation(original.id(), 63, original.owner(), 1, original.phase(), original.reason(), payload,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(payload),
+                original.source(), original.destination(), original.guard());
+        var intent = EscrowAccountingFormatTest.intent(ledger(op), List.of()); ops.add(op.settle(intent));
+        return new EscrowLedger(id(500), 63, 1, ops, floors, List.of());
     }
     @Test void failedAndUnknownCheckedMigrationWritesKeepOriginalAndRetryExactTarget() throws Exception {
         var source = EscrowCodec.encode(ledger(operation(1))); var target = SavedDataSchemaMigrator.migrateEscrow(source);

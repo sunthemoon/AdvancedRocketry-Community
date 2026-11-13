@@ -7,7 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-/** Schema-3 receipts store exact digest bytes and one canonical copy of each audit observation. */
+/** Schema-3/4 receipts store exact digest bytes and one canonical copy of each audit observation. */
 final class EscrowReceiptCodec {
     private static final Set<String> DIGESTS = Set.of("payload_hash", "decision_digest", "digest", "signature",
             "before_signature", "after_signature", "journal_digest", "invariant_digest", "accounting_digest");

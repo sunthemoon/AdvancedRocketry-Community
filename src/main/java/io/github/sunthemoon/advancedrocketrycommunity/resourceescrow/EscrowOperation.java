@@ -18,8 +18,10 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
     }
     public boolean legacyFluid() { return kind.fluid() && accountingBaseline == null; }
     public EscrowOperation accounting(EscrowFluidAccount.Baseline baseline) {
+        var digest = EscrowFluidAccountCodec.baselineDigest(baseline);
+        EscrowTags.require(digest.ok(), "Invalid accounting baseline: " + digest.status());
         return new EscrowOperation(id, sequence, owner, createdTick, phase, reason, payload, payloadHash,
-                source, destination, guard, kind, settlement, nativeBinding, EscrowFluidAccountCodec.baselineDigest(baseline).value());
+                source, destination, guard, kind, settlement, nativeBinding, digest.value());
     }
     public enum Kind {
         FLUID_PROPULSION_FILL, TRANSFER_FLOOR_RETIRE, FLUID_CARGO_LOAD, FLUID_CARGO_UNLOAD,

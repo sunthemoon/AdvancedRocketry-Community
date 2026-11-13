@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 
-/** Immutable server-owned authority. Floors/tombstones have codecs but no online mutation in W11b1. */
+/** Immutable server-owned authority, including same-generation account references and permanent receipts. */
 public record EscrowLedger(UUID id, long issuedThrough, long writerGeneration,
                            List<EscrowOperation> records, List<CompoundTag> floors,
                            List<CompoundTag> tombstones, long issuedLaunchSerial,

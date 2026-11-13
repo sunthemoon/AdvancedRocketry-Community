@@ -134,8 +134,7 @@ public final class SavedDataSchemaMigrator {
     /** Explicit test seam; production reaches this only after the separately reviewed activation. */
     public static CompoundTag migrateEscrow(CompoundTag source) {
         try {
-            var migrated = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.upgradeRoot2(source);
-            return migrated;
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.upgradeRoot2(source);
         } catch (RuntimeException invalid) {
             throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA, "Escrow root-2 migration refused", invalid);
         }

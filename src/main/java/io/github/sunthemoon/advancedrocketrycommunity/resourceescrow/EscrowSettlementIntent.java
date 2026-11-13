@@ -141,6 +141,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 && name.chars().allMatch(character -> character >= 33 && character <= 126), ACTOR_NAME_REFUSAL);
     }
     public EscrowSettlementIntent confirm(UUID confirmingActor, String suppliedDigest, long tick, List<Observation> current) {
+        requireUniqueCandidates(observations);
         EscrowTags.require(actor.equals(confirmingActor) && suppliedDigest != null
                 && suppliedDigest.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 512
                 && digest.equals(suppliedDigest), "Preview actor or digest changed");
