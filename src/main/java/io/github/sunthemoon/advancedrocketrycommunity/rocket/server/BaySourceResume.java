@@ -38,6 +38,7 @@ final class BaySourceResume {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final MinecraftServer server;
     private final java.util.Set<UUID> renewing = new java.util.HashSet<>();
+    private final java.util.Set<UUID> heldForTests = new java.util.HashSet<>(); // W363: one log line per held L
     private long stepTick = Long.MIN_VALUE;
 
     BaySourceResume(MinecraftServer server) { this.server = server; }
@@ -101,6 +102,13 @@ final class BaySourceResume {
         }
         if (!BaySourceProof.endsLoaded(server, record)) {
             claim.waiting("END_LOADING"); // W170-R41: both recorded ends' census columns, which R1 already tickets (R150)
+            return BayStepQueue.Result.NEXT_TICK;
+        }
+        if (ReleaseTestBayEndHold.holds(server, claim.logical())) { // W363: gated; the same wait, as if an end were unloaded
+            if (heldForTests.add(claim.logical())) {
+                LOGGER.info("ARCE_RELEASE_BAY_END_HELD transfer={} logical={}", claim.transfer(), claim.logical());
+            }
+            claim.waiting("END_LOADING");
             return BayStepQueue.Result.NEXT_TICK;
         }
         if (RocketReleaseAccess.fenced(server, claim.logical())) { claim.waiting("RELEASE_FENCED"); return BayStepQueue.Result.NEXT_TICK; }
@@ -183,5 +191,5 @@ final class BaySourceResume {
     }
 
     /** A claim's end, or its gated forget. */
-    void forget(UUID logical) { renewing.remove(logical); }
+    void forget(UUID logical) { renewing.remove(logical); heldForTests.remove(logical); }
 }
