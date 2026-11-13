@@ -1,5 +1,4 @@
 """W358 controls, capacity/byte-preservation oracles and pinned campaign dispatch; no JVM."""
-from copy import deepcopy
 from pathlib import Path
 import sys
 import tempfile
@@ -9,10 +8,25 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_uncovered as runner
 import run_v180_integrated_campaign as campaign
-from test_run_v180_integrated_campaign import arguments, SOURCE, CANDIDATE, HASH
+from test_run_v180_integrated_campaign import arguments, SOURCE, HASH
 
 
 class Oracles(unittest.TestCase):
+    def test_destination_warmup_retries_with_new_request_identity(self):
+        class Session:
+            class args:
+                settle_timeout = 2
+            def __init__(self):
+                self.requests = []
+            def send(self, command, pattern):
+                request = command.split()[-1]; self.requests.append(request)
+                return "ARCE_W358_LAUNCH logical=L transfer=" + request + " result=" + ("DESTINATION_LOADING" if len(self.requests) == 1 else "SUCCESS")
+        run = Session()
+        with patch.object(runner.time, "sleep"):
+            accepted = runner.launch(run, dict(logical="L"))
+        self.assertEqual(2, len(set(run.requests)))
+        self.assertEqual(run.requests[1], accepted)
+
     def test_loader_refusal_requires_no_native_capture_and_no_mutation(self):
         row = dict(captured="false", status="OWNER_PENDING_FULL", unchanged="true")
         runner.check_refusal(row, "OWNER_PENDING_FULL")

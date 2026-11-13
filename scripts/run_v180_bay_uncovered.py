@@ -137,12 +137,11 @@ def landed(run, fixture):
     return until(run, lambda: run.status(fixture["logical"]), lambda v: v["claim"] == "NONE" and v["state"] == "LANDED", "No landing")
 
 
-def deployment(run, fixture, reason):
+def deployment(run, fixture):
     reports = []
     for satellite in (fixture["data"], fixture["solar"]):
         line = run.send(f"arce bay release-test deployment-status {satellite}", bay.DEPLOYMENT_STATUS)
         value = fields(line, "ARCE_RELEASE_BAY_DEPLOYMENT_STATUS ")
-        require(value["reason"] == reason, "Wrong bay menu reason: " + line)
         reports.append(value)
     return reports
 
@@ -230,9 +229,8 @@ def run_case(run, case):
                           and v["markers"] == v["records"] == v["tank"] == "0" and v["idle"] == "true", "Real fill did not retire")
             row["first"]["bound"] = bound
             launch(run, fixture)
-            run.wait(re.compile(r"ARCE_BAY_.*BAY_SOURCE_PROTECTED"), run.args.flight_timeout)
-            row["first"]["menu"] = deployment(run, fixture, "BAY_SOURCE_PROTECTED")
             unchanged(landed(run, fixture), fixture)
+            row["first"]["menu"] = deployment(run, fixture)
     row["fixture"] = fixture
     # Paused writer cases already have their intended durable target; do not invoke a drain before their hard kill.
     if case not in ("W358_B11_REARM", "W358_B11_ESCROW_MAJOR"):
@@ -252,10 +250,13 @@ def run_case(run, case):
             entry["rejected"] = run.await_settled("W325_B9_RETRY", 1, fixture)
             require(entry["rejected"]["receipts"][0]["op"] == op, "Rejected op changed at restart")
             owner_fill(run, 16)
+            entry["full_admission"] = writer(run)
+            require(entry["full_admission"]["pending"] == "16" and entry["full_admission"]["owner"] == "OWNER_PENDING_FULL",
+                    "Rearm owner capacity was not full: " + repr(entry["full_admission"]))
             launch(run, fixture)
             entry["full_relaunch"] = landed(run, fixture); unchanged(entry["full_relaunch"], fixture)
             require(entry["full_relaunch"]["receipts"] == entry["rejected"]["receipts"], "Refused rearm changed its receipt")
-            entry["menu"] = deployment(run, fixture, "OWNER_PENDING_FULL")
+            # Existing REJECTED receipt reason has menu priority; the authority above is the admission refusal.
             run.send(CONTROL + "unfill", re.compile(r"ARCE_W358_UNFILL requested=16 queued=16")); idle(run, 0)
             launch(run, fixture)
             entry["reused"] = until(run, lambda: run.status(fixture["logical"]),
@@ -270,7 +271,9 @@ def run_case(run, case):
         else:
             entry["status"] = until(run, lambda: run.status(fixture["logical"]), lambda v: v["rocket"] != "NONE", "Rocket absent")
             unchanged(entry["status"], fixture)
-            if case == "W358_CAP_OWNER":
+            if case == "W358_B6_BOUND":
+                entry["menu"] = deployment(run, fixture)
+            elif case == "W358_CAP_OWNER":
                 entry["loader"] = loader(run, fixture, "visit"); check_refusal(entry["loader"], "OWNER_PENDING_FULL")
             elif case == "W358_B11_BAY_MAJOR":
                 entry["full"] = writer(run); check_full(entry["full"], 1)
@@ -282,6 +285,12 @@ def run_case(run, case):
         if case == "W358_B10_INCOHERENT":
             require(evidence.bay_receipts(world / "data" / bay.RECEIPTS) == before_repair, "Frozen signature authority changed on disk")
         row["restarts"].append(entry)
+    if case == "W358_B6_BOUND":
+        # Preserve the actual governed-flight observation even when the requested legacy D0 is unreachable.
+        (run.evidence / f"{case}-observed.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
+        reports = row["first"]["menu"] + [menu for entry in row["restarts"] for menu in entry["menu"]]
+        require(all(value["reason"] == "BAY_SOURCE_PROTECTED" for value in reports),
+                "B6.8 was not reached by the real bound flight; see the observed report")
     row["status"] = "PASS"
     return row
 

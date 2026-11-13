@@ -86,6 +86,7 @@ public final class BayUncoveredReleaseTestCommands {
         var data = ResourceEscrowSavedData.forTests(server);
         var coordinator = data.bind(server);
         EscrowTags.require(data.ledger().records().isEmpty(), "W358 escrow fill requires an empty ledger");
+        try {
         for (int n = 1; n <= count; n++) {
             CompoundTag payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 1000);
             String hash = RocketNativeResources.hash("W358 escrow " + n);
@@ -99,13 +100,20 @@ public final class BayUncoveredReleaseTestCommands {
                     new EscrowGuard(logical, null, 1, hash));
             coordinator.prepareTest(op, committed -> LOGGER.info("ARCE_W358_ESCROW_ACK op={} committed={}", op.id(), committed));
         }
+        } catch (RuntimeException failure) {
+            LOGGER.info("ARCE_W358_ESCROW_REFUSED pending={} reason={}", coordinator.admissionAuthority().pendingCount(), failure.toString(), failure);
+            throw failure;
+        }
         LOGGER.info("ARCE_W358_ESCROW requested={} pending={}", count, coordinator.admissionAuthority().pendingCount());
         return count;
     }
 
     private static RocketEntity rocket(MinecraftServer server, UUID logical) {
-        return server.overworld().getEntities(ModEntities.ROCKET.get(), r -> r.assemblyTransactionId().filter(logical::equals).isPresent())
-                .stream().findFirst().orElseThrow();
+        for (var level : server.getAllLevels()) {
+            var found = level.getEntities(ModEntities.ROCKET.get(), r -> r.assemblyTransactionId().filter(logical::equals).isPresent());
+            if (!found.isEmpty()) { return found.get(0); }
+        }
+        throw new IllegalArgumentException("W358 rocket is not loaded: " + logical);
     }
 
     private static int loader(CommandSourceStack source, UUID logical, String action) {
@@ -141,7 +149,9 @@ public final class BayUncoveredReleaseTestCommands {
 
     private static int launch(CommandSourceStack source, UUID logical, UUID transfer) {
         var server = source.getServer(); EscrowTestEndpoints.requireEnabled(server);
-        var result = RocketRuntime.requestAdminFlight(rocket(server, logical), RocketDestination.MOON, transfer);
+        var rocket = rocket(server, logical);
+        var destination = RocketDestination.fromDimension(rocket.level().dimension().location()).opposite();
+        var result = RocketRuntime.requestAdminFlight(rocket, destination, transfer);
         LOGGER.info("ARCE_W358_LAUNCH logical={} transfer={} result={}", logical, transfer, result.code());
         return 1;
     }
@@ -159,11 +169,12 @@ public final class BayUncoveredReleaseTestCommands {
         var authority = BayReceiptTestHooks.authority(server);
         var writer = store.writer();
         var data = ResourceEscrowSavedData.existing(server);
-        LOGGER.info("ARCE_W358_WRITER unknown={} captured={} successor={} pending={} retained={} escrow={} bay={} fluid={}", writer.unknown(),
+        LOGGER.info("ARCE_W358_WRITER unknown={} captured={} successor={} pending={} retained={} escrow={} bay={} fluid={} owner={}", writer.unknown(),
                 writer.captured() == null ? 0 : writer.captured().receipts().size(), writer.hasSuccessor(), authority.pendingCount(),
                 authority.retainedCount(), data == null ? 0 : data.ledger().records().size(),
                 authority.checkReserve(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), EscrowAdmissionAuthority.Consumer.BAY),
-                authority.checkReserve(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), EscrowAdmissionAuthority.Consumer.PROPULSION));
+                authority.checkReserve(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), EscrowAdmissionAuthority.Consumer.PROPULSION),
+                authority.checkReserve(UUID.randomUUID(), OWNER, UUID.randomUUID(), EscrowAdmissionAuthority.Consumer.BAY));
         return 1;
     }
 }
