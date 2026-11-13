@@ -83,7 +83,6 @@ final class BaySourceResume {
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         long now = server.getTickCount();
         if (stepTick == now) { return BayStepQueue.Result.NEXT_TICK; } // one group per tick
-        stepTick = now;
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
         if (!journal.operational()) { claim.waiting("TRANSFER_JOURNAL_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
@@ -112,6 +111,9 @@ final class BaySourceResume {
             return BayStepQueue.Result.NEXT_TICK;
         }
         if (RocketReleaseAccess.fenced(server, claim.logical())) { claim.waiting("RELEASE_FENCED"); return BayStepQueue.Result.NEXT_TICK; }
+        // W363 (R451): only a group past its waits takes the tick's one R2 slot. A waiting group reads its bounded
+        // conditions and passes the slot on, so it cannot starve the restart groups queued behind it.
+        stepTick = now;
         UUID uuid = record.sourceEntityId();
         String copies = BayCopyCensus.inspect(server, record, group).refusal();
         if (copies != null) {
