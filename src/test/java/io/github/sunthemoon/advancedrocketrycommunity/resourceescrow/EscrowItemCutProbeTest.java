@@ -133,6 +133,18 @@ assertEquals(45, cases.size()); // W360: seven new cuts in each item direction.
             assertFalse(EscrowItemCutProbe.journalCut(true, "recover", name));
         }
     }
+
+    @Test void runtimeConsultsTheItemStoreFilterOnlyWithReleaseHooks() throws Exception {
+        var path = java.nio.file.Path.of("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowRuntime.java");
+        var source = java.nio.file.Files.readString(path).replace("\r\n", "\n");
+        assertTrue(source.contains("if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {\n"
+                + "            var item = itemCutProbe;\n"
+                + "            if (item != null && !item.permitsStore(op, endpoint)) { return false; }\n"
+                + "        }\n        var cuts = cargoCuts;"));
+        assertFalse(EscrowCargoSettlementCuts.storeAllowed(true, true, false));
+        assertTrue(EscrowCargoSettlementCuts.storeAllowed(true, true, true));
+        assertTrue(EscrowCargoSettlementCuts.storeAllowed(false, true, false));
+    }
     @Test void candidatesAreCodecValidTypedAndNeverMutateTheLiveSnapshot() {
         assertNull(EscrowItemRecoveryCuts.candidate(false, "IR_LOOT", null, null));
         assertNull(EscrowItemRecoveryCuts.candidate(true, "OTHER", null, null));
