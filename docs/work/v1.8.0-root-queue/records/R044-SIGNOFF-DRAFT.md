@@ -61,7 +61,17 @@
 - **Item 8, re-review.** The draft ties re-review to v1.9.0 and to changes in the format. The owner can choose a
   different version.
 
-## 3. What Root does after a signature
+## 3. Effect of W357's planned ledger change (added 2026-11-13)
+
+W357's design (Root decision R440) moves the escrow ledger to root 3. Once that is implemented, every escrow-aware
+older JAR, C3 included, also refuses a world whose ledger is root 3, even when the world has no governed transfer
+record. That is a second refusal reason next to the transfer journal's schema 3. Whether such a refusal also rewrites
+`level.dat` has not been tested; candidate C4 adds native downgrade cases for it. Item 8 of the text above would
+make a signature given now lapse when root 3 lands. Root therefore recommends signing after C4's results, with item 1
+naming both boundaries and item 2 citing C4's evidence. Root will give that revised text with the C4 report. The text
+above stays the draft for the current format.
+
+## 4. What Root does after a signature
 
 1. Records the owner's words verbatim in a new owner-decision record, with the date and channel.
 2. Changes R-044's downgrade paragraph from "风险接受仍待所有者" to the signed scope, and adds the acceptance (owner,
