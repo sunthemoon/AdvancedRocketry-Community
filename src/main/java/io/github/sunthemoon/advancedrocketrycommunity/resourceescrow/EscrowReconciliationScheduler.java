@@ -114,6 +114,7 @@ public final class EscrowReconciliationScheduler {
         } else {
             retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED
                     || result.reason() == EscrowReason.TRANSFER_JOURNAL_UNPROVED
+                    || result.reason() == EscrowReason.UNKNOWN_BASELINE
                     || result.reason() == EscrowReason.RECONCILIATION_UNIMPLEMENTED ? 20 : 1);
         }
     }

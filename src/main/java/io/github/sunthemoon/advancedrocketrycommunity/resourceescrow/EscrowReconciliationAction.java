@@ -54,6 +54,7 @@ public final class EscrowReconciliationAction {
         catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
         }
+        EscrowAccountingReconciliation.requireApply(root, operation, destination ? operation.destination() : operation.source(), before, after);
         if (EscrowReconciliationValidation.action(root, operation, before, after, destination) != EscrowReason.NONE) {
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
         }

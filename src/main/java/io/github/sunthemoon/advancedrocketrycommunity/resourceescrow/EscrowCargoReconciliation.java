@@ -34,6 +34,9 @@ final class EscrowCargoReconciliation implements AutoCloseable {
                     endpoint -> publish(coordinator, op, view, endpoint));
             if (step == Step.DONE && active == op) { close(); }
             return step;
+        } catch (EscrowReconciliationView.Refusal refused) {
+            if (active == op) { close(); }
+            throw refused;
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             if (active == op) { close(); }
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);

@@ -31,11 +31,12 @@ public enum FluidFuelLoaderStatus {
     PREPARING,
     /** An applied operation progressing through its proofs and L2. */
     TRANSFERRING,
-    OWNER_PENDING_FULL;
+    OWNER_PENDING_FULL,
+    UNKNOWN_BASELINE;
 
     public static final String KEY_PREFIX = "message.advancedrocketrycommunity.fluid_fuel_loader.";
 
-    public boolean refusal() { return ordinal() < READY.ordinal() || this == OWNER_PENDING_FULL; }
+    public boolean refusal() { return ordinal() < READY.ordinal() || this == OWNER_PENDING_FULL || this == UNKNOWN_BASELINE; }
 
     public String translationKey() { return KEY_PREFIX + name().toLowerCase(Locale.ROOT); }
 }

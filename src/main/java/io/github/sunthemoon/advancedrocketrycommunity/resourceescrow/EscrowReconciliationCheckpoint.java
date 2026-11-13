@@ -16,6 +16,8 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
     final Set<UUID> members;
     final Map<EscrowEndpoint.Key, EscrowSettlementIntent.Observation> ends;
     final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers;
+    private final Map<EscrowEndpoint.Key, Map<UUID, EscrowFluidAccount.Vector>> accounting;
+    private final boolean checkedAccounting;
     private final Map<EscrowEndpoint.Key, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot> witnesses;
     private final Map<EscrowEndpoint.Key, EscrowCargoReadback> cargoReadbacks = new HashMap<>();
     final BooleanSupplier journalLease;
@@ -39,7 +41,17 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
             List<EscrowSettlementIntent.Observation> observations, BooleanSupplier journalLease,
             Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers,
             Map<EscrowEndpoint.Key, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot> witnesses) {
+        this(root, members, observations, journalLease, frontiers, witnesses, Map.of());
+    }
+
+    EscrowReconciliationCheckpoint(EscrowLedger root, Set<UUID> members,
+            List<EscrowSettlementIntent.Observation> observations, BooleanSupplier journalLease,
+            Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers,
+            Map<EscrowEndpoint.Key, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot> witnesses,
+            Map<EscrowEndpoint.Key, Map<UUID, EscrowFluidAccount.Vector>> accounting) {
         this.root = root; this.members = Set.copyOf(members); this.journalLease = journalLease;
+        this.accounting = accounting.entrySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
+                Map.Entry::getKey, entry -> Map.copyOf(entry.getValue())));
         this.witnesses = Map.copyOf(witnesses);
         EscrowTags.require(!members.isEmpty() && journalLease.getAsBoolean(), "Checkpoint needs members and a checked journal lease");
         var affected = root.records().stream().filter(op -> members.contains(op.id()))
@@ -55,6 +67,8 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
                 "Checkpoint must cover every affected native endpoint");
         EscrowTags.require(frontiers.keySet().containsAll(ends.keySet()), "Checkpoint lacks an affected frontier");
         this.frontiers = ends.keySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(key -> key, frontiers::get));
+        checkedAccounting = accountingValid();
+        if (!checkedAccounting) { EscrowAccountingReconciliation.mismatch(); }
         EscrowTags.require(EscrowReconciliationValidation.retirementReady(root, members, this.frontiers), "Later acknowledged member is not applied");
         var chains = EscrowPrefix.chains(root.records());
         ends.values().forEach(end -> requireBinding(chains.get(end.endpoint().key()), end));
@@ -85,9 +99,9 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
         var expected = ends.get(key);
         EscrowTags.require(expected != null, "Unknown checkpoint endpoint");
         var chain = List.copyOf(EscrowPrefix.chains(root.records()).get(key));
-        if (chain.stream().anyMatch(link -> link.operation().kind().cargo())) {
+        if (chain.stream().anyMatch(link -> link.operation().kind().cargo() || link.operation().accountingBaseline() != null)) {
             return cargoReadbacks.computeIfAbsent(key, ignored -> new EscrowCargoReadback(root.id(),
-                    new EscrowReconciliationObservation(expected, frontiers.get(key)), witnesses.get(key),
+                    new EscrowReconciliationObservation(expected, frontiers.get(key), accounting.getOrDefault(key, Map.of())), witnesses.get(key),
                     chain.stream().map(EscrowPrefix.Link::operation).toList()));
         }
         return slot -> {
@@ -135,9 +149,12 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
     }
 
     boolean proved() {
-        return !closed && journalLease.getAsBoolean() && proofs.keySet().equals(ends.keySet())
+        return !closed && checkedAccounting && journalLease.getAsBoolean() && proofs.keySet().equals(ends.keySet())
                 && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)
                 && cargoReadbacks.values().stream().allMatch(EscrowCargoReadback::confirmed);
+    }
+    boolean accountingValid() {
+        return EscrowAccountingReconciliation.matches(root, members, frontiers, accounting, true);
     }
 
     @Override public void close() { closed = true; proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear(); }

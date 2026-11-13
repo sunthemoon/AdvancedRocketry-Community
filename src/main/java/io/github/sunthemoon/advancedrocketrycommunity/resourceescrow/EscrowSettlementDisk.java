@@ -26,6 +26,11 @@ final class EscrowSettlementDisk {
     }
     static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot captureWitness) {
+        return ordinary(root, endpoint, ledger, captureWitness, List.of());
+    }
+    static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot captureWitness,
+            List<EscrowOperation> operations) {
         boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
         if (entity) {
             int[] position = root.getIntArray("Position");
@@ -58,10 +63,14 @@ final class EscrowSettlementDisk {
         }
         if (found == null) { return EscrowReconciliationObservation.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0), null); }
         if (!entity && EscrowLoaderEndpoint.is(endpoint)) {
-            return EscrowReconciliationObservation.of(EscrowLoaderEndpoint.observation(endpoint, EscrowLoaderEndpoint.root(found), ledger), null);
+            var nativeRoot = EscrowLoaderEndpoint.root(found);
+            return EscrowReconciliationObservation.of(EscrowLoaderEndpoint.observation(endpoint, nativeRoot, ledger), null)
+                    .accounting(EscrowAccountingCapture.vectors(operations, endpoint, nativeRoot.tank().encode(), null, null));
         }
         if (!entity && EscrowFluidCargoEndpoint.is(endpoint)) {
-            return EscrowReconciliationObservation.of(EscrowFluidCargoEndpoint.observation(endpoint, EscrowFluidCargoEndpoint.root(found), ledger), null);
+            var nativeRoot = EscrowFluidCargoEndpoint.root(found);
+            return EscrowReconciliationObservation.of(EscrowFluidCargoEndpoint.observation(endpoint, nativeRoot, ledger), null)
+                    .accounting(EscrowAccountingCapture.vectors(operations, endpoint, nativeRoot.tank().encode(), null, null));
         }
         if (!entity && EscrowItemCargoEndpoint.is(endpoint)) {
             return EscrowReconciliationObservation.of(EscrowItemCargoEndpoint.observation(endpoint, EscrowItemCargoEndpoint.root(found), ledger), null);
@@ -93,7 +102,8 @@ final class EscrowSettlementDisk {
         String signature = flight.fuel().resourceSignature();
         return EscrowReconciliationObservation.of(new EscrowSettlementIntent.Observation(endpoint, new EscrowPrefix.State(ledger, section.epoch(), signature, section.markers()),
                 section.ledger() != null, flight.fuel().totalAmount(), EscrowSignatureKind.FUEL_VECTOR_V1,
-                EscrowInvariant.rocket(endpoint, EscrowTags.uuid(wrapper, "owner_id"), snapshot)), snapshot.contentHash());
+                EscrowInvariant.rocket(endpoint, EscrowTags.uuid(wrapper, "owner_id"), snapshot)), snapshot.contentHash())
+                .accounting(EscrowAccountingCapture.vectors(operations, endpoint, null, flight.fuel(), snapshot));
     }
     private static void collect(List<net.minecraft.nbt.Tag> entries, List<CompoundTag> result, int depth, boolean entities) {
         EscrowTags.require(depth <= 16, "Passenger observation depth exceeded");

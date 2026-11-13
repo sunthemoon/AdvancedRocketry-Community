@@ -103,6 +103,9 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
                 : !coordinator.operational()) { return status = RocketCargoStatus.LEDGER_UNAVAILABLE; }
         virtual = coordinator == null ? EscrowLedger.empty(java.util.UUID.randomUUID()) : null;
         var logical = rocket.assemblyTransactionId().orElseThrow();
+        if (coordinator != null && ledger().schema() == 3 && coordinator.unresolvedNaming(rocket.getUUID()).stream().anyMatch(EscrowOperation::legacyFluid)) {
+            return status = RocketCargoStatus.UNKNOWN_BASELINE;
+        }
         if (EscrowSettlementTombstones.history(ledger(), logical)
                 || ledger().rocketAuthorities().stream().anyMatch(head -> logical.equals(head.logical()))) {
             return status = RocketCargoStatus.RECEIPT_BACKED;
@@ -161,7 +164,8 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
                         () -> { nativeBefore = device.saveWithFullMetadata(); return nativeBefore; },
                         () -> EscrowFluidCargoProjection.after(nativeBefore, ledger().id(), op), this::nativeUnchanged, capacity);
             }
-            if (!capture.advance(ledger(), coordinator == null ? List.of() : coordinator.pendingAdmissions())) { return; }
+            if (!capture.advance(coordinator != null && ledger().schema() == 3 ? coordinator.pendingLedger() : ledger(),
+                    coordinator == null || ledger().schema() == 3 ? List.of() : coordinator.pendingAdmissions())) { return; }
             var result = capture.result();
             if (result.refusal() != null) {
                 if (result.refusal() == EscrowCoordinator.Transfer.CARGO_TOO_LARGE) { retryCandidate(); }

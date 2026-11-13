@@ -63,7 +63,7 @@ final class EscrowCargoCapture {
                 load ? deviceBeforeDigest : rocketBeforeDigest, load ? deviceAfterDigest : rocketAfterDigest,
                 load ? rocketBeforeDigest : deviceBeforeDigest, load ? rocketAfterDigest : deviceAfterDigest, true);
         var captured = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding, op.accountingBaseline());
         EscrowCodec.operation(captured);
         return new EscrowNativeBinding.Admission(captured, beforeWrapper);
     }

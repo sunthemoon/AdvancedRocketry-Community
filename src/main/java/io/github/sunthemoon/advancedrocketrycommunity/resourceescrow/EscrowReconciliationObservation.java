@@ -5,7 +5,15 @@ import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 
 /** Ordinary prefix projection beside, never substituted for, the settlement fuel observation. */
-record EscrowReconciliationObservation(EscrowSettlementIntent.Observation settlement, EscrowPrefix.State state) {
+record EscrowReconciliationObservation(EscrowSettlementIntent.Observation settlement, EscrowPrefix.State state,
+        java.util.Map<UUID, EscrowFluidAccount.Vector> fluids) {
+    EscrowReconciliationObservation(EscrowSettlementIntent.Observation settlement, EscrowPrefix.State state) {
+        this(settlement, state, java.util.Map.of());
+    }
+    EscrowReconciliationObservation { fluids = java.util.Map.copyOf(fluids); }
+    EscrowReconciliationObservation accounting(java.util.Map<UUID, EscrowFluidAccount.Vector> vectors) {
+        return new EscrowReconciliationObservation(settlement, state, vectors);
+    }
     static EscrowReconciliationObservation of(EscrowSettlementIntent.Observation observation, String contentHash) {
         var state = observation.state(); var endpoint = observation.endpoint();
         if (state != null && EscrowSignatureKind.endpoint(endpoint) == EscrowSignatureKind.ROCKET_COMPOSITE_V1) {

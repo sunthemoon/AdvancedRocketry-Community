@@ -57,6 +57,10 @@ final class EscrowCargoEligibility {
             EscrowTags.require(!load || afterFluid.getAmount() <= tankCapacity, "Cargo capture exceeds tank capacity");
             device(root, operation, delta, deviceBefore, deviceAfter, load);
             var capture = EscrowCargoCapture.capture(root.id(), operation, rocketBefore, rocketAfter, deviceBefore, deviceAfter);
+            if (root.schema() == 3) {
+                capture = EscrowAccountingCapture.bind(capture.operation(), capture.before(), rocketBefore, rocketAfter,
+                        deviceBefore, deviceAfter, before, computed);
+            }
             var refusal = EscrowCargoRefusals.capacity(root, pending, capture);
             if (refusal.isPresent()) { return Result.refused(refusal.get()); }
             return new Result(Status.ELIGIBLE, capture);

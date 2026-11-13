@@ -21,6 +21,9 @@ final class EscrowTransferAdmission {
     }
     static Optional<EscrowCoordinator.Transfer> refusal(EscrowLedger root, Collection<EscrowOperation> pending,
                                                        EscrowNativeBinding.Admission capture) {
+        if (EscrowAccountingReconciliation.legacyComponent(root, pending, capture.operation())) {
+            return Optional.of(EscrowCoordinator.Transfer.UNKNOWN_BASELINE);
+        }
         var exclusive = exclusive(root, pending, capture);
         if (exclusive.isPresent()) { return exclusive; }
         // Settlement-backed retired markers already imply RECEIPT_BACKED. A remaining marker is not

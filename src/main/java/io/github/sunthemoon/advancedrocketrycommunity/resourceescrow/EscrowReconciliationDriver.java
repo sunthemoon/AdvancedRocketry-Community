@@ -44,6 +44,9 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         var root = coordinator.ledger();
+        if (EscrowAccountingReconciliation.legacyHeld(root, op)) {
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.UNKNOWN_BASELINE, false)); return;
+        }
         if (!root.records().contains(op) || coordinator.currentReason(op).manual() || !op.settlement().isEmpty()) {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
@@ -75,6 +78,9 @@ final class EscrowReconciliationDriver {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         var key = component.get(0).id();
+        if (root.schema() == 3 && component.stream().anyMatch(EscrowOperation::legacyFluid)) {
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.UNKNOWN_BASELINE, false)); return;
+        }
         if (actionApplied || changed.contains(key) || component.stream().anyMatch(member -> coordinator.currentReason(member).manual()
                 || !member.settlement().isEmpty() || coordinator.admitting(member.source().key()) || coordinator.admitting(member.destination().key()))) {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
@@ -128,6 +134,7 @@ final class EscrowReconciliationDriver {
             }
             checkpoint(server, op, view, completion);
         } catch (EscrowReconciliationView.Refusal refused) {
+            if (refused.reason == EscrowReason.ACCOUNTING_MISMATCH) { coordinator.holdAccounting(component); }
             completion.accept(new EscrowReconciliationScheduler.Result(refused.reason, false));
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.INVALID_ENDPOINT, false));
@@ -183,7 +190,8 @@ final class EscrowReconciliationDriver {
             var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
             var witnesses = view.ends.entrySet().stream().filter(entry -> entry.getValue().rocket() != null)
                     .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().rocket().snapshot().orElseThrow()));
-            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states, witnesses);
+            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states, witnesses,
+                    view.root.schema() == 3 ? EscrowAccountingReconciliation.capture(view) : Map.of());
             // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
             EscrowTags.require(view.unchanged(coordinator), "C3 observation changed before freezing");
             for (var end : observations) { coordinator.freeze(end.endpoint().key(), states.get(end.endpoint().key())); }
@@ -211,6 +219,7 @@ final class EscrowReconciliationDriver {
                             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
                         }
                         var reason = frozen.readbackReason(targets, result);
+                        if (reason == EscrowReason.ACCOUNTING_MISMATCH) { coordinator.holdAccounting(view.members); }
                         frozen.accept(targets, result);
                         if (frozen.proved()) { runtime.checkpoint("C6_JOINT_READBACK"); }
                         // C6 is internal proof, never scheduler success or release authority.
