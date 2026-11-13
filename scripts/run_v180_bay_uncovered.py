@@ -371,7 +371,9 @@ def run_case(run, case):
     for restart in (1, 2):
         process = run.start(case, restart, {})
         entry = dict(restart=restart)
-        if case in B6:
+        if case == "W358_B6_BOUND":
+            # W363: this probe throws once the landed flight's record is retired, so the wait can time out. The new
+            # case does not use it; its landed rocket is awaited below.
             released.ready(run, fixture["logical"])
         if case == "W358_B10_INCOHERENT":
             released.ready(run, fixture["logical"])
