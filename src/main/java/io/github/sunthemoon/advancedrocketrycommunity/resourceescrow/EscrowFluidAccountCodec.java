@@ -130,7 +130,7 @@ public final class EscrowFluidAccountCodec {
 
     public static Result<List<Row>> decodeRows(ListTag list, Limits limits) {
         if (list == null || list.size() > MAX_ROWS) { return Result.refuse(Status.CARDINALITY); }
-        if (!list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND) { return Result.refuse(Status.INVALID_FIELD); }
+        if (list.getElementType() != (list.isEmpty() ? Tag.TAG_END : Tag.TAG_COMPOUND)) { return Result.refuse(Status.INVALID_FIELD); }
         var rows = new ArrayList<Row>(); var ids = new HashSet<UUID>();
         for (Tag raw : list) {
             var row = decode((CompoundTag) raw, limits);

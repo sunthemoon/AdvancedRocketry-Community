@@ -33,6 +33,17 @@ class EscrowFluidAccountCodecTest {
     static final Limits MAX = EscrowFluidAccountCodec.MAXIMUM;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void emptyAccountListsRequireTheCanonicalEndElementType() throws ReflectiveOperationException {
+        assertEquals(List.of(), EscrowFluidAccountCodec.decodeRows(new ListTag(), MAX).value());
+        var constructor = ListTag.class.getDeclaredConstructor(List.class, byte.class);
+        constructor.setAccessible(true);
+        for (byte type = 1; type <= 12; type++) {
+            var typedEmpty = constructor.newInstance(List.of(), type);
+            assertTrue(typedEmpty.isEmpty()); assertEquals(type, typedEmpty.getElementType());
+            assertEquals(Status.INVALID_FIELD, EscrowFluidAccountCodec.decodeRows(typedEmpty, MAX).status(), "Element type " + type);
+        }
+    }
+
     /** A fuel fill with a collateral oxygen bank; frozen KNOWN with a foreign lava unit and a 100 mB water loss. */
     static Row frozenRow() {
         var member = new Member(id(1), 1, device(10), rocket(20, "FUEL"),
