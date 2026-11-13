@@ -55,6 +55,11 @@ final class BayGapReleaseTestGateTest {
         UUID id = UUID.randomUUID();
         return List.of("arce bay release-test decommission " + id, "arce bay release-test deployment-status " + id,
                 "arce bay release-test stale-assembly " + id,
+                "arce bay release-test seed-repair " + id + " incoherent",
+                "arce bay release-test w358 owner-fill 16", "arce bay release-test w358 unfill",
+                "arce bay release-test w358 escrow-fill 63", "arce bay release-test w358 loader " + id + " visit",
+                "arce bay release-test w358 launch " + id + " " + id, "arce bay release-test w358 writer arm",
+                "arce bay release-test fixture 8 2 8 parked",
                 "arce bay release-test fixture 8 2 8 trio", "arce bay release-test exit fixture 8 2 8 survey",
                 "arce bay release-test exit fixture 8 2 8 offline");
     }
@@ -101,6 +106,27 @@ final class BayGapReleaseTestGateTest {
         property(BayDeploymentCuts.PROPERTY, "B15_D1");
         property(HOOKS, "false");
         assertNull(BayDeploymentCuts.configured(servers.server(directory, false)), "the cut armed without the hooks property");
+    }
+
+    @Test void heldUnknownIsInertWithoutHooksAndRepeatsUntilExplicitRelease() throws Exception {
+        var staged = directory.resolve("staged"); var target = directory.resolve("target");
+        property(HOOKS, "false");
+        var inert = new BayReceiptCommitCut();
+        inert.arm(BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.HOLD_UNKNOWN, "W358_UNKNOWN", UUID.randomUUID());
+        java.nio.file.Files.writeString(staged, "baseline");
+        inert.commit(staged, target);
+        assertEquals("baseline", java.nio.file.Files.readString(target));
+        property(HOOKS, "true");
+        var held = new BayReceiptCommitCut();
+        held.arm(BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.HOLD_UNKNOWN, "W358_UNKNOWN", UUID.randomUUID());
+        java.nio.file.Files.writeString(staged, "candidate");
+        for (int attempt = 0; attempt < 3; attempt++) {
+            assertThrows(java.io.IOException.class, () -> held.commit(staged, target));
+            assertEquals("baseline", java.nio.file.Files.readString(target));
+            assertEquals("candidate", java.nio.file.Files.readString(staged));
+        }
+        held.release(); held.commit(staged, target);
+        assertEquals("candidate", java.nio.file.Files.readString(target));
     }
 
     private static CommandSourceStack source(MinecraftServer server) {
