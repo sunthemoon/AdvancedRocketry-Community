@@ -204,17 +204,32 @@ def inspect(world: Path) -> dict:
 
 
 def check_settlement(case: str, disk: dict, restarted: bool) -> None:
+    import escrow_accounting as accounting
+    accounts = accounting.check(disk["ledger"])
     spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
     landed = restarted and spec.get("landed")
     require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == ("LOAD" if spec.get("load") else "UNLOAD")), "Settlement duplicated the rocket or changed the device")
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
+    for op in root["records"]: accounting.expect_transfer(root, op)
+    chosen_rocket = None if ends["rocket"] is None else ends["rocket"][0]
+    chosen_device = None if ends["device"] is None else ends["device"][0]
+    for row in accounts.values():
+        accounting.expect_frozen(row, chosen_device if spec.get("load") else chosen_rocket,
+                                 chosen_rocket if spec.get("load") else chosen_device)
     require([op["phase"] for op in root["records"]] == state["records"], "Ledger records differ from the boundary")
     require(all(("settlement" in op) == state["intent"] for op in root["records"]), "Frozen intent presence differs from the boundary")
     require(all(op["reason"] == "OTHER_STATE" for op in root["records"] if op["phase"] == "REPAIR"), "Manual conflict lost its reason")
     require([receipt["released"] for receipt in root["tombstones"]] == state["receipts"], "Receipt boundary differs")
     require(len(root["rocket_authorities"]) == state["heads"] and not root["floors"], "Head count or floor differs")
     for receipt in root["tombstones"]:
-        require(receipt["accounting_status"] == "UNKNOWN" and receipt["payload_amount"] == 0
+        row = accounts.get(accounting.identity(receipt["op_id"])) if root.get("schema_version") == 3 else None
+        if root.get("schema_version") == 3:
+            require(row is not None and receipt["schema_version"] == 4, "Fresh fluid receipt took legacy branch")
+            require(receipt["accounting_status"] == ("UNKNOWN" if spec.get("choice") == "ABANDON" else "KNOWN"),
+                    "Fluid receipt knowledge differs from endpoint availability")
+            if receipt["accounting_status"] == "KNOWN":
+                require(all(e.get("a", 0) == 0 for e in row["f"]["e"]), "Settlement has a nonzero signed discrepancy")
+        require((root.get("schema_version") == 3 or receipt["accounting_status"] == "UNKNOWN") and receipt["payload_amount"] == 0
                 and receipt["choice"] == spec.get("choice", "ACCEPT_CURRENT"), "Receipt accounting or choice changed")
         require(len(receipt["missing"]) == (1 if spec.get("choice") == "ABANDON" else 0), "Receipt survivors or absences changed")
         for survivor in receipt["survivors"]:
@@ -338,6 +353,8 @@ def fences(lines: list[str]) -> list[str]:
 
 
 def check(case: str, disk: dict, restarted: bool) -> None:
+    import escrow_accounting as accounting
+    accounting.check(disk["ledger"])
     if CASES[case]["family"] in ("C-S4", "C-S4-LOAD"):
         check_settlement(case, disk, restarted)
     else:
@@ -555,6 +572,10 @@ def run(args) -> None:
                         recovered_proofs(lines, first_raw["ledger"]["records"][0]["settlement"]["digest"], case)
                     require(not restart or start["exit_code"] == 0, "Restart exited unsuccessfully")
                     disk = inspect(world); check(case, disk, bool(restart))
+                    if restart and disk["ledger"].get("schema_version") == 3:
+                        import escrow_accounting as accounting
+                        initial = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))["ledger"]
+                        accounting.check_progress(initial, disk["ledger"])
                     start["disk"] = dict(ledger=dict(records=[(op["phase"], op["reason"], "settlement" in op) for op in disk["ledger"]["records"]],
                                                      receipts=[(r["choice"], r["released"], len(r["survivors"]), len(r["missing"])) for r in disk["ledger"]["tombstones"]],
                                                      heads=[(h["e"], h["outcome"]) for h in disk["ledger"]["rocket_authorities"]],

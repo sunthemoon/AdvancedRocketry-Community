@@ -110,7 +110,9 @@ def expected_binding(disk, op, records, bi):
 
 
 def check_resources(disk, bi, released):
+    i.accounting.check(disk["ledger"])
     projected = copy.deepcopy(disk)
+    projected["ledger"] = i.accounting.resource_projection(disk["ledger"])
     projected["ledger"]["tombstones"] = []; projected["ledger"]["rocket_authorities"] = []
     identity = legacy.check_chain(projected, "LF_M_C2" + ("_BI" if bi else ""), int(released))
     root = disk["ledger"]; r = disk["rocket"]; d = r["RocketEntityData"]; flight = d["flight_data"]
@@ -125,7 +127,8 @@ def check_resources(disk, bi, released):
     records = root["records"]
     for op in records:
         seq = op["seq"]; device = disk["loaders"][seq - 1]["arce_fluid_fuel_loader"]; fluid = device["tank"]["FluidName"]
-        legacy.require(op["schema_version"] == 2 and op["kind"] == "FLUID_PROPULSION_FILL" and op["owner"] == d["owner_id"]
+        i.accounting.expect_transfer(root, op, destination_before=0 if bi else (seq - 1) * 1000)
+        legacy.require(op["schema_version"] == (3 if root.get("schema_version") == 3 else 2) and op["kind"] == "FLUID_PROPULSION_FILL" and op["owner"] == d["owner_id"]
                        and op["transfer_guard"]["rocket_id"] == d["assembly_transaction_id"]
                        and "transfer_id" not in op["transfer_guard"] and op["transfer_guard"]["journal_generation"] == 1,
                        "S6 chain changed operation identity or guard")
@@ -165,7 +168,7 @@ def receipts(root):
     for op in records:
         observations = [o for o in op["settlement"]["observations"] if o["endpoint"]["identity"] in (op["source"]["identity"], op["destination"]["identity"])]
         member = dict(op, settlement=dict(op["settlement"], observations=observations))
-        result.append(dict(pending_receipt(member), anchor_op=anchor))
+        result.append(dict(pending_receipt(member), anchor_op=anchor, **i.accounting.receipt_fields(root, op)))
     return result
 
 
@@ -202,10 +205,10 @@ def check(image, restart, identity=None, cut=CASES[0]):
                 legacy.require(all(not op.get("settlement") for op in records), "Pre-O1 chain invented a decision")
             else:
                 intent = records[0]["settlement"]
-                legacy.require(records[1]["settlement"] == intent and intent["schema_version"] == 2 and intent["choice"] == "ACCEPT_CURRENT"
+                legacy.require(records[1]["settlement"] == intent and intent["schema_version"] == (3 if root.get("schema_version") == 3 else 2) and intent["choice"] == "ACCEPT_CURRENT"
                     and intent["ledger_id"] == root["ledger_id"] and intent["actor"] == canonical_uuid(ACTOR) and intent["actor_name"] == "Server"
                     and re.fullmatch(r"[0-9a-f]{64}", intent["digest"]) and intent["confirmed_tick"] >= intent["preview_tick"] >= 0
-                    and set(intent) == {"schema_version", "choice", "ledger_id", "actor", "actor_name", "digest", "confirmed_tick", "preview_tick", "members", "observations"},
+                    and set(intent) == {"schema_version", "choice", "ledger_id", "actor", "actor_name", "digest", "confirmed_tick", "preview_tick", "members", "observations"} | ({"account_commitment"} if root.get("schema_version") == 3 else set()),
                     "Chain changed its complete frozen decision")
                 legacy.require(len(intent["members"]) == 2, "Chain omitted a frozen member")
                 for member, op in zip(intent["members"], records):

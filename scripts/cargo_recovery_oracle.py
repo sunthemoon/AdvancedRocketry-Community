@@ -1,5 +1,6 @@
 """Native C-S3 oracle: exact retained roots/prefixes, composite floors and both stale-record entities."""
 import hashlib
+import escrow_accounting as accounting
 from pathlib import Path
 import cargo_storage_oracle as storage
 import loader_cut_nbt as nbt
@@ -23,6 +24,8 @@ def floors(root, count):
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
     raw = storage.read(world); root = raw["ledger"]; cut = case[8:]
+    accounting.check(root)
+    for op in root["records"]: accounting.expect_transfer(root, op)
     moved = cut == "R3_RELOCATED" and restarted
     position = [72 if moved else 64, 100, 64]
     devices = [e for e in raw["terrain"]["block_entities"] if [e.get(k) for k in ("x", "y", "z")] == position]

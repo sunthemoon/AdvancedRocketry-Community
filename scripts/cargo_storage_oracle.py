@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import escrow_accounting as accounting
 from pathlib import Path
 
 import loader_cut_nbt as nbt
@@ -31,6 +32,8 @@ def read(world: Path) -> dict:
 def inspect(world: Path, case: str, restarted: bool) -> dict:
     raw = read(world)
     root = raw["ledger"]
+    accounting.check(root)
+    for op in root["records"]: accounting.expect_transfer(root, op)
     entities = [e for e in raw["entities"]["Entities"] if "RocketEntityData" in e]
     devices = [e for e in raw["terrain"]["block_entities"] if [e.get(k) for k in ("x", "y", "z")] == [64, 100, 64]]
     require(len(entities) == len(devices) == 1 and not raw["journal"]["transfers"], "Storage fixture identity count/journal changed")
