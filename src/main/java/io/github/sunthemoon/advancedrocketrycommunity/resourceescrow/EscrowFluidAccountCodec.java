@@ -47,6 +47,21 @@ public final class EscrowFluidAccountCodec {
     public record Limits(int bytes, int depth, int nodes, int members) { }
     /** The most the design allows: the 4,096 bytes first proposed, depth 8 and 64 members (section 5). */
     public static final Limits MAXIMUM = new Limits(4_096, 8, 65, EscrowFluidAccount.MAX_MEMBERS);
+    /** R443: saved rows, including frozen members, never exceed these bounds. */
+    public static final Limits SAVED = new Limits(2_048, 5, 65, 14);
+
+    /** Ordered row-bearing members only, committing their complete frozen choices. */
+    public static String commitment(List<Row> rows) {
+        EscrowTags.require(!rows.isEmpty() && rows.stream().allMatch(row -> row.frozen() != null), "Empty or unfrozen commitment");
+        var encoded = encodeRows(rows, SAVED); EscrowTags.require(encoded.ok(), "Invalid account commitment");
+        var pairs = new ListTag();
+        for (var row : rows) {
+            var pair = new CompoundTag(); pair.putUUID("op", row.operation());
+            pair.putByteArray("digest", HexFormat.of().parseHex(digest(row, SAVED).value())); pairs.add(pair);
+        }
+        var root = new CompoundTag(); root.put("rows", pairs);
+        return CanonicalNbtDigest.of(root, EscrowLimits.ROOT_BYTES, 8);
+    }
     /** At most 128 rows: 64 live operations and 64 permanent receipts, an O3 overlap counted once. */
     public static final int MAX_ROWS = 128;
     private static final int MASK_SOURCE = 1, MASK_DESTINATION = 2, MASK_ADJUSTMENT = 4;
