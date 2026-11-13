@@ -64,6 +64,29 @@ class EscrowAccountingMigrationTest {
         assertEquals(MigrationDiagnosticId.DATA_CURRENT, new WorldDataMigrationService().migrate(temp).diagnosticId());
         assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
     }
+    @Test void activationOffRefusesRoot3AtPreStartWithoutChangingBytesOrCreatingBackups() throws Exception {
+        assertFalse(EscrowAccountingFormat.ENABLED);
+        var source = EscrowCodec.encode(EscrowAccountingFormatTest.planned(operation(1)));
+        var file = file(); write(file, source); var bytes = Files.readAllBytes(file);
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, source).status());
+        var refused = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(temp));
+        assertEquals(MigrationDiagnosticId.FUTURE_SCHEMA, refused.diagnosticId());
+        assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
+    }
+    @Test void decodableNoncanonicalSourceReachesTheReencodingCheckAndPreservesItsFile() throws Exception {
+        var source = EscrowCodec.encode(ledger(operation(1)));
+        source.getList("records", 10).getCompound(0).put("settlement", new CompoundTag());
+        assertNotEquals(source, EscrowCodec.encode(EscrowCodec.decode(source)));
+        var original = source.copy(); var file = file(); write(file, source); var bytes = Files.readAllBytes(file);
+        var refused = assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrateEscrow(source));
+        assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, refused.diagnosticId());
+        assertEquals("Noncanonical root-2 escrow source", refused.getCause().getMessage());
+        assertTrue(refused.getMessage().contains(refused.getCause().getMessage()));
+        assertFalse(refused.getMessage().contains("needs capacity"));
+        assertEquals(original, source); assertArrayEquals(bytes, Files.readAllBytes(file));
+        assertThrows(NullPointerException.class, () -> SavedDataSchemaMigrator.migrateEscrow(null),
+                "Programming errors are not converted into invalid-world diagnoses");
+    }
     @Test void wrongEpochNoncanonicalAndRoot1AreRefusedWithoutChangingSource() throws Exception {
         var canonical = EscrowCodec.encode(ledger(operation(1)));
         var wrong = canonical.copy(); wrong.putString("format_epoch", "v0.9.0-beta");
@@ -96,7 +119,10 @@ class EscrowAccountingMigrationTest {
         long bytes = EscrowSettlementCapacity.reservedBytes(root);
         assertTrue(bytes <= EscrowLimits.ROOT_BYTES && bytes + 39 > EscrowLimits.ROOT_BYTES);
         var source = EscrowCodec.encode(root); var file = file(); write(file, source); var original = Files.readAllBytes(file);
-        assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrateEscrow(source));
+        var refused = assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrateEscrow(source));
+        assertInstanceOf(EscrowSettlementCapacity.ReservationFull.class, refused.getCause());
+        assertTrue(refused.getMessage().startsWith("Escrow root-2 migration needs capacity before upgrade: "));
+        assertTrue(refused.getMessage().contains(refused.getCause().getMessage()));
         assertArrayEquals(original, Files.readAllBytes(file));
     }
     private static EscrowLedger reservationEdge(int blob, List<CompoundTag> floors) {

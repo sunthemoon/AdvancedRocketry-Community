@@ -135,8 +135,12 @@ public final class SavedDataSchemaMigrator {
     public static CompoundTag migrateEscrow(CompoundTag source) {
         try {
             return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.upgradeRoot2(source);
-        } catch (RuntimeException invalid) {
-            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA, "Escrow root-2 migration refused", invalid);
+        } catch (io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementCapacity.ReservationFull full) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    "Escrow root-2 migration needs capacity before upgrade: " + full.getMessage(), full);
+        } catch (IllegalArgumentException invalid) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    "Escrow root-2 migration has invalid source or target: " + invalid.getMessage(), invalid);
         }
     }
 
