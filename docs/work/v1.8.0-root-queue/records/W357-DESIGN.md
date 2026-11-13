@@ -196,8 +196,10 @@ Recommended migration is a lossless **root 2 to root 3** upgrade in the pre-star
    do not change embedded member digests, reconstruct baseline amounts, or create READY authority.
 3. Old live fluid records are explicitly UNKNOWN_BASELINE. Hold ordinary reconciliation before another C2 apply
    or L2 retirement. Infer that diagnostic from the old record version; do not rewrite its saved reason or bytes.
-   Existing operator settlement can complete as a legacy UNKNOWN decision with existing proofs; an already
-   frozen O1 resumes its original decision unchanged. Already released receipts stay released and UNKNOWN.
+   Operator preview must recognize this version-derived hold as an eligible conflict even when the preserved
+   record phase is PREPARED; its member digest still commits those original bytes. It can complete as a legacy
+   UNKNOWN decision with existing proofs. An already frozen O1 resumes its original decision unchanged. Already
+   released receipts stay released and UNKNOWN.
 4. Preserve floors and heads unchanged. A new operation after migration captures a new baseline; this does not
    fill historical gaps in old receipts or floors. New schema-3 records never inherit the legacy exemption.
 5. Validate the target root and all reservation invariants before any replacement. The new header can exceed a
