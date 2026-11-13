@@ -134,7 +134,8 @@ What is still open:
   W362R approved it with two changes needed before activation (R446), and W362F finishes its relaunch inventory
   audit (R445). W358 (merged, R446) built six of the uncovered bay rows natively and
   found that a bay on a governed (escrow-fuelled) flight gets no D0 decision, which W363 fixes (R444). W360 builds
-  the remaining cargo and ledger rows (delivered, R448). Slices C (W364) and E part 1 (W365) are in progress.
+  the remaining cargo and ledger rows (delivered, R448). Slice E part 1 (W365) is merged (R452), Slice C (W364) is
+  delivered and in integration (R453), and Slice D (W366) is in progress.
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
