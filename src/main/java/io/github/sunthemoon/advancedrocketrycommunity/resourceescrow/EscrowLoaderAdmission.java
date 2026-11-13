@@ -74,6 +74,7 @@ public final class EscrowLoaderAdmission {
     /** Cargo scheduling refusals are player-facing ROCKET_BUSY without changing the legacy fill dictionary. */
     static FluidFuelLoaderStatus status(EscrowCoordinator.Transfer transfer) {
         return switch (transfer) {
+            case UNKNOWN_BASELINE -> FluidFuelLoaderStatus.UNKNOWN_BASELINE;
             case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> FluidFuelLoaderStatus.ROCKET_BUSY;
             default -> status(transfer.fill());
         };
@@ -126,6 +127,10 @@ public final class EscrowLoaderAdmission {
         if (journal == null) { return new Visit(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, false); }
         var data = ResourceEscrowSavedData.existing(server);
         var coordinator = data == null ? null : data.bind(server);
+        if (coordinator != null && coordinator.ledger().schema() == 3
+                && coordinator.unresolvedNaming(rocket.getUUID()).stream().anyMatch(EscrowOperation::legacyFluid)) {
+            return new Visit(FluidFuelLoaderStatus.UNKNOWN_BASELINE, false);
+        }
         if (coordinator == null ? runtime.propulsion(server).state() != EscrowAdmissionAuthority.Delegate.State.NO_FILE
                 : !coordinator.operational()) { return new Visit(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, false); }
         if (journal.transfer() != null && !EscrowNamedFillTestHook.allowed(server)) {
@@ -254,7 +259,11 @@ public final class EscrowLoaderAdmission {
         EscrowTags.require(EscrowLoaderEndpoint.change(ledger, op, sourceBefore).equals(sourceAfter)
                 && EscrowReconciliationChange.rocket(ledger, op, projected).getCompound("wrapper").equals(afterWrapper.encode())
                 && loader.saveWithFullMetadata().equals(sourceBefore), "Native capture changed during admission");
-        return new Capture(new EscrowNativeBinding.Admission(op, beforeWrapper), null);
+        var admission = coordinator != null && coordinator.ledger().schema() == 3 || EscrowAccountingFormat.ENABLED
+                ? EscrowAccountingCapture.fuel(op, beforeWrapper, EscrowLoaderEndpoint.root(sourceBefore).tank(),
+                        EscrowLoaderEndpoint.root(sourceAfter).tank(), before, after)
+                : new EscrowNativeBinding.Admission(op, beforeWrapper);
+        return new Capture(admission, null);
     }
 
     /**

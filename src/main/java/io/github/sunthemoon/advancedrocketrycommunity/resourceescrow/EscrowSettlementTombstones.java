@@ -12,8 +12,17 @@ import net.minecraft.nbt.ListTag;
 final class EscrowSettlementTombstones {
     static final int SCHEMA = 3;
     private EscrowSettlementTombstones() { }
+    static boolean settlementReceipt(CompoundTag tag) {
+        return tag.contains("schema_version", net.minecraft.nbt.Tag.TAG_INT)
+                && (tag.getInt("schema_version") == 3 || tag.getInt("schema_version") == 4);
+    }
 
     static CompoundTag create(EscrowOperation op, EscrowSettlementIntent intent) {
+        EscrowTags.require(op.accountingBaseline() == null, "Accounting receipt needs its frozen row");
+        return create(op, intent, null);
+    }
+    static CompoundTag create(EscrowOperation op, EscrowSettlementIntent intent, EscrowFluidAccount.Row row) {
+        EscrowTags.require((row != null) == (op.accountingBaseline() != null), "Receipt account presence mismatch");
         var tag = new CompoundTag(); tag.putInt("schema_version", SCHEMA); tag.putUUID("op_id", op.id());
         var retired = new ListTag(); var id = new CompoundTag(); id.putUUID("op_id", op.id()); retired.add(id); tag.put("retired", retired);
         var guards = new ListTag(); guards.add(EscrowCodec.guard(op.guard())); tag.put("guards", guards);
@@ -26,6 +35,12 @@ final class EscrowSettlementTombstones {
         int amount = op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL ? op.payload().getInt("Amount") : 0;
         tag.putInt("payload_amount", amount); tag.putString("payload_hash", op.payloadHash());
         tag.putString("accounting_status", "UNKNOWN");
+        if (row != null) {
+            EscrowTags.require(row.operation().equals(op.id()) && row.frozen() != null, "Invalid frozen receipt row");
+            tag.putInt("schema_version", 4);
+            tag.putString("accounting_digest", EscrowFluidAccountCodec.digest(row, EscrowFluidAccountCodec.SAVED).value());
+            tag.putString("accounting_status", row.knowledge() == EscrowFluidAccount.Knowledge.KNOWN ? "KNOWN" : "UNKNOWN");
+        }
         tag.putString("decision_digest", intent.digest()); tag.putUUID("actor", intent.actor()); tag.putString("actor_name", intent.actorName());
         tag.putString("choice", intent.choice().name()); tag.putLong("confirmed_tick", intent.confirmedTick()); tag.putBoolean("released", false);
         tag.putLong("release_generation", 0);
@@ -50,7 +65,7 @@ final class EscrowSettlementTombstones {
     }
 
     static boolean installed(EscrowLedger root, EscrowSettlementIntent intent) {
-        return intent.ids().stream().allMatch(id -> root.tombstones().stream().anyMatch(tag -> tag.getInt("schema_version") == SCHEMA
+        return intent.ids().stream().allMatch(id -> root.tombstones().stream().anyMatch(tag -> settlementReceipt(tag)
                 && tag.getUUID("op_id").equals(id) && tag.getString("decision_digest").equals(intent.digest()) && !tag.getBoolean("released")));
     }
 
@@ -58,7 +73,7 @@ final class EscrowSettlementTombstones {
         var tags = new ArrayList<>(root.tombstones());
         for (var op : root.records()) {
             if (!intent.ids().contains(op.id())) { continue; }
-            var expected = create(op, intent);
+            var expected = create(op, intent, root.fluidAccounts().stream().filter(row -> row.operation().equals(op.id())).findFirst().orElse(null));
             var existing = tags.stream().filter(tag -> tag.getUUID("op_id").equals(op.id())).findFirst().orElse(null);
             EscrowTags.require(existing == null || existing.equals(expected), "Settlement tombstone changed");
             if (existing == null) { tags.add(expected); }
@@ -94,12 +109,12 @@ final class EscrowSettlementTombstones {
         return new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(),
                 root.records().stream().filter(op -> !intent.ids().contains(op.id())).toList(),
                 root.floors().stream().filter(floor -> !floorKeys.contains(EscrowFloors.key(floor))).toList(), tags,
-                root.issuedLaunchSerial(), heads, root.armedFlights());
+                root.issuedLaunchSerial(), heads, root.armedFlights(), root.schema(), root.fluidAccounts());
     }
 
     static boolean logicalLocked(EscrowLedger root, UUID logical) {
         return root.tombstones().stream().anyMatch(tag -> {
-            if (tag.getInt("schema_version") != SCHEMA || !tag.getBoolean("released")) { return guarded(tag, logical); }
+            if (!settlementReceipt(tag) || !tag.getBoolean("released")) { return guarded(tag, logical); }
             return EscrowTags.list(tag, "missing", 2).stream().map(raw -> EscrowCodec.endpoint((CompoundTag) raw))
                     .anyMatch(endpoint -> logical.equals(endpoint.logicalRocket()));
         });
@@ -116,7 +131,7 @@ final class EscrowSettlementTombstones {
         var head = root.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
         if (head != null) { return !head.physical().equals(identity); }
         for (var tag : root.tombstones()) {
-            if (tag.getInt("schema_version") != SCHEMA || !guarded(tag, logical)) { continue; }
+            if (!settlementReceipt(tag) || !guarded(tag, logical)) { continue; }
             boolean survivor = EscrowTags.list(tag, "survivors", 2).stream().map(raw -> EscrowCodec.endpoint(((CompoundTag) raw).getCompound("endpoint")))
                     .anyMatch(endpoint -> endpoint.kind() == EscrowEndpoint.Kind.ENTITY
                             && logical.equals(endpoint.logicalRocket()) && identity.equals(endpoint.identity()));
@@ -147,7 +162,7 @@ final class EscrowSettlementTombstones {
         return false;
     }
     private static List<CompoundTag> chosen(EscrowLedger root, UUID logical, UUID identity) {
-        return root.tombstones().stream().filter(tag -> tag.getInt("schema_version") == SCHEMA && tag.getBoolean("released"))
+        return root.tombstones().stream().filter(tag -> settlementReceipt(tag) && tag.getBoolean("released"))
                 .flatMap(tag -> EscrowTags.list(tag, "survivors", 2).stream()).map(raw -> (CompoundTag) raw).filter(survivor -> {
                     var endpoint = EscrowCodec.endpoint(survivor.getCompound("endpoint"));
                     return endpoint.kind() == EscrowEndpoint.Kind.ENTITY && logical.equals(endpoint.logicalRocket()) && identity.equals(endpoint.identity());
@@ -157,7 +172,7 @@ final class EscrowSettlementTombstones {
         if (endpoint.kind() == EscrowEndpoint.Kind.ENTITY) { return identityLocked(root, endpoint.logicalRocket(), endpoint.identity()); }
         for (var tag : root.tombstones()) {
             if (EscrowTags.list(tag, "missing", 2).stream().anyMatch(raw -> endpoint.identity().equals(EscrowCodec.endpoint((CompoundTag) raw).identity()))) { return true; }
-            if (tag.getInt("schema_version") != SCHEMA) { continue; }
+            if (!settlementReceipt(tag)) { continue; }
             for (var raw : EscrowTags.list(tag, "survivors", 2)) {
                 var chosen = EscrowCodec.endpoint(((CompoundTag) raw).getCompound("endpoint"));
                 if (endpoint.identity().equals(chosen.identity()) && (!tag.getBoolean("released") || !endpoint.equals(chosen.key()))) { return true; }

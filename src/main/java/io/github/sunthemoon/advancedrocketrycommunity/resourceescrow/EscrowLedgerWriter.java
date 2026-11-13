@@ -29,6 +29,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     public enum Outcome { COMMITTED, FAILED_BEFORE_REPLACE, UNKNOWN, GUARD_REFUSED }
     public record Snapshot(EscrowLedger ledger, CompoundTag payload, String digest, Set<UUID> admissions) {
         public Snapshot {
+            EscrowTags.require(EscrowAccountingFormat.ENABLED || ledger.schema() == 2, "Accounting format is not activated");
             EscrowTags.bound(payload, EscrowLimits.ROOT_BYTES, 24, 131_072);
             EscrowTags.require(ledger.equals(EscrowCodec.decode(payload))
                     && digest.equals(EscrowCodec.digest(payload)), "Snapshot identity/digest mismatch");

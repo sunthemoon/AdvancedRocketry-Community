@@ -66,6 +66,8 @@ public final class EscrowFloors {
 
     /** Called inside the exact L2 snapshot, before the ledger writer captures it. */
     static EscrowLedger retire(EscrowLedger ledger, Set<UUID> ids, Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers) {
+        EscrowTags.require(ledger.schema() != 3 || ledger.records().stream().noneMatch(op -> ids.contains(op.id()) && op.legacyFluid()),
+                "Legacy fluid baseline is unknown; ordinary retirement is held");
         var floors = new ArrayList<>(ledger.floors());
         for (var op : ledger.records()) {
             if (!ids.contains(op.id()) || op.guard().transfer() == null) { continue; }

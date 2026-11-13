@@ -57,10 +57,14 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                 d, EscrowInvariant.reference(rocket), s, d, d, d, rocket.beforeSignature(), rocket.afterSignature(),
                 source.beforeSignature(), source.afterSignature(), destination.beforeSignature(), destination.afterSignature(), false);
     }
-    record Admission(EscrowOperation operation, RocketEscrowSection before) {
+    record Admission(EscrowOperation operation, RocketEscrowSection before, EscrowFluidAccount.Row account) {
+        Admission(EscrowOperation operation, RocketEscrowSection before) { this(operation, before, null); }
         Admission {
             EscrowTags.require(EscrowNativeEnvelope.digest(before.encode()).equals(operation.nativeBinding().beforeWrapper()),
                     "Admission capture has a different marker section");
+            EscrowTags.require(account == null || account.operation().equals(operation.id()) && account.frozen() == null
+                    && EscrowFluidAccountCodec.baselineDigest(account.baseline()).value().equals(operation.accountingBaseline()),
+                    "Admission account differs from operation");
         }
     }
     /** C0 uses the actual native capture. Historical projection fixtures below are not admission authority. */
@@ -104,7 +108,7 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                 beforeFuel.resourceSignature(), afterFuel.resourceSignature(), EscrowNativeEnvelope.digest(sourceBefore), EscrowNativeEnvelope.digest(sourceAfter),
                 EscrowNativeEnvelope.digest(before), EscrowNativeEnvelope.digest(after), true);
         return new Admission(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding), beforeWrapper);
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding, op.accountingBaseline()), beforeWrapper);
     }
     /** Test-only future-chain projection starts with the captured native suffix, including retired markers. */
     static RocketEscrowSection captureSection(EscrowOperation op, RocketEscrowSection observed, EscrowLedger root) {

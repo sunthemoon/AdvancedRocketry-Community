@@ -35,6 +35,7 @@ public final class EscrowFluidCargoPublication {
         op.nativeBinding().requireOperation(op.owner(), op.source(), op.destination());
         EscrowReconciliationAction.requireNativeFluid(op);
         var after = EscrowFluidCargoEndpoint.change(ledger.id(), op, before); var binding = op.nativeBinding();
+        EscrowAccountingReconciliation.requireApply(ledger, op, op.device(), before, after);
         boolean load = op.kind().cargoLoad();
         EscrowTags.require(EscrowNativeEnvelope.digest(before).equals(load ? binding.sourceBefore() : binding.destinationBefore())
                 && EscrowNativeEnvelope.digest(after).equals(load ? binding.sourceAfter() : binding.destinationAfter()),

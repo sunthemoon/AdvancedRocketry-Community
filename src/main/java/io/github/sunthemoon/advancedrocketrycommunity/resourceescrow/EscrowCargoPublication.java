@@ -89,6 +89,10 @@ public final class EscrowCargoPublication {
             var after = cursor.after(); var binding = operation.nativeBinding();
             boolean loading = operation.kind().cargoLoad();
             if (phase == 0) {
+                if (root.schema() == 3 && operation.kind().fluid()) {
+                    EscrowAccountingReconciliation.requireApply(root, operation, endpoint,
+                            EscrowAccountingCapture.cargo(operation, cursor.before()), EscrowAccountingCapture.cargo(operation, after));
+                }
                 EscrowTags.require(operation.kind().itemCargo() ? cursor.matches(EscrowItemCargoPayload.decode(operation.payload()), loading)
                         : cursor.matches(EscrowCargoPayload.decode(operation.payload()), loading), "Publication delta changed");
                 EscrowTags.require(endpoint.identity().equals(rocket.getUUID()) && endpoint.logicalRocket().equals(cursor.logical())

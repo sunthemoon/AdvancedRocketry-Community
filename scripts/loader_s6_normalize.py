@@ -38,6 +38,7 @@ def check(image, restart, identity=None, cut=CASES[0]):
             and isinstance(image.get("native"), dict), "Normalization UNKNOWN is not zero loss")
     try:
         disk = normalize_ids(image["native"]); identity = normalize_ids(identity); root = disk["ledger"]
+        chain.i.accounting.check(root)
         bi = cut.endswith("_BI")
         require(not restart or identity is not None, "Normalization restart has no frozen initial authority")
         authority = identity["authority"] if restart else root
@@ -51,11 +52,11 @@ def check(image, restart, identity=None, cut=CASES[0]):
             require(all(op["phase"] == "SETTLING_ACCEPT" and op["reason"] == "OTHER_STATE" for op in records),
                     "Normalization lost its acknowledged O1")
             intent = records[0]["settlement"]
-            require(records[1]["settlement"] == intent and intent["schema_version"] == 2 and intent["choice"] == "ACCEPT_CURRENT"
+            require(records[1]["settlement"] == intent and intent["schema_version"] == (3 if root.get("schema_version") == 3 else 2) and intent["choice"] == "ACCEPT_CURRENT"
                 and intent["ledger_id"] == root["ledger_id"] and intent["actor"] == canonical_uuid(ACTOR) and intent["actor_name"] == "Server"
                 and re.fullmatch(r"[0-9a-f]{64}", intent["digest"]) and intent["confirmed_tick"] >= intent["preview_tick"] >= 0
                 and set(intent) == {"schema_version", "choice", "ledger_id", "actor", "actor_name", "digest",
-                                    "confirmed_tick", "preview_tick", "members", "observations"}, "Normalization changed its frozen decision")
+                                    "confirmed_tick", "preview_tick", "members", "observations"} | ({"account_commitment"} if root.get("schema_version") == 3 else set()), "Normalization changed its frozen decision")
             require(len(intent["members"]) == 2, "Normalization omitted a member")
             for member, op in zip(intent["members"], records):
                 require(member == dict(op_id=op["op_id"], phase="REPAIR", reason="OTHER_STATE", digest=member["digest"])

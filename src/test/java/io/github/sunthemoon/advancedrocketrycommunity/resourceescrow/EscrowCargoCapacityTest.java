@@ -22,6 +22,31 @@ class EscrowCargoCapacityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
 
+    @Test void explicitAccountingFormUsesTheAcceptedAdmissionAndRetirementCounts() {
+        for (var kind : KINDS) {
+            for (int floors : List.of(0, 29)) {
+                var old = EscrowCombinedReservationTest.retainedFloors(floors);
+                var base = new EscrowLedger(old.id(), old.issuedThrough(), old.writerGeneration(), old.records(), old.floors(), old.tombstones(),
+                        old.issuedLaunchSerial(), old.rocketAuthorities(), old.armedFlights(), 3, List.of());
+                var ops = new ArrayList<EscrowOperation>();
+                EscrowLedger admitted = base;
+                for (int i = 1; i <= 64; i++) {
+                    var op = operation(kind, base.issuedThrough() + i, 40_000 + i);
+                    var next = new ArrayList<>(ops); next.add(op.accounting(EscrowAccountingFormatTest.baseline(op)));
+                    var candidate = new EscrowLedger(base.id(), op.sequence(), 0, next, base.floors(), base.tombstones(), 0, List.of(), List.of(), 3,
+                            next.stream().map(member -> new EscrowFluidAccount.Row(member.id(), EscrowAccountingFormatTest.baseline(member), null)).toList());
+                    try { EscrowSettlementCapacity.preflight(candidate, op.id()); ops = next; admitted = candidate; }
+                    catch (EscrowSettlementCapacity.ReservationFull full) { break; }
+                }
+                assertEquals(floors == 0 ? 55 : 53, ops.size());
+                if (floors == 29) {
+                    var retirement = EscrowSettlementCapacity.floorRetirement(admitted, floorIntent(admitted, 0), admitted.issuedThrough() + 1, 220, FLOOR_OWNER);
+                    assertEquals(54, retirement.records().size());
+                }
+            }
+        }
+    }
+
     @Test void realEncodersMeasureBothDirectionsOneMarkerChargeAndLegacyRetainedPayloadLimits() {
         for (var kind : KINDS) {
             int longest = 0;

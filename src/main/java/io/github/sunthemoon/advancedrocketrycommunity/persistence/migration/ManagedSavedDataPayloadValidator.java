@@ -40,7 +40,7 @@ final class ManagedSavedDataPayloadValidator {
                 case RESOURCE_ESCROW -> {
                     var loaded = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.decode(payload);
                     if (source != null) {
-                        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLedgerBaseline.require(source, loaded);
+                        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLedgerBaseline.requireMigration(source, payload);
                     }
                     yield true;
                 }

@@ -110,8 +110,10 @@ final class EscrowReconciliationView {
             EscrowTags.bound(envelope, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072);
             bytes = Math.addExact(bytes, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(envelope));
             if (bytes > EscrowLimits.CAPTURE_BYTES) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
-            requirePrefix(root, endpoint, chains.get(endpoint.key()), observation.state(), envelope,
-                    rocket == null ? null : rocket.snapshot().orElseThrow());
+            if (root.schema() == 2) {
+                requirePrefix(root, endpoint, chains.get(endpoint.key()), observation.state(), envelope,
+                        rocket == null ? null : rocket.snapshot().orElseThrow());
+            }
             if (EscrowSettlementTombstones.endpointLocked(root, endpoint.key()) || rocket != null
                     && EscrowSettlementTombstones.stateLocked(root, endpoint.logicalRocket(), endpoint.identity(), rocket.escrowSection(),
                     observation.settlement().state().signature(), observation.settlement().quantity())) { throw new Refusal(EscrowReason.FLOOR_CONFLICT); }
@@ -131,7 +133,21 @@ final class EscrowReconciliationView {
             ends.put(endpoint.key(), new End(endpoint, observation.state(), envelope, level, rocket, source, guard,
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
-        return new EscrowReconciliationView(server, root, members, ends, EscrowFlightJournal.members(journal, members), bytes);
+        var view = new EscrowReconciliationView(server, root, members, ends, EscrowFlightJournal.members(journal, members), bytes);
+        if (root.schema() == 3) {
+            for (var end : ends.values()) {
+                requireBeforeAccounting(root, end.reference(), chains.get(end.reference().key()), end.state(), end.envelope(),
+                        end.rocket() == null ? null : end.rocket().snapshot().orElseThrow());
+            }
+            var states = ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, e -> e.getValue().state()));
+            if (!EscrowAccountingReconciliation.matches(root, members.stream().map(EscrowOperation::id).collect(java.util.stream.Collectors.toSet()),
+                    states, EscrowAccountingReconciliation.capture(view), false)) { EscrowAccountingReconciliation.mismatch(); }
+            for (var end : ends.values()) {
+                requirePrefix(root, end.reference(), chains.get(end.reference().key()), end.state(), end.envelope(),
+                        end.rocket() == null ? null : end.rocket().snapshot().orElseThrow());
+            }
+        }
+        return view;
     }
 
     /** Fuel relocation diagnostics cannot interpret the separate cargo-device identity index. */
@@ -155,6 +171,17 @@ final class EscrowReconciliationView {
     static void requireStoreCapacity(boolean stopping, boolean known, int size) {
         EscrowTags.require(!stopping, "Escrow runtime is stopping");
         if (!known && size >= 64) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
+    }
+
+    /** A removable stale prefix is a cleanup wait, never authority to apply or a manual diagnosis. */
+    static void requireBeforeAccounting(EscrowLedger root, EscrowEndpoint endpoint, List<EscrowPrefix.Link> chain,
+            EscrowPrefix.State state, CompoundTag envelope,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
+        try { requirePrefix(root, endpoint, chain, state, envelope, snapshot); }
+        catch (Refusal refused) {
+            // Preserve C8's cleanup wait. Other invalid frontiers still get the numeric diagnosis before effects.
+            if (refused.reason != EscrowReason.OTHER_STATE) { throw refused; }
+        }
     }
 
     /** A removable stale prefix is a cleanup wait, never authority to apply or a manual diagnosis. */

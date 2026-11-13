@@ -127,6 +127,10 @@ def family_specs():
         bay("forced-" + key.replace("_", "-"), save_boundary, cases, ("--tranche", key))
     for key, cases in uncovered.TRANCHES.items():
         bay("forced-" + key.replace("_", "-"), uncovered, cases, ("--tranche", key))
+    # W360 additions do not alter any existing family's selection.
+    for case in ("X_BAY", "X_LEDGER", "R031_FUTURE", "R031_INVALID"):
+        rows.append(dict(name="r042-" + case, runner="scripts/" + Path(r042.__file__).name,
+                         r042_case=case, cases=[case], arguments=["--case", case]))
     return rows
 
 

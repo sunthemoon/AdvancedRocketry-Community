@@ -7,17 +7,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-/** Schema-3 receipts store exact digest bytes and one canonical copy of each audit observation. */
+/** Schema-3/4 receipts store exact digest bytes and one canonical copy of each audit observation. */
 final class EscrowReceiptCodec {
     private static final Set<String> DIGESTS = Set.of("payload_hash", "decision_digest", "digest", "signature",
-            "before_signature", "after_signature", "journal_digest", "invariant_digest");
+            "before_signature", "after_signature", "journal_digest", "invariant_digest", "accounting_digest");
     // Schema-3 wire names are a closed, lossless dictionary, not omitted audit fields.
     private static final List<String> FIELDS = List.of("schema_version", "op_id", "retired", "guards", "before_choice",
             "payload_amount", "payload_hash", "accounting_status", "decision_digest", "actor", "actor_name", "choice",
             "confirmed_tick", "released", "release_generation", "anchor_op", "rocket_id", "transfer_id", "journal_generation",
             "journal_digest", "endpoint", "missing", "bound", "quantity", "signature_kind", "invariant_digest", "state",
             "kind", "level", "identity", "logical_rocket", "type", "x", "y", "z", "unit", "before_epoch", "after_epoch",
-            "before_signature", "after_signature", "ledger_id", "epoch", "signature", "markers", "seq", "role", "epoch_after");
+            "before_signature", "after_signature", "ledger_id", "epoch", "signature", "markers", "seq", "role", "epoch_after", "accounting_digest");
     private EscrowReceiptCodec() { }
     static CompoundTag encode(CompoundTag internal) {
         var projected = internal.copy(); projections(projected);

@@ -116,7 +116,7 @@ final class EscrowFlightAuthority {
     }
 
     private static EscrowLedger bounded(EscrowLedger root, long issued, List<EscrowFlightTables.Head> heads, List<EscrowFlightTables.Armed> arms) {
-        var next = new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(), root.records(), root.floors(), root.tombstones(), issued, heads, arms);
+        var next = root.flightAuthority(issued, heads, arms);
         EscrowCodec.encode(next); // Include the root, not just the per-entry ceiling, in every reservation.
         return next;
     }

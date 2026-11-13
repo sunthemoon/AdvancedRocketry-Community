@@ -18,12 +18,15 @@ final class EscrowFlightBenchmarkCeiling {
     private static String hash(long value) { return RocketNativeResources.hash("benchmark-ceiling-" + value); }
 
     static EscrowLedger create() {
+        return create(EscrowAccountingFormat.ENABLED);
+    }
+    static EscrowLedger create(boolean accounting) {
         int low = 0, high = 8000;
         EscrowLedger best = null;
         while (low <= high) {
             int middle = (low + high) >>> 1;
             try {
-                var root = build(middle, 0); int bytes = RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root));
+                var root = build(middle, 0, accounting); int bytes = RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root));
                 best = root; low = middle + 1;
                 if (bytes == EscrowLimits.ROOT_BYTES) { return root; }
             } catch (IllegalArgumentException tooLarge) { high = middle - 1; }
@@ -31,16 +34,17 @@ final class EscrowFlightBenchmarkCeiling {
         EscrowTags.require(best != null, "No ceiling codec specimen fits");
         int remainder = EscrowLimits.ROOT_BYTES - RocketNbtSize.uncompressedBytes(EscrowCodec.encode(best));
         EscrowTags.require(remainder < 64, "Current field limits cannot form an exact 1 MiB codec specimen; gap=" + remainder);
-        var result = build(high, remainder);
+        var result = build(high, remainder, accounting);
         EscrowTags.require(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(result)) == EscrowLimits.ROOT_BYTES,
                 "Ceiling specimen is not exactly 1 MiB");
         return result;
     }
-    private static EscrowLedger build(int blob, int lastExtra) {
+    private static EscrowLedger build(int blob, int lastExtra, boolean accounting) {
         UUID ledger = id(1_000_000); var records = new ArrayList<EscrowOperation>();
         var receipts = new ArrayList<CompoundTag>(); var floors = new ArrayList<CompoundTag>();
         var arms = new ArrayList<EscrowFlightTables.Armed>();
         var heads = new ArrayList<EscrowFlightTables.Head>();
+        var rows = new ArrayList<EscrowFluidAccount.Row>();
         for (int i = 1; i <= 64; i++) {
             var payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 1000);
             var fluidTag = new CompoundTag(); fluidTag.putByteArray("blob", new byte[blob + (i == 64 ? lastExtra : 0)]); payload.put("Tag", fluidTag);
@@ -52,16 +56,28 @@ final class EscrowFlightBenchmarkCeiling {
             var guard = new EscrowGuard(target.logicalRocket(), null, 1, hash(900));
             var op = new EscrowOperation(id(i), i, id(4000 + i), 0, EscrowOperation.Phase.REPAIR, EscrowReason.OTHER_STATE,
                     payload, RocketNativeResources.signature(payload), source, target, guard);
-            var root = new EscrowLedger(ledger, i, 1, List.of(op), List.of(), List.of());
+            EscrowFluidAccount.Row row = null;
+            if (accounting) {
+                var key = EscrowFluidAccountCodec.key(payload).value();
+                var baseline = new EscrowFluidAccount.Baseline(EscrowFluidAccount.Scope.FUEL,
+                        List.of(new EscrowFluidAccount.Entry(key, 5000, 0, -1000, 1000)));
+                row = new EscrowFluidAccount.Row(op.id(), baseline, new EscrowFluidAccount.Frozen(EscrowFluidAccount.Knowledge.KNOWN,
+                        op.id(), List.of(op.id()), List.of(new EscrowFluidAccount.FrozenEntry(key, java.util.OptionalLong.of(5000),
+                        java.util.OptionalLong.of(0), java.util.OptionalLong.of(0), op.id()))));
+                rows.add(row); op = op.accounting(baseline);
+            }
+            var root = new EscrowLedger(ledger, i, 1, List.of(op), List.of(), List.of(), 0, List.of(), List.of(), accounting ? 3 : 2,
+                    accounting ? List.of(new EscrowFluidAccount.Row(op.id(), row.baseline(), null)) : List.of());
             var observations = List.of(new EscrowSettlementIntent.Observation(source,
                             new EscrowPrefix.State(ledger, 0, source.beforeSignature(), List.of()), true, 5000),
                     new EscrowSettlementIntent.Observation(target,
                             new EscrowPrefix.State(ledger, 0, target.beforeSignature(), List.of()), true, 0));
             var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                     id(999), "c".repeat(EscrowSettlementIntent.NEW_ACTOR_NAME_LIMIT), 0, observations);
+            if (accounting) { preview = preview.accounting(List.of(row)); }
             var intent = preview.confirm(preview.actor(), preview.digest(), 1, observations);
             records.add(op.settle(intent));
-            var receipt = EscrowSettlementTombstones.create(op, intent);
+            var receipt = EscrowSettlementTombstones.create(op, intent, row);
             receipt.putBoolean("released", true); receipt.putLong("release_generation", 1);
             receipts.add(receipt);
             heads.add(new EscrowFlightTables.Head(target.logicalRocket(), op.owner(), op.id(), 1, target.identity(), 0,
@@ -76,7 +92,7 @@ final class EscrowFlightBenchmarkCeiling {
             floor.putString("signature_kind", EscrowSignatureKind.FIXTURE_RESOURCE_V1.name()); floor.putString("invariant_digest", hash(i));
             floor.putString("signature", hash(i)); floor.putLong("highest_seq", 1); floors.add(floor);
         }
-        return new EscrowLedger(ledger, 64, 1, records, floors, receipts, 64, heads, arms);
+        return new EscrowLedger(ledger, 64, 1, records, floors, receipts, 64, heads, arms, accounting ? 3 : 2, rows);
     }
     private static EscrowEndpoint maximumReference(EscrowEndpoint endpoint) {
         var base = new EscrowEndpoint(endpoint.kind(), "x:" + "l".repeat(126), endpoint.identity(), endpoint.logicalRocket(), endpoint.type(),

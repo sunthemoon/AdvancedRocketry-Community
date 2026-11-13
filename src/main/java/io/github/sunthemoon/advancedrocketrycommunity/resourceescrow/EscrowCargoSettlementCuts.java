@@ -305,7 +305,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         if (cut.boundary().equals("O3_AFTER")) { launch(journal, root); return; }
         released(root, journal);
         result("RELEASED", "rocket=" + (rocket == null ? "absent" : cargo(rocket)) + " device=" + (device == null ? "absent" : tank(device))
-                + " receipts=1 accounting=UNKNOWN");
+                + " receipts=1 accounting=" + root.tombstones().get(0).getString("accounting_status"));
     }
 
     /** The receipt, head and both survivors exactly as section 3.3 derives them from the frozen O1 choice. */
@@ -314,7 +314,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         var receipt = root.tombstones().get(0);
         int survivors = scenario.abandon() ? 1 : 2;
         EscrowTags.require(root.tombstones().size() == 1 && receipt.getBoolean("released") && receipt.getInt("payload_amount") == 0
-                && receipt.getString("accounting_status").equals("UNKNOWN")
+                && EscrowSettlementProbe.accountingMatches(root, receipt)
                 && receipt.getString("choice").equals((scenario.abandon() ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT).name())
                 && receipt.getList("survivors", 10).size() == survivors && receipt.getList("missing", 10).size() == 2 - survivors
                 && root.floors().isEmpty() && root.armedFlights().isEmpty() && journal.entries().isEmpty(), "W142 receipt changed: " + receipt);
@@ -372,7 +372,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
                 "O3 launch native quantities: rocket=" + cargo(rocket) + " device=" + tank(device) + " fuel=" + flight.fuel().totalAmount());
         EscrowTags.require(root.tombstones().size() == 1, "O3 launch receipt: expected one retained receipt");
         var receipt = root.tombstones().get(0);
-        EscrowTags.require(receipt.getBoolean("released") && receipt.getString("accounting_status").equals("UNKNOWN")
+        EscrowTags.require(receipt.getBoolean("released") && EscrowSettlementProbe.accountingMatches(root, receipt)
                 && receipt.getInt("payload_amount") == 0 && receipt.getString("choice").equals("ACCEPT_CURRENT")
                 && receipt.getList("survivors", 10).size() == 2 && receipt.getList("missing", 10).isEmpty()
                 && head.anchor().equals(receipt.getUUID("anchor_op")) && head.releaseGeneration() == receipt.getLong("release_generation"),

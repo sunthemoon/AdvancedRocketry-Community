@@ -1,5 +1,6 @@
 """Two independent real-cargo components; STALLED work may not block the healthy transfer."""
 from pathlib import Path
+import escrow_accounting as accounting
 import cargo_storage_oracle as storage
 import loader_cut_nbt as nbt
 import run_v180_cargo_reconciliation as native
@@ -14,6 +15,8 @@ def healthy(world: Path):
 
 def inspect(world: Path, restarted: bool) -> dict:
     raw = storage.read(world); control = healthy(world); root = raw["ledger"]
+    accounting.check(root)
+    for op in root["records"]: accounting.expect_transfer(root, op)
     require(root["issued_through"] == 2 and not root["floors"] and not root["tombstones"] and not raw["journal"]["transfers"],
             "E5 changed issued authority, floors or journal")
     require(not root["rocket_authorities"] and not root["armed_flights"] and root["issued_launch_serial"] == 0, "E5 acquired flight authority")

@@ -19,7 +19,7 @@ class V180ItemCargoStatusLanguageTest {
                 "ESCROW_PENDING", "UNBOUND", "STALE_BINDING", "WAITING_UNLOADED", "OUT_OF_RANGE", "NOT_OWNER",
                 "ROCKET_BUSY", "UNSUPPORTED_DATA", "INVALID_DATA", "READY", "PREPARING", "TRANSFERRING",
                 "DEVICE_EMPTY", "DEVICE_FULL", "NO_CARGO", "CARGO_FULL", "NO_CARGO_STORAGE", "INCOMPATIBLE_CARGO",
-                "CARGO_TOO_LARGE", "UNRESOLVED_LOOT", "OTHER_TRANSFER_PENDING", "RECEIPT_BACKED", "LEGACY_ROCKET", "OWNER_PENDING_FULL");
+                "CARGO_TOO_LARGE", "UNRESOLVED_LOOT", "OTHER_TRANSFER_PENDING", "RECEIPT_BACKED", "LEGACY_ROCKET", "OWNER_PENDING_FULL", "UNKNOWN_BASELINE");
         assertEquals(names.size(), RocketCargoStatus.values().length);
         for (var status : RocketCargoStatus.values()) {
             assertEquals(names.indexOf(status.name()), status.ordinal());
@@ -31,7 +31,8 @@ class V180ItemCargoStatusLanguageTest {
     @Test void everyItemStatusResolvesWithoutFluidWordingAndOnlyThreeKeysAreAdded() throws Exception {
         for (boolean chinese : new boolean[] {false, true}) {
             var additions = V180ItemCargoStatusLanguage.language(chinese);
-            var shared = V180RocketCargoData.language(chinese);
+            var shared = new java.util.LinkedHashMap<>(V180RocketCargoData.language(chinese));
+            shared.putAll(V180BayReceiptLanguage.entries(chinese));
             assertEquals(3, additions.size());
             var language = com.google.gson.JsonParser.parseString(Files.readString(Path.of(
                     "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/"

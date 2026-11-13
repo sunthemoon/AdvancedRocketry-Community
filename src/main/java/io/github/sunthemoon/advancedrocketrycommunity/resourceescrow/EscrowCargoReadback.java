@@ -14,6 +14,7 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
     private final java.util.List<EscrowOperation> operations;
     private volatile EscrowReconciliationObservation readback;
     private volatile EscrowOperation unavailable;
+    private volatile boolean accountingMismatch;
     private boolean reported;
 
     EscrowCargoReadback(UUID ledger, EscrowReconciliationObservation expected, RocketStructureSnapshot captureWitness) {
@@ -30,6 +31,7 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
         boolean capture = Thread.currentThread() == owner;
         readback = null;
         unavailable = null;
+        accountingMismatch = false;
         for (var operation : operations) {
             try {
                 if (operation.kind().itemCargo()) { EscrowItemStackCodec.validateNative(EscrowItemCargoPayload.decode(operation.payload()).stack()); }
@@ -40,7 +42,9 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
         try {
             // The barrier supplies an AnvilRecordReader-bounded detached root. No live entity/Level crosses threads.
             var observed = EscrowSettlementDisk.ordinary(slot, expected.settlement().endpoint(), ledger,
-                    capture ? captureWitness : null);
+                    capture ? captureWitness : null, operations);
+            // Missing endpoints remain an unproved/unknown observation, never an invented zero vector.
+            accountingMismatch = !observed.settlement().missing() && !expected.fluids().equals(observed.fluids());
             if (capture) { return expected.equals(observed); }
             readback = observed;
             return true; // Comparison is owner-thread authority, not the IO worker's boolean.
@@ -54,6 +58,7 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
 
     EscrowReason reason() {
         EscrowTags.require(Thread.currentThread() == owner, "Cargo readback refusal requires owner thread");
+        if (accountingMismatch) { return EscrowReason.ACCOUNTING_MISMATCH; }
         var refused = unavailable;
         if (refused == null) { return EscrowReason.NONE; }
         if (!reported) {

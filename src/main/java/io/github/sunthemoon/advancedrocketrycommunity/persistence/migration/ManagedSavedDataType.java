@@ -63,7 +63,7 @@ public enum ManagedSavedDataType {
                     new RequiredTag("save_epoch", Tag.TAG_LONG)
             )
     ),
-    /** Unreleased D3-A root 2 replaces development root 1 without a migration reader. */
+    /** Explicit roots 2/3; root-2 migration is activated separately, and development root 1 stays unsupported. */
     RESOURCE_ESCROW(
             "v1.8.0", "advancedrocketrycommunity_resource_escrow", 1_048_576L,
             List.of(new RequiredTag("records", Tag.TAG_LIST), new RequiredTag("floors", Tag.TAG_LIST),
@@ -142,7 +142,7 @@ public enum ManagedSavedDataType {
             case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
-            case RESOURCE_ESCROW -> 2;
+            case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowAccountingFormat.ENABLED ? 3 : 2;
             case CLASSIC_PROGRESSION, ROCKET_REJOINS -> 1;
             case BAY_RECEIPTS -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.SCHEMA;
             case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
@@ -181,7 +181,11 @@ public enum ManagedSavedDataType {
             return EndgameLimits.ROOT_FORMAT_EPOCH;
         }
         if (this == RESOURCE_ESCROW) {
-            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLimits.EPOCH;
+            return switch (schema) {
+                case 2 -> "v1.8.0-resource-escrow";
+                case 3 -> "v1.8.0-resource-escrow-fluid-accounting";
+                default -> throw new IllegalArgumentException("Unsupported escrow epoch schema");
+            };
         }
         if (this == CLASSIC_PROGRESSION) {
             return "v1.8.0-classic-progression";
@@ -198,6 +202,7 @@ public enum ManagedSavedDataType {
      * endgame root has it from its schema 1 (ADR-054 section 10, review R2-L7).
      */
     public int firstEpochSchema() {
+        if (this == RESOURCE_ESCROW) { return 2; }
         return !hasLegacySchema() ? currentSchemaVersion() : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
     }
 
@@ -212,6 +217,7 @@ public enum ManagedSavedDataType {
      * reads only its current schema.
      */
     public boolean supportsSchema(int schema) {
+        if (this == RESOURCE_ESCROW) { return schema == 2 || schema == 3; }
         int oldest = !hasLegacySchema() ? currentSchemaVersion() : SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION;
         return schema >= oldest && schema <= currentSchemaVersion();
     }

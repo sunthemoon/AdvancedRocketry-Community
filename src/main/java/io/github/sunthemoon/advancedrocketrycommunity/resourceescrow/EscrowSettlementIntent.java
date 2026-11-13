@@ -13,7 +13,19 @@ import net.minecraft.nbt.ListTag;
 /** Frozen O1 decision. Observations are deliberately not O2 durability proofs. */
 public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, String actorName,
                                      long previewTick, long confirmedTick, List<Member> members,
-                                     List<Observation> observations, CompoundTag floor, String digest) {
+                                     List<Observation> observations, CompoundTag floor, String digest, String accountCommitment) {
+    public EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, String actorName, long previewTick,
+            long confirmedTick, List<Member> members, List<Observation> observations, CompoundTag floor, String digest) {
+        this(choice, ledger, actor, actorName, previewTick, confirmedTick, members, observations, floor, digest, null);
+    }
+    /** Bind the exact row-bearing member set; the final ledger validates membership and numerical continuity. */
+    public EscrowSettlementIntent accounting(List<EscrowFluidAccount.Row> rows) {
+        EscrowTags.require(confirmedTick == -1, "Confirmed settlement commitment cannot change");
+        String commitment = EscrowFluidAccountCodec.commitment(rows);
+        var tag = base(choice, ledger, actor, actorName, previewTick, members, observations, floor, commitment);
+        return new EscrowSettlementIntent(choice, ledger, actor, actorName, previewTick, confirmedTick, members,
+                observations, floor, RocketNativeResources.signature(tag), commitment);
+    }
     static final int NEW_ACTOR_NAME_LIMIT = 16;
     static final String ACTOR_NAME_REFUSAL = "Settlement actor name must contain 1 to 16 ASCII characters (33-126, no spaces); use the server console for a nonconforming player profile.";
     public enum Choice { ACCEPT_CURRENT, ABANDON, TRANSFER_FLOOR_RETIRE }
@@ -87,8 +99,9 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                     && logical.equals(observation.endpoint().logicalRocket())), "Invalid floor absence decision");
         } else { EscrowTags.require(floor.isEmpty(), "Unexpected floor intent"); }
         EscrowTags.digest(digest);
-        EscrowTags.require(digest.equals(hash(choice, ledger, actor, actorName, previewTick, members, observations, floor)), "Settlement digest mismatch");
-        EscrowTags.bound(base(choice, ledger, actor, actorName, previewTick, members, observations, floor),
+        if (accountCommitment != null) { EscrowTags.digest(accountCommitment); EscrowTags.require(choice != Choice.TRANSFER_FLOOR_RETIRE, "Floor account commitment"); }
+        EscrowTags.require(digest.equals(RocketNativeResources.signature(base(choice, ledger, actor, actorName, previewTick, members, observations, floor, accountCommitment))), "Settlement digest mismatch");
+        EscrowTags.bound(base(choice, ledger, actor, actorName, previewTick, members, observations, floor, accountCommitment),
                 EscrowLimits.OP_BYTES, 14, 480);
     }
     @Override public CompoundTag floor() { return floor.copy(); }
@@ -106,7 +119,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 && op.reason() != EscrowReason.RELOCATED_ENDPOINT && op.reason() != EscrowReason.FLOOR_CONFLICT),
                 "Component requires offline repair or is not eligible for settlement");
         EscrowTags.require(component.stream().anyMatch(op -> op.phase() == EscrowOperation.Phase.REPAIR
-                || op.phase() == EscrowOperation.Phase.STALLED), "Component has no manual conflict or persisted stall");
+                || op.phase() == EscrowOperation.Phase.STALLED || root.schema() == 3 && op.legacyFluid()), "Component has no manual conflict or persisted stall");
         var members = component.stream().map(Member::of).toList();
         requireReceiptRoom(root, members.stream().map(Member::id).toList());
         var sorted = sorted(observations); requireEndpoints(component, sorted);
@@ -135,7 +148,8 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         EscrowTags.require(observations.equals(sorted(current)), "Endpoint observations changed since preview");
         EscrowTags.require(tick >= previewTick && (observations.stream().noneMatch(Observation::missing)
                 || tick - previewTick >= 200), "Missing endpoints require observations at least 200 ticks apart");
-        return create(choice, ledger, actor, actorName, previewTick, tick, members, observations, floor);
+        requireUniqueCandidates(observations);
+        return new EscrowSettlementIntent(choice, ledger, actor, actorName, previewTick, tick, members, observations, floor, digest, accountCommitment);
     }
     public void requireConfirmed() {
         EscrowTags.require(confirmedTick >= previewTick
@@ -143,6 +157,9 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 "Unconfirmed missing observation");
     }
     public EscrowLedger freeze(EscrowLedger root) {
+        return freeze(root, root.fluidAccounts());
+    }
+    public EscrowLedger freeze(EscrowLedger root, List<EscrowFluidAccount.Row> frozenRows) {
         requireConfirmed(); EscrowTags.require(root.id().equals(ledger), "Settlement ledger changed");
         EscrowTags.require(choice != Choice.TRANSFER_FLOOR_RETIRE, "Floor intent needs an explicit operation");
         var component = component(root.records(), members.get(0).id());
@@ -153,10 +170,12 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
             EscrowTags.require(op.settlement().isEmpty() && op.phase() == member.phase() && op.reason() == member.reason()
                     && member.matches(op), "Record changed since preview");
         }
-        var frozen = root.replace(
-                root.records().stream().map(op -> ids().contains(op.id()) ? op.settle(this) : op).toList(), root.floors(), root.tombstones());
+        var frozen = new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(),
+                root.records().stream().map(op -> ids().contains(op.id()) ? op.settle(this) : op).toList(), root.floors(), root.tombstones(),
+                root.issuedLaunchSerial(), root.rocketAuthorities(), root.armedFlights(), root.schema(), frozenRows);
         EscrowSettlementCapacity.preflight(frozen); EscrowCodec.encode(frozen);
-        frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this));
+        frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this,
+                frozenRows.stream().filter(row -> row.operation().equals(op.id())).findFirst().orElse(null)));
         return frozen;
     }
     /**
@@ -267,13 +286,18 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         return RocketNativeResources.signature(base(choice, ledger, actor, name, preview, members, observations, floor));
     }
     public CompoundTag encode() {
-        var tag = base(choice, ledger, actor, actorName, previewTick, members, observations, floor);
+        var tag = base(choice, ledger, actor, actorName, previewTick, members, observations, floor, accountCommitment);
         tag.putLong("confirmed_tick", confirmedTick); tag.putString("digest", digest);
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 14, 480); return tag;
     }
     private static CompoundTag base(Choice choice, UUID ledger, UUID actor, String name, long preview,
                                     List<Member> members, List<Observation> observations, CompoundTag floor) {
+        return base(choice, ledger, actor, name, preview, members, observations, floor, null);
+    }
+    private static CompoundTag base(Choice choice, UUID ledger, UUID actor, String name, long preview,
+                                    List<Member> members, List<Observation> observations, CompoundTag floor, String commitment) {
         var tag = new CompoundTag(); tag.putInt("schema_version", 2); tag.putString("choice", choice.name());
+        if (commitment != null) { tag.putInt("schema_version", 3); tag.putByteArray("account_commitment", java.util.HexFormat.of().parseHex(commitment)); }
         tag.putUUID("ledger_id", ledger); tag.putUUID("actor", actor); tag.putString("actor_name", name); tag.putLong("preview_tick", preview);
         var list = new ListTag();
         for (Member member : members) {
@@ -314,8 +338,11 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     public static EscrowSettlementIntent decode(CompoundTag tag) {
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 14, 480);
-        EscrowTags.fields(tag, "schema_version", "choice", "ledger_id", "actor", "actor_name", "preview_tick", "confirmed_tick", "members", "observations", "floor", "digest");
-        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 2, "Unsupported settlement schema");
+        EscrowTags.fields(tag, "schema_version", "choice", "ledger_id", "actor", "actor_name", "preview_tick", "confirmed_tick", "members", "observations", "floor", "digest", "account_commitment");
+        int schema = EscrowTags.integer(tag, "schema_version");
+        EscrowTags.require(schema == 2 || schema == 3, "Unsupported settlement schema");
+        EscrowTags.require(schema == 3 ? tag.contains("account_commitment", net.minecraft.nbt.Tag.TAG_BYTE_ARRAY)
+                && tag.getByteArray("account_commitment").length == 32 : !tag.contains("account_commitment"), "Invalid account commitment");
         var members = new ArrayList<Member>(); var observations = new ArrayList<Observation>();
         for (var raw : EscrowTags.list(tag, "members", EscrowLimits.OPERATIONS)) {
             var item = (CompoundTag) raw; EscrowTags.fields(item, "op_id", "phase", "reason", "digest");
@@ -326,7 +353,8 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         return new EscrowSettlementIntent(EscrowTags.enumeration(Choice.class, tag, "choice"), EscrowTags.uuid(tag, "ledger_id"),
                 EscrowTags.uuid(tag, "actor"), EscrowTags.string(tag, "actor_name"), EscrowTags.number(tag, "preview_tick"),
                 EscrowTags.number(tag, "confirmed_tick"), members, observations,
-                tag.contains("floor") ? EscrowTags.compound(tag, "floor") : new CompoundTag(), EscrowTags.string(tag, "digest"));
+                tag.contains("floor") ? EscrowTags.compound(tag, "floor") : new CompoundTag(), EscrowTags.string(tag, "digest"),
+                schema == 3 ? java.util.HexFormat.of().formatHex(tag.getByteArray("account_commitment")) : null);
     }
     static Observation decodeObservation(CompoundTag item) {
             EscrowTags.fields(item, "endpoint", "missing", "bound", "quantity", "state", "signature_kind", "invariant_digest", "normalized_wrapper");
