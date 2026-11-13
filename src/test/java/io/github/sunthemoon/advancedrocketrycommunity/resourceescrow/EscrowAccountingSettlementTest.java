@@ -138,11 +138,13 @@ class EscrowAccountingSettlementTest {
     }
 
     @Test void rowlessLegacyPreparedMemberStillOffersAnUnknownDecision() {
+        for (boolean abandon : List.of(false,true)) {
         var root = ledger(operation(1)).accounting(List.of(operation(1)),List.of());
-        var observed = observations(root,null); var rows = EscrowSettlementAccounting.project(root,root.records(),observed,Map.of());
+        var observed = observations(root,abandon ? root.records().get(0).source().key() : null); var rows = EscrowSettlementAccounting.project(root,root.records(),observed,Map.of());
         assertTrue(rows.isEmpty()); assertEquals(2, preview(root,observed,rows).encode().getInt("schema_version"));
         var result = released(root,observed,rows); assertEquals(3,result.tombstones().get(0).getInt("schema_version"));
         assertEquals("UNKNOWN",result.tombstones().get(0).getString("accounting_status"));
+        }
     }
 
     @Test void numericReadbackUsesTheSameDecodedCargoAndDeviceRootsAsTheirSignatures() {
@@ -246,5 +248,54 @@ class EscrowAccountingSettlementTest {
                 }
             }
         }
+    }
+
+    @Test void fuelO2ConfirmsTypedBanksAndSourceAndRefusesSameAmountTagSubstitution() {
+        var f = EscrowAccountingCaptureTest.fuel(false); var capture = f.admission();
+        var root = EscrowAccountingReconciliationTest.root(capture);
+        root = root.replace(List.of(capture.operation().withReason(EscrowReason.OTHER_STATE)),root.floors(),root.tombstones());
+        var op = root.records().get(0);
+        var rocketSlot = EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(),f.after());
+        var deviceSlot = EscrowAccountingReconciliationTest.slot(op.device(),f.deviceAfter());
+        var rocket = EscrowSettlementDisk.ordinary(rocketSlot,op.rocket(),root.id(),null,List.of(op));
+        var device = EscrowSettlementDisk.ordinary(deviceSlot,op.device(),root.id(),null,List.of(op));
+        var observed = List.of(rocket.settlement(),device.settlement());
+        var rows = EscrowSettlementAccounting.project(root,root.records(),observed,Map.of(op.rocket().key(),rocket.fluids(),op.device().key(),device.fluids()));
+        var p = preview(root,observed,rows); var intent = p.confirm(p.actor(),p.digest(),11,observed); var o1 = intent.freeze(root,rows);
+        for (var endpoint : List.of(op.rocket(),op.device())) {
+            var proof = EscrowSettlementProofs.slot(intent,List.of(op),endpoint,e -> EscrowCargoSettlementProofTest.snapshot(f.after()),o1.fluidAccounts());
+            assertTrue(CompletableFuture.supplyAsync(() -> proof.targets().get(0).validator().test(endpoint.equals(op.rocket()) ? rocketSlot : deviceSlot)).join());
+            assertTrue(proof.confirmed());
+            if (endpoint.equals(op.device())) {
+                var changed = f.deviceAfter().copy(); changed.getCompound(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot.KEY)
+                        .getCompound("tank").put("Tag",new CompoundTag());
+                var sameAmount = EscrowAccountingReconciliationTest.slot(op.device(),changed);
+                assertTrue(CompletableFuture.supplyAsync(() -> proof.targets().get(0).validator().test(sameAmount)).join());
+                assertFalse(proof.confirmed()); assertEquals(EscrowReason.ACCOUNTING_MISMATCH,
+                        proof.reason(new EscrowBarrier.JointResult(Map.of(),EscrowReason.BARRIER_UNSTABLE)));
+            }
+        }
+        assertEquals(rows,o1.fluidAccounts());
+    }
+
+    @Test void abandonO2ProvesAbsenceWithoutInventingAMissingVector() {
+        var f = EscrowCargoReconciliationFixture.create(true);
+        var capture = EscrowAccountingCapture.bind(f.op(),RocketEscrowSection.neutral(),f.before(),f.after(),f.deviceBefore(),f.deviceAfter(),
+                EscrowCargoSettlementProofTest.snapshot(f.before()),EscrowCargoSettlementProofTest.snapshot(f.after()));
+        var root = f.ledger().accounting(List.of(capture.operation().withReason(EscrowReason.MISSING_ENDPOINT)),List.of(capture.account()));
+        var op = root.records().get(0); var rocketSlot = EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(),f.after());
+        var rocket = EscrowSettlementDisk.ordinary(rocketSlot,op.rocket(),root.id(),null,List.of(op));
+        var absent = new EscrowSettlementIntent.Observation(op.device(),null,false,0);
+        var observed = List.of(rocket.settlement(),absent);
+        var rows = EscrowSettlementAccounting.project(root,root.records(),observed,Map.of(op.rocket().key(),rocket.fluids()));
+        var p = preview(root,observed,rows); var intent = p.confirm(p.actor(),p.digest(),210,observed);
+        var o1 = intent.freeze(root,rows);
+        var missingProof = EscrowSettlementProofs.slot(intent,List.of(op),op.device(),e -> fail("Absence needs no snapshot"),o1.fluidAccounts());
+        var missingSlot = EscrowFluidCargoEndpointTest.slot(f.deviceAfter()); missingSlot.put("block_entities",new net.minecraft.nbt.ListTag());
+        assertTrue(missingProof.readbacks().isEmpty()); assertTrue(missingProof.targets().get(0).validator().test(missingSlot));
+        assertFalse(missingProof.targets().get(0).validator().test(EscrowFluidCargoEndpointTest.slot(f.deviceAfter())));
+        var survivor = EscrowSettlementProofs.slot(intent,List.of(op),op.rocket(),e -> EscrowCargoSettlementProofTest.snapshot(f.after()),o1.fluidAccounts());
+        assertTrue(CompletableFuture.supplyAsync(() -> survivor.targets().get(0).validator().test(rocketSlot)).join()); assertTrue(survivor.confirmed());
+        var o4 = released(root,observed,rows); assertEquals(Knowledge.UNKNOWN_ENDPOINT,o4.fluidAccounts().get(0).knowledge());
     }
 }
