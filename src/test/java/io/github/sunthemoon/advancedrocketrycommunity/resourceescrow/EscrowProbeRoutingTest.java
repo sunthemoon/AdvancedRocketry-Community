@@ -74,7 +74,7 @@ class EscrowProbeRoutingTest {
         assertTrue(seen.containsAll(List.of(EscrowLoaderS6PublicationProbe.RETURN, EscrowLoaderS6PublicationProbe.HELD)));
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
-        assertEquals(expected, items); assertEquals(31, items.size());
+        assertEquals(expected, items); assertEquals(45, items.size()); // W360's fourteen additional item cuts.
     }
 
     @Test void legacyStoreFaultAndUnenumeratedNamesStillReachTheGenericFallback() throws Exception {
