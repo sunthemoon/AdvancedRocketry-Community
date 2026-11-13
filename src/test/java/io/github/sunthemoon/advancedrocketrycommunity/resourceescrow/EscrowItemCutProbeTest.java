@@ -33,7 +33,7 @@ class EscrowItemCutProbeTest {
     }
     @Test void probeNeedsHooksExactCaseAndScenario() {
         var cases = new java.util.ArrayList<>(EscrowItemSettlementCuts.CASES.keySet()); cases.addAll(EscrowItemRecoveryCuts.CASES);
-assertEquals(31, cases.size());
+assertEquals(45, cases.size()); // W360: seven new cuts in each item direction.
         for (var name : cases) {
             for (var scenario : List.of("start", "recover")) {
                 assertTrue(EscrowItemCutProbe.selected(true, scenario, name));
@@ -116,6 +116,21 @@ assertEquals(31, cases.size());
                 assertTrue(EscrowItemSettlementCuts.pauses("O2_" + side + "_" + when, "O2_" + when + "_" + index, "", false, 1, 0));
                 assertFalse(EscrowItemSettlementCuts.pauses("O2_" + side + "_" + when, "O2_" + when + "_" + (1 - index), "", false, 1, 0));
             }
+        }
+    }
+
+    @Test void beforeWriteCutsSelectOnlyTheirOwnUnreplacedBoundary() {
+        assertTrue(EscrowItemSettlementCuts.pauses("O1_BEFORE", "K1", "", true, -1, -1));
+        assertFalse(EscrowItemSettlementCuts.pauses("O1_BEFORE", "K1", "", false, -1, -1));
+        assertTrue(EscrowItemSettlementCuts.pauses("O_BIND_BEFORE", "O_BIND_BEFORE", "", false, -1, -1));
+        for (var phase : List.of("O3", "O4")) {
+            assertTrue(EscrowItemSettlementCuts.pauses(phase + "_BEFORE", "K1", phase, false, -1, -1));
+            assertFalse(EscrowItemSettlementCuts.pauses(phase + "_BEFORE", "K2", phase, false, -1, -1));
+        }
+        for (var name : List.of("IS_O3J_BEFORE", "IS_LOAD_O3J_BEFORE")) {
+            assertTrue(EscrowItemCutProbe.journalCut(true, "start", name));
+            assertFalse(EscrowItemCutProbe.journalCut(false, "start", name));
+            assertFalse(EscrowItemCutProbe.journalCut(true, "recover", name));
         }
     }
     @Test void candidatesAreCodecValidTypedAndNeverMutateTheLiveSnapshot() {

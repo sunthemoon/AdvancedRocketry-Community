@@ -259,7 +259,7 @@ class InvocationTests(unittest.TestCase):
 
     def test_every_family_has_a_runner_and_every_scratch_family_a_case(self):
         self.assertEqual(set(r042.RUNNERS), {spec["family"] for spec in r042.CASES.values()})
-        self.assertEqual({"U", "N", "L", "P"}, set(r042.RUNNERS))
+        self.assertEqual({"U", "N", "L", "P", "R"}, set(r042.RUNNERS))
         self.assertTrue(all(case in r042.CASES and r042.CASES[case]["family"] == family for family, case in r042.SCRATCH.items()))
 
     def test_the_candidate_arguments_are_required(self):

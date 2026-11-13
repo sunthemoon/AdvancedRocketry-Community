@@ -40,7 +40,7 @@ class CargoW330RunnerTest(unittest.TestCase):
         self.assertEqual(len(loads), 20)
         for name in loads:
             self.assertEqual(fluid.BOUNDARIES[name], fluid.BOUNDARIES[name.replace("FS_LOAD_", "FS_", 1)])
-        self.assertEqual(sum(name.startswith("IS_LOAD_") for name in item.CASES), 13)
+        self.assertEqual(sum(name.startswith("IS_LOAD_") for name in item.CASES), 20)  # W360: seven added cuts.
         self.assertEqual(fluid.CASES["FS_LOAD_VETO_DESTINATION_SAVED"]["final"][1],
                          dict(rocket=(1000, 1, 1, True), device=(5000, 0, 0)))
 

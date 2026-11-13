@@ -100,6 +100,11 @@ class CargoLoadVetoLogTest(unittest.TestCase):
                 continue
             for restart in (0, 1, 2):
                 marker = item.marker(case, restart) + ("" if restart else "boundary=" + item.CASES[case]["boundary"])
+                if case == "IS_LOAD_VETO_DESTINATION_SAVED" and restart == 0:
+                    item.observations(error + [marker], case, restart)
+                    with self.assertRaises(fluid.smoke.SmokeError):
+                        item.observations([marker], case, restart)
+                    continue
                 item.observations([marker], case, restart)
                 with self.subTest(case=case, restart=restart), self.assertRaises(fluid.smoke.SmokeError):
                     item.observations(error + [marker], case, restart)

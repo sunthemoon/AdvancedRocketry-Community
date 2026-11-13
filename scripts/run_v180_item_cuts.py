@@ -28,7 +28,8 @@ CASES.update(IC_PARTIAL_APPLY=dict(family="D-S1", probe="IC_LOAD_C2_DESTINATION_
 CASES.update({name: dict(family="D-S2", probe=name, boundary="BEFORE_OFFLINE_DAMAGE") for name in fixture.CASES})
 for name in oracle.CASES:
     boundary = name.removeprefix("IS_LOAD_") if name.startswith("IS_LOAD_") else name[3:]
-    boundary = {"BIND_AFTER": "O_BIND_AFTER", "BIND_VETO": "NORMALIZATION_VETO", "O3J_AFTER": "O3J_REPLACED",
+    boundary = {"BIND_BEFORE": "O_BIND_BEFORE", "BIND_AFTER": "O_BIND_AFTER", "BIND_VETO": "NORMALIZATION_VETO", "O3J_AFTER": "O3J_REPLACED",
+                "VETO_DESTINATION_SAVED": "O_VETO",
                 "ABANDON_ROCKET": "O1_AFTER", "ABANDON_DEVICE": "O1_AFTER"}.get(boundary, boundary)
     CASES[name] = dict(family="D-S2-LOAD" if name.startswith("IS_LOAD_") else "D-S2", probe=name, boundary=boundary)
 CASES.update(IR_DISASSEMBLY=dict(family="D-S2", probe="IR_DISASSEMBLY", boundary="K1"),
@@ -59,7 +60,11 @@ def observations(lines, case, restart):
         for role in ("SOURCE", "DESTINATION"):
             if probe.endswith(role + "_ONLY_STORE"):
                 require("selected=" + role in matches[0], "Wrong selected one-sided store")
-    require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR/FATAL")
+    if case == "IS_LOAD_VETO_DESTINATION_SAVED" and not restart:
+        from run_v180_cargo_s4_s5_cuts import check_load_veto_error
+        check_load_veto_error(lines)
+    else:
+        require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR/FATAL")
     returns = [int(match[1]) for line in lines if (match := re.search(r"ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=IR_DISASSEMBLY code=(-?\d+)", line))]
     require(all(code == 1 for code in returns), "Production disassembly refused consent")
     if case == "IR_DISASSEMBLY" and not restart:
@@ -169,8 +174,14 @@ def run(args):
                         elif case in oracle.CASES:
                             old = frozen["ledger"]
                             require_progress(old, disk["ledger"])
-                            digest = old["records"][0]["settlement"]["digest"] if old["records"] else old["tombstones"][0]["decision_digest"]
-                            require(disk["ledger"]["tombstones"][0]["decision_digest"] == digest, "Restart changed frozen operator choice")
+                            if case in ("IS_O1_BEFORE", "IS_LOAD_O1_BEFORE"):
+                                require(native.same_typed(old, disk["ledger"]), "Pre-O1 restart changed the undecided ledger")
+                                digest = None
+                            else:
+                                digest = old["records"][0]["settlement"]["digest"] if old["records"] else old["tombstones"][0]["decision_digest"]
+                                current = disk["ledger"]
+                                current_digest = current["records"][0]["settlement"]["digest"] if current["records"] else current["tombstones"][0]["decision_digest"]
+                                require(current_digest == digest, "Restart changed frozen operator choice")
                             for endpoint in ("rocket", "device"):
                                 previous, current = frozen[endpoint], disk[endpoint]
                                 require((previous is None) == (current is None), "Restart changed survivors")
