@@ -219,6 +219,11 @@ class Run(bay.Session):
             self.presence_thread = None
             require(not self.presence_errors, "Presence handle failed: " + "; ".join(self.presence_errors))
 
+    def snapshot_failure(self, world: Path, destination: Path) -> dict:
+        # A failed hold oracle still owns the UNKNOWN handle. Restore file access before copying raw evidence.
+        self.release_presence()
+        return evidence_tools.snapshot_world(world, destination)
+
     def probe_unknown(self, world: Path, filename: str, log: Path) -> str:
         evidence_tools.recheck_installed(self.candidate)
         text = presence.probe(self.args.java, self.candidate, self.session, world, filename, log)
@@ -1076,7 +1081,7 @@ def run(args) -> dict:
                     report["cases"][-1]["coverage"] = "NOT_COVERED"
                 world = session / ("world-" + case)
                 if world.is_dir():
-                    report["cases"][-1]["raw"] = evidence_tools.snapshot_world(world, evidence / f"{case}-failure-raw")
+                    report["cases"][-1]["raw"] = runner.snapshot_failure(world, evidence / f"{case}-failure-raw")
                 print(f"{case}: FAIL {failure}", flush=True)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)

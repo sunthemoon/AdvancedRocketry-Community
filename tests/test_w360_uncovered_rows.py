@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import item_cuts_oracle as item
@@ -18,6 +19,19 @@ SUFFIXES = ("O1_BEFORE", "BIND_BEFORE", "O3_BEFORE", "O3J_BEFORE", "O4_BEFORE", 
 
 
 class UncoveredRowsTest(unittest.TestCase):
+    def test_failed_presence_case_releases_its_handle_before_archiving(self):
+        events = []
+        run = ledger.Run.__new__(ledger.Run)
+
+        def archive(world, destination):
+            self.assertEqual(events, ["released"])
+            return dict(world=str(world), destination=str(destination))
+
+        with patch.object(run, "release_presence", side_effect=lambda: events.append("released")), \
+                patch.object(ledger.evidence_tools, "snapshot_world", side_effect=archive):
+            result = run.snapshot_failure(Path("world"), Path("evidence"))
+        self.assertEqual(result, dict(world="world", destination="evidence"))
+
     def test_held_rows_require_identical_ledger_instead_of_a_release(self):
         for case in ("IS_O1_BEFORE", "IS_LOAD_O1_BEFORE", "IS_VETO_DESTINATION_SAVED", "IS_LOAD_VETO_DESTINATION_SAVED"):
             before = dict(records=[dict(phase="REPAIR" if case.endswith("O1_BEFORE") else "SETTLING_ACCEPT")], tombstones=[])
