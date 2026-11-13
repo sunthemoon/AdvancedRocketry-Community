@@ -19,15 +19,16 @@ import org.slf4j.Logger;
  */
 public final class BayReceiptCommitCut implements CheckedSavedDataFile.Committer {
     public enum Point { STAGED, MOVED }
-    public enum Mode { PAUSE, UNKNOWN }
+    public enum Mode { PAUSE, UNKNOWN, HOLD_UNKNOWN }
     private record Armed(Point point, Mode mode, String cut, UUID op) { }
     private static final Logger LOGGER = LogUtils.getLogger();
     private final CountDownLatch release = new CountDownLatch(1);
     private final java.util.concurrent.atomic.AtomicBoolean guardPaused = new java.util.concurrent.atomic.AtomicBoolean();
     private volatile Armed armed;
 
-    /** One-shot: the next receipt replacement fires this cut. */
+    /** The next replacement fires this cut; HOLD_UNKNOWN also fires on retries until release. */
     public void arm(Point point, Mode mode, String cut, UUID op) {
+        if (mode == Mode.HOLD_UNKNOWN && !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) { return; }
         armed = new Armed(Objects.requireNonNull(point), Objects.requireNonNull(mode), Objects.requireNonNull(cut), Objects.requireNonNull(op));
         LOGGER.info("ARCE_RELEASE_BAY_ARMED cut={} op={} point={} mode={}", cut, op, point, mode);
     }
@@ -52,6 +53,11 @@ public final class BayReceiptCommitCut implements CheckedSavedDataFile.Committer
     }
 
     private void fire(Armed current) throws IOException {
+        // W358: only a gated command arms this mode; retries keep throwing before replacement until release().
+        if (current.mode() == Mode.HOLD_UNKNOWN && release.getCount() != 0) {
+            LOGGER.info("ARCE_RELEASE_BAY_INJECTED cut={} op={} outcome=UNKNOWN point={}", current.cut(), current.op(), current.point());
+            throw new IOException("Held release-test ambiguous receipt replacement");
+        }
         armed = null;
         if (current.mode() == Mode.UNKNOWN) {
             LOGGER.info("ARCE_RELEASE_BAY_INJECTED cut={} op={} outcome=UNKNOWN point={}", current.cut(), current.op(), current.point());

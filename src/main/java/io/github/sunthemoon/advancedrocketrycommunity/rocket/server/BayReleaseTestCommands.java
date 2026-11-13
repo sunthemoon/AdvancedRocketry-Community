@@ -59,6 +59,7 @@ public final class BayReleaseTestCommands {
         BayPassengerExitReleaseTest.register(event);
         BayGapReleaseTestCommands.register(event);
         BaySaveBoundaryReleaseTestCommands.register(event);
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayUncoveredReleaseTestCommands.register(event);
         R042ReleaseTestCommands.register(event); // W332: R-042's NOT_LOADED and held-pool probes
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
@@ -77,6 +78,11 @@ public final class BayReleaseTestCommands {
                         .then(Commands.literal("trio").executes(context -> {
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
                             return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), Variant.TRIO,
+                                    null, null);
+                        }))
+                        .then(Commands.literal("parked").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), Variant.PARKED,
                                     null, null);
                         }))))
                 // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
@@ -98,7 +104,7 @@ public final class BayReleaseTestCommands {
     }
 
     /** The fixture's package layout; STANDARD and SURVEY are C1's, TRIO is W331's. */
-    enum Variant { STANDARD, SURVEY, TRIO }
+    enum Variant { STANDARD, SURVEY, TRIO, PARKED }
 
     /** W254: a non-null {@code rider}, a facility-owned test player, is assigned the seat and boards before the launch. */
     static int fixture(CommandSourceStack source, BlockPos origin, boolean survey,
@@ -157,16 +163,17 @@ public final class BayReleaseTestCommands {
         }
         if (rider != null) { flight = flight.withPassengers(flight.passengers().assign(rider.getUUID()).orElseThrow()); }
         if (offlineRider != null) { flight = flight.withPassengers(flight.passengers().assign(offlineRider).orElseThrow()); }
-        rocket.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), level.getGameTime()));
+        rocket.updateFlightData(flight.withFuel(flight.fuel().fill(variant == Variant.PARKED
+                ? Math.max(0, flight.fuel().capacity() - 1_000) : flight.fuel().capacity()).state(), level.getGameTime()));
         if (rider != null && !rider.startRiding(rocket, true)) { throw new IllegalStateException("The bay fixture rider did not board"); }
-        var launched = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer);
+        var launched = variant == Variant.PARKED ? null : RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer);
         if (locked != null) {
             LOGGER.info("ARCE_RELEASE_BAY_TRIO logical={} data={} survey={} solar={}", logical, BayDeploymentGameTestSupport.satellite(data),
                     BayDeploymentGameTestSupport.satellite(solar), BayDeploymentGameTestSupport.satellite(locked));
         }
         LOGGER.info("ARCE_RELEASE_BAY_FIXTURE logical={} transfer={} rocket={} data={} solar={} launch={} packages={}", logical,
                 transfer, rocket.getUUID(), BayDeploymentGameTestSupport.satellite(data), BayDeploymentGameTestSupport.satellite(solar),
-                launched.code(), signatures(snapshot));
+                launched == null ? "PARKED" : launched.code(), signatures(snapshot));
         source.sendSuccess(() -> Component.literal("Bay fixture launched"), false);
         return 1;
     }

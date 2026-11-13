@@ -26,7 +26,9 @@ final class BayReleasedTestCommands {
                 .then(Commands.literal("released-status").then(Commands.argument("logical", UuidArgument.uuid())
                         .executes(context -> status(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("seed-repair").then(Commands.argument("logical", UuidArgument.uuid())
-                        .executes(context -> repair(context.getSource(), UuidArgument.getUuid(context, "logical"))))))));
+                        .executes(context -> repair(context.getSource(), UuidArgument.getUuid(context, "logical"), false))
+                        .then(Commands.literal("incoherent").executes(context -> repair(context.getSource(),
+                                UuidArgument.getUuid(context, "logical"), true))))))));
     }
 
     private static int ends(CommandSourceStack source, UUID logical) {
@@ -54,7 +56,7 @@ final class BayReleasedTestCommands {
         return 1;
     }
 
-    private static int repair(CommandSourceStack source, UUID logical) {
+    private static int repair(CommandSourceStack source, UUID logical, boolean incoherent) {
         var server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         var session = RocketRuntime.installedBays().orElseThrow().sessionForTests();
@@ -62,6 +64,13 @@ final class BayReleasedTestCommands {
         if (rows.size() != 1 || rows.get(0).phase() != BayReceipt.Phase.INTENT || rows.get(0).released()
                 || !session.acknowledged(rows.get(0).op())) { return 0; }
         var row = rows.get(0).withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", server.getTickCount());
+        if (incoherent) {
+            // A valid receipt schema, but not the package signature in either immutable transfer snapshot.
+            row = new BayReceipt(row.op(), row.seq(), row.rocket(), row.bay(), row.satellite(), row.owner(), row.definition(),
+                    row.kind(), row.orbit(), io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("W358 incoherent"),
+                    row.transfer(), row.srcBefore(), row.srcAfter(), row.dstBefore(), row.dstAfter(), row.phase(), row.reason(),
+                    row.preexisting(), row.released(), row.registryEpoch(), row.createdTick(), row.updatedTick(), row.attempts());
+        }
         var result = BayReceiptTestHooks.put(server, row,
                 outcome -> LOGGER.info("ARCE_RELEASE_BAY_REPAIR logical={} outcome={}", logical, outcome));
         return result.queued() ? 1 : 0;
