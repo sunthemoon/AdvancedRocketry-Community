@@ -61,6 +61,7 @@ def receipts(root):
         receipt.update(anchor_op=min(m["op_id"] for m in root["records"]),
                        before_choice=[{k: v for k, v in o.items() if k != "normalized_wrapper"} for o in chosen],
                        missing=[o["endpoint"] for o in chosen if o["missing"]])
+        receipt.update(chain.i.accounting.receipt_fields(root, op))
         result.append(receipt)
     return result
 
@@ -70,6 +71,8 @@ def check(image, restart, identity=None, cut=CASES[0]):
             and isinstance(image.get("native"), dict), "Abandon UNKNOWN is not zero loss")
     try:
         disk = normalize_ids(image["native"]); identity = normalize_ids(identity); root = disk["ledger"]
+        chain.i.accounting.check(root)
+        require(all(r["f"]["k"] != 1 for r in root.get("fluid_accounts", []) if "f" in r), "Abandon missing endpoint became KNOWN")
         before = "_BEFORE" in cut; released = bool(restart and not before); bi = cut.endswith("_BI")
         require(not released or identity is not None, "Abandon release has no initial frozen authority")
         authority = identity["authority"] if released else root
@@ -88,12 +91,12 @@ def check(image, restart, identity=None, cut=CASES[0]):
                 require(all(not op.get("settlement") for op in records), "Pre-O1 abandon invented a decision")
             else:
                 intent = records[0]["settlement"]
-                require(records[1]["settlement"] == intent and intent["schema_version"] == 2 and intent["choice"] == "ABANDON"
+                require(records[1]["settlement"] == intent and intent["schema_version"] == (3 if root.get("schema_version") == 3 else 2) and intent["choice"] == "ABANDON"
                     and intent["ledger_id"] == root["ledger_id"] and intent["actor"] == canonical_uuid(ACTOR) and intent["actor_name"] == "Server"
                     and re.fullmatch(r"[0-9a-f]{64}", intent["digest"]) and intent["preview_tick"] >= 0
                     and intent["confirmed_tick"] - intent["preview_tick"] >= 200
                     and set(intent) == {"schema_version", "choice", "ledger_id", "actor", "actor_name", "digest",
-                                        "confirmed_tick", "preview_tick", "members", "observations"}, "Abandon changed its frozen decision or absence interval")
+                                        "confirmed_tick", "preview_tick", "members", "observations"} | ({"account_commitment"} if root.get("schema_version") == 3 else set()), "Abandon changed its frozen decision or absence interval")
                 require(len(intent["members"]) == 2, "Abandon omitted a member")
                 for member, op in zip(intent["members"], records):
                     require(member == dict(op_id=op["op_id"], phase="REPAIR", reason="OTHER_STATE", digest=member["digest"])

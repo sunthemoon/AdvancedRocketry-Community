@@ -73,6 +73,8 @@ def inspect_hold(lines: list[str], cut: str, restart: int) -> str:
 
 def require_progress(before: dict, after: dict) -> None:
     """Every released receipt must retain its exact O1 member, actor, choice, guard and observations."""
+    import escrow_accounting as accounting
+    accounting.check_progress(before, after)
     frozen = before["records"]
     if not frozen:
         if before["tombstones"] != after["tombstones"]:

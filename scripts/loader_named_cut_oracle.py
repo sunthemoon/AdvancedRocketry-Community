@@ -25,6 +25,7 @@ def inspect(world: Path, cut: str) -> dict:
 
 
 def check(disk: dict, cut: str, restart: int) -> dict:
+    base.accounting.check(disk["ledger"])
     root, rocket = disk["ledger"], disk["rocket"]
     e5 = cut.endswith("E5"); retired = bool(restart or cut.endswith("K9"))
     data = rocket["RocketEntityData"]; logical = data["assembly_transaction_id"]
@@ -48,6 +49,8 @@ def check(disk: dict, cut: str, restart: int) -> dict:
                      "Named cut lost its exact guard, phase or persisted reason")
     # After checking the complete root/floor, reuse the unchanged resource oracle on this one fill.
     main = copy.deepcopy(disk); main["ledger"]["floors"] = []; main["ledger"]["issued_through"] = 1
+    main["ledger"] = base.accounting.resource_projection(root)
+    main["ledger"].update(floors=[], issued_through=1)
     control = "K6" if e5 else "K9" if cut.endswith("K9") else "K2_ACK"
     identity = base.check(main, base.PREFIX + control, restart)
     if e5:

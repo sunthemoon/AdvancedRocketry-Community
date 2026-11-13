@@ -113,6 +113,9 @@ def inspect(world: Path, case: str):
                 block=block_at(raw["terrain"], 68, 100, 64))
 
 def check_settlement(case: str, disk: dict, restarted: bool) -> None:
+    import escrow_accounting as accounting
+    accounting.check(disk["ledger"], fresh_fluid=False)
+    require(all(r.get("schema_version", 3) == 3 for r in disk["ledger"]["tombstones"]), "Item receipt acquired a fluid account")
     spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
     landed = restarted and spec.get("landed")
     require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == ("LOAD" if spec.get("load") else "UNLOAD")), "Settlement duplicated the rocket or changed the device")
@@ -192,6 +195,8 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
 
 
 def check_recovery(case, disk, restarted):
+    import escrow_accounting as accounting
+    accounting.check(disk["ledger"], fresh_fluid=False)
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
     require(device is not None and device["role"] == "UNLOAD", "Recovery device missing or changed role")
     require(not root["tombstones"] and not root["floors"] and not root["rocket_authorities"]

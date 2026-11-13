@@ -6,6 +6,7 @@ from the named production codecs, never from guessing a Python integer's size.
 import copy
 import hashlib
 import re
+import escrow_accounting as accounting
 from uuid import UUID
 
 import loader_cut_nbt as nbt
@@ -145,6 +146,7 @@ def fuel_signature(descriptor, amount, revision):
 
 
 def pair_identity(pair, ledger, records=True):
+    accounting.check(ledger)
     """Validate the whole typed prefix and retain all immutable native fields."""
     require(len(pair["loaders"]) == 1, "S6 integrity requires one loader per pair")
     device = pair["loaders"][0]; loader = device["arce_fluid_fuel_loader"]
@@ -179,10 +181,11 @@ def pair_identity(pair, ledger, records=True):
 
 
 def check_record(op, pair, ledger):
+    accounting.expect_transfer(ledger, op, source=4000, destination=1000)
     device = pair["loaders"][0]; loader = device["arce_fluid_fuel_loader"]
     rocket = pair["rocket"]; data = rocket["RocketEntityData"]; snapshot = data["snapshot"]
     flight = data["flight_data"]; descriptor = snapshot["propulsion"]
-    require(op["schema_version"] == 2 and op["seq"] == 1 and op["kind"] == "FLUID_PROPULSION_FILL"
+    require(op["schema_version"] == (3 if ledger.get("schema_version") == 3 else 2) and op["seq"] == 1 and op["kind"] == "FLUID_PROPULSION_FILL"
             and op["owner"] == loader["owner"] == data["owner_id"]
             and op["transfer_guard"]["rocket_id"] == data["assembly_transaction_id"]
             and op["payload"] == dict(FluidName=FUEL, Amount=1000), "S6 changed record owner, kind or payload")
