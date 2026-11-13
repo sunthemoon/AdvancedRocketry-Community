@@ -1,7 +1,12 @@
 # W357: signed per-fluid transfer accounting
 
-Date: 2026-11-13. Status: **PROPOSED; independent read-only review and Root decisions are pending.**
-The inspected source is `8e734616ce62bcecb33cf8b085547dfc6d51a858`.
+Date: 2026-11-13. Status: **REVISED after W357R, under Root decisions R440 and R441.** W357R is the independent
+read-only review of this note at `4cf28c497` (verdict APPROVE-WITH-CHANGES; `REVIEW.md` in
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W357-review/`, SHA-256
+`21f26acc525e4945d521f0edb05e9e342fd1dfad16bbd7373caede34599ddc14`). This revision resolves its findings 1 to 9 and
+records Root's four answers in section 10. Nothing in this note is implemented.
+The inspected source is `8e734616ce62bcecb33cf8b085547dfc6d51a858`; the code cited by the revision was read at
+`4cf28c497`, which changes documentation only.
 [R434](OWNER-DECISIONS-20261113.md) commissions this design, not implementation or admission.
 Fuel, the four cargo kinds and the bay remain disabled in production. No Gate or risk is accepted here.
 
@@ -58,6 +63,17 @@ keys because the source equals the selected bank's key; a later observation has 
 key and at most two observed keys, hence at most **three**. Empty units are known zero, not a synthetic fluid.
 An unexpected replacement Fluid therefore gets its own signed entry instead of cancelling another Fluid's loss.
 
+Amounts are **aggregated per endpoint and key**. For the rocket endpoint of a fuel fill, the amount of key `f` is the
+sum of `f` over both banks. This conserves each key and still catches a fuel-for-oxidizer substitution, because
+those keys differ. It does not by itself prove which bank holds the fluid. The code does not exclude the same key in
+both banks: `RocketFluidFuelCatalog.parse` (lines 67 to 69) rejects only a duplicate `(role, Fluid)` pair, so a
+configured catalog may allow one Fluid as both BIPROPELLANT_FUEL and OXIDIZER, and `BankSelection.plan` (lines 53 to
+61) refuses AMBIGUOUS_BANK only when both compatible banks have room. A move of one key between the two banks is
+therefore invisible to the account. Bank placement stays protected by the existing fuel-vector signature:
+`RocketPropulsionFuel.resourceSignature` (lines 27 to 30) hashes the PRIMARY and OXIDIZER bank signatures
+separately and in order, and each bank signature covers its Fluid, tag and amount. The account never replaces that
+check.
+
 ### 2.2 Balance identities
 
 For key `f`, let `S0[f]` and `D0[f]` be the captured baseline amounts, and `S[f]`, `D[f]` the observed amounts in
@@ -95,6 +111,13 @@ its cause or of safety. A nonzero value is never an automatic correction. Exampl
 destination 0: final 4,000/1,000 gives 0; 4,000/900 gives +100; 5,000/1,000 gives -1,000. Replacing 100 water with
 100 oxygen records water loss +100 and oxygen gain -100, never a zero scalar balance.
 
+A proved partial application that the operator accepts is recorded the same way. Under ACCEPT_CURRENT, an
+obligation that is still outstanding at O1 is frozen as the signed discrepancy, `loss[f] = outstanding[f]`. The
+preview shows it as a **half-applied transfer** and names the side that was applied. The third example above is the
+destination-only case: `outstanding = -1,000`, so the receipt's account records a gain of 1,000. The source-only
+case records a loss of `+q`. A receipt therefore never reads as a completed transfer with zero residual when only
+one side was applied.
+
 Knowledge is separate from durability and from the receipt's release flag:
 
 | State | Meaning |
@@ -113,11 +136,35 @@ or a zero numeric sentinel for an unknown contribution.
 
 ### 2.3 Chains and shared endpoints
 
-Fuel admission projects unresolved earlier members. Capture this member's projected baseline, not the live
-rocket amount before those predecessors. At C6, subtract the recorded deltas of proved later prefix members
+Admission projects unresolved earlier members. Capture this member's projected baseline, not the live
+amount before those predecessors. At C6, subtract the recorded deltas of proved later prefix members
 from the complete observed frontier before comparing this member's expected AFTER. Check numeric continuity as
 well as signature/epoch continuity. Multiple same-Fluid fills must not each charge the later frontier as their
 own gain. OTHER or a broken continuity makes the component REPAIR; it is not a new baseline.
+
+These two rules, the projected baseline and the later-prefix subtraction, apply to **every endpoint that has a
+prefix chain**: the rocket's banks, the loader tank, the cargo device tank and the addressed rocket cargo tank.
+Cargo is not exempt. `EscrowSettlementCapacity.CARGO_ADMISSION_PER_ROCKET` is 1, which limits one rocket to one
+unsettled cargo operation, but one device can serve several rockets in turn, a loader tank can feed several fills,
+and decoding accepts up to eight markers on an endpoint. An endpoint with a single marker is the chain of length
+one, and the same code path handles it.
+
+A projected baseline is built only on predecessors whose own baseline is known. Admission therefore **refuses a new
+fluid operation whose prospective component contains a legacy schema-2 fluid record** (a record without an account
+row, section 4.2). The refusal is the ordinary typed admission result before any reservation, sequence, queue,
+writer or endpoint change, and it lasts until the legacy record is settled or retired.
+
+A connected component can still mix kinds of member, because a new fluid member and an item member can share a
+rocket or a device (the W114F mixed component), and a later item operation or a migrated root can connect a
+schema-3 fluid member with a legacy schema-2 fluid member. The rule for every such component is:
+
+- the settlement intent is schema 3 whenever at least one member has an account row, and schema 2 only when no
+  member has one;
+- the intent's account commitment covers exactly the row-bearing members, in member order;
+- item members and legacy fluid members have no row and keep schema-3 UNKNOWN receipts; only row-bearing members
+  get schema-4 receipts;
+- a component with any legacy fluid member has total status UNKNOWN, whatever its row-bearing members know;
+- an item member does not change the fluid total status, and its own receipt stays UNKNOWN as today.
 
 O1 covers an entire connected component. For its net report, count each physical endpoint/resource unit once:
 take its earliest baseline, then its final frozen observation. Do not sum overlapping rocket totals from
@@ -142,7 +189,7 @@ each member's planned-transfer identity is checked separately.
 | C3 to C6 | Freeze the current frontier and numeric projection together. The own-store and stable typed readback must yield the same vector from the same decoded root used for signature/invariant comparison. Validate prefix-normalized deltas for each member and the deduplicated aggregate, with zero residual for automatic completion. |
 | Normal L2 and C8 | Inside the guarded L2 candidate, recheck the exact checkpoint account and jointly live tokens. Delete the operation and its non-receipt-backed account atomically. Install the existing floor if required. C8 changes only markers and must not change quantities. Ordinary successful transfers do not acquire permanent receipt slots. |
 | REPAIR | Preserve baseline, plan, payload and known diagnostics. A mismatch must not overwrite the baseline or retire the operation. Repeated observation cannot silently clear a manual reason. |
-| Operator preview/confirm | Show per-key endpoint deltas, residual, missing flags and adjustment owner. A nonzero residual is a signed proposed loss/gain; an unknown contribution is printed UNKNOWN. Include all account projections and any approved discrepancy in a schema-3 intent commitment. Confirmation repeats the observations, actor/digest checks and existing 200-tick missing-endpoint interval. A component with any unknown contribution has UNKNOWN total status even if some keys are known. |
+| Operator preview/confirm | Show per-key endpoint deltas, residual, missing flags and adjustment owner. A nonzero residual is a signed proposed loss/gain; an unknown contribution is printed UNKNOWN. A remaining outstanding obligation is shown as a half-applied transfer and proposed as its signed discrepancy (section 2.2). Include all account projections and any approved discrepancy in a schema-3 intent commitment. Confirmation repeats the observations, actor/digest checks and existing 200-tick missing-endpoint interval. A component with any unknown contribution has UNKNOWN total status even if some keys are known. |
 | O1 | Freeze all component account projections/adjustments and the confirmed intent in the same ledger generation as the settling operations. No resource is moved. A nonzero KNOWN discrepancy is allowed only because that exact discrepancy was confirmed. UNKNOWN abandonment is explicitly confirmed as unknown, not zero. |
 | O2 | Normalization changes only the wrapper. Recompute typed numeric observations from both survivors, or the survivor and checked absence, and compare with O1. Proof renewal after restart uses the frozen account, never a new choice. Any changed vector invalidates the proof even if a scalar total is unchanged. |
 | O3 | Install the receipt and its exact final account digest atomically while O2 proofs and the checked journal lease remain valid. No newly inferred loss is allowed here. |
@@ -164,9 +211,32 @@ UUID. This avoids both repeated native tags in receipts and a new cross-file dur
 | Ledger | Schema **3**, new epoch `v1.8.0-resource-escrow-fluid-accounting`. Add required `fluid_accounts`. Keep all authority tables, counters and existing count limits. |
 | New fluid operation | Schema **3**. Add `accounting_baseline`, a 32-byte canonical digest of its baseline subrecord. Existing native binding, payload/cursor and hashes remain unchanged. The row UUID must match the operation. |
 | Account row | Independent schema **1**. Closed short-key form: `v` (int), `op` (UUID), `b` (baseline compound), and optional `f` (frozen settlement compound). Baseline entries contain key ID/tag digest, source/destination initial amounts and planned signed deltas. Frozen entries contain the union keys, present/unknown masks, observed amounts, knowledge code, and signed adjustment only where known. Each shared key adjustment identifies its owner; only the component's lowest-sequence row stores its at most 64 member UUIDs. No free-text reason or native-tag copy is stored. |
-| New fluid intent | Schema **3**, existing fields plus one 32-byte commitment over sorted `(member UUID, canonical account-row digest)` pairs. The ordinary intent digest includes it. The row does not contain the intent digest, avoiding a circular hash. Existing numeric observations remain in their old settlement projection. |
+| Intent of a component with at least one account row | Schema **3**, existing fields plus one 32-byte commitment over the `(member UUID, canonical account-row digest)` pairs of exactly the row-bearing members, in member order. The ordinary intent digest includes it. The row does not contain the intent digest, avoiding a circular hash. Existing numeric observations remain in their old settlement projection. Every member of the component, including item and legacy members, embeds this same intent, as `validateComponents` requires. |
 | New fluid receipt | Schema **4**, existing audit fields plus `accounting_digest` (32 bytes), and `accounting_status` KNOWN or UNKNOWN. The digest selects that operation's immutable final row, which includes the more precise knowledge reason. Preserve `payload_amount`: fill liability for fuel, zero for cargo. Actual cargo mB live in the account. Append the new field to the dictionary; never reorder its 47 existing entries. |
-| Other formats | Existing item/floor operations and intents remain schema 2; their receipts remain schema 3/UNKNOWN. Existing floors stay schema 2, READY/ARMED layouts stay unchanged, and rocket/device schemas, signature kinds, payload hashes, transfer-journal schema and network protocols do not change. |
+| Other formats | Item, floor and legacy fluid operations remain schema 2, and their receipts remain schema 3/UNKNOWN in every component. Their intent remains schema 2 when no member of the component has an account row; in a mixed component they embed the component's schema-3 intent. Existing floors stay schema 2, READY/ARMED layouts stay unchanged, and rocket/device schemas, signature kinds, payload hashes, transfer-journal schema and network protocols do not change. |
+
+**Mixed components.** Section 2.3 gives the rule. In saved form it means:
+
+- An operation's own schema (2 or 3) and the schema of the intent it embeds are independent. The decoder selects
+  the intent reader from the intent's own version, and a schema-2 operation that embeds a schema-3 intent keeps
+  every other byte of its schema-2 form.
+- A schema-3 intent with an empty commitment set is invalid, and so is a schema-2 intent in a component that has a
+  row-bearing member.
+- The commitment lists the row-bearing members only. A row for an item or legacy member is an orphan and is refused.
+- O3 writes a schema-4 receipt for each row-bearing member and a schema-3 UNKNOWN receipt for each other member.
+- When the component has a legacy fluid member, every schema-4 receipt in it carries `accounting_status` UNKNOWN,
+  and its frozen row records the knowledge reason UNKNOWN_BASELINE for the component total. The row's own known
+  per-key amounts are kept as diagnostics and are never reported as a component balance.
+
+**Receipt schemas 3 and 4 in the lock predicates.** `EscrowSettlementTombstones` compares `schema_version` with the
+single constant `SCHEMA` at five places: `installed` (line 53), `logicalLocked` (line 102), `identityLocked`
+(line 119), `chosen` (line 150) and `endpointLocked` (line 160). A missed site would silently weaken a protection,
+for example `chosen` would ignore a released schema-4 receipt and `minimumEpoch` would return 0. Slice B therefore
+replaces every such comparison with **one shared settlement-receipt test** (a single method that accepts exactly
+schemas 3 and 4 and nothing else), used by every lock and release predicate in the package. No predicate keeps an
+equality with one constant, and no predicate distinguishes the two schemas: a schema-4 receipt locks, releases and
+orders exactly as the schema-3 receipt with the same audit fields does. Only the codec and the account-reference
+validation read the version to choose a layout.
 
 Rows have one owner even when O3 temporarily has both an operation and its receipt. New fluid operations require
 the exact baseline digest. New fluid receipts require the exact frozen row digest and agreement on knowledge,
@@ -191,7 +261,11 @@ run with admission enabled. Do not claim none exist merely because production ad
 
 Recommended migration is a lossless **root 2 to root 3** upgrade in the pre-start checked migration boundary:
 
-1. Validate the complete root-2 form using a pinned legacy reader and unchanged bounds. Keep a whole-world backup.
+1. Validate the complete root-2 form using a pinned legacy reader and unchanged bounds. The **whole-world backup
+   is the operator's step before the upgrade**; the migrator does not make it. The migrator's own backup
+   (`WorldDataMigrationService`, lines 195 to 224) copies only the managed SavedData files and their `_old`
+   siblings. It refuses with `BACKUP_LIMIT` when `MAX_BACKUPS` (5) migration backups already exist. That refusal
+   becomes reachable for every world that has an escrow ledger, and section 9 registers it.
 2. Retain original operation-2, intent-2 and receipt-3 encodings and their digest rules. Add an empty account list;
    do not change embedded member digests, reconstruct baseline amounts, or create READY authority.
 3. Old live fluid records are explicitly UNKNOWN_BASELINE. Hold ordinary reconciliation before another C2 apply
@@ -199,16 +273,49 @@ Recommended migration is a lossless **root 2 to root 3** upgrade in the pre-star
    Operator preview must recognize this version-derived hold as an eligible conflict even when the preserved
    record phase is PREPARED; its member digest still commits those original bytes. It can complete as a legacy
    UNKNOWN decision with existing proofs. An already frozen O1 resumes its original decision unchanged. Already
-   released receipts stay released and UNKNOWN.
+   released receipts stay released and UNKNOWN. A component that consists only of legacy and item members keeps a
+   schema-2 intent. If such a record later shares a component with a row-bearing member, the mixed-component rule
+   of sections 2.3 and 4.1 applies: the intent is schema 3, the commitment covers the row-bearing members only,
+   the legacy member keeps its schema-3 UNKNOWN receipt, and the component's total status is UNKNOWN.
 4. Preserve floors and heads unchanged. A new operation after migration captures a new baseline; this does not
    fill historical gaps in old receipts or floors. New schema-3 records never inherit the legacy exemption.
+   Admission refuses a new fluid operation whose prospective component contains a legacy schema-2 fluid record
+   (section 2.3), so no new baseline is projected from a predecessor whose own baseline is unknown.
 5. Validate the target root and all reservation invariants before any replacement. The new header can exceed a
    completely full old root; return a bounded migration refusal and preserve the original file, rather than
    truncate or increase 1 MiB. A root already violating existing canonical re-encoding/reservations is likewise
    not repaired by migration. The target write is checked and must be acknowledged before any action.
 
 Support root 2 explicitly in `ManagedSavedDataType`/`SavedDataSchemaMigrator`, including its historical epoch;
-do not accidentally enable root-1 or other legacy schemas through the generic legacy flag. Invalid or future
+do not accidentally enable root-1 or other legacy schemas through the generic legacy flag. As written before
+W357R, that sentence could not pass the existing pre-start validator. Slice B makes these four changes in the
+[migration package](../../../../src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/migration/SavedDataSchemaMigrator.java):
+
+1. **A dedicated escrow branch in `SavedDataSchemaMigrator.migrate`,** in the manner of `migrateTransferJournal`
+   (line 155). Today RESOURCE_ESCROW has no branch, so a supported older root would fall through to the generic
+   tail, which stamps `schema_version = 2` and the epoch `v0.9.0-beta`. The escrow branch performs steps 1 to 5
+   above and never reaches the generic tail.
+2. **Separately pinned epochs in `ManagedSavedDataType.formatEpoch(int)`.** Today it returns `EscrowLimits.EPOCH`
+   for every escrow schema (lines 183 to 185), and `firstEpochSchema()` returns the current schema when
+   `hasLegacySchema()` is false, so after the bump a root-2 file's epoch would not be checked at all. Schema 2
+   returns the root-2 epoch as its own pinned literal, which must not follow `EscrowLimits.EPOCH` when that
+   constant changes. Schema 3 returns `v1.8.0-resource-escrow-fluid-accounting`. The migrator checks the root-2
+   epoch on the source before it migrates, and refuses a root-2 file with any other epoch as invalid.
+3. **`supportsSchema` limited to exactly 2 and 3 for RESOURCE_ESCROW.** `hasLegacySchema()` stays false for this
+   type (line 206), because the generic flag would open schema 1. Root 1, root 0 and every root above 3 stay
+   unsupported.
+4. **The baseline check split in two.** Today `discoverSources` validates the migrated payload with
+   `ManagedSavedDataPayloadValidator.validate(type, payload, source)`, and for RESOURCE_ESCROW (lines 40 to 46) that
+   calls `EscrowLedgerBaseline.require(source, loaded)`, which requires the bytes on disk to equal
+   `EscrowCodec.encode(loaded)`. During a migration the file is root 2 and `loaded` is root 3, so every migration
+   would be refused with "Escrow checked baseline differs from loaded authority". Instead, (a) the source file is
+   compared with the **pinned root-2 re-encoding** of what the pinned root-2 reader decoded, which proves the file
+   is canonical root 2; and (b) the migrated root 3 is **validated on its own**: structure, bounds, references,
+   reservation invariants and an encode/decode round trip. A root-3 file on disk keeps today's single check against
+   its root-3 re-encoding. Neither half is skipped, and neither is satisfied by the other.
+
+A root-1 escrow file is still refused before start with its bytes preserved, as today, and a unit test pins that
+(section 7.1). Invalid or future
 roots keep the current whole-world pre-start refusal/preservation policy. A refused migration leaves no partial
 in-memory upgrade. A failed/UNKNOWN replacement does not expose authority; restart resolves the exact file.
 
@@ -234,17 +341,29 @@ All new limits below are proposals inside the unchanged existing ceilings, not m
 
 | Field/work | Hard bound and accounting |
 |---|---|
-| Account list | At most 128 rows, and exactly the union of new fluid live-operation and permanent-receipt IDs: at most 64 + 64, counting O3 overlap once. A row is at most **4,096 uncompressed bytes**, depth 8, 256 nodes. Root remains 1,048,576 bytes, depth 24, 131,072 nodes. The count maximum does not promise all maximum-size objects fit together. |
+| Account list | At most 128 rows, and exactly the union of new fluid live-operation and permanent-receipt IDs: at most 64 + 64, counting O3 overlap once. A row has one **row ceiling** in uncompressed bytes, with depth 8 and a node bound. The ceiling is not fixed by this note: Slice A measures it (see below), W357R expects about 2,048 bytes, and it is never above the 4,096 bytes first proposed. Root remains 1,048,576 bytes, depth 24, 131,072 nodes. The count maximum does not promise all maximum-size objects fit together. |
 | Keys and arrays | Baseline at most 2 keys; frozen union at most 5 (cargo 1 and 3). IDs retain `EscrowTags.id`'s 128 printable ASCII characters; digests are exactly 32 bytes, UUIDs exactly 16 bytes. Present/unknown codes are fixed enums/bitmasks, not strings. A baseline entry has exactly four longs (two initial amounts, two deltas). A frozen entry has up to two observed-amount longs, one optional known adjustment long and one adjustment-owner UUID; masks govern omissions. No other variable-length numeric array is allowed. |
-| Groups | At most 64 members, at most 128 physical endpoints, at most 320 member/key entries before deduplication. Only the lowest-sequence row carries the member list, at most 64 UUIDs; this list is included in the 4 KiB/256-node bound. Account/intent digests commit the same member set. |
+| Groups | At most 64 members, at most 128 physical endpoints, at most 320 member/key entries before deduplication. Only the lowest-sequence row carries the member list, at most 64 UUIDs by count and at most the largest real component that Slice A measures; this list is included in the row ceiling and node bound. Account/intent digests commit the same member set. |
 | Amounts | Use checked signed `long` arithmetic throughout. Loader units remain 0..16,000. Cargo amounts retain their native capacity checks. Fuel bank bound is `RocketLimits.MAX_BLOCKS * 1,000` (2,048,000). Absent amounts have no numeric value. Aggregate arithmetic is checked even though these limits are well below long overflow. |
 | Existing envelopes | Native fluid/frame remains 8,192 bytes/depth 12/384 nodes; operation remains 12,288/depth 16/512 nodes; receipt remains 2,048/depth 16/128 nodes; endpoint 512; floor/head/ARMED 1,024. Do not copy native fluid NBT into every numeric key or the receipt. |
 | Per-Level and tick work | Accounts belong to the overworld ledger, with no new per-Level persistent map or index. Reuse the existing maximum of 64 Level services, eight cheap reconciliation visits, at most one ordinary component capture and one publication per tick, existing cargo preparation reservations, and the independent one-endpoint pruning visit. Numeric projection reads only already decoded captured units, at most three units per fluid member; it adds no world traversal, ticket or native decode. O1/O2 component work remains bounded by 64 members/128 endpoints and the existing 16 MiB retained capture ceiling. Do not repeat a full account walk for every unchanged member visit. |
 
-An account row's short-key layout fits comfortably in 4 KiB by construction: at most seven encoded key entries
-(two baseline plus five frozen), each with a 128-byte ID, 32-byte digest and a fixed small number of longs/flags,
-plus at most 1,024 bytes of group UUID payload and bounded framing. The implementation must pin the exact worst
-encoding, depth and node count; this is not a substitute for real-codec measurement.
+An account row's short-key layout has at most seven encoded key entries (two baseline plus five frozen), each
+with a 128-byte ID, 32-byte digest and a fixed small number of longs/flags, plus the group member list and bounded
+framing. That is a layout argument, not a measurement, and it does not fix the ceiling.
+
+**Slice A fixes the row ceiling by measurement, before Slice B is written.** With the real codec it measures:
+
+- the true worst account row: seven key entries with maximum-length IDs, every optional field present, and the
+  member list of the largest real component;
+- the largest real component. An intent must fit inside a 12,288-byte operation, so a real component has far fewer
+  than 64 members. Slice A reports the largest member count whose intent still fits, and the member list is bounded
+  by that count.
+
+Slice A then proposes the **smallest row ceiling that fits** the worst real row and that component, with the
+matching depth and node bound. Root's answer 2 (section 10) makes that measured value the ceiling. If the worst
+real row, receipt, operation or O1 candidate does not fit an existing ceiling, the result comes back to Root as a
+failed fit. It is never resolved by raising a ceiling.
 
 The existing dictionary has 47 fields. Appending `accounting_digest` gives the three-character wire key `f1b`.
 One 32-byte NBT byte-array field adds **42 bytes** (type 1 + name length 2 + name 3 + array length 4 + data 32).
@@ -255,12 +374,30 @@ The operation's baseline hash adds 58 bytes under the descriptive key `accountin
 commitment also costs bytes/nodes in its embedded copies. None may bypass the complete-operation bound.
 
 Extend the shared `EscrowSettlementCapacity` preview and reservation, not admission alone. Charge each occupied
-account at its 4 KiB ceiling, reserve future frozen growth, count O3 operation/receipt overlap once, and preserve
+account row **once, at the row ceiling**. The ceiling is the bound of the complete row, so the later frozen part and
+the group-owner member list are already inside that one charge, from L1 on, and nothing further is reserved for
+them. Count O3 operation/receipt overlap once, and preserve
 the existing full receipt, floor, READY and ARMED ceiling charges. R6 floor-retirement headroom remains available;
 bare floor retirement creates no fluid row, so its own current charge need not grow. A candidate must prove O1,
 O3 and O4 fit for its full component before L1. Both admission and unrelated-component freeze must use the same
-rule. Reserve the group-owner member list even before a shared adjustment exists. Root occupancy may reduce useful
+rule. Root occupancy reduces useful
 concurrency; do not reuse W114's counts as measured new capacity or raise a ceiling to recover them.
+
+**Pinned counts that the format moves.** Today each unsettled operation is charged 12,288 + 2,048 bytes
+(`EscrowSettlementCapacity`, lines 142 to 157), so one more charge per fluid operation lowers the number of fluid
+operations that fit in the root. The new header also adds bytes: the epoch string is longer and `fluid_accounts`
+is a required list. Slice A reports, before Slice B is written, the old value, the new value and the real-codec
+measurement of every pinned count the format moves:
+
+- the 61 admitted records in `EscrowCargoCapacityTest` (line 177);
+- the fixture of `EscrowFlightBenchmarkCeilingTest` (line 13), a root of exactly 1,048,576 bytes with 64 records
+  and 256 floors, which no longer fits as it stands and whose fixture has to change, not only an expected value;
+- the point at which the native saturation families `w336-saturation-fluid-load`, `w336-saturation-fluid-unload`
+  and `w336-saturation-fuel` reach the byte refusal.
+
+Root records the accepted numbers in a decision row before Slice B merges, under R441's re-pinning rule
+(section 10). Each re-pin is recorded with its old value, its new value and its measurement. No ceiling, limit or
+assertion purpose changes, and no refusal side-effect check is removed (AGENTS.md section 5).
 
 ## 6. Failures, holds and logging
 
@@ -285,9 +422,13 @@ Use bounded result values for ordinary mismatch, bounds and capacity refusal. Co
 invalid input at decoding boundaries, but must not implement ordinary save rejection. Before code merges, Root
 must add the new holds/refusals to R-035 and an ADR-065 implementation note under AGENTS section 3.3.
 
-New mismatch logging is at most one WARN `ARCE_ESCROW_ACCOUNTING_HELD` per operation per server session, plus one
-INFO `ARCE_ESCROW_ACCOUNTING_RELEASED` if operator settlement later releases it. Remember at most 64 held IDs;
-do not reset that allowance every 200-tick retry. Operator audit is one INFO per acknowledged O1 decision, with
+New mismatch logging is one WARN `ARCE_ESCROW_ACCOUNTING_HELD` per held operation, plus one
+INFO `ARCE_ESCROW_ACCOUNTING_RELEASED` if operator settlement later releases it. At most 64 operations are held at
+once, because the ledger has at most 64 operations, so the remembered set has at most 64 IDs. An ID is **forgotten
+when its operation leaves the ledger**, by release or retirement, and at no other time; the 200-tick retry does not
+reset it. An operation ID is never reused, so one operation logs the WARN at most once per server session. There is
+no fixed total per session: it is bounded by the number of operations that are admitted and then mismatch, and each
+mismatch holds its device and rocket until an operator acts. Operator audit is one INFO per acknowledged O1 decision, with
 at most 64 members/320 key rows and each key ID at most 128 characters; explicit inspect is demand-driven and
 paginated to at most 16 key rows per response. No native tag body is logged. Migration refusal logs one ERROR
 per start. Existing writer, vanilla/Forge save-error and reason-transition logging retain their existing limits
@@ -303,12 +444,48 @@ Add pure arithmetic/account-codec tests for all four partial-application combina
 both cargo directions, zero/empty units, typed tag differences including absent/empty Tag, same-total different
 Fluids, gains, losses, overflow, missing quantities, cardinalities, duplicate keys and mismatched references.
 Check chains in the same bank, alternating banks, partial retirement and a deduplicated connected component.
-Check shared adjustment ownership without double counting, and that a 64-member owner row stays bounded.
+Check shared adjustment ownership without double counting, and that the owner row of the largest real component
+stays inside the row ceiling. Check that amounts are aggregated per endpoint and key when both banks hold the same
+key, and that a move of that key between banks leaves the account unchanged while the fuel-vector signature differs.
+Check that an accepted half-applied transfer freezes `loss = outstanding` in both directions.
+
+Mixed components (section 2.3), both cases:
+
+- A new fluid member and an item member in one component: the intent is schema 3, the commitment holds exactly the
+  fluid member's row, the fluid receipt is schema 4, the item receipt is schema 3 UNKNOWN with its bytes unchanged,
+  and a row for the item member is refused as an orphan.
+- A schema-3 fluid member and a legacy schema-2 fluid member in one component (built as a fixture, because
+  admission refuses to create it): the intent is schema 3, the commitment holds only the schema-3 member's row, the
+  legacy member's receipt is schema 3 UNKNOWN, the schema-4 receipt's status is UNKNOWN, and the component total is
+  UNKNOWN.
+
+Also check that admission refuses a new fluid operation whose prospective component contains a legacy schema-2
+fluid record, with no reservation, sequence, queue, writer or endpoint change, and that a component without any
+row keeps a schema-2 intent.
+
+Receipt schemas in the lock predicates (section 4.1): one parameterized test runs `installed`, `logicalLocked`,
+`identityLocked`, `chosen` with `minimumEpoch` and `stateLocked`, `endpointLocked`, and every other lock or release
+predicate that reads a receipt, on the same receipt encoded once as schema 3 and once as schema 4, released and
+unreleased, and expects equal results for each pair. A second test pins that a receipt of any other schema is
+treated by all of them exactly as today.
 
 Pin root-2 migration fixtures with live, frozen-O1, unreleased-O3 and released receipts, bare floors, heads and
 ARMED entries. Verify exact old operation/intent/receipt bytes and digests survive, UNKNOWN is not promoted,
 new schema-3 rows cannot omit their proof, invalid/future roots are preserved, and a full target refuses without
 replacement. Stop/retry tests cover the migration write and checked baseline, including UNKNOWN outcomes.
+
+For the four migrator changes of section 4.2, add unit tests that:
+
+- a **root-1 escrow file is still refused** before start, with its bytes preserved, and `supportsSchema` is true
+  for exactly 2 and 3;
+- a root-2 file migrates through the escrow branch and the result carries schema 3 and the root-3 epoch, never the
+  generic tail's `schema_version = 2` or `v0.9.0-beta`;
+- a root-2 file with a wrong epoch is refused, and `formatEpoch(2)` still returns the pinned root-2 literal after
+  `EscrowLimits.EPOCH` changes;
+- a root-2 file that is not byte-equal to its pinned root-2 re-encoding is refused, a migrated root that fails its
+  own validation is refused, and a valid root-2 file passes the pre-start validator instead of failing with
+  "Escrow checked baseline differs from loaded authority";
+- a migration that finds five migration backups is refused with `BACKUP_LIMIT` and leaves the ledger unchanged.
 
 Existing expectations that need extension or version-specific fixtures include:
 
@@ -326,8 +503,10 @@ Existing expectations that need extension or version-specific fixtures include:
   `EscrowReviewReservationsTest`, `EscrowFlightTableReservationTest`, `EscrowReservationTransitionTest`,
   `EscrowReservationWalkTest` and `EscrowFlightBenchmarkCeilingTest`: repeat W113/W114's real-codec boundary
   measurements, all 90 cells, maximum actor compatibility, mixed UUID alias, sixth-fuel-marker rejection,
-  queued/UNKNOWN/O1/O3/O4/root reservations and the exact 1 MiB benchmark. Re-pin measured intersections only;
-  keep every ceiling, assertion purpose and refusal-side-effect check.
+  queued/UNKNOWN/O1/O3/O4/root reservations and the exact 1 MiB benchmark. Re-pin measured intersections only,
+  under R441's re-pinning rule (sections 5 and 10): `EscrowCargoCapacityTest`'s 61 and the benchmark's exact
+  1 MiB fixture move, Slice A reports their new values, and Root accepts them in a decision row before Slice B
+  merges. Keep every ceiling, assertion purpose and refusal-side-effect check.
 - Item settlement/compatibility tests retain their schema-3 UNKNOWN and zero diagnostic quantity. Their root
   framing changes to schema 3 only in new fixtures; item payload, receipt bytes and resource-signature pins do
   not change. The new row charge must not discount item operations in mixed components.
@@ -355,7 +534,7 @@ to run again on the integrated C4 candidate. New cases below are additions, not 
 | `cargo-B3-S1-REUSE`, `cargo-B3-S4-REUSE`, `cargo-B3-S5-REUSE`, `cargo-B3-S6-REUSE` | Loader baseline/readback, owner bounds, floor, missing and ordinary/governed-flight families retain their physical outcomes. Extend `loader_cut_oracle.py`, `loader_named_cut_oracle.py`, `loader_s6_integrity.py`, `loader_s6_abandon.py`, `loader_s6_normalize.py`, `loader_s6_chain.py` and `loader_s6_accounting`'s Java probe to distinguish transfer accounts from later flight fuel debit. Ordinary `LF_S6_F9_RESPAWN` stays NOT_COVERED. |
 | `cargo-D-S1`, `cargo-D-S2`, `cargo-D-S2-LOAD`, `cargo-C-Q` | Item-account expectations do not become fluid KNOWN. Root decoding/framing and mixed/shared capacity expectations change; item contents, per-owner 16, authority and refusal assertions remain. Extend item/cargo contention oracles only where they inspect the root/receipt. |
 | `cargo-G2-REUSE`, `w336-downgrade` | Keep the historical failures. Add root-3-ledger-only downgrade/restore cases with the pinned root-2 reader, separately from the existing transfer-journal-schema-3 failure. Verify whole-world bytes, refusal reason, full-backup restoration and two candidate restarts. |
-| `r042-L_LEDGER`, `r042-U_LEDGER`, `r042-P_SERVER`, `r042-P_OWNER`, `w336-saturation-bay`, `w336-saturation-item-load`, `w336-saturation-item-unload`, `w336-saturation-fluid-load`, `w336-saturation-fluid-unload`, `w336-saturation-fuel` | Same missing/unloaded/capacity/shared-pool outcomes. Update valid synthetic ledger fixtures to the appropriate root version; include account rows in byte and ownership checks, without changing 64/server, 8/rocket, 16/owner or shared 256-coordinate limits. |
+| `r042-L_LEDGER`, `r042-U_LEDGER`, `r042-P_SERVER`, `r042-P_OWNER`, `w336-saturation-bay`, `w336-saturation-item-load`, `w336-saturation-item-unload`, `w336-saturation-fluid-load`, `w336-saturation-fluid-unload`, `w336-saturation-fuel` | Same missing/unloaded/shared-pool outcomes, and the same kind of capacity refusal with the same side-effect checks. The count at which `w336-saturation-fluid-load`, `w336-saturation-fluid-unload` and `w336-saturation-fuel` reach the byte refusal is expected to fall, because each fluid operation is charged one more row. That is checked, not assumed: Slice A reports the new counts, and Root accepts them in a decision row before Slice B merges (section 5). Update valid synthetic ledger fixtures to the appropriate root version; include account rows in byte and ownership checks, without changing 64/server, 8/rocket, 16/owner or shared 256-coordinate limits. |
 | Other `forced-*`, `released`, `exit`, `r042-N_BAY`, `r042-U_BAY`, `w336-timing-*` families | Rerun unchanged behavioral oracles on C4. They may transitively use the common ledger decoder, but bay receipt schemas/outcomes and timing budgets do not change. Performance collection stays in the owner's scheduled phase. |
 
 The shared parser `run_v180_escrow_forced_stop.ledger` currently hardcodes root 2, and
@@ -390,17 +569,26 @@ the sequence below is not permission for this worker to delegate or implement.
 
 | Slice | Concrete files/areas | Estimate and exit evidence |
 |---|---|---|
-| A. Pure account and size proof | New `EscrowFluidAccount`, `EscrowFluidAccountCodec` and arithmetic tests; extend existing charge/layout tests using real encoders. | 1.5-2 days. Key/sign/chain/group cases and measured worst row/receipt/operation/O1 fit; return to Root if any bound cannot hold. |
-| B. Saved form and migration | `EscrowLedger`, `EscrowCodec`, `EscrowOperation`, `EscrowReceiptCodec`, `EscrowSettlementIntent`, `EscrowSettlementTombstones`, `EscrowSettlementCapacity`, `EscrowLedgerWriter`; Root-owned `ManagedSavedDataType`/`SavedDataSchemaMigrator` integration. | 2-3 days. Root-2 fixtures remain byte/digest faithful; root-3 round trips, reservations and failed/UNKNOWN migration prove preservation. Another session reviews the saved-form diff before merge. |
+| A. Pure account and size proof | New `EscrowFluidAccount`, `EscrowFluidAccountCodec` and arithmetic tests; extend existing charge/layout tests using real encoders. | 1.5-2 days. Key/sign/chain/group cases and measured worst row/receipt/operation/O1 fit. Reports the largest real component, the proposed smallest row ceiling, and the new value of every pinned count of section 5. Returns to Root if any bound cannot hold. |
+| B. Saved form and migration | `EscrowLedger`, `EscrowCodec`, `EscrowOperation`, `EscrowReceiptCodec`, `EscrowSettlementIntent`, `EscrowSettlementTombstones` (the shared receipt test), `EscrowSettlementCapacity`, `EscrowLedgerWriter`; the four migrator changes of section 4.2 in `ManagedSavedDataType`, `SavedDataSchemaMigrator`, `ManagedSavedDataPayloadValidator` and `EscrowLedgerBaseline`. | 2-3 days. Root-2 fixtures remain byte/digest faithful; root-3 round trips, reservations and failed/UNKNOWN migration prove preservation; a root-1 file stays refused. Its own read-only review by another session precedes the merge. |
 | C. Native capture and normal completion | `EscrowLoaderAdmission`, `EscrowCargoPreparedCapture`/eligibility, `EscrowLoaderEndpoint`, `EscrowFluidCargoEndpoint`, `EscrowReconciliationChange`/action, `EscrowReconciliationCheckpoint`, `EscrowSettlementDisk`, `EscrowCargoReadback`, normal retirement and `EscrowFloors`. | 2-3 days. Real fuel/both cargo directions, prefix-normalized and stable-readback arithmetic, no-effect refusal and E2/UNKNOWN coverage. No new permanent normal-transfer history. |
-| D. Operator lifecycle and diagnostics | Observer/proofs/recovery/operator/diagnostics/pruning files, `EscrowReason`, account commitment and receipt creation/release; Root adds ADR-065/R-035 text and manifest changes. | 1.5-2.5 days. O1-O4, signed nonzero approval, legacy/missing UNKNOWN, both ABANDON survivors, pruning and READY flight GameTests. |
-| E. Oracles and native evidence | `inspect_escrow_receipt.py`, common native ledger decoder, the named loader/cargo/item oracles and runner tests; gated native fixture/probe additions only where necessary. | 2-3 days to implement targeted native coverage; allow another 1-2 days of serial execution/review for the complete candidate campaign and corrections. R-044 failures remain visible. |
+| D. Operator lifecycle and diagnostics | Observer/proofs/recovery/operator/diagnostics/pruning files, `EscrowReason`, account commitment and receipt creation/release; Root adds ADR-065/R-035 text and manifest changes. | 1.5-2.5 days. O1-O4, signed nonzero approval, half-applied acceptance, legacy/missing UNKNOWN, mixed components, both ABANDON survivors, pruning and READY flight GameTests. The receipt work (schema-4 creation and release) gets its own read-only review by another session before it merges. |
+| E. Oracles and native evidence | `inspect_escrow_receipt.py`, common native ledger decoder, the named loader/cargo/item oracles and runner tests; gated native fixture/probe additions only where necessary. | **3-4 days** to implement targeted native coverage, as W357R advises: the shared parser has more than ten callers and 58 families are rerun. Allow another 1-2 days of serial execution/review for the complete candidate campaign and corrections. R-044 failures remain visible. |
 
-Total implementation/targeted verification is approximately **9-13.5 engineer-days**, plus **1-2 days** for the
+Total implementation/targeted verification is approximately **10-14.5 engineer-days**, plus **1-2 days** for the
 full serial candidate rerun and review. Performance/real-client campaigns and separately authorized X01-X03
-work are not included. Do not leave a partially integrated new format reachable: keep admission off, stage the
+work are not included.
+
+**Order (Root's answer 4).** Slice A is dispatched first and alone, because its measurements decide the row
+ceiling and the re-pinned counts. Slices B to E follow it. Every saved-form slice, which means Slice B and Slice D's
+receipt work, gets its own read-only review by another session before it merges (AGENTS.md section 13). Root
+writes the R-035 and ADR-065 text before any code merges.
+
+Do not leave a partially integrated new format reachable: keep admission off, stage the
 writer/version activation until its consumers and migration work together, and run hosted full regression on
-the integrated batch. A saved-form rollback after test worlds have written root 3 requires their whole backup,
+the integrated batch. Slices B to D merge behind one activation constant that stays off, so that the writer keeps
+emitting root 2 and no test world migrates until Slice D is merged. Each slice TASK names that constant and a test
+that pins it off. A saved-form rollback after test worlds have written root 3 requires their whole backup,
 not cherry-picking out the codec while keeping those worlds.
 
 ## 9. Proposed register/ADR text for Root
@@ -410,8 +598,10 @@ baseline and a signed per-fluid account in escrow root schema 3. A native arithm
 the operation's connected component, including its device and rocket, in manual REPAIR without changing or
 discarding resources. A frozen settlement mismatch holds that same component before release. Duration is
 unbounded until the exact frozen state/proofs can be restored or a stopped-server whole-world repair is
-completed; restarting alone is not repair. New accounting diagnostics are capped at one held WARN per operation
-per session (at most 64 remembered IDs), one release INFO when released, and one audit INFO per acknowledged
+completed; restarting alone is not repair. New accounting diagnostics are one WARN per held operation; at most 64
+operations can be held at once. An operation's ID is forgotten when the operation leaves the ledger, by release or
+retirement, so there is no fixed total per session. There is also one release INFO when a held operation is
+released, and one audit INFO per acknowledged
 decision with at most 64 members/320 key rows. Existing writer and vanilla/Forge retry logs retain their
 separate, potentially unbounded lifetime behavior. There is no new terrain/Level save veto and no expansion of
 the shared 256-coordinate GuardedChunkSaves pool.
@@ -421,7 +611,14 @@ UNKNOWN_BASELINE and cannot automatically apply or retire through the new numeri
 settlement or whole-world offline repair is required. A valid old root whose upgraded encoding/reservation does
 not fit is refused at whole-world pre-start, original files preserved, one ERROR per start, until the copy is
 repaired/reduced through a compatible build or the complete backup is restored. Invalid/future root-3 accounts
-use the existing whole-world pre-start refusal. New capacity checks refuse only the prospective admission
+use the existing whole-world pre-start refusal. A root-1 ledger stays refused. The migrator's own backup covers the
+managed SavedData files only; the whole-world backup is the operator's step before the upgrade. When five migration
+backups already exist, the migration is refused with `BACKUP_LIMIT` (`ARCE-BETA-2004`). The scope of that refusal is
+the world, it lasts until the operator archives old migration backups, it logs one ERROR per start, and it leaves
+every file unchanged. A new fluid operation is refused at admission while its prospective component contains a
+legacy fluid record; that refusal affects only the prospective operation and lasts until the legacy record is
+settled or retired. Under ACCEPT_CURRENT a half-applied transfer is recorded as its signed discrepancy, never as a
+completed transfer. New capacity checks refuse only the prospective admission
 before resources, queue or writer change, and last until space is available; permanent 64-receipt exhaustion
 still needs offline recovery, with no eviction. More account bytes can reduce concurrent byte capacity.
 
@@ -435,25 +632,36 @@ saves/restarts with fresh barriers, then whole-world replacement. Never restore 
 backup. Risk registration and an independent read-only review precede any implementation merge; neither is
 owner acceptance or admission approval.
 
-## 10. Numbered Root decisions
+## 10. Root's decisions (R441)
 
-1. **Approve the numeric scope and signed discrepancy policy?** Recommend both propulsion banks for fuel,
-   addressed tank only for cargo, typed per-fluid keys, automatic zero-residual completion only, and explicit
-   digest-confirmed positive-loss/negative-gain operator acceptance. Missing contents remain UNKNOWN after
-   ABANDON. This neither supplies a whole-rocket cargo audit nor an item count balance. Item kinds need a
-   separate item-ID/typed-tag/count account if Root later requires the same numerical auditability: their
-   one-stack payload and signatures protect replay but cannot prove an unknown count baseline. Do not label
-   their current diagnostic zero as that proof or add item accounting to this fluid slice.
-2. **Approve the same-file account list rather than larger receipts or duplicated native tags?** Recommend the
-   bounded 4 KiB rows, one fixed digest in each new fluid receipt, unchanged existing ceilings and shared full
-   reservations. Slice A must supply real-codec measurements before version activation; a failed fit returns
-   for a decision, not a raised bound. Root must accept the possibility of lower effective byte concurrency.
-3. **Approve lossless root-2 migration with explicit legacy UNKNOWN holds?** Recommend retaining old embedded
-   encodings/digests and the old UNKNOWN operator completion path, not direct rejection of every old test
-   ledger and not fabricated baseline migration. This is a change from Design 2's historical direct-replacement
-   policy and needs a Root-approved ADR implementation note. Explicitly decide the whole-world target-capacity
-   refusal and its recovery before code; no implementation task should leave that policy implicit.
-4. **Schedule the required review and native downgrade extension?** Recommend the different-engine read-only
-   review required by R434 before dispatch, then the slices above and C4's complete pinned rerun. Root should
-   update R-035/ADR-065 and review the unsigned R-044 draft's format scope before merging. No existing failed or
-   NOT_COVERED row becomes passed by accepting this note.
+Root answered the four questions of the first version of this note in decision R441, after W357R. The answers
+below replace the open questions. They are Root's design decisions under AGENTS.md section 13. They are not owner
+acceptance, a Gate result or approval of admission.
+
+1. **Scope and discrepancy policy: approved as recommended,** with W357R's findings 5, 6 and 8 written in
+   (sections 2.1, 2.3 and 2.2). The scope is both propulsion banks for fuel, the addressed tank only for cargo,
+   typed per-fluid keys aggregated per endpoint and key, automatic completion only at zero residual, and explicit
+   digest-confirmed signed acceptance of a loss, a gain or a half-applied transfer. Missing contents remain
+   UNKNOWN after ABANDON. There is **no item count account in v1.8**, because R-035 names only per-fluid
+   accounting. Item receipts keep their UNKNOWN status and their diagnostic zero is not a balance.
+2. **The same-file account list: approved, on the condition of Slice A's measurements.** The row ceiling becomes
+   the smallest measured size that fits the worst real row and the largest real component (section 5). A failed
+   fit comes back to Root, never as a raised ceiling. Existing ceilings and the shared full reservations do not
+   change.
+3. **Root-2 migration with legacy UNKNOWN holds: approved,** with findings 1, 2 and 7 resolved (sections 4.2, 2.3
+   and 4.1, and section 9). Old embedded encodings and digests are retained, and no baseline is fabricated. The
+   whole-world pre-start refusal of a root that no longer fits is accepted, with the original files preserved. A
+   root-1 file stays refused.
+4. **Schedule: approved.** Slice A is dispatched first and alone, then Slices B to E, with a read-only review of
+   each saved-form slice (section 8). Root writes the R-035 and ADR-065 text before any code merges. No existing
+   failed or NOT_COVERED row becomes passed by this note, and the R-044 downgrade failures stay visible.
+
+**Re-pinning rule (R441).** Capacity counts that move only because the format deliberately grows may be re-measured
+with the real codec and re-pinned. These are the 61 concurrent fluid operations, the 1 MiB benchmark fixture and
+the saturation families' byte refusal (section 5). Each re-pin is recorded with the old value, the new value and
+the measurement. No ceiling, limit or assertion purpose changes, and no refusal side-effect check is removed
+(AGENTS.md section 5). Root accepts the new numbers in a decision row before Slice B merges.
+
+No question in this note remains open for Root. The open items are measurements and work: Slice A's numbers, the
+R-035 and ADR-065 text, the review of the unsigned R-044 draft's scope for the new ledger schema boundary, and the
+slices themselves.
