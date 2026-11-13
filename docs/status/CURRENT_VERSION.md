@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 26b1ecda9 (W355 merged, R427: the campaign's `B3-S6-REUSE` family leaves out W211 R203's structurally out-of-reach `LF_S6_F9_RESPAWN` through a named exclusion that the plan reports as not covered; Python and tests only; branch run 42941465712 passed with 1,859 GameTests and governance run 42941466990 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 42947784467 at 9a15e1f42 (W355 merged at `26b1ecda9`) passed on its first attempt: build 14.6 minutes, shards 0 to 3 in 14.6, 21.3, 21.4 and 18.2 minutes, 1,859 GameTests, with 3, 4, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 42947784571 there passed. Its build is candidate C3. Run 42944723421 at `5ccff48bf` (W354 merged at `266df4cc3`) also passed on its first attempt with 1,859 GameTests (shards 14.5, 18.8, 21.9 and 15.2 minutes, 3, 3, 2 and 2 entries). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 2af39a672 (W358 merged, R444 and R446: native cases for six of the satellite bay rows that C3 left uncovered, through gated release-test controls, a new runner and seven campaign families; no production behaviour change; branch run 43360946092 passed on its second attempt with 1,859 GameTests after one intermittent live-return failure on the first, which stays an open item). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 43368616867 at 1d62f2371 (W358 merged at `2af39a672`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 16.6, 18.2, 20.1 and 18.1 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 43368616761 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -126,8 +126,14 @@ What is still open:
   first, isolated plans for X01 to X03
   ([X01-X03-ISOLATION-PLAN](../work/v1.8.0-root-queue/records/X01-X03-ISOLATION-PLAN.md)), and the final campaign
   plan ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md), R432 to R438):
-  W357's accounting design (ledger root 3, about 9 to 13.5 engineer-days) is under W357R's read-only review
-  (R440), W358 builds the uncovered bay rows, W360 the remaining cargo and ledger rows, W359's draft campaign plan is
+  W357's accounting design (ledger root 3, about 10 to 14.5 engineer-days) passed W357R's read-only review with
+  changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
+  W361 delivered its Slice A (row ceiling 2,048 bytes; 54 instead of 61 concurrent fluid operations; R443), which
+  W361R reviews. Slice B (W362) built the saved form and migration behind an activation constant pinned off;
+  W362R approved it with two changes needed before activation (R446), and W362F finishes its relaunch inventory
+  audit (R445). W358 (merged, R446) built six of the uncovered bay rows natively and
+  found that a bay on a governed (escrow-fuelled) flight gets no D0 decision, which W363 fixes (R444). W360 builds
+  the remaining cargo and ledger rows. W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
   read-only audit of
@@ -537,6 +543,11 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **Live-return discard in a branch regression (2026-11-13).** Attempt 1 of W358's branch run 43360946092 failed
+  `EscrowGovernedLiveReturnGameTests.countdownCancellationReachesReturnedF6WithPassenger` in shard 3 with "Live
+  return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
+  hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
+  every shard (R446). It stays open until later runs show no recurrence or a cause is found.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the

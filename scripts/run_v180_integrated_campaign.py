@@ -25,6 +25,7 @@ import uuid
 
 import run_v180_bay_forced_stop as forced
 import run_v180_bay_save_boundary as save_boundary
+import run_v180_bay_uncovered as uncovered
 import run_v180_bay_released_flight as released
 import run_v180_bay_exit_cuts as exits
 import run_v180_cargo_integrated as cargo
@@ -124,6 +125,8 @@ def family_specs():
     # W346: B6.5 at the source-save boundary, a forced-stop family in its own runner.
     for key, cases in save_boundary.W346_TRANCHES.items():
         bay("forced-" + key.replace("_", "-"), save_boundary, cases, ("--tranche", key))
+    for key, cases in uncovered.TRANCHES.items():
+        bay("forced-" + key.replace("_", "-"), uncovered, cases, ("--tranche", key))
     # W360 additions do not alter any existing family's selection.
     for case in ("X_BAY", "X_LEDGER", "R031_FUTURE", "R031_INVALID"):
         rows.append(dict(name="r042-" + case, runner="scripts/" + Path(r042.__file__).name,
