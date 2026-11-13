@@ -137,11 +137,16 @@ class EscrowAccountingReconciliationTest {
                 .mapToObj(n -> EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(n))).toList();
         var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
-        try (var logs = new StartupLogLines("ARCE_ESCROW_ACCOUNTING_HELD ");
+        try (var logs = new StartupLogLines("ARCE_ESCROW_ACCOUNTING_HELD ", "Escrow record ");
              var writer = new EscrowLedgerWriter(directory.resolve("warnings.dat"), 0);
              var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.holdAccounting(operations); coordinator.holdAccounting(operations);
             for (var op : operations) { coordinator.transition(op.id(), EscrowReason.ACCOUNTING_MISMATCH); }
+            var attempts = new java.util.concurrent.atomic.AtomicInteger();
+            var scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, (op, records, done) -> {
+                attempts.incrementAndGet(); done.accept(new EscrowReconciliationScheduler.Result(EscrowReason.ACCOUNTING_MISMATCH, false));
+            });
+            scheduler.tick(0); scheduler.tick(1); assertTrue(attempts.get() > 0);
             assertEquals(64, logs.lines.size());
             for (var op : operations) { assertEquals(1, logs.lines.stream().filter(line -> line.equals(
                     "WARN ARCE_ESCROW_ACCOUNTING_HELD op=" + op.id())).count()); }
@@ -150,16 +155,18 @@ class EscrowAccountingReconciliationTest {
     }
 
     @Test void healthyComponentStillValidatesBesideAHeldNumericComponent() {
-        var first = EscrowAccountingCaptureTest.fuel(false).admission();
-        var healthy = EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(3, 77, 0, true));
-        var baseline = EscrowAccountingFormatTest.baseline(healthy); healthy = healthy.accounting(baseline);
-        var root = EscrowAccountingCapture.append(root(first), List.of(healthy),
-                Map.of(healthy.id(), new EscrowFluidAccount.Row(healthy.id(), baseline, null)));
+        var live = EscrowAccountingCaptureTest.fuel(false); var healthy = live.admission().operation();
+        var held = EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(3, 77, 0, true));
+        var baseline = EscrowAccountingFormatTest.baseline(held); held = held.accounting(baseline);
+        var root = EscrowAccountingCapture.append(root(live.admission()), List.of(held),
+                Map.of(held.id(), new EscrowFluidAccount.Row(held.id(), baseline, null)));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("independent.dat"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.holdAccounting(List.of(first.operation()));
+            coordinator.holdAccounting(List.of(held));
             assertEquals(EscrowReason.NONE, coordinator.currentReason(healthy));
             assertTrue(EscrowAccountingReconciliation.matches(root, Set.of(healthy.id()), states(root, true, true), vectors(root, true, true), true));
+            assertNotNull(EscrowReconciliationAction.issue(root, healthy, live.deviceBefore(), false,
+                    () -> coordinator.currentReason(healthy) == EscrowReason.NONE));
             assertTrue(writer.idle());
         }
     }

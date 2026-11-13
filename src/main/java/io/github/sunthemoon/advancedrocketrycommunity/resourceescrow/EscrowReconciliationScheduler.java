@@ -96,7 +96,10 @@ public final class EscrowReconciliationScheduler {
         // Design section 5: one bounded line per state change and backoff transition. A continuing stall is silent.
         if (result.reason().manual()) {
             retry.manual = result.reason(); transition.accept(id, result.reason());
-            LOGGER.warn("Escrow record {} needs audited settlement or offline repair: {}", id, result.reason());
+            // The coordinator owns the once-per-operation accounting diagnostic, including component peers.
+            if (result.reason() != EscrowReason.ACCOUNTING_MISMATCH) {
+                LOGGER.warn("Escrow record {} needs audited settlement or offline repair: {}", id, result.reason());
+            }
         } else if (result.reason().retryableProofFailure()) {
             int previous = retry.failures;
             retry.failures = Math.min(3, retry.failures + 1);
