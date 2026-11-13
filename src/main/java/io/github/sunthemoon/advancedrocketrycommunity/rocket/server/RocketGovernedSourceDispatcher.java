@@ -142,7 +142,10 @@ final class RocketGovernedSourceDispatcher {
             switch (state) {
                 case COUNTDOWN -> RocketFlightFeedback.countdownAccepted(source);
                 case ASCENT -> RocketFlightFeedback.ascentStarted(source);
-                case TRANSIT -> RocketFlightFeedback.transitStarted(source);
+                case TRANSIT -> {
+                    RocketFlightFeedback.transitStarted(source);
+                    bays.governedCheckpoint(server, journal, record, source); // W363: the bay's D0 decision
+                }
                 default -> { }
             }
         } else if (result == EscrowGovernedSourceFlight.Result.ASCENT) {

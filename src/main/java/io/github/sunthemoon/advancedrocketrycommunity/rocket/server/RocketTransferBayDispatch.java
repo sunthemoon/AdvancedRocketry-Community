@@ -130,6 +130,11 @@ final class RocketTransferBayDispatch {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) {
         gate.ascentComplete(server, journal, record, source);
     }
+    /** W363: the governed flight's ascent-complete moment; D0's refusal only, never a claim or a classification. */
+    void governedCheckpoint(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) {
+        gate.governedAscentComplete(server, journal, record, source);
+    }
     String diagnostics(RocketTransferSavedData journal) {
         return " claimed=" + claimedTransfers.size() + journal.entries().stream()
                 .filter(record -> claimedTransfers.contains(record.transferId())).limit(4).map(record -> {
