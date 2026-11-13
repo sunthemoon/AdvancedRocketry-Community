@@ -20,6 +20,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     /** Bind the exact row-bearing member set; the final ledger validates membership and numerical continuity. */
     public EscrowSettlementIntent accounting(List<EscrowFluidAccount.Row> rows) {
+        EscrowTags.require(confirmedTick == -1, "Confirmed settlement commitment cannot change");
         String commitment = EscrowFluidAccountCodec.commitment(rows);
         var tag = base(choice, ledger, actor, actorName, previewTick, members, observations, floor, commitment);
         return new EscrowSettlementIntent(choice, ledger, actor, actorName, previewTick, confirmedTick, members,
@@ -141,13 +142,13 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 && name.chars().allMatch(character -> character >= 33 && character <= 126), ACTOR_NAME_REFUSAL);
     }
     public EscrowSettlementIntent confirm(UUID confirmingActor, String suppliedDigest, long tick, List<Observation> current) {
-        requireUniqueCandidates(observations);
         EscrowTags.require(actor.equals(confirmingActor) && suppliedDigest != null
                 && suppliedDigest.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 512
                 && digest.equals(suppliedDigest), "Preview actor or digest changed");
         EscrowTags.require(observations.equals(sorted(current)), "Endpoint observations changed since preview");
         EscrowTags.require(tick >= previewTick && (observations.stream().noneMatch(Observation::missing)
                 || tick - previewTick >= 200), "Missing endpoints require observations at least 200 ticks apart");
+        requireUniqueCandidates(observations);
         return new EscrowSettlementIntent(choice, ledger, actor, actorName, previewTick, tick, members, observations, floor, digest, accountCommitment);
     }
     public void requireConfirmed() {

@@ -74,8 +74,8 @@ final class EscrowFlightBenchmarkCeiling {
                             new EscrowPrefix.State(ledger, 0, target.beforeSignature(), List.of()), true, 0));
             var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                     id(999), "c".repeat(EscrowSettlementIntent.NEW_ACTOR_NAME_LIMIT), 0, observations);
+            if (accounting) { preview = preview.accounting(List.of(row)); }
             var intent = preview.confirm(preview.actor(), preview.digest(), 1, observations);
-            if (accounting) { intent = intent.accounting(List.of(row)); }
             records.add(op.settle(intent));
             var receipt = EscrowSettlementTombstones.create(op, intent, row);
             receipt.putBoolean("released", true); receipt.putLong("release_generation", 1);

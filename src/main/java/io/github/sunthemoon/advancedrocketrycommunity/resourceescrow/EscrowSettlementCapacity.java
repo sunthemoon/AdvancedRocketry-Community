@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 /** Admission proves its component with the real codecs, then reserves every unsettled member's ceiling. */
-final class EscrowSettlementCapacity {
+public final class EscrowSettlementCapacity {
     // Admission only. Persisted sections/chains retain the eight-marker decode bound.
     static final int ADMISSION_PER_ROCKET = 5;
     // Cargo excludes retained markers and every other operation on its rocket at admission.
@@ -72,7 +72,7 @@ final class EscrowSettlementCapacity {
         catch (ReservationFull full) { throw new ReservationFull(FLOOR_FULL); }
         return candidate;
     }
-    static final class ReservationFull extends IllegalArgumentException {
+    public static final class ReservationFull extends IllegalArgumentException {
         ReservationFull(String message) { super(message); }
     }
     static final class StaleCapture extends IllegalArgumentException {
@@ -122,9 +122,9 @@ final class EscrowSettlementCapacity {
             if (admission) { throw ineligible; }
             return; // Existing ineligible components still receive the fixed charge, never a discount.
         }
-        var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var sizingRows = sizingRows(prospective, component);
-        if (!sizingRows.isEmpty()) { intent = intent.accounting(sizingRows); }
+        if (!sizingRows.isEmpty()) { preview = preview.accounting(sizingRows); }
+        var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var accountedIntent = intent;
         for (var member : hypothetical.records().stream().filter(op -> accountedIntent.ids().contains(op.id())).toList()) {
             EscrowCodec.operation(member.settle(intent));

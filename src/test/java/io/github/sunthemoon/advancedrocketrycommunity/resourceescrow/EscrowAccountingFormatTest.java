@@ -96,6 +96,32 @@ class EscrowAccountingFormatTest {
         var changed = intent.encode(); changed.putByteArray("account_commitment", new byte[32]);
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementIntent.decode(changed));
     }
+    @Test void commitmentMustBePreviewedAndCannotChangeAfterConfirmation() {
+        var root = planned(operation(1).withReason(EscrowReason.OTHER_STATE));
+        var rows = List.of(frozen(root.records().get(0), Knowledge.KNOWN));
+        var confirmed = intent(root, rows); var before = confirmed.encode();
+        assertThrows(IllegalArgumentException.class, () -> confirmed.accounting(rows));
+        assertEquals(before, confirmed.encode());
+        var preview = EscrowSettlementIntent.preview(root, root.records().get(0).id(), confirmed.choice(), confirmed.actor(),
+                confirmed.actorName(), confirmed.previewTick(), confirmed.observations());
+        assertThrows(IllegalArgumentException.class, () -> preview.accounting(List.of()));
+        var accounted = preview.accounting(rows);
+        assertNotEquals(preview.digest(), accounted.digest()); assertEquals(-1, accounted.confirmedTick());
+        assertThrows(IllegalArgumentException.class, () -> accounted.confirm(accounted.actor(), preview.digest(), 11, accounted.observations()));
+        assertEquals(accounted.digest(), accounted.confirm(accounted.actor(), accounted.digest(), 11, accounted.observations()).digest());
+    }
+    @Test void rowlessItemComponentInRoot3KeepsItsSchema2IntentAndUnknownSchema3Receipt() {
+        var op = EscrowItemFixtures.operation(EscrowOperation.Kind.ITEM_CARGO_LOAD, 1, 99).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
+        var root = ledger(op).accounting(List.of(op), List.of()); var intent = intent(root, List.of());
+        assertEquals(2, intent.encode().getInt("schema_version")); assertNull(intent.accountCommitment());
+        var o1 = intent.freeze(root); var o3 = EscrowSettlementTombstones.install(o1, intent); var o4 = EscrowSettlementTombstones.release(o3, intent);
+        for (var stage : List.of(o1, o3, o4)) {
+            assertEquals(3, stage.schema()); assertTrue(stage.fluidAccounts().isEmpty());
+            assertEquals(stage, EscrowCodec.decode(EscrowCodec.encode(stage)));
+        }
+        assertEquals(3, o4.tombstones().get(0).getInt("schema_version"));
+        assertEquals("UNKNOWN", o4.tombstones().get(0).getString("accounting_status"));
+    }
     @Test void mixedItemAndLegacyFluidComponentsSelectTheirOwnReceiptVersions() {
         for (boolean item : List.of(true, false)) {
             var other = item ? EscrowItemFixtures.operation(EscrowOperation.Kind.ITEM_CARGO_UNLOAD, 2, 99, 0, -1, "minecraft:overworld")
@@ -146,7 +172,13 @@ class EscrowAccountingFormatTest {
             assertEquals(EscrowSettlementTombstones.retiredIds(a.tombstones()), EscrowSettlementTombstones.retiredIds(b.tombstones()));
             assertEquals(EscrowSettlementTombstones.retiredTransfer(a, op.guard().rocket(), id(42)), EscrowSettlementTombstones.retiredTransfer(b, op.guard().rocket(), id(42)));
         }
-        for (int schema : List.of(0, 1, 2, 5, Integer.MAX_VALUE)) { var invalid = new CompoundTag(); invalid.putInt("schema_version", schema); assertFalse(EscrowSettlementTombstones.settlementReceipt(invalid)); }
+        // Other schemas cannot reach lock predicates: the ledger's receipt boundary rejects them first.
+        for (int schema : List.of(0, 1, 2, 5, Integer.MAX_VALUE)) {
+            var invalid = newReceipt.copy(); invalid.putInt("schema_version", schema);
+            assertFalse(EscrowSettlementTombstones.settlementReceipt(invalid));
+            assertThrows(IllegalArgumentException.class, () -> new EscrowLedger(root.id(), 1, 1, List.of(), List.of(),
+                    List.of(invalid), 0, List.of(), List.of(), 3, rows));
+        }
     }
     @Test void reservationCountsAnO3AccountOnceAtItsFullCeiling() {
         var root = planned(operation(1).withReason(EscrowReason.OTHER_STATE)); var rows = List.of(frozen(root.records().get(0), Knowledge.KNOWN));

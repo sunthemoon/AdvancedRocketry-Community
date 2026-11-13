@@ -13,7 +13,7 @@ import java.util.function.IntPredicate;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Measurements only: unaccepted capacity numbers are printed, not substituted for historical pins. */
+/** Absolute unaccepted edges stay measurements; derived codec growth and the complete saved-form matrix are checked. */
 class EscrowAccountingCapacityMeasurementTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static int edge(IntPredicate fits, int high) {
@@ -39,24 +39,58 @@ class EscrowAccountingCapacityMeasurementTest {
             EscrowSettlementCapacity.preflight(root, op.id());
             var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); root = root.replace(List.of(repair), root.floors(), root.tombstones());
             for (int missing = 0; missing <= 2; missing++) {
-                var intent = EscrowCargoFixtures.intent(root, repair, retained, missing, false);
+                var intent = choice(root, repair, retained, missing, accounting);
                 if (accounting) {
-                    var rows = List.of(frozen(repair, missing)); intent = intent.accounting(rows); intent.freeze(root, rows);
+                    var rows = List.of(frozen(repair, missing)); intent.freeze(root, rows);
                 } else { intent.freeze(root); }
             }
             return true;
         } catch (IllegalArgumentException refused) { return false; }
     }
+    private static EscrowSettlementIntent choice(EscrowLedger root, EscrowOperation op, int retained, int missing, boolean accounting) {
+        var observed = EscrowCargoFixtures.observations(root, op, retained, missing, false);
+        var preview = EscrowSettlementIntent.preview(root, op.id(), missing == 0 ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
+                : EscrowSettlementIntent.Choice.ABANDON, id(700), "~".repeat(16), 10, observed);
+        if (accounting) { preview = preview.accounting(List.of(frozen(op, missing))); }
+        return preview.confirm(preview.actor(), preview.digest(), missing == 0 ? 11 : 210, observed);
+    }
+    private static BoundedNbt.Size savedGrowth(EscrowOperation.Kind kind) {
+        var op = EscrowCargoFixtures.operation(kind, 1, 99).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
+        var old = ledger(op); var next = account(old); var accounted = next.records().get(0);
+        var oldSize = BoundedNbt.measure(EscrowCodec.operation(op.settle(choice(old, op, 0, 0, false))), EscrowLimits.OP_BYTES, 16, 512);
+        var newSize = BoundedNbt.measure(EscrowCodec.operation(accounted.settle(choice(next, accounted, 0, 0, true))), EscrowLimits.OP_BYTES, 16, 512);
+        assertNotNull(oldSize); assertNotNull(newSize);
+        return new BoundedNbt.Size(newSize.bytes() - oldSize.bytes(), newSize.nodes() - oldSize.nodes());
+    }
     @Test void measureCargoBlobAnd512NodeEdgesWithoutRepinning() {
+        int cells = 0;
         for (var kind : EscrowCargoFixtures.KINDS) {
             for (int retained = 0; retained <= 4; retained++) {
                 int count = retained;
+                int oldBytes = 0;
                 for (boolean accounting : List.of(false, true)) {
                     int bytes = edge(blob -> cargoFits(EscrowCargoFixtures.operation(kind, 100, 99, count, blob,
                             "a:" + "b".repeat(121)), count, accounting), 8000);
                     System.out.println("W362_MEASURE cargo kind=" + kind + " retained=" + retained + " schema=" + (accounting ? 3 : 2) + " blob=" + bytes);
+                    if (!accounting) { oldBytes = bytes; }
+                    if (accounting) {
+                        assertEquals(savedGrowth(kind).bytes(), oldBytes - bytes, "The edge shrinks by the actual saved-field growth");
+                        var op = EscrowCargoFixtures.operation(kind, 100, 99, count, bytes, "a:" + "b".repeat(121))
+                                .withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
+                        var root = account(ledger(op)); op = root.records().get(0);
+                        for (int missing = 0; missing <= 2; missing++) {
+                            var rows = List.of(frozen(op, missing)); var intent = choice(root, op, retained, missing, true);
+                            var o1 = intent.freeze(root, rows); var o3 = EscrowSettlementTombstones.install(o1, intent);
+                            var o4 = EscrowSettlementTombstones.release(o3, intent);
+                            for (var stage : List.of(o1, o3, o4)) {
+                                assertEquals(stage, EscrowCodec.decode(EscrowCodec.encode(stage)));
+                                assertEquals(rows, stage.fluidAccounts()); cells++;
+                            }
+                        }
+                    }
                 }
             }
+            int oldEntries = 0;
             for (boolean accounting : List.of(false, true)) {
                 int entries = edge(nodes -> {
                     try {
@@ -70,8 +104,11 @@ class EscrowAccountingCapacityMeasurementTest {
                     } catch (IllegalArgumentException refused) { return false; }
                 }, 370);
                 System.out.println("W362_MEASURE nodes kind=" + kind + " schema=" + (accounting ? 3 : 2) + " tag_entries=" + entries + " ceiling=512");
+                if (!accounting) { oldEntries = entries; }
+                else { assertEquals(savedGrowth(kind).nodes(), oldEntries - entries); }
             }
         }
+        assertEquals(90, cells, "Two directions, five retained counts, three endpoint choices, O1/O3/O4");
     }
     private static EscrowLedger mixed(int blob, boolean accounting) {
         var cargo = EscrowCargoFixtures.guarded(EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
@@ -84,12 +121,15 @@ class EscrowAccountingCapacityMeasurementTest {
         var root = ledger(fuel, cargo); return accounting ? account(root) : root;
     }
     @Test void measureMixedComponentBlobWithoutRepinning() {
+        int oldBytes = 0;
         for (boolean accounting : List.of(false, true)) {
             int blob = edge(bytes -> {
                 try { var root = mixed(bytes, accounting); EscrowSettlementCapacity.preflight(root, root.records().get(1).id()); return true; }
                 catch (IllegalArgumentException refused) { return false; }
             }, 8000);
             System.out.println("W362_MEASURE mixed schema=" + (accounting ? 3 : 2) + " blob=" + blob);
+            if (!accounting) { oldBytes = blob; }
+            else { assertEquals(savedGrowth(EscrowOperation.Kind.FLUID_CARGO_UNLOAD).bytes(), oldBytes - blob); }
         }
     }
     @Test void measureLoaderFloorCountsAndReservationsWithBothCodecs() {
