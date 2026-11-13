@@ -52,11 +52,15 @@ final class EscrowTransferPreparation {
         if (coordinator.admissionUnavailable()) { return Transfer.UNAVAILABLE; }
         if (EscrowTransferAdmission.invalid(op)) { return Transfer.INVALID; }
         if (coordinator.staleAdmission(op)) { return Transfer.STALE; }
+        var pending = coordinator.pendingAdmissions();
+        if (EscrowAccountingReconciliation.legacyComponent(coordinator.ledger(), pending, op)) { return Transfer.UNKNOWN_BASELINE; }
         if (coordinator.heldAdmission(op)) {
             return Transfer.ENDPOINT_BUSY;
         }
-        var pending = coordinator.pendingAdmissions();
-        var refusal = EscrowTransferAdmission.refusal(coordinator.ledger(), pending, capture);
+        if (coordinator.ledger().schema() == 3 && op.kind().fluid() && capture.account() == null) { return Transfer.INVALID; }
+        var refusal = coordinator.ledger().schema() == 3
+                ? EscrowTransferAdmission.refusal(coordinator.pendingLedger(), java.util.List.of(), capture)
+                : EscrowTransferAdmission.refusal(coordinator.ledger(), pending, capture);
         if (refusal.isPresent()) {
             if (refusal.get() == Transfer.OTHER_TRANSFER_PENDING || refusal.get() == Transfer.ROCKET_BUSY) {
                 coordinator.transferTurns().blocked(op.device().identity(), op.guard().rocket());
@@ -69,7 +73,7 @@ final class EscrowTransferPreparation {
         var reservation = coordinator.admissionAuthority().tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return Transfer.of(fill(reservation)); }
         // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
-        coordinator.enqueue(op, completion);
+        coordinator.enqueue(capture, completion);
         coordinator.transferTurns().admitted(op.device().identity(), op.guard().rocket());
         return Transfer.QUEUED;
     }
@@ -103,8 +107,9 @@ final class EscrowTransferPreparation {
         var op = capture.operation();
         if (capture.before().ledger() != null && !capture.before().ledger().equals(root.id())) { return java.util.Optional.of(Fill.STALE); }
         var candidate = new ArrayList<>(admissions); candidate.add(op);
+        if (EscrowAccountingReconciliation.legacyComponent(root, admissions, op)) { return java.util.Optional.of(Fill.ENDPOINT_BUSY); }
         EscrowLedger prospective;
-        try { prospective = root.append(candidate); }
+        try { prospective = root.schema() == 3 ? EscrowAccountingCapture.append(root, new ArrayList<>(admissions), capture) : root.append(candidate); }
         catch (IllegalArgumentException invalid) { return java.util.Optional.of(Fill.STALE); }
         try { EscrowSettlementCapacity.requireAdmission(prospective, op, capture.before()); }
         catch (IllegalArgumentException limit) { return java.util.Optional.of(Fill.ROCKET_LIMIT); }

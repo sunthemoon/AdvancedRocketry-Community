@@ -17,7 +17,8 @@ final class EscrowCargoRefusals {
         }
         var additions = new ArrayList<>(pending); additions.add(op);
         EscrowLedger prospective;
-        try { prospective = root.append(additions); }
+        if (EscrowAccountingReconciliation.legacyComponent(root, pending, op)) { return Optional.of(Transfer.UNKNOWN_BASELINE); }
+        try { prospective = root.schema() == 3 ? EscrowAccountingCapture.append(root, new ArrayList<>(pending), capture) : root.append(additions); }
         catch (EscrowSettlementCapacity.ReservationFull full) { return Optional.of(Transfer.ESCROW_FULL); }
         catch (IllegalArgumentException stale) { return Optional.of(Transfer.STALE); }
         try {
@@ -42,6 +43,7 @@ final class EscrowCargoRefusals {
             case ROCKET_BUSY -> RocketCargoStatus.ROCKET_BUSY;
             case OTHER_TRANSFER_PENDING -> RocketCargoStatus.OTHER_TRANSFER_PENDING;
             case RECEIPT_BACKED -> RocketCargoStatus.RECEIPT_BACKED;
+            case UNKNOWN_BASELINE -> RocketCargoStatus.UNKNOWN_BASELINE;
         };
     }
 }

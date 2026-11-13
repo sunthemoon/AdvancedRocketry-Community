@@ -13,7 +13,7 @@ class FluidFuelLoaderStatusTest {
         assertEquals(List.of("ADMISSION_DISABLED", "ESCROW_FULL", "LEDGER_UNAVAILABLE", "TRANSFER_JOURNAL_UNPROVED",
                         "ESCROW_PENDING", "UNBOUND", "STALE_BINDING", "WAITING_UNLOADED", "OUT_OF_RANGE", "NOT_OWNER",
                         "ROCKET_BUSY", "EMPTY", "BANK_FULL", "INCOMPATIBLE_FLUID", "AMBIGUOUS_BANK", "UNSUPPORTED_DATA",
-                        "INVALID_DATA", "READY", "PREPARING", "TRANSFERRING", "OWNER_PENDING_FULL"),
+                        "INVALID_DATA", "READY", "PREPARING", "TRANSFERRING", "OWNER_PENDING_FULL", "UNKNOWN_BASELINE"),
                 Arrays.stream(FluidFuelLoaderStatus.values()).map(Enum::name).toList());
     }
 
@@ -21,7 +21,7 @@ class FluidFuelLoaderStatusTest {
         for (FluidFuelLoaderStatus status : FluidFuelLoaderStatus.values()) {
             assertEquals(!List.of("READY", "PREPARING", "TRANSFERRING").contains(status.name()), status.refusal(), status.name());
         }
-        assertEquals(18, Arrays.stream(FluidFuelLoaderStatus.values()).filter(FluidFuelLoaderStatus::refusal).count());
+        assertEquals(19, Arrays.stream(FluidFuelLoaderStatus.values()).filter(FluidFuelLoaderStatus::refusal).count());
     }
 
     @Test void everyMemberHasItsOwnLowercaseMessageKey() {

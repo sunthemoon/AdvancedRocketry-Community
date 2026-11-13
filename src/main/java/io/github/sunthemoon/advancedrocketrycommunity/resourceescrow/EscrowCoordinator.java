@@ -22,6 +22,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final ResourceEscrowSavedData data;
     private final EscrowLedgerWriter writer;
     private final Map<UUID, EscrowOperation> queued = new LinkedHashMap<>();
+    private final Map<UUID, EscrowFluidAccount.Row> queuedAccounts = new HashMap<>();
+    private final Set<UUID> accountingHeld = new java.util.HashSet<>();
     private final Map<UUID, Consumer<Boolean>> requests = new HashMap<>();
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
@@ -56,6 +58,9 @@ public final class EscrowCoordinator implements AutoCloseable {
         this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
         this.propulsion = propulsion; admission = propulsion.authority();
         EscrowTags.require(attachAdmission(), "Admission delegate still holds another ledger's queued, captured or UNKNOWN work");
+        for (var operation : data.ledger().records()) {
+            if (operation.reason() == EscrowReason.ACCOUNTING_MISMATCH) { reportAccountingHold(operation.id()); }
+        }
     }
     /** Retargets the PROPULSION delegate to this ledger; false, with nothing changed, while another ledger holds work. */
     boolean attachAdmission() { owner(); return propulsion.retarget(admissionStore); }
@@ -77,11 +82,15 @@ public final class EscrowCoordinator implements AutoCloseable {
         enqueue(op, completion);
         if (!writer.baselineAvailable()) { cancelUncaptured(); }
     }
+    void enqueueCreated(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
+        if (capture.account() != null) { queuedAccounts.put(capture.operation().id(), capture.account()); }
+        enqueueCreated(capture.operation(), completion);
+    }
     /** A definite failure before L1: only queued, never-captured work leaves, each with exactly one false callback. */
     private void cancelUncaptured() {
         for (UUID id : List.copyOf(queued.keySet())) {
             if (writer.containsCaptured(id)) { continue; }
-            queued.remove(id); Consumer<Boolean> callback = requests.remove(id);
+            queued.remove(id); queuedAccounts.remove(id); Consumer<Boolean> callback = requests.remove(id);
             if (callback != null && !closed) { callback.accept(false); }
         }
         data.setDirty(); admission.refresh();
@@ -184,11 +193,11 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** Shared typed capacity outcomes, plus cargo scheduling diagnostics; R244 appends the owner refusal. */
     enum Transfer {
         QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
-        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE, OWNER_PENDING_FULL;
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE, OWNER_PENDING_FULL, UNKNOWN_BASELINE;
         static Transfer of(Fill fill) { return valueOf(fill.name()); }
         Fill fill() {
             return switch (this) {
-                case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> Fill.ENDPOINT_BUSY;
+                case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, UNKNOWN_BASELINE -> Fill.ENDPOINT_BUSY;
                 case CARGO_TOO_LARGE -> Fill.ESCROW_FULL;
                 default -> Fill.valueOf(name());
             };
@@ -235,6 +244,13 @@ public final class EscrowCoordinator implements AutoCloseable {
     void enqueue(EscrowOperation op, Consumer<Boolean> completion) {
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
         admission.refresh();
+    }
+    void enqueue(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
+        if (capture.account() != null) { queuedAccounts.put(capture.operation().id(), capture.account()); }
+        enqueue(capture.operation(), completion);
+    }
+    EscrowLedger pendingLedger() {
+        return EscrowAccountingCapture.append(data.ledger(), pendingAdmissions(), queuedAccounts);
     }
     public boolean commitPreparations() {
         owner(); if (closed || queued.isEmpty() || tick - lastStart < 10) { return false; }
@@ -358,7 +374,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (admissions) {
             List<EscrowOperation> additions = queued.values().stream()
                     .filter(op -> candidateContains(data.ledger(), op.id()) == false).toList();
-            candidate = candidate.append(additions);
+            candidate = candidate.schema() == 3 ? EscrowAccountingCapture.append(candidate, additions, queuedAccounts) : candidate.append(additions);
             EscrowSettlementCapacity.preflight(candidate);
         }
         candidate = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
@@ -376,11 +392,12 @@ public final class EscrowCoordinator implements AutoCloseable {
             creationBaseline = false;
             if (completion.generation() > data.ledger().writerGeneration()) {
                 data.acknowledged(completion.snapshot().ledger(), !queued.isEmpty());
+                accountingHeld.retainAll(data.ledger().records().stream().map(EscrowOperation::id).toList());
             }
             transitions.entrySet().removeIf(entry -> data.ledger().records().stream()
                     .noneMatch(op -> op.id().equals(entry.getKey()) && op.reason() != entry.getValue()));
             for (UUID id : completion.snapshot().admissions()) {
-                queued.remove(id); Consumer<Boolean> callback = requests.remove(id);
+                queued.remove(id); queuedAccounts.remove(id); Consumer<Boolean> callback = requests.remove(id);
                 if (callback != null && !closed) { callback.accept(true); }
             }
             data.setDirty(!queued.isEmpty() || !transitions.isEmpty() || !writer.idle());
@@ -394,7 +411,7 @@ public final class EscrowCoordinator implements AutoCloseable {
             for (UUID id : completion.snapshot().admissions()) {
                 // A captured successor is still a potential durable L1; do not cancel its admission.
                 if (!writer.containsCaptured(id)) {
-                    queued.remove(id); Consumer<Boolean> callback = requests.remove(id);
+                    queued.remove(id); queuedAccounts.remove(id); Consumer<Boolean> callback = requests.remove(id);
                     if (callback != null && !closed) { callback.accept(false); }
                 }
             }
@@ -418,6 +435,9 @@ public final class EscrowCoordinator implements AutoCloseable {
         Set<UUID> retired = Set.copyOf(ids); // Successor capture must not retain a caller-owned mutable set.
         EscrowPrefix.requireRetirementPrefix(data.ledger().records(), retired);
         if (!ordinaryRetirementAllowed(retired)) { return false; }
+        // Root-3 fluid retirement requires the numeric C3-C6 request, never the model-fixture token API.
+        if (data.ledger().schema() == 3 && data.ledger().records().stream()
+                .anyMatch(op -> retired.contains(op.id()) && op.kind().fluid())) { return false; }
         requireCoveringProofs(data.ledger().records(), retired, proofs, frontiers);
         if (closed || tick - lastStart < 10) { return false; }
         Set<EscrowEndpoint.Key> affected = data.ledger().records().stream().filter(op -> retired.contains(op.id()))
@@ -463,7 +483,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 "C7 waits for every later acknowledged member on the affected endpoints");
         requireCoveringProofs(request.root.records(), members, proofs, frontiers);
         java.util.function.BooleanSupplier valid = () -> lease.getAsBoolean()
-                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
+                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid) && request.accountingValid();
         // Idle writer capture is synchronous on the owner thread. No uncaptured successor can
         // substitute a newer root or a different retirement request beneath this acknowledgement.
         long generation = Math.addExact(writer.lastGeneration(), 1);
@@ -535,7 +555,17 @@ public final class EscrowCoordinator implements AutoCloseable {
         op.withReason(reason); // Enforce the reason-specific transition table before queueing.
         EscrowReason previous = transitions.getOrDefault(id, op.reason());
         EscrowTags.require(!previous.manual() || previous == reason, "Pending manual repair cannot clear automatically");
+        if (reason == EscrowReason.ACCOUNTING_MISMATCH) { reportAccountingHold(id); }
         if (previous != reason) { transitions.put(id, reason); data.setDirty(); }
+    }
+    void holdAccounting(List<EscrowOperation> component) {
+        for (var member : component) {
+            if (!currentReason(member).manual()) { transition(member.id(), EscrowReason.ACCOUNTING_MISMATCH); }
+        }
+    }
+    private void reportAccountingHold(UUID id) {
+        // Only current ledger IDs enter this set; acknowledgement forgets departures. The ledger bounds it to 64.
+        if (accountingHeld.add(id)) { com.mojang.logging.LogUtils.getLogger().warn("ARCE_ESCROW_ACCOUNTING_HELD op={}", id); }
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
     boolean pruningBusy(EscrowEndpoint.Key endpoint) {
@@ -573,6 +603,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private boolean ordinaryRetirementAllowed(Set<UUID> ids) {
         owner();
         return data.ledger().records().stream().filter(op -> ids.contains(op.id())).noneMatch(op -> currentReason(op).manual()
+                || EscrowAccountingReconciliation.legacyHeld(data.ledger(), op)
                 || op.phase() == EscrowOperation.Phase.SETTLING_ACCEPT || op.phase() == EscrowOperation.Phase.SETTLING_ABANDON);
     }
     public EscrowFloors.Usage floorUsage() { owner(); return EscrowFloors.usage(data.ledger(), queued.values()); }

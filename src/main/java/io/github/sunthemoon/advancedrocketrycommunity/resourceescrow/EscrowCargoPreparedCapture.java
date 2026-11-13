@@ -136,6 +136,10 @@ final class EscrowCargoPreparedCapture {
         } else { fluid(root); }
         var capture = EscrowCargoCapture.bind(root.id(), operation, owned[0], owned[1], owned[2], owned[3],
                 prepared.before(), prepared.after(), digests[0], digests[1], digests[2], digests[3]);
+        if (root.schema() == 3 && operation.kind().fluid()) {
+            capture = EscrowAccountingCapture.bind(capture.operation(), capture.before(), owned[0], owned[1], owned[2], owned[3],
+                    prepared.before(), prepared.after());
+        }
         var refusal = EscrowCargoRefusals.capacity(root, pending, capture);
         if (refusal.isPresent()) {
             result = EscrowCargoEligibility.Result.refused(refusal.get());
