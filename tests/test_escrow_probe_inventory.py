@@ -20,13 +20,20 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # FS_LOAD_ and IS_LOAD_ prefix tokens of tests/test_cargo_w330_runner.py.
         # W360: seven item before-write and store-veto cuts in each direction (R448, R450).
         # W370: tests/test_v180_crash_replay.py names IC_UNLOAD_K9, which no producer spells out.
-        self.assertEqual(674, len(self.rows))
-        self.assertEqual(23, len(self.coverage["direct"]))
+        # W376 (X03-V): the three verification cases of scripts/run_v180_x03_repair.py.
+        self.assertEqual(677, len(self.rows))
+        # W376 (X03-V): run_v180_x03_repair is a new direct producer.
+        self.assertEqual(24, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         # W353 adds the load-veto log regression test to the related-test inventory.
         # W360 adds tests/test_w360_uncovered_rows.py; W365 adds the accounting reader and oracle test modules.
         # W370 adds tests/test_v180_crash_replay.py.
-        self.assertEqual(41, len(self.coverage["tests"]))
+        # W376 (X03-V) adds tests/test_run_v180_x03_repair.py.
+        self.assertEqual(42, len(self.coverage["tests"]))
+        self.assertIn("run_v180_x03_repair", self.coverage["direct"])
+        self.assertIn("tests/test_run_v180_x03_repair.py", self.coverage["tests"])
+        for case in ("FF_X03_OBSERVE", "FF_X03_UNLOAD", "FF_X03_LAUNCH"):
+            self.assertIn("scripts/run_v180_x03_repair.py", self.rows[case])
         self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
         self.assertIn("tests/test_cargo_load_veto_log.py", self.coverage["tests"])
 
