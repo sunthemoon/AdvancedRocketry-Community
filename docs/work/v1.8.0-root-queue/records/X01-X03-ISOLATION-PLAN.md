@@ -3,6 +3,7 @@
 | Item | Value |
 |---|---|
 | Status | **PLAN, not started.** Root wrote it on 2026-11-13 under Root decision R436 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). No destructive step runs until the owner confirms it; the steps that need confirmation are marked **[confirm]**. |
+| Decision (2026-11-17) | The owner handed the decision to Root. **Root chose option E4 (R457, [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md))**: application-level crash and fault simulation on this PC, through the `CheckedSavedDataFile` committer seam. It needs no virtual machine, no system change and no destructive step. The real OS, file-system and disk-firmware residual stays stated, and a virtual-machine power-off stays an optional extension. Sections 2 to 4 below remain the background for that choice. X03 proceeds as section 5 says. |
 | Rows | [W326-MATRIX](W326-MATRIX.md), rows X01 to X03; [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 8.6. All three are NOT_COVERED on C3. |
 | Candidate | The runs use the candidate of the final evidence (C4 under R438, or a later one), never a locally built JAR. A dry run may use any JAR, but a dry run is not evidence. |
 | Effort unit | Working days of one worker session, with machine time counted separately. |

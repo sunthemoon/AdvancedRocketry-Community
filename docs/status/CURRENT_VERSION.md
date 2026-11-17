@@ -126,6 +126,11 @@ What is still open:
   first, isolated plans for X01 to X03
   ([X01-X03-ISOLATION-PLAN](../work/v1.8.0-root-queue/records/X01-X03-ISOLATION-PLAN.md)), and the final campaign
   plan ([OWNER-DECISIONS-20261113](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261113.md), R432 to R438):
+  On 2026-11-17 the owner handed every design and decision point to Root
+  ([OWNER-DECISIONS-20261117](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261117.md), R456 to R459): X01 and
+  X02 use application-level crash and fault simulation on this PC (R457), R-044's signature waits for C4 (R458),
+  and each switch is made ready but not enabled, for one final yes or no (R459). The bay fixes of W363 are merged
+  (R455).
   W357's accounting design (ledger root 3, about 10 to 14.5 engineer-days) passed W357R's read-only review with
   changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
   W361 delivered its Slice A (row ceiling 2,048 bytes; 54 instead of 61 concurrent fluid operations; R443), which
@@ -551,6 +556,13 @@ What is still open:
   return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
   hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
   every shard (R446). It stays open until later runs show no recurrence or a cause is found.
+- **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
+  `a2fa5868d` failed one unit test,
+  `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,
+  at its check that each root took the readback path at least once. Every tenth publication
+  takes it, and on a slow runner the writer can skip enough mutations that fewer than ten are published. The same
+  code passed on W364's branch run, and attempt 2 passed every job (R455). It stays open until later runs show no
+  recurrence or the test's dependence on runner speed is removed.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
