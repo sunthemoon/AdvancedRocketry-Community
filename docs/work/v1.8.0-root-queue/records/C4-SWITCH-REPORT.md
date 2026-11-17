@@ -460,12 +460,12 @@ These dispositions are mappings, not C4 results.
 - Downgrade: W176's whole-world verdict stays FAILED and is not waived. The historical-JAR checks are expected to
   fail under R-044 until the owner's decision (R428, R429). Downgrading needs the pre-upgrade backup.
 
-**Deferred by the owner.** Multiplayer and performance stay last, and the owner confirms when the full campaign starts
-([OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md)). For the bay this means:
+**Deferred by the owner.** Multiplayer and performance stay last; Root now sequences and prepares the campaign
+([OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md)). For the bay this means:
 
 - V1: the bay menu statuses and the OWNER_PENDING_FULL text.
-- V2: exits, online passengers and S3. The release-test gate refuses real clients, so the owner must decide how the
-  real-client cases are driven (R-042, R-043).
+- V2: exits, online passengers and S3. The release-test gate refuses real clients, so Root must prepare how the
+  real-client cases are driven; the owner's accounts are still required (R-042, R-043).
 - The reference node: D6 and barrier cost, D3 and registry-writer cost, and the real waiting times of section 9.2.
 - A soak of at least four hours.
 
