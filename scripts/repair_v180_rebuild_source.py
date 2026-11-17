@@ -65,7 +65,7 @@ ROOT_REQUIRED = {
     'satellite_missions': {**{k: nbt.LIST for k in ('satellites', 'missions', 'research_accounts', 'instances', 'ground_surveys')},
                            'clock': nbt.COMPOUND, 'save_epoch': nbt.LONG},
     'endgame': {**{k: nbt.LIST for k in ('endpoints', 'transits', 'elevator_pairs', 'zones')},
-                'dispatched_through': nbt.LONGS, 'save_epoch': nbt.LONG},
+                'dispatched_through': nbt.LONGS, 'save_epoch': nbt.LONG, 'settle_order': nbt.INT},
     'resource_escrow': {**{k: nbt.LIST for k in ('records', 'floors', 'tombstones', 'rocket_authorities', 'armed_flights')},
                         'ledger_id': nbt.INTS, 'issued_through': nbt.LONG, 'writer_generation': nbt.LONG,
                         'issued_launch_serial': nbt.LONG},
@@ -144,7 +144,12 @@ def items(tag, *path):
 
 
 def position(tag, *path):
-    raw = at(tag, *path, kind=nbt.INTS).value
+    return int_vector(at(tag, *path, kind=nbt.INTS))
+
+
+def int_vector(tag):
+    require(tag.type == nbt.INTS, 'INVALID_ORIGIN')
+    raw = tag.value
     require(len(raw) == 3 and all(abs(c) <= 30_000_000 for c in raw), 'INVALID_ORIGIN')
     return raw
 
@@ -160,6 +165,273 @@ def uid(tag, *path):
     raw = at(tag, *path, kind=nbt.INTS).value
     require(len(raw) == 4, 'INVALID_UUID')
     return str(uuid.UUID(bytes=struct.pack('>4i', *raw)))
+
+
+def framing(tag, required, optional=None, limit=64 * 1024):
+    """Closed, typed subset of the native codecs; never a checksum validator."""
+    optional = optional or {}
+    require(tag.type == nbt.COMPOUND and set(required) <= set(tag.value)
+            and set(tag.value) <= set(required) | set(optional), 'UNSUPPORTED_OBJECT_FIELDS')
+    for key, kind in (required | optional).items():
+        if key in tag.value:
+            at(tag, key, kind=kind)
+    require(len(typed(tag)) <= limit, 'OBJECT_SIZE_LIMIT')
+
+
+def schema(tag, version, key='schema_version'):
+    require(value(tag, key, kind=nbt.INT) == version, 'UNSUPPORTED_NESTED_SCHEMA:' + key)
+
+
+def number(tag, key, maximum=2**63 - 1, kind=nbt.LONG):
+    result = value(tag, key, kind=kind)
+    require(0 <= result <= maximum, 'INVALID_NUMBER:' + key)
+    return result
+
+
+def location(tag, key):
+    result = value(tag, key, kind=nbt.STRING)
+    require(len(result) <= 128 and re.fullmatch(r'[a-z0-9_.-]+:[a-z0-9/._-]+', result), 'INVALID_LOCATION:' + key)
+    return result
+
+
+def tag_list(tag, key, kind, maximum):
+    child, entries = at(tag, key, kind=nbt.LIST).value
+    require(len(entries) <= maximum and (child == kind if entries else child in (0, kind))
+            and all(t.type == kind for t in entries), 'INVALID_LIST:' + key)
+    return entries
+
+
+def descriptor(tag):
+    framing(tag, dict(schema=nbt.INT, mode=nbt.STRING, fuels=nbt.COMPOUND,
+                     **{k: nbt.LONG for k in ('primary', 'oxidizer', 'numerator', 'denominator',
+                                             'thrust_units', 'capacity_units', 'core_units')},
+                     **{k: nbt.BYTE for k in ('gravity', 'required', 'hand')}), limit=12_288)
+    schema(tag, 1, 'schema')
+    # This repair profile only interprets the retained single-fluid MONO branch.
+    require(value(tag, 'mode') == 'MONO' and number(tag, 'oxidizer') == 0, 'UNSUPPORTED_PROPULSION')
+    number(tag, 'primary', 2_048_000)
+    numerator, denominator = (number(tag, k, 204_800_000) for k in ('numerator', 'denominator'))
+    require(0 < numerator <= denominator, 'INVALID_COEFFICIENT')
+    for key in ('thrust_units', 'capacity_units', 'core_units'):
+        units = number(tag, key, 4 << 56)
+        require(units >= 7_205_759_403_792_794
+                and units & ((1 << max(0, units.bit_length() - 53)) - 1) == 0, 'INVALID_MULTIPLIER')
+    for key in ('gravity', 'required', 'hand'):
+        number(tag, key, 1, nbt.BYTE)
+    fuels = at(tag, 'fuels')
+    roles = ('MONO', 'BIPROPELLANT_FUEL', 'OXIDIZER', 'WORKING_FLUID')
+    framing(fuels, {k: nbt.LIST for k in roles})
+    total = 0
+    for role in roles:
+        ids = [nbt.plain(t) for t in tag_list(fuels, role, nbt.STRING, 64)]
+        total += len(ids)
+        require(len(set(ids)) == len(ids) and all(len(i) <= 128 and re.fullmatch(
+            r'[a-z0-9_.-]+:[a-z0-9/._-]+', i) for i in ids), 'INVALID_FUEL_ALLOWLIST')
+    require(total <= 64, 'INVALID_FUEL_ALLOWLIST')
+
+
+def native_tag(tag):
+    require(tag.type == nbt.COMPOUND and len(typed(tag)) <= 8192, 'INVALID_NATIVE_TAG')
+    pending, count = [(tag, 0)], 0
+    while pending:
+        child, depth = pending.pop()
+        count += 1
+        require(depth <= 16 and count <= 1024, 'INVALID_NATIVE_TAG')
+        if child.type in (nbt.COMPOUND, nbt.LIST):
+            pending.extend((t, depth + 1) for t in (child.value.values() if child.type == nbt.COMPOUND else child.value[1]))
+
+
+def fluid_stack(tag):
+    framing(tag, dict(FluidName=nbt.STRING, Amount=nbt.INT), dict(Tag=nbt.COMPOUND), 9216)
+    location(tag, 'FluidName')
+    require(number(tag, 'Amount', 2**31 - 1, nbt.INT) > 0, 'INVALID_FLUID_AMOUNT')
+    if 'Tag' in tag.value:
+        native_tag(at(tag, 'Tag'))
+
+
+def fuel_rule(tag):
+    framing(tag, dict(capacity=nbt.LONG, amount=nbt.LONG, committed_debits=nbt.LIST, propulsion=nbt.COMPOUND))
+    debits = []
+    for debit in tag_list(tag, 'committed_debits', nbt.COMPOUND, 64):
+        framing(debit, dict(transaction_id=nbt.INTS))
+        debits.append(uid(debit, 'transaction_id'))
+    require(len(set(debits)) == len(debits), 'DUPLICATE_FUEL_DEBIT')
+    native = at(tag, 'propulsion')
+    framing(native, dict(schema=nbt.INT, descriptor=nbt.COMPOUND, primary=nbt.COMPOUND,
+                         oxidizer=nbt.COMPOUND, revision=nbt.LONG), limit=32_768)
+    schema(native, 1, 'schema')
+    number(native, 'revision')
+    desc = at(native, 'descriptor')
+    descriptor(desc)
+    for key in ('primary', 'oxidizer'):
+        bank = at(native, key)
+        branch = value(bank, 'branch', kind=nbt.STRING)
+        framing(bank, dict(branch=nbt.STRING, amount=nbt.LONG,
+                           **({'fluid': nbt.STRING} if branch == 'FLUID' else {})),
+                {'tag': nbt.COMPOUND} if branch == 'FLUID' else {}, 9216)
+        amount = number(bank, 'amount', number(desc, key))
+        require(branch in ('FLUID', 'EMPTY', 'ABSTRACT') and (amount == 0) == (branch == 'EMPTY'), 'INVALID_FUEL_BANK')
+        if branch == 'FLUID':
+            fluid = location(bank, 'fluid')
+            require(key == 'primary' and fluid in [nbt.plain(t) for t in tag_list(at(desc, 'fuels'), 'MONO', nbt.STRING, 64)],
+                    'UNSUPPORTED_PROPULSION')
+        if 'tag' in bank.value:
+            native_tag(at(bank, 'tag'))
+    require(number(tag, 'capacity') == number(desc, 'primary')
+            and number(tag, 'amount') == number(at(native, 'primary'), 'amount'), 'INVALID_FUEL_PROJECTION')
+
+
+def target_rule(tag):
+    framing(tag, dict(schema_version=nbt.INT, type=nbt.STRING, body_id=nbt.STRING), limit=256)
+    schema(tag, 1)
+    require(value(tag, 'type') == 'advancedrocketrycommunity:body_surface', 'UNSUPPORTED_TRAVEL_TARGET')
+    return location(tag, 'body_id')
+
+
+def flight_rule(tag):
+    framing(tag, dict(schema_version=nbt.INT, logical_rocket_id=nbt.INTS, state=nbt.STRING, fuel=nbt.COMPOUND,
+                     passengers=nbt.COMPOUND, current_body=nbt.STRING, current_dimension=nbt.STRING,
+                     current_origin=nbt.INTS, state_started_game_time=nbt.LONG, current_target=nbt.COMPOUND),
+            dict(plan=nbt.COMPOUND, active_transfer_id=nbt.INTS))
+    schema(tag, 2)
+    uid(tag, 'logical_rocket_id')
+    state = value(tag, 'state')
+    require(state in ('FUELED', 'TRANSIT', 'DESCENT'), 'UNSUPPORTED_FLIGHT_STATE')
+    require(('plan' in tag.value) == ('active_transfer_id' in tag.value) == (state != 'FUELED'), 'INVALID_FLIGHT_BRANCH')
+    fuel_rule(at(tag, 'fuel'))
+    position(tag, 'current_origin')
+    body, dim = (location(tag, k) for k in ('current_body', 'current_dimension'))
+    number(tag, 'state_started_game_time')
+    require(target_rule(at(tag, 'current_target')) == body, 'INVALID_CURRENT_TARGET')
+    passengers = at(tag, 'passengers')
+    framing(passengers, dict(seat_capacity=nbt.INT, assignments=nbt.LIST))
+    number(passengers, 'seat_capacity', 16, nbt.INT)
+    # The profile forbids every assignment, including malformed ones.
+    require(not tag_list(passengers, 'assignments', nbt.COMPOUND, 16), 'PASSENGER_ASSIGNMENT')
+    if 'plan' in tag.value:
+        uid(tag, 'active_transfer_id')
+        plan = at(tag, 'plan')
+        framing(plan, dict(schema_version=nbt.INT, request_id=nbt.INTS,
+                           **{k: nbt.STRING for k in ('source_body', 'destination_body', 'source_dimension', 'destination_dimension')},
+                           required_fuel=nbt.LONG, created_at_game_time=nbt.LONG,
+                           destination_target=nbt.COMPOUND, propulsion_debit=nbt.COMPOUND))
+        schema(plan, 4)
+        uid(plan, 'request_id')
+        for k in ('source_body', 'destination_body', 'source_dimension', 'destination_dimension'):
+            location(plan, k)
+        require((body, dim) in [(value(plan, p + '_body'), value(plan, p + '_dimension')) for p in ('source', 'destination')],
+                'INVALID_PLAN_LOCATION')
+        require(target_rule(at(plan, 'destination_target')) == value(plan, 'destination_body'), 'INVALID_PLAN_TARGET')
+        number(plan, 'required_fuel')
+        number(plan, 'created_at_game_time')
+        debit = at(plan, 'propulsion_debit')
+        framing(debit, dict(schema=nbt.INT, primary=nbt.LONG, oxidizer=nbt.LONG, revision=nbt.LONG,
+                            resources=nbt.STRING, catalog=nbt.STRING), limit=512)
+        schema(debit, 1, 'schema')
+        for k in ('primary', 'oxidizer', 'revision'):
+            number(debit, k)
+        for k in ('resources', 'catalog'):
+            require(HEX.fullmatch(value(debit, k)), 'INVALID_DEBIT_SIGNATURE')
+
+
+def snapshot_framing(tag):
+    framing(tag, dict(schema_version=nbt.INT, snapshot_id=nbt.STRING, source_dimension=nbt.STRING,
+                     source_origin=nbt.INTS, bounding_box=nbt.INTS, block_palette=nbt.LIST, relative_blocks=nbt.LIST,
+                     passenger_anchors=nbt.LIST, mass_inputs=nbt.COMPOUND, created_at_game_time=nbt.LONG,
+                     content_hash=nbt.STRING, propulsion=nbt.COMPOUND), limit=1024**2)
+    schema(tag, 2)
+    text = value(tag, 'snapshot_id')
+    require(str(uuid.UUID(text)) == text, 'INVALID_UUID')
+    require(HEX.fullmatch(value(tag, 'content_hash')), 'INVALID_CONTENT_HASH')
+    location(tag, 'source_dimension')
+    position(tag, 'source_origin')
+    number(tag, 'created_at_game_time')
+    descriptor(at(tag, 'propulsion'))
+    palette = tag_list(tag, 'block_palette', nbt.COMPOUND, 512)
+    require(palette, 'INVALID_PALETTE')
+    for state in palette:
+        framing(state, dict(id=nbt.STRING, properties=nbt.COMPOUND))
+        location(state, 'id')
+        props = at(state, 'properties')
+        require(len(props.value) <= 32 and all(t.type == nbt.STRING and len(k) <= 128
+                and len(nbt.plain(t)) <= 128 for k, t in props.value.items()), 'INVALID_BLOCK_PROPERTIES')
+    blocks = items(tag, 'relative_blocks')
+    footprint(tag)
+    for block in blocks:
+        framing(block, dict(position=nbt.INTS, palette=nbt.INT), dict(block_entity=nbt.COMPOUND))
+        number(block, 'palette', len(palette) - 1, nbt.INT)
+        if 'block_entity' in block.value:
+            payload = at(block, 'block_entity')
+            framing(payload, dict(adapter=nbt.STRING, data=nbt.COMPOUND))
+            require(value(payload, 'adapter') == 'advancedrocketrycommunity:pressurized_tank_v1', 'MISSING_ADAPTER')
+            data = at(payload, 'data')
+            framing(data, dict(tank=nbt.COMPOUND))
+            tank = at(data, 'tank')
+            framing(tank, dict(schema=nbt.INT, fluid=nbt.COMPOUND))
+            schema(tank, 1, 'schema')
+            fluid_stack(at(tank, 'fluid'))
+    offsets = [position(b, 'position') for b in blocks]
+    bounds = [min(p[i] for p in offsets) for i in range(3)] + [max(p[i] for p in offsets) for i in range(3)]
+    require(value(tag, 'bounding_box', kind=nbt.INTS) == bounds, 'INVALID_BOUNDING_BOX')
+    anchors = [tuple(int_vector(a)) for a in tag_list(tag, 'passenger_anchors', nbt.INTS, 16)]
+    require(anchors == sorted(set(anchors)) and all(list(a) in offsets for a in anchors), 'INVALID_PASSENGER_ANCHORS')
+    stats = at(tag, 'mass_inputs')
+    framing(stats, {**{k: nbt.LONG for k in ('mass', 'thrust', 'fuel_capacity')}, **{k: nbt.INT for k in (
+        'block_count', 'engine_count', 'seat_count', 'guidance_count', 'block_entity_count')}})
+    for k, t in stats.value.items():
+        number(stats, k, kind=t.type)
+    require(value(stats, 'block_count') == len(blocks) and value(stats, 'seat_count') == len(anchors)
+            and value(stats, 'block_entity_count') == sum('block_entity' in b.value for b in blocks), 'INVALID_BLOCK_COUNT')
+
+
+def rocket_framing(tag):
+    framing(tag, dict(schema_version=nbt.INT, assembly_transaction_id=nbt.INTS, owner_id=nbt.INTS,
+                      snapshot=nbt.COMPOUND, flight_data=nbt.COMPOUND, resource_escrow=nbt.COMPOUND), limit=2 * 1024**2)
+    schema(tag, 3)
+    uid(tag, 'owner_id')
+    uid(tag, 'assembly_transaction_id')
+    escrow = at(tag, 'resource_escrow')
+    escrow_framing(escrow)
+
+
+def escrow_framing(tag):
+    framing(tag, dict(schema_version=nbt.INT, ledger_id=nbt.INTS, resource_epoch=nbt.LONG, markers=nbt.LIST))
+    schema(tag, 1)
+    uid(tag, 'ledger_id')
+    number(tag, 'resource_epoch')
+    require(not items(tag, 'markers'), 'UNVALIDATED_AUTHORITY:markers')
+
+
+def device_framing(tag):
+    framing(tag, dict(schema_version=nbt.INT, device=nbt.INTS, owner=nbt.INTS, role=nbt.STRING,
+                      binding=nbt.COMPOUND, resource_escrow=nbt.COMPOUND, tank=nbt.COMPOUND))
+    schema(tag, 1)
+    uid(tag, 'device')
+    uid(tag, 'owner')
+    require(value(tag, 'role') in ('LOAD', 'UNLOAD'), 'UNSUPPORTED_DEVICE_ROLE')
+    binding = at(tag, 'binding')
+    framing(binding, dict(schema_version=nbt.INT, logical_rocket=nbt.INTS, physical_rocket=nbt.INTS,
+                         level=nbt.STRING, x=nbt.INT, y=nbt.INT, z=nbt.INT))
+    schema(binding, 1)
+    uid(binding, 'logical_rocket')
+    uid(binding, 'physical_rocket')
+    location(binding, 'level')
+    require(all(abs(value(binding, k)) <= 30_000_000 for k in ('x', 'y', 'z')), 'INVALID_ORIGIN')
+    escrow_framing(at(tag, 'resource_escrow'))
+    fluid_stack(at(tag, 'tank'))
+
+
+def sidecar_authorities(tag):
+    # A player RootVehicle can reintroduce an entity without a matching region
+    # UUID. No native player/vehicle decoder is available in this offline tool.
+    if tag.type == nbt.COMPOUND:
+        for key, child in tag.value.items():
+            if key == 'RootVehicle':
+                require(child.type == nbt.COMPOUND and not child.value, 'UNVALIDATED_AUTHORITY:RootVehicle')
+            sidecar_authorities(child)
+    elif tag.type == nbt.LIST:
+        for child in tag.value[1]:
+            sidecar_authorities(child)
 
 
 def strict_path(path, exists=True):
@@ -417,6 +689,59 @@ def roots(world, files, profile):
     return result
 
 
+def authority_collections(managed, record, repaired, profile):
+    """No negative UUID/coordinate scan can certify an uninterpreted authority row.
+
+    Only T is interpreted by this tool. The other native codecs include semantic,
+    cross-row and content-hash checks not available here, so even a plausible,
+    disjoint row is outside this deliberately narrower repair profile.
+    """
+    for relative, root in managed.items():
+        key = Path(relative).stem.removeprefix('advancedrocketrycommunity_')
+        data = at(root, 'data')
+        fields = dict(schema_version=nbt.INT, format_epoch=nbt.STRING, **ROOT_REQUIRED[key])
+        if key == 'resource_escrow' and profile == PROFILE_ENABLED:
+            fields['fluid_accounts'] = nbt.LIST
+        framing(data, fields, limit=nbt.MAX_DECODED)
+        for field, kind in fields.items():
+            if kind == nbt.LIST:
+                entries = items(data, field)
+                if key == 'rocket_transfers' and field == 'transfers':
+                    require(not entries if repaired else len(entries) == 1 and entries[0] is record,
+                            'UNVALIDATED_AUTHORITY:' + key + '/' + field)
+                else:
+                    require(not entries, 'UNVALIDATED_AUTHORITY:' + key + '/' + field)
+            elif kind == nbt.LONGS:
+                require(not at(data, field).value, 'UNVALIDATED_AUTHORITY:' + key + '/' + field)
+            elif kind == nbt.LONG:
+                number(data, field)
+            elif kind == nbt.INT and field != 'schema_version':
+                number(data, field, 2**31 - 1, nbt.INT)
+            elif kind == nbt.INTS:
+                uid(data, field)
+            elif kind == nbt.COMPOUND:
+                nested = at(data, field)
+                if field in ('classic_first_moon_landing', 'classic_first_warp'):
+                    framing(nested, dict(schema_version=nbt.INT, state=nbt.STRING))
+                    schema(nested, 1)
+                    require(value(nested, 'state') == 'EMPTY', 'UNVALIDATED_AUTHORITY:' + field)
+                elif key == 'classic_progression':
+                    framing(nested, dict(occurred=nbt.BYTE))
+                    require(value(nested, 'occurred') == 0, 'UNVALIDATED_AUTHORITY:' + field)
+                elif field == 'orbital_clock':
+                    framing(nested, dict(schema_version=nbt.INT, logical_tick=nbt.LONG), limit=128)
+                    schema(nested, 1)
+                    number(nested, 'logical_tick')
+                elif key == 'satellite_missions' and field == 'clock':
+                    framing(nested, dict(logical_game_time=nbt.LONG, last_observed_game_time=nbt.LONG))
+                    number(nested, 'logical_game_time')
+                    number(nested, 'last_observed_game_time')
+                else:
+                    raise Refusal('UNVALIDATED_AUTHORITY:' + key + '/' + field)
+        if key in ('satellite_missions', 'endgame'):
+            require(number(data, 'save_epoch') >= 1, 'INVALID_SAVE_EPOCH')
+
+
 def reference(tag, identities):
     if tag.type == nbt.INTS and len(tag.value) == 4:
         return str(uuid.UUID(bytes=struct.pack('>4i', *tag.value))) in identities
@@ -530,6 +855,8 @@ def snapshot_rule(before, current):
     expected.value['content_hash'] = copy.deepcopy(at(current, 'content_hash'))
     difference = first_difference(expected, current)
     require(difference is None, 'SNAPSHOT_DIFFERS:' + str(difference))
+    snapshot_framing(before)
+    snapshot_framing(current)
 
 
 def fence(log, transfer):
@@ -575,12 +902,14 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
     for other in transfers:
         check(other is record or not reference(other, identities), 'OTHER_TRANSFER')
     chunks = regions(world, files)
-    rockets, all_rockets, devices, terrain = [], [], [], {}
+    rockets, all_rockets, devices, cargo_devices, terrain = [], [], [], [], {}
     for level, kind, x, z, root, relative in chunks:
         dim = dimension(level)
         if kind == 'entities':
             for index, entity in enumerate(entities(root)):
                 require(index < MAX_OBJECTS, 'WORK_LIMIT')
+                if entity.value.get('id') == nbt.Tag(nbt.STRING, b'advancedrocketrycommunity:rocket'):
+                    require('RocketEntityData' in entity.value, 'UNINTERPRETABLE_ROCKET')
                 if 'RocketEntityData' in entity.value:
                     data = at(entity, 'RocketEntityData', kind=nbt.COMPOUND)
                     vector(entity, 'Pos')
@@ -588,6 +917,8 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
                     if (uid(entity, 'UUID') == physical or uid(data, 'assembly_transaction_id') == logical
                             or value(data, 'snapshot', 'snapshot_id') in identities):
                         rockets.append((dim, entity))
+                    else:
+                        check(not reference(data, identities), 'COMPETING_ENTITY_AUTHORITY')
                 elif reference(entity, identities):
                     check(False, 'COMPETING_ENTITY_AUTHORITY')
         if kind == 'region':
@@ -596,7 +927,8 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
             require(len(block_entities) <= MAX_OBJECTS, 'WORK_LIMIT')
             for entity in block_entities:
                 if 'arce_rocket_fluid_cargo' in entity.value:
-                    data = at(entity, 'arce_rocket_fluid_cargo')
+                    data = at(entity, 'arce_rocket_fluid_cargo', kind=nbt.COMPOUND)
+                    cargo_devices.append(data)
                     if reference(data, identities):
                         devices.append((dim, entity))
                 else:
@@ -686,6 +1018,11 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
         if path.suffix == '.dat':
             _, root = read_gzip(world / relative)
             check(not reference(root, identities), 'COMPETING_SIDECAR:' + relative)
+            try:
+                sidecar_authorities(root)
+            except Refusal as error:
+                for reason in error.reasons:
+                    check(False, reason)
         else:
             require(files[relative]['size'] <= MAX_REPORT, 'DECODE_LIMIT')
             text = canonical(read_json(world / relative)).decode('ascii')
@@ -722,6 +1059,27 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
         escrow_accounting.validate_root(nbt.plain(ledger), ledger.value.get('fluid_accounts'), fresh_fluid=False)
     except (ValueError, KeyError, TypeError, IndexError, StopIteration) as error:
         raise Refusal('INVALID_ACCOUNTING_ROOT') from error
+    authority_collections(managed, record, repaired, profile)
+    rocket_framing(rocket)
+    for cargo_device in cargo_devices:
+        device_framing(cargo_device)
+    for other_dim, other in all_rockets:
+        if other is entity:
+            continue
+        other_data = at(other, 'RocketEntityData', kind=nbt.COMPOUND)
+        require(value(other, 'id', kind=nbt.STRING) == 'advancedrocketrycommunity:rocket', 'UNINTERPRETABLE_ROCKET')
+        rocket_framing(other_data)
+        other_snapshot = at(other_data, 'snapshot', kind=nbt.COMPOUND)
+        other_flight = at(other_data, 'flight_data', kind=nbt.COMPOUND)
+        snapshot_framing(other_snapshot)
+        flight_rule(other_flight)
+        require(value(other_flight, 'current_dimension') == other_dim, 'UNINTERPRETABLE_ROCKET')
+    for snapshot, saved_flight in ((source, at(record, 'source_flight')), (destination, at(record, 'destination_flight')),
+                                   (at(rocket, 'snapshot'), flight)):
+        snapshot_framing(snapshot)
+        flight_rule(saved_flight)
+        require(typed(at(snapshot, 'propulsion')) == typed(at(saved_flight, 'fuel', 'propulsion', 'descriptor')),
+                'PROPULSION_DIFFERS')
     native_tag = current_fluid.value.get('Tag')
     return dict(record=record, entity=entity, device=device_entity, managed=managed,
                 identity=dict(transfer=transfer, physical=physical, logical=logical, owner=owner,
@@ -921,6 +1279,9 @@ def census(plan_path, world, report, after_start=False):
                     after_root = at(read_gzip(world / relative)[1], 'data')
                     require(all(typed(at(before_root, k)) == typed(at(after_root, k)) for k in ('schema_version', 'format_epoch')),
                             'MIGRATION_DURING_VERIFICATION')
+                    expected = at(nbt.read(journal_candidate(*read_gzip(backup / JOURNAL), body['identity']['transfer']))[1],
+                                  'data') if relative == JOURNAL else before_root
+                    require(typed(expected) == typed(after_root), 'MANAGED_ROOT_CHANGED:' + relative)
         retained = at(nbt.read(bytes.fromhex(body['record_typed_hex']))[1], 'v')
         old = inspect(backup, body['manifest'], body['profile'], body['identity']['transfer'])
         check_observation(body, old)

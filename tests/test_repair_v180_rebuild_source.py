@@ -45,8 +45,20 @@ def vector(*v):
     return n.Tag(n.LIST, (n.DOUBLE, [n.Tag(n.DOUBLE, float(x)) for x in v]))
 
 
+def descriptor():
+    fuels = {role: n.Tag(n.LIST, (n.STRING, [S('advancedrocketrycommunity:' + fluid)])) for role, fluid in (
+        ('MONO', 'rocket_fuel'), ('BIPROPELLANT_FUEL', 'hydrogen'), ('OXIDIZER', 'oxygen'), ('WORKING_FLUID', 'hydrogen'))}
+    return C(schema=I(1), mode=S('MONO'), primary=L(2000), oxidizer=L(0), numerator=L(1), denominator=L(1),
+             thrust_units=L(1 << 56), capacity_units=L(1 << 56), core_units=L(1 << 56),
+             gravity=n.Tag(n.BYTE, 1), required=n.Tag(n.BYTE, 1), hand=n.Tag(n.BYTE, 1), fuels=C(**fuels))
+
+
+def target(body='advancedrocketrycommunity:earth'):
+    return C(schema_version=I(1), type=S('advancedrocketrycommunity:body_surface'), body_id=S(body))
+
+
 def default(kind):
-    return n.Tag(kind, {n.LIST: (0, []), n.COMPOUND: {}, n.INTS: [0, 0, 0, 99], n.LONGS: [], n.LONG: 0}[kind])
+    return n.Tag(kind, {n.LIST: (0, []), n.COMPOUND: {}, n.INTS: [0, 0, 0, 99], n.LONGS: [], n.LONG: 0, n.INT: 0}[kind])
 
 
 class RepairFixture(unittest.TestCase):
@@ -72,20 +84,37 @@ class RepairFixture(unittest.TestCase):
         self.escrow = C(schema_version=I(1), resource_epoch=L(1), markers=E(), ledger_id=U(5))
         self.snapshot = C(schema_version=I(2), snapshot_id=S(str(uuid.UUID(int=6))),
                           source_dimension=S('minecraft:overworld'), source_origin=A(68, 100, 64),
-                          relative_blocks=E(C(position=A(0, 0, 0), block_entity=C(
+                          bounding_box=A(0, 0, 0, 0, 0, 0),
+                          block_palette=E(C(id=S('advancedrocketrycommunity:pressurized_tank'), properties=C())),
+                          relative_blocks=E(C(position=A(0, 0, 0), palette=I(0), block_entity=C(
                               adapter=S('advancedrocketrycommunity:pressurized_tank_v1'),
                               data=C(tank=C(schema=I(1), fluid=C(FluidName=S('minecraft:water'), Amount=I(5000))))))),
-                          content_hash=S('a' * 64), extension=C(short=n.Tag(n.SHORT, 7)))
+                          passenger_anchors=n.Tag(n.LIST, (0, [])),
+                          mass_inputs=C(block_count=I(1), mass=L(1), thrust=L(1), fuel_capacity=L(2000),
+                                        engine_count=I(1), seat_count=I(0), guidance_count=I(1), block_entity_count=I(1)),
+                          created_at_game_time=L(100), content_hash=S('a' * 64), propulsion=descriptor())
         self.destination = copy.deepcopy(self.snapshot)
         self.destination.value['snapshot_id'] = S(str(uuid.UUID(int=7)))
         self.destination.value['source_origin'] = A(88, 100, 64)
-        self.fuel = C(amount=L(1000), propulsion=C(primary=C(amount=L(1000), fluid=S('advancedrocketrycommunity:rocket_fuel'))))
-        self.flight = C(state=S('FUELED'), logical_rocket_id=U(2), current_dimension=S('minecraft:overworld'),
-                        current_origin=A(68, 100, 64), passengers=C(assignments=E()), fuel=copy.deepcopy(self.fuel))
+        self.fuel = C(capacity=L(2000), amount=L(1000), committed_debits=E(), propulsion=C(schema=I(1), descriptor=descriptor(),
+                      primary=C(branch=S('FLUID'), amount=L(1000), fluid=S('advancedrocketrycommunity:rocket_fuel')),
+                      oxidizer=C(branch=S('EMPTY'), amount=L(0)), revision=L(1)))
+        self.flight = C(schema_version=I(2), state=S('FUELED'), logical_rocket_id=U(2), current_dimension=S('minecraft:overworld'),
+                        current_origin=A(68, 100, 64), passengers=C(seat_capacity=I(0), assignments=E()), fuel=copy.deepcopy(self.fuel),
+                        current_body=S('advancedrocketrycommunity:earth'), state_started_game_time=L(200), current_target=target())
+        historical = copy.deepcopy(self.flight)
+        historical.value.update(state=S('TRANSIT'), active_transfer_id=U(1), plan=C(schema_version=I(4), request_id=U(9),
+            source_body=S('advancedrocketrycommunity:earth'), destination_body=S('advancedrocketrycommunity:moon'),
+            source_dimension=S('minecraft:overworld'), destination_dimension=S('minecraft:overworld'), required_fuel=L(1000),
+            created_at_game_time=L(150), destination_target=target('advancedrocketrycommunity:moon'),
+            propulsion_debit=C(schema=I(1), primary=L(1000), oxidizer=L(0), revision=L(0), resources=S('d' * 64), catalog=S('e' * 64))))
+        arrival = copy.deepcopy(historical)
+        arrival.value.update(state=S('DESCENT'), current_origin=A(88, 100, 64),
+                             current_body=S('advancedrocketrycommunity:moon'), current_target=target('advancedrocketrycommunity:moon'))
         self.record = C(schema_version=I(2), transfer_id=U(1), phase=S('PREPARED'), logical_rocket_id=U(2),
                         source_entity_id=U(3), owner_id=U(4), source_snapshot=copy.deepcopy(self.snapshot),
-                        destination_snapshot=self.destination, source_flight=copy.deepcopy(self.flight),
-                        destination_flight=copy.deepcopy(self.flight), checksum=S('c' * 64),
+                        destination_snapshot=self.destination, source_flight=historical,
+                        destination_flight=arrival, checksum=S('c' * 64),
                         unknown=n.Tag(n.BYTES, b'\x00\xff'))
         current = copy.deepcopy(self.snapshot)
         repair.cargo(current, 5000).value['Amount'].value = 4000
@@ -113,7 +142,13 @@ class RepairFixture(unittest.TestCase):
             fields = {k: default(v) for k, v in repair.ROOT_REQUIRED[key].items()}
             self.data[key] = C(schema_version=I(schema), format_epoch=S(epoch), **fields)
         self.data['rocket_transfers'].value['transfers'] = E(copy.deepcopy(self.record))
-        self.data['rocket_transfers'].value['opaque'] = C(z=n.Tag(n.BYTE, 1), a=n.Tag(n.SHORT, 2))
+        for root, field in (('rocket_transfers', 'classic_first_moon_landing'), ('stations', 'classic_first_warp')):
+            self.data[root].value[field] = C(schema_version=I(1), state=S('EMPTY'))
+        self.data['stations'].value['orbital_clock'] = C(schema_version=I(1), logical_tick=L(0))
+        self.data['satellite_missions'].value.update(clock=C(logical_game_time=L(0), last_observed_game_time=L(0)), save_epoch=L(1))
+        self.data['endgame'].value['save_epoch'] = L(1)
+        for field in ('first_moon_landing', 'first_station_warp'):
+            self.data['classic_progression'].value[field] = C(occurred=n.Tag(n.BYTE, 0))
         ledger = self.data['resource_escrow']
         ledger.value['ledger_id'] = U(5)
         ledger.value['issued_through'] = L(1)
@@ -128,7 +163,7 @@ class RepairFixture(unittest.TestCase):
         (self.source / 'data').mkdir(exist_ok=True)
         for key, data in self.data.items():
             n.write_gzip(self.source / 'data' / ('advancedrocketrycommunity_' + key + '.dat'),
-                         b'root', C(DataVersion=I(3465), data=data))
+                         b'root', C(DataVersion=I(3465), opaque=C(z=n.Tag(n.BYTE, 1), a=n.Tag(n.SHORT, 2)), data=data))
 
     def write_entities(self, entries, level=''):
         region(self.source / level / 'entities', {(4, 4): C(Entities=E(*copy.deepcopy(entries)))})
@@ -210,7 +245,7 @@ class RepairTest(RepairFixture):
                 elif change == 'type':
                     bad.value['schema_version'] = L(2)
                 elif change == 'unknown':
-                    bad.value['extension'].value['x'] = I(1)
+                    bad.value['extension'] = C(x=I(1))
                 elif change == 'id':
                     bad.value['snapshot_id'] = S(str(uuid.UUID(int=99)))
                 else:
@@ -317,7 +352,7 @@ class RepairTest(RepairFixture):
         self.write_roots(); self.write_entities([self.entity]); self.write_terrain()
         self.assertEqual(n.digest(repair.typed(C())), self.inspect()['native_tag'])
 
-    def test_every_competing_authority_and_disjoint_unrelated_entries(self):
+    def test_every_competing_authority_and_unvalidated_disjoint_entries_refuse(self):
         for key in ('records', 'floors', 'tombstones', 'rocket_authorities', 'armed_flights'):
             with self.subTest(key=key):
                 self.seed()
@@ -334,9 +369,9 @@ class RepairTest(RepairFixture):
         unrelated = C(rocket_id=U(1234), opaque=n.Tag(n.SHORT, 5))
         self.data['resource_escrow'].value['floors'] = E(unrelated)
         self.write_roots(); self.sync()
-        doc = self.plan()
-        repair.apply(self.planfile, self.output, doc['digest'])
-        self.assertEqual((self.backup / repair.LEDGER).read_bytes(), (self.output / repair.LEDGER).read_bytes())
+        self.refusal('UNVALIDATED_AUTHORITY:resource_escrow/floors', self.plan)
+        self.assertFalse(self.output.exists())
+        self.assertEqual(self.hashes(self.source), self.hashes(self.backup))
 
     def test_footprint_restored_tank_and_destination_occupancy_refuse(self):
         self.write_terrain('minecraft:iron_block')
@@ -500,15 +535,15 @@ class RepairTest(RepairFixture):
         repair.apply(self.planfile, self.output, doc['digest'])
         self.assertEqual((self.backup / repair.LEDGER).read_bytes(), (self.output / repair.LEDGER).read_bytes())
 
-    def test_unrelated_real_codec_root3_accounts_are_preserved_and_orphans_refuse(self):
+    def test_unrelated_real_codec_root3_accounts_and_orphans_refuse(self):
         self.seed(repair.PROFILE_ENABLED)
         fixture = Path(__file__).parent / 'fixtures/escrow_accounting/cargo-planned.dat'
         self.data['resource_escrow'] = copy.deepcopy(repair.at(n.read_gzip(fixture)[1], 'data'))
         self.data['resource_escrow'].value['ledger_id'] = U(5)
         self.write_roots(); self.sync()
-        doc = self.plan(profile=repair.PROFILE_ENABLED)
-        repair.apply(self.planfile, self.output, doc['digest'])
-        self.assertEqual((self.backup / repair.LEDGER).read_bytes(), (self.output / repair.LEDGER).read_bytes())
+        self.refusal('UNVALIDATED_AUTHORITY:resource_escrow/records', lambda: self.plan(profile=repair.PROFILE_ENABLED))
+        self.assertFalse(self.output.exists())
+        self.assertEqual(self.hashes(self.source), self.hashes(self.backup))
         self.data['resource_escrow'].value['records'] = E()
         self.write_roots()
         self.refusal('INVALID_ACCOUNTING_ROOT', lambda: self.inspect(repair.PROFILE_ENABLED))
@@ -521,9 +556,9 @@ class RepairTest(RepairFixture):
         self.data['rocket_transactions'].value['transactions'] = E(C(
             dimension=S('example:disjoint'), minimum=A(60, 99, 60), maximum=A(80, 101, 80)))
         self.write_roots()
-        self.inspect()
+        self.refusal('UNVALIDATED_AUTHORITY:rocket_transactions/transactions')
 
-    def test_unrelated_transfer_is_preserved_in_original_entry_order(self):
+    def test_unvalidated_unrelated_transfer_refuses_without_deleting_either_record(self):
         other = copy.deepcopy(self.record)
         def replace(tag):
             if tag.type == n.INTS and len(tag.value) == 4:
@@ -539,11 +574,12 @@ class RepairTest(RepairFixture):
         replace(other)
         self.data['rocket_transfers'].value['transfers'] = E(other, self.record)
         self.write_roots(); self.sync()
-        doc = self.plan()
-        repair.apply(self.planfile, self.output, doc['digest'])
-        result = repair.items(repair.read_gzip(self.output / repair.JOURNAL)[1], 'data', 'transfers')
-        self.assertEqual(1, len(result))
+        self.refusal('UNVALIDATED_AUTHORITY:rocket_transfers/transfers', self.plan)
+        result = repair.items(repair.read_gzip(self.source / repair.JOURNAL)[1], 'data', 'transfers')
+        self.assertEqual(2, len(result))
         self.assertEqual(repair.typed(other), repair.typed(result[0]))
+        self.assertFalse(self.output.exists())
+        self.assertEqual(self.hashes(self.source), self.hashes(self.backup))
 
     def test_input_lock_close_failure_after_publish_removes_only_own_output(self):
         from contextlib import contextmanager
@@ -743,6 +779,199 @@ class RepairTest(RepairFixture):
 
 
 class RevisionTest(RepairFixture):
+    def assert_no_effect_refusal(self):
+        self.sync()
+        before = self.hashes(self.source)
+        with self.assertRaises(repair.Refusal):
+            self.plan()
+        self.assertEqual(before, self.hashes(self.source))
+        self.assertEqual(before, self.hashes(self.backup))
+        self.assertEqual([], list(self.reports.iterdir()))
+        self.assertFalse(self.output.exists())
+
+    def test_every_nonempty_uninterpreted_collection_refuses_at_current_root_stamps(self):
+        for root, fields in repair.ROOT_REQUIRED.items():
+            for field, kind in fields.items():
+                if kind != n.LIST or (root, field) == ('rocket_transfers', 'transfers'):
+                    continue
+                for entries in (E(C(unrecognized=S('entry'))), E(C(schema_version=I(999))),
+                                E(C(id=U(900)), C(id=U(900))), n.Tag(n.LIST, (n.INT, [I(1)]))):
+                    with self.subTest(root=root, field=field, entries=entries):
+                        self.seed()
+                        self.data[root].value[field] = entries
+                        self.write_roots()
+                        self.assert_no_effect_refusal()
+        for entries in (E(C(unrecognized=S('entry'))), E(C(schema_version=I(999))), E(C(id=U(900)), C(id=U(900)))):
+            self.seed(repair.PROFILE_ENABLED)
+            self.data['resource_escrow'].value['fluid_accounts'] = entries
+            self.write_roots(); self.sync()
+            with self.assertRaises(repair.Refusal):
+                self.plan(profile=repair.PROFILE_ENABLED)
+            self.assertFalse(self.output.exists())
+        for extra in (C(unrecognized=S('entry')), E(C(opaque=L(1)))):
+            self.seed()
+            self.data['rocket_transactions'].value['unknown_authority'] = extra
+            self.write_roots()
+            self.assert_no_effect_refusal()
+
+    def transaction(self, x):
+        # RocketTransactionCodec.encodeEntry framing, including the nested snapshot.
+        # Hash acceptance is deliberately NOT claimed by this synthetic control.
+        snapshot = copy.deepcopy(self.snapshot)
+        snapshot.value.update(snapshot_id=S(str(uuid.UUID(int=606))), source_origin=A(x, 100, 64))
+        return C(transaction_id=U(901), type=S('ASSEMBLY'), phase=S('LOCKED'), snapshot_id=U(606),
+                 content_hash=copy.deepcopy(snapshot.value['content_hash']), dimension=S('minecraft:overworld'),
+                 minimum=A(x, 100, 64), maximum=A(x, 100, 64), progress=I(0), owner_id=U(904), snapshot=snapshot)
+
+    def test_native_transaction_framing_overlap_disjoint_malformed_unsupported_and_duplicate_refuse(self):
+        baseline = self.transaction(160)
+        unsupported = copy.deepcopy(baseline)
+        unsupported.value['type'] = S('FUTURE_OPERATION')
+        bad_snapshot = copy.deepcopy(baseline)
+        repair.at(bad_snapshot, 'snapshot').value['schema_version'] = I(999)
+        wrong_position = copy.deepcopy(baseline)
+        wrong_position.value['minimum'] = A()
+        for entries in (E(self.transaction(68)), E(self.transaction(88)), E(baseline), E(unsupported),
+                        E(bad_snapshot), E(wrong_position), E(baseline, copy.deepcopy(baseline)), E(C(unrecognized=S('entry')))):
+            with self.subTest(entries=entries):
+                self.seed()
+                self.data['rocket_transactions'].value['transactions'] = entries
+                self.write_roots()
+                self.assert_no_effect_refusal()
+
+    def test_apply_rechecks_authority_even_with_rebound_manifest_and_digest(self):
+        document = self.plan()
+        self.data['rocket_transactions'].value['transactions'] = E(C(unrecognized=S('entry')))
+        self.write_roots(); self.sync()
+        with repair.world_lock(self.source) as lock:
+            document['body']['manifest'] = repair.manifest(self.source, lock)
+        document['body']['manifest_sha256'] = n.digest(repair.canonical(document['body']['manifest']))
+        document['digest'] = n.digest(repair.canonical(document['body']))
+        self.planfile.write_bytes(repair.canonical(document))
+        before = self.hashes(self.source)
+        self.refusal('UNVALIDATED_AUTHORITY:rocket_transactions/transactions',
+                     lambda: repair.apply(self.planfile, self.output, document['digest']))
+        self.assertEqual(before, self.hashes(self.source))
+        self.assertEqual(before, self.hashes(self.backup))
+        self.assertFalse(self.output.exists())
+        self.assertEqual([], list(self.base.glob('.*.x03-*')))
+
+    def nested_versions(self):
+        snapshots = [repair.at(self.entity, 'RocketEntityData', 'snapshot'), self.record.value['source_snapshot'],
+                     self.record.value['destination_snapshot']]
+        flights = [repair.at(self.entity, 'RocketEntityData', 'flight_data'), self.record.value['source_flight'],
+                   self.record.value['destination_flight']]
+        result = [(s, 'schema_version', 2) for s in snapshots + flights]
+        result += [(s.value['propulsion'], 'schema', 1) for s in snapshots]
+        result += [(repair.items(s, 'relative_blocks')[0].value['block_entity'].value['data'].value['tank'], 'schema', 1) for s in snapshots]
+        for flight in flights:
+            result += [(repair.at(flight, 'fuel', 'propulsion'), 'schema', 1),
+                       (repair.at(flight, 'fuel', 'propulsion', 'descriptor'), 'schema', 1),
+                       (flight.value['current_target'], 'schema_version', 1)]
+            if 'plan' in flight.value:
+                result += [(flight.value['plan'], 'schema_version', 4),
+                           (repair.at(flight, 'plan', 'propulsion_debit'), 'schema', 1),
+                           (repair.at(flight, 'plan', 'destination_target'), 'schema_version', 1)]
+        result += [(repair.at(self.entity, 'RocketEntityData', 'resource_escrow'), 'schema_version', 1),
+                   (repair.at(self.device, 'arce_rocket_fluid_cargo'), 'schema_version', 1),
+                   (repair.at(self.device, 'arce_rocket_fluid_cargo', 'resource_escrow'), 'schema_version', 1),
+                   (repair.at(self.device, 'arce_rocket_fluid_cargo', 'binding'), 'schema_version', 1)]
+        return result
+
+    def test_every_nested_schema_missing_wrongly_typed_old_and_future_refuses_without_effect(self):
+        baseline = copy.deepcopy((self.entity, self.record, self.device))
+        count = len(self.nested_versions())
+        for index in range(count):
+            for case in ('missing', 'wrong-type', 'old', 'future'):
+                with self.subTest(object=index, case=case):
+                    self.entity, self.record, self.device = copy.deepcopy(baseline)
+                    obj, field, supported = self.nested_versions()[index]
+                    if case == 'missing': del obj.value[field]
+                    else: obj.value[field] = L(supported) if case == 'wrong-type' else I(supported - 1 if case == 'old' else 999)
+                    self.seed()
+                    self.assert_no_effect_refusal()
+
+    def test_matching_future_snapshot_and_current_flight_only_cannot_bypass_equality(self):
+        for bad in (None, L(2), I(1), I(999)):
+            with self.subTest(bad=bad):
+                before, current = copy.deepcopy((self.snapshot, repair.at(self.entity, 'RocketEntityData', 'snapshot')))
+                for snapshot in (before, current):
+                    if bad is None: del snapshot.value['schema_version']
+                    else: snapshot.value['schema_version'] = bad
+                with self.assertRaises(repair.Refusal):
+                    repair.snapshot_rule(before, current)
+        journal = (self.source / repair.JOURNAL).read_bytes()
+        repair.at(self.entity, 'RocketEntityData', 'flight_data').value['schema_version'] = I(999)
+        self.write_entities([self.entity])
+        self.assertEqual(journal, (self.source / repair.JOURNAL).read_bytes())
+        self.assert_no_effect_refusal()
+
+    def test_equal_unsupported_fuel_and_cargo_payload_schemas_refuse(self):
+        baseline = copy.deepcopy((self.entity, self.record))
+        for branch in ('native-fuel', 'fuel-descriptor', 'snapshot-descriptor', 'cargo-tank'):
+            for bad in (None, L(1), I(0), I(999)):
+                with self.subTest(branch=branch, bad=bad):
+                    self.entity, self.record = copy.deepcopy(baseline)
+                    snapshots = [repair.at(self.entity, 'RocketEntityData', 'snapshot'),
+                                 self.record.value['source_snapshot'], self.record.value['destination_snapshot']]
+                    flights = [repair.at(self.entity, 'RocketEntityData', 'flight_data'),
+                               self.record.value['source_flight'], self.record.value['destination_flight']]
+                    for snapshot, flight in zip(snapshots, flights):
+                        if branch == 'native-fuel': obj = repair.at(flight, 'fuel', 'propulsion')
+                        elif branch == 'fuel-descriptor': obj = repair.at(flight, 'fuel', 'propulsion', 'descriptor')
+                        elif branch == 'snapshot-descriptor': obj = snapshot.value['propulsion']
+                        else: obj = repair.items(snapshot, 'relative_blocks')[0].value['block_entity'].value['data'].value['tank']
+                        if bad is None: del obj.value['schema']
+                        else: obj.value['schema'] = bad
+                    self.seed()
+                    self.assert_no_effect_refusal()
+
+    def test_typed_unoccupied_seat_anchors_are_not_passenger_assignments(self):
+        for snapshot in (repair.at(self.entity, 'RocketEntityData', 'snapshot'), self.record.value['source_snapshot'],
+                         self.record.value['destination_snapshot']):
+            snapshot.value['passenger_anchors'] = n.Tag(n.LIST, (n.INTS, [A(0, 0, 0)]))
+            snapshot.value['mass_inputs'].value['seat_count'] = I(1)
+        for flight in (repair.at(self.entity, 'RocketEntityData', 'flight_data'), self.record.value['source_flight'],
+                       self.record.value['destination_flight']):
+            flight.value['passengers'].value['seat_capacity'] = I(1)
+        self.seed()
+        self.inspect()
+
+    def test_required_nested_framing_and_duplicate_debits_refuse(self):
+        baseline = copy.deepcopy((self.entity, self.record))
+        for case in ('missing-capacity', 'wrong-amount', 'missing-debits', 'duplicate-debits', 'wrong-bank',
+                     'wrong-bank-branch', 'missing-revision', 'wrong-switch', 'missing-mass', 'wrong-palette',
+                     'wrong-tank-data', 'wrong-fluid', 'wrong-seat-capacity'):
+            with self.subTest(case=case):
+                self.entity, self.record = copy.deepcopy(baseline)
+                snapshot = repair.at(self.entity, 'RocketEntityData', 'snapshot')
+                flight = repair.at(self.entity, 'RocketEntityData', 'flight_data')
+                fuel = flight.value['fuel']
+                if case == 'missing-capacity': del fuel.value['capacity']
+                elif case == 'wrong-amount': fuel.value['amount'] = I(1000)
+                elif case == 'missing-debits': del fuel.value['committed_debits']
+                elif case == 'duplicate-debits': fuel.value['committed_debits'] = E(C(transaction_id=U(55)), C(transaction_id=U(55)))
+                elif case == 'wrong-bank': fuel.value['propulsion'].value['oxidizer'] = E()
+                elif case == 'wrong-bank-branch': repair.at(fuel, 'propulsion', 'primary').value['branch'] = I(1)
+                elif case == 'missing-revision': del fuel.value['propulsion'].value['revision']
+                elif case == 'wrong-switch': snapshot.value['propulsion'].value['hand'] = I(1)
+                elif case == 'missing-mass': del snapshot.value['mass_inputs'].value['mass']
+                elif case == 'wrong-palette': repair.items(snapshot, 'relative_blocks')[0].value['palette'] = L(0)
+                elif case == 'wrong-tank-data': repair.items(snapshot, 'relative_blocks')[0].value['block_entity'].value['data'] = E()
+                elif case == 'wrong-fluid': repair.cargo(snapshot, 4000).value['Amount'] = L(4000)
+                else: flight.value['passengers'].value['seat_capacity'] = L(0)
+                if case in ('missing-capacity', 'wrong-amount', 'missing-debits', 'duplicate-debits', 'wrong-bank',
+                            'wrong-bank-branch', 'missing-revision'):
+                    # Do not let the old byte-equality check mask missing fuel validation.
+                    self.record.value['source_flight'].value['fuel'] = copy.deepcopy(fuel)
+                if case in ('wrong-switch', 'missing-mass', 'wrong-palette'):
+                    before = copy.deepcopy(snapshot)
+                    repair.cargo(before, 4000).value['Amount'] = I(5000)
+                    before.value['content_hash'] = S('a' * 64)
+                    self.record.value['source_snapshot'] = before
+                self.seed()
+                self.assert_no_effect_refusal()
+
     def cli_plan(self):
         # Unit subprocesses replace only the environmental space measurement,
         # not eligibility, parsing, locking, or the refusal boundary.
@@ -758,18 +987,23 @@ class RevisionTest(RepairFixture):
 
     def test_malformed_vectors_and_containers_have_bounded_cli_refusals_and_no_effect(self):
         baseline = copy.deepcopy((self.entity, self.record))
-        for shape in ('short-origin', 'wrong-origin', 'short-pos', 'wrong-pos', 'nan-motion', 'wrong-flight',
+        for shape in ('empty-origin', 'short-origin', 'wrong-origin', 'short-pos', 'wrong-pos', 'short-motion',
+                      'wrong-motion', 'nan-motion', 'short-flight-origin', 'wrong-flight-origin', 'wrong-flight',
                       'wrong-block-list', 'wrong-block', 'wrong-passengers'):
             with self.subTest(shape=shape):
                 self.entity, self.record = copy.deepcopy(baseline)
                 current = repair.at(self.entity, 'RocketEntityData', 'snapshot')
-                if shape in ('short-origin', 'wrong-origin'):
-                    bad = A() if shape == 'short-origin' else E()
+                if shape in ('empty-origin', 'short-origin', 'wrong-origin'):
+                    bad = E() if shape == 'wrong-origin' else A(*(() if shape == 'empty-origin' else (68, 100)))
                     current.value['source_origin'] = copy.deepcopy(bad)
                     self.record.value['source_snapshot'].value['source_origin'] = bad
                 elif shape == 'short-pos': self.entity.value['Pos'] = vector(68.5)
                 elif shape == 'wrong-pos': self.entity.value['Pos'] = A(68, 100, 64)
+                elif shape == 'short-motion': self.entity.value['Motion'] = vector(0, 0)
+                elif shape == 'wrong-motion': self.entity.value['Motion'] = A(0, 0, 0)
                 elif shape == 'nan-motion': self.entity.value['Motion'] = vector(0, float('nan'), 0)
+                elif shape in ('short-flight-origin', 'wrong-flight-origin'):
+                    repair.at(self.entity, 'RocketEntityData', 'flight_data').value['current_origin'] = A(68) if shape == 'short-flight-origin' else C()
                 elif shape == 'wrong-flight': self.entity.value['RocketEntityData'].value['flight_data'] = E()
                 elif shape == 'wrong-block-list': self.record.value['source_snapshot'].value['relative_blocks'] = C()
                 elif shape == 'wrong-block': self.record.value['source_snapshot'].value['relative_blocks'] = n.Tag(n.LIST, (n.INT, [I(1)]))
@@ -819,8 +1053,51 @@ class RevisionTest(RepairFixture):
         self.seed()
         self.write_entities([self.entity, self.disjoint_rocket(160)])
         self.inspect()  # A genuinely disjoint physical rocket is still allowed.
-        self.write_entities([self.disjoint_rocket()], 'dimensions/example/disjoint')
+        other = self.disjoint_rocket()
+        repair.at(other, 'RocketEntityData', 'flight_data').value['current_dimension'] = S('example:disjoint')
+        repair.at(other, 'RocketEntityData', 'snapshot').value['source_dimension'] = S('example:disjoint')
+        self.write_entities([other], 'dimensions/example/disjoint')
         self.inspect()  # Coordinates alone do not intersect another dimension.
+
+    def test_uninterpretable_extra_rockets_cannot_prove_disjoint_occupancy(self):
+        for other in (C(id=S('advancedrocketrycommunity:rocket'), Pos=vector(160, 100, 64)), self.disjoint_rocket(160)):
+            if 'RocketEntityData' in other.value:
+                repair.at(other, 'RocketEntityData', 'snapshot').value['schema_version'] = I(999)
+            self.write_entities([self.entity, other])
+            with self.assertRaises(repair.Refusal):
+                self.inspect()
+
+    def test_unknown_endpoint_collections_and_other_rocket_debit_authority_refuse(self):
+        baseline = copy.deepcopy((self.entity, self.device))
+        for endpoint in ('rocket', 'device'):
+            self.entity, self.device = copy.deepcopy(baseline)
+            parent = repair.at(self.entity, 'RocketEntityData') if endpoint == 'rocket' else repair.at(self.device, 'arce_rocket_fluid_cargo')
+            parent.value['resource_escrow'].value['unknown_authority'] = E(C(unrecognized=S('entry')))
+            self.seed()
+            self.assert_no_effect_refusal()
+        self.entity, self.device = copy.deepcopy(baseline)
+        self.seed()
+        other = self.disjoint_rocket(160)
+        repair.at(other, 'RocketEntityData', 'flight_data', 'fuel').value['committed_debits'] = E(C(transaction_id=U(1)))
+        self.write_entities([self.entity, other])
+        self.refusal('COMPETING_ENTITY_AUTHORITY')
+
+    def test_uninterpreted_player_vehicle_and_other_device_markers_refuse(self):
+        (self.source / 'playerdata').mkdir()
+        sidecar = self.source / 'playerdata/other.dat'
+        for root_vehicle in (C(unrecognized=S('entry')), E(C(unrecognized=S('entry')))):
+            n.write_gzip(sidecar, b'', C(RootVehicle=root_vehicle))
+            self.refusal('UNVALIDATED_AUTHORITY:RootVehicle')
+        sidecar.unlink()
+        other = copy.deepcopy(self.device)
+        data = other.value['arce_rocket_fluid_cargo']
+        data.value.update(device=U(800), owner=U(400))
+        data.value['binding'].value.update(logical_rocket=U(200), physical_rocket=U(300), x=I(160))
+        data.value['resource_escrow'].value['markers'] = E(C(unrecognized=S('entry')))
+        other.value['x'] = I(160)
+        region(self.source / 'dimensions/example/other/region', {(10, 4): C(
+            sections=E(section(6, ['minecraft:air'], {})), block_entities=E(other))})
+        self.refusal('UNVALIDATED_AUTHORITY:markers')
 
 
 if __name__ == '__main__':
