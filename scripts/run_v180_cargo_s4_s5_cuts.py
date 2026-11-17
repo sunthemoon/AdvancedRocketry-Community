@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import shutil
 import uuid
+import v180_crash_replay as replay
 
 import bay_integrated_evidence as evidence_tools
 import run_dedicated_server_smoke as smoke
@@ -526,7 +527,7 @@ def run(args) -> None:
             properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat", "max-tick-time": "60000",
                                "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
             (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
-            for restart in range(3):
+            for restart in replay.replay_starts(args, row, session / ("world-" + case), evidence, case):
                 if pin:
                     assert_pin(args.source_commit)
                 require_lock(args.lock_owner)
@@ -534,6 +535,7 @@ def run(args) -> None:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                                 "-Dadvancedrocketrycommunity.escrowCase=" + case]
+                replay.trace_command(args, command, restart)
                 if not restart:
                     command[1:1] = [f"-D{key}={value}" for key, value in sorted(CASES[case].get("properties", {}).items())]
                 start = dict(restart=restart, preflight=preflight(), command=command); row["starts"].append(start)
@@ -594,6 +596,9 @@ def run(args) -> None:
                     start.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {restart}: {failure}")
                     start["native_files"] = retain_failed_files(session, world, evidence / f"{case}-{restart}-native")
                 (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+                if not restart and not row["findings"] and replay.capture_replay(args, world, row, evidence, case):
+                    report["status"] = "PASS"
+                    return report
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (forced stop and two restarts)", flush=True)
