@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""X01 campaign. Run as a detached process; takes the heavy-JVM lock per case.
+"""Replay checked-store crash prefixes using recorded dedicated-server cuts.
 
-No native execution belongs to W370/S2. After S1 merges, pin its candidate and
-invoke this script with the same template/JAR arguments as the existing runners.
-Their opt-in Python API records one cut or checks two restarts of a replay world.
+Use a candidate with the gated storage recorder and an installed Forge server
+template. Launch this long-running Windows campaign as a detached process; it
+takes the machine-wide heavy-JVM lock separately for each case.
 """
 from __future__ import annotations
 
