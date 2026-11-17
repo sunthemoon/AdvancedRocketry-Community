@@ -551,6 +551,11 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **Unit-test heap (2026-11-18).** Shared run 44175223235 at `f89f7d5ba` failed in its build: the unit-test JVM ran out of
+  Gradle's default 512 MiB heap in `RocketTransactionAdmissionTest.exactRootByteBoundaryRejectedRetryAndRemovalMatchFullEncoding`,
+  whose snapshot hashing builds multi-megabyte strings, after more than 6,600 tests in the same JVM. The same code passed
+  on W377's branch. R483 sets the test task's heap to 1 GiB in `build.gradle`; no product limit changes. It closes once
+  the next shared regressions pass.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
