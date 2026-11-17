@@ -71,6 +71,13 @@ OFFLINE_NATIVE = {
     "ROCKET_TRANSFERS": ("S", "FS_O3J_AFTER"),
     "SATELLITE_MISSIONS": ("B", "B3_MOVED"),
 }
+# The bay receipt writer ends a generation whose write failed before the move: the deployment is cancelled and the
+# rocket flies on with its satellite, so the cut of B1_MOVED is never reached (W379 smoke 1). For those faults the
+# case is the outcome that the existing case B12_FAILED already checks (landed, nothing consumed, no receipt, on the
+# first start and both restarts), with the injector as the cause of the failed write instead of B12_FAILED's blocked
+# staging path.
+BAY_DEFINITE = ("WRITE_ERROR", "DISK_FULL", "DISK_FULL_OPEN", "FLUSH_ERROR", "CLOSE_ERROR", "LOST_WRITE", "DELETE_ERROR")
+BAY_FAILED_CASE = "X02_D1_FAILED"
 # The default campaign: every live fault once, and the write error long enough to pass the three-failure limit.
 DEFAULT_COUNTS = {fault: (1, 4) if fault == "WRITE_ERROR" else (1,) for fault in LIVE_FAULTS}
 MAX_COUNT = 16
@@ -110,6 +117,8 @@ class Case:
 
     @property
     def native(self) -> tuple[str, str]:
+        if self.store == "BAY_RECEIPTS" and self.fault in BAY_DEFINITE:
+            return "B", BAY_FAILED_CASE
         return (OFFLINE_NATIVE if self.offline else LIVE_NATIVE)[self.store]
 
 
@@ -366,6 +375,33 @@ def earlier_generation(writes, store: str) -> tuple[bytes | None, bool]:
 
 # ---- Hooks into the existing runners -----------------------------------------------------------------------------
 
+class BayFailedWrite:
+    """Runner B with one more case, through the extension point that W346 gave `run` (`extra_cases`).
+
+    The case is B12_FAILED without its `staging` flag: the same flight, the same settled outcome on the first start
+    and on both restarts, and the same checks of `run_case`. No case or expectation of runner B changes.
+    """
+    CASES = {BAY_FAILED_CASE: {key: value for key, value in bay.CASES["B12_FAILED"].items() if key != "staging"}}
+
+    @staticmethod
+    def run(args) -> dict:
+        def case(runner, name):
+            if name in bay.CASES:
+                raise FaultError("Runner B already has a case named " + name)
+            bay.CASES[name] = dict(BayFailedWrite.CASES[name])
+            try:
+                return bay.run_case(runner, name)
+            finally:
+                del bay.CASES[name]
+
+        return bay.run(args, extra_cases={BAY_FAILED_CASE: case})
+
+
+def runner_of(case: Case):
+    alias, native = case.native
+    return BayFailedWrite if native == BAY_FAILED_CASE else x01.RUNNERS[alias]
+
+
 def sha(path: Path) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 
@@ -479,7 +515,7 @@ def run_live(args, case: Case, evidence: Path, scratch: Path, owner: str) -> dic
     arguments = x01.runner_args(args, TEMP / ("w379-" + uuid.uuid4().hex), output, native, owner)
     arguments.storage_fault = case.spec
     with hooks():
-        result, error = x01.run_existing(x01.RUNNERS[alias], arguments, output)
+        result, error = x01.run_existing(runner_of(case), arguments, output)
     logs = read_logs(output)
     x01.keep_logs(output, evidence, "live")
     if (output / "results.json").is_file():

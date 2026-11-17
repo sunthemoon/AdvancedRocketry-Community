@@ -70,8 +70,40 @@ class PlanTests(unittest.TestCase):
     def test_every_case_names_an_existing_cut_of_an_existing_runner(self):
         for case in faults.plan():
             alias, native = case.native
-            self.assertIn(native, x01.RUNNERS[alias].CASES, case.id)
+            self.assertIn(alias, x01.RUNNERS, case.id)
+            self.assertIn(native, faults.runner_of(case).CASES, case.id)
         self.assertEqual(set(faults.STORES.values()) - set(replay.SEAM_NAMES), set())
+
+    def test_bay_writes_that_fail_before_the_move_use_the_outcome_of_the_existing_failed_write_case(self):
+        before = dict(x01.bay.CASES)
+        definite = [case for case in faults.plan(["BAY_RECEIPTS"]) if case.native == ("B", faults.BAY_FAILED_CASE)]
+        self.assertEqual({case.fault for case in definite}, set(faults.BAY_DEFINITE))
+        for fault in ("MOVE_ERROR", "MOVE_DENIED", "MOVE_AFTER", "READ_ERROR", "READ_CORRUPT"):
+            self.assertEqual(faults.Case("BAY_RECEIPTS", fault, 1).native, ("B", "B1_MOVED"))
+        self.assertEqual(faults.Case("RESOURCE_ESCROW", "WRITE_ERROR", 1).native, ("F", "FC_LOAD_L1_REPLACED"))
+        spec = faults.BayFailedWrite.CASES[faults.BAY_FAILED_CASE]
+        self.assertEqual(spec, dict(cut=None, end="land", durable="NONE", first="LANDED_UNCONSUMED",
+                                    restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")))
+        self.assertEqual({**spec, "staging": True}, x01.bay.CASES["B12_FAILED"])
+        self.assertNotIn(faults.BAY_FAILED_CASE, x01.bay.CASES)
+        seen = {}
+
+        def run_case(runner, name):
+            seen.update(spec=dict(x01.bay.CASES[name]), runner=runner)
+            return dict(case=name, status="PASS")
+
+        def run(args, extra_cases):
+            return dict(status="PASS", cases=[extra_cases[faults.BAY_FAILED_CASE]("session", faults.BAY_FAILED_CASE)])
+
+        with patch.object(x01.bay, "run", run), patch.object(x01.bay, "run_case", run_case):
+            report = faults.BayFailedWrite.run(SimpleNamespace())
+        self.assertEqual(report["cases"], [dict(case=faults.BAY_FAILED_CASE, status="PASS")])
+        self.assertEqual(seen, dict(spec=spec, runner="session"))
+        # The case exists in runner B only while it runs, also when it fails; no case of runner B changed.
+        with patch.object(x01.bay, "run", run), patch.object(x01.bay, "run_case", side_effect=smoke.SmokeError("x")):
+            with self.assertRaises(smoke.SmokeError):
+                faults.BayFailedWrite.run(SimpleNamespace())
+        self.assertEqual(x01.bay.CASES, before)
 
     def test_identifiers_round_trip_and_unknown_ones_are_refused(self):
         for case in faults.plan():
@@ -346,7 +378,7 @@ class RunnerTests(unittest.TestCase):
 
     def live_case(self, module, case):
         evidence = self.root / "evidence" / "cases" / case.id
-        with patch.dict(x01.RUNNERS, {case.native[0]: module}), patch.object(x01.bay, "assert_pin"), \
+        with patch.object(faults, "runner_of", lambda selected: module), patch.object(x01.bay, "assert_pin"), \
                 patch.object(x01.evidence_tools, "candidate_pin"):
             row = faults.run_live(self.args, case, evidence, self.root / "work", "owner")
         return row, evidence
@@ -356,7 +388,7 @@ class RunnerTests(unittest.TestCase):
         module = self.stand_in(session(), {1: [READY], 2: [READY]})
         row, evidence = self.live_case(module, case)
         self.assertEqual(module.calls[0], ["java", faults.PROPERTY + "BAY_RECEIPTS:WRITE_ERROR:1", "@args"])
-        self.assertEqual((row["classification"], row["design"], row["native"]), (faults.SEEN_HELD, "F1", "B/B1_MOVED"))
+        self.assertEqual((row["classification"], row["design"], row["native"]), (faults.SEEN_HELD, "F1", "B/X02_D1_FAILED"))
         observation = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))
         self.assertEqual([r["status"] for r in observation["restarts"]], ["PASS", "PASS"])
         self.assertTrue(all(r["ready"] for r in observation["restarts"]))
@@ -365,7 +397,7 @@ class RunnerTests(unittest.TestCase):
         commands = json.loads((evidence / "commands.json").read_text(encoding="utf-8"))
         self.assertEqual([c["restart"] for c in commands], [0, 1, 2])
         self.assertEqual(sorted(p.name for p in (evidence / "logs").iterdir()),
-                         ["live-B1_MOVED-0.log.gz", "live-B1_MOVED-1.log.gz", "live-B1_MOVED-2.log.gz"])
+                         ["live-X02_D1_FAILED-0.log.gz", "live-X02_D1_FAILED-1.log.gz", "live-X02_D1_FAILED-2.log.gz"])
         self.assertTrue((evidence / "runner-results.json").is_file())
         results = (evidence.parent.parent / "results.jsonl").read_text(encoding="utf-8").splitlines()
         self.assertEqual(json.loads(results[0])["case"], case.id)
@@ -378,7 +410,7 @@ class RunnerTests(unittest.TestCase):
         observation = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))
         self.assertEqual([r["status"] for r in observation["restarts"]], ["PASS", "FAIL"])
         self.assertEqual(observation["restarts"][1]["detected"], ["[Server thread/ERROR]: lost receipt"])
-        self.assertIn("B1_MOVED/2: the restart failed", observation["error"])
+        self.assertIn("X02_D1_FAILED/2: the restart failed", observation["error"])
 
     def test_a_first_start_that_never_restarts_is_incomplete(self):
         case = faults.Case("BAY_RECEIPTS", "WRITE_ERROR", 4)
