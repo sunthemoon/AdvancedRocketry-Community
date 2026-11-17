@@ -72,7 +72,7 @@ public final class ReleaseTestStorageTrace {
             return;
         }
         releaseTestGate.accept(server);
-        Recorder recorder = Recorder.open(directory, server.getWorldPath(LevelResource.ROOT), CheckedFileOps.DIRECT,
+        Recorder recorder = Recorder.create(directory, server.getWorldPath(LevelResource.ROOT), CheckedFileOps.DIRECT,
                 MAX_OPERATIONS, MAX_BLOB_BYTES, LOGGER::error);
         if (recorder == null) {
             return;
@@ -108,7 +108,7 @@ public final class ReleaseTestStorageTrace {
         private final long maxBytes;
         private final Consumer<String> marker;
         private final Object lock = new Object();
-        private final Map<FileChannel, Staging> open = new ConcurrentHashMap<>();
+        private final Map<FileChannel, Staging> channels = new ConcurrentHashMap<>();
         private final Set<String> blobs = new HashSet<>();
         private FileChannel lines;
         private boolean recording = true;
@@ -141,8 +141,8 @@ public final class ReleaseTestStorageTrace {
          * the directory is unusable.
          */
         @Nullable
-        static Recorder open(String suppliedDirectory, Path suppliedWorld, CheckedFileOps delegate, int maxOperations,
-                             long maxBytes, Consumer<String> marker) {
+        static Recorder create(String suppliedDirectory, Path suppliedWorld, CheckedFileOps delegate, int maxOperations,
+                               long maxBytes, Consumer<String> marker) {
             try {
                 Path world = suppliedWorld.toAbsolutePath().normalize();
                 Path directory = Path.of(suppliedDirectory).toAbsolutePath().normalize();
@@ -191,7 +191,7 @@ public final class ReleaseTestStorageTrace {
                 recording = false;
                 closeLines();
             }
-            open.clear();
+            channels.clear();
         }
 
         @Override
@@ -207,7 +207,7 @@ public final class ReleaseTestStorageTrace {
                 record("open", store, pending, failure, null);
                 throw failure;
             }
-            open.put(channel, new Staging(pending, store));
+            channels.put(channel, new Staging(pending, store));
             record("open", store, pending, null, (json, sequence) -> {
                 if (target == null) {
                     return;
@@ -220,7 +220,7 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public int write(FileChannel channel, ByteBuffer buffer) throws IOException {
-            Staging staging = open.get(channel);
+            Staging staging = channels.get(channel);
             long offset = position(channel);
             ByteBuffer view = buffer.duplicate();
             int written;
@@ -245,7 +245,7 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void force(FileChannel channel) throws IOException {
-            Staging staging = open.get(channel);
+            Staging staging = channels.get(channel);
             try {
                 delegate.force(channel);
             } catch (IOException | RuntimeException failure) {
@@ -257,7 +257,7 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void close(FileChannel channel) throws IOException {
-            Staging staging = open.remove(channel);
+            Staging staging = channels.remove(channel);
             try {
                 delegate.close(channel);
             } catch (IOException | RuntimeException failure) {

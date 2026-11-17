@@ -211,7 +211,7 @@ class ReleaseTestStorageTraceTest {
     }
 
     private ReleaseTestStorageTrace.Recorder install(int maxOperations, long maxBytes) {
-        var recorder = ReleaseTestStorageTrace.Recorder.open(trace.toString(), world, CheckedFileOps.DIRECT,
+        var recorder = ReleaseTestStorageTrace.Recorder.create(trace.toString(), world, CheckedFileOps.DIRECT,
                 maxOperations, maxBytes, markers::add);
         assertNotNull(recorder, markers.toString());
         CheckedSavedDataFile.installFileOps(recorder);
@@ -219,7 +219,7 @@ class ReleaseTestStorageTraceTest {
     }
 
     private ReleaseTestStorageTrace.Recorder open(String directory) {
-        return ReleaseTestStorageTrace.Recorder.open(directory, world, CheckedFileOps.DIRECT,
+        return ReleaseTestStorageTrace.Recorder.create(directory, world, CheckedFileOps.DIRECT,
                 ReleaseTestStorageTrace.MAX_OPERATIONS, ReleaseTestStorageTrace.MAX_BLOB_BYTES, markers::add);
     }
 
