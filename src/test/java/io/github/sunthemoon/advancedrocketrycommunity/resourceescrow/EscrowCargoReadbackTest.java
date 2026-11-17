@@ -21,7 +21,7 @@ class EscrowCargoReadbackTest {
         var rocket = EscrowSettlementDisk.ordinary(EscrowReconciliationCheckpointTest.rocketSlot(f.op().rocket(), f.after()), f.op().rocket(), f.ledger().id());
         var device = EscrowSettlementDisk.ordinary(EscrowFluidCargoEndpointTest.slot(f.deviceAfter()), f.op().device(), f.ledger().id());
         return new EscrowReconciliationCheckpoint(f.ledger(), Set.of(f.op().id()), List.of(rocket.settlement(), device.settlement()), () -> true,
-                Map.of(f.op().rocket().key(), rocket.state(), f.op().device().key(), device.state()));
+                Map.of(f.op().rocket().key(), rocket.state(), f.op().device().key(), device.state()), Map.of(), f.numbers());
     }
     @Test void readbackCannotConfirmDigestsOffTheOwnerThread() {
         try (var checkpoint = checkpoint(EscrowCargoReconciliationFixture.create(true))) {

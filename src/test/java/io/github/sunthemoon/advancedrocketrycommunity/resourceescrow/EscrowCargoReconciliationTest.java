@@ -53,7 +53,8 @@ class EscrowCargoReconciliationTest {
             assertEquals(EscrowSignatureKind.FUEL_VECTOR_V1, rocket.settlement().signatureKind());
             var frontiers = Map.of(op.rocket().key(), rocket.state(), op.device().key(), device.state());
             var observations = List.of(rocket.settlement(), device.settlement());
-            try (var checkpoint = new EscrowReconciliationCheckpoint(f.ledger(), Set.of(op.id()), observations, () -> true, frontiers)) {
+            try (var checkpoint = new EscrowReconciliationCheckpoint(f.ledger(), Set.of(op.id()), observations, () -> true,
+                    frontiers, Map.of(), f.numbers())) {
                 assertTrue(checkpoint.validator(op.rocket().key()).test(rocketSlot));
                 assertTrue(checkpoint.validator(op.device().key()).test(deviceSlot));
                 assertFalse(checkpoint.validator(op.rocket().key()).test(EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(), f.before())));

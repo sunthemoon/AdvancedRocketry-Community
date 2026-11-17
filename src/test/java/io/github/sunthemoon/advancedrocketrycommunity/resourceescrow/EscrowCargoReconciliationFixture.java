@@ -48,7 +48,15 @@ record EscrowCargoReconciliationFixture(EscrowLedger ledger, EscrowOperation op,
         var after = before.copy(); after.put("snapshot", RocketSnapshotNbtCodec.encode(changed)); after.putString("content_hash", changed.contentHash());
         after.put("wrapper", new RocketEscrowSection(ledger.id(), 1, List.of(new EscrowPrefix.Link(op, endpoint,
                 load ? "DESTINATION" : "SOURCE").marker())).encode());
-        op = EscrowCargoCapture.capture(ledger.id(), op, before, after, deviceBefore, deviceAfter).operation();
-        return new EscrowCargoReconciliationFixture(ledger.append(List.of(op)), op, before, after, deviceBefore, deviceAfter);
+        var captured = EscrowCargoCapture.capture(ledger.id(), op, before, after, deviceBefore, deviceAfter);
+        var accounted = EscrowAccountingCapture.bind(captured.operation(), captured.before(),
+                before, after, deviceBefore, deviceAfter, snapshot, changed);
+        return new EscrowCargoReconciliationFixture(EscrowAccountingCapture.append(ledger, List.of(), accounted),
+                accounted.operation(), before, after, deviceBefore, deviceAfter);
+    }
+
+    java.util.Map<EscrowEndpoint.Key, java.util.Map<java.util.UUID, EscrowFluidAccount.Vector>> numbers() {
+        return java.util.Map.of(op.rocket().key(), java.util.Map.of(op.id(), EscrowAccountingCapture.nativeVector(op, op.rocket(), after)),
+                op.device().key(), java.util.Map.of(op.id(), EscrowAccountingCapture.nativeVector(op, op.device(), deviceAfter)));
     }
 }

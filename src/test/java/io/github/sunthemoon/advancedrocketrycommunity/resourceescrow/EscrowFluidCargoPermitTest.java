@@ -37,8 +37,8 @@ class EscrowFluidCargoPermitTest {
 
     @Test void eitherRolePublishesOnceAndNeverAcceptsAChangedCaptureOrLostAuthority() {
         for (boolean load : List.of(true, false)) {
-            var op = bound(load); var ledger = EscrowLedger.empty(EscrowFluidCargoEndpointTest.LEDGER).append(List.of(op));
-            var before = EscrowFluidCargoEndpointTest.envelope(EscrowFluidCargoEndpointTest.root(load, load ? 5_000 : 0));
+            var captured = EscrowCargoReconciliationFixture.create(load);
+            var op = captured.op(); var ledger = captured.ledger(); var before = captured.deviceBefore();
             var authority = new AtomicBoolean(true);
             var permit = EscrowFluidCargoPublication.issue(ledger, op, before, 10, authority::get);
             var after = permit.consume(10, () -> before);
@@ -59,8 +59,8 @@ class EscrowFluidCargoPermitTest {
 
     @Test void offThreadCannotConsumeAndIncompleteOrTamperedBindingsCannotIssue() {
         for (boolean load : List.of(true, false)) {
-            var op = bound(load); var ledger = EscrowLedger.empty(EscrowFluidCargoEndpointTest.LEDGER).append(List.of(op));
-            var before = EscrowFluidCargoEndpointTest.envelope(EscrowFluidCargoEndpointTest.root(load, load ? 5_000 : 0));
+            var captured = EscrowCargoReconciliationFixture.create(load);
+            var op = captured.op(); var ledger = captured.ledger(); var before = captured.deviceBefore();
             var permit = EscrowFluidCargoPublication.issue(ledger, op, before, 10, () -> true);
             CompletableFuture.runAsync(() -> assertThrows(IllegalArgumentException.class, () -> permit.consume(10, () -> before))).join();
             assertDoesNotThrow(() -> permit.consume(10, () -> before));
