@@ -234,11 +234,9 @@ public final class ReleaseTestStorageTrace {
             }
             record("write", staging, null, (json, sequence) -> {
                 int length = Math.max(0, Math.min(written, view.remaining()));
-                requireBudget(length);
-                byte[] bytes = new byte[length];
-                view.get(bytes);
+                view.limit(view.position() + length);
                 json.append(",\"offset\":").append(offset).append(",\"length\":").append(length);
-                text(json.append(",\"sha256\":"), blob(bytes));
+                text(json.append(",\"sha256\":"), blob(view));
             });
             return written;
         }
@@ -399,11 +397,16 @@ public final class ReleaseTestStorageTrace {
             json.append(",\"preLength\":").append(bytes.length);
         }
 
-        /** Stores the bytes once per SHA-256 and returns the digest. */
-        private String blob(byte[] bytes) throws IOException {
-            String digest = sha256(bytes);
+        /**
+         * Stores the remaining bytes of {@code view} once per SHA-256 and returns the digest. The bound applies only
+         * to bytes that are new to the store, and nothing is copied for bytes already stored.
+         */
+        private String blob(ByteBuffer view) throws IOException {
+            String digest = sha256(view.duplicate());
             if (!blobs.contains(digest)) {
-                requireBudget(bytes.length);
+                requireBudget(view.remaining());
+                byte[] bytes = new byte[view.remaining()];
+                view.get(bytes);
                 Files.write(directory.resolve("blobs").resolve(digest), bytes,
                         StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
                 storedBytes += bytes.length;
@@ -444,8 +447,14 @@ public final class ReleaseTestStorageTrace {
         }
 
         private static String sha256(byte[] bytes) {
+            return sha256(ByteBuffer.wrap(bytes));
+        }
+
+        private static String sha256(ByteBuffer bytes) {
             try {
-                return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                digest.update(bytes);
+                return HexFormat.of().formatHex(digest.digest());
             } catch (NoSuchAlgorithmException impossible) {
                 throw new IllegalStateException(impossible);
             }
