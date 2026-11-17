@@ -63,8 +63,9 @@ class EscrowReceiptChargeTest {
                 }
             }
         }
-        assertEquals(90, cases); assertEquals(1_557, worstCargo); assertEquals(1_833, worstFuel);
-        assertEquals(491, 2_048 - worstCargo); assertEquals(215, 2_048 - worstFuel);
+        // R441: root-3 receipts include their account digest/status; the 2,048-byte allowance is unchanged.
+        assertEquals(90, cases); assertEquals(1_587, worstCargo); assertEquals(1_873, worstFuel);
+        assertEquals(461, 2_048 - worstCargo); assertEquals(175, 2_048 - worstFuel);
     }
 
     @Test void guardedFuelWithNoRetainedMarkersReallyPreparesOnEveryModLevel() {
