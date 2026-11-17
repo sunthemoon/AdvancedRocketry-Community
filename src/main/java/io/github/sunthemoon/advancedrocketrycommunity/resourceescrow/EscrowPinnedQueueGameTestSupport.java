@@ -39,9 +39,10 @@ public final class EscrowPinnedQueueGameTestSupport implements AutoCloseable {
         frozen = new EscrowFlightSource(rocket);
         chest = position.offset(0, 8, 0);
         backlog = EscrowTestEndpoints.create(helper.getLevel(), chest, data.ledger().id());
-        coordinator.prepareTest(backlog.operation(1), committed -> {
+        var admitted = coordinator.prepareTransfer(FluidFuelLoaderEscrowFixtures.modelCapture(backlog.operation(1)), committed -> {
             helper.assertTrue(committed, "Ordinary ledger backlog was refused"); ordinaryAcknowledged = true;
         });
+        helper.assertTrue(admitted == EscrowCoordinator.Transfer.QUEUED, "Ordinary ledger backlog did not queue");
     }
 
     public boolean begin(long now) {

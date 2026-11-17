@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -89,6 +90,54 @@ final class FluidFuelLoaderEscrowFixtures {
     }
 
     static LoaderTank tank(ResourceLocation fluid, int amount) { return LoaderTank.of(fluid, null, amount); }
+
+    /** R468: current-runtime fixtures use the actual loader capture and its same-generation account. */
+    record NativeFill(FluidFuelLoaderBlockEntity loader, RocketEntity rocket, EscrowOperation operation) {
+        UUID logical() { return rocket.assemblyTransactionId().orElseThrow(); }
+        EscrowPrefix.State state(UUID ledger) { return EscrowLoaderEndpoint.observation(operation.source(), loader.root().orElseThrow(), ledger).state(); }
+        int amount() { return loader.root().orElseThrow().tank().amount(); }
+        void applySource(EscrowCoordinator coordinator) {
+            var root = coordinator.ledger(); var state = state(root.id());
+            if (state.markers().stream().anyMatch(marker -> marker.operation().equals(operation.id()))) {
+                EscrowTags.require(state.epoch() == operation.source().afterEpoch()
+                        && state.signature().equals(operation.source().afterSignature()) && amount() == 4_000, "Fixture debit changed");
+                return;
+            }
+            loader.applyEscrowDebit(EscrowReconciliationAction.issue(root, operation, loader.saveWithFullMetadata(), false, () -> true));
+        }
+        void clear() { FluidFuelLoaderEscrowFixtures.clear((ServerLevel) loader.getLevel(), loader.getBlockPos()); }
+    }
+    static NativeFill prepare(GameTestHelper helper, EscrowCoordinator coordinator, RocketEntity rocket, BlockPos position,
+                              java.util.function.Consumer<Boolean> completion) {
+        EscrowTestEndpoints.requireEnabled(helper.getLevel().getServer());
+        var loader = loader(helper.getLevel(), position, rocket.ownerId().orElseThrow(), tank(ROCKET_FUEL, 5_000), binding(rocket));
+        var result = EscrowLoaderAdmission.admitDetachedForTests(loader, rocket, coordinator, completion);
+        helper.assertTrue(result == EscrowCoordinator.Fill.QUEUED, "Native fixture admission refused: " + result);
+        var operation = coordinator.pendingAdmissions().stream().filter(op -> op.source().identity().equals(device(loader))).findFirst().orElseThrow();
+        return new NativeFill(loader, rocket, operation);
+    }
+
+    /** Detached writer/admission traffic only; these typed values are not native endpoint proof evidence. */
+    static EscrowNativeBinding.Admission modelCapture(EscrowOperation model) {
+        var wrapper = new RocketEscrowSection(null, model.rocket().beforeEpoch(), List.of());
+        var b = model.nativeBinding();
+        var binding = new EscrowNativeBinding(EscrowSignatureKind.FUEL_VECTOR_V1, b.physical(), b.logical(), b.owner(), model.id(),
+                b.beforeFrontier(), b.invariant(), b.sourceReference(), b.destinationReference(), EscrowNativeEnvelope.digest(wrapper.encode()),
+                b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(), b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
+        var op = new EscrowOperation(model.id(), model.sequence(), model.owner(), model.createdTick(), model.phase(), model.reason(),
+                model.payload(), model.payloadHash(), model.source(), model.destination(), model.guard(), model.kind(), model.settlement(), binding);
+        var payload = op.payload(); var id = ResourceLocation.tryParse(payload.getString("FluidName"));
+        var tag = payload.contains("Tag") ? payload.getCompound("Tag") : null;
+        var settings = RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of(id.toString()),
+                RocketPropulsion.Role.BIPROPELLANT_FUEL, List.of(), RocketPropulsion.Role.OXIDIZER, List.of(), RocketPropulsion.Role.WORKING_FLUID, List.of()));
+        var fuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(
+                new RocketPropulsion(RocketPropulsion.Mode.MONO, 16_000, 0, 1, 1, settings));
+        long amount = op.rocket().beforeEpoch() * payload.getInt("Amount");
+        if (amount > 0) { fuel = fuel.withFluidBank(false, id, tag, amount); }
+        var tank = LoaderTank.of(id, tag, 5_000);
+        return EscrowAccountingCapture.fuel(op, wrapper, tank, tank.withAmount(5_000 - payload.getInt("Amount")), fuel,
+                fuel.withFluidBank(false, id, tag, amount + payload.getInt("Amount")));
+    }
 
     /** A real loader holding an operator-loaded root: a fresh device, this binding, this tank, a pristine section. */
     static FluidFuelLoaderBlockEntity loader(ServerLevel level, BlockPos at, UUID owner, LoaderTank tank, LoaderBinding binding) {
