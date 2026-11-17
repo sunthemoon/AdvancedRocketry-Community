@@ -36,6 +36,88 @@ final class EscrowTestFixtures {
         return new EscrowLedger(old.id(), old.issuedThrough(), old.writerGeneration(), old.records(), old.floors(), old.tombstones(),
                 old.issuedLaunchSerial(), old.rocketAuthorities(), old.armedFlights(), 2, List.of());
     }
+    /** Typed fixture inputs passed through production capture, for admission/size tests without native publication. */
+    static EscrowNativeBinding.Admission capturedModel(EscrowOperation op, RocketEscrowSection wrapper) {
+        if (!op.kind().fluid()) { return new EscrowNativeBinding.Admission(op, wrapper); }
+        var fluid = op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL ? op.payload() : op.payload().getCompound("fluid");
+        var moved = net.minecraftforge.fluids.FluidStack.loadFluidStackFromNBT(fluid);
+        org.junit.jupiter.api.Assertions.assertFalse(moved.isEmpty(), "Fixture capture needs an available native fluid");
+        var source = moved.copy(); source.setAmount(5000);
+        if (op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL) {
+            var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.MONO, 16000, 0, 1, 1,
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(
+                            java.util.Map.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Role.MONO,
+                                    List.of(fluid.getString("FluidName")),
+                                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Role.BIPROPELLANT_FUEL, List.of(),
+                                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Role.OXIDIZER, List.of(),
+                                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Role.WORKING_FLUID, List.of())));
+            var before = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(descriptor);
+            long amount = op.rocket().beforeEpoch() * moved.getAmount();
+            var fluidId = net.minecraftforge.registries.ForgeRegistries.FLUIDS.getKey(moved.getFluid());
+            if (amount > 0) { before = before.withFluidBank(false, fluidId, moved.getTag(), amount); }
+            var after = before.withFluidBank(false, fluidId, moved.getTag(), amount + moved.getAmount());
+            var tank = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank.of(source);
+            return EscrowAccountingCapture.fuel(op, wrapper, tank, tank.withAmount(5000 - moved.getAmount()), before, after);
+        }
+        boolean loading = op.kind().cargoLoad();
+        var before = cargoSnapshot(op, loading ? net.minecraftforge.fluids.FluidStack.EMPTY : source);
+        var after = io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoMutation.apply(
+                before, EscrowCargoPayload.decode(op.payload()), loading);
+        var deviceBefore = cargoDevice(op, loading ? source : net.minecraftforge.fluids.FluidStack.EMPTY);
+        var deviceAfterStack = moved.copy(); deviceAfterStack.setAmount(loading ? 5000 - moved.getAmount() : moved.getAmount());
+        return EscrowAccountingCapture.bind(op, wrapper, new CompoundTag(), new CompoundTag(), deviceBefore,
+                cargoDevice(op, deviceAfterStack), before, after);
+    }
+    private static io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot cargoSnapshot(
+            EscrowOperation op, net.minecraftforge.fluids.FluidStack stack) {
+        var cursor = EscrowCargoPayload.validateStructure(op.payload());
+        var block = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock(
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(cursor.x(), cursor.y(), cursor.z()),
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState(
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter.TYPE, java.util.Map.of()),
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter.payload(stack));
+        var base = io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.CargoTestFixtures.snapshot(List.of(block));
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot.create(cursor.snapshot(),
+                base.sourceDimension(), base.sourceOrigin(), base.blocks(), base.passengerAnchors(), base.stats(), 0,
+                base.propulsion().orElseThrow());
+    }
+    private static CompoundTag cargoDevice(EscrowOperation op, net.minecraftforge.fluids.FluidStack stack) {
+        var role = op.kind().cargoLoad()
+                ? io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole.LOAD
+                : io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole.UNLOAD;
+        var root = new io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot(
+                op.owner(), op.device().identity(), role, null,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank.of(stack), RocketEscrowSection.neutral());
+        var envelope = new CompoundTag(); envelope.putString("id", "advancedrocketrycommunity:" + role.id());
+        envelope.put(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot.KEY, root.encode());
+        return envelope;
+    }
+    static EscrowOperation accountedModel(EscrowOperation op) {
+        if (!op.kind().fluid()) { return op; }
+        var capture = capturedModel(nativeModel(op, RocketEscrowSection.neutral()), RocketEscrowSection.neutral());
+        return op.accounting(capture.account().baseline());
+    }
+    static EscrowLedger accountedModel(EscrowLedger root) {
+        var operations = new java.util.ArrayList<EscrowOperation>();
+        var rows = new java.util.ArrayList<EscrowFluidAccount.Row>();
+        for (var op : root.records()) {
+            if (!op.kind().fluid()) { operations.add(op); continue; }
+            var capture = capturedModel(nativeModel(op, RocketEscrowSection.neutral()), RocketEscrowSection.neutral());
+            operations.add(op.accounting(capture.account().baseline())); rows.add(capture.account());
+        }
+        return root.accounting(operations, rows);
+    }
+    static EscrowLedger appendModel(EscrowLedger root, List<EscrowOperation> additions) {
+        var operations = new java.util.ArrayList<EscrowOperation>();
+        var rows = new java.util.HashMap<UUID, EscrowFluidAccount.Row>();
+        for (var op : additions) {
+            if (!op.kind().fluid()) { operations.add(op); continue; }
+            var capture = capturedModel(nativeModel(op, RocketEscrowSection.neutral()), RocketEscrowSection.neutral());
+            operations.add(op.accounting(capture.account().baseline())); rows.put(op.id(), capture.account());
+        }
+        return EscrowAccountingCapture.append(root, operations, rows);
+    }
     /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
     static EscrowOperation distributedOwner(EscrowOperation op) {
         var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();
@@ -43,7 +125,7 @@ final class EscrowTestFixtures {
                 b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
                 b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), b.complete());
         return new EscrowOperation(op.id(), op.sequence(), owner, op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding, op.accountingBaseline());
     }
     /** Reconstruct a historical encoded decision without submitting its actor name as a new preview. */
     static EscrowSettlementIntent storedActor(EscrowSettlementIntent preview, String name) {
@@ -63,7 +145,7 @@ final class EscrowTestFixtures {
                 b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
                 b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
         return new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding, op.accountingBaseline());
     }
     static CompoundTag floor(long id) {
         CompoundTag tag = EscrowCodec.guard(new EscrowGuard(id(id), null, 1, hash(id)));
@@ -72,7 +154,7 @@ final class EscrowTestFixtures {
         tag.putString("signature", hash(0)); tag.putLong("highest_seq", 1); return tag;
     }
     static CompoundTag receipt(int id) {
-        var op = operation(10_000 + id).withReason(EscrowReason.OTHER_STATE); var root = ledger(op);
+        var op = operation(10_000 + id).withReason(EscrowReason.OTHER_STATE); var root = root2(ledger(op));
         var observed = EscrowSettlementIntentTest.observations(root, false);
         var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, id(700), "operator", 10, observed);
         var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);

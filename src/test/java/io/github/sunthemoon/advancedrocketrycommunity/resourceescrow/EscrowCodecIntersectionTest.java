@@ -41,7 +41,8 @@ class EscrowCodecIntersectionTest {
             assertEquals(483, RocketNbtSize.uncompressedBytes(floor)); floors.add(floor);
         }
         for (int i = 1; i <= 64; i++) { tombstones.add(exactTombstone(i)); }
-        var ledger = new EscrowLedger(EscrowTestFixtures.id(500), 64, 1, records, floors, tombstones);
+        // Preserve the independently decodable maximum historical root-2 format intersection.
+        var ledger = new EscrowLedger(EscrowTestFixtures.id(500), 64, 1, records, floors, tombstones, 0, List.of(), List.of(), 2, List.of());
         var encoded = EscrowCodec.encode(ledger); assertEquals(ledger, EscrowCodec.decode(encoded));
         // The structural caps make a valid propulsion-only root/operation smaller than their outer envelopes.
         assertTrue(RocketNbtSize.uncompressedBytes(encoded) < EscrowLimits.ROOT_BYTES);

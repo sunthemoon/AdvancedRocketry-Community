@@ -217,7 +217,7 @@ class EscrowAccountingSettlementTest {
 
     @Test void independentItemPreparationAcceptsPendingFluidRowsWithoutChangingRoot2() {
         for (boolean accounting : List.of(false,true)) {
-            var empty = ledger(); if (accounting) { empty = empty.accounting(List.of(),List.of()); }
+            var empty = root2(ledger()); if (accounting) { empty = empty.accounting(List.of(),List.of()); }
             var first = nativeModel(EscrowSettlementCapacityTest.operation(1,991,0,true),RocketEscrowSection.neutral());
             var base = EscrowAccountingFormatTest.baseline(first);
             if (accounting) { first = first.accounting(base); }
