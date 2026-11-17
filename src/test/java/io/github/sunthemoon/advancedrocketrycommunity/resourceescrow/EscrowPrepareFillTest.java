@@ -21,8 +21,8 @@ class EscrowPrepareFillTest {
     @TempDir Path directory;
 
     /** A native fill into a rocket's fuel vector, captured with the neutral marker section. */
-    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true)); }
-    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()); }
+    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.accountedModel(EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true))); }
+    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return EscrowTestFixtures.capturedModel(op, RocketEscrowSection.neutral()); }
     private static ResourceEscrowSavedData loaded(EscrowLedger root) { return ResourceEscrowSavedData.load(EscrowCodec.encode(root)); }
     private Path file(String name) throws Exception {
         return Files.createDirectories(directory.resolve(name)).resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
@@ -54,7 +54,7 @@ class EscrowPrepareFillTest {
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
         var bays = new ArrayList<EscrowAdmissionAuthority.Pending>();
         authority.registerIndex(EscrowAdmissionAuthority.Consumer.BAY, () -> new EscrowAdmissionAuthority.Index(true, bays));
-        var durable = fill(1, 1); var data = loaded(EscrowTestFixtures.ledger(durable));
+        var durable = fill(1, 1); var data = loaded(EscrowTestFixtures.appendModel(EscrowTestFixtures.ledger(), List.of(durable)));
         // ServerStartingEvent's early bind attaches the ledger; the first tick has not run a coordinator or writer tick.
         try (var writer = new EscrowLedgerWriter(file("first-tick"), 0); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             assertEquals(EscrowAdmissionAuthority.Delegate.State.LOADED, delegate.state());
@@ -83,14 +83,14 @@ class EscrowPrepareFillTest {
                     b.snapshotHash(), b.invariant(), b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(),
                     b.beforeFrontier(), b.afterFrontier(), b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), false));
             for (var op : List.of(fixtureKind, incomplete, nativeOp.withReason(EscrowReason.OTHER_STATE))) {
-                assertEquals(EscrowCoordinator.Fill.INVALID, coordinator.prepareFill(capture(op), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Fill.INVALID, coordinator.prepareFill(new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()), ignored -> fail()));
             }
             assertUnchanged(coordinator, writer, data, root, 1, 0);
             // STALE: a sequence other than the next one, and a capture whose section names another ledger.
             assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(capture(fill(2, 1)), ignored -> fail()));
             var foreign = new RocketEscrowSection(EscrowTestFixtures.id(501), 0, List.of());
             var foreignOp = EscrowTestFixtures.nativeModel(EscrowSettlementCapacityTest.operation(1, 1, 0, true), foreign);
-            assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(new EscrowNativeBinding.Admission(foreignOp, foreign), ignored -> fail()));
+            assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(EscrowTestFixtures.capturedModel(foreignOp, foreign), ignored -> fail()));
             // IDENTITY_CONFLICT, SERVER_FULL and ROCKET_FULL come from the shared authority, after the pure check.
             var op = fill(1, 1);
             bays.add(new EscrowAdmissionAuthority.Pending(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.BAY));
@@ -138,7 +138,7 @@ class EscrowPrepareFillTest {
             // The same capture: a different section cannot even form the admission.
             assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()));
             try (var writer = new EscrowLedgerWriter(file("retired-" + retired), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                var result = coordinator.prepareFill(new EscrowNativeBinding.Admission(op, section), ignored -> { });
+                var result = coordinator.prepareFill(EscrowTestFixtures.capturedModel(op, section), ignored -> { });
                 if (retired < 5) {
                     assertEquals(EscrowCoordinator.Fill.QUEUED, result); assertEquals(101, coordinator.nextSequence());
                 } else {
@@ -157,7 +157,7 @@ class EscrowPrepareFillTest {
         var section = new RocketEscrowSection(empty.id(), 5, markers);
         var full = EscrowTestFixtures.nativeModel(EscrowSettlementCapacityTest.operation(1, 1, 5, true), section);
         assertEquals(java.util.Optional.of(EscrowCoordinator.Fill.ROCKET_LIMIT),
-                EscrowCoordinator.fillRefusal(empty, List.of(), new EscrowNativeBinding.Admission(full, section)));
+                EscrowCoordinator.fillRefusal(empty, List.of(), EscrowTestFixtures.capturedModel(full, section)));
         assertEquals(EscrowLedger.empty(EscrowTestFixtures.id(777)), empty);
     }
 
@@ -181,7 +181,7 @@ class EscrowPrepareFillTest {
             assertEquals(60, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.idle());
             assertTrue(writer.capturedOperations().isEmpty()); assertEquals(base, coordinator.ledger());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
-            var prospective = base.append(candidate);
+            var prospective = EscrowTestFixtures.appendModel(base, candidate);
             assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(prospective), "Without the headroom the 61st fill would fit");
             assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(prospective, admitted.get(0).id()));
             assertTrue(coordinator.commitPreparations());
@@ -216,7 +216,7 @@ class EscrowPrepareFillTest {
             assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(62, coordinator.admissionAuthority().pendingCount());
             assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
-            var prospective = base.append(candidate);
+            var prospective = EscrowTestFixtures.appendModel(base, candidate);
             long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
             long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(prospective, refused);
             assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);

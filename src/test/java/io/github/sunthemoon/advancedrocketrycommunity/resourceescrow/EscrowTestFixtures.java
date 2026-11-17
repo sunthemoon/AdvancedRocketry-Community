@@ -118,6 +118,16 @@ final class EscrowTestFixtures {
         }
         return EscrowAccountingCapture.append(root, operations, rows);
     }
+    static EscrowOperation admissionOperation(long sequence) {
+        return accountedModel(EscrowSettlementCapacityTest.operation(sequence, sequence, 0, true));
+    }
+    static EscrowLedger admissionLedger(EscrowOperation... ops) {
+        return appendModel(ledger(), List.of(ops));
+    }
+    static void prepareCapturedModel(EscrowCoordinator coordinator, EscrowOperation op, java.util.function.Consumer<Boolean> completion) {
+        var result = coordinator.prepareTransfer(capturedModel(op, RocketEscrowSection.neutral()), completion);
+        if (result != EscrowCoordinator.Transfer.QUEUED) { throw new IllegalArgumentException(result.name()); }
+    }
     /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
     static EscrowOperation distributedOwner(EscrowOperation op) {
         var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();

@@ -27,8 +27,8 @@ class EscrowLedgerCreationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    private static EscrowOperation fill(long sequence, long rocket) { return EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true); }
-    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()); }
+    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.accountedModel(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true)); }
+    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return EscrowTestFixtures.capturedModel(op, RocketEscrowSection.neutral()); }
     private Path file(String name) throws IOException {
         return Files.createDirectories(directory.resolve(name)).resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
     }
@@ -62,10 +62,10 @@ class EscrowLedgerCreationTest {
         try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove); var coordinator = created(writer, delegate)) {
             assertEquals(EscrowAdmissionAuthority.Delegate.State.LOADED, delegate.state());
             assertTrue(coordinator.creationBaselinePending());
-            coordinator.enqueueCreated(op, replies::add);
+            coordinator.enqueueCreated(capture(op), replies::add);
             assertEquals(1, authority.pendingCount(), "The reservation and its queue entry are one slot");
             assertEquals(2, coordinator.nextSequence()); assertTrue(coordinator.admitting(op.destination().key()));
-            assertThrows(IllegalArgumentException.class, () -> coordinator.enqueueCreated(fill(2, 2), ignored -> { }),
+            assertThrows(IllegalArgumentException.class, () -> coordinator.enqueueCreated(capture(fill(2, 2)), ignored -> { }),
                     "Creation queues exactly its one reserved fill");
             // Step 3: the first checked write is the empty root at generation 1; autosave and L1 wait for it.
             assertTrue(coordinator.commitPreparations());
@@ -90,7 +90,7 @@ class EscrowLedgerCreationTest {
         var missing = directory.resolve("not-yet").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var io = new AwaitedLedgerIo(); var replies = new ArrayList<Boolean>();
         try (var writer = io.writer(missing, 0, CheckedSavedDataFile::atomicMove); var coordinator = created(writer, delegate)) {
-            coordinator.enqueueCreated(op, replies::add);
+            coordinator.enqueueCreated(capture(op), replies::add);
             assertTrue(coordinator.commitPreparations());
             long tick = io.tickUntil(coordinator::tick, 1, writer::idle);
             assertEquals(List.of(false), replies, "One definite failure callback");
@@ -119,7 +119,7 @@ class EscrowLedgerCreationTest {
             if (attempts.incrementAndGet() == 1) { throw new IOException("Release-test ambiguous replacement outcome"); }
             CheckedSavedDataFile.atomicMove(staged, target);
         }); var coordinator = created(writer, delegate)) {
-            coordinator.enqueueCreated(op, replies::add);
+            coordinator.enqueueCreated(capture(op), replies::add);
             assertTrue(coordinator.commitPreparations());
             io.awaitWrites(); coordinator.tick(1);
             assertTrue(writer.unknown() && !writer.idle(), "The baseline is UNKNOWN");
@@ -146,7 +146,7 @@ class EscrowLedgerCreationTest {
         var replies = new ArrayList<Boolean>();
         try (var writer = new EscrowLedgerWriter(file, 0); var coordinator = created(writer, delegate)) {
             assertFalse(writer.baselineAvailable(), "The checked readback differs from the new empty root");
-            coordinator.enqueueCreated(op, replies::add);
+            coordinator.enqueueCreated(capture(op), replies::add);
             assertEquals(List.of(false), replies); assertEquals(0, authority.pendingCount());
             assertFalse(coordinator.operational()); assertFalse(coordinator.commitPreparations());
             assertEquals(EscrowCoordinator.Fill.UNAVAILABLE, coordinator.prepareFill(capture(fill(1, 2)), ignored -> fail()));
@@ -159,7 +159,7 @@ class EscrowLedgerCreationTest {
         try (var writer = new EscrowLedgerWriter(file("written"), 1); var coordinator = new EscrowCoordinator(data, writer)) {
             assertThrows(IllegalArgumentException.class, coordinator::beginCreationBaseline);
             assertFalse(coordinator.creationBaselinePending());
-            assertThrows(IllegalArgumentException.class, () -> coordinator.enqueueCreated(fill(2, 2), ignored -> { }));
+            assertThrows(IllegalArgumentException.class, () -> coordinator.enqueueCreated(capture(fill(2, 2)), ignored -> { }));
         }
     }
 }
