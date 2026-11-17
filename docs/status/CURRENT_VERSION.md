@@ -558,8 +558,10 @@ What is still open:
   the next shared regressions pass.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
-  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
-  open until later runs show no recurrence or a cause is found.
+  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
+  reproduce it in 48 repetitions; the window holds no autosave, and flight B stalled after acknowledging
+  `DESTINATION_SPAWNED`. W378's failure-only diagnostics give the missing observations if it recurs (R484). It stays
+  open until a cause is found or later runs show no recurrence.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,
