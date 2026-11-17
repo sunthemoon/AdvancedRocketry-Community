@@ -38,8 +38,10 @@ public final class BayDeploymentSession {
     }
     boolean claimed(UUID logical) { return claims.test(logical); }
 
-    /** D0 is gated (TASK W128): only a GameTestServer or a gated release-test dedicated server starts deployments. */
-    public boolean admissionEnabled() { owner(); return !closed && EscrowTestEndpoints.enabled(server); }
+    /** D0 admission: the production switch or the existing release-test gate, while the session is open. */
+    public boolean admissionEnabled() {
+        owner(); return !closed && (BayDeploymentSwitches.PRODUCTION_ADMISSION || EscrowTestEndpoints.enabled(server));
+    }
 
     /** BAY_RECEIPTS_UNAVAILABLE: the index is not loaded, the writer is unavailable, or the session has closed. */
     public boolean unavailable() {
