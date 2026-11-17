@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import time
 import uuid
+import v180_crash_replay as replay
 
 import run_dedicated_server_smoke as smoke
 from inspect_celestial_saved_data import NbtReader
@@ -213,6 +214,7 @@ class Session:
             raise smoke.SmokeError("Native start refused: under 10 GiB free")
         self.starts += 1
         command = _server_command(self.args.java); command[2] = "-Xmx4G"
+        replay.trace_command(self.args, command, restart)
         self.process = smoke.CapturedProcess(command, self.session, self.evidence / f"{case}-{restart}.log")
         self.process.wait_for(smoke.READY_MARKER, self.args.startup_timeout)
         return self.process
@@ -373,15 +375,26 @@ def run_case(run: Session, case: str) -> dict:
     (run.session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())),
                                                    encoding="ascii")
     row = dict(case=case, cut=dict(fixture=fixture, point=point, mode=mode, ending=ending))
-    row["first_start"] = first_start(run, case)
-    cut_disk = inspect(world)
-    if cut_disk["satellites"] != satellites or cut_disk["staging"] != staging or cut_disk["mars_discovered"]:
+    replaying = getattr(run.args, "replay_world", None) is not None
+    if replaying:
+        replay.materialize(run.args.replay_world, world, run.args.replay_state)
+        row["first_start"] = run.args.replay_context["first_start"]
+        # inspect() decodes pending NBT in ordinary runs. Torn/empty staging is deliberately opaque in X01.
+        cut_disk = registry_view(read_data(world / "data" / REGISTRY))
+        cut_disk.update(staging=(world / "data" / STAGING).is_file(), mars_discovered=False)
+    else:
+        row["first_start"] = first_start(run, case)
+        cut_disk = inspect(world)
+    if not replaying and (cut_disk["satellites"] != satellites or cut_disk["staging"] != staging or cut_disk["mars_discovered"]):
         raise smoke.SmokeError(f"{case}: wrong files after the cut: {cut_disk}")
     if fixture == "discovery" and "claim_pending_discovery" not in cut_disk["statuses"]:
         raise smoke.SmokeError(f"{case}: the paid receipt is not in the registry file: {cut_disk}")
     row["cut_disk"] = cut_disk; row["restarts"] = []
+    if replay.capture_replay(run.args, world, row, run.evidence, case):
+        row["status"] = "PASS"
+        return row
     balance = row["first_start"].get("receipt", {}).get("balance")
-    for restart in (1, 2):
+    for restart in getattr(run.args, "replay_restart_numbers", (1, 2)):
         process = run.start(case, restart)
         if fixture == "discovery" and restart == 1:
             loaded = run.await_status(lambda s: s["discovered"] and s["research"] == "CLAIMED",
@@ -389,6 +402,9 @@ def run_case(run: Session, case: str) -> dict:
         else:
             loaded = run.status()
         check_restart(case, restart, loaded, cut_disk)
+        if getattr(run.args, "replay_old_registry", False):
+            if loaded["terminal"] != "present" or loaded["package"] != "bound":
+                raise smoke.SmokeError("X01-12 old registry lost the terminal's uncommitted package")
         if fixture == "discovery" and loaded["balance"] != balance:
             raise smoke.SmokeError(f"{case}/{restart}: the paid receipt was lost or paid again: {loaded} {balance}")
         entry = dict(restart=restart, loaded=loaded)
@@ -461,6 +477,8 @@ def run(args) -> dict:
         report["starts"] = runner.starts
         if runner.process is not None:
             runner.process.abort()
+        if report["status"] != "PASS" and getattr(args, "replay_preserve", None):
+            args.replay_preserve(session / ("world-" + cases[0]))
         (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         if (session.parent == intended and not smoke.is_link_or_junction(session) and marker.is_file()
                 and marker.read_text(encoding="ascii") == token):

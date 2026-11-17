@@ -8,6 +8,7 @@ import re
 import shutil
 import uuid
 import zipfile
+import v180_crash_replay as replay
 import bay_integrated_evidence as evidence_tools
 import run_v180_cargo_reconciliation as native
 import run_v180_cargo_cuts as fluid
@@ -42,16 +43,16 @@ HARNESS = fluid.HARNESS + ("scripts/run_v180_item_cuts.py", "scripts/item_cuts_o
                           "scripts/run_v180_rocket_settlement_completion.py", "scripts/run_v180_landed_disassembly_cuts.py")
 require = oracle.require
 
-def marker(case, restart):
+def marker(case, restart, probe=None):
     spec = CASES[case]
     if spec["family"] == "D-S1":
-        return ("ARCE_RELEASE_CARGO_RESULT" if restart else "ARCE_RELEASE_CARGO_PAUSED") + " cut=" + spec["probe"] + " "
+        return ("ARCE_RELEASE_CARGO_RESULT" if restart else "ARCE_RELEASE_CARGO_PAUSED") + " cut=" + (probe or spec["probe"]) + " "
     if not restart and case == "IR_DISASSEMBLY":
         return "ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K1 "
     return ("ARCE_RELEASE_ITEM_CUT_RESULT" if restart else "ARCE_RELEASE_ITEM_CUT_PAUSED") + " cut=" + case + " "
 
-def observations(lines, case, restart):
-    matches = [line for line in lines if marker(case, restart) in line]
+def observations(lines, case, restart, probe=None):
+    matches = [line for line in lines if marker(case, restart, probe) in line]
     require(len(matches) == 1, "Missing or repeated native cut observation")
     if not restart:
         key = "checkpoint" if CASES[case]["family"] == "D-S1" else "boundary"
@@ -97,6 +98,23 @@ def check(world, case, restarted):
         oracle.check_recovery(case, result, restarted)
     return result
 
+
+def replay_old_probe(case):
+    require(case in ("IC_LOAD_K2", "IC_UNLOAD_K9"), "No old-side item expectation for this case")
+    return "IC_LOAD_L1_BEFORE" if case == "IC_LOAD_K2" else "IC_UNLOAD_C6_JOINT_READBACK"
+
+
+def replay_old_check(world, case):
+    """X01-08/09 add earlier-ledger expectations without changing an existing case."""
+    result = native.inspect(world, replay_old_probe(case), True)
+    root = result["ledger"]
+    require(not root["rocket_authorities"] and not root["armed_flights"] and root["issued_launch_serial"] == 0,
+            "Ordinary replay acquired flight authority")
+    block = result["rocket"]["snapshot"]["relative_blocks"][0]["block_entity"]["data"]
+    oracle.exact_stack(block["Items"]); oracle.exact_stack(result["device"]["buffer"]["slots"], True)
+    require(result["raw_total"] == 70, "Earlier-ledger replay lost or duplicated typed items")
+    return result
+
 def retained_files(world, destination):
     """Lossless native files preserve all NBT tag types even if an oracle rejects the decoded observation."""
     files = [p for folder in ("data", "entities", "region", "arce_w143_fixture")
@@ -138,17 +156,19 @@ def run(args):
         port = native.smoke.allocate_port(); native.smoke.write_server_configuration(session, port, True)
         for case in args.case:
             spec = CASES[case]; row = dict(case=case, **spec, pins=pins, starts=[], findings=[]); report["cases"].append(row)
+            replay_probe = replay_old_probe(case) if getattr(args, "replay_old_item", False) else None
             properties = native.smoke.expected_server_properties(port, True)
             properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat", "max-tick-time": "60000",
                                "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
             (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
-            frozen = None
-            for restart in range(3):
+            frozen = getattr(args, "replay_context", {}).get("starts", [{}])[0].get("disk")
+            for restart in replay.replay_starts(args, row, session / ("world-" + case), evidence, case):
                 native.assert_pin(args.source_commit); native.require_lock(args.lock_owner)
                 require(native.digest(args.jar) == pins["jar_sha256"], "JAR changed")
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
-                                "-Dadvancedrocketrycommunity.escrowCase=" + spec["probe"]]
+                                "-Dadvancedrocketrycommunity.escrowCase=" + (replay_probe or spec["probe"])]
+                replay.trace_command(args, command, restart)
                 if not restart and case == "IR_DISASSEMBLY":
                     command.insert(1, "-Dadvancedrocketrycommunity.landedDisassemblyProbe=LANDED_DISASSEMBLY:K1")
                 start = dict(restart=restart, command=command, preflight=native.preflight()); row["starts"].append(start)
@@ -156,7 +176,7 @@ def run(args):
                 evidence_tools.recheck_installed(installed)
                 process = native.smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
                 try:
-                    process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
+                    process.wait_for(re.compile(re.escape(marker(case, restart, replay_probe))), args.startup_timeout)
                     if restart:
                         process.command("stop"); start["exit_code"] = process.finish()
                     else:
@@ -172,8 +192,13 @@ def run(args):
                     raw = evidence / f"{case}-{restart}-raw.json"; raw.write_text(json.dumps(oracle.read(world), indent=2), encoding="utf-8")
                     start["raw"] = dict(file=raw.name, sha256=native.digest(raw))
                     require("process_error" not in start, start.get("process_error", "Native process failed"))
-                    observations(lines, case, restart); require(not restart or start["exit_code"] == 0, "Restart failed")
-                    disk = check(world, case, bool(restart)); start["disk"] = disk
+                    if replay_probe:
+                        observations(lines, case, restart, replay_probe)
+                    else:
+                        observations(lines, case, restart)
+                    require(not restart or start["exit_code"] == 0, "Restart failed")
+                    disk = replay_old_check(world, case) if getattr(args, "replay_old_item", False) else check(world, case, bool(restart))
+                    start["disk"] = disk
                     if restart and frozen is not None:
                         if spec["family"] == "D-S1":
                             require(disk["identity"] == frozen["identity"], "Restart changed ordinary identities")
@@ -205,6 +230,9 @@ def run(args):
                 except (OSError, ValueError, KeyError, native.smoke.SmokeError) as failure:
                     start.update(status="FAILED", error=str(failure)); row["findings"].append(str(failure))
                 (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+                if not restart and not row["findings"] and replay.capture_replay(args, world, row, evidence, case):
+                    report["status"] = "PASS"
+                    return report
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (forced stop and two restarts)", flush=True)
