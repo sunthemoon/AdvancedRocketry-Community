@@ -131,13 +131,26 @@ public final class FluidCargoReconciliationGameTests {
                     heldSince = server.getTickCount(); phase = 11; return;
                 }
                 if (unavailable) {
-                    // A structurally valid saved Fluid whose mod is absent on restart. No balance or native capture changes.
+                    // Rename the saved resource in both payload and its captured account. R39 must refuse before
+                    // comparing this unavailable saved resource with either still-loaded native endpoint.
                     var encoded = EscrowCodec.operation(op);
                     encoded.getCompound("payload").getCompound("fluid").putString("FluidName", "w124:missing");
                     encoded.putString("payload_hash", io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
                             .signature(encoded.getCompound("payload")));
-                    var held = EscrowCodec.operation(encoded); heldPayload = held.payload();
-                    isolated.acknowledged(isolated.ledger().replace(List.of(held), isolated.ledger().floors(), isolated.ledger().tombstones()), true);
+                    var row = isolated.ledger().fluidAccounts().stream().filter(value -> value.operation().equals(op.id())).findFirst().orElseThrow();
+                    check(row.frozen() == null && row.baseline().entries().size() == 1, "R39 lost its fresh captured account");
+                    var entry = row.baseline().entries().get(0);
+                    check(entry.source() == 5_000 && entry.destination() == 0 && entry.sourceDelta() == -1_000
+                            && entry.destinationDelta() == 1_000, "R39 capture changed its native quantities");
+                    var savedRow = EscrowFluidAccountCodec.encode(row, EscrowFluidAccountCodec.SAVED).value();
+                    var savedKey = EscrowFluidAccountCodec.key(encoded.getCompound("payload").getCompound("fluid")).value();
+                    var savedEntry = savedRow.getCompound("b").getList("e", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0);
+                    savedEntry.putString("i", savedKey.fluid());
+                    savedEntry.putByteArray("d", java.util.HexFormat.of().parseHex(savedKey.tagDigest()));
+                    var savedAccount = EscrowFluidAccountCodec.decode(savedRow, EscrowFluidAccountCodec.SAVED);
+                    check(savedAccount.ok(), "R39 renamed account is not canonical: " + savedAccount.status());
+                    var held = EscrowCodec.operation(encoded).accounting(savedAccount.value().baseline()); heldPayload = held.payload();
+                    isolated.acknowledged(isolated.ledger().accounting(List.of(held), List.of(savedAccount.value())), true);
                     enable(b, true); EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), false);
                     phase = 12; return;
                 }
