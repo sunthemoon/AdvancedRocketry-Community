@@ -186,7 +186,8 @@ class EscrowAccountingFormatTest {
         var intent = intent(root, rows); var o1 = intent.freeze(root, rows); var o3 = EscrowSettlementTombstones.install(o1, intent);
         assertEquals(EscrowSettlementCapacity.reservedBytes(o1), EscrowSettlementCapacity.reservedBytes(o3));
         var old = ledger(operation(1));
-        assertEquals(39 + 2048, EscrowSettlementCapacity.reservedBytes(root) - EscrowSettlementCapacity.reservedBytes(old));
+        // Both roots now have the root-3 header; only the one full account-row charge differs.
+        assertEquals(2048, EscrowSettlementCapacity.reservedBytes(root) - EscrowSettlementCapacity.reservedBytes(old));
     }
     @Test void legacyAdmissionRefusalLeavesTheProspectiveRootUnchanged() {
         var first = operation(1, 99, 0); var next = operation(2, 99, 1).accounting(baseline(operation(2, 99, 1)));

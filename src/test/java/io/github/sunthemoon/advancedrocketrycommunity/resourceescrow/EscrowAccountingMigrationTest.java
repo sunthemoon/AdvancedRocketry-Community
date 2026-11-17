@@ -27,7 +27,7 @@ class EscrowAccountingMigrationTest {
         assertFalse(TYPE.hasLegacySchema()); assertEquals(2, TYPE.firstEpochSchema());
         assertEquals("v1.8.0-resource-escrow", TYPE.formatEpoch(2));
         assertEquals("v1.8.0-resource-escrow-fluid-accounting", TYPE.formatEpoch(3));
-        assertEquals(2, TYPE.currentSchemaVersion());
+        assertEquals(3, TYPE.currentSchemaVersion());
     }
     @Test void liveFrozenInstalledAndReleasedRoot2FormsMigrateLosslessly() throws Exception {
         var live = ledger(operation(1).withReason(EscrowReason.OTHER_STATE));
@@ -57,21 +57,27 @@ class EscrowAccountingMigrationTest {
             EscrowLedgerBaseline.requireMigration(file, target); assertArrayEquals(bytes, Files.readAllBytes(file));
         }
     }
-    @Test void activationOffDoesNotMigrateOrCreateBackups() throws Exception {
+    @Test void currentRoot3DoesNotMigrateOrCreateBackups() throws Exception {
         var file = file(); var source = EscrowCodec.encode(ledger(operation(1))); write(file, source);
         var bytes = Files.readAllBytes(file);
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.CURRENT, SavedDataSchemaMigrator.migrate(TYPE, source).status());
         assertEquals(MigrationDiagnosticId.DATA_CURRENT, new WorldDataMigrationService().migrate(temp).diagnosticId());
         assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
     }
-    @Test void activationOffRefusesRoot3AtPreStartWithoutChangingBytesOrCreatingBackups() throws Exception {
-        assertFalse(EscrowAccountingFormat.ENABLED);
+    @Test void activationOnAcceptsRoot3AtPreStartWithoutChangingBytesOrCreatingBackups() throws Exception {
+        assertTrue(EscrowAccountingFormat.ENABLED);
         var source = EscrowCodec.encode(EscrowAccountingFormatTest.planned(operation(1)));
         var file = file(); write(file, source); var bytes = Files.readAllBytes(file);
-        assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, source).status());
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.CURRENT, SavedDataSchemaMigrator.migrate(TYPE, source).status());
+        assertEquals(MigrationDiagnosticId.DATA_CURRENT, new WorldDataMigrationService().migrate(temp).diagnosticId());
+        assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
+
+        var future = source.copy(); future.putInt("schema_version", 4); write(file, future);
+        var futureBytes = Files.readAllBytes(file);
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, future).status());
         var refused = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(temp));
         assertEquals(MigrationDiagnosticId.FUTURE_SCHEMA, refused.diagnosticId());
-        assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
+        assertArrayEquals(futureBytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
     }
     @Test void decodableNoncanonicalSourceReachesTheReencodingCheckAndPreservesItsFile() throws Exception {
         var source = EscrowCodec.encode(ledger(operation(1)));

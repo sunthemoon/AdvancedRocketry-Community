@@ -171,7 +171,7 @@ class EscrowAccountingReconciliationTest {
         }
     }
 
-    @Test void root3PreparationQueuesTheExactRowButTheUnapprovedWriterFormatStaysClosed() {
+    @Test void root3PreparationQueuesTheExactRowAndTheApprovedWriterFormatIsOpen() {
         var f = EscrowAccountingCaptureTest.fuel(false); var root = EscrowAccountingCaptureTest.empty();
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("queued.dat"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
@@ -183,8 +183,8 @@ class EscrowAccountingReconciliationTest {
             assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
             var candidate = coordinator.pendingLedger(); assertEquals(List.of(f.admission().account()), candidate.fluidAccounts());
             assertEquals(List.of(f.admission().operation()), candidate.records());
-            assertFalse(EscrowAccountingFormat.ENABLED);
-            assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(candidate.generation(1), Set.of(f.admission().operation().id())));
+            assertTrue(EscrowAccountingFormat.ENABLED);
+            assertEquals(candidate.generation(1), EscrowLedgerWriter.Snapshot.of(candidate.generation(1), Set.of(f.admission().operation().id())).ledger());
             assertEquals(candidate, coordinator.pendingLedger()); assertEquals(root.id(), coordinator.ledger().id());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
         }
