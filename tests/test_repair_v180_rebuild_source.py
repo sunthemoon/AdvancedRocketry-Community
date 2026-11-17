@@ -49,8 +49,11 @@ def default(kind):
     return n.Tag(kind, {n.LIST: (0, []), n.COMPOUND: {}, n.INTS: [0, 0, 0, 99], n.LONGS: [], n.LONG: 0}[kind])
 
 
-class RepairTest(unittest.TestCase):
+class RepairFixture(unittest.TestCase):
     def setUp(self):
+        enough = patch.object(repair.shutil, 'disk_usage', return_value=shutil._ntuple_diskusage(2**50, 0, 2**50))
+        enough.start()
+        self.addCleanup(enough.stop)
         self.tmp = tempfile.TemporaryDirectory(prefix='arce-w377-')
         self.addCleanup(self.tmp.cleanup)
         self.base = Path(self.tmp.name)
@@ -162,6 +165,8 @@ class RepairTest(unittest.TestCase):
     def hashes(self, root):
         return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob('*') if p.is_file()}
 
+
+class RepairTest(RepairFixture):
     def test_one_record_whole_world_copy_and_offline_census(self):
         original = self.hashes(self.source)
         document = self.plan()
@@ -735,6 +740,87 @@ class RepairTest(unittest.TestCase):
             self.assertEqual(actual, repair.CURRENT_ROOTS[key][0])
         for schema, epoch in repair.CURRENT_ROOTS.values():
             self.assertIn('"' + epoch + '"', text + ''.join((root / f).read_text(encoding='utf-8') for f, _, _ in constants))
+
+
+class RevisionTest(RepairFixture):
+    def cli_plan(self):
+        # Unit subprocesses replace only the environmental space measurement,
+        # not eligibility, parsing, locking, or the refusal boundary.
+        bootstrap = ('import sys,shutil;sys.path.insert(0,sys.argv.pop(1));'
+                     'import repair_v180_rebuild_source as r;'
+                     'r.shutil.disk_usage=lambda p:shutil._ntuple_diskusage(2**50,0,2**50);'
+                     'sys.exit(r.main())')
+        return subprocess.run([sys.executable, '-B', '-c', bootstrap, str(Path(repair.__file__).parent), 'plan',
+                               '--source', str(self.source), '--backup', str(self.backup), '--candidate', str(self.jar),
+                               '--log', str(self.log), '--report', str(self.planfile), '--transfer', self.transfer,
+                               '--profile', repair.PROFILE_DISABLED, '--operator', 'test', '--reason', 'synthetic control'],
+                              capture_output=True, text=True, timeout=20)
+
+    def test_malformed_vectors_and_containers_have_bounded_cli_refusals_and_no_effect(self):
+        baseline = copy.deepcopy((self.entity, self.record))
+        for shape in ('short-origin', 'wrong-origin', 'short-pos', 'wrong-pos', 'nan-motion', 'wrong-flight',
+                      'wrong-block-list', 'wrong-block', 'wrong-passengers'):
+            with self.subTest(shape=shape):
+                self.entity, self.record = copy.deepcopy(baseline)
+                current = repair.at(self.entity, 'RocketEntityData', 'snapshot')
+                if shape in ('short-origin', 'wrong-origin'):
+                    bad = A() if shape == 'short-origin' else E()
+                    current.value['source_origin'] = copy.deepcopy(bad)
+                    self.record.value['source_snapshot'].value['source_origin'] = bad
+                elif shape == 'short-pos': self.entity.value['Pos'] = vector(68.5)
+                elif shape == 'wrong-pos': self.entity.value['Pos'] = A(68, 100, 64)
+                elif shape == 'nan-motion': self.entity.value['Motion'] = vector(0, float('nan'), 0)
+                elif shape == 'wrong-flight': self.entity.value['RocketEntityData'].value['flight_data'] = E()
+                elif shape == 'wrong-block-list': self.record.value['source_snapshot'].value['relative_blocks'] = C()
+                elif shape == 'wrong-block': self.record.value['source_snapshot'].value['relative_blocks'] = n.Tag(n.LIST, (n.INT, [I(1)]))
+                else: repair.at(self.entity, 'RocketEntityData', 'flight_data').value['passengers'] = I(0)
+                self.seed()
+                before = self.hashes(self.source)
+                result = self.cli_plan()
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertTrue(result.stdout.startswith('REFUSED\n'), result.stdout)
+                self.assertLessEqual(len(result.stdout.splitlines()), 5)
+                self.assertTrue(all(len(s) <= 160 for s in result.stdout.splitlines()[1:]))
+                self.assertNotIn('Traceback', result.stderr)
+                self.assertEqual('', result.stderr)
+                self.assertEqual(before, self.hashes(self.source))
+                self.assertEqual(before, self.hashes(self.backup))
+                self.assertEqual([], list(self.reports.iterdir()))
+                self.assertFalse(self.output.exists())
+
+    def disjoint_rocket(self, x=88):
+        entity = copy.deepcopy(self.entity)
+        entity.value['UUID'] = U(300)
+        entity.value['Pos'] = vector(x + .5, 100, 64.5)
+        data = repair.at(entity, 'RocketEntityData')
+        data.value['assembly_transaction_id'] = U(200)
+        data.value['owner_id'] = U(400)
+        repair.at(data, 'snapshot').value['snapshot_id'] = S(str(uuid.UUID(int=600)))
+        repair.at(data, 'snapshot').value['source_origin'] = A(x, 100, 64)
+        repair.at(data, 'flight_data').value['logical_rocket_id'] = U(200)
+        repair.at(data, 'flight_data').value['current_origin'] = A(x, 100, 64)
+        return entity
+
+    def test_disjoint_identity_rocket_occupancy_across_slots_levels_and_passengers(self):
+        for placement in ('source', 'destination', 'slot', 'level', 'passenger'):
+            with self.subTest(placement=placement):
+                self.seed()
+                other = self.disjoint_rocket(68 if placement == 'source' else 88)
+                if placement == 'slot':
+                    region(self.source / 'entities', {(4, 4): C(Entities=E(self.entity)), (5, 4): C(Entities=E(other))})
+                elif placement == 'level':
+                    repair.at(self.data['rocket_transfers'], 'transfers').value[1][0].value['destination_snapshot'].value['source_dimension'] = S('example:other')
+                    self.write_roots()
+                    self.write_entities([other], 'dimensions/example/other')
+                    region(self.source / 'dimensions/example/other/region', {(5, 4): C(sections=E(section(6, ['minecraft:air'], {})), block_entities=E())})
+                elif placement == 'passenger': self.write_entities([self.entity, C(id=S('minecraft:pig'), Passengers=E(other))])
+                else: self.write_entities([self.entity, other])
+                self.refusal('ADDITIONAL_ROCKET_IN_FOOTPRINT')
+        self.seed()
+        self.write_entities([self.entity, self.disjoint_rocket(160)])
+        self.inspect()  # A genuinely disjoint physical rocket is still allowed.
+        self.write_entities([self.disjoint_rocket()], 'dimensions/example/disjoint')
+        self.inspect()  # Coordinates alone do not intersect another dimension.
 
 
 if __name__ == '__main__':

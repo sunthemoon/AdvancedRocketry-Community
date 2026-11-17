@@ -122,7 +122,10 @@ def typed(tag):
 
 
 def at(tag, *path, kind=None):
-    result = nbt.compound(tag, *path)
+    try:
+        result = nbt.compound(tag, *path)
+    except (nbt.NbtError, TypeError, AttributeError) as error:
+        raise Refusal('INVALID_NBT_PATH:' + '/'.join(path)) from error
     require(kind is None or result.type == kind, 'INVALID_NBT_TYPE:' + '/'.join(path))
     return result
 
@@ -135,7 +138,22 @@ def items(tag, *path):
     result = at(tag, *path, kind=nbt.LIST)
     child, entries = result.value
     require(child == nbt.COMPOUND if entries else child in (0, nbt.COMPOUND), 'INVALID_LIST')
+    require(len(entries) <= MAX_OBJECTS, 'WORK_LIMIT')
+    require(all(t.type == nbt.COMPOUND for t in entries), 'INVALID_LIST')
     return entries
+
+
+def position(tag, *path):
+    raw = at(tag, *path, kind=nbt.INTS).value
+    require(len(raw) == 3 and all(abs(c) <= 30_000_000 for c in raw), 'INVALID_ORIGIN')
+    return raw
+
+
+def vector(tag, key):
+    child, entries = at(tag, key, kind=nbt.LIST).value
+    require(child == nbt.DOUBLE and len(entries) == 3
+            and all(t.type == nbt.DOUBLE and math.isfinite(t.value) for t in entries), 'INVALID_VECTOR:' + key)
+    return [t.value for t in entries]
 
 
 def uid(tag, *path):
@@ -440,14 +458,12 @@ def spatial_reference(tag, positions, dim=None):
 
 def footprint(snapshot):
     dim = value(snapshot, 'source_dimension', kind=nbt.STRING)
-    origin = value(snapshot, 'source_origin', kind=nbt.INTS)
-    require(len(origin) == 3 and all(abs(c) <= 30_000_000 for c in origin), 'INVALID_ORIGIN')
+    origin = position(snapshot, 'source_origin')
     blocks = items(snapshot, 'relative_blocks')
     require(0 < len(blocks) <= MAX_OBJECTS, 'WORK_LIMIT')
     positions = set()
     for block in blocks:
-        relative = value(block, 'position', kind=nbt.INTS)
-        require(len(relative) == 3, 'INVALID_ORIGIN')
+        relative = position(block, 'position')
         positions.add((dim, *(origin[i] + relative[i] for i in range(3))))
     require(len(positions) == len(blocks), 'DUPLICATE_BLOCK')
     return positions
@@ -552,20 +568,23 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
     check(bool(HEX.fullmatch(value(record, 'checksum', kind=nbt.STRING))), 'INVALID_CHECKSUM')
     logical, physical, owner = (uid(record, k) for k in ('logical_rocket_id', 'source_entity_id', 'owner_id'))
     source, destination = (at(record, k, kind=nbt.COMPOUND) for k in ('source_snapshot', 'destination_snapshot'))
+    src, dst = footprint(source), footprint(destination)
     snapshot_id = value(source, 'snapshot_id', kind=nbt.STRING)
     require(str(uuid.UUID(snapshot_id)) == snapshot_id, 'INVALID_UUID')
     identities = {transfer, logical, physical, snapshot_id, value(destination, 'snapshot_id', kind=nbt.STRING)}
     for other in transfers:
         check(other is record or not reference(other, identities), 'OTHER_TRANSFER')
     chunks = regions(world, files)
-    rockets, devices, terrain = [], [], {}
+    rockets, all_rockets, devices, terrain = [], [], [], {}
     for level, kind, x, z, root, relative in chunks:
         dim = dimension(level)
         if kind == 'entities':
             for index, entity in enumerate(entities(root)):
                 require(index < MAX_OBJECTS, 'WORK_LIMIT')
                 if 'RocketEntityData' in entity.value:
-                    data = at(entity, 'RocketEntityData')
+                    data = at(entity, 'RocketEntityData', kind=nbt.COMPOUND)
+                    vector(entity, 'Pos')
+                    all_rockets.append((dim, entity))
                     if (uid(entity, 'UUID') == physical or uid(data, 'assembly_transaction_id') == logical
                             or value(data, 'snapshot', 'snapshot_id') in identities):
                         rockets.append((dim, entity))
@@ -585,6 +604,15 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
     check(len(rockets) == 1, 'SECOND_PHYSICAL_ROCKET' if len(rockets) > 1 else 'ROCKET_MISSING')
     require(rockets, reasons + ['ROCKET_MISSING'])
     dim, entity = rockets[0]
+    for other_dim, other in all_rockets:
+        if other is entity:
+            continue
+        origin_at = [math.floor(v) for v in vector(other, 'Pos')]
+        occupied = {(other_dim, *origin_at)}
+        for block in items(other, 'RocketEntityData', 'snapshot', 'relative_blocks'):
+            offset = position(block, 'position')
+            occupied.add((other_dim, *(origin_at[i] + offset[i] for i in range(3))))
+        check(not occupied.intersection(src | dst), 'ADDITIONAL_ROCKET_IN_FOOTPRINT')
     rocket = at(entity, 'RocketEntityData')
     check(value(rocket, 'schema_version', kind=nbt.INT) == 3
           and value(entity, 'id') == 'advancedrocketrycommunity:rocket', 'ROCKET_SCHEMA_DIFFERS')
@@ -594,13 +622,13 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
         snapshot_rule(source, at(rocket, 'snapshot'))
     except Refusal as error:
         reasons.extend(error.reasons)
-    origin = value(source, 'source_origin')
-    check(dim == value(source, 'source_dimension') and value(entity, 'Pos') == [origin[0] + .5, float(origin[1]), origin[2] + .5], 'ROCKET_RELOCATED')
+    origin = position(source, 'source_origin')
+    check(dim == value(source, 'source_dimension') and vector(entity, 'Pos') == [origin[0] + .5, float(origin[1]), origin[2] + .5], 'ROCKET_RELOCATED')
     flight = at(rocket, 'flight_data')
     check(value(flight, 'state') == 'FUELED' and 'plan' not in flight.value and 'active_transfer_id' not in flight.value, 'ACTIVE_FLIGHT')
-    check(value(flight, 'current_dimension') == dim and value(flight, 'current_origin') == origin
+    check(value(flight, 'current_dimension') == dim and position(flight, 'current_origin') == origin
           and uid(flight, 'logical_rocket_id') == logical, 'FLIGHT_IDENTITY_DIFFERS')
-    check(value(entity, 'Motion') == [0.0, 0.0, 0.0], 'ROCKET_MOVING')
+    check(vector(entity, 'Motion') == [0.0, 0.0, 0.0], 'ROCKET_MOVING')
     for f in (flight, at(record, 'source_flight'), at(record, 'destination_flight')):
         check(not items(f, 'passengers', 'assignments'), 'PASSENGER_ASSIGNMENT')
     check('Passengers' not in entity.value or not items(entity, 'Passengers'), 'PASSENGER_ASSIGNMENT')
@@ -662,7 +690,6 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
             require(files[relative]['size'] <= MAX_REPORT, 'DECODE_LIMIT')
             text = canonical(read_json(world / relative)).decode('ascii')
             check(not any(i in text for i in identities), 'COMPETING_SIDECAR:' + relative)
-    src, dst = footprint(source), footprint(destination)
     device_at = (device_dim, *(value(device_entity, k, kind=nbt.INT) for k in ('x', 'y', 'z')))
     positions = src | dst | {device_at}
     for other in transfers:
@@ -674,8 +701,8 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
         check(not spatial_reference(at(ledger, key), positions), 'COMPETING_POSITION_AUTHORITY:' + key)
     target_chunks = {(d, x // 16, z // 16) for d, x, y, z in src | {device_at}}
     check(not {(d, x // 16, z // 16) for d, x, y, z in dst}.intersection(target_chunks), 'DESTINATION_IN_TARGET_CHUNK')
-    for position in src | dst:
-        d, x, y, z = position
+    for cell in src | dst:
+        d, x, y, z = cell
         chunk = terrain.get((d, x // 16, z // 16))
         require(chunk is not None, 'TERRAIN_NOT_PROVEN')
         check(block_state(chunk, x, y, z) == 'minecraft:air', 'FOOTPRINT_OCCUPIED')
@@ -957,7 +984,7 @@ def main(argv=None):
             print(result['status'])
         return 0
     except (Refusal, nbt.NbtError, OSError, ValueError, KeyError, TypeError, struct.error,
-            zlib.error, RecursionError, KeyboardInterrupt) as error:
+            zlib.error, RecursionError, IndexError, AttributeError, OverflowError, KeyboardInterrupt) as error:
         reasons = error.reasons if isinstance(error, Refusal) else ['UNREADABLE_OR_INVALID_INPUT:' + str(error)]
         print('REFUSED')
         for reason in reasons[:4]:
