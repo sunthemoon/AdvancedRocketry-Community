@@ -555,7 +555,14 @@ What is still open:
   `EscrowGovernedLiveReturnGameTests.countdownCancellationReachesReturnedF6WithPassenger` in shard 3 with "Live
   return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
   hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
-  every shard (R446). It stays open until later runs show no recurrence or a cause is found.
+  every shard (R446). It recurred on 2026-11-17 in attempt 1 of W370's branch run 44109049691, shard 3, as
+  `EscrowGovernedLiveReturnGameTests.dismountAfterReturnCompletesCancelledF7AndF8WithoutReseating` with the same
+  message, in a branch that changes only Python and one test count. It stays open until a cause is found; with two
+  recurrences in a week it needs its own diagnosis before candidate C4.
+- **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
+  failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
+  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
+  open until later runs show no recurrence or a cause is found.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,
