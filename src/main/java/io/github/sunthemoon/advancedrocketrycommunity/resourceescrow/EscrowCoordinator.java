@@ -274,6 +274,9 @@ public final class EscrowCoordinator implements AutoCloseable {
      * charged to its server-validated journal owner, never the command actor; other decisions ignore the owner.
      */
     boolean beginSettlement(EscrowSettlementIntent intent, UUID floorOwner, Consumer<Boolean> completion) {
+        return beginSettlement(intent, data.ledger().fluidAccounts(), floorOwner, completion);
+    }
+    boolean beginSettlement(EscrowSettlementIntent intent, List<EscrowFluidAccount.Row> rows, UUID floorOwner, Consumer<Boolean> completion) {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
                 || tick - lastStart < 10) { return false; }
@@ -285,10 +288,11 @@ public final class EscrowCoordinator implements AutoCloseable {
                     "Floor changed since preview");
             candidate = EscrowSettlementCapacity.floorRetirement(data.ledger(), intent, nextSequence(), tick, floorOwner);
         } else {
-            candidate = intent.freeze(data.ledger());
+            candidate = intent.freeze(data.ledger(), rows);
             EscrowSettlementCapacity.preflight(candidate);
         }
-        candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
+        candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent,
+                candidate.fluidAccounts().stream().filter(row -> row.operation().equals(op.id())).findFirst().orElse(null)));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
             // R258: the transient pending refusal follows the permanent receipt, FLOOR_FULL and tombstone checks.

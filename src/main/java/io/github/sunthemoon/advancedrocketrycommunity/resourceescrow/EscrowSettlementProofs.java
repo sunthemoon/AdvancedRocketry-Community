@@ -34,19 +34,30 @@ final class EscrowSettlementProofs {
     /** One physical save proves every frozen reference in the slot of {@code first} together. */
     static Slot slot(EscrowSettlementIntent intent, List<EscrowOperation> members, EscrowEndpoint first,
                      Function<EscrowEndpoint, RocketStructureSnapshot> live) {
+        return slot(intent, members, first, live, List.of());
+    }
+    static Slot slot(EscrowSettlementIntent intent, List<EscrowOperation> members, EscrowEndpoint first,
+                     Function<EscrowEndpoint, RocketStructureSnapshot> live, List<EscrowFluidAccount.Row> rows) {
+        var group = members.stream().filter(op -> op.accountingBaseline() != null)
+                .map(op -> rows.stream().filter(row -> row.operation().equals(op.id())).findFirst().orElseThrow()).toList();
+        EscrowTags.require(group.isEmpty() ? intent.accountCommitment() == null
+                : EscrowFluidAccountCodec.commitment(group).equals(intent.accountCommitment()), "O2 account commitment mismatch");
         var targets = new ArrayList<EscrowBarrier.Target>(); var readbacks = new LinkedHashMap<EscrowEndpoint.Key, EscrowCargoReadback>();
         for (var candidate : intent.checkpointed()) {
             if (!EscrowBarrier.sameSlot(first, candidate.endpoint())) { continue; }
             var frontier = candidate.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
                     EscrowSettlementTombstones.observationDigest(candidate), List.of()) : candidate.state();
             var cargo = candidate.missing() ? List.<EscrowOperation>of() : nativeCargo(members, candidate.endpoint());
+            var expected = candidate.missing() ? Map.<java.util.UUID, EscrowFluidAccount.Vector>of()
+                    : EscrowSettlementAccounting.expected(rows, members, candidate.endpoint());
             Predicate<CompoundTag> validator;
-            if (cargo.isEmpty()) { validator = EscrowSettlementDisk.validator(candidate, intent.ledger()); }
+            if (cargo.isEmpty() && expected.isEmpty()) { validator = EscrowSettlementDisk.validator(candidate, intent.ledger()); }
             else {
                 // The caller observed this live rocket equal to the frozen choice, so its snapshot is that choice's content.
-                var witness = live.apply(candidate.endpoint());
-                var readback = new EscrowCargoReadback(intent.ledger(), EscrowReconciliationObservation.of(candidate, witness.contentHash()),
-                        witness, cargo);
+                var witness = candidate.endpoint().kind() == EscrowEndpoint.Kind.ENTITY ? live.apply(candidate.endpoint()) : null;
+                var operations = members.stream().filter(op -> cargo.contains(op) || expected.containsKey(op.id())).toList();
+                var readback = new EscrowCargoReadback(intent.ledger(), EscrowReconciliationObservation.of(candidate,
+                        witness == null ? null : witness.contentHash()).accounting(expected), witness, operations);
                 readbacks.put(candidate.endpoint().key(), readback); validator = readback;
             }
             targets.add(new EscrowBarrier.Target(candidate.endpoint(), frontier, validator));
