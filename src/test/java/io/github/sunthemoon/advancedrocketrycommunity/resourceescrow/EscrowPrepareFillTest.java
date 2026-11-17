@@ -162,7 +162,7 @@ class EscrowPrepareFillTest {
     }
 
     /**
-     * Root-R6: with 29 retained floors the root admits its pinned 60 fills. The 61st would fit without the headroom,
+     * Root-R6: with 29 retained floors the root admits its pinned 53 fills. The 54th would fit without the headroom,
      * so its refusal is the headroom alone; after L1, a floor retirement still passes.
      */
     @Test void r6HeadroomRefusesTheFillThatWouldTakeTheFloorRetirementAndTheRetirementThenPasses() throws Exception {
@@ -175,30 +175,30 @@ class EscrowPrepareFillTest {
                 var result = coordinator.prepareFill(capture(op), replies::add);
                 if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); } else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; }
             }
-            assertEquals(60, admitted.size(), "The pinned capacity with 29 retained floors, unguarded");
+            assertEquals(53, admitted.size(), "The pinned capacity with 29 retained floors, unguarded");
             assertNotNull(refused);
             long next = coordinator.nextSequence(); assertEquals(refused.sequence(), next);
-            assertEquals(60, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.idle());
+            assertEquals(53, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.idle());
             assertTrue(writer.capturedOperations().isEmpty()); assertEquals(base, coordinator.ledger());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
             var prospective = EscrowTestFixtures.appendModel(base, candidate);
-            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(prospective), "Without the headroom the 61st fill would fit");
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(prospective), "Without the headroom the 54th fill would fit");
             assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(prospective, admitted.get(0).id()));
             assertTrue(coordinator.commitPreparations());
             long tick = ledgerIo.tickUntil(coordinator::tick, 1, writer::idle);
-            assertEquals(60, replies.size()); assertTrue(replies.stream().allMatch(Boolean::booleanValue));
+            assertEquals(53, replies.size()); assertTrue(replies.stream().allMatch(Boolean::booleanValue));
             var root = coordinator.ledger(); assertEquals(admitted, root.records());
             tick += 210; coordinator.tick(tick);
             var results = new ArrayList<Boolean>();
             assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), EscrowTestFixtures.FLOOR_OWNER, results::add), "The reserved headroom admits one floor retirement");
             ledgerIo.tickUntil(coordinator::tick, tick + 1, writer::idle);
-            assertEquals(List.of(true), results); assertEquals(61, coordinator.ledger().records().size());
-            assertEquals(61, coordinator.admissionAuthority().pendingCount());
+            assertEquals(List.of(true), results); assertEquals(54, coordinator.ledger().records().size());
+            assertEquals(54, coordinator.admissionAuthority().pendingCount());
         }
     }
 
     /**
-     * Root-R8: with no floors the root admits its pinned 62 fills. Charged by its own preview only, the 63rd would fit
+     * Root-R8: with no floors the root admits its pinned 55 fills. Charged by its own preview only, the 56th would fit
      * even with the headroom, so its refusal is the ceiling charge.
      */
     @Test void r8ChargingRefusesACandidateThatWouldFitByItsPreviewOnly() throws Exception {
@@ -211,9 +211,9 @@ class EscrowPrepareFillTest {
                 var result = coordinator.prepareFill(capture(op), ignored -> { });
                 if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); } else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; }
             }
-            assertEquals(62, admitted.size(), "The pinned capacity with no floors, unguarded");
+            assertEquals(55, admitted.size(), "The pinned capacity with no floors, unguarded");
             assertNotNull(refused);
-            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(62, coordinator.admissionAuthority().pendingCount());
+            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(55, coordinator.admissionAuthority().pendingCount());
             assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
             var prospective = EscrowTestFixtures.appendModel(base, candidate);
@@ -222,7 +222,7 @@ class EscrowPrepareFillTest {
             assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
             assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES,
                     "Charged by its preview only, with the headroom, the candidate would fit: " + previewOnly);
-            System.out.println("prepareFill R8 admitted=62 ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
+            System.out.println("prepareFill R8 admitted=55 ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
                     + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES + " limit=" + EscrowLimits.ROOT_BYTES);
         }
     }

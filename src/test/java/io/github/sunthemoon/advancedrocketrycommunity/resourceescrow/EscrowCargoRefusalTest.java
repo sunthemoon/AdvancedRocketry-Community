@@ -80,16 +80,16 @@ class EscrowCargoRefusalTest {
             assertEquals(0, root.issuedThrough()); assertTrue(root.records().isEmpty());
         }
         var records = new java.util.ArrayList<EscrowOperation>();
-        for (int i = 1; i <= 63; i++) {
+        for (int i = 1; i <= 55; i++) {
             records.add(EscrowSettlementCapacityTest.operation(i, i, 0, true));
         }
         var full = admissionLedger(records.toArray(EscrowOperation[]::new)); var before = EscrowCodec.encode(full);
-        var op = EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 64, 999);
+        var op = EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 56, 999);
         var data = ResourceEscrowSavedData.load(before);
         try (var writer = new EscrowLedgerWriter(temp.resolve("full"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(
                     capturedModel(op, RocketEscrowSection.neutral()), ignored -> fail()));
-            assertEquals(64, coordinator.nextSequence()); assertEquals(63, coordinator.admissionAuthority().pendingCount());
+            assertEquals(56, coordinator.nextSequence()); assertEquals(55, coordinator.admissionAuthority().pendingCount());
             assertEquals(before, EscrowCodec.encode(coordinator.ledger())); assertFalse(data.isDirty());
             assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());
         }
