@@ -1,10 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -37,8 +34,7 @@ public record CheckedSavedDataPolicy(ManagedSavedDataType type, CheckedSavedData
 
     /** Windows has no portable directory-channel force; staging data is still forced before atomic move. */
     public static void forceDirectory(Path directory) throws IOException {
-        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("windows")) { return; }
-        try (FileChannel channel = FileChannel.open(directory, StandardOpenOption.READ)) { channel.force(true); }
+        CheckedSavedDataFile.fileOps().forceDirectory(directory);
     }
 
     /** The bounded readback of a written root; empty when the regular file is absent. */

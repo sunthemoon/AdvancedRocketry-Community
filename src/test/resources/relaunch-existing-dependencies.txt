@@ -19,6 +19,10 @@
 # Initializers only compile two fixed regexes or construct enums, empty values and two Limits records.
 # No Minecraft, world, registry, IO, thread or logging work occurs at initialization; hashing is method-only.
 # This records static reachability, not a first-use measurement. The measured 55-class preload list is unchanged.
+# W369 (R461): CheckedSavedDataFile's file operations -> the CheckedFileOps seam and its DIRECT implementation.
+# The interface's initializer only constructs the stateless Direct object, whose constructor is empty; neither
+# touches Minecraft, a world, a registry, configuration, IO, a thread or a logger. Every checked write reaches both
+# before any relaunch; first use was not remeasured. No preload entry or assertion changes.
 AdvancedRocketryCommunity
 ModIdentity
 celestial.CelestialIds
@@ -36,6 +40,8 @@ persistence.migration.BoundedSavedDataIo$BoundedAccounter
 persistence.migration.BoundedSavedDataIo$CountingInputStream
 persistence.migration.BoundedSavedDataIo$QuotaExceededException
 persistence.migration.BoundedSavedDataIo$QuotaInputStream
+persistence.migration.CheckedFileOps
+persistence.migration.CheckedFileOps$Direct
 persistence.migration.CheckedSavedDataFile
 persistence.migration.CheckedSavedDataFile$Committer
 persistence.migration.CheckedSavedDataFile$Presence
