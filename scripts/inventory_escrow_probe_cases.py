@@ -22,6 +22,7 @@ DECLARED = (
     "escrow_reconciliation", "escrow_pre_f2", "escrow_source_clock", "fluid_loader_restart",
     "rocket_escrow_audit", "rocket_settlement_completion", "rocket_settlement_intent",
     "escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning", "cargo_s4_s5_cuts", "loader_s6",
+    "x03_repair",  # X03-V: the gated verification cases of W367-DESIGN section 5.1.
 )
 SPECIAL = ("cargo_native_benchmark", "cargo_reconciliation", "escrow_benchmark", "f3_n2_cuts", "fill_countdown",
            "governed_benchmark", "item_cuts", "loader_cuts", "retire_before_fill", "transfer_concurrency")
