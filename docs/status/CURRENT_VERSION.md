@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c0b9bfcea (W370 merged, R467: X01 and X02 simulation slice S2, the crash replay builder and runner, Python with opt-in replay modes in five runners and the probe-inventory counts; branch run 44109049691 passed on its second attempt and governance run 44109051809 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44122230259 at 70aad3524 (W370 merged at `c0b9bfcea`, after Slice D at `83907330c` and W371 at `aaf2e0cdf`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 14.3, 18.4, 19.3 and 15.6 minutes, 1,863 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44122230514 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 07d8d2fa8 (R483: the unit-test JVM's heap set to 1 GiB in `build.gradle` after shared run 44175223235 ran out of Gradle's 512 MiB default; test harness only). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44179325011 at 07d8d2fa8 passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 14.6, 21.2, 21.9 and 19.4 minutes, 1,863 GameTests, with 3, 3, 2 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44179325000 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
