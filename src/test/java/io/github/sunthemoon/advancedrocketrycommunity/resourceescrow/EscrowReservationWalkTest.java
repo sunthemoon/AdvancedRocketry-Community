@@ -18,20 +18,21 @@ class EscrowReservationWalkTest {
 
     @Test void everyNonAdmissionTransitionPreservesOrReleasesCapacity() {
         var root = EscrowCombinedReservationTest.retainedFloors(29);
-        for (int i = 30; i < 90; i++) {
+        for (int i = 30; i < 83; i++) {
             var op = i == 30 ? EscrowSettlementCapacityTest.operation(i, i, 0, true) : operation(i);
             if (i == 31) {
                 op = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
                         op.payload(), op.payloadHash(), op.source(), op.destination(), new EscrowGuard(op.guard().rocket(), id(80_000), 1, hash(400)));
             }
-            root = root.append(List.of(op));
+            op = accountedModel(op);
+            root = appendModel(root, List.of(op));
             EscrowSettlementCapacity.requireAdmission(root, op, i == 30 ? RocketEscrowSection.neutral() : null);
             EscrowSettlementCapacity.preflight(root, op.id());
         }
         var atCapacity = root;
-        assertEquals(60, root.records().size());
-        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(atCapacity.append(List.of(operation(90))), id(90)));
-        assertEquals(14_336L * 60 + 1_024L * (128 + 30)
+        assertEquals(53, root.records().size());
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(appendModel(atCapacity, List.of(operation(83))), id(83)));
+        assertEquals(16_384L * 53 + 1_024L * (128 + 30)
                 + io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(ledger())),
                 EscrowSettlementCapacity.reservedBytes(root));
 
@@ -44,10 +45,10 @@ class EscrowReservationWalkTest {
                 observed.endpoint().equals(selected.destination()) ? new EscrowSettlementIntent.Observation(observed.endpoint(),
                         new EscrowPrefix.State(ledgerId, 1, selected.destination().afterSignature(), List.of(marker)), true, 0,
                         observed.signatureKind(), selected.nativeBinding().invariant()) : observed).toList();
-        var preview = EscrowSettlementIntent.preview(root, selected.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+        var preview = previewModel(root, selected.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                 id(700), "operator", 10, observations);
         var intent = preview.confirm(preview.actor(), preview.digest(), 11, observations);
-        root = transition("O1", root, intent.freeze(root), false);
+        root = transition("O1", root, freezeModel(intent, root), false);
         root = transition("O3 receipt installation", root, EscrowSettlementTombstones.install(root, intent), true);
         assertEquals(1, root.tombstones().size());
         root = transition("O4 release and READY", root, EscrowSettlementTombstones.release(root, intent), false);

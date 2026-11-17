@@ -59,4 +59,28 @@ record EscrowCargoReconciliationFixture(EscrowLedger ledger, EscrowOperation op,
         return java.util.Map.of(op.rocket().key(), java.util.Map.of(op.id(), EscrowAccountingCapture.nativeVector(op, op.rocket(), after)),
                 op.device().key(), java.util.Map.of(op.id(), EscrowAccountingCapture.nativeVector(op, op.device(), deviceAfter)));
     }
+    /** The unavailable-fluid compatibility tests read a world saved before accounting existed. */
+    static EscrowCargoReconciliationFixture createLegacy(boolean load) {
+        var f = create(load); var o = f.op();
+        var old = new EscrowOperation(o.id(), o.sequence(), o.owner(), o.createdTick(), o.phase(), o.reason(), o.payload(),
+                o.payloadHash(), o.source(), o.destination(), o.guard(), o.kind(), o.settlement(), o.nativeBinding());
+        var root = EscrowTestFixtures.root2(new EscrowLedger(f.ledger().id(), 1, 0, List.of(old), List.of(), List.of()));
+        return new EscrowCargoReconciliationFixture(root, old, f.before(), f.after(), f.deviceBefore(), f.deviceAfter());
+    }
+    /** Freeze actual native cargo quantities, including OTHER wrappers whose content is still AFTER. */
+    List<EscrowFluidAccount.Row> settlementRows(EscrowLedger root, List<EscrowSettlementIntent.Observation> observations) {
+        if (root.fluidAccounts().isEmpty()) { return List.of(); }
+        var values = new java.util.HashMap<EscrowEndpoint.Key, java.util.Map<java.util.UUID, EscrowFluidAccount.Vector>>();
+        for (var observed : observations) {
+            if (observed.missing()) { continue; }
+            var endpoint = observed.endpoint(); CompoundTag envelope;
+            if (endpoint.equals(op.rocket())) {
+                envelope = observed.invariantDigest().equals(EscrowCargoSettlementObservationTest.rocket(this, after).invariantDigest()) ? after : before;
+            } else {
+                envelope = observed.state().signature().equals(op.device().afterSignature()) ? deviceAfter : deviceBefore;
+            }
+            values.put(endpoint.key(), java.util.Map.of(op.id(), EscrowAccountingCapture.nativeVector(op, endpoint, envelope)));
+        }
+        return EscrowSettlementAccounting.project(root, root.records(), observations, values);
+    }
 }

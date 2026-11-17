@@ -51,7 +51,7 @@ class EscrowCombinedReservationTest {
 
     private void assertRetirementHeadroom(boolean settleFills) throws Exception {
         var base = retainedFloors(29);
-        int capacity = settleFills ? 63 : 60;
+        int capacity = settleFills ? 63 : 53;
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
         var file = directory.resolve("settled-" + settleFills).resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         java.nio.file.Files.createDirectories(file.getParent());
@@ -61,25 +61,25 @@ class EscrowCombinedReservationTest {
             var accepted = new java.util.concurrent.atomic.AtomicInteger();
             long tick = 0;
             for (int i = 30; i < 30 + capacity; i++) {
-                var op = EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(i));
-                coordinator.prepareTest(op, result -> { assertTrue(result); accepted.incrementAndGet(); });
+                var op = EscrowTestFixtures.distributedOwner(EscrowTestFixtures.admissionOperation(i));
+                EscrowTestFixtures.prepareCapturedModel(coordinator, op, result -> { assertTrue(result); accepted.incrementAndGet(); });
                 if (settleFills) {
                     assertTrue(coordinator.commitPreparations()); acknowledge(io, coordinator, ++tick);
                     coordinator.transition(op.id(), EscrowReason.OTHER_STATE);
                     coordinator.tick(tick += 10); coordinator.autosave(); acknowledge(io, coordinator, ++tick);
                     var root = coordinator.ledger();
-                    var observations = EscrowSettlementIntentTest.observations(EscrowTestFixtures.ledger(op), false);
-                    var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                    var observations = EscrowSettlementIntentTest.observations(EscrowTestFixtures.admissionLedger(op), false);
+                    var preview = EscrowTestFixtures.previewModel(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                             EscrowTestFixtures.id(700), "operator", tick, observations);
                     var results = new ArrayList<Boolean>();
                     coordinator.tick(tick += 10);
-                    assertTrue(coordinator.beginSettlement(preview.confirm(preview.actor(), preview.digest(), tick, observations), results::add));
+                    assertTrue(EscrowTestFixtures.beginModelSettlement(coordinator, preview.confirm(preview.actor(), preview.digest(), tick, observations), results::add));
                     acknowledge(io, coordinator, ++tick); assertEquals(List.of(true), results);
                     coordinator.tick(tick += 10);
                 }
             }
             assertThrows(IllegalArgumentException.class,
-                    () -> coordinator.prepareTest(EscrowTestFixtures.operation(30 + capacity), ignored -> fail()));
+                    () -> EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(30 + capacity), ignored -> fail()));
             if (!settleFills) { assertTrue(coordinator.commitPreparations()); acknowledge(io, coordinator, ++tick); }
             assertEquals(capacity, accepted.get()); var root = coordinator.ledger();
             assertEquals(capacity, root.records().size());
@@ -144,10 +144,10 @@ class EscrowCombinedReservationTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("receipt-capacity"), 0);
                 var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(EscrowTestFixtures.operation(1), ignored -> { });
+            EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(1), ignored -> { });
             assertEquals(1, coordinator.admissionAuthority().pendingCount());
             var refused = assertThrows(IllegalArgumentException.class,
-                    () -> coordinator.prepareTest(EscrowTestFixtures.operation(2), ignored -> fail()));
+                    () -> EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(2), ignored -> fail()));
             assertEquals("Settlement/flight root reservation exhausted", refused.getMessage());
             assertEquals(root, coordinator.ledger()); assertEquals(2, coordinator.nextSequence());
             assertEquals(1, coordinator.admissionAuthority().pendingCount());

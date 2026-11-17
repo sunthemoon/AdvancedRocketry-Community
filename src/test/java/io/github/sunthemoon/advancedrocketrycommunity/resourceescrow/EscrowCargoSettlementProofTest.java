@@ -22,12 +22,18 @@ class EscrowCargoSettlementProofTest {
     @TempDir java.nio.file.Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    static EscrowSettlementIntent intent(EscrowLedger root, EscrowOperation op, List<EscrowSettlementIntent.Observation> observed) {
+    static EscrowSettlementIntent intent(EscrowCargoReconciliationFixture f, EscrowLedger root, EscrowOperation op, List<EscrowSettlementIntent.Observation> observed) {
         boolean missing = observed.stream().anyMatch(EscrowSettlementIntent.Observation::missing);
         var actor = EscrowTestFixtures.id(700);
         var preview = EscrowSettlementIntent.preview(root, op.id(), missing ? EscrowSettlementIntent.Choice.ABANDON
                 : EscrowSettlementIntent.Choice.ACCEPT_CURRENT, actor, "CargoO2", 10, observed);
+        var rows = f.settlementRows(root, observed);
+        if (!rows.isEmpty()) { preview = preview.accounting(rows); }
         return preview.confirm(actor, preview.digest(), missing ? 210 : 11, observed);
+    }
+    private static EscrowSettlementProofs.Slot slot(EscrowCargoReconciliationFixture f, EscrowSettlementIntent intent,
+            EscrowOperation op, EscrowEndpoint endpoint, java.util.function.Function<EscrowEndpoint, RocketStructureSnapshot> live) {
+        return EscrowSettlementProofs.slot(intent, List.of(op), endpoint, live, f.settlementRows(held(f, op), intent.observations()));
     }
     static EscrowLedger held(EscrowCargoReconciliationFixture f, EscrowOperation op) {
         return f.ledger().replace(List.of(op), f.ledger().floors(), f.ledger().tombstones());
@@ -50,8 +56,8 @@ class EscrowCargoSettlementProofTest {
             var f = EscrowCargoReconciliationFixture.create(load); var op = f.op().withReason(EscrowReason.OTHER_STATE);
             var root = held(f, op); var after = snapshot(f.after());
             var rocket = EscrowCargoSettlementObservationTest.rocket(f, f.after());
-            var intent = intent(root, op, List.of(rocket, EscrowCargoSettlementObservationTest.device(f, f.deviceAfter())));
-            var slot = EscrowSettlementProofs.slot(intent, List.of(op), op.rocket(), endpoint -> after);
+            var intent = intent(f, root, op, List.of(rocket, EscrowCargoSettlementObservationTest.device(f, f.deviceAfter())));
+            var slot = slot(f, intent, op, op.rocket(), endpoint -> after);
             assertEquals(1, slot.targets().size()); assertEquals(java.util.Set.of(op.rocket().key()), slot.readbacks().keySet());
             var target = slot.targets().get(0);
             assertEquals(rocket.state(), target.frontier(), "The proof frontier is the frozen fuel-vector choice");
@@ -64,16 +70,19 @@ class EscrowCargoSettlementProofTest {
             assertThrows(java.util.concurrent.CompletionException.class,
                     () -> CompletableFuture.runAsync(slot::confirmed).join(), "Only the owner thread confirms");
             assertTrue(slot.confirmed());
-            var before = stored(op.rocket(), EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(), f.before()));
+            // Isolate stale marker metadata from the separately covered numeric mismatch refusal.
+            var stale = f.after().copy(); stale.put("wrapper", RocketEscrowSection.neutral().encode());
+            var before = stored(op.rocket(), EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(), stale));
             assertTrue(CompletableFuture.supplyAsync(() -> target.validator().test(before)).join(), "A valid decode is not a verdict");
             assertFalse(slot.confirmed(), "A stale BEFORE record must not prove the frozen AFTER choice");
             assertEquals(EscrowReason.SUPERSEDING_SAVE, slot.reason(new EscrowBarrier.JointResult(java.util.Map.of(), EscrowReason.SUPERSEDING_SAVE)),
                     "Without an R39 refusal the barrier's own reason is kept");
             // The device has its own typed adapter and keeps the unchanged generic validator.
-            var device = EscrowSettlementProofs.slot(intent, List.of(op), op.device(), endpoint -> { throw new AssertionError("No rocket"); });
-            assertTrue(device.readbacks().isEmpty());
+            var device = slot(f, intent, op, op.device(), endpoint -> { throw new AssertionError("No rocket"); });
+            assertEquals(java.util.Set.of(op.device().key()), device.readbacks().keySet());
             assertTrue(CompletableFuture.supplyAsync(() -> device.targets().get(0).validator()
                     .test(EscrowFluidCargoEndpointTest.slot(f.deviceAfter()))).join());
+            assertTrue(device.confirmed());
             assertFalse(device.targets().get(0).validator().test(EscrowFluidCargoEndpointTest.slot(f.deviceBefore())));
         }
     }
@@ -92,8 +101,8 @@ class EscrowCargoSettlementProofTest {
                     decoded.settlement().state().signature()), decoded.state().signature());
             assertEquals(op.rocket().afterSignature(), decoded.state().signature(), "The same decode recomputes the after composite");
             assertEquals(EscrowPrefix.Classification.OTHER, EscrowPrefix.classify(root.id(), chain, decoded.state()));
-            var intent = intent(root, op, List.of(decoded.settlement(), EscrowCargoSettlementObservationTest.device(f, f.deviceBefore())));
-            var slot = EscrowSettlementProofs.slot(intent, List.of(op), op.rocket(), endpoint -> snapshot(other));
+            var intent = intent(f, root, op, List.of(decoded.settlement(), EscrowCargoSettlementObservationTest.device(f, f.deviceBefore())));
+            var slot = slot(f, intent, op, op.rocket(), endpoint -> snapshot(other));
             var read = stored(op.rocket(), disk);
             assertTrue(CompletableFuture.supplyAsync(() -> slot.targets().get(0).validator().test(read)).join());
             assertTrue(slot.confirmed(), "ACCEPT_CURRENT proves the frozen OTHER choice, not the operation's AFTER state");
@@ -104,7 +113,7 @@ class EscrowCargoSettlementProofTest {
     }
 
     @Test void r39HoldsOnlyFluidCargoMembersBeforeAnyNativeSettlementAction() throws Exception {
-        var f = EscrowCargoReconciliationFixture.create(false); var op = f.op().withReason(EscrowReason.OTHER_STATE);
+        var f = EscrowCargoReconciliationFixture.createLegacy(false); var op = f.op().withReason(EscrowReason.OTHER_STATE);
         var encoded = EscrowCodec.operation(op);
         encoded.getCompound("payload").getCompound("fluid").putString("FluidName", "w131:missing");
         encoded.putString("payload_hash", RocketNativeResources.signature(encoded.getCompound("payload")));
@@ -120,9 +129,9 @@ class EscrowCargoSettlementProofTest {
         assertTrue(EscrowSettlementProofs.fluidCargo(List.of(fill), fill.destination()).isEmpty());
         // The typed readback repeats the check before decoding and reports the R39 reason on the owner thread.
         var root = f.ledger().replace(List.of(missing), f.ledger().floors(), f.ledger().tombstones());
-        var intent = intent(root, missing, List.of(EscrowCargoSettlementObservationTest.rocket(f, f.after()),
+        var intent = intent(f, root, missing, List.of(EscrowCargoSettlementObservationTest.rocket(f, f.after()),
                 EscrowCargoSettlementObservationTest.device(f, f.deviceAfter())));
-        var slot = EscrowSettlementProofs.slot(intent, List.of(missing), missing.rocket(), endpoint -> snapshot(f.after()));
+        var slot = slot(f, intent, missing, missing.rocket(), endpoint -> snapshot(f.after()));
         var read = stored(missing.rocket(), EscrowReconciliationCheckpointTest.rocketSlot(missing.rocket(), f.after()));
         assertFalse(CompletableFuture.supplyAsync(() -> slot.targets().get(0).validator().test(read)).join());
         assertFalse(slot.confirmed());
@@ -132,8 +141,8 @@ class EscrowCargoSettlementProofTest {
     @Test void abandonProvesTheExactAbsenceAndSurvivorWithTheGenericValidators() {
         var f = EscrowCargoReconciliationFixture.create(false); var op = f.op().withReason(EscrowReason.OTHER_STATE); var root = held(f, op);
         var absent = new EscrowSettlementIntent.Observation(op.rocket(), null, false, 0);
-        var intent = intent(root, op, List.of(absent, EscrowCargoSettlementObservationTest.device(f, f.deviceBefore())));
-        var slot = EscrowSettlementProofs.slot(intent, List.of(op), op.rocket(), endpoint -> { throw new AssertionError("Absence needs no witness"); });
+        var intent = intent(f, root, op, List.of(absent, EscrowCargoSettlementObservationTest.device(f, f.deviceBefore())));
+        var slot = slot(f, intent, op, op.rocket(), endpoint -> { throw new AssertionError("Absence needs no witness"); });
         assertTrue(slot.readbacks().isEmpty());
         var target = slot.targets().get(0);
         assertEquals(new EscrowPrefix.State(root.id(), 0, EscrowSettlementTombstones.observationDigest(absent), List.of()), target.frontier());
@@ -141,7 +150,8 @@ class EscrowCargoSettlementProofTest {
         assertTrue(target.validator().test(empty), "An empty entity slot proves the frozen absence");
         assertFalse(target.validator().test(EscrowReconciliationCheckpointTest.rocketSlot(op.rocket(), f.before())),
                 "A present rocket does not prove its absence");
-        var device = EscrowSettlementProofs.slot(intent, List.of(op), op.device(), endpoint -> { throw new AssertionError("No rocket"); });
-        assertTrue(device.readbacks().isEmpty() && device.targets().get(0).validator().test(EscrowFluidCargoEndpointTest.slot(f.deviceBefore())));
+        var device = slot(f, intent, op, op.device(), endpoint -> { throw new AssertionError("No rocket"); });
+        assertEquals(java.util.Set.of(op.device().key()), device.readbacks().keySet());
+        assertTrue(device.targets().get(0).validator().test(EscrowFluidCargoEndpointTest.slot(f.deviceBefore())));
     }
 }

@@ -69,6 +69,7 @@ class EscrowCargoSettlementObservationTest {
             var actor = EscrowTestFixtures.id(700);
             var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, actor, "CargoO1", 10,
                     List.of(rocket, device));
+            preview = preview.accounting(f.settlementRows(root, List.of(rocket, device)));
             var intent = preview.confirm(actor, preview.digest(), 11, List.of(device, rocket));
             assertEquals(intent, EscrowSettlementIntent.decode(intent.encode()));
             var frozen = intent.observations().stream().filter(value -> value.endpoint().equals(op.rocket())).findFirst().orElseThrow();
@@ -76,7 +77,7 @@ class EscrowCargoSettlementObservationTest {
             assertEquals(new RocketEscrowSection(root.id(), load ? 0 : 1, load ? List.of()
                     : List.of(new EscrowPrefix.Link(op, op.rocket(), "SOURCE").marker())), frozen.normalizedWrapper());
             assertTrue(frozen.checkpointed().bound());
-            var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent, 7);
+            var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root, f.settlementRows(root, intent.observations())), intent), intent, 7);
             assertTrue(released.records().isEmpty());
             var receipt = released.tombstones().get(0);
             assertEquals(0, receipt.getInt("payload_amount")); assertEquals("UNKNOWN", receipt.getString("accounting_status"));

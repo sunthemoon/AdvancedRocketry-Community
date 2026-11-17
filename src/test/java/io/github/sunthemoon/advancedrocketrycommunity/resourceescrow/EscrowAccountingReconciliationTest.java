@@ -133,9 +133,10 @@ class EscrowAccountingReconciliationTest {
     }
 
     @Test void repairWarningsAreOncePerLiveOperationAtTheLedgerCeiling() {
-        var operations = java.util.stream.LongStream.rangeClosed(1, EscrowLimits.OPERATIONS)
-                .mapToObj(n -> EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(n))).toList();
-        var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
+        // The active root reaches its byte ceiling before the unchanged 64-operation decode bound.
+        var operations = java.util.stream.LongStream.rangeClosed(1, 55)
+                .mapToObj(n -> EscrowTestFixtures.distributedOwner(EscrowTestFixtures.admissionOperation(n))).toList();
+        var root = EscrowTestFixtures.admissionLedger(operations.toArray(EscrowOperation[]::new));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var logs = new StartupLogLines("ARCE_ESCROW_ACCOUNTING_HELD ", "Escrow record ");
              var writer = new EscrowLedgerWriter(directory.resolve("warnings.dat"), 0);
@@ -147,7 +148,7 @@ class EscrowAccountingReconciliationTest {
                 attempts.incrementAndGet(); done.accept(new EscrowReconciliationScheduler.Result(EscrowReason.ACCOUNTING_MISMATCH, false));
             });
             scheduler.tick(0); scheduler.tick(1); assertTrue(attempts.get() > 0);
-            assertEquals(64, logs.lines.size());
+            assertEquals(55, logs.lines.size());
             for (var op : operations) { assertEquals(1, logs.lines.stream().filter(line -> line.equals(
                     "WARN ARCE_ESCROW_ACCOUNTING_HELD op=" + op.id())).count()); }
             assertTrue(writer.idle());

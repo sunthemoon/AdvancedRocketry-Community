@@ -166,7 +166,7 @@ class EscrowFluidDurableValidationTest {
     @Test void c2HoldsOnlyTheFillWhoseFluidIsUnavailable() throws Exception {
         for (String name : List.of(MISSING, RENAMED)) {
             var f = EscrowReconciliationBindingBoundaryTest.sample(); var a = f.a(); var held = withFluid(f.b(), name);
-            var root = new EscrowLedger(f.ledger().id(), 2, 1, List.of(a, held), List.of(), List.of());
+            var root = f.ledger().accounting(List.of(a, held), List.of(f.ledger().fluidAccounts().get(0)));
             // The projections themselves refuse before acting, whichever caller reaches them.
             assertThrows(IllegalArgumentException.class, () -> EscrowReconciliationChange.rocket(root.id(), held, f.first()));
             assertThrows(IllegalArgumentException.class, () -> EscrowReconciliationChange.source(root.id(), held, chest(2, root.id(), false)));
@@ -179,7 +179,7 @@ class EscrowFluidDurableValidationTest {
                 var scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, (op, records, done) -> {
                     attempts.add(op.id());
                     var source = chest(op.sequence(), root.id(), false);
-                    var sourceState = EscrowTestEndpoints.state(source.getCompound("ForgeData"), root.id(), false);
+                    var sourceState = EscrowLoaderEndpoint.observation(op.source(), EscrowLoaderEndpoint.root(source), root.id()).state();
                     var wrapper = RocketEscrowSection.decode(f.before().getCompound("wrapper"));
                     var destinationState = new EscrowPrefix.State(root.id(), wrapper.epoch(), a.destination().beforeSignature(), wrapper.markers());
                     done.accept(EscrowReconciliationDriver.applyNext(coordinator, coordinator.ledger(), op, EscrowPrefix.chains(records),
@@ -234,7 +234,7 @@ class EscrowFluidDurableValidationTest {
                 assertEquals(1, coordinator.nextSequence()); assertTrue(coordinator.unresolvedIds().isEmpty());
                 assertFalse(coordinator.admitting(fresh.source().key())); assertFalse(coordinator.admitting(fresh.destination().key()));
                 assertFalse(data.isDirty()); assertTrue(writer.idle()); assertTrue(replies.isEmpty());
-                assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(f.a(), wrapper), replies::add),
+                assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(f.a(), wrapper, f.ledger().fluidAccounts().get(0)), replies::add),
                         "The refusal consumed no sequence or reservation");
             }
             for (boolean load : List.of(true, false)) {
@@ -293,16 +293,9 @@ class EscrowFluidDurableValidationTest {
         }
         return EscrowCodec.encode(ledger(op.settle(intent)));
     }
-    /** The gated chest fixture's envelope, as in EscrowReconciliationBindingBoundaryTest. */
+    /** The real loader fixture shared with the current numeric reconciliation capture. */
     private static CompoundTag chest(long sequence, UUID ledger, boolean applied) {
-        var identity = id(1_000 + sequence); int amount = applied ? 4_900 : 5_000;
-        var fixture = new CompoundTag(); fixture.putUUID("identity", identity); fixture.putInt("amount", amount); fixture.putInt("capacity", 16_000);
-        var persistent = new CompoundTag(); persistent.put("arce_escrow_fixture", fixture);
-        EscrowTestEndpoints.putState(persistent, new EscrowPrefix.State(ledger, applied ? 1 : 0,
-                RocketNativeResources.hash("arce-escrow-fixture-1:" + identity + ":" + amount),
-                applied ? List.of(new EscrowPrefix.Marker(id(sequence), sequence, "SOURCE", 1)) : List.of()), false);
-        var tag = new CompoundTag(); tag.putString("id", "minecraft:chest"); tag.putInt("x", (int) sequence); tag.putInt("y", 64); tag.putInt("z", 0);
-        tag.put("ForgeData", persistent); return tag;
+        return EscrowReconciliationBindingBoundaryTest.source(sequence, ledger, applied);
     }
     private static final class LogCapture extends org.apache.logging.log4j.core.appender.AbstractAppender implements AutoCloseable {
         private final List<String> lines = new java.util.concurrent.CopyOnWriteArrayList<>();

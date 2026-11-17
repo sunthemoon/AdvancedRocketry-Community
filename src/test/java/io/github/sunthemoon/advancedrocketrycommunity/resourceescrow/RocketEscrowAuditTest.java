@@ -83,7 +83,8 @@ final class RocketEscrowAuditTest {
     @Test void failedRepairWriteRetainsAll64LockedOperationsUntilAnExactRetry() throws Exception {
         var records = java.util.stream.LongStream.rangeClosed(1, EscrowLimits.OPERATIONS)
                 .mapToObj(EscrowTestFixtures::operation).toList();
-        var initial = new EscrowLedger(EscrowTestFixtures.id(500), EscrowLimits.OPERATIONS, 0, records, List.of(), List.of());
+        // Explicit root-2 restart history at the old format's full 64-record decode ceiling.
+        var initial = EscrowTestFixtures.root2(new EscrowLedger(EscrowTestFixtures.id(500), EscrowLimits.OPERATIONS, 0, records, List.of(), List.of()));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial));
         Path file = temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var failed = new java.util.concurrent.atomic.AtomicBoolean(true);

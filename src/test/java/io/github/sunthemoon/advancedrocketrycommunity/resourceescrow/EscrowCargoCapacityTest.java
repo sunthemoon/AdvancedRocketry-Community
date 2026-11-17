@@ -147,7 +147,7 @@ class EscrowCargoCapacityTest {
             var repair = previous.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
             var lastO1 = EscrowCodec.operation(repair.settle(intent(ledger(repair), repair, 0, 0, false)));
             assertEquals(512, BoundedNbt.measure(lastO1, 12_288, 16, 512).nodes());
-            var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+            var root = EscrowTestFixtures.ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-nodes"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
                 assertEquals(EscrowCoordinator.Transfer.CARGO_TOO_LARGE, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
                 assertEquals(1, coordinator.nextSequence()); assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());

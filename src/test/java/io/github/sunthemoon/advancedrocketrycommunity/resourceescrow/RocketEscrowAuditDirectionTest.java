@@ -197,23 +197,33 @@ class RocketEscrowAuditDirectionTest {
         boolean unload = kind == EscrowOperation.Kind.FLUID_CARGO_UNLOAD;
         var changed = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(),
                 op.payloadHash(), unload ? op.rocket() : device, unload ? device : op.rocket(), op.guard(), kind, op.settlement());
-        return kind.cargo() ? EscrowTestFixtures.nativeModel(changed, RocketEscrowSection.neutral()) : changed;
+        return EscrowTestFixtures.accountedModel(kind.cargo() ? EscrowTestFixtures.nativeModel(changed, RocketEscrowSection.neutral()) : changed);
     }
 
     private static List<EscrowOperation> sticky(EscrowOperation op) {
         var result = new ArrayList<EscrowOperation>();
         result.add(op.withReason(EscrowReason.OTHER_STATE));
         op = op.withReason(EscrowReason.BARRIER_IO);
-        var root = EscrowTestFixtures.ledger(op);
+        var root = auditLedger(op);
         for (int missing : List.of(0, 2)) {
             var observations = op.kind().cargo() ? EscrowCargoFixtures.observations(root, op, 0, missing, false)
                     : EscrowSettlementIntentTest.observations(root, missing != 0);
-            var preview = EscrowSettlementIntent.preview(root, op.id(), missing == 0
+            var preview = EscrowTestFixtures.previewModel(root, op.id(), missing == 0
                     ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT : EscrowSettlementIntent.Choice.ABANDON,
                     EscrowTestFixtures.id(700), "operator", 10, observations);
             result.add(op.settle(preview.confirm(preview.actor(), preview.digest(), missing == 0 ? 11 : 210, observations)));
         }
         return result;
+    }
+
+    private static EscrowLedger auditLedger(EscrowOperation op) {
+        if (op.settlement().isEmpty()) { return EscrowTestFixtures.admissionLedger(op); }
+        var intent = EscrowSettlementIntent.decode(op.settlement());
+        var member = intent.members().stream().filter(value -> value.id().equals(op.id())).findFirst().orElseThrow();
+        var before = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), member.phase(), member.reason(),
+                op.payload(), op.payloadHash(), op.source(), op.destination(), op.guard(), op.kind(), new net.minecraft.nbt.CompoundTag(),
+                op.nativeBinding(), op.accountingBaseline());
+        return EscrowTestFixtures.freezeModel(intent, EscrowTestFixtures.admissionLedger(before));
     }
 
     private Fixture fixture(EscrowOperation op) throws Exception {
@@ -245,7 +255,7 @@ class RocketEscrowAuditDirectionTest {
             UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, storage, "resources", new HashMap<>());
             UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, storage, "levelDirectory", new LevelStorageSource.LevelDirectory(directory));
             UnstartedServer.set(MinecraftServer.class, server, "storageSource", storage);
-            data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(op)));
+            data = ResourceEscrowSavedData.load(EscrowCodec.encode(auditLedger(op)));
             level.storage.set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), data);
             EscrowArmedRestartBoundaryTest.acknowledge(journal, directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
             level.storage.set(ManagedSavedDataType.ROCKET_TRANSFERS.dataName(), journal);
@@ -293,7 +303,7 @@ class RocketEscrowAuditDirectionTest {
 
         void unchanged() {
             assertEquals(op.reason(), coordinator.currentReason(op));
-            assertEquals(EscrowCodec.encode(EscrowTestFixtures.ledger(op)), EscrowCodec.encode(data.ledger()));
+            assertEquals(EscrowCodec.encode(auditLedger(op)), EscrowCodec.encode(data.ledger()));
             assertTrue(writer.idle()); assertFalse(data.isDirty()); assertFalse(Files.exists(file));
         }
 

@@ -25,18 +25,18 @@ class EscrowReservationTransitionTest {
         assertEquals(64, EscrowLimits.OPERATIONS, "The saved-operation decode bound is unchanged");
         for (int floors : List.of(0, 29)) {
             for (boolean guarded : List.of(false, true)) {
-                int capacity = floors == 0 ? (guarded ? 58 : 62) : (guarded ? 56 : 60);
+                int capacity = floors == 0 ? (guarded ? 51 : 55) : (guarded ? 50 : 53);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowCombinedReservationTest.retainedFloors(floors)));
                 var initial = data.ledger();
                 try (var writer = new EscrowLedgerWriter(directory.resolve("capacity-" + floors + "-" + guarded), 0);
                         var coordinator = new EscrowCoordinator(data, writer)) {
                     for (int i = 1; i <= capacity; i++) {
-                        coordinator.prepareTest(operation(floors + i, guarded), ignored -> { });
+                        EscrowTestFixtures.prepareCapturedModel(coordinator, operation(floors + i, guarded), ignored -> { });
                     }
                     assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
                     assertEquals(floors + capacity + 1, coordinator.nextSequence());
                     var refused = assertThrows(IllegalArgumentException.class,
-                            () -> coordinator.prepareTest(operation(floors + capacity + 1, guarded), ignored -> fail()));
+                            () -> EscrowTestFixtures.prepareCapturedModel(coordinator, operation(floors + capacity + 1, guarded), ignored -> fail()));
                     assertEquals("Settlement/flight root reservation exhausted", refused.getMessage());
                     assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
                     assertEquals(floors + capacity + 1, coordinator.nextSequence());
@@ -55,15 +55,15 @@ class EscrowReservationTransitionTest {
         try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             var acknowledgements = new AtomicInteger();
-            for (int i = 1; i <= 62; i++) {
-                coordinator.prepareTest(operation(i, false), accepted -> {
+            for (int i = 1; i <= 55; i++) {
+                EscrowTestFixtures.prepareCapturedModel(coordinator, operation(i, false), accepted -> {
                     assertTrue(accepted); acknowledgements.incrementAndGet();
                 });
             }
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(operation(63, false), ignored -> fail()));
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.prepareCapturedModel(coordinator, operation(56, false), ignored -> fail()));
             assertTrue(coordinator.commitPreparations());
             acknowledge(io, coordinator, 1, 1);
-            assertEquals(62, acknowledgements.get());
+            assertEquals(55, acknowledgements.get());
             var admitted = coordinator.ledger();
             var longest = Arrays.stream(EscrowReason.values()).filter(EscrowReason::manual)
                     .max(Comparator.comparingInt(reason -> reason.name().length())).orElseThrow();
@@ -78,11 +78,11 @@ class EscrowReservationTransitionTest {
             assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(repaired));
 
             var observations = EscrowSettlementIntentTest.observations(repaired, false);
-            var preview = EscrowSettlementIntent.preview(repaired, repaired.records().get(0).id(),
+            var preview = EscrowTestFixtures.previewModel(repaired, repaired.records().get(0).id(),
                     EscrowSettlementIntent.Choice.ACCEPT_CURRENT, EscrowTestFixtures.id(700), "operator", 20, observations);
             var intent = preview.confirm(preview.actor(), preview.digest(), 20, observations);
             var o1Results = new ArrayList<Boolean>(); coordinator.tick(20);
-            assertTrue(coordinator.beginSettlement(intent, o1Results::add));
+            assertTrue(EscrowTestFixtures.beginModelSettlement(coordinator, intent, o1Results::add));
             acknowledge(io, coordinator, 3, 21);
             assertEquals(List.of(true), o1Results);
             assertEquals(intent.encode(), coordinator.ledger().records().get(0).settlement());
@@ -106,7 +106,8 @@ class EscrowReservationTransitionTest {
 
     @Test void oldFixtureBeyondAdmissionCapacityStillLoadsAndPersistsRepairWithExistingPreflight() throws Exception {
         var operations = java.util.stream.LongStream.rangeClosed(1, 64).mapToObj(EscrowTestFixtures::operation).toList();
-        var old = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
+        // Explicit activation-off history: the old 64-record root keeps its format and over-capacity repair behaviour.
+        var old = EscrowTestFixtures.root2(EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new)));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(old));
         assertEquals(old, data.ledger());
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); var io = new AwaitedLedgerIo();
@@ -138,10 +139,10 @@ class EscrowReservationTransitionTest {
     }
 
     private static EscrowOperation operation(long sequence, boolean guarded) {
-        var op = EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(sequence));
-        return !guarded ? op : new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
+        var op = EscrowTestFixtures.distributedOwner(EscrowTestFixtures.admissionOperation(sequence));
+        return !guarded ? op : EscrowTestFixtures.accountedModel(EscrowTestFixtures.nativeModel(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
                 op.payload(), op.payloadHash(), op.source(), op.destination(),
-                new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(9_000 + sequence), 1, op.guard().journalDigest()));
+                new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(9_000 + sequence), 1, op.guard().journalDigest())), RocketEscrowSection.neutral()));
     }
     private static int bytes(EscrowLedger root) { return RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root)); }
     private static void assertPersisted(Path file, EscrowLedger root) throws Exception {

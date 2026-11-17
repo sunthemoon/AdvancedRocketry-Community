@@ -27,8 +27,8 @@ class EscrowCargoFluidRefusalTest {
     @Test void deviceC2RefusesAsOtherStateBeforeChangingEitherRole() {
         for (boolean load : List.of(true, false)) {
           for (String name : List.of("w124:missing", "w124:renamed_water")) {
-            var f = EscrowCargoReconciliationFixture.create(load); var op = unavailable(f.op(), name);
-            var root = new EscrowLedger(f.ledger().id(), 1, 1, List.of(op), List.of(), List.of());
+            var f = EscrowCargoReconciliationFixture.createLegacy(load); var op = unavailable(f.op(), name);
+            var root = EscrowTestFixtures.root2(new EscrowLedger(f.ledger().id(), 1, 1, List.of(op), List.of(), List.of()));
             var before = f.deviceBefore().copy();
             var refused = assertThrows(EscrowReconciliationView.Refusal.class,
                     () -> EscrowFluidCargoPublication.issue(root, op, before, 1, () -> true));
@@ -44,7 +44,7 @@ class EscrowCargoFluidRefusalTest {
     @Test void typedReadbackRefusesUnavailablePayloadBeforeDecodingTheNativeRecord() {
         for (boolean load : List.of(true, false)) {
           for (String name : List.of("w124:missing", "w124:renamed_water")) {
-            var f = EscrowCargoReconciliationFixture.create(load); var held = unavailable(f.op(), name);
+            var f = EscrowCargoReconciliationFixture.createLegacy(load); var held = unavailable(f.op(), name);
             for (var endpoint : List.of(held.rocket(), held.device())) {
                 var slot = endpoint.kind() == EscrowEndpoint.Kind.ENTITY
                         ? EscrowReconciliationCheckpointTest.rocketSlot(endpoint, f.after())
@@ -61,9 +61,9 @@ class EscrowCargoFluidRefusalTest {
 
     @Test void stickyRefusalPreservesPayloadAndOtherComponentsAcrossCheckedWrite() throws Exception {
         var good = EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 2, 799);
-        var broken = EscrowCargoReconciliationFixture.create(false);
+        var broken = EscrowCargoReconciliationFixture.createLegacy(false);
         var held = unavailable(broken.op(), "w124:missing");
-        var root = new EscrowLedger(broken.ledger().id(), 2, 1, List.of(held, good), List.of(), List.of());
+        var root = EscrowTestFixtures.root2(new EscrowLedger(broken.ledger().id(), 2, 1, List.of(held, good), List.of(), List.of()));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         var awaited = new AwaitedLedgerIo(); var file = directory.resolve(
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());

@@ -35,14 +35,14 @@ class EscrowReceiptChargeTest {
                     int retained = kind.cargo() ? 0 : 4;
                     var op = operation(kind, level, guarded, retained);
                     assertQueued(op, retained, "case-" + cases++);
-                    var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = ledger(repair);
+                    var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = admissionLedger(repair);
                     for (int missing = 0; missing <= 2; missing++) {
                         var intent = intent(root, repair, retained, missing, false, false);
                         assertSettlement(root, repair, intent, missing);
                     }
                     // Native neutral normalization has no retained markers; include both ABANDON directions.
                     var neutralOp = operation(kind, level, guarded, 0).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
-                    var neutralRoot = ledger(neutralOp);
+                    var neutralRoot = admissionLedger(neutralOp);
                     for (int missing = 0; missing <= 2; missing++) {
                         var intent = intent(neutralRoot, neutralOp, 0, missing, true, false);
                         if (missing != 1) {
@@ -54,7 +54,7 @@ class EscrowReceiptChargeTest {
                     }
                     // Admission conservatively uses DESTINATION for the rocket marker, including unloads (+5 bytes).
                     var sizing = intent(root, repair, retained, 0, false, true);
-                    int bytes = RocketNbtSize.uncompressedBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(repair, sizing)));
+                    int bytes = RocketNbtSize.uncompressedBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(repair, sizing, settlementRows(root, repair, sizing.observations()).stream().filter(row -> row.operation().equals(repair.id())).findFirst().orElse(null))));
                     assertTrue(bytes <= 2_048);
                     if (kind.cargo()) { worstCargo = Math.max(worstCargo, bytes); }
                     else { worstFuel = Math.max(worstFuel, bytes); }
@@ -75,25 +75,25 @@ class EscrowReceiptChargeTest {
 
     @Test void admittedGuardedCargoDoesNotBlockAnUnrelatedRepairFreeze() throws Exception {
         // Near the complete-operation byte edge: a five-marker shared preview cannot fit this admitted cargo.
-        var op = EscrowCargoFixtures.guarded(EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
-                100, 99, 0, 7_600, "advancedrocketrycommunity:tau_ceti_g"));
-        var unrelated = fill(1, 98, 0, 0, "minecraft:overworld", false, -1).withReason(EscrowReason.OTHER_STATE);
-        var root = new EscrowLedger(id(500), 99, 0, List.of(unrelated), List.of(), List.of());
+        var op = accountedModel(EscrowCargoFixtures.guarded(EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
+                100, 99, 0, 7_400, "advancedrocketrycommunity:tau_ceti_g")));
+        var unrelated = accountedModel(fill(1, 98, 0, 0, "minecraft:overworld", false, -1)).withReason(EscrowReason.OTHER_STATE);
+        var root = appendModel(new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of()), List.of(unrelated));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root)); var io = new AwaitedLedgerIo();
         try (var writer = io.writer(temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             var replies = new ArrayList<Boolean>();
-            assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op,
+            assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(capturedModel(op,
                     RocketEscrowSection.neutral()), replies::add));
             // Exercise the unrelated O1 against the admitted prospective root before the writer's own shared preflight.
-            var admitted = coordinator.ledger().append(List.of(op));
+            var admitted = appendModel(coordinator.ledger(), List.of(op));
             var decision = intent(admitted, unrelated, 0, 0, false, false);
-            var previewFrozen = assertDoesNotThrow(() -> decision.freeze(admitted));
+            var previewFrozen = assertDoesNotThrow(() -> freezeModel(decision, admitted));
             assertEquals(op, previewFrozen.records().get(1));
             assertTrue(coordinator.commitPreparations()); io.tickUntil(coordinator::tick, 1, writer::idle);
             assertEquals(List.of(true), replies); assertEquals(List.of(unrelated, op), coordinator.ledger().records());
             var intent = intent(coordinator.ledger(), unrelated, 0, 0, false, false);
-            var frozen = assertDoesNotThrow(() -> intent.freeze(coordinator.ledger()));
+            var frozen = assertDoesNotThrow(() -> freezeModel(intent, coordinator.ledger()));
             assertEquals(op, frozen.records().get(1)); assertEquals(1, intent.ids().size());
             assertSettlement(coordinator.ledger(), unrelated, intent, 0);
         }
@@ -104,14 +104,14 @@ class EscrowReceiptChargeTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(temp.resolve(name), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(
-                    new EscrowNativeBinding.Admission(op, EscrowCargoFixtures.wrapper(retained)), ignored -> fail("No write submitted")));
+                    capturedModel(op, EscrowCargoFixtures.wrapper(retained)), ignored -> fail("No write submitted")));
             assertEquals(101, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
             assertEquals(root, coordinator.ledger()); assertTrue(data.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
         }
     }
 
     private static void assertSettlement(EscrowLedger root, EscrowOperation op, EscrowSettlementIntent intent, int missing) {
-        var o1 = intent.freeze(root); var stored = EscrowSettlementIntent.decode(o1.records().stream()
+        var o1 = freezeModel(intent, root); var stored = EscrowSettlementIntent.decode(o1.records().stream()
                 .filter(member -> member.id().equals(op.id())).findFirst().orElseThrow().settlement());
         assertEquals(intent, stored);
         if (op.kind().cargo() && missing != 1) {
@@ -142,10 +142,10 @@ class EscrowReceiptChargeTest {
     }
 
     private static EscrowOperation operation(EscrowOperation.Kind kind, String level, boolean guarded, int retained) {
-        if (!kind.cargo()) { return fill(100, 99, retained, retained, level, guarded, -1); }
+        if (!kind.cargo()) { return accountedModel(fill(100, 99, retained, retained, level, guarded, -1)); }
         var op = kind.itemCargo() ? EscrowItemFixtures.operation(kind, 100, 99, retained, -1, level)
                 : EscrowCargoFixtures.operation(kind, 100, 99, retained, -1, level);
-        return guarded ? EscrowCargoFixtures.guarded(op) : op;
+        return accountedModel(guarded ? EscrowCargoFixtures.guarded(op) : op);
     }
 
     private static EscrowSettlementIntent intent(EscrowLedger root, EscrowOperation op, int retained, int missing,
@@ -161,7 +161,7 @@ class EscrowReceiptChargeTest {
                         o.state().signature(), markers), o.bound(), o.quantity(), o.signatureKind(), o.invariantDigest());
             }).toList();
         }
-        var preview = EscrowSettlementIntent.preview(root, op.id(), missing == 0 ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
+        var preview = previewModel(root, op.id(), missing == 0 ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
                 : EscrowSettlementIntent.Choice.ABANDON, id(700), "~".repeat(16), 10, observed);
         return preview.confirm(preview.actor(), preview.digest(), missing == 0 ? 11 : 210, observed);
     }

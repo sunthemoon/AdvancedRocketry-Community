@@ -84,11 +84,11 @@ class EscrowLedgerWriterTest {
         assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()), outcomes::add));
     }
     @Test void autosaveNeverPublishesQueuedAdmissionsAndTheFirstContainingAcknowledgementIsL1() throws Exception {
-        var data = ResourceEscrowSavedData.create(); var op = EscrowTestFixtures.operation(1); var replies = new ArrayList<Boolean>();
+        var data = ResourceEscrowSavedData.create(); var op = EscrowTestFixtures.admissionOperation(1); var replies = new ArrayList<Boolean>();
         var ledgerIo = new AwaitedLedgerIo();
         var writer = ledgerIo.writer(file(), 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer);
         try {
-            coordinator.prepareTest(op, replies::add); coordinator.autosave();
+            EscrowTestFixtures.prepareCapturedModel(coordinator, op, replies::add); coordinator.autosave();
             poll(ledgerIo, writer, writer::idle); assertTrue(data.ledger().records().isEmpty()); assertTrue(replies.isEmpty()); assertTrue(data.isDirty());
             coordinator.tick(10); coordinator.commitPreparations(); poll(ledgerIo, writer, writer::idle);
             assertEquals(List.of(true), replies); assertEquals(List.of(op), data.ledger().records()); assertFalse(data.isDirty());
@@ -104,10 +104,10 @@ class EscrowLedgerWriterTest {
                 EscrowTestFixtures.ledger(), Set.of(EscrowTestFixtures.id(999))));
     }
     @Test void periodicReasonPersistenceCannotStarveAnExplicitPreparation() throws Exception {
-        var data = ResourceEscrowSavedData.create(); var op = EscrowTestFixtures.operation(1); var replies = new ArrayList<Boolean>();
+        var data = ResourceEscrowSavedData.create(); var op = EscrowTestFixtures.admissionOperation(1); var replies = new ArrayList<Boolean>();
         var ledgerIo = new AwaitedLedgerIo(); var writer = ledgerIo.writer(file(), 0, CheckedSavedDataFile::atomicMove);
         try (var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(op, replies::add);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, op, replies::add);
             ledgerIo.tickUntil(tick -> {
                 coordinator.tick(tick); coordinator.persistTransitions(); coordinator.commitPreparations();
             }, 0, () -> !replies.isEmpty());
@@ -186,7 +186,8 @@ class EscrowLedgerWriterTest {
         }
     }
     @Test void queuedRetirementCopiesCallerOwnedIdsAndProofMapBeforeSuccessorCapture() throws Exception {
-        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var op = EscrowTestFixtures.operation(1); // This is the root-2 activation-off queued model-token API; root 3 uses idle native C7 requests.
+        var base = EscrowTestFixtures.root2(EscrowTestFixtures.ledger(op)).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); data.setDirty();
         CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1);
         AtomicInteger stages = new AtomicInteger(); var outcomes = new ArrayList<Boolean>();
@@ -220,7 +221,7 @@ class EscrowLedgerWriterTest {
     }
     /** Review W11b1 finding 1, probe "wedge": ambiguous L2, then a newer endpoint save before the 200-tick retry. */
     @Test @Timeout(60) void anAmbiguousRetirementWhoseProofIsLaterInvalidatedResolvesWithoutWedgingTheWriter() throws Exception {
-        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var op = EscrowTestFixtures.admissionOperation(1); var base = EscrowTestFixtures.admissionLedger(op).generation(1);
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
         policy.replace(file(), () -> EscrowCodec.encode(base));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
@@ -234,7 +235,7 @@ class EscrowLedgerWriterTest {
         var coordinator = new EscrowCoordinator(data, writer); var callbacks = new ArrayList<Boolean>();
         var savedGenerations = new ArrayList<java.util.concurrent.atomic.AtomicLong>();
         var proofs = frozenProofs(coordinator, base, op, savedGenerations);
-        coordinator.tick(10); assertTrue(coordinator.retire(Set.of(op.id()), proofs, callbacks::add));
+        coordinator.tick(10); assertTrue(EscrowTestFixtures.retireCapturedModel(coordinator, Set.of(op.id()), proofs, callbacks::add));
         long tick = ledgerIo.tickUntil(coordinator::tick, 11, () -> unknown.get() != 0);
         assertEquals(1, unknown.get(), "The first replacement must be ambiguous");
         savedGenerations.get(0).incrementAndGet(); // Vanilla saves one endpoint chunk before the retry.
@@ -255,7 +256,7 @@ class EscrowLedgerWriterTest {
     }
     /** Review W11b1 finding 6, probe "retire": an ambiguous first move, then a commit, reports one final callback. */
     @Test @Timeout(60) void anAmbiguousRetirementThatLaterCommitsCallsBackOnceWithTrue() throws Exception {
-        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var op = EscrowTestFixtures.admissionOperation(1); var base = EscrowTestFixtures.admissionLedger(op).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); AtomicInteger moves = new AtomicInteger();
         var ledgerIo = new AwaitedLedgerIo();
         var writer = ledgerIo.writer(file(), 1, (staged, target) -> {
@@ -265,7 +266,7 @@ class EscrowLedgerWriterTest {
         var callbacks = new ArrayList<Boolean>();
         try (var coordinator = new EscrowCoordinator(data, writer)) {
             var proofs = frozenProofs(coordinator, base, op, new ArrayList<>());
-            coordinator.tick(10); assertTrue(coordinator.retire(Set.of(op.id()), proofs, callbacks::add));
+            coordinator.tick(10); assertTrue(EscrowTestFixtures.retireCapturedModel(coordinator, Set.of(op.id()), proofs, callbacks::add));
             ledgerIo.tickUntil(coordinator::tick, 11, writer::idle);
             assertTrue(writer.idle()); assertEquals(2, moves.get());
             assertEquals(List.of(true), callbacks); assertTrue(coordinator.ledger().records().isEmpty());
