@@ -31,6 +31,14 @@ public final class EscrowGovernedLiveReturnGameTests {
     private enum Fault { CANCEL, PAD, SPAWN }
     private EscrowGovernedLiveReturnGameTests() { }
 
+    // As in the Moon landing fixture, leave 60 ticks for F1's 20-tick force batch and checked ARMED write.
+    // Autosave can revoke a proof after readback, while ARMED is queued: that is F1_WRITE, not the
+    // F1_PROOF SUPERSEDING_SAVE that EscrowGameTestLaunch may retry. Defer the fixture, not that refusal.
+    static void prepareWhenReady(int tickCount, java.util.function.BooleanSupplier journalReady, Runnable prepare) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave.within(tickCount, 60)
+                && journalReady.getAsBoolean()) { prepare.run(); }
+    }
+
     // The checked journal is global; these single-flight acknowledgement fixtures require isolated batches.
     @GameTest(template = "empty", batch = "escrow_live_cancel_separate", timeoutTicks = 600)
     public static void countdownCancellationReachesReturnedF6WithPassenger(GameTestHelper helper) {
@@ -165,7 +173,9 @@ public final class EscrowGovernedLiveReturnGameTests {
             if (List.of(position, destination).stream().anyMatch(pos -> !level.areEntitiesLoaded(new ChunkPos(pos).toLong())
                     || !level.isPositionEntityTicking(pos))) { return; }
             var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
-            if (rocket == null) { if (journal.retryChecked(server)) { prepare(); } return; }
+            if (rocket == null) {
+                prepareWhenReady(server.getTickCount(), () -> journal.retryChecked(server), this::prepare); return;
+            }
             helper.assertTrue(!discarded, "Live return launch preparation was discarded");
             launch.tick();
             if (!accepted) { return; }
