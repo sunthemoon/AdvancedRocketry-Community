@@ -155,7 +155,7 @@ class EscrowLedgerCreationTest {
     }
 
     @Test void creationIsOnlyForAnUnwrittenEmptyLedger() throws Exception {
-        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(fill(1, 1)).generation(1)));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.admissionLedger(fill(1, 1)).generation(1)));
         try (var writer = new EscrowLedgerWriter(file("written"), 1); var coordinator = new EscrowCoordinator(data, writer)) {
             assertThrows(IllegalArgumentException.class, coordinator::beginCreationBaseline);
             assertFalse(coordinator.creationBaselinePending());

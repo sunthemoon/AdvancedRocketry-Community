@@ -119,7 +119,10 @@ final class EscrowTestFixtures {
         return EscrowAccountingCapture.append(root, operations, rows);
     }
     static EscrowOperation admissionOperation(long sequence) {
-        return accountedModel(EscrowSettlementCapacityTest.operation(sequence, sequence, 0, true));
+        return admissionOperation(sequence, sequence, 0);
+    }
+    static EscrowOperation admissionOperation(long sequence, long rocket, long epoch) {
+        return accountedModel(EscrowSettlementCapacityTest.operation(sequence, rocket, epoch, true));
     }
     static EscrowLedger admissionLedger(EscrowOperation... ops) {
         return appendModel(ledger(), List.of(ops));

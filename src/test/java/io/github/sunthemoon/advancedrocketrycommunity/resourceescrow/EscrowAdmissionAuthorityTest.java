@@ -272,8 +272,9 @@ final class EscrowAdmissionAuthorityTest {
         }
     }
     @Test void overCapacityRestartIndexesEveryRecordWithoutEviction() throws Exception {
-        var old = EscrowTestFixtures.admissionLedger(java.util.stream.LongStream.rangeClosed(1, 64)
-                .mapToObj(EscrowTestFixtures::operation).toArray(EscrowOperation[]::new));
+        // A maximum historical root-2 file is indexed without applying today's admission budget.
+        var old = EscrowTestFixtures.root2(EscrowTestFixtures.ledger(java.util.stream.LongStream.rangeClosed(1, 64)
+                .mapToObj(EscrowTestFixtures::operation).toArray(EscrowOperation[]::new)));
         // A restart is a new runtime: a new authority and delegate, and the loaded ledger binding at startup.
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(Consumer.PROPULSION);
         var bay = pending(1_000, 300, Consumer.BAY); var bays = new ArrayList<>(List.of(bay));

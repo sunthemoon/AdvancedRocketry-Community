@@ -252,11 +252,15 @@ class EscrowPrepareFillTest {
         }
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> op.id().equals(candidate.id())
                 ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
+        var baseline = EscrowAccountingReconciliation.baseline(prospective, candidate);
+        var numbers = java.util.Map.of(candidate.source().key(), java.util.Map.of(candidate.id(), baseline.sourceAfter()),
+                candidate.destination().key(), java.util.Map.of(candidate.id(), baseline.destinationAfter()));
+        var rows = EscrowSettlementAccounting.project(hypothetical, component, observations, numbers);
         var preview = EscrowSettlementIntent.preview(hypothetical, candidate.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                new UUID(0, 1), "~".repeat(16), 0, observations);
+                new UUID(0, 1), "~".repeat(16), 0, observations).accounting(rows);
         var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var member = hypothetical.records().stream().filter(op -> op.id().equals(candidate.id())).findFirst().orElseThrow();
-        return listBytes(EscrowCodec.operation(member.settle(intent))) + listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent)));
+        return listBytes(EscrowCodec.operation(member.settle(intent))) + listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent, rows.get(0))));
     }
     private static int listBytes(net.minecraft.nbt.CompoundTag tag) { return RocketNbtSize.uncompressedBytes(tag) - 3; }
     private static EscrowSettlementIntent floorIntent(EscrowLedger root, int index, long tick) {
