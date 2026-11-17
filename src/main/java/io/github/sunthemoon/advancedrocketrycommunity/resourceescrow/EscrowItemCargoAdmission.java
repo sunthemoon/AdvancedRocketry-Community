@@ -192,7 +192,8 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
                         () -> { nativeBefore = device.saveWithFullMetadata(); return nativeBefore; },
                         () -> EscrowItemCargoProjection.after(nativeBefore, ledger().id(), op), this::nativeUnchanged, 0);
             }
-            if (!capture.advance(ledger(), coordinator == null ? List.of() : coordinator.pendingAdmissions())) { return; }
+            if (!capture.advance(coordinator != null && ledger().schema() == 3 ? coordinator.pendingLedger() : ledger(),
+                    coordinator == null || ledger().schema() == 3 ? List.of() : coordinator.pendingAdmissions())) { return; }
             var result = capture.result();
             if (result.refusal() != null) {
                 if (result.refusal() == EscrowCoordinator.Transfer.CARGO_TOO_LARGE) { retryCandidate(); }
