@@ -115,7 +115,7 @@ public final class RocketSettlementIdleGameTests {
         private final java.util.ArrayList<UUID> completed = new java.util.ArrayList<>();
         private ResourceEscrowSavedData data;
         private EscrowCoordinator coordinator;
-        private EscrowTestEndpoints.Fixture source;
+        private FluidFuelLoaderEscrowFixtures.NativeFill source;
         private RocketEntity rocket;
         private EscrowOperation operation;
         private int step;
@@ -131,8 +131,8 @@ public final class RocketSettlementIdleGameTests {
         private final java.util.EnumSet<RocketTransferPhase> phases = java.util.EnumSet.noneOf(RocketTransferPhase.class);
         private boolean sawDescent, sawF6, sawF7;
         private List<CompoundTag> receipts;
-        private final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> l2Proofs = new java.util.LinkedHashMap<>();
-        private boolean proving, retiring, discardHook, closed;
+        private long l1Generation;
+        private boolean discardHook, closed;
         private final Map<ServerLevel, java.util.Set<ChunkPos>> flightChunks = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Release release) {
@@ -158,7 +158,7 @@ public final class RocketSettlementIdleGameTests {
                 case 2 -> {
                     if (!coordinator.writerIdle() || data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id()))) { return; }
                     helper.assertTrue(!RocketEscrowGate.idle(rocket), "Pending current-ledger rocket is idle");
-                    source.applySource(operation);
+                    source.applySource(coordinator);
                     if (release == Release.L2) { step = 20; return; }
                     coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
                 }
@@ -280,53 +280,29 @@ public final class RocketSettlementIdleGameTests {
             step = 5;
         }
 
-        /** Test the existing L2 core; C32 owns the native C0-C8 adapter and its automatic pruning. */
+        /** R468: await the real accounted C3-C8 pipeline rather than supplying model-only retirement tokens. */
         private void ordinaryL2() {
-            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
-            if (proving || retiring || !journal.actionAuthorityAvailable()) { return; }
-            if (l2Proofs.values().stream().anyMatch(proof -> !proof.valid())) {
-                l2Proofs.values().forEach(EscrowBarrier.Proof::release); l2Proofs.clear();
-            }
-            var observations = EscrowSettlementObserver.component(server, data.ledger(), operation.id());
-            for (var observation : observations) {
-                var endpoint = observation.endpoint();
-                if (l2Proofs.containsKey(endpoint.key())) { continue; }
-                coordinator.freeze(endpoint.key(), observation.state()); proving = true;
-                var runtime = EscrowRuntime.of(server);
-                boolean started = runtime.barrier().begin(runtime.store(level), endpoint, observation.state(),
-                        EscrowSettlementDisk.validator(observation, data.ledger().id()), server.getTickCount(), result -> {
-                            proving = false;
-                            if (result.confirmed()) { l2Proofs.put(endpoint.key(), result.proof()); }
-                        });
-                if (!started) { proving = false; }
+            var journal = RocketTransferSavedData.get(level.getServer()); var root = data.ledger();
+            if (root.records().stream().anyMatch(op -> op.id().equals(operation.id()))) {
+                helper.assertTrue(!RocketEscrowGate.idle(rocket) && journal.acknowledgedGuard(source.logical()).orElseThrow().transfer() == null,
+                        "L2 fixture lost its checked journal or released before retirement");
                 return;
             }
-            helper.assertTrue(!RocketEscrowGate.idle(rocket) && journal.acknowledgedGuard(source.logical()).orElseThrow().transfer() == null,
-                    "L2 fixture lost its checked journal or released before retirement");
-            retiring = coordinator.retire(java.util.Set.of(operation.id()), l2Proofs, acknowledged -> {
-                retiring = false;
-                if (!acknowledged) { l2Proofs.clear(); return; }
-                helper.assertTrue(data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id()))
-                        && data.ledger().issuedThrough() >= operation.sequence() && journal.actionAuthorityAvailable(),
-                        "L2 callback is not its exact checked retirement");
-                var envelope = EscrowNativeEnvelope.rocket(rocket);
-                var encoded = rocket.saveWithoutId(new CompoundTag());
-                var section = rocket.escrowSection();
-                var pruned = new RocketEscrowSection(section.ledger(), section.epoch(), section.markers().stream()
-                        .filter(marker -> !marker.operation().equals(operation.id())).toList());
-                encoded.getCompound("RocketEntityData").put("resource_escrow", pruned.encode());
-                // Explicit fixture setup after real L2, not a production C8 API or an unproved release.
-                rocket.discard(); rocket = ModEntities.ROCKET.get().create(level);
-                helper.assertTrue(rocket != null, "Post-L2 fixture could not reload its survivor");
-                rocket.load(encoded); helper.assertTrue(level.addFreshEntity(rocket), "Post-L2 survivor did not rejoin");
-                envelope.put("wrapper", pruned.encode());
-                helper.assertTrue(envelope.equals(EscrowNativeEnvelope.rocket(rocket)) && pruned.epoch() == 1
-                        && pruned.markers().isEmpty() && RocketEscrowGate.idle(rocket), "Post-L2 setup changed more than its retired marker");
-                EscrowTestEndpoints.clearRetired(source, java.util.Set.of(operation.id()));
-                released();
-            });
+            if (!coordinator.writerIdle() || !rocket.escrowSection().markers().isEmpty() || !source.state(root.id()).markers().isEmpty()) { return; }
+            helper.assertTrue(root.issuedThrough() >= operation.sequence() && root.writerGeneration() > l1Generation
+                    && journal.actionAuthorityAvailable() && root.fluidAccounts().stream().noneMatch(row -> row.operation().equals(operation.id())),
+                    "L2 is not its exact checked retirement");
+            helper.assertTrue(rocket.escrowSection().epoch() == 1 && source.state(root.id()).epoch() == 1
+                    && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000 && source.amount() == 4_000
+                    && RocketEscrowGate.idle(rocket), "Post-L2 pruning changed resources, epochs or launch authority");
+            var envelope = EscrowNativeEnvelope.rocket(rocket); var encoded = rocket.saveWithoutId(new CompoundTag());
+            rocket.discard(); rocket = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(rocket != null, "Post-L2 fixture could not reload its survivor");
+            rocket.load(encoded); helper.assertTrue(level.addFreshEntity(rocket), "Post-L2 survivor did not rejoin");
+            helper.assertTrue(envelope.equals(EscrowNativeEnvelope.rocket(rocket)) && RocketEscrowGate.idle(rocket),
+                    "Post-L2 reload changed the retired native survivor or its launch authority");
+            released();
         }
-
         private void flight() {
             var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
             var sourceFlight = predecessor.flightData().orElseThrow();
@@ -463,7 +439,6 @@ public final class RocketSettlementIdleGameTests {
             var server = level.getServer();
             if (discardHook) { discardHook = false; EscrowRuntime.of(server).terminalCutForTests(server, null); }
             if (leaseCut != null) { leaseCut.close(); leaseCut = null; }
-            l2Proofs.values().forEach(EscrowBarrier.Proof::release); l2Proofs.clear();
             if (passenger != null) {
                 passenger.stopRiding();
                 if (server.getPlayerList().getPlayer(passenger.getUUID()) == passenger) { server.getPlayerList().remove(passenger); }
@@ -471,7 +446,7 @@ public final class RocketSettlementIdleGameTests {
             for (var each : java.util.Arrays.asList(rocket, predecessor, successor)) {
                 if (each != null && !each.isRemoved()) { each.discard(); }
             }
-            if (source != null) { source.bank().discard(); level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()); }
+            if (source != null) { source.clear(); }
             level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             flightChunks.forEach((end, slots) -> slots.forEach(slot ->
                     end.getChunkSource().removeRegionTicket(FLIGHT_FIXTURE, slot, 2, actor)));
@@ -481,20 +456,16 @@ public final class RocketSettlementIdleGameTests {
         private void prepare() {
             var journal = RocketTransferSavedData.get(level.getServer()); if (!journal.retryChecked(level.getServer())) { return; }
             data = ResourceEscrowSavedData.forTests(level.getServer()); coordinator = data.bind(level.getServer());
-            source = EscrowTestEndpoints.create(level, position, data.ledger().id()); source.bank().discard();
-            rocket = createRocket(level, position, source.logical());
-            var sample = source.operation(coordinator.nextSequence());
+            rocket = createRocket(level, position, UUID.randomUUID());
             var before = rocket.flightData().orElseThrow(); var fuel = before.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
-            var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), source.logical(),
-                    ModIdentity.id("rocket").toString(), chunk.x, 0, chunk.z, EscrowEndpoint.Unit.PRIMARY, 0,
-                    before.fuel().resourceSignature(), fuel.resourceSignature());
-            var payload = sample.payload(); payload.putString("FluidName", ModIdentity.id("rocket_fuel").toString());
-            var guard = journal.acknowledgedGuard(source.logical()).orElseThrow();
-            operation = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
-                    payload, RocketNativeResources.signature(payload), sample.source(), destination,
-                    new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-            var capture = EscrowNativeBinding.captureTest(operation, rocket, source.source(), before.fuel(), fuel, data.ledger());
-            operation = capture.operation();
+            source = FluidFuelLoaderEscrowFixtures.prepare(helper, coordinator, rocket, position, committed -> {
+                helper.assertTrue(committed, "L1 was not acknowledged");
+                l1Generation = data.ledger().writerGeneration();
+                if (release != Release.L2) {
+                    source.applySource(coordinator); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions();
+                }
+            });
+            operation = source.operation();
             if (release != Release.NORMALIZED) {
                 var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
                 wrapper.put("flight_data", RocketFlightNbtCodec.encode(before.withFuel(fuel, level.getGameTime())));
@@ -503,7 +474,7 @@ public final class RocketSettlementIdleGameTests {
                 rocket.load(parent);
             }
             helper.assertTrue(rocket.operational() && level.addFreshEntity(rocket), "Credited rocket fixture failed");
-            coordinator.prepareTest(operation, capture.before(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
+            step = 1;
         }
         private void exerciseMountAndRefuel() {
             // W182: a connected stand-in with the open flight menu, since the server refuses a fake player's intents.

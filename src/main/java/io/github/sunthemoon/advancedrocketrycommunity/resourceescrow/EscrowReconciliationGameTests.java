@@ -73,7 +73,7 @@ public final class EscrowReconciliationGameTests {
         final EscrowCoordinator coordinator;
         final Path directory;
         final ArrayList<EscrowReconciliationScheduler.Result> replies = new ArrayList<>();
-        EscrowTestEndpoints.Fixture fixture;
+        FluidFuelLoaderEscrowFixtures.NativeFill fixture;
         RocketEntity rocket;
         EscrowOperation operation;
         boolean acknowledged;
@@ -102,34 +102,25 @@ public final class EscrowReconciliationGameTests {
             if (!level.areEntitiesLoaded(chunk.toLong()) || !level.isPositionEntityTicking(position)) { return; }
             if (step == 0) {
                 var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
-                fixture = EscrowTestEndpoints.create(level, position, data.ledger().id());
-                rocket = RocketSettlementIdleGameTests.createRocket(level, position, fixture.logical());
+                rocket = RocketSettlementIdleGameTests.createRocket(level, position, java.util.UUID.randomUUID());
                 helper.assertTrue(level.addFreshEntity(rocket), "Native rocket publication failed");
-                var sample = fixture.operation(coordinator.nextSequence()); var fuel = rocket.flightData().orElseThrow().fuel();
-                var next = fuel.withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
-                var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), fixture.logical(),
-                        EscrowAdapterIds.ROCKET, chunk.x, 0, chunk.z, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(), next.resourceSignature());
-                var guard = journal.acknowledgedGuard(fixture.logical()).orElseThrow();
-                var payload = sample.payload(); payload.putString("FluidName", ModIdentity.id("rocket_fuel").toString());
-                operation = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(),
-                        sample.reason(), payload, RocketNativeResources.signature(payload), sample.source(), destination,
-                        new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                coordinator.prepareNativeTest(operation, rocket, fixture.source(), result -> {
+                fixture = FluidFuelLoaderEscrowFixtures.prepare(helper, coordinator, rocket, position, result -> {
                     helper.assertTrue(result, "The checked L1 writer refused the fixture preparation"); acknowledged = true;
                 });
+                operation = fixture.operation();
                 helper.assertTrue(data.ledger().records().isEmpty() && rocket.flightData().orElseThrow().fuel().totalAmount() == 0
-                        && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 5_000, "C0 changed an endpoint before L1");
+                        && fixture.amount() == 5_000, "C0 changed an endpoint before L1");
                 step = 1;
             }
             if (step == 1) { coordinator.commitPreparations(); if (!acknowledged) { return; } step = 2; }
             if (step == 2) {
                 operation = data.ledger().records().get(0);
-                if (missing == 1) { level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()); }
+                if (missing == 1) { fixture.clear(); }
                 RocketEscrowAudit.attempt(coordinator, server, operation, data.ledger().records(), replies::add);
                 helper.assertTrue(replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "Apply or absence was reported as L2 proof");
                 if (missing == 1) { assertMissing(0); finish(); return; }
                 if (rocket.flightData().orElseThrow().fuel().totalAmount() != 1_000) { return; }
-                helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
+                helper.assertTrue(fixture.amount() == 4_000
                         && rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1
                         && data.ledger().records().size() == 1 && coordinator.locked(operation.destination().key()),
                         "C2 lost conservation, epoch, marker or the pending lock");
@@ -140,15 +131,15 @@ public final class EscrowReconciliationGameTests {
                 if (missing == 3 && coordinator.reconciliationCheckpointProved(operation.id())) {
                     assertC6(); finish(); return; // Stop this boundary test before requesting C7.
                 }
-                if (missing == 2) { level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()); }
+                if (missing == 2) { fixture.clear(); }
                 RocketEscrowAudit.attempt(coordinator, server, operation, data.ledger().records(), replies::add);
                 if (missing == 4) {
                     helper.assertTrue(rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000
-                            && fixture.sourceState().epoch() == 1 && rocket.escrowSection().epoch() == 1
-                            && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000, "C7/C8 changed resources or epochs");
+                            && fixture.state(data.ledger().id()).epoch() == 1 && rocket.escrowSection().epoch() == 1
+                            && fixture.amount() == 4_000, "C7/C8 changed resources or epochs");
                     if (data.ledger().records().isEmpty()) {
                         helper.assertTrue(replies.stream().filter(EscrowReconciliationScheduler.Result::proved).count() == 1
-                                && rocket.escrowSection().markers().isEmpty() && fixture.sourceState().markers().isEmpty()
+                                && rocket.escrowSection().markers().isEmpty() && fixture.state(data.ledger().id()).markers().isEmpty()
                                 && !coordinator.locked(operation.source().key()) && !coordinator.locked(operation.destination().key())
                                 && !coordinator.reconciliationCheckpointProved(operation.id()), "Exact L2 did not prune/release once");
                         finish(); return;
@@ -159,7 +150,7 @@ public final class EscrowReconciliationGameTests {
                     return;
                 }
                 helper.assertTrue(rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000
-                        && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
+                        && fixture.amount() == 4_000
                         && replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "C2 replayed or fabricated proof");
                 if (missing == 2) { assertMissing(1_000); }
                 if (missing == 3) {
@@ -173,7 +164,7 @@ public final class EscrowReconciliationGameTests {
             var root = coordinator.ledger();
             var view = EscrowReconciliationView.capture(helper.getLevel().getServer(), root, root.records());
             helper.assertTrue(view.current(coordinator) && view.unchanged(coordinator), "Fresh native binding is not current");
-            var persistent = fixture.source().getPersistentData();
+            var persistent = fixture.loader().getPersistentData();
             persistent.putBoolean("c39_changed", true);
             helper.assertTrue(!view.current(coordinator), "Fixture mutation did not invalidate the cached binding");
             persistent.remove("c39_changed");
@@ -195,7 +186,7 @@ public final class EscrowReconciliationGameTests {
                     && coordinator.locked(operation.source().key()) && coordinator.locked(operation.destination().key())
                     && data.ledger().records().size() == 1, "C3-C6 released an L1 record or an endpoint frontier");
             helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1
-                    && fixture.sourceState().epoch() == 1 && fixture.sourceState().markers().size() == 1
+                    && fixture.state(data.ledger().id()).epoch() == 1 && fixture.state(data.ledger().id()).markers().size() == 1
                     && replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "Native readback changed an epoch/marker or reported L2");
         }
         void assertMissing(long expectedFuel) {
@@ -208,8 +199,7 @@ public final class EscrowReconciliationGameTests {
                     && coordinator.locked(operation.destination().key()), "Missing source lost sticky repair");
         }
         void finish() {
-            coordinator.close(); rocket.discard(); fixture.bank().discard();
-            helper.getLevel().setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
+            coordinator.close(); rocket.discard(); fixture.clear();
             helper.getLevel().getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             try {
                 try (var files = Files.list(directory)) { for (var file : files.toList()) { Files.delete(file); } }
