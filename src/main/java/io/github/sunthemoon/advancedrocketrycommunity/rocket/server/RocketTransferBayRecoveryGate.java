@@ -67,6 +67,13 @@ public interface RocketTransferBayRecoveryGate {
      */
     default void ascentComplete(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) { }
+    /**
+     * W363: the same moment on a governed flight, from the governed dispatcher's ASCENT to TRANSIT change. A governed
+     * source is never the neutral wrapper, so D0's decision is its refusal. It starts no claim, writes nothing, loads
+     * nothing and does not pause the flight.
+     */
+    default void governedAscentComplete(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) { }
 
     RocketTransferBayRecoveryGate UNCLAIMED = new RocketTransferBayRecoveryGate() {
         @Override public Claim claim(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {

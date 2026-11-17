@@ -38,6 +38,7 @@ final class BaySourceResume {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final MinecraftServer server;
     private final java.util.Set<UUID> renewing = new java.util.HashSet<>();
+    private final java.util.Set<UUID> heldForTests = new java.util.HashSet<>(); // W363: one log line per held L
     private long stepTick = Long.MIN_VALUE;
 
     BaySourceResume(MinecraftServer server) { this.server = server; }
@@ -82,7 +83,6 @@ final class BaySourceResume {
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         long now = server.getTickCount();
         if (stepTick == now) { return BayStepQueue.Result.NEXT_TICK; } // one group per tick
-        stepTick = now;
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
         if (!journal.operational()) { claim.waiting("TRANSFER_JOURNAL_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
@@ -103,7 +103,17 @@ final class BaySourceResume {
             claim.waiting("END_LOADING"); // W170-R41: both recorded ends' census columns, which R1 already tickets (R150)
             return BayStepQueue.Result.NEXT_TICK;
         }
+        if (ReleaseTestBayEndHold.holds(server, claim.logical())) { // W363: gated; the same wait, as if an end were unloaded
+            if (heldForTests.add(claim.logical())) {
+                LOGGER.info("ARCE_RELEASE_BAY_END_HELD transfer={} logical={}", claim.transfer(), claim.logical());
+            }
+            claim.waiting("END_LOADING");
+            return BayStepQueue.Result.NEXT_TICK;
+        }
         if (RocketReleaseAccess.fenced(server, claim.logical())) { claim.waiting("RELEASE_FENCED"); return BayStepQueue.Result.NEXT_TICK; }
+        // W363 (R451): only a group past its waits takes the tick's one R2 slot. A waiting group reads its bounded
+        // conditions and passes the slot on, so it cannot starve the restart groups queued behind it.
+        stepTick = now;
         UUID uuid = record.sourceEntityId();
         String copies = BayCopyCensus.inspect(server, record, group).refusal();
         if (copies != null) {
@@ -183,5 +193,5 @@ final class BaySourceResume {
     }
 
     /** A claim's end, or its gated forget. */
-    void forget(UUID logical) { renewing.remove(logical); }
+    void forget(UUID logical) { renewing.remove(logical); heldForTests.remove(logical); }
 }
