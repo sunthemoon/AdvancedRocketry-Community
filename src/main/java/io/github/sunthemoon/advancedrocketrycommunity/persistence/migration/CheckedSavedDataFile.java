@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
@@ -8,8 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -18,7 +17,22 @@ import net.minecraft.nbt.NbtUtils;
 
 /** Forced, read-back-validated, atomically replaced SavedData file; no non-atomic fallback. */
 public final class CheckedSavedDataFile {
+    /**
+     * The file operations of every checked write. It holds {@link CheckedFileOps#DIRECT} unless the gated release-test
+     * installer ({@link ReleaseTestStorageTrace}) replaces it for one server session.
+     */
+    private static volatile CheckedFileOps fileOps = CheckedFileOps.DIRECT;
+
     private CheckedSavedDataFile() {
+    }
+
+    static CheckedFileOps fileOps() {
+        return fileOps;
+    }
+
+    /** Release-test and unit-test seam; null restores {@link CheckedFileOps#DIRECT}. */
+    static void installFileOps(CheckedFileOps replacement) {
+        fileOps = replacement == null ? CheckedFileOps.DIRECT : replacement;
     }
 
     public static void replace(Path file, ManagedSavedDataType type, Supplier<CompoundTag> payload) {
@@ -26,7 +40,7 @@ public final class CheckedSavedDataFile {
     }
 
     public static void atomicMove(Path staged, Path target) throws IOException {
-        Files.move(staged, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        fileOps.move(staged, target);
     }
 
     /** Throws before acknowledging; the target is replaced only by {@code committer}. */
@@ -34,6 +48,7 @@ public final class CheckedSavedDataFile {
                                Committer committer) {
         Path file = supplied.toAbsolutePath().normalize();
         Path pending = file.resolveSibling(type.fileName() + ".arce-pending");
+        CheckedFileOps ops = fileOps;
         boolean staged = false;
         try {
             if (!file.getFileName().toString().equals(type.fileName())) {
@@ -51,21 +66,22 @@ public final class CheckedSavedDataFile {
             outer.put("data", payload.get());
             NbtUtils.addCurrentDataVersion(outer);
             byte[] encoded = BoundedSavedDataIo.write(outer, type);
-            try (var output = FileChannel.open(pending, StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
+            FileChannel output = ops.open(pending);
+            // The resource closes exactly as the channel did: after the body, and suppressed under a body failure.
+            try (Closeable closing = () -> ops.close(output)) {
                 staged = true;
                 var buffer = ByteBuffer.wrap(encoded);
-                while (buffer.hasRemaining()) { output.write(buffer); }
-                output.force(true);
+                while (buffer.hasRemaining()) { ops.write(output, buffer); }
+                ops.force(output);
             }
-            if (!outer.equals(BoundedSavedDataIo.read(pending, type))) {
+            if (!outer.equals(ops.readStaged(pending, type))) {
                 throw new IOException("SavedData staging readback differs");
             }
             requireFileOrAbsent(file);
             committer.commit(pending, file);
         } catch (IOException | RuntimeException exception) {
             if (staged) {
-                try { Files.deleteIfExists(pending); }
+                try { ops.delete(pending); }
                 catch (IOException cleanup) { exception.addSuppressed(cleanup); }
             }
             if (exception instanceof IOException io) { throw new UncheckedIOException(io); }
