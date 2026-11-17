@@ -139,10 +139,19 @@ class EscrowReconciliationRetirementTest {
             var observations = new ArrayList<>(request.ends.values());
             observations.add(new EscrowSettlementIntent.Observation(f.b.source(), new EscrowPrefix.State(f.base.id(), 1,
                     f.b.source().afterSignature(), List.of(new EscrowPrefix.Link(f.b, f.b.source(), "SOURCE").marker())), true, 4900));
+            var numbers = new HashMap<EscrowEndpoint.Key, java.util.Map<java.util.UUID, EscrowFluidAccount.Vector>>();
+            var slots = java.util.Map.of(f.a.source().key(), EscrowReconciliationCheckpointTest.sourceSlot(f.a, f.base),
+                    f.b.source().key(), EscrowReconciliationCheckpointTest.sourceSlot(f.b, f.base), f.a.destination().key(), f.rocketSlot);
+            slots.forEach((key, slot) -> {
+                var chain = EscrowPrefix.chains(f.base.records()).get(key);
+                numbers.put(key, EscrowSettlementDisk.ordinary(slot, chain.get(0).endpoint(), f.base.id(), null,
+                        chain.stream().map(EscrowPrefix.Link::operation).toList()).fluids());
+            });
+            var rows = EscrowSettlementAccounting.project(f.coordinator.ledger(), f.coordinator.ledger().records(), observations, numbers);
             var preview = EscrowSettlementIntent.preview(f.coordinator.ledger(), f.a.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                    EscrowTestFixtures.id(700), "operator", tick, observations);
+                    EscrowTestFixtures.id(700), "operator", tick, observations).accounting(rows);
             var intent = preview.confirm(preview.actor(), preview.digest(), tick, observations);
-            assertTrue(f.coordinator.beginSettlement(intent, assertTrueResult -> assertTrue(assertTrueResult)));
+            assertTrue(f.coordinator.beginSettlement(intent, rows, null, assertTrueResult -> assertTrue(assertTrueResult)));
             tick = f.io.tickUntil(f.coordinator::tick, tick + 1, f.writer::idle); f.coordinator.tick(tick += 10);
             var proofs = new HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
             for (var observation : intent.checkpointed()) {
@@ -182,8 +191,8 @@ class EscrowReconciliationRetirementTest {
             a = named ? new EscrowOperation(original.id(), original.sequence(), original.owner(), original.createdTick(), original.phase(),
                     original.reason(), original.payload(), original.payloadHash(), original.source(), original.destination(),
                     new EscrowGuard(original.guard().rocket(), EscrowTestFixtures.id(750), 1, EscrowTestFixtures.hash(750)),
-                    original.kind(), original.settlement(), original.nativeBinding()) : original;
-            var initial = new EscrowLedger(sample.ledger().id(), sample.ledger().issuedThrough(), 1, List.of(a, b), List.of(), List.of());
+                    original.kind(), original.settlement(), original.nativeBinding(), original.accountingBaseline()) : original;
+            var initial = sample.ledger().accounting(List.of(a, b), sample.ledger().fluidAccounts());
             java.nio.file.Files.createDirectory(file.getParent());
             CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(file, () -> EscrowCodec.encode(initial));
             data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial)); base = data.ledger();
@@ -191,10 +200,9 @@ class EscrowReconciliationRetirementTest {
             rocketSlot = EscrowReconciliationCheckpointTest.rocketSlot(a.destination(), sample.after());
         }
         EscrowReconciliationCheckpoint request(BooleanSupplier lease) {
-            var source = new EscrowSettlementIntent.Observation(a.source(), new EscrowPrefix.State(base.id(), 1,
-                    a.source().afterSignature(), List.of(new EscrowPrefix.Link(a, a.source(), "SOURCE").marker())), true, 4900);
-            var request = new EscrowReconciliationCheckpoint(base, Set.of(a.id()), List.of(source,
-                    EscrowSettlementDisk.observe(rocketSlot, a.destination(), base.id())), lease);
+            var slots = java.util.Map.of(a.source().key(), EscrowReconciliationCheckpointTest.sourceSlot(a, base),
+                    a.destination().key(), rocketSlot);
+            var request = EscrowReconciliationCheckpointTest.captured(base, Set.of(a.id()), slots, lease);
             for (var endpoint : List.of(a.source(), a.destination())) {
                 var targets = request.targets(endpoint); var proofs = new HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
                 for (var target : targets) {
@@ -204,6 +212,7 @@ class EscrowReconciliationRetirementTest {
                     proofs.put(target.endpoint().key(), new EscrowBarrier.Proof(target.frontier(), capture, new AtomicBoolean(true), new AtomicBoolean(true)));
                     coordinator.freeze(target.endpoint().key(), target.frontier());
                 }
+                EscrowReconciliationCheckpointTest.readback(targets, slots);
                 request.accept(targets, new EscrowBarrier.JointResult(proofs, EscrowReason.NONE));
             }
             return request;
