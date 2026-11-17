@@ -41,11 +41,12 @@ class EscrowAccountingFormatTest {
         if (!rows.isEmpty()) { preview = preview.accounting(rows); }
         return preview.confirm(preview.actor(), preview.digest(), 11, observed);
     }
-    @Test void activationIsOffAndWriterCannotPublishTheNewForm() {
-        assertFalse(EscrowAccountingFormat.ENABLED);
-        var old = ledger(operation(1)); assertEquals(2, EscrowCodec.encode(old).getInt("schema_version"));
-        assertEquals(old, EscrowLedgerWriter.Snapshot.of(old, java.util.Set.of()).ledger());
-        assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(planned(operation(1)), java.util.Set.of()));
+    @Test void activationIsOnAndWriterPublishesTheNewFormUnderR466() {
+        assertTrue(EscrowAccountingFormat.ENABLED); // Root decision R466: activate the integrated accounting format.
+        var root = ledger(operation(1)); assertEquals(3, EscrowCodec.encode(root).getInt("schema_version"));
+        assertEquals(root, EscrowLedgerWriter.Snapshot.of(root, java.util.Set.of()).ledger());
+        var accounted = planned(operation(1));
+        assertEquals(accounted, EscrowLedgerWriter.Snapshot.of(accounted, java.util.Set.of()).ledger());
     }
     @Test void explicitRoot3RoundTripsPlannedO1O3AndO4() {
         var root = planned(operation(1).withReason(EscrowReason.OTHER_STATE));
