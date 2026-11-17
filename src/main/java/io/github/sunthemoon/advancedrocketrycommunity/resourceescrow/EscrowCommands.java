@@ -26,30 +26,43 @@ public final class EscrowCommands {
                 .then(intent("settle-floor", EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE))));
     }
     private static LiteralArgumentBuilder<CommandSourceStack> diagnostic(String name, boolean retry) {
-        return Commands.literal(name).then(Commands.argument("operation", net.minecraft.commands.arguments.UuidArgument.uuid())
-                .executes(context -> {
-                    var source = context.getSource();
-                    var selected = net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation");
-                    try {
-                        if (retry) {
-                            var result = EscrowRuntime.of(source.getServer()).settlement().retry(source.getServer(), selected);
-                            source.sendSuccess(() -> Component.literal(result.message()), false);
-                            return result.outcome() == EscrowOperatorRetry.Outcome.ACCEPTED ? 1 : 0;
-                        }
-                        EscrowOperatorDiagnostics.inspect(source.getServer(), selected).forEach(line ->
-                                source.sendSuccess(() -> Component.literal(line), false));
-                        return 1;
-                    } catch (IllegalArgumentException refused) {
-                        source.sendFailure(Component.literal("Escrow " + name + " refused: " + refused.getMessage())); return 0;
-                    }
-                }));
+        var operation = Commands.argument("operation", net.minecraft.commands.arguments.UuidArgument.uuid())
+                .executes(context -> diagnostic(context.getSource(), net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation"), name, retry, 0));
+        if (!retry) { operation.then(Commands.argument("page", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 19))
+                .executes(context -> diagnostic(context.getSource(), net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation"), name, false,
+                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page")))); }
+        return Commands.literal(name).then(operation);
+    }
+    private static int diagnostic(CommandSourceStack source, java.util.UUID selected, String name, boolean retry, int page) {
+        try {
+            if (retry) {
+                var result = EscrowRuntime.of(source.getServer()).settlement().retry(source.getServer(), selected);
+                source.sendSuccess(() -> Component.literal(result.message()), false);
+                return result.outcome() == EscrowOperatorRetry.Outcome.ACCEPTED ? 1 : 0;
+            }
+            EscrowOperatorDiagnostics.inspect(source.getServer(), selected, page).forEach(line ->
+                    source.sendSuccess(() -> Component.literal(line), false));
+            return 1;
+        } catch (IllegalArgumentException refused) {
+            source.sendFailure(Component.literal("Escrow " + name + " refused: " + refused.getMessage())); return 0;
+        }
     }
     private static LiteralArgumentBuilder<CommandSourceStack> intent(String name, EscrowSettlementIntent.Choice choice) {
         return Commands.literal(name).then(Commands.argument("operation", net.minecraft.commands.arguments.UuidArgument.uuid())
                 .executes(context -> execute(context.getSource(), net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation"), choice, null))
+                .then(Commands.literal("page").then(Commands.argument("page", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 19))
+                        .executes(context -> previewPage(context.getSource(), net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation"), choice,
+                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page")))))
                 .then(Commands.literal("confirm").then(Commands.argument("digest", StringArgumentType.word())
                         .executes(context -> execute(context.getSource(), net.minecraft.commands.arguments.UuidArgument.getUuid(context, "operation"),
                                 choice, StringArgumentType.getString(context, "digest"))))));
+    }
+    private static int previewPage(CommandSourceStack source, java.util.UUID selected, EscrowSettlementIntent.Choice choice, int page) {
+        try {
+            var actor = EscrowCommandActor.require(source);
+            EscrowRuntime.of(source.getServer()).settlement().previewPage(source.getServer(), selected, choice, actor.id(), page)
+                    .forEach(line -> source.sendSuccess(() -> Component.literal(line), false)); return 1;
+        } catch (IllegalArgumentException refused) { source.sendFailure(Component.literal("Settlement preview refused: " + refused.getMessage())); return 0; }
     }
     private static int execute(CommandSourceStack source, java.util.UUID selected, EscrowSettlementIntent.Choice choice, String digest) {
         try {
@@ -63,7 +76,7 @@ public final class EscrowCommands {
             }
             if (digest == null) {
                 var preview = operator.preview(server, selected, choice, actor.id(), actor.name());
-                source.sendSuccess(() -> Component.literal(EscrowOperatorDiagnostics.preview(preview)), false);
+                operator.previewLines(preview, 0).forEach(line -> source.sendSuccess(() -> Component.literal(line), false));
                 return 1;
             }
             boolean queued = operator.confirm(server, selected, choice, actor.id(), digest, committed -> {

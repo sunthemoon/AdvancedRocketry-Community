@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 2af39a672 (W358 merged, R444 and R446: native cases for six of the satellite bay rows that C3 left uncovered, through gated release-test controls, a new runner and seven campaign families; no production behaviour change; branch run 43360946092 passed on its second attempt with 1,859 GameTests after one intermittent live-return failure on the first, which stays an open item). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 43368616867 at 1d62f2371 (W358 merged at `2af39a672`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 16.6, 18.2, 20.1 and 18.1 minutes, 1,859 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 43368616761 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: c0d2f0728 (W363 merged, R451 and R455: a governed flight records BAY_SOURCE_PROTECTED for its packaged bays at ascent complete with no claim; a waiting restart group passes the tick's R2 slot on; the gated B17.3 readiness seam; branch run 43399137244 and governance run 43399138967 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44086544010 at 1bde69a38 (W363 merged at `c0d2f0728`) passed on its first attempt: build 10.0 minutes, shards 0 to 3 in 13.9, 20.2, 20.1 and 18.3 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44086544032 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -555,7 +555,14 @@ What is still open:
   `EscrowGovernedLiveReturnGameTests.countdownCancellationReachesReturnedF6WithPassenger` in shard 3 with "Live
   return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
   hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
-  every shard (R446). It stays open until later runs show no recurrence or a cause is found.
+  every shard (R446). It recurred on 2026-11-17 in attempt 1 of W370's branch run 44109049691, shard 3, as
+  `EscrowGovernedLiveReturnGameTests.dismountAfterReturnCompletesCancelledF7AndF8WithoutReseating` with the same
+  message, in a branch that changes only Python and one test count. It stays open until a cause is found; with two
+  recurrences in a week it needs its own diagnosis before candidate C4.
+- **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
+  failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
+  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
+  open until later runs show no recurrence or a cause is found.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,

@@ -30,6 +30,7 @@ import re
 import shutil
 import time
 import uuid
+import v180_crash_replay as replay
 
 import bay_integrated_evidence as evidence_tools
 import run_dedicated_server_smoke as smoke
@@ -398,6 +399,7 @@ class Session:
             raise smoke.SmokeError("Native start refused: under 10 GiB free")
         command = _server_command(self.args.java)
         command[2] = "-Xmx4G"
+        replay.trace_command(self.args, command, restart)
         for key, value in sorted(properties.items()):
             command.insert(4, f"-Dadvancedrocketrycommunity.{key}={value}")
         try:
@@ -824,7 +826,12 @@ def run_case(run: Session, case: str) -> dict:
     (run.session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())),
                                                    encoding="ascii")
     row = dict(case=case, spec=spec)
-    fixture, row["first_start"] = first_start(run, case, world)
+    if getattr(run.args, "replay_world", None) is not None:
+        replay.materialize(run.args.replay_world, world, run.args.replay_state)
+        fixture = run.args.replay_context["fixture"]
+        row["first_start"] = run.args.replay_context["first_start"]
+    else:
+        fixture, row["first_start"] = first_start(run, case, world)
     receipts = world / "data" / RECEIPTS
     row["cut_disk"] = dict(receipts=digest(receipts) if receipts.is_file() else None,
                            staging=(world / "data" / STAGING).exists())
@@ -835,7 +842,11 @@ def run_case(run: Session, case: str) -> dict:
         row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"],
             passenger=ONLINE_RIDER if spec.get("online") else "00000000-0000-4000-8000-000000185001")
     row["restarts"] = []
-    for restart in (1, 2):
+    row["fixture"] = fixture
+    if replay.capture_replay(run.args, world, row, run.evidence, case):
+        row["status"] = "PASS"
+        return row
+    for restart in getattr(run.args, "replay_restart_numbers", (1, 2)):
         hooked = first_tick_satellite(case, fixture) if fixture is not None and restart == 1 else None
         properties = {"bayFirstTick": hooked} if hooked else {}
         if spec.get("hold") == "REGISTRY_BLOCKED":
@@ -1555,6 +1566,8 @@ def run(args, extra_cases: dict | None = None, extra_tranches: dict | None = Non
                 print(f"{case}: FAIL {failure}", flush=True)
             report["cases"][-1]["observed_ticks"] = evidence_tools.case_observations(evidence, case)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+            if report["cases"][-1]["status"] != "PASS" and getattr(args, "replay_preserve", None):
+                args.replay_preserve(session / ("world-" + case))
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
             if report["cases"][-1]["status"] != "PASS" and getattr(args, "stop_on_failure", False):
                 break

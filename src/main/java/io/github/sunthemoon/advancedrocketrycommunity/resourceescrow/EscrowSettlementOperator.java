@@ -61,10 +61,13 @@ final class EscrowSettlementOperator {
         }
         var observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = EscrowSettlementIntent.preview(data.ledger(), selected, choice, actor, name, tick, observed);
+        var component = EscrowSettlementIntent.component(data.ledger().records(), selected);
+        var rows = EscrowSettlementAccounting.project(data.ledger(), component, observed, EscrowSettlementObserver.accounting(server, component, observed));
+        if (!rows.isEmpty()) { intent = intent.accounting(rows); }
         // Validate operation envelopes and reserve capacity before offering a confirm digest.
         intent.confirm(actor, intent.digest(), tick + (observed.stream().anyMatch(EscrowSettlementIntent.Observation::missing) ? 200 : 0), observed)
-                .freeze(data.ledger());
-        previews.put(intent, tick); return intent;
+                .freeze(data.ledger(), EscrowSettlementAccounting.merge(data.ledger(), intent, rows));
+        previews.put(intent, rows, tick); return intent;
     }
     boolean confirm(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor,
                     String digest, Consumer<Boolean> completion) {
@@ -76,12 +79,18 @@ final class EscrowSettlementOperator {
                 ? EscrowSettlementObserver.floor(server, preview.floor(), data.ledger().id())
                 : EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = preview.confirm(actor, digest, tick, observed);
+        var rows = previews.rows(actor);
+        if (intent.accountCommitment() != null) {
+            EscrowSettlementAccounting.requireFrozen(data.ledger(), intent, observed,
+                    EscrowSettlementObserver.accounting(server, EscrowSettlementIntent.component(data.ledger().records(), selected), observed));
+        }
         UUID owner = choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE ? floorOwner(server, intent.floor()) : null;
-        boolean queued = data.bind(server).beginSettlement(intent, owner, committed -> {
+        boolean queued = data.bind(server).beginSettlement(intent, EscrowSettlementAccounting.merge(data.ledger(), intent, rows), owner, committed -> {
             if (committed) {
                 previews.remove(actor, preview);
                 LOGGER.info("ARCE_ESCROW_O1 actor={} choice={} operations={} digest={} quantities={} release=awaiting-checkpoints",
                         intent.actor(), intent.choice(), intent.ids(), intent.digest(), intent.observations().stream().map(EscrowSettlementIntent.Observation::quantity).toList());
+                if (data.ledger().schema() == 3) { LOGGER.info("ARCE_ESCROW_ACCOUNTING_DECISION {}", EscrowAccountingDiagnostics.audit(intent, rows)); }
             }
             completion.accept(committed);
         });
@@ -113,23 +122,43 @@ final class EscrowSettlementOperator {
     void close() { previews.clear(); retries.clear(); }
     /** A copy for the provenance GameTest; no command reads it. */
     Map<UUID, EscrowSettlementIntent> previewSnapshot() { return previews.snapshot(); }
+    List<String> previewLines(EscrowSettlementIntent intent, int page) {
+        var rows = previews.rows(intent.actor());
+        if (rows.isEmpty()) { EscrowTags.require(page == 0, "Accounting page out of range"); return List.of(EscrowOperatorDiagnostics.preview(intent)); }
+        var result = new java.util.ArrayList<String>();
+        result.add(EscrowOperatorDiagnostics.preview(intent).replace("accounting=UNKNOWN", "accounting=" + rows.get(0).knowledge()));
+        result.addAll(EscrowAccountingDiagnostics.page(rows, page, "PREVIEW-not-O1-or-O2", intent)); return List.copyOf(result);
+    }
+    List<String> previewPage(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor, int page) {
+        existing(server);
+        var intent = previews.get(actor, server.getTickCount());
+        EscrowTags.require(intent != null && intent.choice() == choice && (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
+                ? selected.equals(intent.floor().getUUID("transfer_id")) : intent.ids().contains(selected)), "No matching preview");
+        return previewLines(intent, page);
+    }
     static final class PreviewCache {
         private final Map<UUID, EscrowSettlementIntent> entries = new HashMap<>();
+        private final Map<UUID, List<EscrowFluidAccount.Row>> accounts = new HashMap<>();
         void requireCapacity(UUID actor, long tick) {
             entries.entrySet().removeIf(entry -> tick - entry.getValue().previewTick() > PREVIEW_TICKS);
+            accounts.keySet().retainAll(entries.keySet());
             EscrowTags.require(entries.containsKey(actor) || entries.size() < PREVIEWS, "Settlement preview capacity exhausted");
         }
         void put(EscrowSettlementIntent intent, long tick) {
-            requireCapacity(intent.actor(), tick); entries.put(intent.actor(), intent);
+            put(intent, List.of(), tick);
         }
+        void put(EscrowSettlementIntent intent, List<EscrowFluidAccount.Row> rows, long tick) {
+            requireCapacity(intent.actor(), tick); entries.put(intent.actor(), intent); accounts.put(intent.actor(), List.copyOf(rows));
+        }
+        List<EscrowFluidAccount.Row> rows(UUID actor) { return accounts.getOrDefault(actor, List.of()); }
         EscrowSettlementIntent get(UUID actor, long tick) {
             var result = entries.get(actor);
-            if (result != null && tick - result.previewTick() > PREVIEW_TICKS) { entries.remove(actor); return null; }
+            if (result != null && tick - result.previewTick() > PREVIEW_TICKS) { entries.remove(actor); accounts.remove(actor); return null; }
             return result;
         }
-        void remove(UUID actor, EscrowSettlementIntent intent) { entries.remove(actor, intent); }
+        void remove(UUID actor, EscrowSettlementIntent intent) { if (entries.remove(actor, intent)) { accounts.remove(actor); } }
         int size() { return entries.size(); }
         Map<UUID, EscrowSettlementIntent> snapshot() { return Map.copyOf(entries); }
-        void clear() { entries.clear(); }
+        void clear() { entries.clear(); accounts.clear(); }
     }
 }

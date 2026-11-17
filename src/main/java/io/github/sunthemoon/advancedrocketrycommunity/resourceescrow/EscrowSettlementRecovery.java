@@ -122,9 +122,12 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             if (EscrowSettlementNormalization.publish(server, coordinator, intent, journal.acknowledgedLease(), runtime)) { observation.sample("settlement.wait.NORMALIZATION", 0); return; }
             var current = EscrowSettlementObserver.observe(server, intent.ledger(), references);
             EscrowTags.require(current.equals(intent.checkpointed()), "Frozen settlement endpoint changed");
+            EscrowSettlementAccounting.requireFrozen(coordinator.ledger(), intent, current,
+                    EscrowSettlementObserver.accounting(server, members, current));
             for (var endpointObservation : intent.checkpointed()) {
                 if (state.proofs.containsKey(endpointObservation.endpoint().key())) { continue; }
-                var slot = EscrowSettlementProofs.slot(intent, members, endpointObservation.endpoint(), rocket -> liveSnapshot(server, rocket));
+                var slot = EscrowSettlementProofs.slot(intent, members, endpointObservation.endpoint(), rocket -> liveSnapshot(server, rocket),
+                        coordinator.ledger().fluidAccounts());
                 var targets = slot.targets();
                 var keys = targets.stream().map(target -> target.endpoint().key()).toList();
                 var endpoint = endpointObservation.endpoint();
@@ -177,6 +180,10 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                     pruning.enqueue(coordinator.ledger(), acknowledgement);
                     com.mojang.logging.LogUtils.getLogger().info("ARCE_ESCROW_O4 actor={} choice={} digest={} operations={} released=acknowledged",
                             intent.actor(), intent.choice(), intent.digest(), intent.ids());
+                    if (coordinator.ledger().schema() == 3) {
+                        com.mojang.logging.LogUtils.getLogger().info("ARCE_ESCROW_ACCOUNTING_RELEASED actor={} digest={} members={} account_commitment={}",
+                                intent.actor(), intent.digest(), intent.ids(), intent.accountCommitment());
+                    }
                 } else { stalled(runtime, intent, state, "O4_WRITE_UNACKNOWLEDGED", server.getTickCount()); }
             })) { observation.sample("settlement.wait.O4_QUEUE", 0); state.writing = false; }
         } catch (IllegalArgumentException | java.util.NoSuchElementException refused) {

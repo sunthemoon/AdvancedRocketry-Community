@@ -56,19 +56,25 @@ final class EscrowOperatorDiagnostics {
                 + " ready_heads=" + root.rocketAuthorities().size() + "/64 armed=" + root.armedFlights().size() + "/64",
                 "held_reasons=" + reasons.entrySet().stream().limit(DETAILS).toList()
                 + " other_reason_kinds=" + Math.max(0, reasons.size() - DETAILS)
-                + " accounting=UNKNOWN; all settlement choices consume one permanent receipt per member; at 64, all choices refuse and require stopped-server whole-world offline repair.");
+                + (root.schema() == 2 ? " accounting=UNKNOWN" : " accounting_rows=" + root.fluidAccounts().size()
+                        + " accounting=per-fluid inspect-required")
+                + "; all settlement choices consume one permanent receipt per member; at 64, all choices refuse and require stopped-server whole-world offline repair.");
     }
     private static long count(List<net.minecraft.nbt.CompoundTag> receipts, String choice) {
         return receipts.stream().filter(tag -> choice.equals(tag.getString("choice"))).count();
     }
     static List<String> inspect(MinecraftServer server, UUID selected) {
+        return inspect(server, selected, 0);
+    }
+    static List<String> inspect(MinecraftServer server, UUID selected, int page) {
         var data = ResourceEscrowSavedData.existing(server);
         EscrowTags.require(data != null, "No escrow ledger; inspect does not create one");
         var runtime = EscrowRuntime.of(server); var scheduler = runtime.reconciliationScheduler();
         var journal = RocketTransferSavedData.existing(server);
-        return inspect(data.ledger(), selected, runtime.settlementRecovery()::view,
+        var result = new ArrayList<>(inspect(data.ledger(), selected, runtime.settlementRecovery()::view,
                 id -> scheduler == null ? new EscrowReconciliationScheduler.View("QUEUED", "NONE", -1, 0, false) : scheduler.view(id),
-                journal == null ? "absent-unproved" : journal.checkedWriteResult().toString(), runtime.settlementRecovery()::pruningState);
+                journal == null ? "absent-unproved" : journal.checkedWriteResult().toString(), runtime.settlementRecovery()::pruningState));
+        result.addAll(EscrowAccountingDiagnostics.inspect(data.ledger(), selected, page)); return List.copyOf(result);
     }
     static List<String> inspect(EscrowLedger root, UUID selected,
             Function<EscrowSettlementIntent, EscrowSettlementRecovery.View> settlement,
@@ -91,20 +97,20 @@ final class EscrowOperatorDiagnostics {
             var survivors = new java.util.LinkedHashSet<EscrowEndpoint.Key>(); group.forEach(member -> survivors.addAll(survivors(member)));
             result.add("group=" + digest + " members=" + group.size()
                     + " omitted=" + Math.max(0, group.size() - DETAILS) + " pruning=" + pruning(pruning, digest, receipt, List.copyOf(survivors))
-                    + " journal=" + bounded(journal) + " accounting=UNKNOWN");
+                    + " journal=" + bounded(journal) + " accounting=" + EscrowAccountingDiagnostics.knowledge(root, group.stream().map(tag -> tag.getUUID("op_id")).toList()));
             for (var member : group.stream().limit(DETAILS).toList()) {
                 UUID logical = EscrowCodec.guard((net.minecraft.nbt.CompoundTag) EscrowTags.list(member, "guards", 1).get(0)).rocket();
                 result.add("operation=" + member.getUUID("op_id") + " persisted=RETIRED runtime=RELEASED reason=NONE O2=not-retained"
                         + " pruning=" + pruning(pruning, digest, member, survivors(member))
                         + " next_retry=none receipt=" + (member.getBoolean("released") ? "RELEASED" : "INSTALLED")
-                        + " head=" + head(root, logical) + " accounting=UNKNOWN");
+                        + " head=" + head(root, logical) + " accounting=" + EscrowAccountingDiagnostics.knowledge(root, List.of(member.getUUID("op_id"))));
             }
             return List.copyOf(result);
         }
         var group = EscrowSettlementIntent.component(root.records(), selected);
         result.add("group=" + (op.settlement().isEmpty() ? group.get(0).id() : op.settlement().getString("digest"))
                 + " members=" + group.size() + " omitted=" + Math.max(0, group.size() - DETAILS)
-                + " journal=" + bounded(journal) + " accounting=UNKNOWN");
+                + " journal=" + bounded(journal) + " accounting=" + EscrowAccountingDiagnostics.knowledge(root, group.stream().map(EscrowOperation::id).toList()));
         for (var member : group.stream().limit(DETAILS).toList()) {
             String runtime;
             if (!member.settlement().isEmpty()) {
@@ -119,7 +125,7 @@ final class EscrowOperatorDiagnostics {
             var installed = root.tombstones().stream().filter(tag -> member.id().equals(tag.getUUID("op_id"))).findFirst().orElse(null);
             result.add("operation=" + member.id() + " persisted=" + member.phase() + " persisted_reason=" + member.reason()
                     + " runtime=" + runtime + " receipt=" + (installed == null ? "NONE" : "INSTALLED")
-                    + " head=" + head(root, member.guard().rocket()) + " accounting=UNKNOWN");
+                    + " head=" + head(root, member.guard().rocket()) + " accounting=" + EscrowAccountingDiagnostics.knowledge(root, List.of(member.id())));
         }
         return List.copyOf(result);
     }
