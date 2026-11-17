@@ -17,8 +17,14 @@ class EscrowCombinedReservationTest {
     @TempDir Path directory;
 
     static EscrowLedger retainedFloors(int count) {
+        var historical = retainedRoot2Floors(count);
+        return EscrowCodec.decode(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator
+                .migrateEscrow(EscrowCodec.encode(historical)));
+    }
+
+    static EscrowLedger retainedRoot2Floors(int count) {
         // Build retained floors through ordinary admitted-fill retirement, not arbitrary padding.
-        var base = EscrowTestFixtures.ledger();
+        var base = EscrowTestFixtures.root2(EscrowTestFixtures.ledger());
         for (int i = 1; i <= count; i++) {
             var original = EscrowTestFixtures.operation(i, 10_000 + i, 0);
             var op = new EscrowOperation(original.id(), original.sequence(), original.owner(), original.createdTick(),

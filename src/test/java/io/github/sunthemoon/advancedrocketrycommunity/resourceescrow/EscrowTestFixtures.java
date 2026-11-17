@@ -28,6 +28,14 @@ final class EscrowTestFixtures {
         return new EscrowLedger(id(500), java.util.Arrays.stream(records).mapToLong(EscrowOperation::sequence).max().orElse(0),
                 0, List.of(records), List.of(), List.of());
     }
+    /** Historical format input only; runtime tests must carry captured accounting rows instead. */
+    static EscrowLedger root2(EscrowLedger old) {
+        if (!old.fluidAccounts().isEmpty() || old.records().stream().anyMatch(op -> op.accountingBaseline() != null)) {
+            throw new IllegalArgumentException("Historical fixture cannot discard accounting rows");
+        }
+        return new EscrowLedger(old.id(), old.issuedThrough(), old.writerGeneration(), old.records(), old.floors(), old.tombstones(),
+                old.issuedLaunchSerial(), old.rocketAuthorities(), old.armedFlights(), 2, List.of());
+    }
     /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
     static EscrowOperation distributedOwner(EscrowOperation op) {
         var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();

@@ -35,6 +35,9 @@ import org.junit.jupiter.api.Test;
  * those encoded tags with the names and types of section 4.1. Nothing here changes an existing fixture or pin.
  */
 class EscrowFluidAccountSizeTest {
+    private static EscrowLedger ledger(EscrowOperation... records) {
+        return root2(EscrowTestFixtures.ledger(records));
+    }
     /** The new root header: a 17-byte longer epoch and the required, empty {@code fluid_accounts} list. */
     static final String NEW_EPOCH = "v1.8.0-resource-escrow-fluid-accounting";
     /** Section 4.1 does not name the intent's commitment field. This name is this slice's assumption. */
@@ -396,7 +399,7 @@ class EscrowFluidAccountSizeTest {
         assertEquals(39, header);
         for (var kind : EscrowCargoFixtures.KINDS) {
             for (int floors : List.of(0, 29)) {
-                var base = EscrowCombinedReservationTest.retainedFloors(floors); var candidates = new ArrayList<EscrowOperation>();
+                var base = EscrowCombinedReservationTest.retainedRoot2Floors(floors); var candidates = new ArrayList<EscrowOperation>();
                 for (int index = 0; index < 64; index++) {
                     candidates.add(distributedOwner(EscrowCargoFixtures.operation(kind, base.issuedThrough() + 1 + index, 40_000 + index)));
                 }
@@ -423,7 +426,7 @@ class EscrowFluidAccountSizeTest {
     }
 
     @Test void benchmarkCeilingFixtureWithAccountRows() {
-        var root = EscrowFlightBenchmarkCeiling.create(); var encoded = EscrowCodec.encode(root);
+        var root = EscrowFlightBenchmarkCeiling.create(false); var encoded = EscrowCodec.encode(root);
         assertEquals(1_048_576, size(encoded).bytes());
         int blob = root.records().get(0).payload().getCompound("Tag").getByteArray("blob").length;
         int last = root.records().get(63).payload().getCompound("Tag").getByteArray("blob").length;
