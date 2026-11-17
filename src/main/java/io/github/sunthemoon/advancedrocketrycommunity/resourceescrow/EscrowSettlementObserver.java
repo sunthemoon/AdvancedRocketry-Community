@@ -23,6 +23,33 @@ import net.minecraft.world.phys.AABB;
 final class EscrowSettlementObserver {
     static final int ENTITIES_PER_SLOT = 1_024;
     private EscrowSettlementObserver() { }
+    /** Called on the owner thread immediately after loaded-only observations, with no asynchronous boundary. */
+    static java.util.Map<EscrowEndpoint.Key, java.util.Map<UUID, EscrowFluidAccount.Vector>> accounting(
+            MinecraftServer server, List<EscrowOperation> members, List<EscrowSettlementIntent.Observation> observations) {
+        EscrowTags.require(server.isSameThread(), "Accounting observation requires owner thread");
+        var result = new java.util.HashMap<EscrowEndpoint.Key, java.util.Map<UUID, EscrowFluidAccount.Vector>>();
+        for (var observation : observations) {
+            var endpoint = observation.endpoint();
+            var operations = members.stream().filter(op -> op.accountingBaseline() != null
+                    && (op.source().key().equals(endpoint.key()) || op.destination().key().equals(endpoint.key()))).toList();
+            if (observation.missing() || operations.isEmpty()) { continue; }
+            var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
+            net.minecraft.nbt.CompoundTag tank = null;
+            RocketEntity rocket = null;
+            if (endpoint.kind() == EscrowEndpoint.Kind.ENTITY) { rocket = (RocketEntity) level.getEntity(endpoint.identity()); }
+            else {
+                var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
+                EscrowTags.require(chunk != null, "WAITING_UNLOADED");
+                var source = chunk.getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
+                tank = EscrowLoaderEndpoint.is(endpoint)
+                        ? ((io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity) source).root().orElseThrow().tank().encode()
+                        : ((io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity) source).root().orElseThrow().tank().encode();
+            }
+            result.put(endpoint.key(), EscrowAccountingCapture.vectors(operations, endpoint, tank,
+                    rocket == null ? null : rocket.flightData().orElseThrow().fuel(), rocket == null ? null : rocket.snapshot().orElseThrow()));
+        }
+        return java.util.Map.copyOf(result);
+    }
     static List<EscrowSettlementIntent.Observation> floor(MinecraftServer server, net.minecraft.nbt.CompoundTag floor, UUID ledger) {
         var journal = RocketTransferSavedData.get(server);
         EscrowTags.require(journal.retryChecked(server), "Checked journal acknowledgement is unavailable");
