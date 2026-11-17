@@ -21,6 +21,8 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowCargoCapacityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
+    // Historical codec boundaries remain explicit root-2 inputs; the R8 runtime root below is root 3.
+    private static EscrowLedger ledger(EscrowOperation... ops) { return root2(EscrowTestFixtures.ledger(ops)); }
 
     @Test void explicitAccountingFormUsesTheAcceptedAdmissionAndRetirementCounts() {
         for (var kind : KINDS) {
@@ -156,7 +158,7 @@ class EscrowCargoCapacityTest {
 
     @Test void r6HeadroomAndR8CeilingChargesRefuseBeforeReservationAndStillPermitR9Retirement() throws Exception {
         for (var kind : KINDS) {
-            for (int floors : List.of(0, 29)) {
+            for (int floors : List.of(8, 29)) {
                 var base = EscrowCombinedReservationTest.retainedFloors(floors);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); var io = new AwaitedLedgerIo();
                 var file = java.nio.file.Files.createDirectories(temp.resolve(kind + "-floors-" + floors)).resolve(
@@ -165,17 +167,25 @@ class EscrowCargoCapacityTest {
                         var coordinator = new EscrowCoordinator(data, writer)) {
                     var admitted = new ArrayList<EscrowOperation>(); EscrowOperation refused = null;
                     for (int i = 0; i < 64; i++) {
-                        var op = EscrowTestFixtures.distributedOwner(operation(kind, coordinator.nextSequence(), 40_000 + i));
+                        var op = accountedModel(EscrowTestFixtures.distributedOwner(operation(kind, coordinator.nextSequence(), 40_000 + i)));
                         var result = coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> { });
                         if (result == EscrowCoordinator.Transfer.QUEUED) { admitted.add(op); }
                         else { assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, result); refused = op; break; }
                     }
-                    assertNotNull(refused); assertEquals(floors == 0 ? 62 : 60, admitted.size());
+                    assertNotNull(refused); assertEquals(floors == 8 ? 54 : 53, admitted.size());
                     assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(admitted.size(), coordinator.admissionAuthority().pendingCount());
                     assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
-                    var all = new ArrayList<>(admitted); all.add(refused); var prospective = base.append(all);
+                    var all = new ArrayList<>(admitted); all.add(refused); var prospective = appendModel(base, all);
                     long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
-                    long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(refused);
+                    long fullCharge = EscrowLimits.OP_BYTES + 2_048L + (refused.kind().fluid() ? EscrowFluidAccountCodec.SAVED.bytes() : 0);
+                    long actualPreview = realPreview(prospective, refused, observations(prospective, refused, 0, 0, false));
+                    long previewOnly = ceiling - fullCharge + actualPreview;
+                    long slack = fullCharge - actualPreview;
+                    long overshoot = ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES - EscrowLimits.ROOT_BYTES;
+                    System.out.println("R469_PADDING kind=" + kind + " floors=" + floors + " admitted=" + admitted.size()
+                            + " ceiling=" + ceiling + " full_charge=" + fullCharge + " preview=" + actualPreview
+                            + " slack=" + slack + " overshoot=" + overshoot + " preview_only=" + previewOnly);
+                    if (floors == 8) { assertTrue(overshoot > 0 && overshoot < slack, "R469 named-floor padding"); }
                     assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
                     if (floors == 29) { assertTrue(ceiling <= EscrowLimits.ROOT_BYTES, "R6 alone rejects the next cargo"); }
                     else { assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES, "R8 must charge ceilings, not preview bytes"); }
@@ -195,11 +205,11 @@ class EscrowCargoCapacityTest {
                         assertEquals(reservedBefore, EscrowSettlementCapacity.reservedBytes(terminal));
                         var afterRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER);
                         assertEquals(EscrowSettlementCapacity.reservedBytes(beforeRetirement), EscrowSettlementCapacity.reservedBytes(afterRetirement));
-                        System.out.println("CARGO_R9 kind=" + kind + " cargo=60 floors=29 terminal_slots=64 before_after=" + reservedBefore
+                        System.out.println("CARGO_R9 kind=" + kind + " cargo=53 floors=29 terminal_slots=64 before_after=" + reservedBefore
                                 + " retirement_before_after=" + EscrowSettlementCapacity.reservedBytes(afterRetirement));
                         coordinator.tick(220); assertTrue(coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, results::add));
                         io.tickUntil(coordinator::tick, 221, writer::idle); assertEquals(List.of(true), results);
-                        assertEquals(61, coordinator.ledger().records().size());
+                        assertEquals(54, coordinator.ledger().records().size());
                     }
                     System.out.println("CARGO_RESERVATION kind=" + kind + " floors=" + floors + " admitted=" + admitted.size()
                             + " next_ceiling=" + ceiling + " preview_only=" + previewOnly + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES);

@@ -131,6 +131,31 @@ final class EscrowTestFixtures {
         var result = coordinator.prepareTransfer(capturedModel(op, RocketEscrowSection.neutral()), completion);
         if (result != EscrowCoordinator.Transfer.QUEUED) { throw new IllegalArgumentException(result.name()); }
     }
+    /** R469: replace all of the candidate's ceilings with its actual codec-measured O1, receipt and frozen row. */
+    static long realPreview(EscrowLedger root, EscrowOperation candidate, List<EscrowSettlementIntent.Observation> observations) {
+        var op = candidate.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
+        var local = root.replace(root.records().stream().map(member -> member.id().equals(op.id()) ? op : member).toList(),
+                root.floors(), root.tombstones());
+        var numbers = new java.util.HashMap<EscrowEndpoint.Key, java.util.Map<UUID, EscrowFluidAccount.Vector>>();
+        if (op.accountingBaseline() != null) {
+            var baseline = EscrowAccountingReconciliation.baseline(root, op);
+            numbers.put(op.source().key(), java.util.Map.of(op.id(), baseline.sourceAfter()));
+            numbers.put(op.destination().key(), java.util.Map.of(op.id(), baseline.destinationAfter()));
+        }
+        var rows = EscrowSettlementAccounting.project(local, List.of(op), observations, numbers);
+        var preview = EscrowSettlementIntent.preview(local, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                id(700), "~".repeat(16), 10, observations);
+        if (!rows.isEmpty()) { preview = preview.accounting(rows); }
+        var intent = preview.confirm(preview.actor(), preview.digest(), 11, observations);
+        var row = rows.isEmpty() ? null : rows.get(0);
+        long operationBytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.operation(op.settle(intent))) - 3L;
+        long receiptBytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(
+                EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(op, intent, row))) - 3L;
+        long rowBytes = row == null ? 0 : io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(
+                EscrowFluidAccountCodec.encode(row, EscrowFluidAccountCodec.SAVED).value()) - 3L;
+        System.out.println("R469_PREVIEW kind=" + op.kind() + " operation=" + operationBytes + " receipt=" + receiptBytes + " row=" + rowBytes);
+        return operationBytes + receiptBytes + rowBytes;
+    }
     /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
     static EscrowOperation distributedOwner(EscrowOperation op) {
         var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();

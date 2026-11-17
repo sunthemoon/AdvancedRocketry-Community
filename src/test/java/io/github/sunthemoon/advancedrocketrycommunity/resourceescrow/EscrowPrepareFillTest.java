@@ -198,11 +198,11 @@ class EscrowPrepareFillTest {
     }
 
     /**
-     * Root-R8: with no floors the root admits its pinned 55 fills. Charged by its own preview only, the 56th would fit
-     * even with the headroom, so its refusal is the ceiling charge.
+     * R469 pads R8 with 8 retained named floors to place the first refusal inside the candidate's real slack.
+     * Its real codec preview fits with headroom; the fixed ceiling charge does not.
      */
     @Test void r8ChargingRefusesACandidateThatWouldFitByItsPreviewOnly() throws Exception {
-        var base = EscrowTestFixtures.ledger(); var data = loaded(base);
+        var base = EscrowCombinedReservationTest.retainedFloors(8); var data = loaded(base);
         try (var writer = new EscrowLedgerWriter(file("r8"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             var admitted = new ArrayList<EscrowOperation>();
             EscrowOperation refused = null;
@@ -211,22 +211,28 @@ class EscrowPrepareFillTest {
                 var result = coordinator.prepareFill(capture(op), ignored -> { });
                 if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); } else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; }
             }
-            assertEquals(55, admitted.size(), "The pinned capacity with no floors, unguarded");
+            assertEquals(54, admitted.size(), "R469: 8 retained named floors");
             assertNotNull(refused);
-            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(55, coordinator.admissionAuthority().pendingCount());
+            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(54, coordinator.admissionAuthority().pendingCount());
             assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
             var prospective = EscrowTestFixtures.appendModel(base, candidate);
             long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
-            long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(prospective, refused);
-            System.out.println("R468 R8 admitted=" + admitted.size() + " candidate=" + refused.sequence()
+            long fullCharge = EscrowLimits.OP_BYTES + 2_048L + EscrowFluidAccountCodec.SAVED.bytes();
+            long realPreview = previewBytes(prospective, refused);
+            long slack = fullCharge - realPreview;
+            long overshoot = ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES - EscrowLimits.ROOT_BYTES;
+            assertTrue(overshoot > 0 && overshoot < slack, "R469 padding places refusal strictly inside real preview slack");
+            long previewOnly = ceiling - fullCharge + realPreview;
+            System.out.println("R469 R8 admitted=" + admitted.size() + " candidate=" + refused.sequence()
                     + " ceiling=" + ceiling + " candidate_preview=" + previewBytes(prospective, refused)
                     + " preview_only=" + previewOnly + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES
-                    + " limit=" + EscrowLimits.ROOT_BYTES);
+                    + " limit=" + EscrowLimits.ROOT_BYTES + " padding_floors=8 full_charge=" + fullCharge
+                    + " slack=" + slack + " overshoot=" + overshoot);
             assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
             assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES,
                     "Charged by its preview only, with the headroom, the candidate would fit: " + previewOnly);
-            System.out.println("prepareFill R8 admitted=55 ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
+            System.out.println("prepareFill R8 admitted=" + admitted.size() + " ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
                     + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES + " limit=" + EscrowLimits.ROOT_BYTES);
         }
     }
@@ -264,7 +270,11 @@ class EscrowPrepareFillTest {
                 new UUID(0, 1), "~".repeat(16), 0, observations).accounting(rows);
         var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var member = hypothetical.records().stream().filter(op -> op.id().equals(candidate.id())).findFirst().orElseThrow();
-        return listBytes(EscrowCodec.operation(member.settle(intent))) + listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent, rows.get(0))));
+        long operationBytes = listBytes(EscrowCodec.operation(member.settle(intent)));
+        long receiptBytes = listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent, rows.get(0))));
+        long rowBytes = listBytes(EscrowFluidAccountCodec.encode(rows.get(0), EscrowFluidAccountCodec.SAVED).value());
+        System.out.println("R469_FUEL_PREVIEW operation=" + operationBytes + " receipt=" + receiptBytes + " row=" + rowBytes);
+        return operationBytes + receiptBytes + rowBytes;
     }
     private static int listBytes(net.minecraft.nbt.CompoundTag tag) { return RocketNbtSize.uncompressedBytes(tag) - 3; }
     private static EscrowSettlementIntent floorIntent(EscrowLedger root, int index, long tick) {

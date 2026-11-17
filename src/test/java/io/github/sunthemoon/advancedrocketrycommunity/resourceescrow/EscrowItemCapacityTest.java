@@ -126,7 +126,7 @@ class EscrowItemCapacityTest {
 
     @Test void r6HeadroomAndR8CeilingChargesRefuseBeforeReservationAndStillPermitR9Retirement() throws Exception {
         for (var kind : KINDS) {
-            for (int floors : List.of(0, 29)) {
+            for (int floors : List.of(16, 29)) {
                 var base = EscrowCombinedReservationTest.retainedFloors(floors);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); var io = new AwaitedLedgerIo();
                 var file = java.nio.file.Files.createDirectories(temp.resolve(kind + "-floors-" + floors)).resolve(
@@ -140,12 +140,20 @@ class EscrowItemCapacityTest {
                         if (result == EscrowCoordinator.Transfer.QUEUED) { admitted.add(op); }
                         else { assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, result); refused = op; break; }
                     }
-                    assertNotNull(refused); assertEquals(floors == 0 ? 62 : 60, admitted.size());
+                    assertNotNull(refused); assertEquals(floors == 16 ? 61 : 60, admitted.size());
                     assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(admitted.size(), coordinator.admissionAuthority().pendingCount());
                     assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
-                    var all = new ArrayList<>(admitted); all.add(refused); var prospective = base.append(all);
+                    var all = new ArrayList<>(admitted); all.add(refused); var prospective = appendModel(base, all);
                     long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
-                    long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(refused);
+                    long fullCharge = EscrowLimits.OP_BYTES + 2_048L + (refused.kind().fluid() ? EscrowFluidAccountCodec.SAVED.bytes() : 0);
+                    long actualPreview = realPreview(prospective, refused, observations(prospective, refused, 0, 0, false));
+                    long previewOnly = ceiling - fullCharge + actualPreview;
+                    long slack = fullCharge - actualPreview;
+                    long overshoot = ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES - EscrowLimits.ROOT_BYTES;
+                    System.out.println("R469_PADDING kind=" + kind + " floors=" + floors + " admitted=" + admitted.size()
+                            + " ceiling=" + ceiling + " full_charge=" + fullCharge + " preview=" + actualPreview
+                            + " slack=" + slack + " overshoot=" + overshoot + " preview_only=" + previewOnly);
+                    if (floors == 16) { assertTrue(overshoot > 0 && overshoot < slack, "R469 named-floor padding"); }
                     assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
                     if (floors == 29) { assertTrue(ceiling <= EscrowLimits.ROOT_BYTES, "R6 alone rejects the next cargo"); }
                     else { assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES, "R8 must charge ceilings, not preview bytes"); }
