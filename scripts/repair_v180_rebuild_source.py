@@ -240,6 +240,11 @@ def space(files, output_parent):
     require(shutil.disk_usage(output_parent).free >= 3 * size + 10 * 1024**3, 'INSUFFICIENT_SPACE')
     for volume in ('C:/', 'D:/') if os.name == 'nt' else (tempfile.gettempdir(),):
         require(shutil.disk_usage(volume).free >= 10 * 1024**3, 'INSUFFICIENT_SPACE')
+    if os.name != 'nt':
+        gradle = Path(os.environ.get('GRADLE_USER_HOME', Path.home() / '.gradle'))
+        while not gradle.exists():
+            gradle = gradle.parent
+        require(shutil.disk_usage(gradle).free >= 10 * 1024**3, 'INSUFFICIENT_SPACE')
 
 
 def read_gzip(path):
@@ -274,8 +279,10 @@ def journal_candidate(name, root, transfer):
 
 
 def toolchain():
+    import escrow_accounting
     return dict(python=platform.python_version(), zlib=zlib.ZLIB_RUNTIME_VERSION,
-                script=file_digest(Path(__file__)), nbt=file_digest(Path(nbt.__file__)))
+                script=file_digest(Path(__file__)), nbt=file_digest(Path(nbt.__file__)),
+                accounting=file_digest(Path(escrow_accounting.__file__)))
 
 
 def force_directory(path):
