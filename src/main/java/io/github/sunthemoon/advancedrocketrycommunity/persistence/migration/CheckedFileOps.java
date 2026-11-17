@@ -40,7 +40,13 @@ interface CheckedFileOps {
     void delete(Path pending) throws IOException;
 
     /** The file operations as they were before the seam existed, call for call. */
-    CheckedFileOps DIRECT = new CheckedFileOps() {
+    CheckedFileOps DIRECT = new Direct();
+
+    /** Stateless; its initializer constructs nothing and reads no world, registry or configuration. */
+    final class Direct implements CheckedFileOps {
+        private Direct() {
+        }
+
         @Override
         public FileChannel open(Path pending) throws IOException {
             return FileChannel.open(pending, StandardOpenOption.CREATE,
@@ -88,5 +94,5 @@ interface CheckedFileOps {
         public String toString() {
             return "CheckedFileOps.DIRECT";
         }
-    };
+    }
 }
