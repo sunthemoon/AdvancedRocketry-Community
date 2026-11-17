@@ -99,7 +99,12 @@ public final class ReleaseTestStorageTrace {
         }
     }
 
-    /** Records each operation after {@code delegate} performed it. */
+    /**
+     * Records each operation after {@code delegate} performed it. While it records, one lock covers the delegated
+     * operation, the copy of the old target at an open, and the appended line, so the lines are in the order of the
+     * file-system effects across all writer threads (W369R finding 1). Once recording has stopped, by a refusal or
+     * at server stop, every operation only delegates, outside the lock.
+     */
     static final class Recorder implements CheckedFileOps {
         private final CheckedFileOps delegate;
         private final Path directory;
@@ -196,6 +201,15 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public FileChannel open(Path pending) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    return recordedOpen(pending);
+                }
+            }
+            return delegate.open(pending);
+        }
+
+        private FileChannel recordedOpen(Path pending) throws IOException {
             String name = pending.getFileName().toString();
             Path target = name.endsWith(PENDING_SUFFIX)
                     ? pending.resolveSibling(name.substring(0, name.length() - PENDING_SUFFIX.length())) : null;
@@ -220,6 +234,15 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public int write(FileChannel channel, ByteBuffer buffer) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    return recordedWrite(channel, buffer);
+                }
+            }
+            return delegate.write(channel, buffer);
+        }
+
+        private int recordedWrite(FileChannel channel, ByteBuffer buffer) throws IOException {
             Staging staging = channels.get(channel);
             long offset = position(channel);
             ByteBuffer view = buffer.duplicate();
@@ -243,6 +266,16 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void force(FileChannel channel) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    recordedForce(channel);
+                    return;
+                }
+            }
+            delegate.force(channel);
+        }
+
+        private void recordedForce(FileChannel channel) throws IOException {
             Staging staging = channels.get(channel);
             try {
                 delegate.force(channel);
@@ -255,6 +288,17 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void close(FileChannel channel) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    recordedClose(channel);
+                    return;
+                }
+            }
+            channels.remove(channel);
+            delegate.close(channel);
+        }
+
+        private void recordedClose(FileChannel channel) throws IOException {
             Staging staging = channels.remove(channel);
             try {
                 delegate.close(channel);
@@ -267,6 +311,15 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public CompoundTag readStaged(Path pending, ManagedSavedDataType type) {
+            synchronized (lock) {
+                if (recording) {
+                    return recordedReadStaged(pending, type);
+                }
+            }
+            return delegate.readStaged(pending, type);
+        }
+
+        private CompoundTag recordedReadStaged(Path pending, ManagedSavedDataType type) {
             CompoundTag read;
             try {
                 read = delegate.readStaged(pending, type);
@@ -280,6 +333,16 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void move(Path staged, Path target) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    recordedMove(staged, target);
+                    return;
+                }
+            }
+            delegate.move(staged, target);
+        }
+
+        private void recordedMove(Path staged, Path target) throws IOException {
             String store = store(target);
             Detail detail = (json, sequence) -> text(json.append(",\"target\":"), relative(target));
             try {
@@ -293,6 +356,16 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void forceDirectory(Path directory) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    recordedForceDirectory(directory);
+                    return;
+                }
+            }
+            delegate.forceDirectory(directory);
+        }
+
+        private void recordedForceDirectory(Path directory) throws IOException {
             try {
                 delegate.forceDirectory(directory);
             } catch (IOException | RuntimeException failure) {
@@ -304,6 +377,16 @@ public final class ReleaseTestStorageTrace {
 
         @Override
         public void delete(Path pending) throws IOException {
+            synchronized (lock) {
+                if (recording) {
+                    recordedDelete(pending);
+                    return;
+                }
+            }
+            delegate.delete(pending);
+        }
+
+        private void recordedDelete(Path pending) throws IOException {
             String name = pending.getFileName().toString();
             String store = store(name.endsWith(PENDING_SUFFIX)
                     ? pending.resolveSibling(name.substring(0, name.length() - PENDING_SUFFIX.length())) : null);
@@ -322,7 +405,10 @@ public final class ReleaseTestStorageTrace {
                     failure, detail);
         }
 
-        /** Appends one line with one unbuffered write; any failure here ends the recording, never the operation. */
+        /**
+         * Appends one line with one unbuffered write; any failure here ends the recording, never the operation. The
+         * caller already holds {@code lock}, which is reentrant.
+         */
         private void record(String operation, @Nullable String store, @Nullable Path path, @Nullable Throwable failure,
                             @Nullable Detail detail) {
             synchronized (lock) {
