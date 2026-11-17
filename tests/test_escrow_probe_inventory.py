@@ -19,12 +19,14 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # W330: four owner-cap cases (a patched wrapper), 33 load-direction settlement cases and the
         # FS_LOAD_ and IS_LOAD_ prefix tokens of tests/test_cargo_w330_runner.py.
         # W360: seven item before-write and store-veto cuts in each direction (R448, R450).
-        self.assertEqual(673, len(self.rows))
+        # W370: tests/test_v180_crash_replay.py names IC_UNLOAD_K9, which no producer spells out.
+        self.assertEqual(674, len(self.rows))
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         # W353 adds the load-veto log regression test to the related-test inventory.
         # W360 adds tests/test_w360_uncovered_rows.py; W365 adds the accounting reader and oracle test modules.
-        self.assertEqual(40, len(self.coverage["tests"]))
+        # W370 adds tests/test_v180_crash_replay.py.
+        self.assertEqual(41, len(self.coverage["tests"]))
         self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
         self.assertIn("tests/test_cargo_load_veto_log.py", self.coverage["tests"])
 
