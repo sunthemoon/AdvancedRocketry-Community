@@ -292,6 +292,9 @@ def repaired_cycle(args, session, evidence, number):
     original, transfer, log = seed_world(args, session, evidence, label)
     baseline = oracle.read(original)
     oracle.check_state(baseline, baseline, repaired=False)
+    write_json(evidence / (label + '-baseline.json'),
+               {key: nbt.plain(baseline[key]) if isinstance(baseline[key], nbt.Tag) else baseline[key]
+                for key in ('entity', 'block', 'ledger', 'journal', 'cargo', 'tank')})
     backup = session / ('backup-' + label)
     original_hashes = copy_verified(original, backup)
     planfile = evidence / (label + '-plan.json')
@@ -306,6 +309,13 @@ def repaired_cycle(args, session, evidence, number):
     for restart in (1, 2, 3):
         lines, _ = start(args, session, evidence, label + '-observe-' + str(restart), candidate, 'FF_X03_OBSERVE', SCENARIO)
         state = oracle.read(candidate)
+        write_json(evidence / (label + '-observe-' + str(restart) + '-raw.json'),
+                   dict(entity=nbt.plain(state['entity']), block=nbt.plain(state['block']),
+                        managed={name: nbt.plain(root) for name, root in state['managed'].items()},
+                        object_differences=[dict(file=k[0], chunk=list(k[1:]),
+                                                 path=oracle.first_difference(baseline['chunks'][k], state['chunks'][k]))
+                                            for k in baseline['chunks'].keys() & state['chunks'].keys()
+                                            if baseline['chunks'][k] != state['chunks'][k]]))
         oracle.observe(lines, 'FF_X03_OBSERVE', state)
         measure(lambda: oracle.compare_repair(baseline, state, transfer), findings, args.derive_runtime_list)
         manifest = oracle.manifest(candidate)
