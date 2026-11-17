@@ -5,7 +5,9 @@ A live case runs one existing native cut with the gated fault injector on its fi
 (-Dadvancedrocketrycommunity.storageFault=<store>:<fault>:<count>), then the runner's own two restarts with
 storage healthy. An offline case records the same cut, damages one store file in a copy of the kill image, and
 runs the same two restarts. Each completed case gets exactly one class: SEEN_HELD, CAUGHT_LATER or NOT_CAUGHT.
-No oracle of an existing runner changes, and a NOT_CAUGHT case is reported as a residual.
+No oracle of an existing runner changes, and a NOT_CAUGHT case is reported as a residual. A case without an outcome
+(NOT_RUN, INCOMPLETE, NOT_APPLICABLE) and a case whose faulted start failed an existing check although both healthy
+restarts passed (NEEDS_REVIEW) have no class, and the campaign is then INCOMPLETE.
 
 Use a candidate with the injector and an installed Forge server template. Launch a long campaign as a detached
 process on Windows; it takes the machine-wide heavy-JVM lock separately for each case.
@@ -39,6 +41,9 @@ SEEN_HELD, CAUGHT_LATER, NOT_CAUGHT = "SEEN_HELD", "CAUGHT_LATER", "NOT_CAUGHT"
 CLASSES = (SEEN_HELD, CAUGHT_LATER, NOT_CAUGHT)
 # A run that never produced an outcome has no class. It is reported and never counted as held.
 NOT_RUN, INCOMPLETE, NOT_APPLICABLE = "NOT_RUN", "INCOMPLETE", "NOT_APPLICABLE"
+# The fault was seen and the durable outcome passed, but an existing check of the faulted start failed. It is neither
+# counted as held nor reported as a residual until a reader has decided.
+NEEDS_REVIEW = "NEEDS_REVIEW"
 
 # The four stores of Root decision R461 (Q5): ManagedSavedDataType name -> file under <world>/data.
 STORES = {
@@ -276,6 +281,14 @@ def classify_live(observation: dict) -> dict:
     if seen and healthy:
         reasons.append("Every faulted write failed inside the session, and both healthy restarts met the existing oracle.")
         return verdict(SEEN_HELD)
+    if seen and restarts_passed(restarts):
+        # Both healthy restarts met the existing oracle, so the durable outcome is the expected one, but a check of
+        # the faulted start itself failed (W379 smoke 2: the journal's hold is logged at ERROR, and the runner
+        # refuses any ERROR line). The check is not relaxed and the case is not called a residual: a reader decides.
+        reasons.append("The session saw the fault and both healthy restarts met the existing oracle, but an existing "
+                       "check of the faulted start failed: " + str(observation.get("error")))
+        evidence.extend(observation.get("session_errors", []))
+        return verdict(NEEDS_REVIEW)
     if not healthy:
         reasons.append("An existing oracle failed after the fault: " + str(observation.get("error") or "restart status"))
         evidence.extend(later)
@@ -687,7 +700,7 @@ def summary(manifest: dict) -> str:
     rows = manifest["results"]
     lines = ["# X02 storage faults", "", "Status: " + manifest["status"], "",
              "| Class | Cases |", "|---|---|"]
-    for name in (*CLASSES, INCOMPLETE, NOT_RUN, NOT_APPLICABLE):
+    for name in (*CLASSES, NEEDS_REVIEW, INCOMPLETE, NOT_RUN, NOT_APPLICABLE):
         lines.append(f"| {name} | {sum(1 for row in rows if row['classification'] == name)} |")
     lines += ["", "| Case | Design | Native case | Class | Reason |", "|---|---|---|---|---|"]
     for row in rows:
@@ -703,7 +716,7 @@ def summary(manifest: dict) -> str:
 
 def status_of(rows: list[dict]) -> str:
     """COMPLETE when every case has a class or is not applicable; a residual is a finding, not a harness failure."""
-    if any(row["classification"] in (INCOMPLETE, NOT_RUN) for row in rows):
+    if any(row["classification"] in (INCOMPLETE, NOT_RUN, NEEDS_REVIEW) for row in rows):
         return "INCOMPLETE"
     return "COMPLETE_WITH_RESIDUALS" if any(row["classification"] == NOT_CAUGHT for row in rows) else "COMPLETE"
 

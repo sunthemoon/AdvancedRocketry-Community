@@ -196,7 +196,7 @@ class LiveClassificationTests(unittest.TestCase):
 
     def test_a_seen_fault_with_a_failed_oracle_is_a_residual_and_never_held(self):
         self.assertEqual(self.classify(session(), restarts=((1, "PASS"), (2, "FAIL"))), faults.NOT_CAUGHT)
-        self.assertEqual(self.classify(session(), error="Existing runner did not pass"), faults.NOT_CAUGHT)
+        self.assertEqual(self.classify(session(), restarts=((1, "FAIL"), (2, "PASS")), error="oracle"), faults.NOT_CAUGHT)
         # Errors in a later log do not turn a seen fault with a failed oracle into a hold.
         result = faults.classify_live(observed(session(), restarts=((1, "FAIL"), (2, "FAIL")), error="oracle",
                                                detected=["[Server thread/ERROR]: receipts unreadable"]))
@@ -216,8 +216,25 @@ class LiveClassificationTests(unittest.TestCase):
         self.assertEqual(self.classify(session("MOVE_AFTER", operation="move", moved=False), live("MOVE_AFTER")),
                          faults.NOT_CAUGHT)
 
-    def test_every_completed_case_has_exactly_one_of_the_three_classes(self):
-        for lines, kwargs in ((session(), {}), (session(), dict(error="x")),
+    def test_a_failed_check_of_the_faulted_start_is_neither_held_nor_a_residual(self):
+        # W379 smoke 2, the journal: the hold is logged at ERROR, the runner refuses any ERROR line on the first start,
+        # and both healthy restarts pass. The existing check is not relaxed, and the hold is not called a residual.
+        hold = "[Server thread/ERROR]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority"
+        observation = observed(session(store="ROCKET_TRANSFERS"), live(store="ROCKET_TRANSFERS"),
+                               error="SmokeError: First contradictory cut: FS_O3J_AFTER: start 0: Native run logged ERROR or FATAL")
+        observation["session_errors"] = [hold]
+        result = faults.classify_live(observation)
+        self.assertEqual(result["classification"], faults.NEEDS_REVIEW)
+        self.assertIn("Native run logged ERROR or FATAL", result["reasons"][-1])
+        self.assertIn(hold, result["evidence"])
+        self.assertNotIn(faults.NEEDS_REVIEW, faults.CLASSES)
+        # It needs a seen fault and two passing restarts; anything less keeps its class.
+        self.assertEqual(self.classify(session("LOST_WRITE", unseen=True, retry=False), live("LOST_WRITE"), error="x"),
+                         faults.NOT_CAUGHT)
+        self.assertEqual(self.classify(session(), restarts=((1, "PASS"), (2, "FAIL")), error="x"), faults.NOT_CAUGHT)
+
+    def test_a_case_without_a_failed_check_has_exactly_one_of_the_three_classes(self):
+        for lines, kwargs in ((session(), {}), (session(), dict(restarts=((1, "FAIL"), (2, "FAIL")), error="x")),
                               (session("LOST_WRITE", unseen=True), dict(case=live("LOST_WRITE")))):
             self.assertIn(faults.classify_live(observed(lines, **kwargs))["classification"], faults.CLASSES)
 
@@ -426,6 +443,8 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(faults.status_of(rows), "COMPLETE_WITH_RESIDUALS")
         self.assertEqual(faults.status_of(rows[:1]), "COMPLETE")
         self.assertEqual(faults.status_of(rows + [dict(classification=faults.INCOMPLETE)]), "INCOMPLETE")
+        self.assertEqual(faults.status_of(rows[:1] + [dict(classification=faults.NEEDS_REVIEW)]), "INCOMPLETE")
+        self.assertIn("| NEEDS_REVIEW | 0 |", faults.summary(dict(status="COMPLETE", results=rows[:1], uncovered=[])))
         self.assertEqual(faults.status_of([dict(classification=faults.NOT_APPLICABLE)]), "COMPLETE")
         text = faults.summary(dict(status="COMPLETE_WITH_RESIDUALS", results=rows, uncovered=faults.UNCOVERED))
         self.assertIn("| SEEN_HELD | 1 |", text)
