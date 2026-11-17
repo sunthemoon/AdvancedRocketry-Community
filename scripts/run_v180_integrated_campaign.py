@@ -33,6 +33,7 @@ import run_v180_w336_timing as timing
 import run_v180_w336_saturation as saturation
 import run_v180_w336_downgrade as downgrade
 import run_v180_r042_native as r042
+import run_v180_x03_repair as x03
 
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path(r"D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm")
@@ -131,6 +132,8 @@ def family_specs():
     for case in ("X_BAY", "X_LEDGER", "R031_FUTURE", "R031_INVALID"):
         rows.append(dict(name="r042-" + case, runner="scripts/" + Path(r042.__file__).name,
                          r042_case=case, cases=[case], arguments=["--case", case]))
+    rows.append(dict(name="cargo-X03-REPAIR", runner="scripts/run_v180_x03_repair.py",
+                     cases=["X03-REPAIR"], arguments=[]))
     return rows
 
 
