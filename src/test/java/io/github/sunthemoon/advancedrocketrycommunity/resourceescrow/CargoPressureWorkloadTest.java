@@ -25,10 +25,11 @@ class CargoPressureWorkloadTest {
             assertEquals(1000, op.payload().getInt("Amount"));
             assertEquals(i < 8 ? i % 4 : 0, op.destination().beforeEpoch());
         }
-        var ledger = EscrowTestFixtures.ledger(records.toArray(EscrowOperation[]::new));
+        // This comparison is the historical root-2 pressure encoding, not a root-3 admission.
+        var ledger = EscrowTestFixtures.root2(EscrowTestFixtures.ledger(records.toArray(EscrowOperation[]::new)));
         assertEquals(64, ledger.records().size());
         assertEquals(58, records.stream().map(o -> o.destination().key()).distinct().count());
-        assertEquals(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(EscrowTestFixtures.ledger(historical.toArray(EscrowOperation[]::new)))),
+        assertEquals(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(EscrowTestFixtures.root2(EscrowTestFixtures.ledger(historical.toArray(EscrowOperation[]::new))))),
                 RocketNbtSize.uncompressedBytes(EscrowCodec.encode(ledger)));
         for (var op : records) {
             var component = EscrowSettlementIntent.component(records, op.id());
@@ -36,7 +37,7 @@ class CargoPressureWorkloadTest {
             assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(ledger, op, null));
             // Component admission sizing, not a claim that the global root reservation admits all 64.
             assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(
-                    EscrowTestFixtures.ledger(component.toArray(EscrowOperation[]::new)), op.id()));
+                    EscrowTestFixtures.root2(EscrowTestFixtures.ledger(component.toArray(EscrowOperation[]::new))), op.id()));
         }
     }
     @Test void indicesOutsideTheFixedWorkloadAreRefused() {
@@ -49,22 +50,22 @@ class CargoPressureWorkloadTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger()));
         try (var writer = new EscrowLedgerWriter(directory.resolve("pressure"), 0);
                 var coordinator = new EscrowCoordinator(data, writer)) {
-            for (int i = 0; i < 62; i++) {
-                coordinator.prepareTest(EscrowTestFixtures.distributedOwner(CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(
-                        i + 1, CargoNativePressureWorkload.component(i) + 1, 0), i)), ignored -> { });
+            for (int i = 0; i < 55; i++) {
+                EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.accountedModel(EscrowTestFixtures.distributedOwner(CargoNativePressureWorkload.operation(EscrowTestFixtures.admissionOperation(
+                        i + 1, CargoNativePressureWorkload.component(i) + 1, 0), i))), ignored -> { });
             }
             var before = EscrowCodec.encode(coordinator.ledger()); boolean dirty = data.isDirty();
-            assertEquals(63, coordinator.nextSequence());
-            assertEquals(62, coordinator.admissionAuthority().pendingCount());
-            for (int request = 62; request < 64; request++) {
+            assertEquals(56, coordinator.nextSequence());
+            assertEquals(55, coordinator.admissionAuthority().pendingCount());
+            for (int request = 55; request < 57; request++) {
                 var witness = CargoNativeAdmissionWitness.capture(data, coordinator);
-                var op = CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(63, request + 1, 0), request);
+                var op = EscrowTestFixtures.accountedModel(CargoNativePressureWorkload.operation(EscrowTestFixtures.admissionOperation(56, request + 1, 0), request));
                 assertThrows(EscrowSettlementCapacity.ReservationFull.class,
-                        () -> coordinator.prepareTest(op, ignored -> fail("Refused admission callback")));
+                        () -> EscrowTestFixtures.prepareCapturedModel(coordinator, op, ignored -> fail("Refused admission callback")));
                 assertEquals(witness, CargoNativeAdmissionWitness.capture(data, coordinator));
             }
-            assertEquals(63, coordinator.nextSequence());
-            assertEquals(62, coordinator.admissionAuthority().pendingCount());
+            assertEquals(56, coordinator.nextSequence());
+            assertEquals(55, coordinator.admissionAuthority().pendingCount());
             assertEquals(before, EscrowCodec.encode(coordinator.ledger()));
             assertEquals(dirty, data.isDirty());
             assertTrue(writer.capturedOperations().isEmpty());

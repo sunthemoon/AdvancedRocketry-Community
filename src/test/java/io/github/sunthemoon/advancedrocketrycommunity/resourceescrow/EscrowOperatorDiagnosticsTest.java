@@ -80,11 +80,11 @@ class EscrowOperatorDiagnosticsTest {
         var file = temp.resolve("ledger.dat");
         try (var writer = new EscrowLedgerWriter(file, 0); var coordinator = new EscrowCoordinator(data, writer)) {
             data.attach(coordinator, () -> true);
-            var op = EscrowTestFixtures.operation(1);
+            var op = EscrowTestFixtures.admissionOperation(1);
             var guarded = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
                     op.payload(), op.payloadHash(), op.source(), op.destination(),
                     new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(900), 1, EscrowTestFixtures.hash(900)));
-            coordinator.prepareTest(guarded, ignored -> fail("Diagnostics must not submit a write"));
+            EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.nativeModel(guarded, RocketEscrowSection.neutral()), ignored -> fail("Diagnostics must not submit a write"));
             var before = EscrowCodec.encode(data.ledger());
             var lines = EscrowOperatorDiagnostics.status(data.ledger(), value -> value.reason().name(), data.floorUsage());
             assertTrue(lines.get(1).contains("floors_used=0 floors_reserved=1/"));

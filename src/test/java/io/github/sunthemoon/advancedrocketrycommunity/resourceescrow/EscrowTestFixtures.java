@@ -128,8 +128,83 @@ final class EscrowTestFixtures {
         return appendModel(ledger(), List.of(ops));
     }
     static void prepareCapturedModel(EscrowCoordinator coordinator, EscrowOperation op, java.util.function.Consumer<Boolean> completion) {
-        var result = coordinator.prepareTransfer(capturedModel(op, RocketEscrowSection.neutral()), completion);
-        if (result != EscrowCoordinator.Transfer.QUEUED) { throw new IllegalArgumentException(result.name()); }
+        prepareCapturedModel(coordinator, op, RocketEscrowSection.neutral(), completion);
+    }
+    static void prepareCapturedModel(EscrowCoordinator coordinator, EscrowOperation op, RocketEscrowSection observed,
+                                     java.util.function.Consumer<Boolean> completion) {
+        var capture = capturedModel(nativeModel(op, observed), observed);
+        var additions = new java.util.ArrayList<>(coordinator.pendingAdmissions()); additions.add(capture.operation());
+        var prospective = appendModel(coordinator.ledger(), additions);
+        EscrowSettlementCapacity.requireAdmission(prospective, capture.operation(), observed);
+        EscrowSettlementCapacity.preflight(prospective, op.id());
+        var result = coordinator.prepareTransfer(capture, completion);
+        if (result != EscrowCoordinator.Transfer.QUEUED) { throw new IllegalArgumentException("Shared admission refused: " + result.name()); }
+    }
+    /** Detached settlement fixtures use the captured vectors at each observed complete prefix. */
+    static List<EscrowFluidAccount.Row> settlementRows(EscrowLedger root, EscrowOperation selected,
+                                                     List<EscrowSettlementIntent.Observation> observations) {
+        var members = EscrowSettlementIntent.component(root.records(), selected.id());
+        var vectors = new java.util.HashMap<EscrowEndpoint.Key, java.util.Map<UUID, EscrowFluidAccount.Vector>>();
+        var chains = EscrowPrefix.chains(members);
+        for (var observation : observations) {
+            var chain = chains.get(observation.endpoint().key());
+            if (chain == null || observation.missing()) { continue; }
+            var values = new java.util.HashMap<UUID, EscrowFluidAccount.Vector>();
+            for (var link : chain) {
+                if (link.operation().accountingBaseline() == null) { continue; }
+                var last = chain.get(chain.size() - 1); var first = chain.get(0);
+                boolean after = observation.state().epoch() >= last.endpoint().afterEpoch();
+                var chosen = after ? last : first;
+                var baseline = EscrowAccountingReconciliation.baseline(root, chosen.operation());
+                boolean source = chosen.endpoint().key().equals(chosen.operation().source().key());
+                values.put(link.operation().id(), after ? (source ? baseline.sourceAfter() : baseline.destinationAfter())
+                        : (source ? baseline.sourceBefore() : baseline.destinationBefore()));
+            }
+            vectors.put(observation.endpoint().key(), values);
+        }
+        return EscrowSettlementAccounting.project(root, members, observations, vectors);
+    }
+    static EscrowSettlementIntent previewModel(EscrowLedger root, UUID selected, EscrowSettlementIntent.Choice choice,
+            UUID actor, String name, long tick, List<EscrowSettlementIntent.Observation> observations) {
+        var op = root.records().stream().filter(member -> member.id().equals(selected)).findFirst().orElseThrow();
+        var preview = EscrowSettlementIntent.preview(root, selected, choice, actor, name, tick, observations);
+        var rows = settlementRows(root, op, observations);
+        return rows.isEmpty() ? preview : preview.accounting(rows);
+    }
+    static EscrowLedger freezeModel(EscrowSettlementIntent intent, EscrowLedger root) {
+        var op = root.records().stream().filter(member -> intent.ids().contains(member.id())).findFirst().orElseThrow();
+        return intent.freeze(root, EscrowSettlementAccounting.merge(root, intent, settlementRows(root, op, intent.observations())));
+    }
+    static boolean beginModelSettlement(EscrowCoordinator coordinator, EscrowSettlementIntent intent,
+                                        java.util.function.Consumer<Boolean> completion) {
+        var root = coordinator.ledger();
+        var op = root.records().stream().filter(member -> intent.ids().contains(member.id())).findFirst().orElseThrow();
+        return coordinator.beginSettlement(intent, EscrowSettlementAccounting.merge(root, intent, settlementRows(root, op, intent.observations())), null, completion);
+    }
+    /** Model proof/lease tests: real captured accounting, with their existing detached proof tokens. */
+    static boolean retireCapturedModel(EscrowCoordinator coordinator, java.util.Set<UUID> ids,
+            java.util.Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs, java.util.function.Consumer<Boolean> completion) {
+        var root = coordinator.ledger(); EscrowPrefix.requireRetirementPrefix(root.records(), ids);
+        var chains = EscrowPrefix.chains(root.records());
+        var ends = new java.util.ArrayList<EscrowSettlementIntent.Observation>();
+        var states = new java.util.HashMap<EscrowEndpoint.Key, EscrowPrefix.State>();
+        var vectors = new java.util.HashMap<EscrowEndpoint.Key, java.util.Map<UUID, EscrowFluidAccount.Vector>>();
+        var affected = root.records().stream().filter(op -> ids.contains(op.id()))
+                .flatMap(op -> java.util.stream.Stream.of(op.source().key(), op.destination().key())).collect(java.util.stream.Collectors.toSet());
+        for (var key : affected) {
+            var chain = chains.get(key); var last = chain.get(chain.size() - 1); var state = proofs.get(key).frontier();
+            states.put(key, state);
+            ends.add(new EscrowSettlementIntent.Observation(last.endpoint(), state, true, 0,
+                    EscrowSignatureKind.endpoint(last.endpoint()), last.endpoint().kind() == EscrowEndpoint.Kind.ENTITY
+                            ? last.operation().nativeBinding().invariant() : EscrowInvariant.reference(last.endpoint())));
+            var baseline = EscrowAccountingReconciliation.baseline(root, last.operation());
+            var value = key.equals(last.operation().source().key()) ? baseline.sourceAfter() : baseline.destinationAfter();
+            vectors.put(key, chain.stream().collect(java.util.stream.Collectors.toMap(link -> link.operation().id(), link -> value)));
+        }
+        var request = new EscrowReconciliationCheckpoint(root, ids, ends, () -> true, states, java.util.Map.of(), vectors);
+        request.proofs.putAll(proofs.entrySet().stream().filter(entry -> affected.contains(entry.getKey()))
+                .collect(java.util.stream.Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue)));
+        return coordinator.retireNative(request, ack -> completion.accept(ack.committed()));
     }
     /** R469: replace all of the candidate's ceilings with its actual codec-measured O1, receipt and frozen row. */
     static long realPreview(EscrowLedger root, EscrowOperation candidate, List<EscrowSettlementIntent.Observation> observations) {
