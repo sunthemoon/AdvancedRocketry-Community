@@ -219,6 +219,10 @@ class EscrowPrepareFillTest {
             var prospective = EscrowTestFixtures.appendModel(base, candidate);
             long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
             long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(prospective, refused);
+            System.out.println("R468 R8 admitted=" + admitted.size() + " candidate=" + refused.sequence()
+                    + " ceiling=" + ceiling + " candidate_preview=" + previewBytes(prospective, refused)
+                    + " preview_only=" + previewOnly + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES
+                    + " limit=" + EscrowLimits.ROOT_BYTES);
             assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
             assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES,
                     "Charged by its preview only, with the headroom, the candidate would fit: " + previewOnly);
