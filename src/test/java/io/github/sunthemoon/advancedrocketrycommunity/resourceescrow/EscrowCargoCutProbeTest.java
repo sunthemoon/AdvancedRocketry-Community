@@ -168,6 +168,127 @@ class EscrowCargoCutProbeTest {
         assertNull(EscrowCargoCutProbe.attach(null, null));
     }
 
+    @Test void theVerificationModeIsInertWithoutTheHooks() {
+        for (String name : EscrowCargoRepairVerifyProbe.CASES) {
+            for (String scenario : new String[] {null, "", "verify", "start", "recover", "other"}) {
+                assertFalse(EscrowCargoCutProbe.selected(false, scenario, name), name + "/" + scenario);
+                assertFalse(EscrowCargoRepairVerifyProbe.selected(false, scenario, name), name + "/" + scenario);
+                assertFalse(EscrowCargoRepairVerifyProbe.misrouted(false, scenario, name), name + "/" + scenario);
+            }
+        }
+        assertFalse(EscrowCargoRepairVerifyProbe.misrouted(false, "verify", "FF_REBUILD_SOURCE"));
+        assertFalse(EscrowCargoRepairVerifyProbe.misrouted(false, "verify", null));
+    }
+
+    @Test void theVerificationCasesAreSelectedOnlyUnderTheVerifyScenario() {
+        assertEquals(Set.of("FF_X03_OBSERVE", "FF_X03_UNLOAD", "FF_X03_LAUNCH"), EscrowCargoRepairVerifyProbe.CASES);
+        for (String name : EscrowCargoRepairVerifyProbe.CASES) {
+            assertTrue(EscrowCargoCutProbe.accepts(name), "The existing cargo-cut branch routes " + name);
+            assertTrue(EscrowCargoCutProbe.selected(true, "verify", name));
+            assertFalse(EscrowCargoRepairVerifyProbe.misrouted(true, "verify", name));
+            for (String scenario : new String[] {null, "", "start", "recover", "VERIFY", "verify ", "other"}) {
+                assertFalse(EscrowCargoCutProbe.selected(true, scenario, name), name + "/" + scenario);
+                assertTrue(EscrowCargoRepairVerifyProbe.misrouted(true, scenario, name), name + "/" + scenario);
+            }
+            // No other specialized selector takes a verification case under any scenario.
+            for (String scenario : List.of("verify", "start", "recover")) {
+                assertFalse(EscrowItemCutProbe.selected(true, scenario, name));
+                assertFalse(EscrowCargoCutProbe.journalCut(true, scenario, name));
+            }
+            assertFalse(EscrowCargoReconciliationProbe.accepts(name));
+            assertFalse(EscrowCargoOwnerCapProbe.CASES.containsKey(name) || EscrowCargoSettlementCuts.CASES.containsKey(name)
+                    || EscrowCargoFlightCuts.CASES.containsKey(name) || EscrowCargoRecoveryCuts.CASES.containsKey(name));
+        }
+    }
+
+    @Test void theExistingCasesAreNeverSelectedUnderTheVerifyScenario() {
+        var existing = new java.util.TreeSet<String>();
+        existing.addAll(EscrowCargoOwnerCapProbe.CASES.keySet()); existing.addAll(EscrowCargoSettlementCuts.CASES.keySet());
+        existing.addAll(EscrowCargoFlightCuts.CASES.keySet()); existing.addAll(EscrowCargoRecoveryCuts.CASES.keySet());
+        assertTrue(existing.contains("FF_REBUILD_SOURCE") && existing.contains("FS_O1_BEFORE"));
+        for (String name : existing) {
+            assertFalse(EscrowCargoRepairVerifyProbe.accepts(name), name);
+            assertFalse(EscrowCargoCutProbe.selected(true, "verify", name), name);
+            assertTrue(EscrowCargoRepairVerifyProbe.misrouted(true, "verify", name), name);
+            // Their own scenarios are unchanged and are not a misrouting.
+            for (String scenario : List.of("start", "recover")) {
+                assertTrue(EscrowCargoCutProbe.selected(true, scenario, name), name);
+                assertFalse(EscrowCargoRepairVerifyProbe.misrouted(true, scenario, name), name);
+            }
+        }
+        // The verify scenario accepts nothing else either: no case, an empty case, an unknown name or another family.
+        for (String name : new String[] {null, "", "FF_X03_", "FF_X03_REPAIRED", "ff_x03_observe", "E1", "BENCH", "IC_LOAD_K8"}) {
+            assertFalse(EscrowCargoCutProbe.selected(true, "verify", name));
+            assertTrue(EscrowCargoRepairVerifyProbe.misrouted(true, "verify", name));
+        }
+        // Names outside both groups keep reaching the older dispatch under the older scenarios.
+        for (String name : new String[] {null, "", "E1", "OLDER_RUNNER_CASE", "FF_UNKNOWN"}) {
+            for (String scenario : new String[] {null, "start", "recover", "older-scenario"}) {
+                assertFalse(EscrowCargoRepairVerifyProbe.misrouted(true, scenario, name));
+            }
+        }
+    }
+
+    @Test void aMisroutedVerificationStartIsRefusedBeforeAnyProbeIsCreated() {
+        String hooks = EscrowTestEndpoints.HOOKS, scenario = EscrowCargoCutProbe.SCENARIO, selectedCase = EscrowCargoCutProbe.CASE;
+        var saved = new String[] {System.getProperty(hooks), System.getProperty(scenario), System.getProperty(selectedCase)};
+        try {
+            System.setProperty(hooks, "true");
+            for (String[] pair : new String[][] {{"start", "FF_X03_OBSERVE"}, {"recover", "FF_X03_UNLOAD"}, {"other", "FF_X03_LAUNCH"},
+                    {null, "FF_X03_OBSERVE"}, {"verify", "FF_REBUILD_SOURCE"}, {"verify", "E1"}, {"verify", null}}) {
+                set(scenario, pair[0]); set(selectedCase, pair[1]);
+                // The server argument is null: the refusal precedes every use of it.
+                assertThrows(IllegalArgumentException.class, () -> EscrowCargoCutProbe.attach(null, null), pair[0] + "/" + pair[1]);
+            }
+            // Without the hooks the same properties are inert, and nothing attaches.
+            System.setProperty(hooks, "false");
+            for (String[] pair : new String[][] {{"start", "FF_X03_OBSERVE"}, {"verify", "FF_X03_OBSERVE"}, {"verify", "FF_REBUILD_SOURCE"}}) {
+                set(scenario, pair[0]); set(selectedCase, pair[1]);
+                assertNull(EscrowCargoCutProbe.attach(null, null));
+            }
+        } finally {
+            set(hooks, saved[0]); set(scenario, saved[1]); set(selectedCase, saved[2]);
+        }
+    }
+    private static void set(String key, String value) {
+        if (value == null) { System.clearProperty(key); } else { System.setProperty(key, value); }
+    }
+
+    @Test void theVerificationRouteAndLaunchAnswersAreBounded() {
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination.MOON, EscrowCargoRepairVerifyProbe.route(null));
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination.MOON, EscrowCargoRepairVerifyProbe.route(""));
+        for (var destination : io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination.values()) {
+            assertEquals(destination, EscrowCargoRepairVerifyProbe.route(destination.name()));
+        }
+        for (String value : List.of("moon", "MARS", " MOON", "1")) {
+            assertThrows(IllegalArgumentException.class, () -> EscrowCargoRepairVerifyProbe.route(value), value);
+        }
+        for (var code : io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.values()) {
+            boolean accepted = code.name().equals("SUCCESS") || code.name().equals("JOURNAL_PENDING");
+            assertEquals(accepted, EscrowCargoRepairVerifyProbe.launchAccepted(code), code.name());
+            assertEquals(code.name().equals("DESTINATION_LOADING"), EscrowCargoRepairVerifyProbe.launchRepeatable(code, 1), code.name());
+            assertFalse(EscrowCargoRepairVerifyProbe.launchRepeatable(code, EscrowCargoRepairVerifyProbe.REQUESTS), code.name());
+        }
+        assertEquals(6_000, EscrowCargoRepairVerifyProbe.WAIT_TICKS);
+        assertFalse(EscrowCargoRepairVerifyProbe.expired(6_100, 100));
+        assertTrue(EscrowCargoRepairVerifyProbe.expired(6_101, 100));
+    }
+
+    @Test void theVerificationProbeHoldsNoCreationRecoveryOrLedgerWrite() throws Exception {
+        String source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowCargoRepairVerifyProbe.java"));
+        String code = source.lines().map(String::trim).filter(line -> !line.startsWith("*") && !line.startsWith("/**") && !line.startsWith("//"))
+                .collect(java.util.stream.Collectors.joining("\n"));
+        for (String forbidden : List.of("setDirty", "recoverTransfer", "cargoRocket(", "device(DEVICE", "addFreshEntity", "setBlock",
+                "journal.put", "journal.remove", "journal.replace", "ResourceEscrowSavedData.forTests", "updateFlightData", "flushChecked",
+                "pause(", "hardStop(", "ReleaseTestPlayers")) {
+            assertFalse(code.contains(forbidden), "The verification mode must not use " + forbidden);
+        }
+        assertEquals(2, code.split("EscrowCargoSwitches\\.forTests\\(", -1).length - 1, "One naming and one withdrawal of the device switch");
+        assertEquals(1, code.split("requestAdminFlight\\(", -1).length - 1);
+        assertTrue(code.contains("EscrowTestEndpoints.requireEnabled(server)"));
+    }
+
     @Test void theJournalSeamIsInertOutsideItsTwoStartCases() {
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS);
         assertSame(policy, EscrowCargoCutProbe.journalPolicy(null, policy));
