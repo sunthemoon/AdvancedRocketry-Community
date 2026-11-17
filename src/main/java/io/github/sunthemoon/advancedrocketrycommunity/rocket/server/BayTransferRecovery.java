@@ -192,6 +192,28 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         queue.offer(claim.logical());
     }
 
+    /**
+     * W363: D0's decision on a governed flight. Its source carries a ledger binding and an ARMED flight, which the
+     * neutral wrapper excludes, so each packaged bay is refused with BAY_SOURCE_PROTECTED for its menu status. No claim,
+     * receipt or registration; the governed boundary admits no bay claim or permit, so nothing here could deploy.
+     */
+    @Override
+    public void governedAscentComplete(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+            RocketEntity source) {
+        if (stopping || shuttingDown() || !session.admissionEnabled() || claims.holds(record.logicalRocketId())) { return; }
+        if (record.nativeTransfer().isEmpty() || RocketEscrowGate.bayNeutral(source, record.transferId())) { return; }
+        int refused = 0;
+        for (var bay : checks.bays(record.sourceSnapshot())) {
+            if (bay.satellite() == null) { continue; }
+            session.rejections().put(bay.satellite(), "BAY_SOURCE_PROTECTED", record.logicalRocketId(), server.getTickCount());
+            refused++;
+        }
+        if (refused > 0) {
+            LOGGER.info("ARCE_BAY_GOVERNED_REFUSED transfer={} logical={} reason=BAY_SOURCE_PROTECTED bays={}",
+                    record.transferId(), record.logicalRocketId(), refused);
+        }
+    }
+
     // ---- The session's steps: at most 32 per tick, round-robin by L, after the held claims' ticket renewal. ----
 
     void tick() {

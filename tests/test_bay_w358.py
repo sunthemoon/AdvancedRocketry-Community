@@ -79,7 +79,7 @@ class Oracles(unittest.TestCase):
 
     def test_new_families_cover_only_the_implemented_rows_and_keep_existing_selections(self):
         rows = {r["name"]: r for r in campaign.family_specs()}
-        self.assertEqual({"B6.8", "B10.6", "B11.8", "B11.9", "B11.7", "CAP.3"}, set(sum((list(v) for v in runner.CASES.values()), [])))
+        self.assertEqual({"B6.8", "B10.6", "B11.8", "B11.9", "B11.7", "CAP.3", "B17.3"}, set(sum((list(v) for v in runner.CASES.values()), [])))
         for key, cases in runner.TRANCHES.items():
             row = rows["forced-" + key.replace("_", "-")]
             self.assertEqual(cases, row["cases"])
@@ -93,7 +93,7 @@ class Oracles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE):
             plan = campaign.make_plan(arguments(Path(directory)))
         rows = [r for r in plan["families"] if r["name"].startswith("forced-W358-")]
-        self.assertEqual(7, len(rows))
+        self.assertEqual(6, len(rows))  # W363 (R451): W358_B6_BOUND left the campaign selection
         for row in rows:
             command = row["command"]
             self.assertEqual(SOURCE, command[command.index("--candidate-commit") + 1])
