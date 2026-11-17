@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c0b9bfcea (W370 merged, R467: X01 and X02 simulation slice S2, the crash replay builder and runner, Python with opt-in replay modes in five runners and the probe-inventory counts; branch run 44109049691 passed on its second attempt and governance run 44109051809 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44122230259 at 70aad3524 (W370 merged at `c0b9bfcea`, after Slice D at `83907330c` and W371 at `aaf2e0cdf`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 14.3, 18.4, 19.3 and 15.6 minutes, 1,863 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44122230514 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 07d8d2fa8 (R483: the unit-test JVM's heap set to 1 GiB in `build.gradle` after shared run 44175223235 ran out of Gradle's 512 MiB default; test harness only). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44179325011 at 07d8d2fa8 passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 14.6, 21.2, 21.9 and 19.4 minutes, 1,863 GameTests, with 3, 3, 2 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44179325000 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -551,6 +551,11 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **Unit-test heap (2026-11-18).** Shared run 44175223235 at `f89f7d5ba` failed in its build: the unit-test JVM ran out of
+  Gradle's default 512 MiB heap in `RocketTransactionAdmissionTest.exactRootByteBoundaryRejectedRetryAndRemovalMatchFullEncoding`,
+  whose snapshot hashing builds multi-megabyte strings, after more than 6,600 tests in the same JVM. The same code passed
+  on W377's branch. R483 sets the test task's heap to 1 GiB in `build.gradle`; no product limit changes. It closes once
+  the next shared regressions pass.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
