@@ -63,7 +63,7 @@ YGGDRASIL = "[10:55:43] [Yggdrasil Key Fetcher/ERROR] [mojang/YggdrasilServicesK
 
 def offline(after=("d", "d"), statuses=("FAIL", "FAIL"), detected=(REFUSAL,), error="oracle", **extra):
     return dict(case=dict(id="X02-BAY_RECEIPTS-BIT_FLIP", store="BAY_RECEIPTS", fault="BIT_FLIP"), damaged_sha256="d",
-                error=error, restarts=[dict(restart=number, status=statuses[number - 1], ready=False,
+                error=error, restarts=[dict(restart=number, status=statuses[number - 1], ready=False, store_observations=1,
                                             store_sha256=after[number - 1], detected=list(detected if number == 1 else ()))
                                        for number in (1, 2)], **extra)
 
@@ -385,7 +385,7 @@ class DetectionTests(unittest.TestCase):
         # More ERROR lines than the bound on the kept ones, and the refusal after them.
         noise = [f"[x] [Server thread/ERROR] [x/]: noise {index}" for index in range(faults.EVIDENCE_LINES + 5)]
         logs = {1: noise + [REFUSAL], 2: noise}
-        rows = faults.restart_rows(dict(cases=[dict(restarts=[])]), logs, {1: "d", 2: "d"}, "BAY_RECEIPTS")
+        rows = faults.restart_rows(dict(cases=[dict(restarts=[])]), logs, {1: ["d"], 2: ["d"]}, "BAY_RECEIPTS")
         self.assertEqual([row["production"] for row in rows], [[REFUSAL], []])
         self.assertNotIn(REFUSAL, rows[0]["detected"])
         observation = offline()
@@ -396,6 +396,104 @@ class DetectionTests(unittest.TestCase):
         rows[0]["detected"] = [REFUSAL]
         self.assertEqual(faults.classify_offline(observation)["classification"], faults.NOT_CAUGHT)
         self.assertNotIn("production", faults.restart_rows(dict(cases=[dict(restarts=[])]), logs)[0])
+
+
+class ObservationTests(unittest.TestCase):
+    """Root decision R491, answer 3: a missing observation of the store file is not an observation."""
+
+    def setUp(self):
+        RunnerTests.setUp(self)
+        self.direct = smoke.CapturedProcess  # what a runner holds that imported the class before the hooks replaced it
+        self.native = "B3_MOVED"
+        (self.root / "evidence").mkdir()
+
+    def restarts(self, bypass=False, content=b"damaged", lines=(REFUSAL,), processes=1, status="FAILED"):
+        """Both restarts through the real start_twice, around a stand-in for runner B that starts real processes."""
+        test = self
+
+        def run(arguments):
+            arguments.evidence_dir.mkdir(parents=True)
+            data = arguments.session_dir / ("world-" + test.native) / "data"
+            data.mkdir(parents=True)
+            if content is not None:
+                (data / faults.STORES["BAY_RECEIPTS"]).write_bytes(content)
+            for number in (1, 2):
+                for index in range(processes):
+                    # A second process of the same start has its own log file with the same start number.
+                    log = arguments.evidence_dir / (f"{test.native}-{number}.log" if index == 0 else f"{test.native}-again{index}-{number}.log")
+                    launch = test.direct if bypass else smoke.CapturedProcess
+                    process = launch([sys.executable, "-c", "pass"], arguments.session_dir, log)
+                    process.finish(30); process.process.stdin.close(); process.process.stdout.close(); process.log_stream.close()
+                    log.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+            report = dict(status=status, cases=[dict(case=test.native, restarts=[dict(restart=1, status=status),
+                                                                                 dict(restart=2, status=status)])])
+            (arguments.evidence_dir / "results.json").write_text(json.dumps(report), encoding="utf-8")
+            return report
+
+        work = self.root / ("work-" + str(len(list(self.root.glob("work-*")))))
+        with patch.dict(x01.RUNNERS, {"B": SimpleNamespace(run=run)}), patch.object(x01.bay, "assert_pin"), \
+                patch.object(x01.evidence_tools, "candidate_pin"):
+            rows, error, _ = faults.start_twice(self.args, "B", self.native, self.root / "kill", replay.State("damaged", {}), {},
+                                                work, "owner", self.root / "evidence", "BAY_RECEIPTS")
+        observation = dict(case=dict(id="X02-BAY_RECEIPTS-TRUNCATED", store="BAY_RECEIPTS", fault="TRUNCATED"),
+                           damaged_sha256=replay.sha(b"damaged"), restarts=rows, error=error)
+        return rows, faults.classify_offline(observation)
+
+    def test_each_start_of_a_hooked_runner_is_observed_once(self):
+        rows, result = self.restarts()
+        self.assertEqual([(row["store_observations"], row["store_sha256"]) for row in rows], [(1, replay.sha(b"damaged"))] * 2)
+        self.assertEqual(result["classification"], faults.CAUGHT_LATER)
+
+    def test_a_runner_that_bypasses_the_replaced_process_class_is_not_run(self):
+        # W379R finding 3: the runner keeps the process class that it imported, so no callback hashes the store file.
+        # The refusal is in both logs and the file on disk is unchanged, which W379F read as CAUGHT_LATER.
+        rows, result = self.restarts(bypass=True)
+        self.assertEqual([(row["store_observations"], row["store_sha256"], len(row["production"])) for row in rows], [(0, None, 1)] * 2)
+        self.assertEqual(result["classification"], faults.NOT_RUN)
+        self.assertIn("not observed after start(s) 1, 2", result["reasons"][0])
+        self.assertIn("instrumentation missed", result["reasons"][0])
+        self.assertEqual(faults.status_of([dict(case=result["case"], classification=result["classification"])]), "INCOMPLETE")
+        # With a passing existing runner, which W379R's stand-in had, the result is the same.
+        self.assertEqual(self.restarts(bypass=True, status="PASS")[1]["classification"], faults.NOT_RUN)
+        self.assertIs(smoke.CapturedProcess, self.direct)
+
+    def test_an_observed_absent_file_is_an_observation(self):
+        rows, result = self.restarts(content=None, lines=(READY,))
+        self.assertEqual([(row["store_observations"], row["store_sha256"]) for row in rows], [(1, None)] * 2)
+        # The start removed or never wrote the file and reported nothing: a residual, and not a case that did not run.
+        self.assertEqual(result["classification"], faults.NOT_CAUGHT)
+        self.assertIn("accepted and rewritten", result["reasons"][0])
+
+    def test_two_observations_of_one_start_are_incomplete(self):
+        rows, result = self.restarts(processes=2)
+        self.assertEqual([row["store_observations"] for row in rows], [2, 2])
+        self.assertEqual(result["classification"], faults.INCOMPLETE)
+        self.assertIn("[2, 2] times", result["reasons"][0])
+
+    def test_the_count_is_read_apart_from_the_hash(self):
+        def classify(*pairs, **kwargs):
+            observation = offline(**kwargs)
+            for row, (count, digest) in zip(observation["restarts"], pairs):
+                row.update(store_observations=count, store_sha256=digest)
+                if count is None:
+                    del row["store_observations"]
+            return faults.classify_offline(observation)["classification"]
+
+        self.assertEqual(classify((1, "d"), (1, "d")), faults.CAUGHT_LATER)
+        # No observation, whatever the hash field says, and on either start.
+        for pairs in (((0, None), (0, None)), ((0, None), (1, "d")), ((1, "d"), (0, None)), ((0, "d"), (1, "d")),
+                      (("1", "d"), (1, "d")), ((True, "d"), (1, "d"))):
+            self.assertEqual(classify(*pairs), faults.NOT_RUN, pairs)
+            self.assertEqual(classify(*pairs, statuses=("PASS", "PASS"), error=None), faults.NOT_RUN, pairs)
+        self.assertEqual(classify((2, "d"), (1, "d")), faults.INCOMPLETE)
+        # An observed absent file is a changed file, and not a missing observation.
+        self.assertEqual(classify((1, "d"), (1, None)), faults.NOT_CAUGHT)
+        self.assertEqual(classify((1, None), (1, None), detected=()), faults.NOT_CAUGHT)
+        # A row kept by W379 or W379F has no count. Its hash was written by a callback; without a hash nothing was observed.
+        self.assertEqual(classify((None, "d"), (None, "d")), faults.CAUGHT_LATER)
+        self.assertEqual(classify((None, None), (None, None)), faults.NOT_RUN)
+        self.assertEqual(classify((None, None), (None, None), statuses=("PASS", "PASS"), error=None), faults.NOT_RUN)
+        self.assertEqual(classify((None, "d"), (None, None)), faults.NOT_RUN)
 
 
 class DamageTests(unittest.TestCase):

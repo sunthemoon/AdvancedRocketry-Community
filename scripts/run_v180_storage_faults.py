@@ -315,6 +315,17 @@ def detection(restarts, store: str) -> list[str]:
             for line in (entry["production"] if "production" in entry else production_lines(entry.get("detected", []), store))]
 
 
+def store_observations(entry: dict) -> int:
+    """How often the store file was observed after one start of an offline case.
+
+    A row of this runner counts the callbacks that ran. A row kept by W379 or W379F has no count: its hash, when
+    there is one, was written by a callback and is read as one observation, and a row without a hash as none.
+    """
+    if "store_observations" in entry:
+        return entry["store_observations"] if type(entry["store_observations"]) is int else 0
+    return 1 if entry.get("store_sha256") is not None else 0
+
+
 def first_start_held(first: dict | None) -> bool:
     """The faulted start failed the existing runner's check only by declared hold lines.
 
@@ -491,6 +502,11 @@ def classify_offline(observation: dict) -> dict:
     ERROR or FATAL line is kept as evidence and is never detection: a case with a failed oracle and no declared
     production line is NOT_CAUGHT, a residual. So is a file that a start accepts or replaces without the above. An
     offline fault is never seen by a running session, so SEEN_HELD does not occur.
+
+    Root decision R491, answer 3: the store file must have been observed exactly once after each of the two starts.
+    A start without an observation is NOT_RUN, because the instrumentation missed it and nothing is known about the
+    file; more than one observation of a start is INCOMPLETE. A file that an observation found absent is an
+    observation, and it differs from the damaged file.
     """
     case = observation["case"]
     reasons, evidence = [], []
@@ -504,6 +520,16 @@ def classify_offline(observation: dict) -> dict:
     restarts = observation["restarts"]
     if len(restarts) != 2 or [r.get("restart") for r in restarts] != [1, 2]:
         reasons.append("The damaged copy was not started twice: " + str(observation.get("error") or "no result"))
+        return verdict(INCOMPLETE)
+    counts = [store_observations(entry) for entry in restarts]
+    if 0 in counts:
+        reasons.append("The store file was not observed after start(s) "
+                       + ", ".join(str(entry.get("restart")) for entry, count in zip(restarts, counts) if count == 0)
+                       + ": the callback that hashes it when the server process has ended did not run, so the "
+                         "instrumentation missed the start and nothing is known about the file.")
+        return verdict(NOT_RUN)
+    if counts != [1, 1]:
+        reasons.append(f"The store file was observed {counts} times after the two starts, against exactly once each.")
         return verdict(INCOMPLETE)
     damaged = observation["damaged_sha256"]
     after = [entry.get("store_sha256") for entry in restarts]
@@ -674,9 +700,14 @@ def read_logs(output: Path) -> dict[int, list[str]]:
     return logs
 
 
-def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, str | None] | None = None,
+def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, list[str | None]] | None = None,
                  store: str | None = None) -> list[dict]:
-    """The existing runner's verdict on each restart it reached, with what this harness saw beside it."""
+    """The existing runner's verdict on each restart it reached, with what this harness saw beside it.
+
+    `hashes` lists, for each start, the store file's hash at every observation after its process had ended (None for
+    an absent file). The row keeps the number of observations apart from the hash: no observation and an observed
+    absent file both have no hash.
+    """
     entries = (result.get("cases") or [{}])[0]
     listed = entries.get("restarts", entries.get("starts", []))
     rows = []
@@ -693,7 +724,9 @@ def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, str
         if observed is not None and observed.get("error"):
             row["error"] = str(observed["error"])[:400]
         if hashes is not None:
-            row["store_sha256"] = hashes.get(number)
+            seen = hashes.get(number, [])
+            row["store_observations"] = len(seen)
+            row["store_sha256"] = seen[-1] if seen else None
         rows.append(row)
     return rows
 
@@ -847,13 +880,17 @@ def record(args, alias: str, native: str, evidence: Path, scratch: Path, owner: 
 
 def start_twice(args, alias: str, native: str, kill: Path, state, context: dict, scratch: Path, owner: str,
                 evidence: Path, store: str):
-    """Both restarts of the existing runner on one damaged copy; the store file is hashed after each process ends."""
+    """Both restarts of the existing runner on one damaged copy; the store file is hashed after each process ends.
+
+    Every call of the observer is kept, so that a start whose process did not go through the replaced process class
+    (no call) is told apart from a start that left no file (one call, no hash).
+    """
     hashes, commands, errors = {}, [], []
 
     def observer(cwd: Path, log: Path):
         number = start_number(log)
         if number is not None:
-            hashes[number] = sha(cwd / ("world-" + native) / "data" / STORES[store])
+            hashes.setdefault(number, []).append(sha(cwd / ("world-" + native) / "data" / STORES[store]))
 
     module = x01.RUNNERS[alias]
     output, after_first = scratch / "restart", scratch / "after-first"
