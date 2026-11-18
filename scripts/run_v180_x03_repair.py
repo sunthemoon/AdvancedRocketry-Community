@@ -298,6 +298,9 @@ def repaired_cycle(args, session, evidence, number):
     backup = session / ('backup-' + label)
     original_hashes = copy_verified(original, backup)
     planfile = evidence / (label + '-plan.json')
+    refusals = [refusal(args, original, log, transfer, evidence, label + '-old-root', 'ROOT_NOT_CURRENT', old_root),
+                refusal(args, original, log, transfer, evidence, label + '-unknown-authority',
+                        'UNVALIDATED_AUTHORITY', unknown_authority)]
     # The seed's ordinary fixture is the numeric before-witness. It created a
     # 5000/0 water pair, then logged the applied ordinary unload before the cut.
     document = make_plan(args, original, backup, log, transfer, planfile)
@@ -335,6 +338,14 @@ def repaired_cycle(args, session, evidence, number):
     for i, case in enumerate(DESCENDANT_SEQUENCE):
         lines, _ = start(args, session, evidence, label + '-functional-' + str(i), descendant, case, SCENARIO)
         state = oracle.read(descendant)
+        write_json(evidence / (label + '-functional-' + str(i) + '-raw.json'),
+                   dict(entity=nbt.plain(state['entity']), block=nbt.plain(state['block']),
+                        managed={name: nbt.plain(root) for name, root in state['managed'].items()},
+                        added_chunks=[list(k) for k in state['chunks'].keys() - before['chunks'].keys()],
+                        object_differences=[dict(file=k[0], chunk=list(k[1:]),
+                                                 path=oracle.first_difference(before['chunks'][k], state['chunks'][k]))
+                                            for k in before['chunks'].keys() & state['chunks'].keys()
+                                            if before['chunks'][k] != state['chunks'][k]]))
         launched = i >= 2
         oracle.check_state(state, baseline, unloaded=True, launched=launched)
         fields = oracle.observe(lines, case, state, landed=launched)
@@ -349,7 +360,7 @@ def repaired_cycle(args, session, evidence, number):
     oracle.require(oracle.manifest(original) == original_hashes == oracle.manifest(backup), 'SOURCE_OR_BACKUP_CHANGED')
     row = dict(status='MEASURED_NOT_PROMOTED' if args.derive_runtime_list else 'VERIFIED_NOT_PROMOTED',
                transfer=transfer, baseline_manifest=original_hashes, stages=stages, functional=functional,
-               findings=findings, apply=applied, plan_digest=document['digest'])
+               findings=findings, refusals=refusals, apply=applied, plan_digest=document['digest'])
     write_json(evidence / (label + '-result.json'), row)
     return row, dict(original=original, backup=backup, candidate=candidate, twice=twice, plan=planfile,
                      transfer=transfer, baseline=baseline, log=log)
@@ -364,6 +375,9 @@ def run(args):
     oracle.require(not session.exists() and not evidence.exists() and session not in evidence.parents and evidence not in session.parents,
                    'EXISTING_OR_OVERLAPPING_OUTPUT')
     oracle.require(REPO not in session.parents and REPO not in evidence.parents, 'OUTPUT_INSIDE_REPOSITORY')
+    # Refuse a mismatched template before making any server copy or starting Java.
+    argsfile = _server_command(args.java)[-2].removeprefix('@')
+    oracle.require((args.source_server / argsfile).is_file(), 'FORGE_TEMPLATE_ARGUMENT_FILE_MISSING:' + argsfile)
     evidence.mkdir(parents=True)
     session.mkdir(parents=True)
     token = uuid.uuid4().hex
@@ -377,6 +391,9 @@ def run(args):
         shutil.copytree(args.source_server / 'libraries', session / 'libraries')
         (session / 'mods').mkdir()
         evidence_tools.install_candidate(args.jar, session / 'mods' / args.jar.name, args.jar_sha256)
+        keep, transfer, log = seed_world(args, session, evidence, 'keep-source', 'FF_KEEP_SOURCE')
+        report['refusals'] = [refusal(args, keep, log, transfer, evidence, 'keep-source',
+                                     'DESTINATION_IN_TARGET_CHUNK', exact=True)]
         for number in (1, 2):
             row, context = repaired_cycle(args, session, evidence, number)
             report['cycles'].append(row)
@@ -384,13 +401,7 @@ def run(args):
         if args.derive_runtime_list:
             report['status'] = 'MEASURED_NOT_PROMOTED'
         else:
-            report['refusals'] = [refusal(args, context['original'], context['log'], context['transfer'], evidence,
-                                         'old-root', 'ROOT_NOT_CURRENT', old_root),
-                                  refusal(args, context['original'], context['log'], context['transfer'], evidence,
-                                          'unknown-authority', 'UNVALIDATED_AUTHORITY', unknown_authority)]
-            keep, transfer, log = seed_world(args, session, evidence, 'keep-source', 'FF_KEEP_SOURCE')
-            report['refusals'].append(refusal(args, keep, log, transfer, evidence, 'keep-source',
-                                              'DESTINATION_IN_TARGET_CHUNK', exact=True))
+            report['refusals'].extend(row for cycle in report['cycles'] for row in cycle['refusals'])
             report['controls'] = controls(args, session, evidence, report['cycles'], context)
             # Promotion replaces the entire original directory, with a verified
             # sibling first. Never overlay stores. The descendant is not used.
