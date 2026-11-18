@@ -289,6 +289,39 @@ class EscrowCargoCutProbeTest {
         assertTrue(code.contains("EscrowTestEndpoints.requireEnabled(server)"));
     }
 
+    @Test void verificationLaunchWaitsForTerminalAuthorityPruningAndQuietWriters() {
+        var initial = GovernedTransferFixture.create().record();
+        var arm = initial.nativeTransfer().orElseThrow().armed();
+        var empty = EscrowLedger.empty(arm.ledger()).generation(arm.generation() - 1);
+        var terminal = EscrowCargoFlightCuts.governedRoot(empty, initial, true);
+        assertEquals(EscrowFlightTables.Outcome.HANDED_OFF, terminal.armedFlights().get(0).outcome());
+        assertFalse(EscrowCargoRepairVerifyProbe.launchSettled(terminal, arm.logical(), true));
+        assertFalse(EscrowCargoRepairVerifyProbe.launchSettled(empty, arm.logical(), false));
+        assertTrue(EscrowCargoRepairVerifyProbe.launchSettled(empty, arm.logical(), true));
+        assertTrue(EscrowCargoRepairVerifyProbe.launchSettled(terminal, UUID.randomUUID(), true));
+    }
+
+    @Test void verificationUnloadKeepsTheOrdinaryPacerRunningAfterThePlayerlessSettle() throws Exception {
+        var pacer = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer.loadedAt(0);
+        int[] emptyTime = {400};
+        int attempts = 0;
+        for (int tick = 400; tick <= 440; tick++) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking("FF_X03_UNLOAD", 3, () -> emptyTime[0] = 0);
+            if (emptyTime[0]++ < 300 && pacer.tryStart(tick)) { attempts++; }
+        }
+        assertEquals(3, attempts, "The real 20-tick pacer must run after the 400-tick playerless settle");
+        for (String name : List.of("FF_X03_OBSERVE", "FF_X03_LAUNCH", "FF_REBUILD_SOURCE")) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking(name, 3, () -> fail("Other cases must not reset the Level"));
+        }
+        for (int step : List.of(0, 1, 5)) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking("FF_X03_UNLOAD", step, () -> fail("Outside the unload interval"));
+        }
+        String source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowCargoRepairVerifyProbe.java"));
+        assertTrue(source.contains("keepUnloadTicking(name, step, level::resetEmptyTime)"));
+        assertTrue(source.contains("launchSettled(data.ledger(), logical, quiet(journal, coordinator))"));
+    }
+
     @Test void theJournalSeamIsInertOutsideItsTwoStartCases() {
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS);
         assertSame(policy, EscrowCargoCutProbe.journalPolicy(null, policy));
