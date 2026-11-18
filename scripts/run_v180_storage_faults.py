@@ -306,13 +306,13 @@ def classify_live(observation: dict) -> dict:
     """
     case, report = observation["case"], observation["report"]
     reasons, evidence = [], []
-    first = observation.get("first_start") or {}
+    faulted_start = observation.get("first_start") or {}
 
     def verdict(value):
         result = dict(case=case["id"], classification=value, reasons=reasons, evidence=evidence[:EVIDENCE_LINES])
-        if first:
+        if faulted_start:
             # Every accepted hold line is kept, whatever the class and outside the bound on the evidence lines.
-            result["accepted_hold_lines"] = list(first.get("accepted", []))
+            result["accepted_hold_lines"] = list(faulted_start.get("accepted", []))
         return result
 
     installed = report["installed"]
@@ -388,24 +388,24 @@ def classify_live(observation: dict) -> dict:
         # Both healthy restarts met the existing oracle, so the durable outcome is the expected one, but a check of
         # the faulted start itself failed (W379 smoke 2: the journal's hold is logged at ERROR, and the runner
         # refuses any ERROR line). That check is not edited and its result stays recorded.
-        if first_start_held(first):
+        if first_start_held(faulted_start):
             # Root decision R486: the only ERROR lines of the faulted start are hold lines declared for this store
             # before the run, logged after the injection; without them the start met the runner's checks.
             reasons.append("Every faulted write failed inside the session, and both healthy restarts met the existing "
                            "oracle. The existing runner's check of the faulted start failed ("
-                           + str(first["runner"].get("error")) + ") only on " + str(len(first["accepted"]))
+                           + str(faulted_start["runner"].get("error")) + ") only on " + str(len(faulted_start["accepted"]))
                            + " declared hold line(s) of the faulted store; this runner's evaluation of that start "
-                           "without them passed: " + ", ".join(first["filtered"].get("checks", [])) + ".")
+                           "without them passed: " + ", ".join(faulted_start["filtered"].get("checks", [])) + ".")
             return verdict(SEEN_HELD)
         # Anything else is neither relaxed nor called a residual: a reader decides.
         reasons.append("The session saw the fault and both healthy restarts met the existing oracle, but an existing "
                        "check of the faulted start failed: " + str(observation.get("error")))
-        if first:
-            reasons.append(f"{first.get('unaccepted_count', len(first.get('unaccepted', [])))} ERROR or FATAL line(s) of the faulted start are not "
+        if faulted_start:
+            reasons.append(f"{faulted_start.get('unaccepted_count', len(faulted_start.get('unaccepted', [])))} ERROR or FATAL line(s) of the faulted start are not "
                            "declared hold lines; the evaluation without the accepted lines: "
-                           + str((first.get("filtered") or {}).get("status"))
-                           + (" (" + str(first["filtered"].get("error") or first["filtered"].get("reason")) + ")"
-                              if (first.get("filtered") or {}).get("status") != "PASS" else "") + ".")
+                           + str((faulted_start.get("filtered") or {}).get("status"))
+                           + (" (" + str(faulted_start["filtered"].get("error") or faulted_start["filtered"].get("reason")) + ")"
+                              if (faulted_start.get("filtered") or {}).get("status") != "PASS" else "") + ".")
         evidence.extend(observation.get("session_errors", []))
         return verdict(NEEDS_REVIEW)
     if not healthy:

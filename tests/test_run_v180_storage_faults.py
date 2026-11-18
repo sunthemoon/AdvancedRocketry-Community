@@ -719,6 +719,19 @@ class HoldLineTests(unittest.TestCase):
         unseen["first_start"] = refused_start()
         self.assertEqual(faults.classify_live(unseen)["classification"], faults.NOT_CAUGHT)
 
+    def test_a_readback_fault_keeps_the_record_of_the_faulted_start(self):
+        # The readback rule compares each faulted write with its retry; the record of the faulted start stays apart.
+        lines = session("READ_ERROR", store="ROCKET_TRANSFERS", operation="move", moved=True, reads=1)
+        observation = observed(lines, live("READ_ERROR", store="ROCKET_TRANSFERS"),
+                               error="SmokeError: First contradictory cut: FS_O3J_AFTER: start 0: " + REFUSED)
+        observation["first_start"] = refused_start()
+        result = faults.classify_live(observation)
+        self.assertEqual((result["classification"], result["accepted_hold_lines"]), (faults.SEEN_HELD, [JOURNAL_HOLD]))
+        observation["first_start"] = refused_start(unaccepted=("[x] [Server thread/ERROR] [x/]: other",))
+        result = faults.classify_live(observation)
+        self.assertEqual((result["classification"], result["accepted_hold_lines"]), (faults.NEEDS_REVIEW, [JOURNAL_HOLD]))
+        self.assertIn("1 ERROR or FATAL line(s)", result["reasons"][-1])
+
     def test_a_runner_that_passes_the_faulted_start_keeps_its_class_and_the_accepted_lines(self):
         # Runner R does not refuse an ERROR line of the first start: the registry case is held as before.
         first = dict(declared=list(faults.HOLD_MARKERS["SATELLITE_MISSIONS"]), runner=dict(status="PASS", error=None, findings=None),
