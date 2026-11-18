@@ -476,5 +476,409 @@ class RunnerTests(unittest.TestCase):
             faults.check_size(evidence)
 
 
+JOURNAL_HOLD = "[09:00:02] [Server thread/ERROR] [x/]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority"
+REGISTRY_HOLD = "[09:00:02] [Server thread/ERROR] [x/]: ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=7"
+REFUSED = "Native run logged ERROR or FATAL"
+
+
+def skipped(skip, count=1, store="SATELLITE_MISSIONS", fault="WRITE_ERROR", installed=True, passed=None, first=None):
+    """The first start's log of a fault behind `skip` passed writes: the passed writes, the failed ones, one that moves."""
+    lines = [f"[x] [Server thread/INFO]: {M} installed store={store} fault={fault} count={count}"
+             + (f" skip={skip}" if installed else "")]
+    for attempt in (range(1, skip + 1) if passed is None else passed):
+        lines.append(f"{M} passed store={store} fault={fault} attempt={attempt} skip={skip} left={skip - attempt}")
+        lines.append(f"{M} attempt store={store} attempt={attempt} result=moved moved=true faulted=false bytes=9 sha256=aa")
+    first = skip + 1 if first is None else first
+    for attempt in range(first, first + count):
+        lines.append(f"{M} injected store={store} fault={fault} operation=write attempt={attempt} "
+                     f"remaining={first + count - 1 - attempt} skip={skip}")
+        lines.append(f"{M} attempt store={store} attempt={attempt} result=failed moved=false faulted=true bytes=0 sha256=bb")
+    lines.append(f"{M} attempt store={store} attempt={first + count} result=moved moved=true faulted=false bytes=9 sha256=aa")
+    return lines
+
+
+def refused_start(accepted=(JOURNAL_HOLD,), unaccepted=(), filtered=None, findings=1, status="FAILED"):
+    """The two results for a faulted start that the existing runner refused."""
+    return dict(declared=list(faults.HOLD_MARKERS["ROCKET_TRANSFERS"]),
+                runner=dict(status=status, error=REFUSED, findings=findings), accepted=list(accepted),
+                unaccepted=list(unaccepted), unaccepted_count=len(unaccepted),
+                filtered=filtered or dict(status="PASS", checks=["log observations", "disk oracle of the cut"]))
+
+
+class SkipTests(unittest.TestCase):
+    """Root decision R486, answer 2: the optional fourth field of the property."""
+
+    def test_the_registry_cases_skip_the_runners_baseline_write_and_no_other_store_skips(self):
+        cases = faults.plan()
+        live = [case for case in cases if not case.offline]
+        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS"})
+        self.assertEqual({case.skip for case in live if case.store == "SATELLITE_MISSIONS"}, {1})
+        self.assertTrue(all(case.skip == 0 for case in cases if case.offline))
+        registry = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
+        self.assertIn(registry, cases)
+        # The planned skip is not part of the identifier, and it is the fourth field of the property.
+        self.assertEqual((registry.id, registry.spec, registry.native),
+                         ("X02-SATELLITE_MISSIONS-WRITE_ERROR-1", "SATELLITE_MISSIONS:WRITE_ERROR:1:1", ("R", "R3")))
+        self.assertEqual(registry.view(), dict(id=registry.id, store="SATELLITE_MISSIONS", fault="WRITE_ERROR", count=1, skip=1))
+        # Without a skip the property is the three-field form of W379, unchanged.
+        for case in live:
+            self.assertEqual(case.spec.count(":"), 3 if case.skip else 2, case.id)
+        self.assertEqual(faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 4).view(),
+                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4))
+        self.assertIn("baseline request", faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
+        self.assertEqual(set(faults.DEFAULT_SKIP), {"SATELLITE_MISSIONS"})
+
+    def test_another_skip_is_named_in_the_identifier(self):
+        case = faults.by_id("X02-BAY_RECEIPTS-MOVE_ERROR-1-S2")
+        self.assertEqual((case, case.spec, case.id), (faults.Case("BAY_RECEIPTS", "MOVE_ERROR", 1, 2), "BAY_RECEIPTS:MOVE_ERROR:1:2",
+                                                      "X02-BAY_RECEIPTS-MOVE_ERROR-1-S2"))
+        first = faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1-S0")
+        self.assertEqual((first.skip, first.spec), (0, "SATELLITE_MISSIONS:WRITE_ERROR:1"))
+        self.assertEqual(faults.by_id("X02-RESOURCE_ESCROW-FLUSH_ERROR-16-S48").skip, faults.MAX_SKIP)
+        for case in (case, first):
+            self.assertEqual(faults.by_id(case.id), case)
+        # One identifier for each case, a bounded skip, and no skip for an offline fault.
+        for bad in ("X02-SATELLITE_MISSIONS-WRITE_ERROR-1-S1", "X02-BAY_RECEIPTS-MOVE_ERROR-1-S0", "X02-BAY_RECEIPTS-MOVE_ERROR-1-S49",
+                    "X02-BAY_RECEIPTS-MOVE_ERROR-1-S01", "X02-BAY_RECEIPTS-MOVE_ERROR-1-S", "X02-BAY_RECEIPTS-MOVE_ERROR-S2",
+                    "X02-BAY_RECEIPTS-STALE-S1", "X02-BAY_RECEIPTS-MOVE_ERROR-1-s2"):
+            with self.assertRaises(faults.FaultError, msg=bad):
+                faults.by_id(bad)
+
+    def test_the_skip_lines_are_read_and_the_three_field_lines_parse_as_before(self):
+        report = faults.parse_markers(skipped(2, count=2) + [f"{M} closed store=SATELLITE_MISSIONS fault=WRITE_ERROR injected=2 "
+                                                             "attempts=5 skip=2"])
+        self.assertEqual(report["installed"], dict(store="SATELLITE_MISSIONS", fault="WRITE_ERROR", count=2, skip=2))
+        self.assertEqual(report["passed"], [dict(attempt=1, left=1), dict(attempt=2, left=0)])
+        self.assertEqual(report["injected"], [dict(operation="write", attempt=3, remaining=1), dict(operation="write", attempt=4, remaining=0)])
+        self.assertEqual([entry["attempt"] for entry in report["attempts"]], [1, 2, 3, 4, 5])
+        self.assertEqual(report["closed"], dict(injected=2, attempts=5, skip=2))
+        self.assertEqual(report["malformed"], [])
+        plain = faults.parse_markers(session())
+        self.assertEqual((plain["installed"], plain["passed"]), (dict(store="BAY_RECEIPTS", fault="WRITE_ERROR", count=1), []))
+        self.assertEqual(len(faults.parse_markers([f"{M} passed store=BAY_RECEIPTS attempt=x"])["malformed"]), 1)
+
+    def classify(self, lines, skip=1, count=1, **kwargs):
+        case = dict(id="X02-SATELLITE_MISSIONS-WRITE_ERROR-1", store="SATELLITE_MISSIONS", fault="WRITE_ERROR", count=count)
+        return faults.classify_live(observed(lines, case | (dict(skip=skip) if skip else {}), **kwargs))
+
+    def test_a_fault_behind_the_skipped_writes_is_classified_as_any_other(self):
+        result = self.classify(skipped(1))
+        self.assertEqual(result["classification"], faults.SEEN_HELD)
+        self.assertEqual(result["evidence"][:2], ["passed attempt=1 skip=1", "injected operation=write attempt=2 remaining=0"])
+        self.assertEqual(self.classify(skipped(3, count=4), skip=3, count=4)["classification"], faults.SEEN_HELD)
+        self.assertEqual(self.classify(skipped(1), restarts=((1, "PASS"), (2, "FAIL")))["classification"], faults.NOT_CAUGHT)
+        self.assertEqual(self.classify(skipped(1), restarts=(), error="Timed out")["classification"], faults.INCOMPLETE)
+
+    def test_a_skip_that_the_injector_did_not_report_as_planned_is_not_a_result(self):
+        # The installation without the skip, or with another one.
+        self.assertEqual(self.classify(skipped(1, installed=False))["classification"], faults.NOT_RUN)
+        self.assertEqual(self.classify(skipped(2), skip=1)["classification"], faults.NOT_RUN)
+        self.assertEqual(self.classify(session(store="SATELLITE_MISSIONS"), skip=1)["classification"], faults.NOT_RUN)
+        # A skip the case did not ask for.
+        self.assertEqual(self.classify(skipped(1), skip=0)["classification"], faults.NOT_RUN)
+        # The store wrote less often than the skip: nothing was injected.
+        short = self.classify(skipped(2)[:3], skip=2)
+        self.assertEqual(short["classification"], faults.NOT_RUN)
+        self.assertIn("1 of 2 skipped writes happened", short["reasons"][0])
+        # Passed writes that are not the first ones, a missing passed line, and a fault on a skipped write.
+        self.assertEqual(self.classify(skipped(2, passed=(2, 3)), skip=2)["classification"], faults.NOT_RUN)
+        self.assertEqual(self.classify(skipped(2, passed=(1,)), skip=2)["classification"], faults.NOT_RUN)
+        self.assertEqual(self.classify(skipped(2, first=2), skip=2)["classification"], faults.NOT_RUN)
+
+
+class NotApplicableTests(unittest.TestCase):
+    """Root decision R486, answer 3: a case that cannot complete by construction is declared before the run."""
+
+    def test_only_the_bay_case_without_a_second_receipt_write_is_declared(self):
+        declared = [case for case in faults.plan() if case.not_applicable]
+        self.assertEqual([case.id for case in declared], ["X02-BAY_RECEIPTS-WRITE_ERROR-4"])
+        self.assertIn("no second receipt write follows", declared[0].not_applicable)
+        # A count of 4 stays where the store's writer retries, and where the bay writer retries the exact candidate.
+        for store in ("RESOURCE_ESCROW", "ROCKET_TRANSFERS", "SATELLITE_MISSIONS"):
+            self.assertIsNone(faults.Case(store, "WRITE_ERROR", 4, faults.default_skip(store)).not_applicable, store)
+        self.assertIsNone(faults.Case("BAY_RECEIPTS", "MOVE_ERROR", 4).not_applicable)
+        self.assertIsNone(faults.Case("BAY_RECEIPTS", "WRITE_ERROR", 1).not_applicable)
+        self.assertIsNone(faults.Case("BAY_RECEIPTS", "STALE").not_applicable)
+        # A skip leaves the first receipt write healthy, and the failed-write outcome then never happens.
+        self.assertTrue(faults.Case("BAY_RECEIPTS", "FLUSH_ERROR", 1, 1).not_applicable)
+
+    def test_the_declarations_name_exactly_the_two_hold_markers_the_skip_and_the_declared_case(self):
+        declared = faults.declarations(faults.plan())
+        self.assertEqual(declared["hold_markers"], {"ROCKET_TRANSFERS": ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"],
+                                                    "SATELLITE_MISSIONS": ["ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED"]})
+        self.assertIn("only after an ARCE_RELEASE_STORAGE_FAULT injected line", declared["hold_rule"])
+        self.assertEqual(len(declared["skips"]), 1)
+        skip = declared["skips"][0]
+        self.assertEqual((skip["store"], skip["skip"], len(skip["cases"])), ("SATELLITE_MISSIONS", 1, len(faults.LIVE_FAULTS) + 1))
+        self.assertEqual(skip["reason"], faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
+        self.assertEqual(declared["not_applicable"], [dict(case="X02-BAY_RECEIPTS-WRITE_ERROR-4",
+                                                           reason=faults.Case("BAY_RECEIPTS", "WRITE_ERROR", 4).not_applicable)])
+        named = faults.declarations([faults.by_id("X02-BAY_RECEIPTS-MOVE_ERROR-1-S2")])
+        self.assertEqual((named["skips"][0]["skip"], named["skips"][0]["reason"]), (2, "Named in the case identifier by the caller."))
+        # A registry skip other than the planned one does not borrow the planned one's reason.
+        other = faults.declarations([faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1-S3"), faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1")])
+        self.assertEqual([(entry["skip"], entry["reason"].split(" ")[0]) for entry in other["skips"]], [(1, "Runner"), (3, "Named")])
+        self.assertEqual(faults.declarations([faults.Case("BAY_RECEIPTS", "STALE")])["skips"], [])
+
+    def test_a_declared_case_is_recorded_without_a_start_and_listed_as_uncovered_scope(self):
+        with tempfile.TemporaryDirectory() as temp:
+            case = faults.Case("BAY_RECEIPTS", "WRITE_ERROR", 4)
+            evidence = Path(temp) / "evidence" / "cases" / case.id
+            row = faults.declared_row(case, evidence)
+            self.assertEqual((row["classification"], row["reasons"]), (faults.NOT_APPLICABLE, [case.not_applicable]))
+            observation = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))
+            self.assertEqual((observation["declared_before_run"], observation["restarts"]), (True, []))
+            self.assertEqual(json.loads((evidence / "commands.json").read_text(encoding="utf-8")), [])
+        held = dict(case="X02-A", store="BAY_RECEIPTS", fault="WRITE_ERROR", design="F1", native="B/X02_D1_FAILED",
+                    classification=faults.SEEN_HELD, reasons=["held"])
+        late = dict(case="X02-C", store="BAY_RECEIPTS", fault="STALE", design="F7a", native="B/B3_MOVED",
+                    classification=faults.NOT_APPLICABLE, reasons=["no earlier write"])
+        manifest = dict(status="COMPLETE", results=[row, held, late], uncovered=["scope"], **faults.declarations([case]))
+        # The status rule is the one of W379: a case without an outcome by construction does not make it INCOMPLETE.
+        self.assertEqual(faults.status_of(manifest["results"]), "COMPLETE")
+        self.assertEqual(faults.status_of(manifest["results"] + [dict(classification=faults.NEEDS_REVIEW)]), "INCOMPLETE")
+        text = faults.summary(manifest)
+        uncovered = text.split("## Uncovered", 1)[1]
+        self.assertIn("- scope", uncovered)
+        self.assertIn(f"- {case.id}: NOT_APPLICABLE, declared before the run. {case.not_applicable}", uncovered)
+        self.assertIn("- X02-C: NOT_APPLICABLE. no earlier write", uncovered)
+        self.assertIn("| NOT_APPLICABLE | 2 |", text)
+        self.assertIn("- ROCKET_TRANSFERS: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED", text)
+        self.assertNotIn("## Skipped writes", text)
+        self.assertIn("- SATELLITE_MISSIONS: the first 1 write(s) of the store pass before the faulted ones. Runner R",
+                      faults.summary(dict(status="COMPLETE", results=[], uncovered=[], **faults.declarations(faults.plan()))))
+
+
+class HoldLineTests(unittest.TestCase):
+    """Root decision R486, answer 1: declared hold lines, in the faulted start only."""
+    INJECTED = f"[09:00:01] [ARCE-rocket-journal/INFO] [x/]: {M} injected store=ROCKET_TRANSFERS fault=WRITE_ERROR operation=write attempt=1 remaining=0"
+
+    def test_a_declared_line_is_accepted_only_at_error_for_its_store_and_after_the_injection(self):
+        other = "[09:00:03] [Server thread/ERROR] [x/]: something else failed"
+        fatal = "[09:00:03] [Server thread/FATAL] [x/]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"
+        plain = "[09:00:04] [Server thread/INFO] [x/]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED mentioned at INFO"
+        lines = [JOURNAL_HOLD, self.INJECTED, JOURNAL_HOLD, REGISTRY_HOLD, other, fatal, plain, JOURNAL_HOLD]
+        accepted, unaccepted, kept = faults.hold_lines(lines, "ROCKET_TRANSFERS")
+        self.assertEqual(accepted, [JOURNAL_HOLD, JOURNAL_HOLD])
+        # The line before the injection, the other store's marker, the unrelated line and the FATAL line stay.
+        self.assertEqual(unaccepted, [JOURNAL_HOLD, REGISTRY_HOLD, other, fatal])
+        self.assertEqual(kept, [JOURNAL_HOLD, self.INJECTED, REGISTRY_HOLD, other, fatal, plain])
+        # Another store's injection opens nothing, and a store without declared markers accepts nothing.
+        self.assertEqual(faults.hold_lines([self.INJECTED, REGISTRY_HOLD], "SATELLITE_MISSIONS")[0], [])
+        self.assertEqual(faults.hold_lines([self.INJECTED.replace("ROCKET_TRANSFERS", "SATELLITE_MISSIONS"), REGISTRY_HOLD],
+                                           "SATELLITE_MISSIONS")[0], [REGISTRY_HOLD])
+        for store in ("BAY_RECEIPTS", "RESOURCE_ESCROW"):
+            injected = self.INJECTED.replace("ROCKET_TRANSFERS", store)
+            self.assertEqual(faults.hold_lines([injected, JOURNAL_HOLD, REGISTRY_HOLD], store)[0], [], store)
+        # An ERROR line that only quotes an injection does not open the acceptance.
+        quoted = self.INJECTED.replace("/INFO]", "/ERROR]")
+        self.assertEqual(faults.hold_lines([quoted, JOURNAL_HOLD], "ROCKET_TRANSFERS")[:2], ([], [quoted, JOURNAL_HOLD]))
+        self.assertEqual(sorted(faults.HOLD_MARKERS), ["ROCKET_TRANSFERS", "SATELLITE_MISSIONS"])
+        self.assertEqual(sum(len(markers) for markers in faults.HOLD_MARKERS.values()), 2)
+
+    def journal(self, first, restarts=((1, "PASS"), (2, "PASS")), error="SmokeError: First contradictory cut: FS_O3J_AFTER: start 0: " + REFUSED):
+        observation = observed(session(store="ROCKET_TRANSFERS"), live(store="ROCKET_TRANSFERS"), restarts=restarts, error=error)
+        observation.update(first_start=first, session_errors=list(first["accepted"]) + list(first["unaccepted"]))
+        return faults.classify_live(observation)
+
+    def test_a_start_refused_only_for_declared_hold_lines_is_held_and_both_results_are_kept(self):
+        result = self.journal(refused_start())
+        self.assertEqual(result["classification"], faults.SEEN_HELD)
+        self.assertEqual(result["accepted_hold_lines"], [JOURNAL_HOLD])
+        reason = result["reasons"][-1]
+        self.assertIn("The existing runner's check of the faulted start failed (" + REFUSED + ")", reason)
+        self.assertIn("without them passed: log observations, disk oracle of the cut", reason)
+        self.assertEqual(self.journal(refused_start(accepted=(JOURNAL_HOLD, JOURNAL_HOLD)))["accepted_hold_lines"],
+                         [JOURNAL_HOLD, JOURNAL_HOLD])
+
+    def test_any_unaccepted_line_or_unproved_start_stays_for_a_reader(self):
+        other = "[09:00:03] [Server thread/ERROR] [x/]: something else failed"
+        for first in (refused_start(unaccepted=(other,)),
+                      refused_start(accepted=()),
+                      refused_start(filtered=dict(status="FAILED", error="SmokeError: wrong disk")),
+                      refused_start(filtered=dict(status="NOT_EVALUATED", reason="Runner F has no first-start evaluation")),
+                      refused_start(findings=2),
+                      refused_start(status="PASS"),
+                      refused_start(status=None, findings=None)):
+            result = self.journal(first)
+            self.assertEqual(result["classification"], faults.NEEDS_REVIEW, first)
+            # The accepted lines are kept also when the case is not held.
+            self.assertEqual(result["accepted_hold_lines"], first["accepted"])
+        result = self.journal(refused_start(unaccepted=(other,)))
+        self.assertIn(other, result["evidence"])
+        self.assertIn("1 ERROR or FATAL line(s) of the faulted start are not declared hold lines", result["reasons"][-1])
+        self.assertIn("NOT_EVALUATED (Runner F has no", self.journal(refused_start(filtered=dict(
+            status="NOT_EVALUATED", reason="Runner F has no first-start evaluation")))["reasons"][-1])
+
+    def test_a_hold_line_never_covers_a_restart_or_an_unseen_fault(self):
+        # A failed restart keeps its effect whatever the faulted start showed.
+        self.assertEqual(self.journal(refused_start(), restarts=((1, "PASS"), (2, "FAIL")))["classification"], faults.NOT_CAUGHT)
+        self.assertEqual(self.journal(refused_start(), restarts=((1, "PASS"),))["classification"], faults.INCOMPLETE)
+        unseen = observed(session("LOST_WRITE", store="ROCKET_TRANSFERS", unseen=True, retry=False),
+                          live("LOST_WRITE", store="ROCKET_TRANSFERS"), error="x")
+        unseen["first_start"] = refused_start()
+        self.assertEqual(faults.classify_live(unseen)["classification"], faults.NOT_CAUGHT)
+
+    def test_a_runner_that_passes_the_faulted_start_keeps_its_class_and_the_accepted_lines(self):
+        # Runner R does not refuse an ERROR line of the first start: the registry case is held as before.
+        first = dict(declared=list(faults.HOLD_MARKERS["SATELLITE_MISSIONS"]), runner=dict(status="PASS", error=None, findings=None),
+                     accepted=[REGISTRY_HOLD], unaccepted=[], unaccepted_count=0,
+                     filtered=dict(status="NOT_EVALUATED", reason="Runner R has no first-start evaluation in this harness"))
+        case = dict(id="X02-SATELLITE_MISSIONS-WRITE_ERROR-1", store="SATELLITE_MISSIONS", fault="WRITE_ERROR", count=1, skip=1)
+        observation = observed(skipped(1), case)
+        observation["first_start"] = first
+        result = faults.classify_live(observation)
+        self.assertEqual((result["classification"], result["accepted_hold_lines"]), (faults.SEEN_HELD, [REGISTRY_HOLD]))
+
+
+class FirstStartTests(unittest.TestCase):
+    """This runner's own evaluation of a faulted start, by runner S's unedited functions."""
+    CASE = faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 1)
+    NATIVE = "FS_O3J_AFTER"
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.world = Path(self.temp.name) / "first-world"; self.world.mkdir()
+        self.runner = x01.RUNNERS["S"]
+        boundary = self.runner.BOUNDARIES.get(self.NATIVE)
+        self.cut = self.runner.marker(self.NATIVE, 0) + ("boundary=" + boundary if boundary else "paused")
+        self.disk = dict(rockets=[dict(logical=[1, 2], owner=[3, 4])], device=dict(id=[5, 6]))
+        self.inspected = []
+        for name, stand_in in (("inspect", lambda world: self.inspected.append(world) or self.disk),
+                               ("check", lambda case, disk, restarted: self.inspected.append((case, restarted)))):
+            patcher = patch.object(self.runner, name, stand_in); patcher.start(); self.addCleanup(patcher.stop)
+
+    def lines(self, *extra):
+        return [line + "\n" for line in ("[09:00:00] [Server thread/INFO] [x/]: " + self.cut, HoldLineTests.INJECTED, *extra)]
+
+    def result(self, status="FAILED", error=REFUSED, disks=None, **first):
+        disks = disks or (self.disk, self.disk)
+        starts = [dict(restart=0, forced_stop=True, raw=dict(file="raw.json"), status=status, error=error) | first]
+        starts += [dict(restart=number, disk=disk, status="PASS") for number, disk in zip((1, 2), disks) if disk is not None]
+        return dict(status="FAILED", cases=[dict(case=self.NATIVE, starts=starts, findings=["start 0: " + error] if error else [])])
+
+    def evaluate(self, lines, result=None, world=True, case=None):
+        return faults.evaluate_first_start(case or self.CASE, result or self.result(), lines, self.world if world else None)
+
+    def test_the_runners_refusal_and_the_filtered_evaluation_are_both_recorded(self):
+        first = self.evaluate(self.lines(JOURNAL_HOLD))
+        self.assertEqual(first["runner"], dict(status="FAILED", error=REFUSED, findings=1))
+        self.assertEqual(first["declared"], ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"])
+        self.assertEqual((first["accepted"], first["unaccepted"], first["unaccepted_count"]), ([JOURNAL_HOLD], [], 0))
+        self.assertEqual(first["filtered"]["status"], "PASS")
+        self.assertEqual(first["filtered"]["checks"][2:4], ["log observations", "disk oracle of the cut"])
+        # The world of that start was inspected by the runner's own oracle, as a cut and not as a restart.
+        self.assertEqual(self.inspected, [self.world, (self.NATIVE, False)])
+        self.assertTrue(faults.first_start_held(first))
+        # The runner's own check, unedited, still refuses the unfiltered log.
+        with self.assertRaisesRegex(smoke.SmokeError, REFUSED):
+            self.runner.observations(self.lines(JOURNAL_HOLD), self.NATIVE, 0)
+
+    def test_the_runners_unedited_checks_still_refuse_the_filtered_start(self):
+        other = "[09:00:03] [Server thread/ERROR] [x/]: something else failed"
+        refused = self.evaluate(self.lines(JOURNAL_HOLD, other))
+        self.assertEqual((refused["unaccepted"], refused["filtered"]["status"]), ([other], "FAILED"))
+        self.assertIn(REFUSED, refused["filtered"]["error"])
+        self.assertFalse(faults.first_start_held(refused))
+        # A second cut observation, a start that did not end at its cut, undecoded files, and a changed identity.
+        twice = self.evaluate(self.lines(JOURNAL_HOLD, "[09:00:05] [Server thread/INFO] [x/]: " + self.cut))
+        self.assertIn("Missing or repeated cut observation", twice["filtered"]["error"])
+        self.assertIn("Start execution", self.evaluate(self.lines(JOURNAL_HOLD), self.result(forced_stop=False))["filtered"]["error"])
+        self.assertIn("Raw decoding", self.evaluate(self.lines(JOURNAL_HOLD), self.result(raw=dict(error="bad")))["filtered"]["error"])
+        moved = dict(rockets=[dict(logical=[9, 9], owner=[3, 4])], device=dict(id=[5, 6]))
+        for disks in ((self.disk, moved), (moved, self.disk), (self.disk, None)):
+            changed = self.evaluate(self.lines(JOURNAL_HOLD), self.result(disks=disks))
+            self.assertEqual(changed["filtered"]["status"], "FAILED", disks)
+            self.assertIn("Restart changed the logical rocket, owner or device", changed["filtered"]["error"])
+        with patch.object(self.runner, "check", side_effect=smoke.SmokeError("Ledger: wrong records")):
+            self.assertIn("Ledger: wrong records", self.evaluate(self.lines(JOURNAL_HOLD))["filtered"]["error"])
+
+    def test_nothing_is_evaluated_without_an_accepted_line_a_kept_world_or_a_runner_entry(self):
+        clean = self.evaluate(self.lines(), self.result(status="PASS", error=None))
+        self.assertEqual((clean["runner"]["status"], clean["accepted"], clean["filtered"]["status"]), ("PASS", [], "NOT_EVALUATED"))
+        self.assertEqual(self.evaluate(self.lines(JOURNAL_HOLD), world=False)["filtered"],
+                         dict(status="NOT_EVALUATED", reason="The world of the faulted start was not kept"))
+        self.assertEqual(self.inspected, [])
+        # Runner R reports a first start only when it passed, and has no evaluation here.
+        registry = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
+        injected = HoldLineTests.INJECTED.replace("ROCKET_TRANSFERS", "SATELLITE_MISSIONS") + "\n"
+        first = self.evaluate([injected, REGISTRY_HOLD + "\n"], dict(cases=[dict(case="R3", first_start=dict(baseline={}))]), case=registry)
+        self.assertEqual((first["runner"], first["accepted"]), (dict(status="PASS", error=None, findings=None), [REGISTRY_HOLD]))
+        self.assertIn("Runner R has no first-start evaluation", first["filtered"]["reason"])
+        self.assertEqual(self.evaluate([injected], dict(cases=[dict(case="R3")]), case=registry)["runner"]["status"], None)
+        self.assertEqual(set(faults.FIRST_START_CHECKS), {"S"})
+
+    def test_the_first_starts_log_is_read_as_the_process_captured_it(self):
+        output = Path(self.temp.name) / "run"; output.mkdir()
+        (output / "FS_O3J_AFTER-0.log").write_bytes(b"one\ntwo\x0cstill two\r\nthree")
+        (output / "FS_O3J_AFTER-1.log").write_bytes(b"restart\n")
+        self.assertEqual(faults.first_start_lines(output), ["one\n", "two\x0cstill two\r\n", "three"])
+
+
+class LiveRunTests(unittest.TestCase):
+    """run_live around a stand-in for runner S: the world of the faulted start is kept for the evaluation."""
+    setUp, stand_in, live_case = RunnerTests.setUp, RunnerTests.stand_in, RunnerTests.live_case
+
+    def test_a_journal_hold_is_evaluated_on_the_world_of_the_faulted_start(self):
+        case = faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 1)
+        runner = x01.RUNNERS["S"]
+        cut = runner.marker("FS_O3J_AFTER", 0) + "boundary=" + runner.BOUNDARIES.get("FS_O3J_AFTER", "x")
+        first = session(store="ROCKET_TRANSFERS") + ["[09:00:00] [Server thread/INFO] [x/]: " + cut, JOURNAL_HOLD]
+        disk = dict(rockets=[dict(logical=[1], owner=[2])], device=dict(id=[3]))
+        seen = {}
+
+        def run(arguments):
+            arguments.evidence_dir.mkdir(parents=True)
+            session_dir = self.root / "server"
+            (session_dir / "world-FS_O3J_AFTER" / "data").mkdir(parents=True)
+            (session_dir / "world-FS_O3J_AFTER" / "data" / "store.dat").write_bytes(b"at the cut")
+            starts = []
+            for number in (0, 1, 2):
+                command = [sys.executable, "-c", "pass"]
+                replay.trace_command(arguments, command, number)
+                log = arguments.evidence_dir / f"FS_O3J_AFTER-{number}.log"
+                process = smoke.CapturedProcess([sys.executable, "-c", "pass"], session_dir, log)
+                process.finish(30); process.process.stdin.close(); process.process.stdout.close(); process.log_stream.close()
+                log.write_text("\n".join(first if number == 0 else [READY]) + "\n", encoding="utf-8", newline="\n")
+                # A restart rewrites the world; the copy for the evaluation must be the one of start 0.
+                (session_dir / "world-FS_O3J_AFTER" / "data" / "store.dat").write_bytes(b"after restart %d" % number)
+                starts.append(dict(restart=0, forced_stop=True, raw=dict(file="raw"), status="FAILED", error=REFUSED) if number == 0
+                              else dict(restart=number, disk=disk, status="PASS"))
+            report = dict(status="FAILED", cases=[dict(case="FS_O3J_AFTER", starts=starts, findings=["start 0: " + REFUSED])])
+            (arguments.evidence_dir / "results.json").write_text(json.dumps(report), encoding="utf-8")
+            raise smoke.SmokeError("First contradictory cut: FS_O3J_AFTER: start 0: " + REFUSED)
+
+        def inspect(world):
+            seen.update(world=world, content=(world / "data" / "store.dat").read_bytes())
+            return disk
+
+        with patch.object(runner, "inspect", inspect), patch.object(runner, "check", lambda *args: None):
+            row, evidence = self.live_case(SimpleNamespace(run=run), case)
+        self.assertEqual(seen["content"], b"at the cut")
+        self.assertEqual(seen["world"].name, "first-world")
+        self.assertEqual(row["classification"], faults.SEEN_HELD)
+        observation = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))
+        self.assertEqual(observation["first_start"]["runner"], dict(status="FAILED", error=REFUSED, findings=1))
+        self.assertEqual(observation["first_start"]["filtered"]["status"], "PASS")
+        self.assertEqual(observation["first_start"]["accepted"], [JOURNAL_HOLD])
+        self.assertIn("start 0: " + REFUSED, observation["error"])
+        classification = json.loads((evidence / "classification.json").read_text(encoding="utf-8"))
+        self.assertEqual(classification["accepted_hold_lines"], [JOURNAL_HOLD])
+        # The existing runner's own result is kept as it wrote it.
+        kept = json.loads((evidence / "runner-results.json").read_text(encoding="utf-8"))
+        self.assertEqual((kept["status"], kept["cases"][0]["findings"]), ("FAILED", ["start 0: " + REFUSED]))
+
+    def test_a_store_without_declared_markers_gets_no_evaluation_and_no_world_copy(self):
+        case = faults.Case("BAY_RECEIPTS", "WRITE_ERROR", 1)
+        module = self.stand_in(session() + ["[09:00:02] [Server thread/ERROR] [x/]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"],
+                               {1: [READY], 2: [READY]})
+        row, evidence = self.live_case(module, case)
+        first = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))["first_start"]
+        self.assertEqual((first["declared"], first["accepted"], first["unaccepted_count"]), ([], [], 1))
+        self.assertEqual(first["filtered"]["status"], "NOT_EVALUATED")
+        # Its effect is the one it had: the stand-in runner passed, as runner B does for a first start.
+        self.assertEqual(row["classification"], faults.SEEN_HELD)
+
+
 if __name__ == "__main__":
     unittest.main()
