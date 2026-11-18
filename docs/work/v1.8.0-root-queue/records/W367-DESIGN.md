@@ -14,7 +14,7 @@ that maps each finding to its section is in [W367](W367.md). The top-level secti
 revision 1, so existing references to sections 1 to 8 still point at the same subjects.
 
 Revision 3 (2026-11-18, Root decision R487) adds [section 9](#9-revision-3-root-decision-r487-after-w380s-native-runs),
-which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and sections 3.6 and 5.1 after W380F's and W380G's (R488, R490).
+which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and sections 3.6 and 5.1 after W380F's, W380G's and W380H's (R488, R490, R495).
 The other sections are unchanged.
 
 Terms used below:
@@ -898,3 +898,24 @@ with the 159 mB debit. Root decides the remaining points as follows.
    No operation followed within 6,000 ticks. The refusing condition is diagnosed first. If it is in the gated
    probe, the probe is fixed. If it is in production code, the work stops at a failing test that names the
    condition, and Root routes the fix.
+
+### 9.5 The launch observes the landed rocket under the probe's own ticket (Root decision R495)
+
+W380H's native run (record `W380.md` on branch `codex/v1.8.0-w380`, commits `80d2a5a64` to `812ed9210`):
+
+- **The ordinary unload completed** once the gated probe kept the playerless Level ticking (`resetEmptyTime` in
+  the unload steps only): water went from 4,000/1,000 to 3,000/2,000 mB, both epochs became 2, and the switch
+  was withdrawn.
+- **The launch landed**, with the 159 mB debit. While the probe waited for the authority to be pruned (9.4,
+  point 4), the destination warmup released its ticket at handover. The landing chunk unloaded, and the result
+  reported `rocket=absent`, although the stopped files held exactly one landed rocket.
+
+Root decides:
+
+- **A ticket on the landing chunk.** When the probe first observes the landed rocket alive, it adds its own
+  non-persistent ticket at distance 0 on the landing chunk. That is the same kind of ticket it already holds at
+  the source. It removes the ticket when it ends. A distance-0 ticket stays inside the generation box of 9.4.
+- **No weakened check.** The live observation after pruning keeps its full contract (a loaded, alive rocket). If
+  the rocket is not alive when it is first observed, that is still `ROCKET_READBACK_ABSENT`.
+- **The probe's ticks count as harness additions (3.3).** Neither `resetEmptyTime` in the unload steps nor the
+  landing ticket exists outside the gated probe. Each is named in the record.

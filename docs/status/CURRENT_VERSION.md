@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: d588a6fbe (W369 merged, R476 and R485: X01 and X02 simulation slice S1, the gated `CheckedFileOps` seam with `DIRECT` and the `ReleaseTestStorageTrace` recorder, after W369F's fixes and W369R2's approval; branch run 44171362326 and governance run 44171364334 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44201501106 at 4c2f8cac8 (W378 merged at `0b8275499`, W369 merged at `d588a6fbe`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 12.9, 18.3, 19.8 and 16.9 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44201500909 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: da9b21dc3 (W379 merged, R482 to R496: X01 and X02 simulation slice S4, the gated storage fault injector `ReleaseTestStorageFault` and the X02 runner, after W379F, W379G and W379R2's approval; branch run 44251866178 and governance run 44251868134 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44262916205 at 2c1ab8d24 (W379 merged at `da9b21dc3`) passed on its first attempt: build 12.2 minutes, shards 0 to 3 in 16.0, 18.7, 20.7 and 15.9 minutes, 1,864 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44262916124 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -551,17 +551,13 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **Item-cargo replay mismatch GameTest (2026-11-18).** W379's first local full GameTest run failed
-  `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` at phase 14 of its
-  second direction ("A mismatched replay lost its operation or changed an endpoint"); the second run of the same
-  Java source passed all 1,863. W379's slice is not on that path, and no earlier failure of this test is recorded.
-  The log does not say which of the three checks failed. It stays open until later runs show no recurrence or a
-  cause is found; a recurrence gets its own diagnosis task.
-- **Transfer recovery GameTest (2026-11-18).** W380's local full GameTest run failed
-  `transferRecoveryReconcilesAllEntityPresenceCases` once ("both recovery did not complete: RETRY_LATER"), with the
-  duplicate-destination recovery WARN in an undeclared batch. W380 changed no Java. It ran while other workers
-  compiled on the same machine, as W379's item-cargo failure did. It stays open until later runs show no
-  recurrence or a cause is found; a hosted recurrence gets its own diagnosis task.
+- **Legacy pad occupancy recovery path (2026-11-18).** Shared run 44254384368 at `f4d3e2b0c` passed all 1,864
+  GameTests, but shard 0's log check failed. In batch `legacy_pad_occupancy`, the transfer of
+  `wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn` was taken over by a journal recovery
+  (`RECOVERED_SOURCE`, `KEEP_SOURCE`) two ticks after its preparation. The expected `ARCE_TRANSFER_RETURNED_TO_SOURCE`
+  with `destination_pad_blocked` did not appear. The rocket still ended at its source, so the test passed. The same
+  log failure appeared once before, in W301F's local full run on 2026-11-05. `flight_recovery`, the batch W381
+  changed, ran later in that shard. Root re-ran the run, and a diagnosis task follows (W383, R494).
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not

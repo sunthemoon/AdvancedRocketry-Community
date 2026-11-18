@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootPresence;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ReleaseTestStorageFault;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ReleaseTestStorageTrace;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents;
@@ -148,6 +149,7 @@ public final class ClassicFirstEventDelivery {
     public static void onServerStarted(ServerStartedEvent event) {
         MinecraftServer server = event.getServer();
         ReleaseTestStorageTrace.installAtStartup(server, EscrowTestEndpoints::requireEnabled);
+        ReleaseTestStorageFault.installAtStartup(server, EscrowTestEndpoints::requireEnabled);
         FirstEventCutSeams.validateAtStartup(server);
         StationRegistrySavedData.get(server);
         RocketTransferSavedData.get(server);
