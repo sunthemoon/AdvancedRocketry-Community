@@ -68,7 +68,8 @@ public final class RocketTransferRecoveryGameTests {
                             recoveryManager,
                             sourceOnly,
                         1,
-                        new GameTestTickPacer(earth.getServer())
+                        new GameTestTickPacer(earth.getServer()),
+                        new RocketTransferRecoveryWait(helper.getTick(), System.nanoTime())
                     );
                     return;
                 }
@@ -78,7 +79,8 @@ public final class RocketTransferRecoveryGameTests {
                         moon,
                         recoveryManager,
                         sourceOnly,
-                        sourceOnlyReport
+                        sourceOnlyReport,
+                        () -> retirement(helper, recoveryManager, sourceOnly)
                 );
             });
         });
@@ -91,15 +93,15 @@ public final class RocketTransferRecoveryGameTests {
             RocketManager recoveryManager,
             RocketTransferRecord sourceOnly,
             int attempt,
-            GameTestTickPacer pacer
+            GameTestTickPacer pacer,
+            RocketTransferRecoveryWait wait
     ) {
         driver.after(1, () -> {
             RocketTransferRecoveryReport report = recoverAcknowledged(
                     helper, recoveryManager,
                     sourceOnly.transferId()
             );
-            if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER
-                    && attempt < 20) {
+            if (wait.retry(report.status(), attempt, RocketTransferRecoveryWait.SOURCE_ONLY_ATTEMPTS, helper.getTick(), System.nanoTime())) {
                 pacer.pace();
                 retrySourceRecovery(
                         helper, driver,
@@ -108,7 +110,8 @@ public final class RocketTransferRecoveryGameTests {
                         recoveryManager,
                         sourceOnly,
                         attempt + 1,
-                        pacer
+                        pacer,
+                        wait
                 );
                 return;
             }
@@ -118,7 +121,8 @@ public final class RocketTransferRecoveryGameTests {
                     moon,
                     recoveryManager,
                     sourceOnly,
-                    report
+                    report,
+                    () -> wait.describe(RocketTransferRecoveryWait.SOURCE_ONLY_ATTEMPTS, () -> retirement(helper, recoveryManager, sourceOnly))
             );
         });
     }
@@ -129,7 +133,8 @@ public final class RocketTransferRecoveryGameTests {
             ServerLevel moon,
             RocketManager recoveryManager,
             RocketTransferRecord sourceOnly,
-            RocketTransferRecoveryReport sourceOnlyReport
+            RocketTransferRecoveryReport sourceOnlyReport,
+            java.util.function.Supplier<String> sourceOnlyWait
     ) {
             assertRecovery(
                     helper,
@@ -137,7 +142,8 @@ public final class RocketTransferRecoveryGameTests {
                     RocketTransferRecoveryAction.KEEP_SOURCE,
                     1,
                     0,
-                    "source-only"
+                    "source-only",
+                    sourceOnlyWait
             );
             assertSingleAuthority(helper, earth, moon, sourceOnly.logicalRocketId(), earth, "source-only");
 
@@ -173,14 +179,16 @@ public final class RocketTransferRecoveryGameTests {
                 prepareRecoveryScenario(helper, driver, new BlockPos(9, 2, 3), both -> {
                     spawnRecoveryDestination(moon, both);
                     // W98 (N3-A1): the source-side report follows the survivor and discarded-copy proofs.
-                    awaitRecovered(helper, driver, recoveryManager, both.transferId(), 1, new GameTestTickPacer(earth.getServer()), bothReport -> {
+                    var bothWait = new RocketTransferRecoveryWait(helper.getTick(), System.nanoTime());
+                    awaitRecovered(helper, driver, recoveryManager, both.transferId(), 1, new GameTestTickPacer(earth.getServer()), bothWait, bothReport -> {
                     assertRecovery(
                             helper,
                             bothReport,
                             RocketTransferRecoveryAction.REMOVE_DESTINATION_KEEP_SOURCE,
                             1,
                             1,
-                            "both"
+                            "both",
+                            () -> bothWait.describe(RocketTransferRecoveryWait.BOTH_ATTEMPTS, () -> retirement(helper, recoveryManager, both))
                     );
                     assertSingleAuthority(helper, earth, moon, both.logicalRocketId(), earth, "both");
 
@@ -219,14 +227,21 @@ public final class RocketTransferRecoveryGameTests {
      * slot, are read back; until then each call is RETRY_LATER. One retry per tick, bounded by two barrier batches.
      */
     private static void awaitRecovered(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, UUID transfer,
-            int attempt, GameTestTickPacer pacer, java.util.function.Consumer<RocketTransferRecoveryReport> done) {
+            int attempt, GameTestTickPacer pacer, RocketTransferRecoveryWait wait,
+            java.util.function.Consumer<RocketTransferRecoveryReport> done) {
         RocketTransferRecoveryReport report = recoverAcknowledged(helper, manager, transfer);
-        if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER && attempt < 40) {
+        if (wait.retry(report.status(), attempt, RocketTransferRecoveryWait.BOTH_ATTEMPTS, helper.getTick(), System.nanoTime())) {
             pacer.pace();
-            driver.after(1, () -> awaitRecovered(helper, driver, manager, transfer, attempt + 1, pacer, done));
+            driver.after(1, () -> awaitRecovered(helper, driver, manager, transfer, attempt + 1, pacer, wait, done));
             return;
         }
         done.accept(report);
+    }
+
+    /** W381: failure text only; a bounded read of the fixture manager's own retirement entry. */
+    private static String retirement(GameTestHelper helper, RocketManager manager, RocketTransferRecord record) {
+        return "retirement{" + io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryGameTestSupport
+                .retirement(helper.getLevel().getServer(), manager, record.logicalRocketId()) + "}";
     }
 
     private static void prepareRecoveryScenario(
@@ -282,10 +297,22 @@ public final class RocketTransferRecoveryGameTests {
             int expectedDestinations,
             String scenario
     ) {
-        helper.assertTrue(
-                report.status() == RocketTransferRecoveryReport.Status.RECOVERED,
-                scenario + " recovery did not complete: " + report.status()
-        );
+        assertRecovery(helper, report, expectedAction, expectedSources, expectedDestinations, scenario, () -> "");
+    }
+
+    /** {@code waited} is read only when the recovery did not complete (W381). */
+    private static void assertRecovery(
+            GameTestHelper helper,
+            RocketTransferRecoveryReport report,
+            RocketTransferRecoveryAction expectedAction,
+            int expectedSources,
+            int expectedDestinations,
+            String scenario,
+            java.util.function.Supplier<String> waited
+    ) {
+        if (report.status() != RocketTransferRecoveryReport.Status.RECOVERED) {
+            helper.fail((scenario + " recovery did not complete: " + report.status() + " " + waited.get()).trim());
+        }
         helper.assertTrue(
                 report.action().filter(expectedAction::equals).isPresent(),
                 scenario + " recovery selected " + report.action().orElse(null)
