@@ -41,6 +41,12 @@ public final class RocketConcurrentFlightGameTests {
         new Scenario(helper, false).start();
     }
 
+    /** Keep the original bound; collect world observations only when reporting a failure. */
+    static void checkWait(int waits, java.util.function.Supplier<String> detail,
+                          java.util.function.Consumer<String> fail) {
+        if (waits >= 550) { fail.accept("Concurrent-flight fixture exceeded its bounded wait; " + detail.get()); }
+    }
+
     static final class Scenario {
         final GameTestHelper helper;
         final boolean delayed;
@@ -65,7 +71,7 @@ public final class RocketConcurrentFlightGameTests {
         void tick() {
             if (closed) { return; }
             try {
-                helper.assertTrue(++waits < 550, "Concurrent-flight fixture exceeded its bounded wait");
+                checkWait(++waits, this::describeWait, helper::fail);
                 if (stage == 0) { setup(); }
                 else if (stage == 1) {
                     if (held.entered()) {
@@ -196,6 +202,33 @@ public final class RocketConcurrentFlightGameTests {
         BlockPos origin(int index, boolean destination) {
             return helper.absolutePos(new BlockPos(destination ? 14 : 3, 2, 3 + index * 5));
         }
+
+        String describeWait() {
+            var level = helper.getLevel();
+            var state = new StringBuilder("serverTick=").append(level.getServer().getTickCount())
+                    .append(" gameTime=").append(level.getGameTime()).append(" stage=").append(stage)
+                    .append(" delayed=").append(delayed).append(" released=").append(released)
+                    .append(" heldEntered=").append(held != null && held.entered()).append(" awaitSpawnPair=").append(awaitSpawnPair)
+                    .append(" queued=").append(journal.outstandingEffectCount())
+                    .append(" writer=").append(journal.checkedWriteResult().outcome());
+            for (int i = 0; i < initial.length; i++) {
+                var original = initial[i];
+                var record = original == null ? null : journal.find(original.transferId()).orElse(null);
+                var source = sources[i];
+                var destination = record == null ? null : record.destinationEntityId().map(level::getEntity).orElse(null);
+                state.append(" flight[").append(i).append("]={phase=").append(record == null ? "absent" : record.phase())
+                        .append(" actionable=").append(record != null && journal.actionable(record.logicalRocketId()))
+                        .append(" sourceCurrent=").append(record != null && RocketTransferEntities.currentEntity(source, record, false))
+                        .append(" sourceState=").append(source == null ? "absent" : source.flightData().map(RocketFlightData::state).orElse(null))
+                        .append(" sourcePos=").append(source == null ? "absent" : source.position())
+                        .append(" destinationReady=").append(record != null && RocketTransferEntities.destinationEntityChunkReady(level, record.destinationSnapshot()))
+                        .append(" destination=").append(record == null ? "absent" : record.destinationEntityId())
+                        .append(" destinationPresent=").append(destination != null)
+                        .append(" steps=").append(journalSteps[i]).append(" landed=").append(landed[i]).append('}');
+            }
+            return state.toString();
+        }
+
         static RocketPosition position(BlockPos pos) { return new RocketPosition(pos.getX(), pos.getY(), pos.getZ()); }
         void close() {
             if (closed) { return; } closed = true; if (held != null) { held.close(); }

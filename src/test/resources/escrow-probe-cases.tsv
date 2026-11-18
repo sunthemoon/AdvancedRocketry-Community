@@ -128,6 +128,9 @@ FF_REBUILD_SOURCE	scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_s4_s5_cu
 FF_RECONNECT	scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_s4_s5_cuts_runner.py
 FF_STALE_PREPARED	scripts/run_v180_cargo_s4_s5_cuts.py
 FF_TWO_FLIGHTS	scripts/run_v180_cargo_s4_s5_cuts.py
+FF_X03_LAUNCH	scripts/run_v180_x03_repair.py;tests/test_run_v180_x03_repair.py
+FF_X03_OBSERVE	scripts/run_v180_x03_repair.py;tests/test_run_v180_x03_repair.py
+FF_X03_UNLOAD	scripts/run_v180_x03_repair.py;tests/test_run_v180_x03_repair.py
 FP_ABSENT_SOURCE	scripts/run_v180_escrow_phases.py;tests/test_v180_escrow_phases.py
 FP_COMMITTED	scripts/run_v180_escrow_phases.py;tests/test_v180_escrow_phases.py
 FP_PASSENGERS_ACK	scripts/run_v180_escrow_phases.py;tests/test_v180_escrow_phases.py

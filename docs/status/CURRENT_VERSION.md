@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c0d2f0728 (W363 merged, R451 and R455: a governed flight records BAY_SOURCE_PROTECTED for its packaged bays at ascent complete with no claim; a waiting restart group passes the tick's R2 slot on; the gated B17.3 readiness seam; branch run 43399137244 and governance run 43399138967 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44086544010 at 1bde69a38 (W363 merged at `c0d2f0728`) passed on its first attempt: build 10.0 minutes, shards 0 to 3 in 13.9, 20.2, 20.1 and 18.3 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44086544032 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: d588a6fbe (W369 merged, R476 and R485: X01 and X02 simulation slice S1, the gated `CheckedFileOps` seam with `DIRECT` and the `ReleaseTestStorageTrace` recorder, after W369F's fixes and W369R2's approval; branch run 44171362326 and governance run 44171364334 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44201501106 at 4c2f8cac8 (W378 merged at `0b8275499`, W369 merged at `d588a6fbe`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 12.9, 18.3, 19.8 and 16.9 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44201500909 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -551,18 +551,12 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **Live-return discard in a branch regression (2026-11-13).** Attempt 1 of W358's branch run 43360946092 failed
-  `EscrowGovernedLiveReturnGameTests.countdownCancellationReachesReturnedF6WithPassenger` in shard 3 with "Live
-  return launch preparation was discarded", the message of earlier intermittent failures in that class (W116's
-  hosted run, W248's local run). W358 does not touch that code, its local full run passed, and attempt 2 passed
-  every shard (R446). It recurred on 2026-11-17 in attempt 1 of W370's branch run 44109049691, shard 3, as
-  `EscrowGovernedLiveReturnGameTests.dismountAfterReturnCompletesCancelledF7AndF8WithoutReseating` with the same
-  message, in a branch that changes only Python and one test count. It stays open until a cause is found; with two
-  recurrences in a week it needs its own diagnosis before candidate C4.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
-  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. It stays
-  open until later runs show no recurrence or a cause is found.
+  exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
+  reproduce it in 48 repetitions; the window holds no autosave, and flight B stalled after acknowledging
+  `DESTINATION_SPAWNED`. W378's failure-only diagnostics give the missing observations if it recurs (R484). It stays
+  open until a cause is found or later runs show no recurrence.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,
