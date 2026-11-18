@@ -557,7 +557,11 @@ What is still open:
   (`RECOVERED_SOURCE`, `KEEP_SOURCE`) two ticks after its preparation. The expected `ARCE_TRANSFER_RETURNED_TO_SOURCE`
   with `destination_pad_blocked` did not appear. The rocket still ended at its source, so the test passed. The same
   log failure appeared once before, in W301F's local full run on 2026-11-05. `flight_recovery`, the batch W381
-  changed, ran later in that shard. Root re-ran the run, and a diagnosis task follows (W383, R494).
+  changed, ran later in that shard. Root re-ran the run. W383 found a test cause: the test prepares with a
+  detached service, and its fixture did not wait for the whole arrival ticket set, so a still-loading
+  column held the arrival and the server's own journal recovery took the record. Production has no such
+  race. The test-only fix is merged as `005acb5e5` (R500). The item closes with the hosted regression at
+  that merge; W385 checks the other fixtures that use a detached service.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
