@@ -455,10 +455,22 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         result("LANDED", "rocket=" + afterRocket() + " device=" + afterDevice() + " fuel=700 serial=1 armed=0 journal=idle");
     }
 
-    /** Replaces only the tank of the held device's root; its identity, binding and escrow section stay as they are. */
+    /**
+     * Replaces only the tank of the held device's root; its identity, binding and escrow section stay as they are.
+     * A live protected device refuses a replaced root (ARCE_FLUID_CARGO_LIVE_REPLACEMENT_REFUSED), so the change is
+     * made the only way it can reach a locked device: the stored block entity is replaced as a whole, as an edit
+     * outside the game would do.
+     */
     private void changeDevice(LoaderTank tank) {
         var tag = new CompoundTag(); tag.put(RocketFluidCargoRoot.KEY, device.root().orElseThrow().withTank(tank).encode());
-        device.load(tag); device.setChanged();
+        level.removeBlockEntity(DEVICE);
+        var replaced = existingDevice(DEVICE);
+        EscrowTags.require(replaced != null && replaced != device && replaced.root().isEmpty(), "W373B device replacement did not create a fresh block entity");
+        replaced.load(tag); replaced.setChanged();
+        EscrowTags.require(replaced.root().isPresent() && id(replaced).equals(deviceId) && tank(replaced) == tank.amount()
+                && String.valueOf(tank.fluid()).equals(String.valueOf(replaced.root().orElseThrow().tank().fluid())),
+                "W373B device replacement was refused");
+        device = replaced;
     }
     private static boolean water(RocketFluidCargoBlockEntity device) {
         return "minecraft:water".equals(String.valueOf(device.root().orElseThrow().tank().fluid()));
