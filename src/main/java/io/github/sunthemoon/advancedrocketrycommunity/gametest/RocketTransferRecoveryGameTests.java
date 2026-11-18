@@ -69,7 +69,7 @@ public final class RocketTransferRecoveryGameTests {
                             sourceOnly,
                         1,
                         new GameTestTickPacer(earth.getServer()),
-                        new RocketTransferRecoveryWait(helper.getTick(), System.nanoTime())
+                        newWait(helper)
                     );
                     return;
                 }
@@ -80,7 +80,7 @@ public final class RocketTransferRecoveryGameTests {
                         recoveryManager,
                         sourceOnly,
                         sourceOnlyReport,
-                        () -> retirement(helper, recoveryManager, sourceOnly)
+                        () -> retirement(helper, recoveryManager, sourceOnly.logicalRocketId())
                 );
             });
         });
@@ -101,7 +101,8 @@ public final class RocketTransferRecoveryGameTests {
                     helper, recoveryManager,
                     sourceOnly.transferId()
             );
-            if (wait.retry(report.status(), attempt, RocketTransferRecoveryWait.SOURCE_ONLY_ATTEMPTS, helper.getTick(), System.nanoTime())) {
+            if (wait.retry(report.status(), attempt, firstCleanAttempt(helper, recoveryManager, sourceOnly.logicalRocketId()),
+                    helper.getTick(), System.nanoTime())) {
                 pacer.pace();
                 retrySourceRecovery(
                         helper, driver,
@@ -122,7 +123,7 @@ public final class RocketTransferRecoveryGameTests {
                     recoveryManager,
                     sourceOnly,
                     report,
-                    () -> wait.describe(RocketTransferRecoveryWait.SOURCE_ONLY_ATTEMPTS, () -> retirement(helper, recoveryManager, sourceOnly))
+                    () -> wait.describe(() -> retirement(helper, recoveryManager, sourceOnly.logicalRocketId()))
             );
         });
     }
@@ -179,8 +180,8 @@ public final class RocketTransferRecoveryGameTests {
                 prepareRecoveryScenario(helper, driver, new BlockPos(9, 2, 3), both -> {
                     spawnRecoveryDestination(moon, both);
                     // W98 (N3-A1): the source-side report follows the survivor and discarded-copy proofs.
-                    var bothWait = new RocketTransferRecoveryWait(helper.getTick(), System.nanoTime());
-                    awaitRecovered(helper, driver, recoveryManager, both.transferId(), 1, new GameTestTickPacer(earth.getServer()), bothWait, bothReport -> {
+                    var bothWait = newWait(helper);
+                    awaitRecovered(helper, driver, recoveryManager, both, 1, new GameTestTickPacer(earth.getServer()), bothWait, bothReport -> {
                     assertRecovery(
                             helper,
                             bothReport,
@@ -188,7 +189,7 @@ public final class RocketTransferRecoveryGameTests {
                             1,
                             1,
                             "both",
-                            () -> bothWait.describe(RocketTransferRecoveryWait.BOTH_ATTEMPTS, () -> retirement(helper, recoveryManager, both))
+                            () -> bothWait.describe(() -> retirement(helper, recoveryManager, both.logicalRocketId()))
                     );
                     assertSingleAuthority(helper, earth, moon, both.logicalRocketId(), earth, "both");
 
@@ -224,24 +225,36 @@ public final class RocketTransferRecoveryGameTests {
 
     /**
      * W98 (N3-A1): a source-side recovery reports RECOVERED once the returned source's own slot, and any discarded copy's
-     * slot, are read back; until then each call is RETRY_LATER. One retry per tick, bounded by two barrier batches.
+     * slot, are read back; until then each call is RETRY_LATER. One retry per tick while the return is on its first
+     * attempt with no wait or failure, within the product's allowance for one attempt (W381, {@link RocketTransferRecoveryWait}).
      */
-    private static void awaitRecovered(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, UUID transfer,
+    private static void awaitRecovered(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, RocketTransferRecord record,
             int attempt, GameTestTickPacer pacer, RocketTransferRecoveryWait wait,
             java.util.function.Consumer<RocketTransferRecoveryReport> done) {
-        RocketTransferRecoveryReport report = recoverAcknowledged(helper, manager, transfer);
-        if (wait.retry(report.status(), attempt, RocketTransferRecoveryWait.BOTH_ATTEMPTS, helper.getTick(), System.nanoTime())) {
+        RocketTransferRecoveryReport report = recoverAcknowledged(helper, manager, record.transferId());
+        if (wait.retry(report.status(), attempt, firstCleanAttempt(helper, manager, record.logicalRocketId()), helper.getTick(), System.nanoTime())) {
             pacer.pace();
-            driver.after(1, () -> awaitRecovered(helper, driver, manager, transfer, attempt + 1, pacer, wait, done));
+            driver.after(1, () -> awaitRecovered(helper, driver, manager, record, attempt + 1, pacer, wait, done));
             return;
         }
         done.accept(report);
     }
 
-    /** W381: failure text only; a bounded read of the fixture manager's own retirement entry. */
-    private static String retirement(GameTestHelper helper, RocketManager manager, RocketTransferRecord record) {
+    private static RocketTransferRecoveryWait newWait(GameTestHelper helper) {
+        return new RocketTransferRecoveryWait(io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                .RocketTransferRecoveryGameTestSupport.attemptTicks(), helper.getTick(), System.nanoTime());
+    }
+
+    /** W381: a bounded read of the fixture manager's own retirement entry for one logical rocket. */
+    private static boolean firstCleanAttempt(GameTestHelper helper, RocketManager manager, UUID logical) {
+        var entry = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryGameTestSupport
+                .retirement(helper.getLevel().getServer(), manager, logical);
+        return RocketTransferRecoveryWait.firstCleanAttempt(entry.pending(), entry.attempts(), entry.reason());
+    }
+
+    private static String retirement(GameTestHelper helper, RocketManager manager, UUID logical) {
         return "retirement{" + io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferRecoveryGameTestSupport
-                .retirement(helper.getLevel().getServer(), manager, record.logicalRocketId()) + "}";
+                .retirement(helper.getLevel().getServer(), manager, logical) + "}";
     }
 
     private static void prepareRecoveryScenario(
