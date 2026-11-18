@@ -870,6 +870,71 @@ class HoldLineTests(unittest.TestCase):
         self.assertEqual((result["classification"], result["accepted_hold_lines"]), (faults.SEEN_HELD, [REGISTRY_HOLD]))
 
 
+class UnacceptedLineTests(unittest.TestCase):
+    """Root decision R491, answer 2: an unaccepted line of the faulted start blocks every favourable class."""
+    CASE = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
+    # Runner R met its own checks of the first start, so it reports one; it refuses no ERROR line there.
+    PASSED = dict(status="PASS", cases=[dict(case="R3", first_start=dict(baseline={}), restarts=[dict(restart=1), dict(restart=2)])])
+    UNRELATED = "[12:00:00] [Server thread/ERROR] [x/]: unrelated failure"
+    FATAL_MARKER = "[12:00:00] [Server thread/FATAL] [x/]: ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED"
+    OTHER_STORE = "[12:00:00] [Server thread/ERROR] [x/]: ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority"
+
+    def registry(self, *extra, restarts=((1, "PASS"), (2, "PASS")), error=None, lines=None, detected=()):
+        """A registry case that runner R passed, with the faulted start read by the real evaluation."""
+        lines = (lines or skipped(1) + [REGISTRY_HOLD]) + list(extra)
+        observation = observed(lines, self.CASE.view(), restarts=restarts, error=error, detected=detected)
+        observation["first_start"] = faults.evaluate_first_start(self.CASE, self.PASSED, [line + "\n" for line in lines], None)
+        observation["session_errors"] = faults.detected_lines(lines)
+        return observation, faults.classify_live(observation)
+
+    def test_a_start_that_runner_r_passed_is_held_only_without_an_unaccepted_line(self):
+        observation, result = self.registry()
+        self.assertEqual((observation["first_start"]["runner"]["status"], observation["first_start"]["unaccepted"]), ("PASS", []))
+        self.assertEqual(result["classification"], faults.SEEN_HELD)
+        self.assertEqual((result["runner_first_start"], result["unaccepted_first_start_lines"]),
+                         (dict(status="PASS", error=None, findings=None), 0))
+
+    def test_runner_r_passes_and_an_unaccepted_line_keeps_the_case_for_a_reader(self):
+        # W379R's three probes: an unrelated ERROR, a FATAL carrying the store's marker, and another store's marker.
+        for line in (self.UNRELATED, self.FATAL_MARKER, self.OTHER_STORE):
+            observation, result = self.registry(line)
+            first = observation["first_start"]
+            self.assertEqual((first["runner"]["status"], first["accepted"], first["unaccepted"]), ("PASS", [REGISTRY_HOLD], [line]))
+            self.assertEqual(result["classification"], faults.NEEDS_REVIEW, line)
+            self.assertEqual(faults.status_of([dict(case=result["case"], classification=result["classification"])]), "INCOMPLETE")
+            self.assertIn("1 ERROR or FATAL line(s) of the faulted start are not declared hold lines", result["reasons"][-1])
+            # The runner's own result stays what the runner reported, beside the class and not in place of it.
+            self.assertIn("status=PASS, error=None", result["reasons"][-1])
+            self.assertEqual(result["runner_first_start"], dict(status="PASS", error=None, findings=None))
+            self.assertEqual((result["unaccepted_first_start_lines"], result["accepted_hold_lines"]), (1, [REGISTRY_HOLD]))
+            self.assertIn(line, result["evidence"])
+
+    def test_the_count_decides_also_when_the_kept_lines_are_cut(self):
+        observation, _ = self.registry()
+        observation["first_start"].update(unaccepted=[], unaccepted_count=3)
+        self.assertEqual(faults.classify_live(observation)["classification"], faults.NEEDS_REVIEW)
+
+    def test_an_unaccepted_line_blocks_caught_later_and_changes_no_unfavourable_class(self):
+        unseen = [line.replace("BAY_RECEIPTS", "SATELLITE_MISSIONS") for line in session("LOST_WRITE", unseen=True, retry=False)]
+        case = faults.Case("SATELLITE_MISSIONS", "LOST_WRITE", 1, 0)
+        failed = dict(restarts=((1, "FAIL"), (2, "FAIL")), error="oracle", detected=[refusal("SATELLITE_MISSIONS")])
+
+        def classify(*extra, **kwargs):
+            observation = observed(unseen + list(extra), case.view(), **kwargs)
+            observation["first_start"] = faults.evaluate_first_start(case, self.PASSED, [line + "\n" for line in unseen + list(extra)], None)
+            return faults.classify_live(observation)
+
+        self.assertEqual(classify(**failed)["classification"], faults.CAUGHT_LATER)
+        blocked = classify(self.UNRELATED, **failed)
+        self.assertEqual(blocked["classification"], faults.NEEDS_REVIEW)
+        self.assertIn("The existing runner reported: oracle", blocked["reasons"])
+        # A residual, an incomplete case and a case that never ran keep their class; none of them is favourable.
+        self.assertEqual(classify(self.UNRELATED, restarts=((1, "FAIL"), (2, "FAIL")), error="oracle")["classification"], faults.NOT_CAUGHT)
+        self.assertEqual(self.registry(self.UNRELATED, restarts=((1, "PASS"), (2, "FAIL")))[1]["classification"], faults.NOT_CAUGHT)
+        self.assertEqual(self.registry(self.UNRELATED, restarts=((1, "PASS"),))[1]["classification"], faults.INCOMPLETE)
+        self.assertEqual(self.registry(self.UNRELATED, lines=skipped(1)[:1])[1]["classification"], faults.NOT_RUN)
+
+
 class FirstStartTests(unittest.TestCase):
     """This runner's own evaluation of a faulted start, by runner S's unedited functions."""
     CASE = faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 1)
@@ -1015,7 +1080,14 @@ class LiveRunTests(unittest.TestCase):
         first = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))["first_start"]
         self.assertEqual((first["declared"], first["accepted"], first["unaccepted_count"]), ([], [], 1))
         self.assertEqual(first["filtered"]["status"], "NOT_EVALUATED")
-        # Its effect is the one it had: this stand-in runner refuses nothing in a first start, and the class is unchanged.
+        # W379R finding 2 (R491, answer 2): this stand-in runner refuses nothing in a first start, and W379F kept
+        # SEEN_HELD here. The line is not a declared hold line of the bay receipts, so the case waits for a reader.
+        self.assertEqual(first["runner"]["status"], None)
+        self.assertEqual(row["classification"], faults.NEEDS_REVIEW)
+        self.assertIn("1 ERROR or FATAL line(s) of the faulted start are not declared hold lines", row["reasons"][-1])
+        # The same start without the line keeps its class.
+        self.root = self.root / "clean"
+        row, _ = self.live_case(self.stand_in(session(), {1: [READY], 2: [READY]}), case)
         self.assertEqual(row["classification"], faults.SEEN_HELD)
 
 
