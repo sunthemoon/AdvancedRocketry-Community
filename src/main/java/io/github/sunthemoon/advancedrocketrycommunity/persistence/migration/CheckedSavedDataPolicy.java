@@ -1,13 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -17,6 +15,16 @@ import net.minecraft.nbt.CompoundTag;
  */
 public record CheckedSavedDataPolicy(ManagedSavedDataType type, CheckedSavedDataFile.Committer committer,
                                      Reader reader) {
+    /**
+     * Null in production. The gated release-test fault injector ({@link ReleaseTestStorageFault}) sets it for one
+     * server session, so that the readback of every policy can be made to fail (W368-DESIGN section 4, fault F9).
+     */
+    private static volatile UnaryOperator<Reader> readerWrapper;
+
+    /** Release-test and unit-test seam; null restores the unwrapped readers. */
+    static void installReaderWrapper(UnaryOperator<Reader> wrapper) { readerWrapper = wrapper; }
+    static boolean readerWrapped() { return readerWrapper != null; }
+
     public CheckedSavedDataPolicy {
         Objects.requireNonNull(type); Objects.requireNonNull(committer); Objects.requireNonNull(reader);
     }
@@ -32,13 +40,15 @@ public record CheckedSavedDataPolicy(ManagedSavedDataType type, CheckedSavedData
     public void replace(Path file, Supplier<CompoundTag> payload) {
         CheckedSavedDataFile.replace(file, type, payload, committer);
     }
-    public Optional<CompoundTag> read(Path file) { return reader.read(file, type); }
+    public Optional<CompoundTag> read(Path file) {
+        UnaryOperator<Reader> wrapper = readerWrapper;
+        return (wrapper == null ? reader : wrapper.apply(reader)).read(file, type);
+    }
     public long maxUncompressedBytes() { return type.maxUncompressedBytes(); }
 
     /** Windows has no portable directory-channel force; staging data is still forced before atomic move. */
     public static void forceDirectory(Path directory) throws IOException {
-        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("windows")) { return; }
-        try (FileChannel channel = FileChannel.open(directory, StandardOpenOption.READ)) { channel.force(true); }
+        CheckedSavedDataFile.fileOps().forceDirectory(directory);
     }
 
     /** The bounded readback of a written root; empty when the regular file is absent. */

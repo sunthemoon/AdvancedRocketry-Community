@@ -70,7 +70,11 @@ class EscrowProbeRoutingTest {
         // W221: seven named-pad selections under unchanged producer rules.
         // W330: four owner-cap and 33 load-direction settlement cases, and the FS_LOAD_ and IS_LOAD_ prefix tokens
         // of tests/test_cargo_w330_runner.py, as the generator renders them.
-        assertEquals(673, seen.size()); // W360: fourteen new item case tokens.
+        // W360: fourteen new item case tokens. W370: IC_UNLOAD_K9, named by tests/test_v180_crash_replay.py (R467).
+        // W376 (X03-V): the three verification cases FF_X03_OBSERVE, FF_X03_UNLOAD and FF_X03_LAUNCH; they route to
+        // cargoCuts, and EscrowCargoCutProbe.attach refuses them outside the verify scenario.
+        assertEquals(677, seen.size());
+        assertTrue(seen.containsAll(EscrowCargoRepairVerifyProbe.CASES));
         assertTrue(seen.containsAll(List.of(EscrowLoaderS6PublicationProbe.RETURN, EscrowLoaderS6PublicationProbe.HELD)));
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);

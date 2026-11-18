@@ -52,6 +52,16 @@ public final class ItemCargoReconciliationGameTests {
     }
     @AfterBatch(batch = "item_cargo_replay_mismatch")
     public static void cleanupMismatch(ServerLevel level) { cleanup(level); }
+    /**
+     * W381: the same hold while the admission's ledger write is slow. The coordinator then has a successor generation in
+     * flight when the admission is acknowledged, and the fixture must not replace the ledger under that write.
+     */
+    @GameTest(template = "rocket_test", batch = "item_cargo_replay_mismatch_slow_write", timeoutTicks = 1200)
+    public static void mismatchedFrozenReplayDigestHoldsBehindASlowAdmissionWrite(GameTestHelper helper) {
+        running = new Scenario(helper, false, false, true, true); helper.onEachTick(running::tick);
+    }
+    @AfterBatch(batch = "item_cargo_replay_mismatch_slow_write")
+    public static void cleanupSlowWrite(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
@@ -59,6 +69,13 @@ public final class ItemCargoReconciliationGameTests {
         final boolean named;
         final boolean unavailable;
         final boolean mismatch;
+        /** W381: hold each direction's admission write on the ledger IO thread for {@link #HELD_WRITE_TICKS}. */
+        final boolean heldWrite;
+        static final int HELD_WRITE_TICKS = 15;
+        EscrowGameTestTerminalCut writeCut;
+        java.util.concurrent.CountDownLatch writeReached;
+        int writeReachedTick;
+        boolean admissionSeen;
         final List<RocketItemCargoBlockEntity> devices = new ArrayList<>();
         final List<RocketEntity> rockets = new ArrayList<>();
         ResourceEscrowSavedData original, isolated;
@@ -73,12 +90,16 @@ public final class ItemCargoReconciliationGameTests {
         io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot beforeSnapshot;
         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord namedRecord;
         int heldSince;
+        /** W381: what the mismatch injection wrote and when, for the hold check's failure text only. */
+        String injectedDigest;
+        int injectedTick;
         RocketEntity otherRocket;
         CompoundTag heldPayload;
         Scenario(GameTestHelper helper, boolean named) { this(helper, named, false); }
         Scenario(GameTestHelper helper, boolean named, boolean unavailable) { this(helper, named, unavailable, false); }
-        Scenario(GameTestHelper helper, boolean named, boolean unavailable, boolean mismatch) {
-            this.helper = helper; this.named = named; this.unavailable = unavailable; this.mismatch = mismatch;
+        Scenario(GameTestHelper helper, boolean named, boolean unavailable, boolean mismatch) { this(helper, named, unavailable, mismatch, false); }
+        Scenario(GameTestHelper helper, boolean named, boolean unavailable, boolean mismatch, boolean heldWrite) {
+            this.helper = helper; this.named = named; this.unavailable = unavailable; this.mismatch = mismatch; this.heldWrite = heldWrite;
             pacer = new GameTestTickPacer(helper.getLevel().getServer());
         }
         void tick() {
@@ -114,8 +135,14 @@ public final class ItemCargoReconciliationGameTests {
                     phase = 10;
                 } else {
                     EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), true);
+                    if (heldWrite) { holdAdmissionWrite(); }
                     enable(a, true); phase = 2;
                 }
+            }
+            if (writeCut != null && writeReached.getCount() == 0) {
+                if (writeReachedTick < 0) { writeReachedTick = server.getTickCount(); }
+                // Ten ticks after a write starts with its admission unacknowledged, the coordinator asks for the next generation.
+                if (server.getTickCount() - writeReachedTick >= HELD_WRITE_TICKS) { writeCut.close(); writeCut = null; }
             }
             if (phase == 10) {
                 if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return; }
@@ -127,6 +154,13 @@ public final class ItemCargoReconciliationGameTests {
             var coordinator = isolated.bind(server);
             if (phase == 2) {
                 var op = member(a); if (op == null) { return; }
+                if (heldWrite && !admissionSeen) {
+                    admissionSeen = true;
+                    check(!coordinator.writerIdle(), "The held admission write left no successor generation in flight");
+                }
+                // W381: the mismatch and R39 holds below replace the saved ledger directly. A generation still in flight was
+                // captured before that replacement, and its acknowledgement would put the admitted operation back.
+                if ((mismatch || unavailable) && !coordinator.writerIdle()) { return; }
                 first = op.id(); check(named ? namedRecord.transferId().equals(op.guard().transfer()) : op.guard().transfer() == null,
                         "Cargo used the wrong journal guard");
                 check(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete(), "C1 lost complete PREPARED");
@@ -146,6 +180,7 @@ public final class ItemCargoReconciliationGameTests {
                     isolated.acknowledged(isolated.ledger().replace(isolated.ledger().records().stream()
                             .map(record -> record.id().equals(op.id()) ? held : record).toList(), isolated.ledger().floors(), isolated.ledger().tombstones()), true);
                     EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), false);
+                    injectedDigest = wrong; injectedTick = server.getTickCount();
                     phase = 14; return;
                 }
                 if (named) {
@@ -189,13 +224,20 @@ public final class ItemCargoReconciliationGameTests {
             }
             if (phase == 14) {
                 var held = member(a);
-                check(held != null && held.id().equals(first) && deviceBefore.equals(a.saveWithFullMetadata())
-                        && rocketBefore.equals(EscrowNativeEnvelope.rocket(rocket)), "A mismatched replay lost its operation or changed an endpoint");
+                // W381: the same four conditions as before, evaluated separately so that a failure names the one that broke.
+                var deviceNow = a.saveWithFullMetadata(); var rocketNow = EscrowNativeEnvelope.rocket(rocket);
+                var failed = ItemCargoReplayMismatchDiagnostics.failedChecks(held != null, held != null && held.id().equals(first),
+                        deviceBefore.equals(deviceNow), rocketBefore.equals(rocketNow));
+                if (!failed.isEmpty()) {
+                    helper.fail("A mismatched replay lost its operation or changed an endpoint: failed=" + failed + " " + observed(coordinator, deviceNow, rocketNow));
+                }
                 if (!coordinator.writerIdle() || held.phase() != EscrowOperation.Phase.REPAIR) { return; }
                 var device = a.root().orElseThrow().escrow(); var wrapper = rocket.escrowSection();
-                check(held.reason() == EscrowReason.OTHER_STATE && isolated.ledger().records().size() == direction + 1 && coordinator.operational()
-                        && device.epoch() == 0 && device.markers().isEmpty() && wrapper.epoch() == 0 && wrapper.markers().isEmpty(),
-                        "A mismatched replay did not hold as REPAIR OTHER_STATE before either endpoint published");
+                if (!(held.reason() == EscrowReason.OTHER_STATE && isolated.ledger().records().size() == direction + 1 && coordinator.operational()
+                        && device.epoch() == 0 && device.markers().isEmpty() && wrapper.epoch() == 0 && wrapper.markers().isEmpty())) {
+                    helper.fail("A mismatched replay did not hold as REPAIR OTHER_STATE before either endpoint published: operational="
+                            + coordinator.operational() + " " + observed(coordinator, deviceNow, rocketNow));
+                }
                 // Keep the held endpoints loaded until cleanup, as R39 does; the next direction uses its own rocket.
                 if (direction++ == 0) { phase = 1; return; }
                 cleanup(); helper.succeed(); return;
@@ -236,6 +278,30 @@ public final class ItemCargoReconciliationGameTests {
             }
         }
         void check(boolean value, String message) { helper.assertTrue(value, message); }
+        /** W381: this direction's admission write (the next K1) waits on the ledger IO thread until the hook closes. */
+        void holdAdmissionWrite() {
+            var reached = new java.util.concurrent.CountDownLatch(1); var resume = new java.util.concurrent.CountDownLatch(1);
+            var first = new java.util.concurrent.atomic.AtomicBoolean(true);
+            writeReached = reached; writeReachedTick = -1; admissionSeen = false;
+            writeCut = new EscrowGameTestTerminalCut(helper, label -> {
+                if (!label.equals("K1") || !first.compareAndSet(true, false)) { return; }
+                reached.countDown();
+                try {
+                    if (!resume.await(10, java.util.concurrent.TimeUnit.SECONDS)) { throw new IllegalStateException("The fixture did not resume its held ledger write"); }
+                } catch (InterruptedException stopped) { Thread.currentThread().interrupt(); throw new IllegalStateException(stopped); }
+            }, resume::countDown);
+        }
+        /** W381: bounded reads of state the fixture already holds; called only when a hold check has failed. */
+        String observed(EscrowCoordinator coordinator, CompoundTag deviceNow, CompoundTag rocketNow) {
+            var server = helper.getLevel().getServer(); var device = a.root().orElseThrow(); var wrapper = rocket.escrowSection();
+            return "direction=" + direction + " tick=" + server.getTickCount() + " since_injection=" + (server.getTickCount() - injectedTick)
+                    + " writer_idle=" + coordinator.writerIdle() + " first=" + first.toString().substring(0, 8)
+                    + " ledger{" + ItemCargoReplayMismatchDiagnostics.ledgerRows(isolated.ledger(), device.device(), injectedDigest) + "}"
+                    + " device{changed=" + ItemCargoReplayMismatchDiagnostics.changedKeys(deviceBefore, deviceNow) + " epoch=" + device.escrow().epoch()
+                    + " markers=" + device.escrow().markers().size() + " items=" + device.buffer().slots().stream().mapToInt(slot -> slot.getByte("Count")).sum() + "}"
+                    + " rocket{changed=" + ItemCargoReplayMismatchDiagnostics.changedKeys(rocketBefore, rocketNow) + " epoch=" + wrapper.epoch()
+                    + " markers=" + wrapper.markers().size() + " removed=" + rocket.isRemoved() + "}";
+        }
         EscrowOperation member(RocketItemCargoBlockEntity device) {
             return isolated.ledger().records().stream().filter(op -> op.device().identity().equals(device.root().orElseThrow().device())).findFirst().orElse(null);
         }
@@ -253,6 +319,7 @@ public final class ItemCargoReconciliationGameTests {
         }
         void cleanup() {
             if (done) { return; } done = true;
+            if (writeCut != null) { writeCut.close(); writeCut = null; }
             var server = helper.getLevel().getServer(); var runtime = EscrowRuntime.of(server);
             for (var device : devices) {
                 enable(device, false); EscrowCargoSwitches.pauseReconciliationForTests(server, device.root().orElseThrow().device(), false); device.setRemoved();

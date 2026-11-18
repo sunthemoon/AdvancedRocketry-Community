@@ -465,6 +465,10 @@ dependencies {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+    // R483: more than 6,600 unit tests share one test JVM with the Minecraft bootstrap. Gradle's default 512 MiB
+    // heap ran out in RocketTransactionAdmissionTest's exact 1 MiB root boundary case (shared run 44175223235),
+    // whose snapshot hashing builds multi-megabyte strings. This sizes the test harness; no product limit changes.
+    maxHeapSize = '1g'
 }
 
 tasks.register('importLegacyCelestial', JavaExec) {

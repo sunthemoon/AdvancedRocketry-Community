@@ -39,7 +39,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.fluids.FluidStack;
 
 /**
- * W142's gated native cargo cuts: C-S4 settlement ({@code FS_}) and C-S5 creation, flight and disassembly ({@code FF_}).
+ * W142's gated native cargo cuts: C-S4 settlement ({@code FS_}) and C-S5 creation, flight and disassembly ({@code FF_}),
+ * and X03-V's verification mode ({@link EscrowCargoRepairVerifyProbe}).
  * Inert unless the release-test hooks, an escrow scenario and one of these cases are all set. Between the BEFORE fixture
  * save and a cut only production entry points act; a held state is saved once before the operator previews, as an
  * autosave would.
@@ -67,18 +68,29 @@ public abstract class EscrowCargoCutProbe {
 
     static boolean accepts(String name) {
         return name != null && (EscrowCargoOwnerCapProbe.CASES.containsKey(name) || EscrowCargoSettlementCuts.CASES.containsKey(name)
-                || EscrowCargoFlightCuts.CASES.containsKey(name) || EscrowCargoRecoveryCuts.CASES.containsKey(name));
+                || EscrowCargoFlightCuts.CASES.containsKey(name) || EscrowCargoRecoveryCuts.CASES.containsKey(name)
+                || EscrowCargoRepairVerifyProbe.accepts(name));
     }
-    /** The whole gate: release-test hooks, a start or recover scenario, and an inventoried cargo-cut case. */
+    /**
+     * The whole gate: release-test hooks, and either a start or recover scenario with an inventoried cargo-cut case, or
+     * the verify scenario with one of X03-V's three cases. Neither group is selected under the other's scenario.
+     */
     static boolean selected(boolean hooks, String scenario, String name) {
+        if (EscrowCargoRepairVerifyProbe.accepts(name) || EscrowCargoRepairVerifyProbe.VERIFY.equals(scenario)) {
+            return EscrowCargoRepairVerifyProbe.selected(hooks, scenario, name);
+        }
         return hooks && ("start".equals(scenario) || "recover".equals(scenario)) && accepts(name);
     }
     /** Returns the existing probe, a new one once the gate is open, or null on every ordinary server. */
     static EscrowCargoCutProbe attach(MinecraftServer server, EscrowCargoCutProbe current) {
-        if (current != null || !selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), System.getProperty(SCENARIO), System.getProperty(CASE))) {
-            return current;
-        }
+        if (current != null) { return current; }
+        boolean hooks = Boolean.getBoolean(EscrowTestEndpoints.HOOKS);
+        // X03-V: a verification case outside the verify scenario, or any other case inside it, stops the start here.
+        EscrowTags.require(!EscrowCargoRepairVerifyProbe.misrouted(hooks, System.getProperty(SCENARIO), System.getProperty(CASE)),
+                "The verify scenario and the X03 verification cases are accepted only together");
+        if (!selected(hooks, System.getProperty(SCENARIO), System.getProperty(CASE))) { return null; }
         String name = System.getProperty(CASE);
+        if (EscrowCargoRepairVerifyProbe.accepts(name)) { return new EscrowCargoRepairVerifyProbe(server); }
         if (EscrowCargoOwnerCapProbe.CASES.containsKey(name)) { return new EscrowCargoOwnerCapProbe(server); }
         if (name.startsWith("FS_")) { return new EscrowCargoSettlementCuts(server); }
         if (EscrowCargoFlightCuts.CASES.containsKey(name)) { return new EscrowCargoFlightCuts(server); }

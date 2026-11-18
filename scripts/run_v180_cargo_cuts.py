@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import shutil
 import uuid
+import v180_crash_replay as replay
 
 import bay_integrated_evidence as evidence_tools
 import run_v180_cargo_reconciliation as native
@@ -194,12 +195,13 @@ def run(args) -> None:
             properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat", "max-tick-time": "60000",
                                "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
             (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
-            for restart in range(3):
+            for restart in replay.replay_starts(args, row, session / ("world-" + case), evidence, case):
                 native.assert_pin(args.source_commit); native.require_lock(args.lock_owner)
                 require(native.digest(args.jar) == pins["jar_sha256"], "JAR changed")
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                                 "-Dadvancedrocketrycommunity.escrowCase=" + case]
+                replay.trace_command(args, command, restart)
                 start = dict(restart=restart, preflight=native.preflight(), command=command); row["starts"].append(start)
                 start.update(installed)
                 evidence_tools.recheck_installed(installed)
@@ -244,6 +246,9 @@ def run(args) -> None:
                 except (ValueError, KeyError, native.smoke.SmokeError) as failure:
                     start.update(status="FAILED", error=str(failure)); row["findings"].append(str(failure))
                 (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+                if not restart and not row["findings"] and replay.capture_replay(args, world, row, evidence, case):
+                    report["status"] = "PASS"
+                    return report
                 if not restart and case == "FC_LOAD_R3_RELOCATED" and not row["findings"]:
                     require(sentinel.read_text(encoding="ascii") == token, "Relocation lost ownership of its stopped copy")
                     row["offline_fixture"] = recovery.relocate(world, evidence / (case + "-edit"))

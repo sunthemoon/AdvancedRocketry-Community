@@ -179,6 +179,15 @@
       "reason": "W132-R4: in each direction one item operation's frozen digest is replaced, so the real replay verifier refuses it before either endpoint publishes."
     },
     {
+      "id": "w381-item-cargo-replay-mismatch-slow-write-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
+      "message": "Escrow record [0-9a-f-]{36} needs audited settlement or offline repair: OTHER_STATE",
+      "counts": {"item_cargo_replay_mismatch_slow_write": 2},
+      "test": "ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsBehindASlowAdmissionWrite",
+      "reason": "W381: the W132-R4 hold in each direction, with the admission's ledger write held long enough for a successor generation; the real replay verifier still refuses the replaced digest."
+    },
+    {
       "id": "w124-cargo-named-cleanup-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -240,6 +249,24 @@
       "counts": {"fluid_cargo_r39": 1},
       "test": "FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent",
       "reason": "Only the unavailable-Fluid operation enters sticky repair; a distinct native component still retires."
+    },
+    {
+      "id": "w382-cargo-r39-slow-write-native-fluid",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction/",
+      "message": "ARCE_ESCROW_FLUID_UNAVAILABLE op=[0-9a-f-]{36} fluid=w124:missing",
+      "counts": {"fluid_cargo_r39_slow_write": 1},
+      "test": "FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponentBehindASlowAdmissionWrite",
+      "reason": "W382: the W124 R39 hold, with the admission's ledger write held long enough for a successor generation; the replaced payload still names the unavailable native Fluid once."
+    },
+    {
+      "id": "w382-cargo-r39-slow-write-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
+      "message": "Escrow record [0-9a-f-]{36} needs audited settlement or offline repair: OTHER_STATE",
+      "counts": {"fluid_cargo_r39_slow_write": 1},
+      "test": "FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponentBehindASlowAdmissionWrite",
+      "reason": "W382: the same hold behind a slow admission write; only the unavailable-Fluid operation enters sticky repair."
     },
     {
       "id": "w109-cargo-unsupported-keepable",
