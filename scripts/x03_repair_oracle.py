@@ -352,20 +352,20 @@ def compare_repair(baseline, current, transfer):
 
 
 def observe(lines, case, state, *, landed=False):
-    require(not any('ARCE_TRANSFER_FENCED' in line for line in lines), 'FENCE_NOT_CLEARED')
+    checked(lambda: require(not any('ARCE_TRANSFER_FENCED' in line for line in lines), 'FENCE_NOT_CLEARED'))
     prefix = 'ARCE_RELEASE_CARGO_CUT_RESULT cut=' + case + ' '
     matches = [line.split(prefix, 1)[1] for line in lines if prefix in line]
     require(len(matches) == 1, 'OBSERVATION_MISSING_OR_DUPLICATE')
     fields = dict(token.split('=', 1) for token in matches[0].split() if '=' in token)
-    require(fields.get('action_authority') == 'true' and fields.get('journal') == '0', 'ACTION_AUTHORITY_READBACK')
-    require(fields.get('device') == str(state['tank']) and fields.get('device_markers') == '0', 'DEVICE_READBACK')
+    checked(lambda: require(fields.get('action_authority') == 'true' and fields.get('journal') == '0', 'ACTION_AUTHORITY_READBACK'))
+    checked(lambda: require(fields.get('device') == str(state['tank']) and fields.get('device_markers') == '0', 'DEVICE_READBACK'))
     # The restart probe intentionally loads only the source area. The landed entity
     # is read across all on-disk Levels, not inferred absent from a log counter.
     if fields.get('rocket') != 'absent':
-        require(fields.get('rocket') == str(state['cargo']) and fields.get('mutation_allowed') == 'true'
-                and fields.get('rocket_markers') == '0', 'ROCKET_READBACK')
+        checked(lambda: require(fields.get('rocket') == str(state['cargo']) and fields.get('mutation_allowed') == 'true'
+                                and fields.get('rocket_markers') == '0', 'ROCKET_READBACK'))
     else:
-        require(landed and case.endswith('OBSERVE'), 'ROCKET_READBACK_ABSENT')
+        checked(lambda: require(landed and case.endswith('OBSERVE'), 'ROCKET_READBACK_ABSENT'))
     return fields
 
 
@@ -447,7 +447,7 @@ def compare_functional(before, after, *, action=None):
     checked(lambda: require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED'))
     event = moon_event(after) if action == 'launch' else None
     for name in new_roots:
-        validate_new_functional_root(name, after['managed'][name], event)
+        checked(lambda: validate_new_functional_root(name, after['managed'][name], event))
     for name in before['managed']:
         if name not in after['managed']:
             checked(lambda: require(False, 'MANAGED_ROOT_MISSING:' + name))
@@ -458,9 +458,9 @@ def compare_functional(before, after, *, action=None):
                 for key in (('issued_through', 'writer_generation') if action == 'unload' else
                             ('writer_generation', 'issued_launch_serial')):
                     root.value['data'].value.pop(key)
-            require(after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'WRITER_GENERATION')
+            checked(lambda: require(after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'WRITER_GENERATION'))
             if action == 'unload':
-                require(after['ledger']['issued_through'] == before['ledger']['issued_through'] + 1, 'UNLOAD_GENERATION')
+                checked(lambda: require(after['ledger']['issued_through'] == before['ledger']['issued_through'] + 1, 'UNLOAD_GENERATION'))
         if action == 'launch' and name == JOURNAL:
             require(nbt.plain(a)['data']['classic_first_moon_landing'] == dict(schema_version=1, state='EMPTY'), 'PREEXISTING_MOON_ELECTION')
             for root in (a, b):

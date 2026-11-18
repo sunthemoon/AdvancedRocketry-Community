@@ -76,6 +76,36 @@ class BookkeepingClockTest(RepairFixture):
         self.assertEqual({'WATER_ENDPOINTS', 'DEVICE_EPOCH', 'ROCKET_EPOCH'}, {row['reason'] for row in findings})
         self.assertTrue(all(row['file'] and row['path'].startswith('/') for row in findings))
 
+    def test_measurement_keeps_parsed_fields_after_a_failed_readback(self):
+        line = ('ARCE_RELEASE_CARGO_CUT_RESULT cut=FF_X03_LAUNCH state=LANDED action_authority=true journal=0 '
+                'device=1000 device_markers=0 rocket=4000 mutation_allowed=false rocket_markers=0 debit=retained')
+        findings = []
+        with oracle.measurement(findings):
+            fields = oracle.observe([line], 'FF_X03_LAUNCH', dict(tank=1000, cargo=4000), landed=True)
+        self.assertEqual('retained', fields['debit'])
+        self.assertEqual([dict(reason='ROCKET_READBACK')], findings)
+        with self.assertRaisesRegex(oracle.OracleError, 'ROCKET_READBACK'):
+            oracle.observe([line], 'FF_X03_LAUNCH', dict(tank=1000, cargo=4000), landed=True)
+
+    def test_measurement_reports_both_generation_failures_and_later_roots(self):
+        before = oracle.read(self.source)
+        after = copy.deepcopy(before)
+        satellite = 'data/advancedrocketrycommunity_satellite_missions.dat'
+        after['managed'][satellite].value['data'].value['save_epoch'].value += 1
+        findings = []
+        with oracle.measurement(findings):
+            oracle.compare_functional(before, after, action='unload')
+        self.assertEqual({'WRITER_GENERATION', 'UNLOAD_GENERATION', 'OBJECT_CHANGED'}, {row['reason'] for row in findings})
+        with self.assertRaisesRegex(oracle.OracleError, 'WRITER_GENERATION'):
+            oracle.compare_functional(before, after, action='unload')
+
+    def test_progression_source_field_is_not_newly_admitted(self):
+        root = C(data=C(schema_version=I(1), format_epoch=S('v1.8.0-classic-progression'),
+                        first_moon_landing=C(occurred=nbt.Tag(nbt.BYTE, 1), source=S('rocket_transfers'), event=C()),
+                        first_station_warp=C(occurred=nbt.Tag(nbt.BYTE, 0))), DataVersion=I(3465))
+        with self.assertRaisesRegex(oracle.OracleError, 'NEW_CLASSIC_AUTHORITY'):
+            oracle.validate_new_functional_root('data/advancedrocketrycommunity_classic_progression.dat', root, C())
+
 
 class RawOracleTest(RepairFixture):
     def landed(self, before):
