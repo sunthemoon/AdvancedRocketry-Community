@@ -179,7 +179,8 @@ class VerificationCommandTest(unittest.TestCase):
 
     def test_campaign_appends_one_full_case_and_forwards_candidate_pins(self):
         import run_v180_integrated_campaign as campaign
-        row = campaign.family_specs()[-1]
+        # W373B appends its accounting families after this one; X03 keeps its own position, row 71.
+        row = campaign.family_specs()[71]
         self.assertEqual(runner.FAMILY, row['name'])
         self.assertEqual('scripts/run_v180_x03_repair.py', row['runner'])
         self.assertEqual([], row['arguments'])
