@@ -174,6 +174,19 @@ class BoundaryTest(unittest.TestCase):
         with self.assertRaisesRegex(oracle.OracleError, 'TWO_DRY_RUNS_REQUIRED'):
             oracle.tamper_target({}, [{}], {})
 
+    def test_tamper_rule_checks_actual_gzip_type_and_nonempty_region_headers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'a.dat').write_bytes(b'opaque-not-gzip')
+            (root / 'entities').mkdir()
+            (root / 'entities/r.0.0.mca').write_bytes(bytes(8192))
+            before = oracle.manifest(root)
+            with self.assertRaisesRegex(oracle.OracleError, 'NO_TAMPER_TARGET'):
+                oracle.tamper_target(before, [before, before], {}, root)
+            nbt.write_gzip(root / 'b.dat', b'', C(count=I(1)))
+            before = oracle.manifest(root)
+            self.assertEqual('b.dat', oracle.tamper_target(before, [before, before], {}, root))
+
     def test_test_only_omission_of_final_file_check_misses_collateral_tamper(self):
         before = {'level.dat': 'a', 'data/raids.dat': 'b'}
         after = dict(before, **{'data/raids.dat': 'c'})

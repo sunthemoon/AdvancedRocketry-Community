@@ -273,11 +273,22 @@ def launch_debit(fields, before, after):
     return dict(primary=primary, oxidizer=oxidizer, revision=int(match[3]), resource=match[4], catalog=match[5])
 
 
-def tamper_target(baseline, stopped, allowed):
+def tamper_target(baseline, stopped, allowed, world=None):
     require(len(stopped) >= 2, 'TWO_DRY_RUNS_REQUIRED')
     for name in sorted(baseline, key=lambda text: text.encode('utf-8')):
         if name not in allowed and all(row.get(name) == baseline[name] for row in stopped):
-            if name.endswith('.dat') or (name.endswith('.mca') and Path(name).parent.name in ('region', 'entities', 'poi')):
+            eligible = name.endswith('.dat') or (name.endswith('.mca') and Path(name).parent.name in ('region', 'entities', 'poi'))
+            if eligible and world is not None:
+                path = world / name
+                with path.open('rb') as stream:
+                    head = stream.read(8192)
+                if name.endswith('.dat'):
+                    eligible = head[:2] == b'\x1f\x8b'
+                    if eligible:
+                        nbt.read_gzip(path)
+                else:
+                    eligible = len(head) == 8192 and any(struct.unpack('>1024I', head[:4096]))
+            if eligible:
                 return name
     raise OracleError('NO_TAMPER_TARGET')
 

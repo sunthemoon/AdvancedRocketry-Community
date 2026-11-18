@@ -102,6 +102,7 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
     require_lock(args.lock_owner)
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
     verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
+    oracle.require(oracle.digest(session / 'mods' / args.jar.name) == args.jar_sha256, 'INSTALLED_CANDIDATE_CHANGED')
     preflight()
     port = smoke.allocate_port()
     smoke.write_server_configuration(session, port, True)
@@ -136,6 +137,7 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
         row['status'] = 'STOPPED'
         row['log_sha256'] = oracle.digest(log)
         row['configuration'] = {'server.properties': oracle.digest(session / 'server.properties')}
+        row['configuration'][command[-2].removeprefix('@')] = oracle.digest(session / command[-2].removeprefix('@'))
         for directory in (session / 'config', world / 'serverconfig'):
             if directory.is_dir():
                 row['configuration'].update({path.relative_to(session).as_posix(): oracle.digest(path)
@@ -144,7 +146,7 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
         write_json(evidence / (label + '-invocation.json'), row)
         return process.lines, log
     finally:
-        if process.process.poll() is None:
+        if not process.log_stream.closed:
             process.abort()
 
 
@@ -295,7 +297,7 @@ def controls(args, session, evidence, cycles, context):
         stable.append({name for name in baseline if stopped.get(name) == baseline[name]})
     baseline = cycles[-1]['baseline_manifest']
     common = {name: baseline[name] for name in stable[0] & stable[1]}
-    target = oracle.tamper_target(common, [common, common], RUNTIME_FILES)
+    target = oracle.tamper_target(common, [common, common], RUNTIME_FILES, context['twice'])
     results = []
     for name in ('unlisted-file', 'listed-object'):
         control = session / ('control-' + name)
@@ -327,6 +329,8 @@ def repaired_cycle(args, session, evidence, number):
                 for key in ('entity', 'block', 'ledger', 'journal', 'cargo', 'tank')})
     backup = session / ('backup-' + label)
     original_hashes = copy_verified(original, backup)
+    world_size = sum(path.stat().st_size for path in original.rglob('*') if path.is_file())
+    oracle.require(shutil.disk_usage(session).free >= 6 * world_size, 'INSUFFICIENT_SPACE_FOR_HARNESS_COPIES')
     planfile = evidence / (label + '-plan.json')
     refusals = [refusal(args, original, log, transfer, evidence, label + '-old-root', 'ROOT_NOT_CURRENT', old_root),
                 refusal(args, original, log, transfer, evidence, label + '-unknown-authority',
