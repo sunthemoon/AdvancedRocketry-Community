@@ -73,6 +73,9 @@ public final class ItemCargoReconciliationGameTests {
         io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot beforeSnapshot;
         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord namedRecord;
         int heldSince;
+        /** W381: what the mismatch injection wrote and when, for the hold check's failure text only. */
+        String injectedDigest;
+        int injectedTick;
         RocketEntity otherRocket;
         CompoundTag heldPayload;
         Scenario(GameTestHelper helper, boolean named) { this(helper, named, false); }
@@ -146,6 +149,7 @@ public final class ItemCargoReconciliationGameTests {
                     isolated.acknowledged(isolated.ledger().replace(isolated.ledger().records().stream()
                             .map(record -> record.id().equals(op.id()) ? held : record).toList(), isolated.ledger().floors(), isolated.ledger().tombstones()), true);
                     EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), false);
+                    injectedDigest = wrong; injectedTick = server.getTickCount();
                     phase = 14; return;
                 }
                 if (named) {
@@ -189,13 +193,20 @@ public final class ItemCargoReconciliationGameTests {
             }
             if (phase == 14) {
                 var held = member(a);
-                check(held != null && held.id().equals(first) && deviceBefore.equals(a.saveWithFullMetadata())
-                        && rocketBefore.equals(EscrowNativeEnvelope.rocket(rocket)), "A mismatched replay lost its operation or changed an endpoint");
+                // W381: the same four conditions as before, evaluated separately so that a failure names the one that broke.
+                var deviceNow = a.saveWithFullMetadata(); var rocketNow = EscrowNativeEnvelope.rocket(rocket);
+                var failed = ItemCargoReplayMismatchDiagnostics.failedChecks(held != null, held != null && held.id().equals(first),
+                        deviceBefore.equals(deviceNow), rocketBefore.equals(rocketNow));
+                if (!failed.isEmpty()) {
+                    helper.fail("A mismatched replay lost its operation or changed an endpoint: failed=" + failed + " " + observed(coordinator, deviceNow, rocketNow));
+                }
                 if (!coordinator.writerIdle() || held.phase() != EscrowOperation.Phase.REPAIR) { return; }
                 var device = a.root().orElseThrow().escrow(); var wrapper = rocket.escrowSection();
-                check(held.reason() == EscrowReason.OTHER_STATE && isolated.ledger().records().size() == direction + 1 && coordinator.operational()
-                        && device.epoch() == 0 && device.markers().isEmpty() && wrapper.epoch() == 0 && wrapper.markers().isEmpty(),
-                        "A mismatched replay did not hold as REPAIR OTHER_STATE before either endpoint published");
+                if (!(held.reason() == EscrowReason.OTHER_STATE && isolated.ledger().records().size() == direction + 1 && coordinator.operational()
+                        && device.epoch() == 0 && device.markers().isEmpty() && wrapper.epoch() == 0 && wrapper.markers().isEmpty())) {
+                    helper.fail("A mismatched replay did not hold as REPAIR OTHER_STATE before either endpoint published: operational="
+                            + coordinator.operational() + " " + observed(coordinator, deviceNow, rocketNow));
+                }
                 // Keep the held endpoints loaded until cleanup, as R39 does; the next direction uses its own rocket.
                 if (direction++ == 0) { phase = 1; return; }
                 cleanup(); helper.succeed(); return;
@@ -236,6 +247,17 @@ public final class ItemCargoReconciliationGameTests {
             }
         }
         void check(boolean value, String message) { helper.assertTrue(value, message); }
+        /** W381: bounded reads of state the fixture already holds; called only when a hold check has failed. */
+        String observed(EscrowCoordinator coordinator, CompoundTag deviceNow, CompoundTag rocketNow) {
+            var server = helper.getLevel().getServer(); var device = a.root().orElseThrow(); var wrapper = rocket.escrowSection();
+            return "direction=" + direction + " tick=" + server.getTickCount() + " since_injection=" + (server.getTickCount() - injectedTick)
+                    + " writer_idle=" + coordinator.writerIdle() + " first=" + first.toString().substring(0, 8)
+                    + " ledger{" + ItemCargoReplayMismatchDiagnostics.ledgerRows(isolated.ledger(), device.device(), injectedDigest) + "}"
+                    + " device{changed=" + ItemCargoReplayMismatchDiagnostics.changedKeys(deviceBefore, deviceNow) + " epoch=" + device.escrow().epoch()
+                    + " markers=" + device.escrow().markers().size() + " items=" + device.buffer().slots().stream().mapToInt(slot -> slot.getByte("Count")).sum() + "}"
+                    + " rocket{changed=" + ItemCargoReplayMismatchDiagnostics.changedKeys(rocketBefore, rocketNow) + " epoch=" + wrapper.epoch()
+                    + " markers=" + wrapper.markers().size() + " removed=" + rocket.isRemoved() + "}";
+        }
         EscrowOperation member(RocketItemCargoBlockEntity device) {
             return isolated.ledger().records().stream().filter(op -> op.device().identity().equals(device.root().orElseThrow().device())).findFirst().orElse(null);
         }
