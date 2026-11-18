@@ -898,10 +898,8 @@ class Campaign:
     def setUp(self):
         RunnerTests.setUp(self)
         self.args.cooldown = 0
-        self.evidence = self.root / "package"
-        (self.evidence / "cases").mkdir(parents=True)
-        self.work = self.scratch / "campaign"; self.work.mkdir()
         self.calls, self.fail_recording, self.filler = [], None, 0
+        self.package("package")
         self.files = {store: b"current " + store.encode() * 8 for store in faults.STORES}
         # The ledger and the receipts have an earlier generation. The registry's only write created the file, as in the
         # recording that W379's second smoke kept for B3_MOVED.
@@ -909,6 +907,12 @@ class Campaign:
                        replay.Write(7, "t", "BAY_RECEIPTS", "data/r", b"earlier receipts", b"two", complete=True),
                        replay.Write(14, "t", "RESOURCE_ESCROW", "data/e", b"earlier ledger", b"two", complete=True),
                        replay.Write(21, "t", "SATELLITE_MISSIONS", "data/s", None, b"first", complete=True)]
+
+    def package(self, name):
+        """A new evidence directory and scratch directory, as faults.run prepares them."""
+        self.evidence = self.root / name
+        (self.evidence / "cases").mkdir(parents=True)
+        self.work = self.scratch / ("campaign-" + name); self.work.mkdir()
 
     def on_disk(self):
         return json.loads((self.evidence / "MANIFEST.json").read_text(encoding="utf-8"))
@@ -1050,6 +1054,91 @@ class PlanningTests(Campaign, unittest.TestCase):
         # The stale ledger that was started is the earlier generation of the recording.
         observation = json.loads((self.evidence / "cases" / "X02-RESOURCE_ESCROW-STALE" / "observation.json").read_text(encoding="utf-8"))
         self.assertEqual(observation["damaged_sha256"], replay.sha(b"earlier ledger"))
+
+
+class PackageBoundTests(Campaign, unittest.TestCase):
+    """Root decision R491, answer 5: the finished package, with its final metadata, is what the bound is checked on."""
+    CASE = ["X02-BAY_RECEIPTS-WRITE_ERROR-1"]
+    live_class = faults.NOT_CAUGHT  # the final status is then longer than IN_PROGRESS, so the final metadata grows
+
+    def size(self):
+        return sum(path.stat().st_size for path in self.evidence.rglob("*") if path.is_file())
+
+    def run_bounded(self, name, limit=None):
+        """The whole orchestration with one case and its evidence; the size and the files at each check of the bound."""
+        self.package(name)
+        self.filler, checks, real = 1000, [], faults.check_size
+
+        def check_size(evidence):
+            checks.append((self.size(), sorted(path.name for path in evidence.iterdir())))
+            real(evidence)
+
+        with patch.object(faults, "check_size", check_size), patch.object(faults, "LIMIT", limit or faults.LIMIT):
+            return self.campaign(self.CASE), checks
+
+    def verify_seal(self):
+        listed = dict(reversed(line.split("  ", 1)) for line in (self.evidence / "SHA256SUMS.txt").read_text(encoding="ascii").splitlines())
+        files = {path.relative_to(self.evidence).as_posix(): replay.sha(path.read_bytes())
+                 for path in self.evidence.rglob("*") if path.is_file() and path.name != "SHA256SUMS.txt"}
+        self.assertEqual(listed, files)
+
+    def measure(self):
+        manifest, checks = self.run_bounded("measure")
+        self.assertEqual(manifest["status"], "COMPLETE_WITH_RESIDUALS")
+        (during, files), (final, _) = checks
+        # Each check sees the summary and the checksum list, and the last check sees the finished package.
+        self.assertEqual(files, ["MANIFEST.json", "SHA256SUMS.txt", "SUMMARY.md", "cases", "results.jsonl"])
+        self.assertEqual(final, self.size())
+        self.assertGreater(final, during)
+        self.verify_seal()
+        return during, final
+
+    def test_a_package_that_only_its_final_metadata_takes_over_the_bound_is_over_bound(self):
+        # W379R finding 5: every check while the cases ran passed, and W379F then returned a successful status for a
+        # package that the final manifest and summary had taken over the bound.
+        during, final = self.measure()
+        for limit in (during, final - 1):
+            with self.assertRaisesRegex(replay.OverBound, "OVER_BOUND"):
+                self.run_bounded(f"over-{limit}", limit)
+            persisted = self.on_disk()
+            self.assertEqual((persisted["status"], persisted["status_before_bound"]), ("OVER_BOUND", "COMPLETE_WITH_RESIDUALS"))
+            self.assertIn("OVER_BOUND", persisted["over_bound"])
+            self.assertNotIn("error", persisted)
+            self.assertEqual(len(persisted["results"]), 1)
+            self.assertIn("Status: OVER_BOUND", (self.evidence / "SUMMARY.md").read_text(encoding="utf-8"))
+            self.verify_seal()
+            self.assertGreater(self.size(), limit)
+            self.assertFalse(self.work.exists())
+
+    def test_a_package_exactly_at_the_bound_is_complete_and_within_it(self):
+        _, final = self.measure()
+        manifest, checks = self.run_bounded("at-limit", final)
+        self.assertEqual((manifest["status"], self.on_disk()["status"]), ("COMPLETE_WITH_RESIDUALS", "COMPLETE_WITH_RESIDUALS"))
+        self.assertEqual((self.size(), checks[-1][0]), (final, final))
+        with patch.object(faults, "LIMIT", final):
+            faults.check_size(self.evidence)
+        self.assertNotIn("over_bound", manifest)
+
+    def test_a_package_over_the_bound_while_the_cases_run_is_over_bound_too(self):
+        during, _ = self.measure()
+        with self.assertRaisesRegex(replay.OverBound, "OVER_BOUND"):
+            self.run_bounded("early", during - 1)
+        persisted = self.on_disk()
+        # The campaign stopped at the check after the case; the failure and the bound are both recorded.
+        self.assertEqual((persisted["status"], persisted["status_before_bound"]), ("OVER_BOUND", "FAILED"))
+        self.assertIn("OverBound: OVER_BOUND", persisted["error"])
+        self.verify_seal()
+
+    def test_the_command_line_reports_an_over_bound_package_as_a_failure(self):
+        arguments = ["run_v180_storage_faults.py", "server", "--jar", "mod.jar", "--evidence-dir", "evidence", "--source-commit", "s",
+                     "--candidate-commit", "c", "--jar-sha256", "j", "--java", "java"]
+        with patch.object(sys, "argv", arguments), patch.object(faults, "run", side_effect=replay.OverBound("OVER_BOUND: the evidence")), \
+                patch("builtins.print") as printed:
+            self.assertEqual(faults.main(), 1)
+        printed.assert_called_with("FAIL: OVER_BOUND: the evidence")
+        for status, code in (("COMPLETE", 0), ("COMPLETE_WITH_RESIDUALS", 1), ("INCOMPLETE", 1)):
+            with patch.object(sys, "argv", arguments), patch.object(faults, "run", return_value=dict(status=status)), patch("builtins.print"):
+                self.assertEqual(faults.main(), code, status)
 
 
 class HoldLineTests(unittest.TestCase):

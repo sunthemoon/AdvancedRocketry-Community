@@ -828,6 +828,19 @@ def check_size(evidence: Path) -> None:
         raise replay.OverBound("OVER_BOUND: the evidence exceeds 50 MiB in one file or 100 MiB in total")
 
 
+def seal(evidence: Path, manifest: dict) -> None:
+    """The manifest, the summary and the checksum list of the package as it is now.
+
+    Root decision R491, answer 5: the three files are part of the package, so they are written before every check of
+    its size, and the last check is made on the finished package.
+    """
+    x01.write_json(evidence / "MANIFEST.json", manifest)
+    (evidence / "SUMMARY.md").write_text(summary(manifest), encoding="utf-8", newline="\n")
+    sums = [f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(evidence).as_posix()}"
+            for path in sorted(evidence.rglob("*")) if path.is_file() and path.name != "SHA256SUMS.txt"]
+    (evidence / "SHA256SUMS.txt").write_text("\n".join(sums) + "\n", encoding="ascii", newline="\n")
+
+
 # ---- Running ------------------------------------------------------------------------------------------------------
 
 def run_live(args, case: Case, evidence: Path, scratch: Path, owner: str) -> dict:
@@ -1208,7 +1221,7 @@ def campaign(args, cases: list[Case], evidence: Path, scratch: Path) -> dict:
                                                                          "trace_ops_sha256") if key in recording}
                                         | dict(declared=[entry["case"] for entry in recording["declared"]]))
             manifest["not_applicable"].extend(recording["declared"])
-            x01.write_json(evidence / "MANIFEST.json", manifest)
+            seal(evidence, manifest)
             check_size(evidence)
         # The plan is frozen: every NOT_APPLICABLE declaration is on disk before the first case runs, and from here on
         # nothing is added to it.
@@ -1231,21 +1244,28 @@ def campaign(args, cases: list[Case], evidence: Path, scratch: Path) -> dict:
                     if work.exists():
                         shutil.rmtree(work)
             manifest["results"].extend(rows)
-            x01.write_json(evidence / "MANIFEST.json", manifest)
+            # The package is sealed as it is now, so that the summary and the checksum list count against the bound.
+            seal(evidence, manifest)
             check_size(evidence)
         manifest["status"] = status_of(manifest["results"], set(declared))
-        return manifest
     except Exception as failure:
         manifest.update(status="FAILED", error=f"{type(failure).__name__}: {failure}")
         raise
     finally:
         if scratch.exists():
             shutil.rmtree(scratch)
-        x01.write_json(evidence / "MANIFEST.json", manifest)
-        (evidence / "SUMMARY.md").write_text(summary(manifest), encoding="utf-8", newline="\n")
-        sums = [f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(evidence).as_posix()}"
-                for path in sorted(evidence.rglob("*")) if path.is_file() and path.name != "SHA256SUMS.txt"]
-        (evidence / "SHA256SUMS.txt").write_text("\n".join(sums) + "\n", encoding="ascii", newline="\n")
+        seal(evidence, manifest)
+        try:
+            # The finished package, with its final manifest, summary and checksum list.
+            check_size(evidence)
+        except replay.OverBound as failure:
+            # The result is not a successful one. It is written into the package, which is sealed again; the status
+            # that the campaign had reached is kept beside it.
+            manifest.update(status="OVER_BOUND", status_before_bound=manifest["status"], over_bound=str(failure))
+            seal(evidence, manifest)
+    if manifest["status"] == "OVER_BOUND":
+        raise replay.OverBound(manifest["over_bound"])
+    return manifest
 
 
 def main() -> int:
