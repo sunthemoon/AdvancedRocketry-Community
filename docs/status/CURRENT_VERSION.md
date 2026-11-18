@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 28722179b (W376 merged, R481: X03-V, the gated verification mode `EscrowCargoRepairVerifyProbe` with the `verify` scenario and its three cases; branch run 44168289950 and governance run 44168291392 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44198354007 at e946e3e02 (W376 merged at `28722179b`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 14.8, 21.0, 19.0 and 16.9 minutes, 1,863 GameTests, with 3, 4, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44198353848 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: d588a6fbe (W369 merged, R476 and R485: X01 and X02 simulation slice S1, the gated `CheckedFileOps` seam with `DIRECT` and the `ReleaseTestStorageTrace` recorder, after W369F's fixes and W369R2's approval; branch run 44171362326 and governance run 44171364334 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44201501106 at 4c2f8cac8 (W378 merged at `0b8275499`, W369 merged at `d588a6fbe`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 12.9, 18.3, 19.8 and 16.9 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44201500909 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
