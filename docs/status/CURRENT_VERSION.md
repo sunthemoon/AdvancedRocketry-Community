@@ -558,7 +558,8 @@ What is still open:
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
   reproduce it in 48 repetitions; the window holds no autosave, and flight B stalled after acknowledging
   `DESTINATION_SPAWNED`. W378's failure-only diagnostics give the missing observations if it recurs (R484). It stays
-  open until a cause is found or later runs show no recurrence.
+  open until a cause is found or later runs show no recurrence. W385 (merged at `da55aeb02`, R510) made the test wait for both
+  arrivals' whole ticket sets before they spawn; that pre-spawn gap does not explain the post-spawn stall.
 - **Journal unit test on the activation branch (2026-11-17).** In one complete unit run on W372's branch
   (`W372/r469-target1`), `EscrowGovernedTerminalJournalTest.aFailedWriteOrAStoppedJournalDiscardsTheProof`
   failed at line 69, and the run's XML was not kept. The branch changes neither that test nor its helper.
