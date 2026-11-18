@@ -139,6 +139,10 @@ What is still open:
   old-JAR case (W373B). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
   governed (escrow-fuelled) flight got no D0 decision, which W363 fixed (R444). W360 built the remaining cargo and
   ledger rows (R448).
+  For the three residual-risk tests: X03-B, the operator's whole-world repair on root 2, is merged as `97576e2be`
+  after its native accepting run and two read-only reviews (W380 to W380J, R509), and X03-C repeats it on root 3
+  (W387). The X02 storage-fault runner passed its native preflight (W384, R506); slices S5 (X02) and S3 (X01) run
+  on the candidate.
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
