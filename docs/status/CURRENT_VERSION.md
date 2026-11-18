@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: d588a6fbe (W369 merged, R476 and R485: X01 and X02 simulation slice S1, the gated `CheckedFileOps` seam with `DIRECT` and the `ReleaseTestStorageTrace` recorder, after W369F's fixes and W369R2's approval; branch run 44171362326 and governance run 44171364334 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44201501106 at 4c2f8cac8 (W378 merged at `0b8275499`, W369 merged at `d588a6fbe`) passed on its first attempt: build 14.7 minutes, shards 0 to 3 in 12.9, 18.3, 19.8 and 16.9 minutes, 1,863 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44201500909 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 4ce9546d3 (W381 merged, R492: the item-cargo fixture replaces the ledger only under an idle writer, with a new held-write GameTest, and the transfer recovery fixture waits by the product's own per-attempt allowance; test side only; branch run 44249924481 and governance run 44249925326 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44254384368 at f4d3e2b0c (W381 merged at `4ce9546d3`) passed on its second attempt: build 12.0 minutes, shards 0 to 3 in 14.2, 21.6, 21.8 and 18.1 minutes, 1,864 GameTests, with 3, 4, 4 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44254384434 there passed. Attempt 1 failed only shard 0's log check, in batch `legacy_pad_occupancy` (open item "Legacy pad occupancy recovery path"). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -551,20 +551,6 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **Item-cargo replay mismatch GameTest (2026-11-18).** W379's first local full GameTest run failed
-  `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` at phase 14 of its
-  second direction ("A mismatched replay lost its operation or changed an endpoint"); the second run of the same
-  Java source passed all 1,863. W379's slice is not on that path, and no earlier failure of this test is recorded.
-  The log does not say which of the three checks failed. W381 found the cause: the fixture replaced the saved ledger
-  while a successor generation was in flight, and its acknowledgement undid the replacement. The fixture now waits for
-  an idle writer, and a new GameTest pins it (R492). It closes when W381 is merged and a shared regression passes.
-- **Transfer recovery GameTest (2026-11-18).** W380's local full GameTest run failed
-  `transferRecoveryReconcilesAllEntityPresenceCases` once ("both recovery did not complete: RETRY_LATER"), with the
-  duplicate-destination recovery WARN in an undeclared batch. W380 changed no Java. It ran while other workers
-  compiled on the same machine, as W379's item-cargo failure did. W381 found the cause: the fixture allowed 20 or 40
-  retries, but a Level's first force batch comes 20 ticks after the capture. The wait now follows the product's own
-  per-attempt allowance and ends at once on a second attempt or a recorded reason (R492). It closes when W381 is
-  merged and a shared regression passes.
 - **Legacy pad occupancy recovery path (2026-11-18).** Shared run 44254384368 at `f4d3e2b0c` passed all 1,864
   GameTests, but shard 0's log check failed. In batch `legacy_pad_occupancy`, the transfer of
   `wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn` was taken over by a journal recovery
