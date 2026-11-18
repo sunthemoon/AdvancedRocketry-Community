@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: e00f11989 (W382 merged, R497: the fluid cargo R39 fixture replaces the ledger only under an idle writer, with a held-write GameTest; test side only; branch run 44271767659 and governance run 44271769366 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44277202687 at 1f7fca6a5 (W382 merged at `e00f11989`) passed on its first attempt: build 11.1 minutes, shards 0 to 3 in 16.2, 19.3, 20.0 and 18.1 minutes, 1,865 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44277202831 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 005acb5e5 (W383 merged, R494 and R500: the legacy pad occupancy fixture waits for the arrival's whole ticket set and asserts that the pre-spawn refusal began the ordinary return; test side only; merged directly, so the shared run below is its first hosted run). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44317875594 at 26e2a3783 (W383 merged at `005acb5e5`) passed on its first attempt: build 14.5 minutes, shards 0 to 3 in 13.5, 21.3, 21.6 and 18.6 minutes, 1,865 GameTests, with 3, 4, 4 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44317875844 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -551,17 +551,6 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **Legacy pad occupancy recovery path (2026-11-18).** Shared run 44254384368 at `f4d3e2b0c` passed all 1,864
-  GameTests, but shard 0's log check failed. In batch `legacy_pad_occupancy`, the transfer of
-  `wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn` was taken over by a journal recovery
-  (`RECOVERED_SOURCE`, `KEEP_SOURCE`) two ticks after its preparation. The expected `ARCE_TRANSFER_RETURNED_TO_SOURCE`
-  with `destination_pad_blocked` did not appear. The rocket still ended at its source, so the test passed. The same
-  log failure appeared once before, in W301F's local full run on 2026-11-05. `flight_recovery`, the batch W381
-  changed, ran later in that shard. Root re-ran the run. W383 found a test cause: the test prepares with a
-  detached service, and its fixture did not wait for the whole arrival ticket set, so a still-loading
-  column held the arrival and the server's own journal recovery took the record. Production has no such
-  race. The test-only fix is merged as `005acb5e5` (R500). The item closes with the hosted regression at
-  that merge; W385 checks the other fixtures that use a detached service.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
