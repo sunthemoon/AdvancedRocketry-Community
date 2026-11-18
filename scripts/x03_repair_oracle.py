@@ -320,7 +320,12 @@ def compare_functional(before, after, *, action=None):
             require(Path(key[0]).parent.name != 'entities' or not right[key].value['Entities'].value[1], 'NEW_UNRELATED_ENTITY')
         right = {key: right[key] for key in left}
     compare_chunks(left, right)
-    require(before['managed'].keys() == after['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED')
+    new_roots = after['managed'].keys() - before['managed'].keys()
+    allowed_new = set(FUNCTIONAL_DATA_FILES) - {LEDGER} if action == 'launch' else set()
+    require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED')
+    event = moon_event(after) if action == 'launch' else None
+    for name in new_roots:
+        validate_new_functional_root(name, after['managed'][name], event)
     for name in before['managed']:
         a, b = copy.deepcopy(before['managed'][name]), copy.deepcopy(after['managed'][name])
         if action in ('unload', 'launch') and name == LEDGER:
@@ -331,7 +336,64 @@ def compare_functional(before, after, *, action=None):
             require(after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'WRITER_GENERATION')
             if action == 'unload':
                 require(after['ledger']['issued_through'] == before['ledger']['issued_through'] + 1, 'UNLOAD_GENERATION')
+        if action == 'launch' and name == JOURNAL:
+            require(nbt.plain(a)['data']['classic_first_moon_landing'] == dict(schema_version=1, state='EMPTY'), 'PREEXISTING_MOON_ELECTION')
+            for root in (a, b):
+                root.value['data'].value.pop('classic_first_moon_landing')
+        if action == 'launch' and name.endswith('_stations.dat'):
+            for root in (a, b):
+                root.value['data'].value['orbital_clock'].value.pop('logical_tick')
+        if action == 'launch' and name.endswith('_classic_progression.dat'):
+            require(nbt.plain(a)['data']['first_moon_landing'] == dict(occurred=0), 'PREEXISTING_MOON_RECEIPT')
+            equal(b.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
+            for root in (a, b):
+                root.value['data'].value.pop('first_moon_landing')
         equal(a, b, name)
+
+
+def moon_event(state):
+    """The ordinary launch's one world-first event; unrelated authority is not normalized."""
+    outbox = state['managed'][JOURNAL].value['data'].value['classic_first_moon_landing']
+    root = nbt.plain(outbox)
+    require(set(root) == {'schema_version', 'state', 'event'} and root['schema_version'] == 1
+            and root['state'] == 'DELIVERED', 'MOON_OUTBOX_NOT_DELIVERED')
+    event = outbox.value['event']
+    value = nbt.plain(event)
+    require(set(value) == {'kind', 'event_id', 'transfer_id', 'logical_rocket_id', 'owner_id', 'terminal_rocket_id',
+                           'record_checksum', 'level', 'terminal_origin', 'completed_at_game_time', 'participants', 'fingerprint'}, 'MOON_EVENT_FIELDS')
+    for field in ('event_id', 'transfer_id', 'logical_rocket_id', 'owner_id', 'terminal_rocket_id'):
+        require(event.value[field].type == nbt.INTS and len(value[field]) == 4, 'MOON_EVENT_UUID')
+    require(value['kind'] == 'first_moon_landing' and value['logical_rocket_id'] == state['rocket']['assembly_transaction_id']
+            and value['owner_id'] == state['rocket']['owner_id'] and value['terminal_rocket_id'] == nbt.plain(state['entity'])['UUID']
+            and value['terminal_origin'] == state['rocket']['flight_data']['current_origin']
+            and value['level'] == 'advancedrocketrycommunity:moon' and value['participants'] == [], 'MOON_EVENT_IDENTITY')
+    require(event.value['participants'].type == nbt.INTS and event.value['terminal_origin'].type == nbt.INTS
+            and event.value['completed_at_game_time'].type == nbt.LONG
+            and value['completed_at_game_time'] >= 0
+            and all(re.fullmatch('[0-9a-f]{64}', value[field]) for field in ('record_checksum', 'fingerprint')), 'MOON_EVENT_TYPES')
+    return event
+
+
+def validate_new_functional_root(name, root, event):
+    require(set(root.value) == {'data', 'DataVersion'} and root.value['DataVersion'].type == nbt.INT
+            and root.value['DataVersion'].value == 3465, 'NEW_MANAGED_ROOT_WRAPPER')
+    data = nbt.plain(root)['data']
+    if name.endswith('_stations.dat'):
+        require(set(data) == {'schema_version', 'format_epoch', 'stations', 'reservations', 'warp_energy', 'orbital_clock', 'classic_first_warp'}
+                and data['schema_version'] == 5 and data['format_epoch'] == 'v1.8.0-station-first-warp'
+                and not data['stations'] and not data['reservations'] and not data['warp_energy']
+                and set(data['orbital_clock']) == {'schema_version', 'logical_tick'}
+                and data['orbital_clock']['schema_version'] == 1 and data['orbital_clock']['logical_tick'] >= 0
+                and data['classic_first_warp'] == dict(schema_version=1, state='EMPTY'), 'NEW_STATION_AUTHORITY')
+    elif name.endswith('_classic_progression.dat'):
+        require(set(data) == {'schema_version', 'format_epoch', 'first_moon_landing', 'first_station_warp'}
+                and data['schema_version'] == 1 and data['format_epoch'] == 'v1.8.0-classic-progression'
+                and data['first_station_warp'] == dict(occurred=0)
+                and set(data['first_moon_landing']) == {'occurred', 'event'}
+                and data['first_moon_landing']['occurred'] == 1, 'NEW_CLASSIC_AUTHORITY')
+        equal(root.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
+    else:
+        raise OracleError('UNEXPECTED_NEW_ROOT:' + name)
 
 
 def in_functional_box(key):
