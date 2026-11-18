@@ -656,7 +656,9 @@ def settlement_first_start(native: str, lines: list[str], world: Path, entry: di
 
 
 # Runner alias -> its first-start checks. A runner without an entry cannot be evaluated here, and a faulted start
-# that it refused stays NEEDS_REVIEW. Runners B and R do not refuse an ERROR line of the first start.
+# that it refused stays NEEDS_REVIEW. Runner R refuses no ERROR line of a first start. Runner B refuses the lines
+# outside its own list (bay_integrated_evidence.unexpected_errors) and then ends the case before any restart, so
+# such a case is INCOMPLETE; the bay receipts have no declared hold marker.
 FIRST_START_CHECKS = {"S": settlement_first_start}
 
 

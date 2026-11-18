@@ -895,7 +895,7 @@ class LiveRunTests(unittest.TestCase):
         first = json.loads((evidence / "observation.json").read_text(encoding="utf-8"))["first_start"]
         self.assertEqual((first["declared"], first["accepted"], first["unaccepted_count"]), ([], [], 1))
         self.assertEqual(first["filtered"]["status"], "NOT_EVALUATED")
-        # Its effect is the one it had: the stand-in runner passed, as runner B does for a first start.
+        # Its effect is the one it had: this stand-in runner refuses nothing in a first start, and the class is unchanged.
         self.assertEqual(row["classification"], faults.SEEN_HELD)
 
 
