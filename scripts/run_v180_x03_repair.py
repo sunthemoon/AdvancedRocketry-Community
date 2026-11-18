@@ -587,6 +587,7 @@ def generation_rule():
     oracle.require(len(ring) == 288 and all(oracle.in_functional_box((oracle.MOON + '/region/r.0.0.mca', x, z))
                                           for x, z in ring), 'MEASURED_RING_OUTSIDE_DERIVED_BOX')
     return dict(boxes=oracle.FUNCTIONAL_BOXES, destination_ticket_radius=oracle.DESTINATION_TICKET_RADIUS,
+                probe_landing_ticket_distance=oracle.PROBE_LANDING_TICKET_DISTANCE,
                 vanilla_dependency_margin=oracle.GENERATION_MARGIN, existing_margin_chunks='immutable', measured_ring_chunks=len(ring))
 
 

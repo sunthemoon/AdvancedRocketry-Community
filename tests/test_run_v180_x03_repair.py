@@ -160,6 +160,8 @@ class VerificationCommandTest(unittest.TestCase):
 
     def test_generation_rule_refuses_when_the_measured_ring_does_not_fit(self):
         self.assertEqual(288, runner.generation_rule()['measured_ring_chunks'])
+        self.assertEqual(0, runner.generation_rule()['probe_landing_ticket_distance'])
+        self.assertEqual(2, runner.generation_rule()['destination_ticket_radius'])
         with patch.dict(runner.oracle.FUNCTIONAL_BOXES, {runner.oracle.MOON: (-12, 13, -13, 13)}):
             with self.assertRaisesRegex(runner.oracle.OracleError, 'MEASURED_RING_OUTSIDE_DERIVED_BOX'):
                 runner.generation_rule()

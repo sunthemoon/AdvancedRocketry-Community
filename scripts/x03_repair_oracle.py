@@ -59,8 +59,11 @@ def checked(check):
 # FULL level 33 -> FULL radius 2. ChunkStatus.STATUS_BY_RANGE has 12 entries,
 # with the final non-EMPTY status at distance 11. The resulting radius is 13.
 # javap derivation: W380H record. Existing chunks in that margin are immutable.
+# R495: the probe's non-persistent START ticket on the live landing chunk is
+# distance 0, inside the existing warmup radius; it enlarges no generation box.
 MOON = 'dimensions/advancedrocketrycommunity/moon'
 DESTINATION_TICKET_RADIUS, GENERATION_MARGIN = 2, 11
+PROBE_LANDING_TICKET_DISTANCE = 0
 GENERATION_RADIUS = DESTINATION_TICKET_RADIUS + GENERATION_MARGIN
 FUNCTIONAL_BOXES = {'': (-6, 15, -6, 14), MOON: (-GENERATION_RADIUS, GENERATION_RADIUS) * 2}
 FUNCTIONAL_DATA_FILES = {
