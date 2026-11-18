@@ -197,6 +197,12 @@ class NativeOperationFixtureTest(RepairFixture):
         self.assertEqual('PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS', report['status'])
         self.assertEqual('both', args.world_origin)
         self.assertFalse(report['promotion_approved'])
+        args.evidence_dir = self.base / 'measurement'
+        args.measurement_mode = True
+        with patch.object(runner, 'verify_root_2'), patch.object(runner, 'run', return_value={
+                'status': 'MEASURED_NOT_PROMOTED', 'cleanup': True}):
+            self.assertEqual('MEASURED_NOT_PROMOTED', runner.run_both(args)['status'])
+        self.assertTrue(args.derive_runtime_list)
         args.evidence_dir = self.base / 'failure'
         with patch.object(runner, 'verify_root_2'), patch.object(runner, 'run', side_effect=runner.oracle.OracleError('fact')) as run:
             with self.assertRaisesRegex(runner.oracle.OracleError, 'fact'):

@@ -663,6 +663,8 @@ def run(args):
 
 
 def run_both(args):
+    if getattr(args, 'measurement_mode', False):
+        args.derive_runtime_list = True
     verify_root_2(args)
     oracle.require(not args.evidence_dir.exists(), 'EXISTING_OR_OVERLAPPING_OUTPUT')
     args.evidence_dir.mkdir(parents=True)
