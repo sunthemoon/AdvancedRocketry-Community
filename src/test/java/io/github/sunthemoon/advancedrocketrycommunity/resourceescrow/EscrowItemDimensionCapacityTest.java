@@ -57,7 +57,7 @@ class EscrowItemDimensionCapacityTest {
                             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
                             try (var writer = new EscrowLedgerWriter(temp.resolve("case-" + caseNumber++), 0);
                                     var coordinator = new EscrowCoordinator(data, writer)) {
-                                var admission = new EscrowNativeBinding.Admission(op, EscrowItemFixtures.wrapper(retained));
+                                var admission = capturedModel(op, EscrowItemFixtures.wrapper(retained));
                                 var result = coordinator.prepareTransfer(admission, ignored -> fail("No write was submitted"));
                                 // Sizing with retained markers grants no authority to replay unknown retired work.
                                 var expectedResult = retained > 0
@@ -109,29 +109,32 @@ class EscrowItemDimensionCapacityTest {
         var op = kind.itemCargo() ? EscrowItemFixtures.operation(kind, 100, 99, retained, blob, level)
                 : EscrowCargoFixtures.operation(kind, 100, 99, retained, -1, level);
         if (maxStack) { assertEquals(4_096, RocketNbtSize.uncompressedBytes(op.payload().getCompound("stack"))); }
-        return guarded ? EscrowItemFixtures.guarded(op) : op;
+        return accountedModel(guarded ? EscrowItemFixtures.guarded(op) : op);
     }
     private static EscrowSettlementIntent intent(EscrowLedger root, EscrowOperation op, int missing) {
         int retained = (int) op.rocket().beforeEpoch();
-        return op.kind().itemCargo() ? EscrowItemFixtures.intent(root, op, retained, missing, false)
-                : EscrowCargoFixtures.intent(root, op, retained, missing, false);
+        var observations = op.kind().itemCargo() ? EscrowItemFixtures.observations(root, op, retained, missing, false)
+                : EscrowCargoFixtures.observations(root, op, retained, missing, false);
+        var preview = previewModel(root, op.id(), missing == 0 ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
+                : EscrowSettlementIntent.Choice.ABANDON, id(700), "operator", 10, observations);
+        return preview.confirm(preview.actor(), preview.digest(), missing == 0 ? 11 : 210, observations);
     }
     private static boolean fits(EscrowOperation op) {
         try {
-            EscrowSettlementCapacity.preflight(ledger(op), op.id());
-            var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = ledger(repair);
-            for (int missing = 0; missing <= 2; missing++) { intent(root, repair, missing).freeze(root); }
+            EscrowSettlementCapacity.preflight(admissionLedger(op), op.id());
+            var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = admissionLedger(repair);
+            for (int missing = 0; missing <= 2; missing++) { freezeModel(intent(root, repair, missing), root); }
             return true;
         } catch (IllegalArgumentException refused) { return false; }
     }
     private static void measure(EscrowOperation original) {
-        var op = original.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = ledger(op);
+        var op = original.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = admissionLedger(op);
         System.out.println("CARGO_MEASURE kind=" + op.kind() + " guarded=" + (op.guard().transfer() != null)
                 + " level=" + op.rocket().level());
         EscrowItemCapacityTest.report("payload", op.payload());
         EscrowItemCapacityTest.report("unsettled_operation", EscrowCodec.operation(op));
         for (int missing = 0; missing <= 2; missing++) {
-            var intent = intent(root, op, missing); var o1 = intent.freeze(root);
+            var intent = intent(root, op, missing); var o1 = freezeModel(intent, root);
             var o3 = EscrowSettlementTombstones.install(o1, intent); var o4 = EscrowSettlementTombstones.release(o3, intent, 7);
             assertEquals(o4, EscrowCodec.decode(EscrowCodec.encode(o4)));
             EscrowItemCapacityTest.report("intent_" + missing, intent.encode());

@@ -41,11 +41,12 @@ class EscrowAccountingFormatTest {
         if (!rows.isEmpty()) { preview = preview.accounting(rows); }
         return preview.confirm(preview.actor(), preview.digest(), 11, observed);
     }
-    @Test void activationIsOffAndWriterCannotPublishTheNewForm() {
-        assertFalse(EscrowAccountingFormat.ENABLED);
-        var old = ledger(operation(1)); assertEquals(2, EscrowCodec.encode(old).getInt("schema_version"));
-        assertEquals(old, EscrowLedgerWriter.Snapshot.of(old, java.util.Set.of()).ledger());
-        assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(planned(operation(1)), java.util.Set.of()));
+    @Test void activationIsOnAndWriterPublishesTheNewFormUnderR466() {
+        assertTrue(EscrowAccountingFormat.ENABLED); // Root decision R466: activate the integrated accounting format.
+        var root = ledger(operation(1)); assertEquals(3, EscrowCodec.encode(root).getInt("schema_version"));
+        assertEquals(root, EscrowLedgerWriter.Snapshot.of(root, java.util.Set.of()).ledger());
+        var accounted = planned(operation(1));
+        assertEquals(accounted, EscrowLedgerWriter.Snapshot.of(accounted, java.util.Set.of()).ledger());
     }
     @Test void explicitRoot3RoundTripsPlannedO1O3AndO4() {
         var root = planned(operation(1).withReason(EscrowReason.OTHER_STATE));
@@ -185,7 +186,8 @@ class EscrowAccountingFormatTest {
         var intent = intent(root, rows); var o1 = intent.freeze(root, rows); var o3 = EscrowSettlementTombstones.install(o1, intent);
         assertEquals(EscrowSettlementCapacity.reservedBytes(o1), EscrowSettlementCapacity.reservedBytes(o3));
         var old = ledger(operation(1));
-        assertEquals(39 + 2048, EscrowSettlementCapacity.reservedBytes(root) - EscrowSettlementCapacity.reservedBytes(old));
+        // Both roots now have the root-3 header; only the one full account-row charge differs.
+        assertEquals(2048, EscrowSettlementCapacity.reservedBytes(root) - EscrowSettlementCapacity.reservedBytes(old));
     }
     @Test void legacyAdmissionRefusalLeavesTheProspectiveRootUnchanged() {
         var first = operation(1, 99, 0); var next = operation(2, 99, 1).accounting(baseline(operation(2, 99, 1)));

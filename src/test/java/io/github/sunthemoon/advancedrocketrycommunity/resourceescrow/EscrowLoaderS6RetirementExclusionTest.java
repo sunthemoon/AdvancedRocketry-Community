@@ -31,8 +31,7 @@ class EscrowLoaderS6RetirementExclusionTest {
     private void exercise(String mode) throws Exception {
         var sample = EscrowReconciliationBindingBoundaryTest.sample();
         var op = sample.a();
-        var initial = new EscrowLedger(sample.ledger().id(), sample.ledger().issuedThrough(), 1,
-                List.of(op, sample.b()), List.of(), List.of());
+        var initial = sample.ledger();
         Path file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(file, () -> EscrowCodec.encode(initial));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial));
@@ -41,16 +40,16 @@ class EscrowLoaderS6RetirementExclusionTest {
         try (var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.tick(10);
             CompoundTag rocketSlot = EscrowReconciliationCheckpointTest.rocketSlot(op.destination(), sample.after());
-            var source = new EscrowSettlementIntent.Observation(op.source(), new EscrowPrefix.State(data.ledger().id(), 1,
-                    op.source().afterSignature(), List.of(new EscrowPrefix.Link(op, op.source(), "SOURCE").marker())), true, 4900);
-            try (var request = new EscrowReconciliationCheckpoint(data.ledger(), Set.of(op.id()), List.of(source,
-                    EscrowSettlementDisk.observe(rocketSlot, op.destination(), data.ledger().id())), () -> true)) {
+            var slots = java.util.Map.of(op.source().key(), EscrowReconciliationCheckpointTest.sourceSlot(op, initial),
+                    op.destination().key(), rocketSlot);
+            try (var request = EscrowReconciliationCheckpointTest.captured(data.ledger(), Set.of(op.id()), slots, () -> true)) {
                 for (var endpoint : List.of(op.source(), op.destination())) {
                     var state = request.frontiers.get(endpoint.key());
                     var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null,
                             directory, new ChunkPos(0, 0), new AtomicLong(1), 1, 0, () -> { }, () -> { });
                     request.proofs.put(endpoint.key(), new EscrowBarrier.Proof(state, capture,
                             new AtomicBoolean(true), new AtomicBoolean(true)));
+                    EscrowReconciliationCheckpointTest.readback(request.targets(endpoint), slots);
                     coordinator.freeze(endpoint.key(), state);
                 }
                 assertTrue(request.proved());

@@ -43,7 +43,8 @@ public final class BayAdmissionRowGameTests {
             }
             try (var f = new BayAdmissionRowGameTestFiles(h, directory.resolve("bay-major"), ledger(0), null)) {
                 for (int n = 1; n <= 63; n++) { f.put(receipt(n, BayReceipt.Phase.INTENT)); }
-                f.coordinator.prepareTest(operation(1, 3000, 0), success -> { });
+                h.assertTrue(f.coordinator.prepareTransfer(FluidFuelLoaderEscrowFixtures.modelCapture(operation(1, 3000, 0)), success -> { })
+                        == EscrowCoordinator.Transfer.QUEUED, "Reverse fluid admission did not queue");
                 h.assertTrue(f.authority.pendingCount() == 64, "Reverse consumers did not share 64 slots");
                 h.assertTrue(f.store().put(receipt(64, BayReceipt.Phase.INTENT), outcome -> { }).reservation()
                         == EscrowAdmissionAuthority.Result.SERVER_FULL, "Reverse bay admission bypassed full pool");

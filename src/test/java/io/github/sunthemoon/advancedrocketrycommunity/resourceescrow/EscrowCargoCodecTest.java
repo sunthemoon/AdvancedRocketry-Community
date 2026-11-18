@@ -31,7 +31,7 @@ class EscrowCargoCodecTest {
             assertEquals(kind == EscrowOperation.Kind.FLUID_CARGO_LOAD ? "DESTINATION" : "SOURCE", chain.get(0).role());
             var state = new EscrowPrefix.State(id(500), 1, op.rocket().afterSignature(), List.of(chain.get(0).marker()));
             assertEquals(EscrowPrefix.Classification.AFTER, EscrowPrefix.classify(id(500), chain, state));
-            var retired = EscrowFloors.retire(ledger(op), Set.of(op.id()), Map.of(op.rocket().key(), state));
+            var retired = EscrowFloors.retire(root2(ledger(op)), Set.of(op.id()), Map.of(op.rocket().key(), state));
             var floor = retired.floors().get(0);
             assertEquals(op.rocket().identity(), floor.getUUID("entity_id"));
             assertEquals(op.nativeBinding().invariant(), floor.getString("invariant_digest"));

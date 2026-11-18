@@ -30,7 +30,7 @@ class EscrowAdmissionCaptureTest {
                 assertEquals(100, coordinator.nextSequence()); assertFalse(data.isDirty());
                 assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
             }
-            assertDoesNotThrow(() -> coordinator.prepareTest(op, section, ignored -> { }));
+            assertDoesNotThrow(() -> EscrowTestFixtures.prepareCapturedModel(coordinator, op, section, ignored -> { }));
             assertEquals(101, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
         }
     }

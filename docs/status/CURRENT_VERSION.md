@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 07d8d2fa8 (R483: the unit-test JVM's heap set to 1 GiB in `build.gradle` after shared run 44175223235 ran out of Gradle's 512 MiB default; test harness only). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44179325011 at 07d8d2fa8 passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 14.6, 21.2, 21.9 and 19.4 minutes, 1,863 GameTests, with 3, 3, 2 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44179325000 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 5951d6df2 (the accounting activation merged, W372 to W372E, R466, R468, R469 and R498 to R505: `EscrowAccountingFormat.ENABLED` is true, so native worlds write the root-3 ledger; format values re-pinned under R441 and legacy fixtures made explicit, after W372R's review; its code equals `c5714243e`, whose branch run 44323812620 and governance run 44323815024 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44335760429 at 5951d6df2 (the activation merge) passed on its first attempt: build 12.1 minutes, shards 0 to 3 in 16.6, 18.4, 22.2 and 18.8 minutes, 1,865 GameTests, with 3, 3, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44335760474 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -131,16 +131,14 @@ What is still open:
   X02 use application-level crash and fault simulation on this PC (R457), R-044's signature waits for C4 (R458),
   and each switch is made ready but not enabled, for one final yes or no (R459). The bay fixes of W363 are merged
   (R455).
-  W357's accounting design (ledger root 3, about 10 to 14.5 engineer-days) passed W357R's read-only review with
-  changes, now written in ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442), and
-  W361 delivered its Slice A (row ceiling 2,048 bytes; 54 instead of 61 concurrent fluid operations; R443), which
-  W361R reviewed (R447). Slice B (W362) built the saved form and migration behind an activation constant pinned off
-  (Slices A and B merged as `b7fd85f74`, not active, R449);
-  W362R approved it with two changes needed before activation (R446), and W362F finishes its relaunch inventory
-  audit (R445). W358 (merged, R446) built six of the uncovered bay rows natively and
-  found that a bay on a governed (escrow-fuelled) flight gets no D0 decision, which W363 fixes (R444). W360 builds
-  the remaining cargo and ledger rows (delivered, R448). Slice E part 1 (W365) is merged (R452), Slice C (W364) is
-  delivered and in integration (R453), and Slice D (W366) is in progress.
+  W357's accounting design (ledger root 3) passed W357R's read-only review with changes
+  ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442). Slices A to D and Slice E part 1
+  are merged (W361, W362, W364, W365 and W366). The activation is merged as `5951d6df2` after W372R's read-only
+  review (R466 to R505): `EscrowAccountingFormat.ENABLED` is true, so every native world now writes a root-3 ledger.
+  Slice E part 2 runs the campaign families on root 3 (W373) and adds the native accounting cuts, including R-044's
+  old-JAR case (W373B). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
+  governed (escrow-fuelled) flight got no D0 decision, which W363 fixed (R444). W360 built the remaining cargo and
+  ledger rows (R448).
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
@@ -551,17 +549,19 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
-- **Unit-test heap (2026-11-18).** Shared run 44175223235 at `f89f7d5ba` failed in its build: the unit-test JVM ran out of
-  Gradle's default 512 MiB heap in `RocketTransactionAdmissionTest.exactRootByteBoundaryRejectedRetryAndRemovalMatchFullEncoding`,
-  whose snapshot hashing builds multi-megabyte strings, after more than 6,600 tests in the same JVM. The same code passed
-  on W377's branch. R483 sets the test task's heap to 1 GiB in `build.gradle`; no product limit changes. It closes once
-  the next shared regressions pass.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
   reproduce it in 48 repetitions; the window holds no autosave, and flight B stalled after acknowledging
   `DESTINATION_SPAWNED`. W378's failure-only diagnostics give the missing observations if it recurs (R484). It stays
   open until a cause is found or later runs show no recurrence.
+- **Journal unit test on the activation branch (2026-11-17).** In one complete unit run on W372's branch
+  (`W372/r469-target1`), `EscrowGovernedTerminalJournalTest.aFailedWriteOrAStoppedJournalDiscardsTheProof`
+  failed at line 69, and the run's XML was not kept. The branch changes neither that test nor its helper.
+  Line 69 calls `EscrowArmedRestartBoundaryTest.acknowledge`, which polls the transfer journal's writer about
+  1,000 times with a 2 ms sleep and then asserts the acknowledgement, so Root reads it as a slow write on a
+  loaded host. It passed alone and in three complete runs since (W372D). The activation review W372R checks
+  the diff for any effect on it (R502). If it recurs, a test task diagnoses it.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,

@@ -13,6 +13,10 @@ Revision 2 resolves the findings of the independent review W367R
 that maps each finding to its section is in [W367](W367.md). The top-level section numbers are unchanged from
 revision 1, so existing references to sections 1 to 8 still point at the same subjects.
 
+Revision 3 (2026-11-18, Root decision R487) adds [section 9](#9-revision-3-root-decision-r487-after-w380s-native-runs),
+which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and sections 3.6 and 5.1 after W380F's, W380G's and W380H's (R488, R490, R495).
+The other sections are unchanged.
+
 Terms used below:
 
 - **T** is the one stale transfer record in the journal. **R** is the one physical rocket. **The device** is
@@ -797,3 +801,121 @@ Two points are new in revision 2 and are put to Root for acceptance with it:
   predicate and its refusal case are removed. That costs about a quarter of a day in X03-B.
 - The gated mode uses a new scenario value, `verify`, and three `FF_X03_` cases, rather than an external
   agent (section 5.1).
+
+## 9. Revision 3 (Root decision R487), after W380's native runs
+
+W380's native runs (record `W380.md` on branch `codex/v1.8.0-w380`, commit `269cf73c2`) met two facts that
+revision 2 did not describe. Both are properties of the candidate and of vanilla, not of the damaged world, so
+the contract changes and no check is dropped.
+
+### 9.1 The fence evidence is a sequence of reason changes (amends 2.2 and 5.3)
+
+`RocketTransferFences` logs `ARCE_TRANSFER_FENCED` each time a transfer's reason changes, not once per start.
+When an endpoint of T joins a Level, `joined` fences T with the transient reason `ENDPOINT_JOIN_PROOF_REQUIRED`,
+and the next reevaluation with both ends loaded logs the derived reason. A qualifying log therefore holds
+`ENDPOINT_JOIN_PROOF_REQUIRED` lines for T around the `FLOOR_CONFLICT` line. The rule becomes:
+
+- every `ARCE_TRANSFER_FENCED` line names T, or the tool refuses with `OTHER_TRANSFER_FENCED`;
+- every reason is `FLOOR_CONFLICT` or `ENDPOINT_JOIN_PROOF_REQUIRED`, or the tool refuses with
+  `FENCE_REASON_DIFFERS` (WAITING_UNLOADED and every other derived reason still refuse);
+- at least one line carries `FLOOR_CONFLICT`, or the tool refuses with `FENCE_EVIDENCE_MISSING`; a log with
+  only the transient reason shows that no reevaluation derived the fence;
+- the plan binds the log's SHA-256 and the first `FLOOR_CONFLICT` line.
+
+The native family asserts the same rule in both protected starts.
+
+### 9.2 A zero-byte region file is an empty region (amends 3.5 and 5.2)
+
+Vanilla opens region, entity and POI files with `CREATE`, so a start that only reads a region leaves a zero-byte
+`.mca` file. Its `RegionFile` constructor treats a header read that returns end-of-file as an empty header, and
+only warns about a header of another short length. Root checked this in the bytecode of the Forge 47.4.10
+mapped jar: the constructor compares `FileChannel.read` with -1, skips the offset table on -1, and logs
+"Region file {} has truncated header" for any other length but 8,192. Therefore:
+
+- the tool and the independent oracle read a `.mca` file of exactly zero bytes as a region with no chunks;
+- the file stays in the census with its size and hash, and a later change of it is judged by section 3.6;
+- a file of 1 to 8,191 bytes still refuses with `CORRUPT_REGION`, which is stricter than vanilla;
+- neither the tool nor the runner creates, fills, removes or normalizes such a file.
+
+### 9.3 The first per-root bookkeeping fields (fills the list of 3.6, Root decision R488)
+
+W380F's first repaired observation (record `W380.md` on branch `codex/v1.8.0-w380`, commit `1f712a153`) changed
+`data/clock/last_observed_game_time` and `data/clock/logical_game_time` of the satellite mission root. Section
+3.6 expected such fields: boundary 2 permits "a second fixed list of per-root bookkeeping fields, with a reason
+per field". These are its first two entries.
+
+- **Reason.** The satellite mission service keeps a monotonic clock (`MonotonicMissionClock.advance`). It sets
+  `last_observed_game_time` to the server game time it observes, and adds only forward differences to
+  `logical_game_time`. `SatelliteMissionSavedData.observeClock` marks the root dirty after a clock-only change,
+  and the ordinary autosave writes it. The clock-only write keeps the root's epoch.
+- **Check, which is stricter than a plain exemption.** The tool's census and the oracle accept a difference in
+  these two paths only when all of the following hold:
+  - `last_observed_game_time` did not decrease;
+  - the increase of `logical_game_time` equals the increase of `last_observed_game_time`;
+  - every other path of the root, the epoch included, is unchanged.
+  Any other difference in the root is still `OBJECT_CHANGED`.
+- **Scope.** The two entries are named in `ROOT_BOOKKEEPING_FIELDS` with this reason. The list is never extended
+  at run time. `ENTITY_CLOCK_FIELDS` stays empty unless Root admits an entry with its reason.
+
+### 9.4 Root's decisions on W380G's measurements (Root decision R490)
+
+W380G ran the whole sequence twice in measurement mode (record `W380.md` on branch `codex/v1.8.0-w380`, commits
+`d32fc2d5d` to `863bc63c8`; evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W380G/`). All six repaired
+observations passed the target, all-chunk and managed-root comparisons, and both launches landed on the Moon
+with the 159 mB debit. Root decides the remaining points as follows.
+
+1. **The runtime list (boundary 3).** Root admits W380G's 18 exact names with W380G's reasons:
+   - the nine `raids.dat` files;
+   - the transfer journal and the satellite mission root;
+   - `entities/r.0.0.mca`, `level.dat` and `level.dat_old`;
+   - the four overworld region files around the origin.
+   `session.lock` stayed byte-identical in both runs and is not listed. Inside the listed files the checks still
+   apply:
+   - in a `raids.dat`, only `/data/Tick` may change, and it may not decrease;
+   - in region and entity files, every object is compared with only `LastUpdate` and `InhabitedTime` exempt;
+   - the satellite root follows 9.3;
+   - `level.dat` and `level.dat_old` are vanilla metadata and are allowed as files.
+2. **The functional descendant's generation box (3.6).** The box comes from code, not from the observation.
+   - It is the destination tickets' radius plus vanilla's generation-dependency margin. Both are derived from the
+     candidate's bytecode, with the derivation in the record.
+   - In the margin, only chunks that were absent before may appear, and no existing chunk may change.
+   - The derived box must contain the 288 chunks of the ring from -13 to 13 that W380G observed. If it does not,
+     the run stops and reports.
+3. **The progression receipt.** The classic progression root may gain exactly one `first_moon_landing` receipt.
+   - Its fields are those `ClassicProgressionSavedData.encodeReceipt` writes, `source` = `rocket_transfers`
+     included.
+   - Its landing must match the observed Moon landing.
+   - Any other new entry, `first_station_warp` included, is still `NEW_CLASSIC_AUTHORITY`.
+4. **The launch settles only after the authority is pruned (5.1).** `FF_X03_LAUNCH` reports its result only
+   after:
+   - the ledger holds no armed-flight row for R;
+   - the writers are quiet;
+   - all of this inside the existing 6,000-tick bound.
+   W380G saw the result while a `HANDED_OFF` row was still present.
+5. **The ordinary unload does not start.** In both runs `FF_X03_UNLOAD` named the device and observed:
+   - the rocket holding 4,000 mB and the device 1,000 mB, of a 16,000 mB tank;
+   - both authorities true.
+   No operation followed within 6,000 ticks. The refusing condition is diagnosed first. If it is in the gated
+   probe, the probe is fixed. If it is in production code, the work stops at a failing test that names the
+   condition, and Root routes the fix.
+
+### 9.5 The launch observes the landed rocket under the probe's own ticket (Root decision R495)
+
+W380H's native run (record `W380.md` on branch `codex/v1.8.0-w380`, commits `80d2a5a64` to `812ed9210`):
+
+- **The ordinary unload completed** once the gated probe kept the playerless Level ticking (`resetEmptyTime` in
+  the unload steps only): water went from 4,000/1,000 to 3,000/2,000 mB, both epochs became 2, and the switch
+  was withdrawn.
+- **The launch landed**, with the 159 mB debit. While the probe waited for the authority to be pruned (9.4,
+  point 4), the destination warmup released its ticket at handover. The landing chunk unloaded, and the result
+  reported `rocket=absent`, although the stopped files held exactly one landed rocket.
+
+Root decides:
+
+- **A ticket on the landing chunk.** When the probe first observes the landed rocket alive, it adds its own
+  non-persistent ticket at distance 0 on the landing chunk. That is the same kind of ticket it already holds at
+  the source. It removes the ticket when it ends. A distance-0 ticket stays inside the generation box of 9.4.
+- **No weakened check.** The live observation after pruning keeps its full contract (a loaded, alive rocket). If
+  the rocket is not alive when it is first observed, that is still `ROCKET_READBACK_ABSENT`.
+- **The probe's ticks count as harness additions (3.3).** Neither `resetEmptyTime` in the unload steps nor the
+  landing ticket exists outside the gated probe. Each is named in the record.

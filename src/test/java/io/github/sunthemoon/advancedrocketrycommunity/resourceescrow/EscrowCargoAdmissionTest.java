@@ -18,7 +18,18 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowCargoAdmissionTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
-    static EscrowNativeBinding.Admission capture(EscrowOperation op, int retained) { return new EscrowNativeBinding.Admission(op, wrapper(retained)); }
+    static EscrowNativeBinding.Admission capture(EscrowOperation op, int retained) { return capturedModel(op, wrapper(retained)); }
+    private static EscrowOperation operation(EscrowOperation.Kind kind, long sequence, long logical) {
+        return operation(kind, sequence, logical, 0, -1, "minecraft:overworld");
+    }
+    private static EscrowOperation operation(EscrowOperation.Kind kind, long sequence, long logical, int retained, int blob, String level) {
+        return capture(EscrowCargoFixtures.operation(kind, sequence, logical, retained, blob, level), retained).operation();
+    }
+    private static EscrowLedger ledger(EscrowOperation... ops) {
+        var root = EscrowTestFixtures.ledger();
+        for (var op : ops) { root = EscrowAccountingCapture.append(root, List.of(), capture(op, 0)); }
+        return root;
+    }
 
     @Test void bothDirectionsUseTheExistingExactL1WriterAndRefuseQueuedCapturedAndDurableMixing() throws Exception {
         for (var kind : KINDS) {
@@ -73,13 +84,14 @@ class EscrowCargoAdmissionTest {
                 assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(op, wrong));
                 assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, wrong));
                 if (retained == 0) {
-                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, before));
-                    assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root.append(List.of(op)), op.id()));
+                    var candidate = EscrowAccountingCapture.append(root, List.of(), capture(op, retained));
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(candidate, op, before));
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(candidate, op.id()));
                 } else {
                     assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, before));
                 }
                 try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-" + retained), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                    var result = coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, before), ignored -> { });
+                    var result = coordinator.prepareTransfer(capture(op, retained), ignored -> { });
                     if (retained == 0) { assertEquals(EscrowCoordinator.Transfer.QUEUED, result); }
                     else {
                         // Codec fit is not retirement authority for unknown captured markers.
@@ -150,7 +162,7 @@ class EscrowCargoAdmissionTest {
             for (var kind : KINDS) {
                 var wrapper = new RocketEscrowSection(root.id(), 1, List.of());
                 var op = nativeModel(operation(kind, 1, 99), wrapper);
-                assertEquals(EscrowCoordinator.Transfer.STALE, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, wrapper), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.STALE, coordinator.prepareTransfer(capturedModel(op, wrapper), ignored -> fail()));
             }
             assertEquals(1, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
             assertFalse(data.isDirty()); assertTrue(writer.capturedOperations().isEmpty());

@@ -69,6 +69,7 @@ class EscrowCargoSettlementObservationTest {
             var actor = EscrowTestFixtures.id(700);
             var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, actor, "CargoO1", 10,
                     List.of(rocket, device));
+            preview = preview.accounting(f.settlementRows(root, List.of(rocket, device)));
             var intent = preview.confirm(actor, preview.digest(), 11, List.of(device, rocket));
             assertEquals(intent, EscrowSettlementIntent.decode(intent.encode()));
             var frozen = intent.observations().stream().filter(value -> value.endpoint().equals(op.rocket())).findFirst().orElseThrow();
@@ -76,10 +77,12 @@ class EscrowCargoSettlementObservationTest {
             assertEquals(new RocketEscrowSection(root.id(), load ? 0 : 1, load ? List.of()
                     : List.of(new EscrowPrefix.Link(op, op.rocket(), "SOURCE").marker())), frozen.normalizedWrapper());
             assertTrue(frozen.checkpointed().bound());
-            var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent, 7);
+            var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root, f.settlementRows(root, intent.observations())), intent), intent, 7);
             assertTrue(released.records().isEmpty());
             var receipt = released.tombstones().get(0);
-            assertEquals(0, receipt.getInt("payload_amount")); assertEquals("UNKNOWN", receipt.getString("accounting_status"));
+            assertEquals(0, receipt.getInt("payload_amount")); assertEquals("KNOWN", receipt.getString("accounting_status"));
+            // R441: the native capture makes the partial load's loss, or the completed unload's zero residual, known.
+            assertEquals(load ? 1_000 : 0, released.fluidAccounts().get(0).frozen().entries().get(0).adjustment().orElseThrow());
             assertEquals(op.payloadHash(), receipt.getString("payload_hash"));
             assertEquals(2, receipt.getList("before_choice", 10).size()); assertTrue(receipt.getList("missing", 10).isEmpty());
             assertEquals(receipt, EscrowReceiptCodec.decode(EscrowReceiptCodec.encode(receipt)));

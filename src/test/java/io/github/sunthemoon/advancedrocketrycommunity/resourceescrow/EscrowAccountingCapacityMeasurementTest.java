@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 
 /** Absolute unaccepted edges stay measurements; derived codec growth and the complete saved-form matrix are checked. */
 class EscrowAccountingCapacityMeasurementTest {
+    private static EscrowLedger ledger(EscrowOperation... records) {
+        return root2(EscrowTestFixtures.ledger(records));
+    }
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static int edge(IntPredicate fits, int high) {
         int low = 0;
@@ -134,7 +137,7 @@ class EscrowAccountingCapacityMeasurementTest {
     }
     @Test void measureLoaderFloorCountsAndReservationsWithBothCodecs() {
         for (int floors : List.of(255, 256)) {
-            var base = EscrowCombinedReservationTest.retainedFloors(floors);
+            var base = EscrowCombinedReservationTest.retainedRoot2Floors(floors);
             var original = operation(floors + 1, 999, 0);
             var guard = new EscrowGuard(original.guard().rocket(), id(50_000), 1, hash(400));
             var op = new EscrowOperation(original.id(), original.sequence(), original.owner(), original.createdTick(), original.phase(), original.reason(),

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowItemAdmissionTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
-    static EscrowNativeBinding.Admission capture(EscrowOperation op, int retained) { return new EscrowNativeBinding.Admission(op, wrapper(retained)); }
+    static EscrowNativeBinding.Admission capture(EscrowOperation op, int retained) { return capturedModel(op, wrapper(retained)); }
 
     @Test void bothDirectionsUseTheExistingExactL1WriterAndRefuseQueuedCapturedAndDurableMixing() throws Exception {
         for (var kind : KINDS) {

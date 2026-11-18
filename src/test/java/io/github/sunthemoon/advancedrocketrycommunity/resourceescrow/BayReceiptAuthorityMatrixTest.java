@@ -75,10 +75,10 @@ final class BayReceiptAuthorityMatrixTest {
         try (var server = new Server("bay-major").start(EscrowTestFixtures.ledger())) {
             for (long n = 1; n <= 63; n++) { queued(server.bay.put(intent(n, BayReceiptFixtures.id(600 + n / 8)))); }
             var replies = new ArrayList<Boolean>();
-            server.coordinator.prepareTest(EscrowTestFixtures.operation(1, 2_000, 0), replies::add);
+            EscrowTestFixtures.prepareCapturedModel(server.coordinator, EscrowTestFixtures.admissionOperation(1, 2_000, 0), replies::add);
             assertEquals(64, server.pending());
             var refused = assertThrows(IllegalArgumentException.class,
-                    () -> server.coordinator.prepareTest(EscrowTestFixtures.operation(2, 2_001, 0), ignored -> fail()));
+                    () -> EscrowTestFixtures.prepareCapturedModel(server.coordinator, EscrowTestFixtures.admissionOperation(2, 2_001, 0), ignored -> fail()));
             assertEquals("Shared admission refused: SERVER_FULL", refused.getMessage());
             assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, server.bay.put(intent(64, BayReceiptFixtures.id(700))).reservation());
             assertEquals(64, server.pending());

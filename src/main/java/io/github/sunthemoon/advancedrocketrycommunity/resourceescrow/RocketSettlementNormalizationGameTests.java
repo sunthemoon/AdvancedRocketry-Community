@@ -30,31 +30,25 @@ public final class RocketSettlementNormalizationGameTests {
         var data = ResourceEscrowSavedData.forTests(level.getServer()); var coordinator = data.bind(level.getServer());
         var pacer = new GameTestTickPacer(level.getServer());
         class Scenario {
-            int step; boolean writing; EscrowTestEndpoints.Fixture fixture; RocketEntity rocket; EscrowOperation operation;
+            int step; boolean writing; FluidFuelLoaderEscrowFixtures.NativeFill fixture; RocketEntity rocket; EscrowOperation operation;
             UUID physical; UUID owner; String snapshot;
             void tick() {
                 pacer.pace(); if (!level.areEntitiesLoaded(chunk.toLong()) || !level.isPositionEntityTicking(position)) { return; }
                 if (step == 0) {
-                    fixture = EscrowTestEndpoints.create(level, position, data.ledger().id());
-                    rocket = RocketSettlementIdleGameTests.createRocket(level, position, fixture.logical());
+                    rocket = RocketSettlementIdleGameTests.createRocket(level, position, UUID.randomUUID());
                     physical = rocket.getUUID(); owner = rocket.ownerId().orElseThrow(); snapshot = rocket.snapshot().orElseThrow().contentHash();
-                    var sample = fixture.operation(coordinator.nextSequence()); var fuel = rocket.flightData().orElseThrow().fuel();
-                    var after = fuel.withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
-                    var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), physical, fixture.logical(),
-                            ModIdentity.id("rocket").toString(), chunk.x, 0, chunk.z, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(), after.resourceSignature());
-                    var payload = sample.payload(); payload.putString("FluidName", ModIdentity.id("rocket_fuel").toString());
                     var journal = RocketTransferSavedData.get(level.getServer()); helper.assertTrue(journal.retryChecked(level.getServer()), "Idle journal is unproved");
-                    var guard = journal.acknowledgedGuard(fixture.logical()).orElseThrow();
-                    var model = new EscrowOperation(sample.id(), sample.sequence(), owner, sample.createdTick(), sample.phase(), sample.reason(), payload,
-                            RocketNativeResources.signature(payload), sample.source(), endpoint, new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                    var capture = EscrowNativeBinding.captureTest(model, rocket, fixture.source(), fuel, after, data.ledger());
-                    operation = capture.operation();
+                    fixture = FluidFuelLoaderEscrowFixtures.prepare(helper, coordinator, rocket, position, acknowledged -> {
+                        helper.assertTrue(acknowledged, "Native L1 failed");
+                        fixture.applySource(coordinator); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions();
+                    });
+                    operation = fixture.operation();
                     helper.assertTrue(level.addFreshEntity(rocket), "Neutral survivor publication failed");
-                    coordinator.prepareTest(operation, capture.before(), acknowledged -> helper.assertTrue(acknowledged, "Native L1 failed")); step = 1;
+                    step = 1;
                 } else if (step == 1) { if (coordinator.commitPreparations()) { step = 2; } }
                 else if (step == 2) {
                     if (!coordinator.writerIdle()) { return; }
-                    fixture.applySource(operation); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
+                    fixture.applySource(coordinator); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
                 } else if (step == 3) {
                     if (!coordinator.writerIdle() || writing) { return; }
                     if (data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id())
@@ -77,7 +71,7 @@ public final class RocketSettlementNormalizationGameTests {
                     }
                     var encoded = rocket.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData");
                     helper.assertTrue(RocketEscrowSection.decode(encoded.getCompound("resource_escrow")).equals(rocket.escrowSection()), "Normalization did not survive native serialization");
-                    rocket.discard(); fixture.bank().discard(); level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
+                    rocket.discard(); fixture.clear();
                     level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); step = 5; helper.succeed();
                 }
             }

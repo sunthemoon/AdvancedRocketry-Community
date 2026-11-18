@@ -45,7 +45,9 @@ class EscrowReconciliationPruningTest {
         var forged = new EscrowPrefix.State(root.id(), 1, f.a().destination().afterSignature(), List.of(wrongId));
         assertEquals(EscrowReason.FOREIGN_MARKER, assertThrows(EscrowReconciliationView.Refusal.class,
                 () -> EscrowReconciliationPruning.retired(root, f.a().destination(), forged, Set.of())).reason);
-        var tailRetired = new EscrowLedger(root.id(), root.issuedThrough(), 0, List.of(f.a()), List.of(), List.of());
+        // Deliberately malformed prefix, but with a structurally consistent surviving account.
+        var tailRetired = new EscrowLedger(root.id(), root.issuedThrough(), 0, List.of(f.a()), List.of(), List.of(),
+                0, List.of(), List.of(), 3, root.fluidAccounts().stream().filter(row -> row.operation().equals(f.a().id())).toList());
         assertEquals(EscrowReason.FOREIGN_MARKER, assertThrows(EscrowReconciliationView.Refusal.class,
                 () -> EscrowReconciliationPruning.retired(tailRetired, f.a().destination(), state, Set.of())).reason);
     }

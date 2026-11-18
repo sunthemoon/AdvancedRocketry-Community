@@ -21,12 +21,12 @@ class EscrowFlightQueueContentionTest {
     @Test void eightFlightsWaitBehindOrdinaryAdmissionsAndCaptureTheirAcknowledgedRoot() throws Exception {
         var data = ResourceEscrowSavedData.create(); var before = data.ledger();
         var ordinary = new ArrayList<Boolean>(); var flights = new ArrayList<Boolean>();
-        var operations = List.of(EscrowTestFixtures.operation(1), EscrowTestFixtures.operation(2), EscrowTestFixtures.operation(3));
+        var operations = List.of(EscrowTestFixtures.admissionOperation(1), EscrowTestFixtures.admissionOperation(2), EscrowTestFixtures.admissionOperation(3));
         var captures = new AtomicInteger(); var io = new AwaitedLedgerIo();
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
              var coordinator = new EscrowCoordinator(data, writer)) {
-            operations.forEach(op -> coordinator.prepareTest(op, ordinary::add));
+            operations.forEach(op -> EscrowTestFixtures.prepareCapturedModel(coordinator, op, ordinary::add));
             assertTrue(writer.idle());
             for (int i = 1; i <= 8; i++) {
                 var launch = EscrowFlightAuthorityTest.launch(before, i);
@@ -41,8 +41,8 @@ class EscrowFlightQueueContentionTest {
             }
             coordinator.tick(0);
             assertEquals(0, captures.get()); assertTrue(flights.isEmpty()); assertSame(before, coordinator.ledger());
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(
-                    EscrowTestFixtures.operation(4, EscrowFlightAuthorityTest.launch(before, 1).logical().getLeastSignificantBits(), 0),
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.prepareCapturedModel(coordinator,
+                    EscrowTestFixtures.admissionOperation(4, EscrowFlightAuthorityTest.launch(before, 1).logical().getLeastSignificantBits(), 0),
                     ignored -> fail("A waiting flight admitted a same-logical fill")));
             assertEquals(operations, coordinator.pendingAdmissions());
             assertTrue(coordinator.commitPreparations());
@@ -63,8 +63,8 @@ class EscrowFlightQueueContentionTest {
     }
 
     @Test void queuedTransitionIsAcknowledgedBeforeTheWaitingFlightCapture() throws Exception {
-        var operation = EscrowTestFixtures.operation(1);
-        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(operation)));
+        var operation = EscrowTestFixtures.admissionOperation(1);
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.admissionLedger(operation)));
         var before = data.ledger(); var launch = EscrowFlightAuthorityTest.launch(before, 1);
         var flights = new ArrayList<Boolean>(); var captures = new AtomicInteger(); var io = new AwaitedLedgerIo();
         try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);
@@ -86,11 +86,11 @@ class EscrowFlightQueueContentionTest {
 
     @Test void proofInvalidatedWhileWaitingRefusesOnlyThatFlightWithoutIssuingASerial() throws Exception {
         var data = ResourceEscrowSavedData.create(); var before = data.ledger(); var valid = new AtomicBoolean(true);
-        var operation = EscrowTestFixtures.operation(1); var results = new ArrayList<Boolean>(); var io = new AwaitedLedgerIo();
+        var operation = EscrowTestFixtures.admissionOperation(1); var results = new ArrayList<Boolean>(); var io = new AwaitedLedgerIo();
         var launch = EscrowFlightAuthorityTest.launch(before, 1);
         try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);
              var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(operation, committed -> assertTrue(committed));
+            EscrowTestFixtures.prepareCapturedModel(coordinator, operation, committed -> assertTrue(committed));
             assertTrue(coordinator.flightWrite(launch.logical(), (root, generation) -> {
                 fail("An invalidated retained proof must not reach capture"); return root;
             }, valid::get, results::add));

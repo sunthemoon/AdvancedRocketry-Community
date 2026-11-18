@@ -28,8 +28,8 @@ class EscrowAccountingDecodeTest {
         // The current saved form and fixed reservations fit; a hypothetical embedded O1 does not.
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));
         roundTrip(root);
-        assertFalse(EscrowAccountingFormat.ENABLED);
-        assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(root, Set.of()));
+        assertTrue(EscrowAccountingFormat.ENABLED);
+        assertEquals(root, EscrowLedgerWriter.Snapshot.of(root, Set.of()).ledger());
     }
 
     @Test void reasonL2FloorGrowthO1O3O4AndFloorCollectionRemainDecodable() {

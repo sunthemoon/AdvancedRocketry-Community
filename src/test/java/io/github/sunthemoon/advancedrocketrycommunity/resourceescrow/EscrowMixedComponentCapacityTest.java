@@ -19,13 +19,13 @@ class EscrowMixedComponentCapacityTest {
     @Test void crossKindUuidAliasKeepsTheFuelRocketsFiveMarkerAllowance() {
         for (var kind : List.of(EscrowOperation.Kind.FLUID_CARGO_LOAD, EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                 EscrowOperation.Kind.ITEM_CARGO_LOAD, EscrowOperation.Kind.ITEM_CARGO_UNLOAD)) {
-            var cargo = kind.itemCargo() ? EscrowItemFixtures.operation(kind, 101, 99, 0, -1, "minecraft:overworld")
-                    : EscrowCargoFixtures.operation(kind, 101, 99);
+            var cargo = accountedModel(kind.itemCargo() ? EscrowItemFixtures.operation(kind, 101, 99, 0, -1, "minecraft:overworld")
+                    : EscrowCargoFixtures.operation(kind, 101, 99));
             for (int retained = 1; retained <= 5; retained++) {
                 var before = EscrowCargoFixtures.wrapper(retained);
                 var original = EscrowReceiptChargeTest.fill(100, 98, retained, retained, "minecraft:overworld", false, -1);
-                var fuel = aliasDeviceToCargoRocket(original, cargo, before);
-                var root = ledger(fuel, cargo);
+                var fuel = accountedModel(aliasDeviceToCargoRocket(original, cargo, before));
+                var root = admissionLedger(fuel, cargo);
                 assertEquals(root, EscrowCodec.decode(EscrowCodec.encode(root)));
                 assertEquals(List.of(fuel, cargo), EscrowSettlementIntent.component(root.records(), cargo.id()));
                 assertEquals(fuel.device().identity(), cargo.rocket().identity());
@@ -33,11 +33,11 @@ class EscrowMixedComponentCapacityTest {
                 assertNotEquals(fuel.guard().rocket(), cargo.guard().rocket());
                 assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, cargo, RocketEscrowSection.neutral()));
                 if (retained < 5) {
-                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(ledger(fuel), fuel, before));
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(admissionLedger(fuel), fuel, before));
                     assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, fuel, before));
                 } else {
                     // The sixth total marker still refuses, with and without the aliased cargo member.
-                    for (var prospective : List.of(ledger(fuel), root)) {
+                    for (var prospective : List.of(admissionLedger(fuel), root)) {
                         assertEquals("Rocket settlement admission limit exceeded", assertThrows(IllegalArgumentException.class,
                                 () -> EscrowSettlementCapacity.requireAdmission(prospective, fuel, before)).getMessage());
                     }
@@ -70,10 +70,10 @@ class EscrowMixedComponentCapacityTest {
         var observed = new ArrayList<EscrowSettlementIntent.Observation>();
         observed.addAll(EscrowCargoFixtures.observations(held, held.records().get(0), 4, 0, false));
         observed.addAll(EscrowCargoFixtures.observations(held, held.records().get(1), 0, 0, false));
-        var preview = EscrowSettlementIntent.preview(held, cargo.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+        var preview = previewModel(held, cargo.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                 id(700), "~".repeat(16), 10, observed);
         var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);
-        var o1 = assertDoesNotThrow(() -> intent.freeze(held));
+        var o1 = assertDoesNotThrow(() -> freezeModel(intent, held));
         for (var member : o1.records()) {
             var stored = EscrowSettlementIntent.decode(member.settlement());
             assertEquals(intent, stored);
@@ -86,7 +86,7 @@ class EscrowMixedComponentCapacityTest {
                     .findFirst().orElseThrow().state().markers();
             assertEquals(List.of(new EscrowPrefix.Link(cargo, cargo.rocket(), "SOURCE").marker()), cargoMarkers);
             assertDoesNotThrow(() -> EscrowCodec.operation(member));
-            assertDoesNotThrow(() -> EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, stored)));
+            assertDoesNotThrow(() -> EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, stored, o1.fluidAccounts().stream().filter(row -> row.operation().equals(member.id())).findFirst().orElse(null))));
         }
         var encoded = EscrowCodec.encode(o1);
         assertEquals(o1, EscrowCodec.decode(encoded));
@@ -112,13 +112,13 @@ class EscrowMixedComponentCapacityTest {
     }
 
     private void assertPreparation(EscrowLedger prospective, EscrowCoordinator.Transfer expected, String name) {
-        var base = ledger(prospective.records().get(0)); var cargo = prospective.records().get(1);
+        var base = admissionLedger(prospective.records().get(0)); var cargo = prospective.records().get(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
         try (var writer = new EscrowLedgerWriter(temp.resolve(name), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             long sequence = coordinator.nextSequence();
             int pending = coordinator.admissionAuthority().pendingCount();
             assertFalse(data.isDirty());
-            assertEquals(expected, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(cargo,
+            assertEquals(expected, coordinator.prepareTransfer(capturedModel(cargo,
                     RocketEscrowSection.neutral()), ignored -> fail("No write submitted")));
             boolean queued = expected == EscrowCoordinator.Transfer.QUEUED;
             assertEquals(sequence + (queued ? 1 : 0), coordinator.nextSequence());
@@ -136,7 +136,7 @@ class EscrowMixedComponentCapacityTest {
         var cargo = EscrowCargoFixtures.guarded(EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                 101, 99, 0, blob, "advancedrocketrycommunity:tau_ceti_g"));
         var original = EscrowReceiptChargeTest.fill(100, 98, 4, 4, "advancedrocketrycommunity:tau_ceti_g", true, -1);
-        return ledger(aliasDeviceToCargoRocket(original, cargo, EscrowCargoFixtures.wrapper(4)), cargo);
+        return admissionLedger(aliasDeviceToCargoRocket(original, cargo, EscrowCargoFixtures.wrapper(4)), cargo);
     }
 
     private static EscrowOperation aliasDeviceToCargoRocket(EscrowOperation fuel, EscrowOperation cargo, RocketEscrowSection before) {

@@ -58,38 +58,31 @@ public final class EscrowOperatorGameTests {
         var data = ResourceEscrowSavedData.forTests(server); var coordinator = data.bind(server);
         var pacer = new GameTestTickPacer(server);
         class Scenario {
-            int step; EscrowTestEndpoints.Fixture fixture; RocketEntity rocket; EscrowOperation operation;
+            int step; FluidFuelLoaderEscrowFixtures.NativeFill fixture; RocketEntity rocket; EscrowOperation operation;
             void tick() {
                 if (step == 4) { return; }
                 pacer.pace(); if (!level.areEntitiesLoaded(chunk.toLong()) || !level.isPositionEntityTicking(position)) { return; }
                 if (step == 0) {
                     var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
-                    fixture = EscrowTestEndpoints.create(level, position, data.ledger().id());
-                    rocket = RocketSettlementIdleGameTests.createRocket(level, position, fixture.logical());
-                    var sample = fixture.operation(coordinator.nextSequence()); var fuel = rocket.flightData().orElseThrow().fuel();
-                    var after = fuel.withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
-                    var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), fixture.logical(),
-                            EscrowAdapterIds.ROCKET, chunk.x, 0, chunk.z, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(), after.resourceSignature());
-                    var payload = sample.payload(); payload.putString("FluidName", ModIdentity.id("rocket_fuel").toString());
-                    var guard = journal.acknowledgedGuard(fixture.logical()).orElseThrow();
-                    var model = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(),
-                            sample.reason(), payload, RocketNativeResources.signature(payload), sample.source(), endpoint,
-                            new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                    var capture = EscrowNativeBinding.captureTest(model, rocket, fixture.source(), fuel, after, data.ledger());
-                    operation = capture.operation();
+                    rocket = RocketSettlementIdleGameTests.createRocket(level, position, UUID.randomUUID());
+                    fixture = FluidFuelLoaderEscrowFixtures.prepare(helper, coordinator, rocket, position, acknowledged -> {
+                        helper.assertTrue(acknowledged, "Fixture L1 failed");
+                        fixture.applySource(coordinator); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions();
+                    });
+                    operation = fixture.operation();
                     helper.assertTrue(level.addFreshEntity(rocket), "Rocket fixture publication failed");
-                    coordinator.prepareTest(operation, capture.before(), acknowledged -> helper.assertTrue(acknowledged, "Fixture L1 failed")); step = 1;
+                    step = 1;
                 } else if (step == 1) { if (coordinator.commitPreparations()) { step = 2; } }
                 else if (step == 2) {
                     if (!coordinator.writerIdle()) { return; }
-                    fixture.applySource(operation); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
+                    fixture.applySource(coordinator); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
                 } else if (step == 3) {
                     if (!coordinator.writerIdle() || data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id())
                             && op.phase() == EscrowOperation.Phase.REPAIR)) { return; }
                     try { provenance(helper, data, coordinator, operation.id()); }
                     catch (com.mojang.brigadier.exceptions.CommandSyntaxException unparsed) { helper.fail("Escrow command did not parse: " + unparsed.getMessage()); }
                     // The REPAIR record stays in this run's gated ledger; its fixture endpoints are removed.
-                    rocket.discard(); fixture.bank().discard(); level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
+                    rocket.discard(); fixture.clear();
                     level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); step = 4; helper.succeed();
                 }
             }

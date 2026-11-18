@@ -51,14 +51,14 @@ class EscrowFillSelfGuardTest {
     }
 
     @Test void queuedAndCapturedOperationsRemainPartOfTheSelfGuard() {
-        var op = EscrowTestFixtures.nativeModel(fill(1, 0), RocketEscrowSection.neutral());
+        var op = EscrowTestFixtures.accountedModel(EscrowTestFixtures.nativeModel(fill(1, 0), RocketEscrowSection.neutral()));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger()));
         var io = new AwaitedLedgerIo();
         try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()),
                 0, CheckedSavedDataFile::atomicMove);
              var coordinator = new EscrowCoordinator(data, writer)) {
             assertFalse(coordinator.fillSelfGuard(op.guard(), op.destination().key(), RocketEscrowSection.neutral()));
-            coordinator.prepareTest(op, RocketEscrowSection.neutral(), ignored -> { });
+            EscrowTestFixtures.prepareCapturedModel(coordinator, op, RocketEscrowSection.neutral(), ignored -> { });
             assertTrue(coordinator.fillSelfGuard(op.guard(), op.destination().key(), RocketEscrowSection.neutral()));
             coordinator.tick(10); assertTrue(coordinator.commitPreparations());
             assertTrue(coordinator.fillSelfGuard(op.guard(), op.destination().key(), RocketEscrowSection.neutral()));

@@ -133,9 +133,10 @@ class EscrowAccountingReconciliationTest {
     }
 
     @Test void repairWarningsAreOncePerLiveOperationAtTheLedgerCeiling() {
-        var operations = java.util.stream.LongStream.rangeClosed(1, EscrowLimits.OPERATIONS)
-                .mapToObj(n -> EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(n))).toList();
-        var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
+        // The active root reaches its byte ceiling before the unchanged 64-operation decode bound.
+        var operations = java.util.stream.LongStream.rangeClosed(1, 55)
+                .mapToObj(n -> EscrowTestFixtures.distributedOwner(EscrowTestFixtures.admissionOperation(n))).toList();
+        var root = EscrowTestFixtures.admissionLedger(operations.toArray(EscrowOperation[]::new));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var logs = new StartupLogLines("ARCE_ESCROW_ACCOUNTING_HELD ", "Escrow record ");
              var writer = new EscrowLedgerWriter(directory.resolve("warnings.dat"), 0);
@@ -147,7 +148,7 @@ class EscrowAccountingReconciliationTest {
                 attempts.incrementAndGet(); done.accept(new EscrowReconciliationScheduler.Result(EscrowReason.ACCOUNTING_MISMATCH, false));
             });
             scheduler.tick(0); scheduler.tick(1); assertTrue(attempts.get() > 0);
-            assertEquals(64, logs.lines.size());
+            assertEquals(55, logs.lines.size());
             for (var op : operations) { assertEquals(1, logs.lines.stream().filter(line -> line.equals(
                     "WARN ARCE_ESCROW_ACCOUNTING_HELD op=" + op.id())).count()); }
             assertTrue(writer.idle());
@@ -171,7 +172,7 @@ class EscrowAccountingReconciliationTest {
         }
     }
 
-    @Test void root3PreparationQueuesTheExactRowButTheUnapprovedWriterFormatStaysClosed() {
+    @Test void root3PreparationQueuesTheExactRowAndTheApprovedWriterFormatIsOpen() {
         var f = EscrowAccountingCaptureTest.fuel(false); var root = EscrowAccountingCaptureTest.empty();
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("queued.dat"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
@@ -183,8 +184,8 @@ class EscrowAccountingReconciliationTest {
             assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
             var candidate = coordinator.pendingLedger(); assertEquals(List.of(f.admission().account()), candidate.fluidAccounts());
             assertEquals(List.of(f.admission().operation()), candidate.records());
-            assertFalse(EscrowAccountingFormat.ENABLED);
-            assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(candidate.generation(1), Set.of(f.admission().operation().id())));
+            assertTrue(EscrowAccountingFormat.ENABLED);
+            assertEquals(candidate.generation(1), EscrowLedgerWriter.Snapshot.of(candidate.generation(1), Set.of(f.admission().operation().id())).ledger());
             assertEquals(candidate, coordinator.pendingLedger()); assertEquals(root.id(), coordinator.ledger().id());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
         }

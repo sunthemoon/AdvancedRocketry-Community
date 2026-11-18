@@ -27,11 +27,11 @@ class EscrowPinnedFlightQueueTest {
         var data = ResourceEscrowSavedData.create(); var before = data.ledger();
         var admissions = new ArrayList<Boolean>(); var flights = new ArrayList<Boolean>(); var captures = new AtomicInteger();
         var monitor = new EscrowSaveMonitor(); var proof = source(monitor); var io = new AwaitedLedgerIo();
-        var operation = EscrowTestFixtures.operation(1); var launch = EscrowFlightAuthorityTest.launch(before, 1);
+        var operation = EscrowTestFixtures.admissionOperation(1); var launch = EscrowFlightAuthorityTest.launch(before, 1);
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         try (var barrier = new EscrowBarrier(); var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
              var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(operation, admissions::add);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, operation, admissions::add);
             assertTrue(coordinator.flightWrite(launch.logical(), (root, generation) -> {
                 assertEquals(List.of(true), admissions); assertEquals(List.of(operation), root.records());
                 captures.incrementAndGet(); return EscrowFlightAuthority.arm(root, launch, generation);
@@ -53,7 +53,7 @@ class EscrowPinnedFlightQueueTest {
     }
 
     @Test void actualInvalidationWhileQueuedStillRefusesTheFlightAfterTransitionsDrain() throws Exception {
-        var op = EscrowTestFixtures.operation(1); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(op)));
+        var op = EscrowTestFixtures.admissionOperation(1); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.admissionLedger(op)));
         var monitor = new EscrowSaveMonitor(); var proof = source(monitor); var io = new AwaitedLedgerIo(); var replies = new ArrayList<Boolean>();
         var launch = EscrowFlightAuthorityTest.launch(data.ledger(), 1);
         try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);

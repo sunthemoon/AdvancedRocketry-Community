@@ -252,7 +252,7 @@ public final class FluidCargoSettlementGameTests {
             boolean head = mode != Mode.ABANDON;
             var receipt = root.tombstones().stream().filter(tag -> op.id().equals(tag.getUUID("op_id"))).findFirst().orElseThrow();
             check(receipt.getBoolean("released") && receipt.getString("choice").equals(preview.choice().name())
-                    && receipt.getInt("payload_amount") == 0 && receipt.getString("accounting_status").equals("UNKNOWN")
+                    && receipt.getInt("payload_amount") == 0 && receipt.getString("accounting_status").equals(abandon() ? "UNKNOWN" : "KNOWN")
                     && receipt.getString("payload_hash").equals(op.payloadHash()) && receipt.getString("decision_digest").equals(preview.digest())
                     && receipt.getList("survivors", 10).size() == (abandon() ? 1 : 2) && receipt.getList("missing", 10).size() == (abandon() ? 1 : 0)
                     && receipt.equals(EscrowReceiptCodec.decode(EscrowReceiptCodec.encode(receipt))), "Receipt changed: " + receipt);
@@ -264,10 +264,24 @@ public final class FluidCargoSettlementGameTests {
                         == (isRocket ? rocket.flightData().orElseThrow().fuel().totalAmount() : EscrowCargoGameTestWorld.tank(device)),
                         "Receipt survivor projection changed: " + survivor);
             }
-            check(lines.size() == 2 && lines.get(0).startsWith("group=" + preview.digest() + " members=1 omitted=0 pruning=DONE journal=")
-                    && lines.get(0).endsWith(" accounting=UNKNOWN") && lines.get(1).equals("operation=" + op.id()
+            // R441: captured root-3 rows add the bounded accounting page; partial load loss is known, not zero.
+            String knowledge = abandon() ? "UNKNOWN_ENDPOINT" : "KNOWN";
+            check(lines.size() == 4 && lines.get(0).startsWith("group=" + preview.digest() + " members=1 omitted=0 pruning=DONE journal=")
+                    && lines.get(0).endsWith(" accounting=" + knowledge) && lines.get(1).equals("operation=" + op.id()
                     + " persisted=RETIRED runtime=RELEASED reason=NONE O2=not-retained pruning=DONE next_retry=none receipt=RELEASED head="
-                    + (head ? "READY" : "NONE") + " accounting=UNKNOWN"), "Inspector output changed: " + lines);
+                    + (head ? "READY" : "NONE") + " accounting=" + knowledge), "Inspector output changed: " + lines);
+            check(lines.get(2).equals("fluid_accounting page=0/1 key_rows=1 durability=ledger-acknowledged endpoint-proof=not-claimed"
+                    + " endpoint_frontier_deltas=nonadditive shared_adjustments=count-once"), "Accounting page changed: " + lines);
+            String sourceDelta = mode == Mode.ABANDON ? "UNKNOWN" : mode == Mode.LOAD || mode == Mode.UNLOAD ? "-1000" : "0";
+            String destinationDelta = mode == Mode.ABANDON_DEVICE ? "UNKNOWN" : mode == Mode.UNLOAD ? "1000" : "0";
+            String residual = abandon() ? "UNKNOWN" : mode == Mode.LOAD ? "-1000" : "0";
+            String loss = abandon() ? "UNKNOWN" : mode == Mode.LOAD ? "1000" : "0";
+            String application = abandon() ? "UNKNOWN" : mode == Mode.LOAD ? "HALF_APPLIED_SOURCE_ONLY" : mode == Mode.UNLOAD ? "BOTH" : "NONE";
+            check(lines.get(3).startsWith("operation=" + op.id() + " fluid=minecraft:water tag_digest=")
+                    && lines.get(3).endsWith(" knowledge=" + knowledge + " dS=" + sourceDelta + " dD=" + destinationDelta
+                    + " missing_source=" + (mode == Mode.ABANDON) + " missing_destination=" + (mode == Mode.ABANDON_DEVICE)
+                    + " residual=" + residual + " adjustment_owner=" + op.id() + " shared=false component_residual=" + residual
+                    + " proposed_signed_loss=" + loss + " application=" + application), "Accounting values changed: " + lines);
             var logical = op.rocket().logicalRocket();
             var ready = root.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
             if (mode == Mode.ABANDON_DEVICE) {

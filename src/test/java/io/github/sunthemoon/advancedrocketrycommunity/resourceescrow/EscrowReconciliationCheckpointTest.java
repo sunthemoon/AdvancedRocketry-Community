@@ -74,6 +74,9 @@ class EscrowReconciliationCheckpointTest {
         try (var checkpoint = checkpoint(f.ledger(), f.a(), rocketSlot(f.a().destination(), f.after()), lease)) {
             var sourceTargets = checkpoint.targets(f.a().source()); var destinationTargets = checkpoint.targets(f.a().destination());
             assertEquals(1, sourceTargets.size()); assertEquals(1, destinationTargets.size());
+            var slots = Map.of(f.a().source().key(), sourceSlot(f.a(), f.ledger()),
+                    f.a().destination().key(), rocketSlot(f.a().destination(), f.after()));
+            readback(sourceTargets, slots); readback(destinationTargets, slots);
             checkpoint.accept(sourceTargets, proofs(sourceTargets, generation, released));
             assertFalse(checkpoint.proved(), "One-sided readback is not joint proof");
             checkpoint.accept(destinationTargets, proofs(destinationTargets, generation, released)); assertTrue(checkpoint.proved());
@@ -92,7 +95,9 @@ class EscrowReconciliationCheckpointTest {
         observations.add(EscrowSettlementDisk.observe(sourceSlot(f.a(), root), f.a().source(), root.id()));
         observations.add(EscrowSettlementDisk.observe(sourceSlot(f.b(), root), f.b().source(), root.id()));
         observations.add(EscrowSettlementDisk.observe(rocketSlot(f.a().destination(), f.after()), f.a().destination(), root.id()));
-        var checkpoint = new EscrowReconciliationCheckpoint(root, Set.of(f.a().id(), f.b().id()), observations, () -> true);
+        var checkpoint = captured(root, Set.of(f.a().id(), f.b().id()), Map.of(
+                f.a().source().key(), sourceSlot(f.a(), root), f.b().source().key(), sourceSlot(f.b(), root),
+                f.a().destination().key(), rocketSlot(f.a().destination(), f.after())), () -> true);
         var targets = checkpoint.targets(f.a().source()); assertEquals(2, targets.size());
         var released = new AtomicInteger(); checkpoint.close();
         checkpoint.accept(targets, proofs(targets, new AtomicLong(1), released));
@@ -100,9 +105,31 @@ class EscrowReconciliationCheckpointTest {
     }
 
     private static EscrowReconciliationCheckpoint checkpoint(EscrowLedger root, EscrowOperation op, CompoundTag slot, AtomicBoolean lease) {
-        return new EscrowReconciliationCheckpoint(root, Set.of(op.id()), List.of(
-                EscrowSettlementDisk.observe(sourceSlot(op, root), op.source(), root.id()),
-                EscrowSettlementDisk.observe(slot, op.destination(), root.id())), lease::get);
+        return captured(root, Set.of(op.id()), Map.of(op.source().key(), sourceSlot(op, root), op.destination().key(), slot), lease::get);
+    }
+
+    static EscrowReconciliationCheckpoint captured(EscrowLedger root, Set<java.util.UUID> members,
+            Map<EscrowEndpoint.Key, CompoundTag> slots, java.util.function.BooleanSupplier lease) {
+        var observations = new ArrayList<EscrowSettlementIntent.Observation>();
+        var states = new HashMap<EscrowEndpoint.Key, EscrowPrefix.State>();
+        var numbers = new HashMap<EscrowEndpoint.Key, Map<java.util.UUID, EscrowFluidAccount.Vector>>();
+        for (var entry : slots.entrySet()) {
+            var chain = EscrowPrefix.chains(root.records()).get(entry.getKey());
+            var endpoint = chain.get(chain.size() - 1).endpoint();
+            var observed = EscrowSettlementDisk.ordinary(entry.getValue(), endpoint, root.id(), null,
+                    chain.stream().map(EscrowPrefix.Link::operation).toList());
+            observations.add(observed.settlement()); states.put(entry.getKey(), observed.state());
+            numbers.put(entry.getKey(), observed.fluids());
+        }
+        return new EscrowReconciliationCheckpoint(root, members, observations, lease, states, Map.of(), numbers);
+    }
+
+    static void readback(List<EscrowBarrier.Target> targets, Map<EscrowEndpoint.Key, CompoundTag> slots) {
+        for (var target : targets) {
+            var slot = slots.get(target.endpoint().key());
+            assertTrue(target.validator().test(slot));
+            assertTrue(CompletableFuture.supplyAsync(() -> target.validator().test(slot)).join());
+        }
     }
 
     private static EscrowBarrier.JointResult proofs(List<EscrowBarrier.Target> targets, AtomicLong generation, AtomicInteger released) {
@@ -125,14 +152,8 @@ class EscrowReconciliationCheckpointTest {
         entity.put("RocketEntityData", data); var entities = new ListTag(); entities.add(entity); root.put("Entities", entities); return root;
     }
 
-    private static CompoundTag sourceSlot(EscrowOperation op, EscrowLedger root) {
-        var endpoint = op.source(); var tag = new CompoundTag(); tag.putString("id", endpoint.type());
-        tag.putInt("x", endpoint.x()); tag.putInt("y", endpoint.y()); tag.putInt("z", endpoint.z());
-        var fixture = new CompoundTag(); fixture.putUUID("identity", endpoint.identity()); fixture.putInt("amount", 4900); fixture.putInt("capacity", 16000);
-        var persistent = new CompoundTag(); persistent.put("arce_escrow_fixture", fixture);
-        EscrowTestEndpoints.putState(persistent, new EscrowPrefix.State(root.id(), 1, endpoint.afterSignature(),
-                List.of(new EscrowPrefix.Link(op, endpoint, "SOURCE").marker())), false);
-        tag.put("ForgeData", persistent); var slot = new CompoundTag(); slot.putInt("xPos", endpoint.x() >> 4); slot.putInt("zPos", endpoint.z() >> 4);
-        var objects = new ListTag(); objects.add(tag); slot.put("block_entities", objects); return slot;
+    static CompoundTag sourceSlot(EscrowOperation op, EscrowLedger root) {
+        return EscrowAccountingReconciliationTest.slot(op.source(),
+                EscrowReconciliationBindingBoundaryTest.source(op.sequence(), root.id(), true));
     }
 }

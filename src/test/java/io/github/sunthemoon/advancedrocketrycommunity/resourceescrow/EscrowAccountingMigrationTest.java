@@ -18,6 +18,9 @@ class EscrowAccountingMigrationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.RESOURCE_ESCROW;
+    private static EscrowLedger ledger(EscrowOperation... records) {
+        return root2(EscrowTestFixtures.ledger(records));
+    }
     private Path file() throws Exception { return Files.createDirectories(temp.resolve("data")).resolve(TYPE.fileName()); }
     private static void write(Path file, CompoundTag payload) throws Exception {
         var outer = new CompoundTag(); outer.put("data", payload); NbtIo.writeCompressed(outer, file.toFile());
@@ -27,7 +30,7 @@ class EscrowAccountingMigrationTest {
         assertFalse(TYPE.hasLegacySchema()); assertEquals(2, TYPE.firstEpochSchema());
         assertEquals("v1.8.0-resource-escrow", TYPE.formatEpoch(2));
         assertEquals("v1.8.0-resource-escrow-fluid-accounting", TYPE.formatEpoch(3));
-        assertEquals(2, TYPE.currentSchemaVersion());
+        assertEquals(3, TYPE.currentSchemaVersion());
     }
     @Test void liveFrozenInstalledAndReleasedRoot2FormsMigrateLosslessly() throws Exception {
         var live = ledger(operation(1).withReason(EscrowReason.OTHER_STATE));
@@ -38,11 +41,11 @@ class EscrowAccountingMigrationTest {
         var logical = receipt.getList("guards", 10).getCompound(0).getUUID("rocket_id");
         var head = new EscrowFlightTables.Head(logical, id(99), receipt.getUUID("anchor_op"), 1, id(301), 2,
                 EscrowSignatureKind.FUEL_VECTOR_V1, hash(2), hash(3), 0, 0, EscrowFlightTables.Outcome.READY);
-        var ready = new EscrowLedger(id(500), 0, 1, List.of(), List.of(), List.of(receipt), 0, List.of(head), List.of());
+        var ready = new EscrowLedger(id(500), 0, 1, List.of(), List.of(), List.of(receipt), 0, List.of(head), List.of(), 2, List.of());
         var launch = new EscrowFlightAuthority.Launch(logical, id(99), id(301), new RocketEscrowSection(ready.id(), 2, List.of()),
                 hash(2), hash(3), id(401), id(501), hash(4), hash(5), hash(6), hash(7), new EscrowGuard(logical, null, 1, hash(8)), java.util.Set.of());
         var armed = EscrowFlightAuthority.arm(ready, launch, 2);
-        for (var root : List.of(live, o1, o3, o4, ready, armed, EscrowCombinedReservationTest.retainedFloors(2))) {
+        for (var root : List.of(live, o1, o3, o4, ready, armed, EscrowCombinedReservationTest.retainedRoot2Floors(2))) {
             var source = EscrowCodec.encode(root); var original = source.copy();
             var target = SavedDataSchemaMigrator.migrateEscrow(source);
             assertEquals(original, source); assertEquals(3, target.getInt("schema_version"));
@@ -57,21 +60,27 @@ class EscrowAccountingMigrationTest {
             EscrowLedgerBaseline.requireMigration(file, target); assertArrayEquals(bytes, Files.readAllBytes(file));
         }
     }
-    @Test void activationOffDoesNotMigrateOrCreateBackups() throws Exception {
-        var file = file(); var source = EscrowCodec.encode(ledger(operation(1))); write(file, source);
+    @Test void currentRoot3DoesNotMigrateOrCreateBackups() throws Exception {
+        var file = file(); var source = EscrowCodec.encode(EscrowTestFixtures.ledger(operation(1))); write(file, source);
         var bytes = Files.readAllBytes(file);
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.CURRENT, SavedDataSchemaMigrator.migrate(TYPE, source).status());
         assertEquals(MigrationDiagnosticId.DATA_CURRENT, new WorldDataMigrationService().migrate(temp).diagnosticId());
         assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
     }
-    @Test void activationOffRefusesRoot3AtPreStartWithoutChangingBytesOrCreatingBackups() throws Exception {
-        assertFalse(EscrowAccountingFormat.ENABLED);
+    @Test void activationOnAcceptsRoot3AtPreStartWithoutChangingBytesOrCreatingBackups() throws Exception {
+        assertTrue(EscrowAccountingFormat.ENABLED);
         var source = EscrowCodec.encode(EscrowAccountingFormatTest.planned(operation(1)));
         var file = file(); write(file, source); var bytes = Files.readAllBytes(file);
-        assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, source).status());
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.CURRENT, SavedDataSchemaMigrator.migrate(TYPE, source).status());
+        assertEquals(MigrationDiagnosticId.DATA_CURRENT, new WorldDataMigrationService().migrate(temp).diagnosticId());
+        assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
+
+        var future = source.copy(); future.putInt("schema_version", 4); write(file, future);
+        var futureBytes = Files.readAllBytes(file);
+        assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, future).status());
         var refused = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(temp));
         assertEquals(MigrationDiagnosticId.FUTURE_SCHEMA, refused.diagnosticId());
-        assertArrayEquals(bytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
+        assertArrayEquals(futureBytes, Files.readAllBytes(file)); assertFalse(Files.exists(temp.resolve("advancedrocketrycommunity-backups")));
     }
     @Test void decodableNoncanonicalSourceReachesTheReencodingCheckAndPreservesItsFile() throws Exception {
         var source = EscrowCodec.encode(ledger(operation(1)));
@@ -105,7 +114,7 @@ class EscrowAccountingMigrationTest {
         assertArrayEquals(bytes, Files.readAllBytes(file));
     }
     @Test void validRoot2ReservationsCanBeFilledByOnlyTheNewHeader() throws Exception {
-        var floors = EscrowCombinedReservationTest.retainedFloors(20).floors();
+        var floors = EscrowCombinedReservationTest.retainedRoot2Floors(20).floors();
         int low = 0, high = 8000;
         while (low < high) {
             int middle = (low + high + 1) >>> 1;
@@ -134,7 +143,7 @@ class EscrowAccountingMigrationTest {
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(payload),
                 original.source(), original.destination(), original.guard());
         var intent = EscrowAccountingFormatTest.intent(ledger(op), List.of()); ops.add(op.settle(intent));
-        return new EscrowLedger(id(500), 63, 1, ops, floors, List.of());
+        return new EscrowLedger(id(500), 63, 1, ops, floors, List.of(), 0, List.of(), List.of(), 2, List.of());
     }
     @Test void failedAndUnknownCheckedMigrationWritesKeepOriginalAndRetryExactTarget() throws Exception {
         var source = EscrowCodec.encode(ledger(operation(1))); var target = SavedDataSchemaMigrator.migrateEscrow(source);

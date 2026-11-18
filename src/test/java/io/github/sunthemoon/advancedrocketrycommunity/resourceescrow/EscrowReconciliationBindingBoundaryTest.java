@@ -62,8 +62,10 @@ class EscrowReconciliationBindingBoundaryTest {
         first.put("wrapper", new RocketEscrowSection(ledgerId, 1, List.of(markerA)).encode());
         var after = before.copy(); after.put("flight", RocketFlightNbtCodec.encode(EscrowNativeEnvelope.fuelOnly(flight, fuel2)));
         after.put("wrapper", new RocketEscrowSection(ledgerId, 2, List.of(markerA, markerB)).encode());
-        var a = operation(1, before, first, snapshot); var b = operation(2, first, after, snapshot);
-        var ledger = new EscrowLedger(ledgerId, 2, 1, List.of(a, b), List.of(), List.of());
+        var captureA = operation(1, before, first, snapshot); var captureB = operation(2, first, after, snapshot);
+        var a = captureA.operation(); var b = captureB.operation();
+        var ledger = EscrowAccountingCapture.append(EscrowLedger.empty(ledgerId), List.of(), captureA);
+        ledger = EscrowAccountingCapture.append(ledger, List.of(), captureB).generation(1);
         return new Sample(ledger, a, b, before, first, after);
     }
 
@@ -78,24 +80,34 @@ class EscrowReconciliationBindingBoundaryTest {
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         try (var writer = io.writer(file, 1, CheckedSavedDataFile::atomicMove);
              var coordinator = new EscrowCoordinator(data, writer)) {
-            var proofs = new HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
+            var slots = new HashMap<EscrowEndpoint.Key, CompoundTag>();
+            slots.put(a.source().key(), EscrowReconciliationCheckpointTest.sourceSlot(a, ledger));
+            slots.put(a.destination().key(), EscrowReconciliationCheckpointTest.rocketSlot(a.destination(), after));
+            var request = EscrowReconciliationCheckpointTest.captured(coordinator.ledger(), Set.of(a.id()), slots, () -> true);
+            var proofs = request.proofs;
             for (var chain : EscrowPrefix.chains(ledger.records()).values()) {
                 var last = chain.get(chain.size() - 1);
+                if (!slots.containsKey(last.endpoint().key())) { continue; }
                 var state = new EscrowPrefix.State(ledgerId, last.endpoint().afterEpoch(), last.endpoint().afterSignature(),
                         chain.stream().map(EscrowPrefix.Link::marker).toList());
                 coordinator.freeze(last.endpoint().key(), state);
                 var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, directory,
                         new ChunkPos(0, 0), new AtomicLong(1), 1, 0, () -> { }, () -> { });
-                proofs.put(last.endpoint().key(), new EscrowBarrier.Proof(state, capture, new AtomicBoolean(true), new AtomicBoolean(true)));
+                var targets = request.targets(last.endpoint());
+                EscrowReconciliationCheckpointTest.readback(targets, slots);
+                request.accept(targets, new EscrowBarrier.JointResult(Map.of(last.endpoint().key(),
+                        new EscrowBarrier.Proof(state, capture, new AtomicBoolean(true), new AtomicBoolean(true))), EscrowReason.NONE));
             }
             var replies = new ArrayList<Boolean>();
-            assertTrue(coordinator.retire(Set.of(a.id()), proofs, replies::add));
+            var destinationProof = proofs.get(b.destination().key());
+            coordinator.tick(10);
+            assertTrue(coordinator.retireNative(request, ack -> replies.add(ack.committed())));
             EscrowLedgerWriterTest.poll(io, writer, writer::idle);
             assertEquals(List.of(true), replies);
             var reloaded = EscrowCodec.decode(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
             assertEquals(List.of(b), reloaded.records()); assertTrue(reloaded.tombstones().isEmpty());
             assertTrue(reloaded.floors().isEmpty()); assertTrue(reloaded.rocketAuthorities().isEmpty());
-            assertFalse(proofs.get(b.destination().key()).valid(), "Partial L2 revokes the old shared frontier token");
+            assertFalse(destinationProof.valid(), "Partial L2 revokes the old shared frontier token");
             assertTrue(coordinator.locked(b.destination().key()));
 
             var prunedMarkers = EscrowSettlementPruning.prune(List.of(markerA, markerB), Set.of(a.id()), Set.of(b.id()));
@@ -123,7 +135,7 @@ class EscrowReconciliationBindingBoundaryTest {
     @Test void retirementWaitsWithAllLocksUntilTheLaterAcknowledgedMemberApplies() {
         var f = sample(); var root = f.ledger(); var a = f.a(); var b = f.b();
         var states = new HashMap<EscrowEndpoint.Key, EscrowPrefix.State>();
-        states.put(a.source().key(), EscrowTestEndpoints.state(source(1, root.id(), true).getCompound("ForgeData"), root.id(), false));
+        states.put(a.source().key(), sourceState(a, root.id(), source(1, root.id(), true)));
         var wrapper = RocketEscrowSection.decode(f.first().getCompound("wrapper"));
         states.put(a.destination().key(), new EscrowPrefix.State(root.id(), wrapper.epoch(), a.destination().afterSignature(), wrapper.markers()));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
@@ -184,7 +196,7 @@ class EscrowReconciliationBindingBoundaryTest {
             var scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, (op, records, done) -> {
                 attempts.incrementAndGet();
                 var source = source(2, root.id(), true);
-                var sourceState = EscrowTestEndpoints.state(source.getCompound("ForgeData"), root.id(), false);
+                var sourceState = sourceState(b, root.id(), source);
                 var wrapper = RocketEscrowSection.decode(before.getCompound("wrapper"));
                 var destinationState = new EscrowPrefix.State(root.id(), wrapper.epoch(), b.destination().beforeSignature(), wrapper.markers());
                 done.accept(EscrowReconciliationDriver.applyNext(coordinator, root, op, EscrowPrefix.chains(records),
@@ -217,11 +229,12 @@ class EscrowReconciliationBindingBoundaryTest {
 
     @Test void nativeDestinationFaultKeepsTheAdmissionCaptureAndFailsAtTheRealDriverAction() {
         var f = sample(); var op = EscrowReconciliationProbe.destinationMismatch(f.a());
-        var root = new EscrowLedger(f.ledger().id(), 1, 1, List.of(op), List.of(), List.of());
+        var root = f.ledger().accounting(List.of(op), f.ledger().fluidAccounts().stream()
+                .filter(row -> row.operation().equals(op.id())).toList());
         var wrapper = RocketEscrowSection.decode(f.before().getCompound("wrapper"));
         assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, op, wrapper));
         var source = source(1, root.id(), true);
-        var sourceState = EscrowTestEndpoints.state(source.getCompound("ForgeData"), root.id(), false);
+        var sourceState = sourceState(op, root.id(), source);
         var destinationState = new EscrowPrefix.State(root.id(), wrapper.epoch(), op.destination().beforeSignature(), wrapper.markers());
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("destination-fault.dat"), 1);
@@ -245,16 +258,15 @@ class EscrowReconciliationBindingBoundaryTest {
         assertEquals(EscrowReason.NONE, EscrowReconciliationValidation.action(f.ledger(), f.a(), before, after, false));
         before.putString("CustomName", "changed");
         assertEquals(EscrowReason.OTHER_STATE, EscrowReconciliationValidation.action(f.ledger(), f.a(), before,
-                EscrowReconciliationChange.fixture(f.ledger().id(), f.a(), before), false));
+                EscrowReconciliationChange.source(f.ledger().id(), f.a(), before), false));
     }
 
-    private static EscrowOperation operation(long sequence, CompoundTag before, CompoundTag after, RocketStructureSnapshot snapshot) {
+    private static EscrowNativeBinding.Admission operation(long sequence, CompoundTag before, CompoundTag after, RocketStructureSnapshot snapshot) {
         var ledger = RocketEscrowSection.decode(before.getCompound("wrapper")).ledger();
         var sourceBefore = source(sequence, ledger, false); var sourceAfter = source(sequence, ledger, true);
-        var fromState = EscrowTestEndpoints.state(sourceBefore.getCompound("ForgeData"), ledger, false);
-        var toState = EscrowTestEndpoints.state(sourceAfter.getCompound("ForgeData"), ledger, false);
+        var from = EscrowLoaderEndpoint.root(sourceBefore); var to = EscrowLoaderEndpoint.root(sourceAfter);
         var source = new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, before.getString("level"), EscrowTestFixtures.id(1_000 + sequence), null,
-                "minecraft:chest", (int) sequence, 64, 0, EscrowEndpoint.Unit.TANK, 0, fromState.signature(), toState.signature());
+                EscrowAdapterIds.LOADER, (int) sequence, 64, 0, EscrowEndpoint.Unit.TANK, 0, from.signature(), to.signature());
         var beforeFuel = RocketFlightNbtCodec.decode(before.getCompound("flight")).data().orElseThrow().fuel();
         var afterFuel = RocketFlightNbtCodec.decode(after.getCompound("flight")).data().orElseThrow().fuel();
         var chunk = before.getIntArray("chunk");
@@ -269,20 +281,24 @@ class EscrowReconciliationBindingBoundaryTest {
                 beforeFuel.resourceSignature(), afterFuel.resourceSignature(), EscrowNativeEnvelope.digest(sourceBefore), EscrowNativeEnvelope.digest(sourceAfter),
                 EscrowNativeEnvelope.digest(before), EscrowNativeEnvelope.digest(after), true);
         var payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 100);
-        return new EscrowOperation(EscrowTestFixtures.id(sequence), sequence, owner, 0, EscrowOperation.Phase.PREPARED, EscrowReason.NONE,
+        var op = new EscrowOperation(EscrowTestFixtures.id(sequence), sequence, owner, 0, EscrowOperation.Phase.PREPARED, EscrowReason.NONE,
                 payload, RocketNativeResources.signature(payload), source, destination,
                 new EscrowGuard(destination.logicalRocket(), null, 1, EscrowTestFixtures.hash(400)),
                 EscrowOperation.Kind.FLUID_PROPULSION_FILL, new CompoundTag(), binding);
+        return EscrowAccountingCapture.bind(op, RocketEscrowSection.decode(before.getCompound("wrapper")),
+                before, after, sourceBefore, sourceAfter, null, null);
     }
 
-    private static CompoundTag source(long sequence, java.util.UUID ledger, boolean applied) {
+    static CompoundTag source(long sequence, java.util.UUID ledger, boolean applied) {
         var identity = EscrowTestFixtures.id(1_000 + sequence); int amount = applied ? 4_900 : 5_000;
-        var fixture = new CompoundTag(); fixture.putUUID("identity", identity); fixture.putInt("amount", amount); fixture.putInt("capacity", 16_000);
-        var persistent = new CompoundTag(); persistent.put("arce_escrow_fixture", fixture);
-        EscrowTestEndpoints.putState(persistent, new EscrowPrefix.State(ledger, applied ? 1 : 0,
-                RocketNativeResources.hash("arce-escrow-fixture-1:" + identity + ":" + amount),
-                applied ? List.of(new EscrowPrefix.Marker(EscrowTestFixtures.id(sequence), sequence, "SOURCE", 1)) : List.of()), false);
-        var tag = new CompoundTag(); tag.putString("id", "minecraft:chest"); tag.putInt("x", (int) sequence); tag.putInt("y", 64); tag.putInt("z", 0);
-        tag.put("ForgeData", persistent); return tag;
+        var section = new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderEscrowSection(
+                ledger, applied ? 1 : 0,
+                applied ? List.of(new EscrowPrefix.Marker(EscrowTestFixtures.id(sequence), sequence, "SOURCE", 1)) : List.of());
+        var loader = new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot(GovernedTransferFixture.id(8), identity, null,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank.of(ResourceLocation.tryParse("minecraft:water"), null, amount), section);
+        var tag = EscrowLoaderEndpointTest.envelope(loader); tag.putInt("x", (int) sequence); tag.putInt("z", 0); return tag;
+    }
+    private static EscrowPrefix.State sourceState(EscrowOperation op, java.util.UUID ledger, CompoundTag source) {
+        return EscrowLoaderEndpoint.observation(op.source(), EscrowLoaderEndpoint.root(source), ledger).state();
     }
 }

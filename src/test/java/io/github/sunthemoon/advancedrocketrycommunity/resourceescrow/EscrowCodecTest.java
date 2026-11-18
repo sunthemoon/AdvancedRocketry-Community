@@ -21,7 +21,7 @@ class EscrowCodecTest {
         assertEquals(1_000, ledger.records().get(0).payload().getInt("Amount"));
     }
     @Test void allUnsupportedFieldsTypesKindsHashesAndEpochsRefuse() {
-        var root = EscrowCodec.encode(EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)));
+        var root = EscrowCodec.encode(EscrowTestFixtures.root2(EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1))));
         for (java.util.function.Consumer<CompoundTag> mutation : List.<java.util.function.Consumer<CompoundTag>>of(
                 tag -> tag.putInt("schema_version", 3), tag -> tag.putInt("schema_version", 1), tag -> tag.putString("format_epoch", "other"),
                 tag -> tag.putString("issued_through", "1"), tag -> tag.putLong("issued_through", 0),
@@ -39,7 +39,8 @@ class EscrowCodecTest {
     @Test void operationRocketDeviceFloorAndTombstoneCountsAreHardLimits() {
         var records = new ArrayList<EscrowOperation>(); for (int i = 1; i <= 64; i++) { records.add(EscrowTestFixtures.operation(i)); }
         var floors = new ArrayList<CompoundTag>(); for (int i = 1; i <= 256; i++) { floors.add(EscrowTestFixtures.floor(i)); }
-        var root = new EscrowLedger(EscrowTestFixtures.id(500), 64, 0, records, floors, List.of());
+        // This count intersection is the historical root-2 format, not fresh admission capacity.
+        var root = new EscrowLedger(EscrowTestFixtures.id(500), 64, 0, records, floors, List.of(), 0, List.of(), List.of(), 2, List.of());
         assertEquals(root, EscrowCodec.decode(EscrowCodec.encode(root)));
         records.add(EscrowTestFixtures.operation(65)); assertThrows(IllegalArgumentException.class,
                 () -> new EscrowLedger(root.id(), 65, 0, records, floors, List.of())); records.remove(64);
@@ -57,7 +58,7 @@ class EscrowCodecTest {
         for (int i = 1; i <= 64; i++) {
             tombstones.add(EscrowTestFixtures.receipt(i));
         }
-        var full = new EscrowLedger(root.id(), 64, 0, root.records(), root.floors(), tombstones);
+        var full = new EscrowLedger(root.id(), 64, 0, root.records(), root.floors(), tombstones, 0, List.of(), List.of(), 2, List.of());
         assertEquals(full, EscrowCodec.decode(EscrowCodec.encode(full)));
         tombstones.add(tombstones.get(0).copy());
         assertThrows(IllegalArgumentException.class, () -> new EscrowLedger(root.id(), 64, 0,
