@@ -2,7 +2,7 @@
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import tempfile
 from types import SimpleNamespace
 import copy
@@ -20,6 +20,42 @@ ROUTE = "-Dadvancedrocketrycommunity.escrowVerifyRoute="
 
 
 class VerificationCommandTest(unittest.TestCase):
+    def test_missing_native_observation_is_retained_only_in_measurement_mode(self):
+        process = MagicMock()
+        process.wait_for.side_effect = runner.smoke.SmokeError('native result absent')
+        process.process.poll.return_value = 0
+        process.finish.return_value = 0
+        row = runner.observation_stop(process, 'result', 420, 'unload', True)
+        self.assertEqual('NATIVE_OBSERVATION_MISSING', row['contradictions'][0]['reason'])
+        self.assertEqual(420, process.wait_for.call_args.args[1])
+        process.command.assert_not_called()
+        with self.assertRaisesRegex(runner.smoke.SmokeError, 'native result absent'):
+            runner.observation_stop(process, 'result', 420, 'unload', False)
+
+    def test_failed_native_stop_is_not_accepted_and_all_details_are_retained(self):
+        process = MagicMock()
+        process.process.poll.return_value = None
+        process.finish.return_value = 1
+        row = runner.observation_stop(process, 'result', 420, 'unload', True)
+        self.assertEqual('UNCLEAN_STOP', row['contradictions'][0]['reason'])
+        process.command.assert_called_once_with('stop')
+        with self.assertRaisesRegex(runner.oracle.OracleError, 'UNCLEAN_STOP:unload'):
+            runner.observation_stop(process, 'result', 420, 'unload', False)
+
+    def test_measurement_decodes_vanilla_gzip_paths_as_well_as_managed_roots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            world = Path(directory)
+            (world / 'data').mkdir()
+            path = world / 'data/raids.dat'
+            runner.nbt.write_gzip(path, b'', C(data=C(Tick=runner.nbt.Tag(runner.nbt.INT, 1))))
+            before = runner.disk_snapshot(world)
+            runner.nbt.write_gzip(path, b'', C(data=C(Tick=runner.nbt.Tag(runner.nbt.INT, 2))))
+            after = runner.disk_snapshot(world)
+            row = runner.record_stage(world, 'raids', before, after)
+            self.assertEqual(['data/raids.dat'], row['differences']['changed'])
+            self.assertEqual('/data/Tick', row['typed_changes'][0]['path'])
+            self.assertEqual(runner.nbt.INT, row['typed_changes'][0]['before_type'])
+
     def test_restarts_reuse_the_session_startup_properties_witness(self):
         with tempfile.TemporaryDirectory() as directory:
             session = Path(directory)

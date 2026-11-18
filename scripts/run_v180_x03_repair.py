@@ -138,17 +138,18 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
     write_json(evidence / (label + '-invocation.json'), row)
     process = smoke.CapturedProcess(command, session, log)
     try:
-        process.wait_for(re.compile(re.escape(expected)), args.startup_timeout)
         if forced:
+            process.wait_for(re.compile(re.escape(expected)), args.startup_timeout)
             process.process.kill()
             process.abort()
             row['forced_stop'] = True
         else:
-            process.command('stop')
-            row['exit_code'] = process.finish()
-            oracle.require(row['exit_code'] == 0, 'UNCLEAN_STOP:' + label)
-        oracle.require(not any('/ERROR]' in line or '/FATAL]' in line for line in process.lines), 'NATIVE_ERROR:' + label)
-        row['status'] = 'STOPPED'
+            row.update(observation_stop(process, expected, args.startup_timeout, label, measured))
+        errors = [line.strip() for line in process.lines if '/ERROR]' in line or '/FATAL]' in line]
+        if not measured:
+            oracle.require(not errors, 'NATIVE_ERROR:' + label)
+        row.setdefault('contradictions', []).extend(dict(reason='NATIVE_ERROR', file=log.name, path=':log', line=line) for line in errors)
+        row['status'] = 'STOPPED_WITH_CONTRADICTIONS' if row['contradictions'] else 'STOPPED'
         row['log_sha256'] = oracle.digest(log)
         row['configuration'] = {'server.properties': oracle.digest(session / 'server.properties')}
         row['configuration'][command[-2].removeprefix('@')] = oracle.digest(session / command[-2].removeprefix('@'))
@@ -158,12 +159,31 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
                                              for path in directory.rglob('*') if path.is_file()})
         row['manifest'] = oracle.manifest(world)
         if measured:
-            record_stage(evidence, label, before, disk_snapshot(world))
+            record_stage(evidence, label, before, disk_snapshot(world), row['contradictions'])
         write_json(evidence / (label + '-invocation.json'), row)
         return process.lines, log
     finally:
         if not process.log_stream.closed:
             process.abort()
+
+
+def observation_stop(process, expected, timeout, label, measured):
+    """A missing native observation remains a failure, but diagnostics retain its stopped files."""
+    contradictions = []
+    try:
+        process.wait_for(re.compile(re.escape(expected)), timeout)
+    except smoke.SmokeError as error:
+        if not measured:
+            raise
+        contradictions.append(dict(reason='NATIVE_OBSERVATION_MISSING', file=label + '.log', path=':result-marker', detail=str(error)))
+    if process.process.poll() is None:
+        process.command('stop')
+    code = process.finish()
+    if not measured:
+        oracle.require(code == 0, 'UNCLEAN_STOP:' + label)
+    elif code != 0:
+        contradictions.append(dict(reason='UNCLEAN_STOP', file=label + '.log', path=':exit-code', exit_code=code))
+    return dict(exit_code=code, contradictions=contradictions)
 
 
 def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE'):
@@ -249,9 +269,13 @@ def measure(check, findings, derive):
 def disk_snapshot(world):
     if not world.exists():
         return dict(manifest={}, objects={})
-    objects = {(name, ''): root for name, root in
-               ((p.relative_to(world).as_posix(), nbt.read_gzip(p)[1])
-                for p in world.rglob('advancedrocketrycommunity_*.dat'))}
+    objects = {}
+    for path in sorted(world.rglob('*')):
+        if path.is_file() and path.name.endswith(('.dat', '.dat_old')):
+            with path.open('rb') as stream:
+                gzip_header = stream.read(2) == b'\x1f\x8b'
+            if gzip_header:
+                objects[(path.relative_to(world).as_posix(), '')] = nbt.read_gzip(path)[1]
     objects.update(oracle.chunks(world))
     return dict(manifest=oracle.manifest(world), objects=objects)
 
@@ -517,6 +541,9 @@ def run(args):
                            'SOURCE_OR_BACKUP_CHANGED_AFTER_ALL_RUNS')
         if args.derive_runtime_list:
             report['status'] = 'MEASURED_NOT_PROMOTED'
+            report['native_contradictions'] = [dict(stage=path.stem, **finding)
+                                               for path in sorted(evidence.glob('*-invocation.json'))
+                                               for finding in json.loads(path.read_text(encoding='utf-8')).get('contradictions', [])]
         else:
             report['refusals'].extend(row for cycle in report['cycles'] for row in cycle['refusals'])
             report['controls'] = controls(args, session, evidence, report['cycles'], context)

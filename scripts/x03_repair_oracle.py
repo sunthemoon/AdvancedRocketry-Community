@@ -261,31 +261,55 @@ def identity(state):
 
 
 def check_state(state, baseline, *, repaired=True, unloaded=False, launched=False):
+    def check(condition, reason):
+        if condition or _MEASUREMENT.get() is None:
+            require(condition, reason)
+            return
+        rocket_ref = dict(file=state['rocket_key'][0], chunk=list(state['rocket_key'][1:]), path='/RocketEntityData')
+        device_ref = dict(file=state['device_key'][0], chunk=list(state['device_key'][1:]), path='/arce_rocket_fluid_cargo')
+        refs = {
+            'WATER_ENDPOINTS': [dict(rocket_ref, path='/RocketEntityData/snapshot/relative_blocks'), dict(device_ref, path='/arce_rocket_fluid_cargo/tank/Amount')],
+            'WATER_CONSERVATION': [rocket_ref, device_ref],
+            'DEVICE_BINDING': [dict(device_ref, path='/arce_rocket_fluid_cargo/binding')],
+            'ESCROW_BINDING_OR_MARKERS': [dict(rocket_ref, path='/RocketEntityData/resource_escrow'), dict(device_ref, path='/arce_rocket_fluid_cargo/resource_escrow')],
+            'FABRICATED_AUTHORITY': [dict(file=LEDGER, path='/data')],
+            'JOURNAL_REMOVAL': [dict(file=JOURNAL, path='/data/transfers')],
+            'X03_B_REQUIRES_ROOT_2': [dict(file=LEDGER, path='/data/schema_version')],
+            'PROPULSION_OR_FLIGHT': [dict(rocket_ref, path='/RocketEntityData/flight_data')],
+            'ROCKET_MOVED': [dict(rocket_ref, path='/Pos')],
+            'FABRICATED_HEAD': [dict(file=LEDGER, path='/data')],
+            'NOT_LANDED_ELSEWHERE': [dict(rocket_ref, path='/RocketEntityData/flight_data/state'), dict(rocket_ref, path='/Pos')],
+            'LAUNCH_SERIAL_OR_FABRICATED_HEAD': [dict(file=LEDGER, path='/data')],
+            'DEVICE_EPOCH': [dict(device_ref, path='/arce_rocket_fluid_cargo/resource_escrow/resource_epoch')],
+            'ROCKET_EPOCH': [dict(rocket_ref, path='/RocketEntityData/resource_escrow/resource_epoch')],
+        }.get(reason, [device_ref] if reason == 'IDENTITY:device' else [rocket_ref])
+        _MEASUREMENT.get().extend(dict(reason=reason, **ref) for ref in refs)
+
     rocket, device, ledger = state['rocket'], state['device'], state['ledger']
-    require((state['cargo'], state['tank']) == ((3000, 2000) if unloaded else (4000, 1000)), 'WATER_ENDPOINTS')
-    require(state['cargo'] + state['tank'] == 5000, 'WATER_CONSERVATION')
+    check((state['cargo'], state['tank']) == ((3000, 2000) if unloaded else (4000, 1000)), 'WATER_ENDPOINTS')
+    check(state['cargo'] + state['tank'] == 5000, 'WATER_CONSERVATION')
     now, old = identity(state), identity(baseline)
     for key in ('logical', 'owner', 'device') + (() if launched else ('physical', 'snapshot')):
-        require(now[key] == old[key], 'IDENTITY:' + key)
-    require(device['binding']['logical_rocket'] == now['logical'] and device['owner'] == now['owner'], 'DEVICE_BINDING')
+        check(now[key] == old[key], 'IDENTITY:' + key)
+    check(device['binding']['logical_rocket'] == now['logical'] and device['owner'] == now['owner'], 'DEVICE_BINDING')
     for section in (rocket['resource_escrow'], device['resource_escrow']):
-        require(section['ledger_id'] == ledger['ledger_id'] and not section['markers'], 'ESCROW_BINDING_OR_MARKERS')
-    require(not ledger['records'] and not ledger['floors'] and not ledger['tombstones'] and not ledger['armed_flights']
+        check(section['ledger_id'] == ledger['ledger_id'] and not section['markers'], 'ESCROW_BINDING_OR_MARKERS')
+    check(not ledger['records'] and not ledger['floors'] and not ledger['tombstones'] and not ledger['armed_flights']
             and not ledger.get('fluid_accounts', []), 'FABRICATED_AUTHORITY')
-    require(not rocket['flight_data']['passengers']['assignments'], 'PASSENGER_ASSIGNMENT')
-    require(len(state['journal']['transfers']) == (0 if repaired else 1), 'JOURNAL_REMOVAL')
-    require(ledger['schema_version'] == 2, 'X03_B_REQUIRES_ROOT_2')
+    check(not rocket['flight_data']['passengers']['assignments'], 'PASSENGER_ASSIGNMENT')
+    check(len(state['journal']['transfers']) == (0 if repaired else 1), 'JOURNAL_REMOVAL')
+    check(ledger['schema_version'] == 2, 'X03_B_REQUIRES_ROOT_2')
     if not launched:
-        require(rocket['flight_data']['state'] == 'FUELED' and rocket['flight_data']['fuel'] == baseline['rocket']['flight_data']['fuel'], 'PROPULSION_OR_FLIGHT')
-        require(nbt.plain(state['entity'])['Pos'] == nbt.plain(baseline['entity'])['Pos'], 'ROCKET_MOVED')
-        require(not ledger['rocket_authorities'] and ledger['issued_launch_serial'] == 0, 'FABRICATED_HEAD')
+        check(rocket['flight_data']['state'] == 'FUELED' and rocket['flight_data']['fuel'] == baseline['rocket']['flight_data']['fuel'], 'PROPULSION_OR_FLIGHT')
+        check(nbt.plain(state['entity'])['Pos'] == nbt.plain(baseline['entity'])['Pos'], 'ROCKET_MOVED')
+        check(not ledger['rocket_authorities'] and ledger['issued_launch_serial'] == 0, 'FABRICATED_HEAD')
     else:
-        require(rocket['flight_data']['state'] == 'LANDED' and nbt.plain(state['entity'])['Pos'] != nbt.plain(baseline['entity'])['Pos'], 'NOT_LANDED_ELSEWHERE')
-        require(ledger['issued_launch_serial'] == 1 and not ledger['rocket_authorities'], 'LAUNCH_SERIAL_OR_FABRICATED_HEAD')
+        check(rocket['flight_data']['state'] == 'LANDED' and nbt.plain(state['entity'])['Pos'] != nbt.plain(baseline['entity'])['Pos'], 'NOT_LANDED_ELSEWHERE')
+        check(ledger['issued_launch_serial'] == 1 and not ledger['rocket_authorities'], 'LAUNCH_SERIAL_OR_FABRICATED_HEAD')
     expected_epoch = 2 if unloaded else 1
-    require(device['resource_escrow']['resource_epoch'] == expected_epoch, 'DEVICE_EPOCH')
+    check(device['resource_escrow']['resource_epoch'] == expected_epoch, 'DEVICE_EPOCH')
     if not launched:
-        require(rocket['resource_escrow']['resource_epoch'] == expected_epoch, 'ROCKET_EPOCH')
+        check(rocket['resource_escrow']['resource_epoch'] == expected_epoch, 'ROCKET_EPOCH')
 
 
 def normalized(root, kind):

@@ -67,6 +67,15 @@ class BookkeepingClockTest(RepairFixture):
         with self.assertRaises(oracle.OracleError):
             oracle.equal(before, after, 'data/example.dat')
 
+    def test_measurement_records_all_failed_unload_invariants_with_typed_locations(self):
+        state = oracle.read(self.source)
+        state['journal']['transfers'] = []
+        findings = []
+        with oracle.measurement(findings):
+            oracle.check_state(state, state, unloaded=True)
+        self.assertEqual({'WATER_ENDPOINTS', 'DEVICE_EPOCH', 'ROCKET_EPOCH'}, {row['reason'] for row in findings})
+        self.assertTrue(all(row['file'] and row['path'].startswith('/') for row in findings))
+
 
 class RawOracleTest(RepairFixture):
     def landed(self, before):
