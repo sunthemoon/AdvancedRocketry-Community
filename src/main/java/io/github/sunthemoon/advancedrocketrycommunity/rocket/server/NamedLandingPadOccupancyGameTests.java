@@ -124,8 +124,11 @@ public final class NamedLandingPadOccupancyGameTests {
             helper.assertTrue(!staging.recheck(f.space, record.destinationSnapshot(), f.station.stationId(),
                     f.entry.reference(), transfer), "Pre-spawn recheck accepted the wide occupant");
             helper.assertTrue(transfer.equals(f.currentEntry().claim()), "Recheck created/replaced the prepared claim");
+            DetachedTransferReadinessGameTestSupport.assertReady(helper, f.space, record, f.readyColumns());
             source.updateFlightData(record.sourceFlightData());
             service.spawnDestination(f.space.getServer(), journal, record, source);
+            helper.assertTrue(RocketSourceRetirementFixtures.recovery(service).retirements().pending(record.logicalRocketId()),
+                    "Pre-spawn refusal did not begin this service's ordinary return to the source");
             // W98 (N3-A1): the record and claim leave once the returned source's own entity slot is read back.
             f.afterRetired(service, record.logicalRocketId(), () -> {
                 f.assertNoClaimOrDestination(transfer);
@@ -271,18 +274,24 @@ public final class NamedLandingPadOccupancyGameTests {
 
         private void awaitReady(Runnable action) {
             boolean ready = helper.getLevel().areEntitiesLoaded(new ChunkPos(sourceOrigin).toLong())
-                    && space.isPositionEntityTicking(pad.above());
-            for (int x = (origin.getX() - 1) >> 4; x <= (origin.getX() + 21) >> 4; x++) {
-                for (int z = (origin.getZ() - 1) >> 4; z <= (origin.getZ() + 1) >> 4; z++) {
-                    ready &= space.areEntitiesLoaded(ChunkPos.asLong(x, z));
-                }
-            }
+                    && space.isPositionEntityTicking(pad.above())
+                    && DetachedTransferReadinessGameTestSupport.ready(space, readyColumns());
             if (ready || helper.getTick() >= 80) {
                 helper.assertTrue(ready, "Occupancy fixture entity chunks did not become ready");
                 try { action.run(); } finally { if (!deferred) { close(); } }
             } else {
                 pacer.pace(); driver.after(1, () -> awaitReady(action));
             }
+        }
+
+        private List<ChunkPos> readyColumns() {
+            var columns = new ArrayList<ChunkPos>();
+            for (int x = (origin.getX() - 1) >> 4; x <= (origin.getX() + 21) >> 4; x++) {
+                for (int z = (origin.getZ() - 1) >> 4; z <= (origin.getZ() + 1) >> 4; z++) {
+                    columns.add(new ChunkPos(x, z));
+                }
+            }
+            return columns;
         }
 
         private RocketEntity source() {
