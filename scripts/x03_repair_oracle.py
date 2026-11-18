@@ -154,6 +154,11 @@ def serialized(tag):
     return nbt.write(b'', tag)
 
 
+def leaf(tag):
+    """A scalar's serialized bytes: 0.0 and -0.0 differ, and an unchanged NaN is equal, in both modes."""
+    return serialized(nbt.Tag(nbt.COMPOUND, {'v': tag}))
+
+
 def first_difference(left, right, path=''):
     if left.type != right.type:
         return path + ':type'
@@ -171,7 +176,7 @@ def first_difference(left, right, path=''):
             found = first_difference(a, b, path + '/' + str(i))
             if found:
                 return found
-    elif left.value != right.value:
+    elif leaf(left) != leaf(right):
         return path
     return None
 
@@ -203,7 +208,7 @@ def typed_differences(left, right, path=''):
             yield dict(path=path + ':list', before_type=left.type, after_type=right.type)
         for i, (a, b) in enumerate(zip(left.value[1], right.value[1])):
             yield from typed_differences(a, b, path + '/' + str(i))
-    elif serialized(nbt.Tag(nbt.COMPOUND, {'v': left})) != serialized(nbt.Tag(nbt.COMPOUND, {'v': right})):
+    elif leaf(left) != leaf(right):
         yield dict(path=path, before_type=left.type, after_type=right.type)
 
 

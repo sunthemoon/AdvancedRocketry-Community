@@ -343,6 +343,36 @@ class BoundaryTest(unittest.TestCase):
             with self.assertRaises(oracle.OracleError):
                 oracle.equal(C(x=I(1), y=I(2)), other, 'object')
 
+    def test_accepting_comparison_separates_signed_zero_as_measurement_does(self):
+        # W380R finding 4: Python's == calls 0.0 and -0.0 equal; their NBT bytes differ.
+        for kind in (nbt.DOUBLE, nbt.FLOAT):
+            before = C(Motion=nbt.Tag(nbt.LIST, (kind, [nbt.Tag(kind, 0.0), nbt.Tag(kind, 0.0)])))
+            after = C(Motion=nbt.Tag(nbt.LIST, (kind, [nbt.Tag(kind, 0.0), nbt.Tag(kind, -0.0)])))
+            with self.subTest(kind=kind):
+                self.assertEqual('/Motion/1', oracle.first_difference(before, after))
+                with self.assertRaisesRegex(oracle.OracleError, '^OBJECT_CHANGED:entity:/Motion/1$'):
+                    oracle.equal(before, after, 'entity')
+                self.assertEqual(['/Motion/1'], [row['path'] for row in oracle.typed_differences(before, after)])
+                key = ('entities/r.0.0.mca', 0, 0)
+                with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*entities/r.0.0.mca.*:/Motion/1$'):
+                    oracle.compare_chunks({key: before}, {key: after})
+
+    def test_accepting_comparison_holds_an_unchanged_nan_equal_as_measurement_does(self):
+        # The other half of finding 4: NaN != NaN in Python, which refused an unchanged object.
+        for kind in (nbt.DOUBLE, nbt.FLOAT):
+            before = C(Rotation=nbt.Tag(nbt.LIST, (kind, [nbt.Tag(kind, float('nan'))])), Health=nbt.Tag(kind, float('nan')))
+            after = nbt.read(nbt.write(b'', before))[1]
+            with self.subTest(kind=kind):
+                self.assertIsNone(oracle.first_difference(before, after))
+                oracle.equal(before, after, 'entity')
+                self.assertEqual([], list(oracle.typed_differences(before, after)))
+                key = ('entities/r.0.0.mca', 0, 0)
+                oracle.compare_chunks({key: before}, {key: after})
+                changed = copy.deepcopy(after)
+                changed.value['Health'].value = 1.0
+                with self.assertRaisesRegex(oracle.OracleError, '^OBJECT_CHANGED:entity:/Health$'):
+                    oracle.equal(before, changed, 'entity')
+
     def test_oracle_has_no_planner_dependency(self):
         import ast
         tree = ast.parse(Path(oracle.__file__).read_text(encoding='utf-8'))
