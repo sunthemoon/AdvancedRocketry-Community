@@ -204,7 +204,7 @@ def check_state(state, baseline, *, repaired=True, unloaded=False, launched=Fals
         require(not ledger['rocket_authorities'] and ledger['issued_launch_serial'] == 0, 'FABRICATED_HEAD')
     else:
         require(rocket['flight_data']['state'] == 'LANDED' and nbt.plain(state['entity'])['Pos'] != nbt.plain(baseline['entity'])['Pos'], 'NOT_LANDED_ELSEWHERE')
-        require(ledger['issued_launch_serial'] == 1 and len(ledger['rocket_authorities']) <= 1, 'LAUNCH_SERIAL')
+        require(ledger['issued_launch_serial'] == 1 and not ledger['rocket_authorities'], 'LAUNCH_SERIAL_OR_FABRICATED_HEAD')
     expected_epoch = 2 if unloaded else 1
     require(device['resource_escrow']['resource_epoch'] == expected_epoch, 'DEVICE_EPOCH')
     if not launched:
@@ -326,7 +326,7 @@ def compare_functional(before, after, *, action=None):
         if action in ('unload', 'launch') and name == LEDGER:
             for root in (a, b):
                 for key in (('issued_through', 'writer_generation') if action == 'unload' else
-                            ('writer_generation', 'issued_launch_serial', 'rocket_authorities')):
+                            ('writer_generation', 'issued_launch_serial')):
                     root.value['data'].value.pop(key)
             require(after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'WRITER_GENERATION')
             if action == 'unload':
@@ -361,6 +361,11 @@ def compare_launched_rocket(before, after):
     old, new = before['rocket'], after['rocket']
     require(new['flight_data']['current_dimension'] == 'advancedrocketrycommunity:moon'
             and new['flight_data']['current_origin'][::2] == [8, 8], 'LANDING_OUTSIDE_PINNED_FIRST_PAD')
+    origin = new['flight_data']['current_origin']
+    require(after['rocket_key'][0].startswith('dimensions/advancedrocketrycommunity/moon/entities/')
+            and nbt.plain(after['entity'])['Pos'] == [origin[0] + .5, float(origin[1]), origin[2] + .5]
+            and new['snapshot']['source_origin'] == origin
+            and new['snapshot']['source_dimension'] == new['flight_data']['current_dimension'], 'LANDED_PHYSICAL_LOCATION')
     for entity in (a, b):
         for field in ('UUID', 'Pos'):
             entity.value.pop(field)

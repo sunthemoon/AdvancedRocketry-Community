@@ -11,10 +11,58 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import loader_cut_nbt as nbt
 import x03_repair_oracle as oracle
 from test_loader_cut_nbt import compound as C, string as S, region
-from test_repair_v180_rebuild_source import RepairFixture, E, I
+from test_repair_v180_rebuild_source import RepairFixture, E, I, L, U, A, vector, target
 
 
 class RawOracleTest(RepairFixture):
+    def landed(self, before):
+        after = copy.deepcopy(before)
+        entity = after['entity']
+        entity.value['UUID'] = U(10)
+        entity.value['Pos'] = vector(8.5, 100, 8.5)
+        rocket = entity.value['RocketEntityData']
+        snapshot = rocket.value['snapshot']
+        snapshot.value.update(snapshot_id=S('00000000-0000-0000-0000-000000000011'),
+                              source_dimension=S('advancedrocketrycommunity:moon'), source_origin=A(8, 100, 8),
+                              created_at_game_time=L(201), content_hash=S('c' * 64))
+        rocket.value['resource_escrow'].value['resource_epoch'] = L(0)
+        flight = rocket.value['flight_data']
+        flight.value.update(state=S('LANDED'), current_body=S('advancedrocketrycommunity:moon'),
+                            current_dimension=S('advancedrocketrycommunity:moon'), current_origin=A(8, 100, 8),
+                            state_started_game_time=L(201), current_target=target('advancedrocketrycommunity:moon'))
+        fuel = flight.value['fuel']
+        fuel.value.update(amount=L(683), committed_debits=E(U(12)))
+        fuel.value['propulsion'].value['primary'].value['amount'] = L(683)
+        fuel.value['propulsion'].value['revision'] = L(2)
+        after['rocket'] = nbt.plain(entity)['RocketEntityData']
+        after['rocket_key'] = ('dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca', 0, 0)
+        return after
+
+    def test_launch_comparison_masks_only_the_named_action_fields(self):
+        before = oracle.read(self.source)
+        after = self.landed(before)
+        oracle.compare_launched_rocket(before, after)
+        after['entity'].value['CustomName'] = S('collateral edit')
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:landed-rocket'):
+            oracle.compare_launched_rocket(before, after)
+
+    def test_landing_claim_must_match_the_physical_file_and_position(self):
+        before = oracle.read(self.source)
+        after = self.landed(before)
+        after['entity'].value['Pos'] = vector(80.5, 100, 64.5)
+        with self.assertRaisesRegex(oracle.OracleError, 'LANDED_PHYSICAL_LOCATION'):
+            oracle.compare_launched_rocket(before, after)
+
+    def test_launch_debit_is_checked_per_fluid_and_against_disk(self):
+        before = oracle.read(self.source)
+        after = self.landed(before)
+        fields = dict(debit='primary:317,oxidizer:0,revision:1,resource:' + 'a' * 64 + ',catalog:' + 'b' * 64,
+                      fuel_before='1000', fuel_after='683')
+        self.assertEqual(317, oracle.launch_debit(fields, before, after)['primary'])
+        fields['debit'] = 'unobserved'
+        with self.assertRaisesRegex(oracle.OracleError, 'TYPED_PROPULSION_DEBIT_MISSING'):
+            oracle.launch_debit(fields, before, after)
+
     def test_reads_physical_water_without_counting_historical_journal_inventory(self):
         state = oracle.read(self.source)
         self.assertEqual((4000, 1000), (state['cargo'], state['tank']))
