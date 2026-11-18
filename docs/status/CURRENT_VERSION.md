@@ -568,6 +568,13 @@ What is still open:
   reproduce it in 48 repetitions; the window holds no autosave, and flight B stalled after acknowledging
   `DESTINATION_SPAWNED`. W378's failure-only diagnostics give the missing observations if it recurs (R484). It stays
   open until a cause is found or later runs show no recurrence.
+- **Journal unit test on the activation branch (2026-11-17).** In one complete unit run on W372's branch
+  (`W372/r469-target1`), `EscrowGovernedTerminalJournalTest.aFailedWriteOrAStoppedJournalDiscardsTheProof`
+  failed at line 69, and the run's XML was not kept. The branch changes neither that test nor its helper.
+  Line 69 calls `EscrowArmedRestartBoundaryTest.acknowledge`, which polls the transfer journal's writer about
+  1,000 times with a 2 ms sleep and then asserts the acknowledgement, so Root reads it as a slow write on a
+  loaded host. It passed alone and in three complete runs since (W372D). The activation review W372R checks
+  the diff for any effect on it (R502). If it recurs, a test task diagnoses it.
 - **Writer benchmark unit test on the shared branch (2026-11-13).** Attempt 1 of shared run 43395387417 at
   `a2fa5868d` failed one unit test,
   `EscrowWriterBenchmarkAccessTest.pacedMutationsOfBothRootsPublishOnOwnerTicksAndEveryTenthTakesTheReadbackPath`,
