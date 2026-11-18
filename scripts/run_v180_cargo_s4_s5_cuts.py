@@ -64,7 +64,7 @@ CASES = {
     "FS_ABANDON_ROCKET": settlement(ABANDON, dict(rocket=None, device=(0, 0, 0)), ORPHANED, dict(rocket=None, device=(0, 0, 0)), choice="ABANDON"),
     "FS_ABANDON_DEVICE": settlement(ABANDON, dict(rocket=NEUTRAL["rocket"], device=None), RELEASED, dict(rocket=NORMALIZED["rocket"], device=None),
                                     choice="ABANDON"),
-    "FS_VETO_DESTINATION_SAVED": settlement(ACCEPT, VETOED, ACCEPT, VETOED),
+    "FS_VETO_DESTINATION_SAVED": settlement(ACCEPT, VETOED, ACCEPT, VETOED, frozen_ends=APPLIED),
     "FS_BIND_VETO": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED, cut_x=68.75),
 }
 # W330: keep the unload oracle intact and enumerate the direction-specific load states.
@@ -78,6 +78,7 @@ for _case, _spec in tuple(CASES.items()):
                  final=(_spec["final"][0], load_ends(_spec["final"][1])))
     if _case == "FS_VETO_DESTINATION_SAVED":
         _load["cut"] = _load["final"] = (ACCEPT, dict(rocket=(1000, 1, 1, True), device=(5000, 0, 0)))
+        _load["frozen_ends"] = load_ends(_spec["frozen_ends"])
     CASES[_case.replace("FS_", "FS_LOAD_", 1)] = _load
 
 LANDED = "advancedrocketrycommunity.landedDisassemblyProbe"
@@ -212,8 +213,11 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
     require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == ("LOAD" if spec.get("load") else "UNLOAD")), "Settlement duplicated the rocket or changed the device")
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
     for op in root["records"]: accounting.expect_transfer(root, op)
-    chosen_rocket = None if ends["rocket"] is None else ends["rocket"][0]
-    chosen_device = None if ends["device"] is None else ends["device"][0]
+    # O1 captures both live AFTER endpoints. The veto persists only the destination,
+    # so its stopped-world source is BEFORE, not the immutable chosen account.
+    chosen = spec.get("frozen_ends", ends)
+    chosen_rocket = None if chosen["rocket"] is None else chosen["rocket"][0]
+    chosen_device = None if chosen["device"] is None else chosen["device"][0]
     for row in accounts.values():
         accounting.expect_frozen(row, chosen_device if spec.get("load") else chosen_rocket,
                                  chosen_rocket if spec.get("load") else chosen_device)
