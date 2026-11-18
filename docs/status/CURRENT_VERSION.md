@@ -565,6 +565,13 @@ What is still open:
   retries, but a Level's first force batch comes 20 ticks after the capture. The wait now follows the product's own
   per-attempt allowance and ends at once on a second attempt or a recorded reason (R492). It closes when W381 is
   merged and a shared regression passes.
+- **Legacy pad occupancy recovery path (2026-11-18).** Shared run 44254384368 at `f4d3e2b0c` passed all 1,864
+  GameTests, but shard 0's log check failed. In batch `legacy_pad_occupancy`, the transfer of
+  `wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn` was taken over by a journal recovery
+  (`RECOVERED_SOURCE`, `KEEP_SOURCE`) two ticks after its preparation. The expected `ARCE_TRANSFER_RETURNED_TO_SOURCE`
+  with `destination_pad_blocked` did not appear. The rocket still ended at its source, so the test passed. The same
+  log failure appeared once before, in W301F's local full run on 2026-11-05. `flight_recovery`, the batch W381
+  changed, ran later in that shard. Root re-ran the run, and a diagnosis task follows (W383, R494).
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
