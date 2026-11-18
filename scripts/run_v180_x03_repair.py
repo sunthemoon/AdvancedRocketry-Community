@@ -263,12 +263,21 @@ def tamper_object(world):
     oracle.require(bool(keys), 'NO_NONTARGET_CHUNK')
     key = keys[0]
     root = records[key]
-    section = root.value['sections'].value[1][0].value['Y'].value
-    x, y, z = key[1] * 16, section * 16, key[2] * 16
-    old = nbt.block(root, x, y, z)
-    nbt.set_block(root, x, y, z, 'minecraft:stone' if old != 'minecraft:stone' else 'minecraft:dirt')
-    nbt.write_chunk(world / 'region', key[1], key[2], root)
-    return key
+    for section in root.value['sections'].value[1]:
+        states = section.value.get('block_states')
+        if states is None:
+            continue
+        names = [nbt.plain(entry)['Name'] for entry in states.value['palette'].value[1]]
+        x, y, z = key[1] * 16, section.value['Y'].value * 16, key[2] * 16
+        old = nbt.block(root, x, y, z)
+        # set_block deliberately cannot expand/repack a palette. Pick an
+        # already represented, uniquely named state, changing exactly one cell.
+        replacement = next((name for name in names if name != old and names.count(name) == 1), None)
+        if replacement is not None:
+            nbt.set_block(root, x, y, z, replacement)
+            nbt.write_chunk(world / 'region', key[1], key[2], root)
+            return key
+    raise oracle.OracleError('NO_NONTARGET_BLOCK_IN_SELECTED_CHUNK')
 
 
 def coordinator(context, world, baseline_manifest):
