@@ -555,13 +555,16 @@ What is still open:
   `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` at phase 14 of its
   second direction ("A mismatched replay lost its operation or changed an endpoint"); the second run of the same
   Java source passed all 1,863. W379's slice is not on that path, and no earlier failure of this test is recorded.
-  The log does not say which of the three checks failed. It stays open until later runs show no recurrence or a
-  cause is found; a recurrence gets its own diagnosis task.
+  The log does not say which of the three checks failed. W381 found the cause: the fixture replaced the saved ledger
+  while a successor generation was in flight, and its acknowledgement undid the replacement. The fixture now waits for
+  an idle writer, and a new GameTest pins it (R492). It closes when W381 is merged and a shared regression passes.
 - **Transfer recovery GameTest (2026-11-18).** W380's local full GameTest run failed
   `transferRecoveryReconcilesAllEntityPresenceCases` once ("both recovery did not complete: RETRY_LATER"), with the
   duplicate-destination recovery WARN in an undeclared batch. W380 changed no Java. It ran while other workers
-  compiled on the same machine, as W379's item-cargo failure did. It stays open until later runs show no
-  recurrence or a cause is found; a hosted recurrence gets its own diagnosis task.
+  compiled on the same machine, as W379's item-cargo failure did. W381 found the cause: the fixture allowed 20 or 40
+  retries, but a Level's first force batch comes 20 ticks after the capture. The wait now follows the product's own
+  per-attempt allowance and ends at once on a second attempt or a recorded reason (R492). It closes when W381 is
+  merged and a shared regression passes.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
