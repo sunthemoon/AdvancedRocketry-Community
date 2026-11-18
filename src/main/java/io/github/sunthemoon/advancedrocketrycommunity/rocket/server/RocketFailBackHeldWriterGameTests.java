@@ -120,7 +120,12 @@ public final class RocketFailBackHeldWriterGameTests {
                             journal.put(journal.find(firstTransfer).orElseThrow());
                             third = RocketJournalSchedulingGameTestSupport.hold(helper, journal, file);
                         }
-                        if (blockedArrival) { service.spawnDestination(server, journal, record, source); }
+                        if (blockedArrival) {
+                            assertArrivalReady();
+                            service.spawnDestination(server, journal, record, source);
+                            helper.assertTrue(RocketSourceRetirementFixtures.recovery(service).retirements().pending(record.logicalRocketId()),
+                                    "Blocked arrival did not begin this service's ordinary return to the source");
+                        }
                         else {
                             helper.assertTrue(service.failBackToSource(server, journal, record, source,
                                     RocketTransferReturnReason.COUNTDOWN_CANCELLED,
@@ -222,6 +227,7 @@ public final class RocketFailBackHeldWriterGameTests {
                 blockedLevel.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.FORCED, chunk, 2, chunk);
                 blockedLevel.getChunk(chunk.x, chunk.z);
                 if (!blockedLevel.isPositionEntityTicking(blockedPosition)) { return; }
+                if (!DetachedTransferReadinessGameTestSupport.ready(blockedLevel, arrivalColumns())) { return; }
                 helper.assertTrue(blockedLevel.getBlockEntity(blockedPosition) == null, "Blocked footprint contains an unrelated block entity");
                 previousBlock = blockedLevel.getBlockState(blockedPosition);
                 blockedLevel.setBlock(blockedPosition, net.minecraft.world.level.block.Blocks.BEDROCK.defaultBlockState(), 3);
@@ -256,7 +262,10 @@ public final class RocketFailBackHeldWriterGameTests {
         void assertRefused() {
             var flight = source.flightData().orElseThrow(); var position = source.position();
             var payload = journal.save(new CompoundTag());
-            if (blockedArrival) { service.spawnDestination(helper.getLevel().getServer(), journal, record, source); }
+            if (blockedArrival) {
+                assertArrivalReady();
+                service.spawnDestination(helper.getLevel().getServer(), journal, record, source);
+            }
             else {
                 helper.assertTrue(!service.failBackToSource(helper.getLevel().getServer(), journal, record, source,
                         RocketTransferReturnReason.COUNTDOWN_CANCELLED,
@@ -268,6 +277,16 @@ public final class RocketFailBackHeldWriterGameTests {
                     "Refused fail-back changed source or journal bytes");
             helper.assertTrue(first.get() == 0 && second.get() == 0, "Held write ran a continuation");
             assertRetained();
+        }
+
+        java.util.List<net.minecraft.world.level.ChunkPos> arrivalColumns() {
+            var zero = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(0, 0, 0);
+            return DetachedTransferReadinessGameTestSupport.columns(blockedPosition,
+                    new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBounds(zero, zero));
+        }
+
+        void assertArrivalReady() {
+            DetachedTransferReadinessGameTestSupport.assertReady(helper, blockedLevel, record, arrivalColumns());
         }
 
         void assertRetained() {
