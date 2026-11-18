@@ -14,6 +14,60 @@ from test_loader_cut_nbt import compound as C, string as S, region
 from test_repair_v180_rebuild_source import RepairFixture, E, I, L, U, A, vector, target
 
 
+class BookkeepingClockTest(RepairFixture):
+    def compare_clock(self, observed=20, logical=20, extra=None, root_key='satellite_missions'):
+        if root_key != 'satellite_missions':
+            self.data[root_key].value['clock'] = C(logical_game_time=L(0), last_observed_game_time=L(0))
+            self.write_roots()
+        before = oracle.read(self.source)
+        self.data['rocket_transfers'].value['transfers'] = E()
+        data = self.data[root_key]
+        data.value['clock'].value['logical_game_time'].value = logical
+        data.value['clock'].value['last_observed_game_time'].value = observed
+        if extra:
+            extra(data)
+        self.write_roots()
+        oracle.compare_repair(before, oracle.read(self.source), self.transfer)
+
+    def test_forward_equal_clock_step_is_accepted(self):
+        self.compare_clock()
+
+    def test_decreased_observed_time_is_rejected(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*satellite_missions'):
+            self.compare_clock(-1, -1)
+
+    def test_unequal_clock_increases_are_rejected(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*satellite_missions'):
+            self.compare_clock(20, 19)
+
+    def test_clock_step_with_changed_epoch_is_rejected(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*satellite_missions'):
+            self.compare_clock(extra=lambda data: data.value.update(save_epoch=L(2)))
+
+    def test_clock_step_with_other_changed_field_is_rejected(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*satellite_missions'):
+            self.compare_clock(extra=lambda data: data.value.update(other=I(1)))
+
+    def test_same_paths_in_another_root_are_not_exempt(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*endgame'):
+            self.compare_clock(root_key='endgame')
+
+    def test_clock_scalar_type_change_is_not_exempt(self):
+        with self.assertRaisesRegex(oracle.OracleError, 'OBJECT_CHANGED:.*satellite_missions'):
+            self.compare_clock(extra=lambda data: data.value['clock'].value.update(logical_game_time=I(20)))
+
+    def test_measurement_reports_each_path_and_restores_strict_checks(self):
+        before = C(a=L(1), b=I(2))
+        after = C(a=L(3), b=L(2))
+        findings = []
+        with oracle.measurement(findings):
+            oracle.equal(before, after, 'data/example.dat')
+        self.assertEqual(['/a', '/b'], [row['path'] for row in findings])
+        self.assertTrue(all(row['file'] == 'data/example.dat' for row in findings))
+        with self.assertRaises(oracle.OracleError):
+            oracle.equal(before, after, 'data/example.dat')
+
+
 class RawOracleTest(RepairFixture):
     def landed(self, before):
         after = copy.deepcopy(before)

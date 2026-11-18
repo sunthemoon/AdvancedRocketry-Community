@@ -6,6 +6,8 @@ Runtime allowances are fixed declarations, not a list learned by an accepting ru
 from __future__ import annotations
 
 import copy
+from contextlib import contextmanager
+from contextvars import ContextVar
 import hashlib
 from pathlib import Path
 import re
@@ -21,6 +23,34 @@ MAX_FILES, MAX_REGIONS, MAX_DECODED = 100_000, 4096, 256 * 1024**2
 # Vanilla chunk clocks advance while the verification probe holds its tickets.
 CHUNK_CLOCKS = ('LastUpdate', 'InhabitedTime')
 ENTITY_CLOCKS = ()
+ROOT_BOOKKEEPING_FIELDS = {
+    'data/advancedrocketrycommunity_satellite_missions.dat': {
+        'data/clock/logical_game_time': 'MonotonicMissionClock adds forward observed-time deltas; clock-only autosaves retain the epoch.',
+        'data/clock/last_observed_game_time': 'The last server time observed by the mission service; only a nondecreasing equal-delta clock step is admitted.',
+    },
+}
+_MEASUREMENT = ContextVar('x03_measurement', default=None)
+
+
+@contextmanager
+def measurement(findings):
+    """Collect typed comparison failures, never turn them into acceptance."""
+    token = _MEASUREMENT.set(findings)
+    try:
+        yield
+    finally:
+        _MEASUREMENT.reset(token)
+
+
+def checked(check):
+    try:
+        return check()
+    except OracleError as error:
+        findings = _MEASUREMENT.get()
+        if findings is None:
+            raise
+        findings.append(dict(reason=str(error)))
+        return None
 # The runner fixes the first, virgin Moon landing pad at (8, 8). Its one-column
 # footprint is in chunk (0, 0); two ticket columns plus eight vanilla generation
 # neighbours bound the disposable descendant. A different selected pad refuses.
@@ -136,8 +166,53 @@ def first_difference(left, right, path=''):
 
 
 def equal(left, right, label):
+    findings = _MEASUREMENT.get()
+    if findings is not None:
+        findings.extend(dict(reason='OBJECT_CHANGED', file=label, **row) for row in typed_differences(left, right))
+        return
     difference = first_difference(left, right)
     require(difference is None, 'OBJECT_CHANGED:' + label + ':' + str(difference))
+
+
+def typed_differences(left, right, path=''):
+    """All differing typed paths, including order, lengths and scalar types."""
+    if left.type != right.type:
+        yield dict(path=path, before_type=left.type, after_type=right.type)
+    elif left.type == nbt.COMPOUND:
+        if list(left.value) != list(right.value):
+            yield dict(path=path + ':keys/order', before_type=left.type, after_type=right.type)
+        for key in sorted(left.value.keys() | right.value.keys()):
+            if key not in left.value or key not in right.value:
+                yield dict(path=path + '/' + key, before_type=left.value[key].type if key in left.value else None,
+                           after_type=right.value[key].type if key in right.value else None)
+            else:
+                yield from typed_differences(left.value[key], right.value[key], path + '/' + key)
+    elif left.type == nbt.LIST:
+        if left.value[0] != right.value[0] or len(left.value[1]) != len(right.value[1]):
+            yield dict(path=path + ':list', before_type=left.type, after_type=right.type)
+        for i, (a, b) in enumerate(zip(left.value[1], right.value[1])):
+            yield from typed_differences(a, b, path + '/' + str(i))
+    elif serialized(nbt.Tag(nbt.COMPOUND, {'v': left})) != serialized(nbt.Tag(nbt.COMPOUND, {'v': right})):
+        yield dict(path=path, before_type=left.type, after_type=right.type)
+
+
+def bookkeeping_pair(name, before, after):
+    """Independently verify the fixed, root-scoped clock rule before masking."""
+    left, right = copy.deepcopy(before), copy.deepcopy(after)
+    paths = ROOT_BOOKKEEPING_FIELDS.get(name)
+    if paths:
+        try:
+            pairs = [(nbt.compound(left, *path.split('/')), nbt.compound(right, *path.split('/'))) for path in paths]
+            deltas = [b.value - a.value for a, b in pairs if a.type == b.type == nbt.LONG]
+            if len(deltas) == 2 and deltas[1] >= 0 and deltas[0] == deltas[1]:
+                for a, b in pairs:
+                    b.value = a.value
+                # A clock-only exemption cannot hide clocks in a root that also changed.
+                if serialized(left) != serialized(right):
+                    return before, after
+        except (nbt.NbtError, KeyError, TypeError, AttributeError):
+            pass
+    return left, right
 
 
 def read(world):
@@ -223,23 +298,33 @@ def normalized(root, kind):
 
 def compare_chunks(before, after):
     """Full typed comparison, including non-target objects in target-containing files."""
-    require(before.keys() == after.keys(), 'CHUNK_SET_CHANGED')
-    for key in before:
+    checked(lambda: require(before.keys() == after.keys(), 'CHUNK_SET_CHANGED'))
+    if _MEASUREMENT.get() is not None:
+        for key in sorted(before.keys() ^ after.keys()):
+            _MEASUREMENT.get().append(dict(reason='CHUNK_SET_CHANGED', file=key[0], chunk=list(key[1:]), path=''))
+    for key in sorted(before.keys() & after.keys()):
         kind = Path(key[0]).parent.name
-        equal(normalized(before[key], kind), normalized(after[key], kind), repr(key))
+        if _MEASUREMENT.get() is None:
+            equal(normalized(before[key], kind), normalized(after[key], kind), repr(key))
+        else:
+            _MEASUREMENT.get().extend(dict(reason='OBJECT_CHANGED', file=key[0], chunk=list(key[1:]), **row)
+                                      for row in typed_differences(normalized(before[key], kind), normalized(after[key], kind)))
 
 
 def compare_repair(baseline, current, transfer):
-    check_state(current, baseline)
+    checked(lambda: check_state(current, baseline))
     compare_chunks(baseline['chunks'], current['chunks'])
-    require(baseline['managed'].keys() == current['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED')
+    checked(lambda: require(baseline['managed'].keys() == current['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED'))
     for name, root in baseline['managed'].items():
+        if name not in current['managed']:
+            checked(lambda: require(False, 'MANAGED_ROOT_MISSING:' + name))
+            continue
         expected = copy.deepcopy(root)
         if name == JOURNAL:
             records = expected.value['data'].value['transfers']
             require(len(records.value[1]) == 1 and nbt.plain(records.value[1][0])['transfer_id'] == list(nbt.uuid_tag(uuid.UUID(transfer)).value), 'WRONG_REMOVAL')
             records.value = (0, [])
-        equal(expected, current['managed'][name], name)
+        equal(*bookkeeping_pair(name, expected, current['managed'][name]), name)
 
 
 def observe(lines, case, state, *, landed=False):
@@ -318,7 +403,7 @@ def compare_functional(before, after, *, action=None):
             root.value['tank'].value.pop('Amount')
             root.value['resource_escrow'].value.pop('resource_epoch')
     if action == 'launch':
-        compare_launched_rocket(before, after)
+        checked(lambda: compare_launched_rocket(before, after))
         # Remove only the independently checked physical target, not its chunk
         # or other entities. Disappearance of an otherwise empty entity record
         # is vanilla's ordinary deletion after the handoff.
@@ -327,19 +412,22 @@ def compare_functional(before, after, *, action=None):
             entries[:] = [entry for entry in entries if nbt.plain(entry).get('UUID') != nbt.plain(state['entity'])['UUID']]
             if not entries:
                 del tree[state['rocket_key']]
-        require(not left.keys() - right.keys(), 'COLLATERAL_CHUNK_REMOVED')
-        for key in right.keys() - left.keys():
-            require(in_functional_box(key), 'OUTSIDE_FUNCTIONAL_BOX:' + repr(key))
-            require(Path(key[0]).parent.name != 'entities' or not right[key].value['Entities'].value[1], 'NEW_UNRELATED_ENTITY')
-        right = {key: right[key] for key in left}
-    compare_chunks(left, right)
+        checked(lambda: require(not left.keys() - right.keys(), 'COLLATERAL_CHUNK_REMOVED'))
+        for key in sorted(right.keys() - left.keys()):
+            checked(lambda: require(in_functional_box(key), 'OUTSIDE_FUNCTIONAL_BOX:' + repr(key)))
+            checked(lambda: require(Path(key[0]).parent.name != 'entities' or not right[key].value['Entities'].value[1], 'NEW_UNRELATED_ENTITY'))
+        right = {key: right[key] for key in left if key in right}
+    checked(lambda: compare_chunks(left, right))
     new_roots = after['managed'].keys() - before['managed'].keys()
     allowed_new = set(FUNCTIONAL_DATA_FILES) - {LEDGER} if action == 'launch' else set()
-    require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED')
+    checked(lambda: require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED'))
     event = moon_event(after) if action == 'launch' else None
     for name in new_roots:
         validate_new_functional_root(name, after['managed'][name], event)
     for name in before['managed']:
+        if name not in after['managed']:
+            checked(lambda: require(False, 'MANAGED_ROOT_MISSING:' + name))
+            continue
         a, b = copy.deepcopy(before['managed'][name]), copy.deepcopy(after['managed'][name])
         if action in ('unload', 'launch') and name == LEDGER:
             for root in (a, b):
@@ -361,7 +449,7 @@ def compare_functional(before, after, *, action=None):
             equal(b.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
             for root in (a, b):
                 root.value['data'].value.pop('first_moon_landing')
-        equal(a, b, name)
+        equal(*bookkeeping_pair(name, a, b), name)
 
 
 def moon_event(state):

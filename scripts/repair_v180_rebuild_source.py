@@ -75,7 +75,12 @@ ROOT_REQUIRED = {
 }
 # No unreviewed runtime normalization; a false refusal is safer than data loss.
 ENTITY_CLOCK_FIELDS = ()
-ROOT_BOOKKEEPING_FIELDS = ()
+ROOT_BOOKKEEPING_FIELDS = {
+    'data/advancedrocketrycommunity_satellite_missions.dat': {
+        'data/clock/logical_game_time': 'MonotonicMissionClock adds the forward observed-time delta; observeClock dirties the root without changing its epoch.',
+        'data/clock/last_observed_game_time': 'MonotonicMissionClock records server game time; only a nondecreasing, equal-delta clock-only save is admitted.',
+    },
+}
 REGION = re.compile(r'r\.(-?\d+)\.(-?\d+)\.mca\Z')
 HEX = re.compile(r'[0-9a-f]{64}\Z')
 
@@ -1262,6 +1267,22 @@ def apply(plan_path, output, confirm):
 
 
 def census(plan_path, world, report, after_start=False):
+    def same_root(expected, actual, relative):
+        if relative not in ROOT_BOOKKEEPING_FIELDS:
+            return typed(expected) == typed(actual)
+        left, right = copy.deepcopy(expected), copy.deepcopy(actual)
+        try:
+            clocks = []
+            for path in ROOT_BOOKKEEPING_FIELDS[relative]:
+                a, b = at(left, *path.split('/')), at(right, *path.split('/'))
+                if a.type != nbt.LONG or b.type != nbt.LONG:
+                    return False
+                clocks.append(b.value - a.value)
+                b.value = a.value
+            return len(clocks) == 2 and clocks[1] >= 0 and clocks[0] == clocks[1] and typed(left) == typed(right)
+        except Refusal:
+            return False
+
     body = load_plan(plan_path)
     world, backup, source = map(strict_path, (world, body['backup'], body['source']))
     report = strict_path(report, exists=False)
@@ -1278,13 +1299,12 @@ def census(plan_path, world, report, after_start=False):
         if after_start:
             for relative in body['manifest']:
                 if Path(relative).name.removesuffix('.dat').removeprefix('advancedrocketrycommunity_') in CURRENT_ROOTS:
-                    before_root = at(read_gzip(backup / relative)[1], 'data')
-                    after_root = at(read_gzip(world / relative)[1], 'data')
-                    require(all(typed(at(before_root, k)) == typed(at(after_root, k)) for k in ('schema_version', 'format_epoch')),
+                    before_root = read_gzip(backup / relative)[1]
+                    after_root = read_gzip(world / relative)[1]
+                    require(all(typed(at(before_root, 'data', k)) == typed(at(after_root, 'data', k)) for k in ('schema_version', 'format_epoch')),
                             'MIGRATION_DURING_VERIFICATION')
-                    expected = at(nbt.read(journal_candidate(*read_gzip(backup / JOURNAL), body['identity']['transfer']))[1],
-                                  'data') if relative == JOURNAL else before_root
-                    require(typed(expected) == typed(after_root), 'MANAGED_ROOT_CHANGED:' + relative)
+                    expected = nbt.read(journal_candidate(*read_gzip(backup / JOURNAL), body['identity']['transfer']))[1] if relative == JOURNAL else before_root
+                    require(same_root(expected, after_root, relative), 'MANAGED_ROOT_CHANGED:' + relative)
         retained = at(nbt.read(bytes.fromhex(body['record_typed_hex']))[1], 'v')
         old = inspect(backup, body['manifest'], body['profile'], body['identity']['transfer'])
         check_observation(body, old)
@@ -1299,7 +1319,7 @@ def census(plan_path, world, report, after_start=False):
             for path, root in old['managed'].items():
                 expected = nbt.read(journal_candidate(*read_gzip(backup / JOURNAL), body['identity']['transfer']))[1] if path == JOURNAL else root
                 # A vanilla empty ListTag is END; nonempty lists and unknown fields keep their types.
-                require(typed(expected) == typed(new['managed'][path]), 'MANAGED_ROOT_CHANGED:' + path)
+                require(same_root(expected, new['managed'][path], path), 'MANAGED_ROOT_CHANGED:' + path)
         # Forced-chunk lists may be newly written by the operator's loading commands,
         # but their decoded contents must return to the backup's state.
         for path in diff['added'] + diff['changed'] if after_start else []:

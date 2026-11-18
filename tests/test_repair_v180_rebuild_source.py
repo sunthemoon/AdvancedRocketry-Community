@@ -1100,6 +1100,45 @@ class RevisionTest(RepairFixture):
         self.refusal('UNVALIDATED_AUTHORITY:markers')
 
 
+class BookkeepingClockTest(RepairFixture):
+    def clock_census(self, observed=20, logical=20, extra=None, root_key='satellite_missions'):
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        path = self.output / ('data/advancedrocketrycommunity_' + root_key + '.dat')
+        name, root = n.read_gzip(path)
+        data = root.value['data']
+        if root_key != 'satellite_missions':
+            data.value['clock'] = C(logical_game_time=L(0), last_observed_game_time=L(0))
+        data.value['clock'].value['logical_game_time'].value = logical
+        data.value['clock'].value['last_observed_game_time'].value = observed
+        if extra:
+            extra(data)
+        n.write_gzip(path, name, root)
+        return repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True)
+
+    def test_forward_equal_clock_step_is_accepted(self):
+        self.assertEqual('SEMANTIC_CENSUS_ONLY', self.clock_census()['status'])
+
+    def test_decreased_observed_time_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(-1, -1))
+
+    def test_unequal_clock_increases_are_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(20, 19))
+
+    def test_clock_step_with_changed_epoch_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(extra=lambda data: data.value.update(save_epoch=L(2))))
+
+    def test_clock_step_with_other_changed_field_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(extra=lambda data: data.value.update(other=I(1))))
+
+    def test_same_paths_in_another_root_are_not_exempt(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(root_key='endgame'))
+
+    def test_clock_scalar_type_change_is_not_exempt(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(
+            extra=lambda data: data.value['clock'].value.update(logical_game_time=I(20))))
+
+
 class Revision3Test(RepairFixture):
     def test_mixed_fence_sequence_binds_whole_log_and_first_floor_conflict(self):
         floor = self.log.read_text(encoding='utf-8').rstrip('\n')
