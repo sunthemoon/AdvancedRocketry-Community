@@ -14,7 +14,7 @@ that maps each finding to its section is in [W367](W367.md). The top-level secti
 revision 1, so existing references to sections 1 to 8 still point at the same subjects.
 
 Revision 3 (2026-11-18, Root decision R487) adds [section 9](#9-revision-3-root-decision-r487-after-w380s-native-runs),
-which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and section 3.6 after W380F's (R488).
+which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and sections 3.6 and 5.1 after W380F's and W380G's (R488, R490).
 The other sections are unchanged.
 
 Terms used below:
@@ -856,3 +856,45 @@ per field". These are its first two entries.
   Any other difference in the root is still `OBJECT_CHANGED`.
 - **Scope.** The two entries are named in `ROOT_BOOKKEEPING_FIELDS` with this reason. The list is never extended
   at run time. `ENTITY_CLOCK_FIELDS` stays empty unless Root admits an entry with its reason.
+
+### 9.4 Root's decisions on W380G's measurements (Root decision R490)
+
+W380G ran the whole sequence twice in measurement mode (record `W380.md` on branch `codex/v1.8.0-w380`, commits
+`d32fc2d5d` to `863bc63c8`; evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W380G/`). All six repaired
+observations passed the target, all-chunk and managed-root comparisons, and both launches landed on the Moon
+with the 159 mB debit. Root decides the remaining points as follows.
+
+1. **The runtime list (boundary 3).** Root admits W380G's 18 exact names with W380G's reasons:
+   - the nine `raids.dat` files;
+   - the transfer journal and the satellite mission root;
+   - `entities/r.0.0.mca`, `level.dat` and `level.dat_old`;
+   - the four overworld region files around the origin.
+   `session.lock` stayed byte-identical in both runs and is not listed. Inside the listed files the checks still
+   apply:
+   - in a `raids.dat`, only `/data/Tick` may change, and it may not decrease;
+   - in region and entity files, every object is compared with only `LastUpdate` and `InhabitedTime` exempt;
+   - the satellite root follows 9.3;
+   - `level.dat` and `level.dat_old` are vanilla metadata and are allowed as files.
+2. **The functional descendant's generation box (3.6).** The box comes from code, not from the observation.
+   - It is the destination tickets' radius plus vanilla's generation-dependency margin. Both are derived from the
+     candidate's bytecode, with the derivation in the record.
+   - In the margin, only chunks that were absent before may appear, and no existing chunk may change.
+   - The derived box must contain the 288 chunks of the ring from -13 to 13 that W380G observed. If it does not,
+     the run stops and reports.
+3. **The progression receipt.** The classic progression root may gain exactly one `first_moon_landing` receipt.
+   - Its fields are those `ClassicProgressionSavedData.encodeReceipt` writes, `source` = `rocket_transfers`
+     included.
+   - Its landing must match the observed Moon landing.
+   - Any other new entry, `first_station_warp` included, is still `NEW_CLASSIC_AUTHORITY`.
+4. **The launch settles only after the authority is pruned (5.1).** `FF_X03_LAUNCH` reports its result only
+   after:
+   - the ledger holds no armed-flight row for R;
+   - the writers are quiet;
+   - all of this inside the existing 6,000-tick bound.
+   W380G saw the result while a `HANDED_OFF` row was still present.
+5. **The ordinary unload does not start.** In both runs `FF_X03_UNLOAD` named the device and observed:
+   - the rocket holding 4,000 mB and the device 1,000 mB, of a 16,000 mB tank;
+   - both authorities true.
+   No operation followed within 6,000 ticks. The refusing condition is diagnosed first. If it is in the gated
+   probe, the probe is fixed. If it is in production code, the work stops at a failing test that names the
+   condition, and Root routes the fix.
