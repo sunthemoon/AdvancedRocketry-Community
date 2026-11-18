@@ -354,6 +354,8 @@ def repaired_cycle(args, session, evidence, number):
         action = 'unload' if i == 0 else 'launch' if i == 2 else None
         measure(lambda: oracle.compare_functional(before, state, action=action), findings, args.derive_runtime_list)
         debit = oracle.launch_debit(fields, before, state) if case == 'FF_X03_LAUNCH' else None
+        measure(lambda: oracle.functional_boundary(snapshots[0], oracle.manifest(descendant), RUNTIME_FILES), findings,
+                args.derive_runtime_list)
         functional.append(dict(case=case, observation=fields, debit=debit,
                                differences=oracle.differences(snapshots[0], oracle.manifest(descendant))))
         before = state

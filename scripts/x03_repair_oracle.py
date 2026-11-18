@@ -21,6 +21,10 @@ MAX_FILES, MAX_REGIONS, MAX_DECODED = 100_000, 4096, 256 * 1024**2
 # Vanilla chunk clocks advance while the verification probe holds its tickets.
 CHUNK_CLOCKS = ('LastUpdate', 'InhabitedTime')
 ENTITY_CLOCKS = ()
+# The runner fixes the first, virgin Moon landing pad at (8, 8). Its one-column
+# footprint is in chunk (0, 0); two ticket columns plus eight vanilla generation
+# neighbours bound the disposable descendant. A different selected pad refuses.
+FUNCTIONAL_BOXES = {'': (-6, 14, -6, 14), 'dimensions/advancedrocketrycommunity/moon': (-10, 10, -10, 10)}
 
 
 class OracleError(ValueError):
@@ -257,6 +261,10 @@ def launch_debit(fields, before, after):
     old, new = before['rocket']['flight_data']['fuel'], after['rocket']['flight_data']['fuel']
     require(primary + oxidizer > 0 and old['amount'] - new['amount'] == primary + oxidizer, 'PROPULSION_DEBIT_DIFFERS')
     require(int(fields['fuel_before']) == old['amount'] and int(fields['fuel_after']) == new['amount'], 'FUEL_READBACK')
+    require(oxidizer == 0 and old['propulsion']['primary']['fluid'] == 'advancedrocketrycommunity:rocket_fuel'
+            and old['propulsion']['primary']['amount'] - new['propulsion']['primary']['amount'] == primary,
+            'PER_FLUID_PROPULSION_DEBIT_DIFFERS')
+    require(old['propulsion']['oxidizer'] == new['propulsion']['oxidizer'], 'OXIDIZER_CHANGED')
     return dict(primary=primary, oxidizer=oxidizer, revision=int(match[3]), resource=match[4], catalog=match[5])
 
 
@@ -291,18 +299,83 @@ def compare_functional(before, after, *, action=None):
             root = block.value['arce_rocket_fluid_cargo']
             root.value['tank'].value.pop('Amount')
             root.value['resource_escrow'].value.pop('resource_epoch')
-    # Launch needs route-bounded world-generation/relocation comparison. Until
-    # its native trace supplies the exact bound, do not accept it by masking an
-    # entire entity, Level or SavedData root.
-    require(action != 'launch', 'LAUNCH_OBJECT_BOUNDARY_NOT_ESTABLISHED')
+    if action == 'launch':
+        compare_launched_rocket(before, after)
+        # Remove only the independently checked physical target, not its chunk
+        # or other entities. Disappearance of an otherwise empty entity record
+        # is vanilla's ordinary deletion after the handoff.
+        for state, tree in ((before, left), (after, right)):
+            entries = tree[state['rocket_key']].value['Entities'].value[1]
+            entries[:] = [entry for entry in entries if nbt.plain(entry).get('UUID') != nbt.plain(state['entity'])['UUID']]
+            if not entries:
+                del tree[state['rocket_key']]
+        require(not left.keys() - right.keys(), 'COLLATERAL_CHUNK_REMOVED')
+        for key in right.keys() - left.keys():
+            require(in_functional_box(key), 'OUTSIDE_FUNCTIONAL_BOX:' + repr(key))
+            require(Path(key[0]).parent.name != 'entities' or not right[key].value['Entities'].value[1], 'NEW_UNRELATED_ENTITY')
+        right = {key: right[key] for key in left}
     compare_chunks(left, right)
     require(before['managed'].keys() == after['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED')
     for name in before['managed']:
         a, b = copy.deepcopy(before['managed'][name]), copy.deepcopy(after['managed'][name])
-        if action == 'unload' and name == LEDGER:
+        if action in ('unload', 'launch') and name == LEDGER:
             for root in (a, b):
-                for key in ('issued_through', 'writer_generation'):
+                for key in (('issued_through', 'writer_generation') if action == 'unload' else
+                            ('writer_generation', 'issued_launch_serial', 'rocket_authorities')):
                     root.value['data'].value.pop(key)
-            require(after['ledger']['issued_through'] == before['ledger']['issued_through'] + 1
-                    and after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'UNLOAD_GENERATION')
+            require(after['ledger']['writer_generation'] > before['ledger']['writer_generation'], 'WRITER_GENERATION')
+            if action == 'unload':
+                require(after['ledger']['issued_through'] == before['ledger']['issued_through'] + 1, 'UNLOAD_GENERATION')
         equal(a, b, name)
+
+
+def in_functional_box(key):
+    name, x, z = key
+    path = Path(name)
+    level = path.parent.parent.as_posix()
+    box = FUNCTIONAL_BOXES.get('' if level == '.' else level)
+    return box is not None and box[0] <= x <= box[1] and box[2] <= z <= box[3]
+
+
+def functional_boundary(before, after, runtime_files):
+    allowed = set(runtime_files)
+    for name in before.keys() | after.keys():
+        path = Path(name)
+        match = REGION.fullmatch(path.name)
+        level = path.parent.parent.as_posix()
+        box = FUNCTIONAL_BOXES.get('' if level == '.' else level)
+        if box and path.parent.name in ('region', 'entities', 'poi') and match:
+            rx, rz = map(int, match.groups())
+            if rx * 32 <= box[1] and rx * 32 + 31 >= box[0] and rz * 32 <= box[3] and rz * 32 + 31 >= box[2]:
+                allowed.add(name)
+    return boundary(before, after, allowed)
+
+
+def compare_launched_rocket(before, after):
+    a, b = copy.deepcopy(before['entity']), copy.deepcopy(after['entity'])
+    old, new = before['rocket'], after['rocket']
+    require(new['flight_data']['current_dimension'] == 'advancedrocketrycommunity:moon'
+            and new['flight_data']['current_origin'][::2] == [8, 8], 'LANDING_OUTSIDE_PINNED_FIRST_PAD')
+    for entity in (a, b):
+        for field in ('UUID', 'Pos'):
+            entity.value.pop(field)
+        data = entity.value['RocketEntityData']
+        snapshot = data.value['snapshot']
+        for field in ('snapshot_id', 'source_dimension', 'source_origin', 'content_hash', 'created_at_game_time'):
+            snapshot.value.pop(field)
+        escrow = data.value['resource_escrow']
+        escrow.value.pop('resource_epoch')
+        flight = data.value['flight_data']
+        for field in ('state', 'current_body', 'current_dimension', 'current_origin', 'state_started_game_time', 'current_target'):
+            flight.value.pop(field)
+        fuel = flight.value['fuel']
+        for field in ('amount', 'committed_debits'):
+            fuel.value.pop(field)
+        fuel.value['propulsion'].value.pop('revision')
+        fuel.value['propulsion'].value['primary'].value.pop('amount')
+    require(new['resource_escrow']['resource_epoch'] == 0 and new['flight_data']['state'] == 'LANDED', 'LANDED_EPOCH_OR_STATE')
+    old_fuel, new_fuel = old['flight_data']['fuel'], new['flight_data']['fuel']
+    require(len(new_fuel['committed_debits']) == len(old_fuel['committed_debits']) + 1
+            and new_fuel['committed_debits'][:-1] == old_fuel['committed_debits']
+            and new_fuel['propulsion']['revision'] == old_fuel['propulsion']['revision'] + 1, 'DEBIT_HISTORY_OR_REVISION')
+    equal(a, b, 'landed-rocket')
