@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-18. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w386`, branch `codex/v1.8.0-w386`, at the shared head |
 | Decision | Root decision R506 (QUEUE row W386) |
-| Prior work | W384's record (`records/W384.md`, merged with W384): the X02 `ZERO_LENGTH` case on the satellite registry was refused at both starts with `ARCE-BETA-2002`, so the runner, which detects only the declared `ARCE-BETA-2000` line, classed it `NOT_CAUGHT` |
+| Prior work | [W384's record](records/W384.md): the X02 `ZERO_LENGTH` case on the satellite registry was refused at both starts with `ARCE-BETA-2002`, so the runner, which detects only the declared `ARCE-BETA-2000` line, classed it `NOT_CAUGHT` |
 | Record | `docs/work/v1.8.0-root-queue/records/W386.md` |
 | Write scope | `persistence/migration/BoundedSavedDataIo.java`, its unit tests and `WorldDataMigrationServiceTest`, and the record. No other production file, no runner, no oracle, no log manifest unless a GameTest proves an expected line changed. |
 
