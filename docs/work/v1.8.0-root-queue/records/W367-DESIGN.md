@@ -14,7 +14,8 @@ that maps each finding to its section is in [W367](W367.md). The top-level secti
 revision 1, so existing references to sections 1 to 8 still point at the same subjects.
 
 Revision 3 (2026-11-18, Root decision R487) adds [section 9](#9-revision-3-root-decision-r487-after-w380s-native-runs),
-which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs. The other sections are unchanged.
+which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs, and section 3.6 after W380F's (R488).
+The other sections are unchanged.
 
 Terms used below:
 
@@ -835,3 +836,23 @@ mapped jar: the constructor compares `FileChannel.read` with -1, skips the offse
 - the file stays in the census with its size and hash, and a later change of it is judged by section 3.6;
 - a file of 1 to 8,191 bytes still refuses with `CORRUPT_REGION`, which is stricter than vanilla;
 - neither the tool nor the runner creates, fills, removes or normalizes such a file.
+
+### 9.3 The first per-root bookkeeping fields (fills the list of 3.6, Root decision R488)
+
+W380F's first repaired observation (record `W380.md` on branch `codex/v1.8.0-w380`, commit `1f712a153`) changed
+`data/clock/last_observed_game_time` and `data/clock/logical_game_time` of the satellite mission root. Section
+3.6 expected such fields: boundary 2 permits "a second fixed list of per-root bookkeeping fields, with a reason
+per field". These are its first two entries.
+
+- **Reason.** The satellite mission service keeps a monotonic clock (`MonotonicMissionClock.advance`). It sets
+  `last_observed_game_time` to the server game time it observes, and adds only forward differences to
+  `logical_game_time`. `SatelliteMissionSavedData.observeClock` marks the root dirty after a clock-only change,
+  and the ordinary autosave writes it. The clock-only write keeps the root's epoch.
+- **Check, which is stricter than a plain exemption.** The tool's census and the oracle accept a difference in
+  these two paths only when all of the following hold:
+  - `last_observed_game_time` did not decrease;
+  - the increase of `logical_game_time` equals the increase of `last_observed_game_time`;
+  - every other path of the root, the epoch included, is unchanged.
+  Any other difference in the root is still `OBJECT_CHANGED`.
+- **Scope.** The two entries are named in `ROOT_BOOKKEEPING_FIELDS` with this reason. The list is never extended
+  at run time. `ENTITY_CLOCK_FIELDS` stays empty unless Root admits an entry with its reason.
