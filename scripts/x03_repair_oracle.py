@@ -65,10 +65,15 @@ MOON = 'dimensions/advancedrocketrycommunity/moon'
 DESTINATION_TICKET_RADIUS, GENERATION_MARGIN = 2, 11
 PROBE_LANDING_TICKET_DISTANCE = 0
 GENERATION_RADIUS = DESTINATION_TICKET_RADIUS + GENERATION_MARGIN
-FUNCTIONAL_BOXES = {'': (-6, 15, -6, 14), MOON: (-GENERATION_RADIUS, GENERATION_RADIUS) * 2}
+# R501 (W380R finding 2): the Moon box is the only one. The launch may add chunks
+# nowhere else, and the source Level needs no file-level box: the only overworld
+# files a functional start wrote in W380G to W380I are four region files and one
+# entity file, and the runtime list already names each of them exactly.
+FUNCTIONAL_BOXES = {MOON: (-GENERATION_RADIUS, GENERATION_RADIUS) * 2}
+# R501: the stations root is not admitted. No run wrote it, so a new or changed
+# stations root is an unlisted file, an unexpected root or a changed object.
 FUNCTIONAL_DATA_FILES = {
     LEDGER: 'Ordinary unload and flight authority writes.',
-    'data/advancedrocketrycommunity_stations.dat': 'The admin flight resolves the station registry even for a body route.',
     'data/advancedrocketrycommunity_classic_progression.dat': 'The ordinary first Moon landing receipt.',
 }
 
@@ -487,9 +492,6 @@ def compare_functional(before, after, *, action=None):
             require(nbt.plain(a)['data']['classic_first_moon_landing'] == dict(schema_version=1, state='EMPTY'), 'PREEXISTING_MOON_ELECTION')
             for root in (a, b):
                 root.value['data'].value.pop('classic_first_moon_landing')
-        if action == 'launch' and name.endswith('_stations.dat'):
-            for root in (a, b):
-                root.value['data'].value['orbital_clock'].value.pop('logical_tick')
         if action == 'launch' and name.endswith('_classic_progression.dat'):
             require(nbt.plain(a)['data']['first_moon_landing'] == dict(occurred=0), 'PREEXISTING_MOON_RECEIPT')
             validate_moon_receipt(b.value['data'].value['first_moon_landing'], event)
@@ -528,17 +530,7 @@ def validate_new_functional_root(name, root, event):
     typed_data = root.value['data']
     require(typed_data.type == nbt.COMPOUND and typed_data.value['schema_version'].type == nbt.INT
             and typed_data.value['format_epoch'].type == nbt.STRING, 'NEW_MANAGED_ROOT_TYPES')
-    if name.endswith('_stations.dat'):
-        require(set(data) == {'schema_version', 'format_epoch', 'stations', 'reservations', 'warp_energy', 'orbital_clock', 'classic_first_warp'}
-                and data['schema_version'] == 5 and data['format_epoch'] == 'v1.8.0-station-first-warp'
-                and not data['stations'] and not data['reservations'] and not data['warp_energy']
-                and set(data['orbital_clock']) == {'schema_version', 'logical_tick'}
-                and data['orbital_clock']['schema_version'] == 1 and data['orbital_clock']['logical_tick'] >= 0
-                and data['classic_first_warp'] == dict(schema_version=1, state='EMPTY'), 'NEW_STATION_AUTHORITY')
-        require(all(typed_data.value[key].type == nbt.LIST for key in ('stations', 'reservations', 'warp_energy'))
-                and typed_data.value['orbital_clock'].type == typed_data.value['classic_first_warp'].type == nbt.COMPOUND
-                and typed_data.value['orbital_clock'].value['logical_tick'].type == nbt.LONG, 'NEW_STATION_TYPES')
-    elif name.endswith('_classic_progression.dat'):
+    if name.endswith('_classic_progression.dat'):
         require(set(data) == {'schema_version', 'format_epoch', 'first_moon_landing', 'first_station_warp'}
                 and data['schema_version'] == 1 and data['format_epoch'] == 'v1.8.0-classic-progression'
                 and data['first_station_warp'] == dict(occurred=0)

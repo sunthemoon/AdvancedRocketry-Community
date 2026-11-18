@@ -146,6 +146,86 @@ class RawOracleTest(RepairFixture):
         after['rocket_key'] = ('dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca', 0, 0)
         return after
 
+    def launched_pair(self):
+        """A repaired world before the launch and its stopped files after an ordinary first Moon landing."""
+        self.data['rocket_transfers'].value['transfers'] = E()
+        self.write_roots()
+        before = oracle.read(self.source)
+        after = self.landed(before)
+        moon = after['rocket_key']
+        del after['chunks'][before['rocket_key']]
+        after['chunks'][moon] = C(Entities=E(after['entity']))
+        after['chunks'][(oracle.MOON + '/region/r.0.0.mca', 0, 0)] = C(sections=E(), block_entities=E())
+        event = C(kind=S('first_moon_landing'), event_id=U(20), transfer_id=U(21), logical_rocket_id=U(2), owner_id=U(4),
+                  terminal_rocket_id=U(10), record_checksum=S('a' * 64), level=S('advancedrocketrycommunity:moon'),
+                  terminal_origin=A(8, 100, 8), completed_at_game_time=L(300), participants=A(), fingerprint=S('b' * 64))
+        after['managed'][oracle.JOURNAL].value['data'].value['classic_first_moon_landing'] = C(
+            schema_version=I(1), state=S('DELIVERED'), event=event)
+        after['managed']['data/advancedrocketrycommunity_classic_progression.dat'].value['data'].value['first_moon_landing'] = C(
+            occurred=nbt.Tag(nbt.BYTE, 1), source=S('rocket_transfers'), event=copy.deepcopy(event))
+        ledger = after['managed'][oracle.LEDGER].value['data'].value
+        ledger['writer_generation'].value += 3
+        ledger['issued_launch_serial'].value = 1
+        after['ledger'] = nbt.plain(after['managed'][oracle.LEDGER])['data']
+        after['journal'] = nbt.plain(after['managed'][oracle.JOURNAL])['data']
+        return before, after
+
+    def test_ordinary_first_moon_landing_passes_the_functional_comparison(self):
+        before, after = self.launched_pair()
+        oracle.compare_functional(before, after, action='launch')
+        # Previously absent Moon chunks may appear anywhere in the derived radius-13 box, and nowhere beyond it.
+        after['chunks'][(oracle.MOON + '/region/r.-1.-1.mca', -13, -13)] = C(sections=E(), block_entities=E())
+        oracle.compare_functional(before, after, action='launch')
+        after['chunks'][(oracle.MOON + '/region/r.0.0.mca', 14, 0)] = C(sections=E(), block_entities=E())
+        with self.assertRaisesRegex(oracle.OracleError, 'OUTSIDE_FUNCTIONAL_BOX:.*moon/region/r.0.0.mca., 14, 0'):
+            oracle.compare_functional(before, after, action='launch')
+
+    def test_launch_may_not_add_any_overworld_chunk(self):
+        # W380R finding 2 (R501): the removed overworld box held chunks -6..15 by -6..14.
+        for name, x, z, root in (('region/r.0.0.mca', 9, 9, C(sections=E(), block_entities=E())),
+                                 ('region/r.-1.-1.mca', -6, -6, C(sections=E(), block_entities=E())),
+                                 ('entities/r.0.0.mca', 15, 14, C(Entities=E())),
+                                 ('entities/r.0.0.mca', 4, 4, C(Entities=E())),
+                                 ('poi/r.0.0.mca', 0, 0, C(Sections=C()))):
+            before, after = self.launched_pair()
+            self.assertNotIn((name, x, z), after['chunks'])
+            after['chunks'][(name, x, z)] = root
+            with self.subTest(name=name, x=x, z=z), self.assertRaisesRegex(
+                    oracle.OracleError, '^OUTSIDE_FUNCTIONAL_BOX:.*' + name + "', " + str(x) + ', ' + str(z)):
+                oracle.compare_functional(before, after, action='launch')
+            self.assertFalse(oracle.in_functional_box((name, x, z)))
+
+    def test_new_stations_root_fails_the_functional_comparison(self):
+        stations = 'data/advancedrocketrycommunity_stations.dat'
+        for action in ('launch', 'unload', None):
+            before, after = self.launched_pair()
+            fresh = copy.deepcopy(before['managed'][stations])
+            del before['managed'][stations]
+            if action != 'launch':
+                after = copy.deepcopy(before)
+                after['managed'][stations] = fresh
+                if action == 'unload':
+                    after['ledger']['writer_generation'] += 1
+                    after['ledger']['issued_through'] += 1
+            with self.subTest(action=action), self.assertRaisesRegex(oracle.OracleError, '^MANAGED_ROOT_SET_CHANGED$'):
+                oracle.compare_functional(before, after, action=action)
+        root = C(data=C(schema_version=I(5), format_epoch=S('v1.8.0-station-first-warp'), stations=E(), reservations=E(),
+                        warp_energy=E(), orbital_clock=C(schema_version=I(1), logical_tick=L(0)),
+                        classic_first_warp=C(schema_version=I(1), state=S('EMPTY'))), DataVersion=I(3465))
+        with self.assertRaisesRegex(oracle.OracleError, '^UNEXPECTED_NEW_ROOT:' + stations + '$'):
+            oracle.validate_new_functional_root(stations, root, C())
+        self.assertNotIn(stations, oracle.FUNCTIONAL_DATA_FILES)
+
+    def test_changed_stations_root_fails_the_functional_comparison(self):
+        stations = 'data/advancedrocketrycommunity_stations.dat'
+        for tick in (1, -1):
+            before, after = self.launched_pair()
+            oracle.compare_functional(before, after, action='launch')
+            after['managed'][stations].value['data'].value['orbital_clock'].value['logical_tick'].value = tick
+            with self.subTest(tick=tick), self.assertRaisesRegex(
+                    oracle.OracleError, '^OBJECT_CHANGED:' + stations + ':/data/orbital_clock/logical_tick$'):
+                oracle.compare_functional(before, after, action='launch')
+
     def test_launch_comparison_masks_only_the_named_action_fields(self):
         before = oracle.read(self.source)
         after = self.landed(before)
@@ -294,6 +374,22 @@ class BoundaryTest(unittest.TestCase):
                         'dimensions/advancedrocketrycommunity/moon/region/r.1.1.mca', 'playerdata/unrelated.dat'):
             with self.subTest(outside=outside), self.assertRaisesRegex(oracle.OracleError, 'UNLISTED_FILE'):
                 oracle.functional_boundary({}, {outside: 'x'}, {})
+
+    def test_functional_file_rule_has_no_overworld_box_and_no_stations_root(self):
+        # W380R finding 2 (R501). The removed overworld box admitted these twelve files; the removed
+        # data entry admitted the stations root. Only exact runtime-list names remain for the source Level.
+        self.assertEqual({oracle.MOON}, set(oracle.FUNCTIONAL_BOXES))
+        former = [kind + '/r.' + region + '.mca' for kind in ('region', 'entities', 'poi')
+                  for region in ('-1.-1', '-1.0', '0.-1', '0.0')]
+        for name in former + ['data/advancedrocketrycommunity_stations.dat']:
+            for before in ({}, {name: 'old'}):
+                with self.subTest(name=name, before=before), self.assertRaisesRegex(
+                        oracle.OracleError, '^UNLISTED_FILE:' + name + '$'):
+                    oracle.functional_boundary(before, {name: 'new'}, {})
+        listed = {'region/r.0.0.mca': 'reason', 'entities/r.0.0.mca': 'reason'}
+        self.assertEqual(sorted(listed), oracle.functional_boundary({}, dict.fromkeys(listed, 'new'), listed)['added'])
+        with self.assertRaisesRegex(oracle.OracleError, '^UNLISTED_FILE:poi/r.0.0.mca$'):
+            oracle.functional_boundary({}, {'poi/r.0.0.mca': 'new'}, listed)
 
     def test_chunk_box_does_not_admit_unrelated_slots_in_an_allowed_region_file(self):
         self.assertTrue(oracle.in_functional_box(('dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca', 0, 0)))
