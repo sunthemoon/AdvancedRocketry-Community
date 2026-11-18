@@ -62,7 +62,8 @@ class ReleaseTestStorageFaultTest {
         for (Fault fault : Fault.values()) {
             assertEquals(fault, ReleaseTestStorageFault.parse("SATELLITE_MISSIONS:" + fault + ":4").fault());
         }
-        assertMalformed("form", "", "BAY_RECEIPTS", "BAY_RECEIPTS:WRITE_ERROR", "BAY_RECEIPTS:WRITE_ERROR:1:2");
+        // W379F (Root decision R486): a fourth field is the skip, so the refused long form now has five fields.
+        assertMalformed("form", "", "BAY_RECEIPTS", "BAY_RECEIPTS:WRITE_ERROR", "BAY_RECEIPTS:WRITE_ERROR:1:2:3");
         assertMalformed("store", "bay_receipts:WRITE_ERROR:1", "LEDGER:WRITE_ERROR:1", ":WRITE_ERROR:1");
         assertMalformed("fault", "BAY_RECEIPTS:write_error:1", "BAY_RECEIPTS:POWER_LOSS:1", "BAY_RECEIPTS::1");
         assertMalformed("count", "BAY_RECEIPTS:WRITE_ERROR:0", "BAY_RECEIPTS:WRITE_ERROR:-1", "BAY_RECEIPTS:WRITE_ERROR:17",
@@ -348,7 +349,114 @@ class ReleaseTestStorageFaultTest {
         assertArrayEquals(Files.readAllBytes(direct), Files.readAllBytes(file));
     }
 
+    // ---- The skip (W379F, Root decision R486) ------------------------------------------------------------------------
+
+    @Test void theOptionalFourthFieldIsTheSkip() {
+        assertEquals(new Spec(TYPE, Fault.WRITE_ERROR, 1, 0), ReleaseTestStorageFault.parse("BAY_RECEIPTS:WRITE_ERROR:1"));
+        assertEquals(new Spec(TYPE, Fault.WRITE_ERROR, 1), ReleaseTestStorageFault.parse("BAY_RECEIPTS:WRITE_ERROR:1:0"));
+        assertEquals(new Spec(ManagedSavedDataType.SATELLITE_MISSIONS, Fault.MOVE_AFTER, 16, 48),
+                ReleaseTestStorageFault.parse("SATELLITE_MISSIONS:MOVE_AFTER:16:48"));
+        assertEquals(2, ReleaseTestStorageFault.parse("BAY_RECEIPTS:FLUSH_ERROR:4:2").skip());
+        assertMalformed("skip", "BAY_RECEIPTS:WRITE_ERROR:1:", "BAY_RECEIPTS:WRITE_ERROR:1:-1", "BAY_RECEIPTS:WRITE_ERROR:1:49",
+                "BAY_RECEIPTS:WRITE_ERROR:1:01", "BAY_RECEIPTS:WRITE_ERROR:1:+1", "BAY_RECEIPTS:WRITE_ERROR:1:x",
+                "BAY_RECEIPTS:WRITE_ERROR:1: 1");
+        // The count is still checked first, and a malformed skip installs nothing.
+        assertMalformed("count", "BAY_RECEIPTS:WRITE_ERROR:0:1", "BAY_RECEIPTS:WRITE_ERROR:17:x");
+        assertFalse(ReleaseTestStorageFault.install("BAY_RECEIPTS:WRITE_ERROR:1:49", lines::add, errors::add));
+        assertEquals(List.of(ReleaseTestStorageFault.INVALID + " reason=malformed-skip"), errors);
+        assertSame(CheckedFileOps.DIRECT, CheckedSavedDataFile.fileOps());
+        // Every skipped and every faulted write has its attempt line.
+        assertEquals(ReleaseTestStorageFault.MAX_REPORTED_ATTEMPTS, ReleaseTestStorageFault.MAX_SKIP + ReleaseTestStorageFault.MAX_COUNT);
+    }
+
+    @Test void theSkippedWritesPassAndTheFaultedWritesFollowThem() throws Exception {
+        seed();
+        install("BAY_RECEIPTS:WRITE_ERROR:2:2");
+        assertEquals(ReleaseTestStorageFault.MARKER + " installed store=BAY_RECEIPTS fault=WRITE_ERROR count=2 skip=2", lines.get(0));
+        // Another store's writes do not use up the skip.
+        Path other = Files.createDirectories(root.resolve("other")).resolve(OTHER.fileName());
+        CheckedSavedDataFile.replace(other, OTHER, () -> payload(7));
+        write(1);
+        assertEquals(payload(1), read());
+        write(2);
+        byte[] second = Files.readAllBytes(file);
+        assertEquals(payload(2), read());
+        for (int attempt = 3; attempt <= 4; attempt++) {
+            assertEquals("ARCE injected fault: write error", failed(() -> write(3, true)).getMessage());
+            assertArrayEquals(second, Files.readAllBytes(file));
+        }
+        write(3);
+        assertEquals(payload(3), read());
+        List<String> events = events();
+        assertEquals("passed attempt=1 skip=2 left=1", events.get(0));
+        assertTrue(events.get(1).startsWith("attempt attempt=1 result=moved moved=true faulted=false bytes="), events.get(1));
+        assertEquals("passed attempt=2 skip=2 left=0", events.get(2));
+        assertTrue(events.get(3).startsWith("attempt attempt=2 result=moved moved=true faulted=false bytes="), events.get(3));
+        assertEquals(List.of("injected operation=write attempt=3 remaining=1 skip=2",
+                "attempt attempt=3 result=failed moved=false faulted=true bytes=0",
+                "injected operation=write attempt=4 remaining=0 skip=2",
+                "attempt attempt=4 result=failed moved=false faulted=true bytes=0"), events.subList(4, 8));
+        assertTrue(events.get(8).startsWith("attempt attempt=5 result=moved moved=true faulted=false bytes="), events.get(8));
+        assertEquals(9, events.size());
+        ReleaseTestStorageFault.restore();
+        assertEquals(ReleaseTestStorageFault.MARKER + " closed store=BAY_RECEIPTS fault=WRITE_ERROR injected=2 attempts=5 skip=2",
+                lines.get(lines.size() - 1));
+    }
+
+    @Test void aSkippedWriteLeavesTheSameBytesAsDirect() throws Exception {
+        Path direct = Files.createDirectories(root.resolve("direct")).resolve(TYPE.fileName());
+        CheckedSavedDataFile.replace(direct, TYPE, () -> payload(5));
+        install("BAY_RECEIPTS:LOST_WRITE:1:1");
+        write(5);
+        assertArrayEquals(Files.readAllBytes(direct), Files.readAllBytes(file));
+        assertFalse(Files.exists(pending()));
+        // The write after the skip is the lost one.
+        assertThrows(RuntimeException.class, () -> write(6, true));
+        assertArrayEquals(Files.readAllBytes(direct), Files.readAllBytes(file));
+    }
+
+    @Test void aSkippedOpenIsNotRefusedAndASkippedMoveIsNotFaulted() throws Exception {
+        seed();
+        install("BAY_RECEIPTS:DISK_FULL_OPEN:1:1");
+        write(1);
+        assertEquals(payload(1), read());
+        assertTrue(failed(() -> write(2, true)).getMessage().contains("not enough space"));
+        assertEquals(List.of("injected operation=open attempt=2 remaining=0 skip=1",
+                "attempt attempt=2 result=open-failed moved=false faulted=true bytes=0"), events().subList(2, 4));
+        ReleaseTestStorageFault.restore();
+        lines.clear();
+
+        install("BAY_RECEIPTS:READ_ERROR:1:1");
+        CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
+        policy.replace(file, () -> payload(3));
+        // No readback is faulted after the skipped write's move.
+        assertEquals(Optional.of(payload(3)), policy.read(file));
+        assertThrows(UncheckedIOException.class, () -> policy.replace(file, () -> payload(4)));
+        assertThrows(UncheckedIOException.class, () -> policy.read(file));
+        assertEquals(Optional.of(payload(4)), policy.read(file));
+    }
+
+    @Test void anUnusedSkipEndsWithTheRestore() throws Exception {
+        seed();
+        install("BAY_RECEIPTS:WRITE_ERROR:1:3");
+        write(1);
+        ReleaseTestStorageFault.restore();
+        assertEquals(ReleaseTestStorageFault.MARKER + " closed store=BAY_RECEIPTS fault=WRITE_ERROR injected=0 attempts=1 skip=3",
+                lines.get(lines.size() - 1));
+        int reported = lines.size();
+        for (int value = 2; value <= 5; value++) {
+            write(value);
+        }
+        assertEquals(payload(5), read());
+        assertEquals(reported, lines.size());
+    }
+
     // ---- Helpers ----------------------------------------------------------------------------------------------------
+
+    private void install(String property) {
+        assertTrue(ReleaseTestStorageFault.install(property, lines::add, errors::add), errors.toString());
+        assertTrue(errors.isEmpty());
+    }
 
     private void install(Fault fault, int count) {
         assertTrue(ReleaseTestStorageFault.install(TYPE + ":" + fault + ":" + count, lines::add, errors::add), errors.toString());

@@ -25,10 +25,10 @@ import org.slf4j.Logger;
 
 /**
  * The gated injector of checked-write storage faults (W368-DESIGN sections 4 and 6, task W379). It is installed only
- * on a release-test dedicated server that names one fault as {@code <store>:<fault>:<count>}, and it is removed when
- * that server stops. It acts on the named store only, for the first {@code count} writes after the installation, and
- * calls {@link CheckedFileOps#DIRECT} for everything else. It adds no command, network message, configuration key or
- * saved field.
+ * on a release-test dedicated server that names one fault as {@code <store>:<fault>:<count>[:<skip>]}, and it is
+ * removed when that server stops. It acts on the named store only: the store's first {@code skip} writes after the
+ * installation pass unchanged, the next {@code count} writes get the fault, and everything else goes to
+ * {@link CheckedFileOps#DIRECT}. It adds no command, network message, configuration key or saved field.
  */
 public final class ReleaseTestStorageFault {
     public static final String HOOKS = "advancedrocketrycommunity.releaseTestHooks";
@@ -37,6 +37,8 @@ public final class ReleaseTestStorageFault {
     public static final String INVALID = "ARCE_RELEASE_STORAGE_FAULT_INVALID";
     /** A count of 4 outlasts the writers' three-failure limit; the bound keeps a mistyped count from holding a server. */
     static final int MAX_COUNT = 16;
+    /** With {@link #MAX_COUNT}, every skipped and every faulted write is among the reported attempts. */
+    static final int MAX_SKIP = 48;
     /** The attempts of the named store that get an {@code attempt} line; later attempts are only counted. */
     static final int MAX_REPORTED_ATTEMPTS = 64;
     static final String PENDING_SUFFIX = ".arce-pending";
@@ -76,8 +78,16 @@ public final class ReleaseTestStorageFault {
         READ_CORRUPT
     }
 
-    /** One parsed fault. */
-    record Spec(ManagedSavedDataType store, Fault fault, int count) {
+    /** One parsed fault; {@code skip} is the number of the store's writes that pass before the first faulted one. */
+    record Spec(ManagedSavedDataType store, Fault fault, int count, int skip) {
+        Spec(ManagedSavedDataType store, Fault fault, int count) {
+            this(store, fault, count, 0);
+        }
+
+        /** Empty without a skip, so that the lines of the three-field form are the ones it always had. */
+        String skipField() {
+            return skip == 0 ? "" : " skip=" + skip;
+        }
     }
 
     /**
@@ -89,15 +99,19 @@ public final class ReleaseTestStorageFault {
         return hooks && dedicated && property != null && !property.isEmpty() ? property : null;
     }
 
-    /** Parses {@code <store>:<fault>:<count>}; the store is a {@link ManagedSavedDataType} name. */
+    /**
+     * Parses {@code <store>:<fault>:<count>[:<skip>]}. The store is a {@link ManagedSavedDataType} name, the count is 1
+     * to {@link #MAX_COUNT} and the skip is 0 to {@link #MAX_SKIP}; without the fourth field the skip is 0.
+     */
     static Spec parse(String property) {
         String[] parts = property.split(":", -1);
-        if (parts.length != 3) {
+        if (parts.length != 3 && parts.length != 4) {
             throw new IllegalArgumentException("form");
         }
         ManagedSavedDataType store;
         Fault fault;
         int count;
+        int skip = 0;
         try {
             store = ManagedSavedDataType.valueOf(parts[0]);
         } catch (IllegalArgumentException unknown) {
@@ -116,7 +130,17 @@ public final class ReleaseTestStorageFault {
         if (count < 1 || count > MAX_COUNT || !parts[2].equals(Integer.toString(count))) {
             throw new IllegalArgumentException("count");
         }
-        return new Spec(store, fault, count);
+        if (parts.length == 4) {
+            try {
+                skip = Integer.parseInt(parts[3]);
+            } catch (NumberFormatException unknown) {
+                throw new IllegalArgumentException("skip");
+            }
+            if (skip < 0 || skip > MAX_SKIP || !parts[3].equals(Integer.toString(skip))) {
+                throw new IllegalArgumentException("skip");
+            }
+        }
+        return new Spec(store, fault, count, skip);
     }
 
     /**
@@ -161,7 +185,8 @@ public final class ReleaseTestStorageFault {
         installed = injector;
         CheckedSavedDataFile.installFileOps(injector);
         CheckedSavedDataPolicy.installReaderWrapper(injector::wrap);
-        info.accept(MARKER + " installed store=" + spec.store() + " fault=" + spec.fault() + " count=" + spec.count());
+        info.accept(MARKER + " installed store=" + spec.store() + " fault=" + spec.fault() + " count=" + spec.count()
+                + spec.skipField());
         return true;
     }
 
@@ -180,11 +205,12 @@ public final class ReleaseTestStorageFault {
     }
 
     /**
-     * Injects {@link Spec#fault} into the first {@link Spec#count} writes of {@link Spec#store}. One write (attempt) is
-     * one staging open with the operations that follow it. Each injection, the end of each attempt and a move that
-     * follows a lost write are reported as one {@link #MARKER} line, so a run's log shows where the fault acted and
-     * whether the write failed in the session. The bookkeeping is synchronized; no delegated operation runs under the
-     * lock.
+     * Passes the first {@link Spec#skip} writes of {@link Spec#store} to the delegate and injects {@link Spec#fault}
+     * into the {@link Spec#count} writes after them. One write (attempt) is one staging open with the operations that
+     * follow it, so a retry of the same candidate is a write of its own. Each passed write, each injection, the end of
+     * each attempt and a move that follows a lost write are reported as one {@link #MARKER} line, so a run's log shows
+     * where the fault acted and whether the write failed in the session. The bookkeeping is synchronized; no delegated
+     * operation runs under the lock.
      */
     static final class Injector implements CheckedFileOps {
         private final Spec spec;
@@ -194,6 +220,7 @@ public final class ReleaseTestStorageFault {
         private final Map<FileChannel, Attempt> channels = new HashMap<>();
         private final Map<Path, Attempt> stagings = new HashMap<>();
         private int remaining;
+        private int toSkip;
         private int injected;
         private int attempts;
         private int readFaults;
@@ -203,6 +230,7 @@ public final class ReleaseTestStorageFault {
             final MessageDigest digest = sha256();
             long bytes;
             boolean faulted;
+            boolean passed;
             boolean lost;
             boolean moved;
             boolean keepStaging;
@@ -218,6 +246,7 @@ public final class ReleaseTestStorageFault {
             this.report = report;
             this.targetName = spec.store().fileName();
             this.remaining = spec.count();
+            this.toSkip = spec.skip();
         }
 
         synchronized int injected() {
@@ -240,7 +269,7 @@ public final class ReleaseTestStorageFault {
                 stagings.clear();
             }
             say(MARKER + " closed store=" + spec.store() + " fault=" + spec.fault() + " injected=" + total
-                    + " attempts=" + seen);
+                    + " attempts=" + seen + spec.skipField());
         }
 
         // ---- The file operations ------------------------------------------------------------------------------------
@@ -254,7 +283,14 @@ public final class ReleaseTestStorageFault {
             boolean refuse;
             synchronized (this) {
                 attempt = new Attempt(++attempts);
-                refuse = spec.fault() == Fault.DISK_FULL_OPEN && arm(attempt, "open");
+                if (toSkip > 0) {
+                    // This write comes before the faulted ones: every operation of it goes to the delegate.
+                    toSkip--;
+                    attempt.passed = true;
+                    say(MARKER + " passed store=" + spec.store() + " fault=" + spec.fault() + " attempt=" + attempt.index
+                            + " skip=" + spec.skip() + " left=" + toSkip);
+                }
+                refuse =spec.fault() == Fault.DISK_FULL_OPEN && arm(attempt, "open");
             }
             if (refuse) {
                 ended(attempt, "open-failed");
@@ -444,16 +480,16 @@ public final class ReleaseTestStorageFault {
 
         // ---- Bookkeeping --------------------------------------------------------------------------------------------
 
-        /** Under the lock: takes one of the remaining faults for an attempt that has none yet. */
+        /** Under the lock: takes one of the remaining faults for an attempt that has none yet and was not skipped. */
         private boolean arm(Attempt attempt, String operation) {
-            if (attempt.faulted || remaining <= 0) {
+            if (attempt.passed || attempt.faulted || remaining <= 0) {
                 return false;
             }
             attempt.faulted = true;
             remaining--;
             injected++;
             say(MARKER + " injected store=" + spec.store() + " fault=" + spec.fault() + " operation=" + operation
-                    + " attempt=" + attempt.index + " remaining=" + remaining);
+                    + " attempt=" + attempt.index + " remaining=" + remaining + spec.skipField());
             return true;
         }
 
