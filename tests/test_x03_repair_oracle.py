@@ -7,6 +7,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import loader_cut_nbt as nbt
 import x03_repair_oracle as oracle
 from test_loader_cut_nbt import compound as C, string as S, region
