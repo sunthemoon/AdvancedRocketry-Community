@@ -1272,8 +1272,11 @@ def apply(plan_path, output, confirm):
 
 def census(plan_path, world, report, after_start=False):
     def same_root(expected, actual, relative):
+        # An unchanged root is equal whatever its shape; the clock rule judges only a difference.
+        if typed(expected) == typed(actual):
+            return True
         if relative not in ROOT_BOOKKEEPING_FIELDS:
-            return typed(expected) == typed(actual)
+            return False
         left, right = copy.deepcopy(expected), copy.deepcopy(actual)
         try:
             clocks = []

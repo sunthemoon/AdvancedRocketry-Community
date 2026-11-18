@@ -1167,6 +1167,50 @@ class BookkeepingClockTest(RepairFixture):
         self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(
             extra=lambda data: data.value['clock'].value.update(logical_game_time=I(20))))
 
+    def clockless_census(self, clock, change=None):
+        """W380R finding 5. The planner's own framing refuses a satellite clock without its two LONG leaves
+        (UNSUPPORTED_OBJECT_FIELDS or INVALID_NBT_TYPE), so census can meet such a root only behind a plan
+        that framing did not make. That framing is patched out here to reach the census comparison itself."""
+        self.data['satellite_missions'].value['clock'] = clock
+        self.write_roots()
+        self.sync()
+        with self.assertRaises(repair.Refusal):
+            self.plan()
+        self.assertFalse(self.planfile.exists())
+        with patch.object(repair, 'authority_collections'):
+            document = self.plan()
+            repair.apply(self.planfile, self.output, document['digest'])
+            if change:
+                path = self.output / 'data/advancedrocketrycommunity_satellite_missions.dat'
+                name, root = n.read_gzip(path)
+                change(root.value['data'])
+                n.write_gzip(path, name, root)
+            return repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True)
+
+    def test_unchanged_satellite_root_without_the_clock_leaves_is_equal(self):
+        for clock in (C(), C(logical_game_time=L(0)), C(logical_game_time=I(0), last_observed_game_time=I(0))):
+            with self.subTest(clock=sorted(clock.value)):
+                self.seed()
+                for stale in (self.planfile, self.reports / 'clock-census.json'):
+                    stale.unlink(missing_ok=True)
+                if self.output.exists():
+                    shutil.rmtree(self.output)
+                self.assertEqual('SEMANTIC_CENSUS_ONLY', self.clockless_census(clock)['status'])
+
+    def test_changed_satellite_root_without_the_clock_leaves_still_refuses(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clockless_census(
+            C(), lambda data: data.value['save_epoch'].__setattr__('value', 2)))
+
+    def test_changed_ordinary_root_still_refuses_after_the_equal_first_return(self):
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        path = self.output / 'data/advancedrocketrycommunity_endgame.dat'
+        name, root = n.read_gzip(path)
+        root.value['data'].value['save_epoch'].value = 2
+        n.write_gzip(path, name, root)
+        self.refusal('MANAGED_ROOT_CHANGED:data/advancedrocketrycommunity_endgame.dat',
+                     lambda: repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True))
+
 
 class Revision3Test(RepairFixture):
     def test_mixed_fence_sequence_binds_whole_log_and_first_floor_conflict(self):
