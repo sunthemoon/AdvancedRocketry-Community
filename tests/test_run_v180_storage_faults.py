@@ -1280,6 +1280,18 @@ class UnacceptedLineTests(unittest.TestCase):
         observation["first_start"].update(unaccepted=[], unaccepted_count=3)
         self.assertEqual(faults.classify_live(observation)["classification"], faults.NEEDS_REVIEW)
 
+    def test_an_observation_without_the_reading_of_the_faulted_start_accepted_nothing(self):
+        # W379 kept observations without `first_start`. Every ERROR or FATAL line of their first start counts.
+        observation, _ = self.registry(self.UNRELATED)
+        del observation["first_start"]
+        result = faults.classify_live(observation)
+        self.assertEqual(result["classification"], faults.NEEDS_REVIEW)
+        self.assertIn("2 ERROR or FATAL line(s) of the faulted start are not declared hold lines", result["reasons"][-1])
+        self.assertIn("The existing runner reported for the case: no error.", result["reasons"][-1])
+        self.assertEqual(result["evidence"][-2:], [REGISTRY_HOLD, self.UNRELATED])
+        observation["session_errors"] = []
+        self.assertEqual(faults.classify_live(observation)["classification"], faults.SEEN_HELD)
+
     def test_an_unaccepted_line_blocks_caught_later_and_changes_no_unfavourable_class(self):
         unseen = [line.replace("BAY_RECEIPTS", "SATELLITE_MISSIONS") for line in session("LOST_WRITE", unseen=True, retry=False)]
         case = faults.Case("SATELLITE_MISSIONS", "LOST_WRITE", 1, 0)
@@ -1293,7 +1305,7 @@ class UnacceptedLineTests(unittest.TestCase):
         self.assertEqual(classify(**failed)["classification"], faults.CAUGHT_LATER)
         blocked = classify(self.UNRELATED, **failed)
         self.assertEqual(blocked["classification"], faults.NEEDS_REVIEW)
-        self.assertIn("The existing runner reported: oracle", blocked["reasons"])
+        self.assertIn("The existing runner reported for the case: oracle.", blocked["reasons"][-1])
         # A residual, an incomplete case and a case that never ran keep their class; none of them is favourable.
         self.assertEqual(classify(self.UNRELATED, restarts=((1, "FAIL"), (2, "FAIL")), error="oracle")["classification"], faults.NOT_CAUGHT)
         self.assertEqual(self.registry(self.UNRELATED, restarts=((1, "PASS"), (2, "FAIL")))[1]["classification"], faults.NOT_CAUGHT)

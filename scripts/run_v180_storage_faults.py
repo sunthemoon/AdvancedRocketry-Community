@@ -369,7 +369,12 @@ def classify_live(observation: dict) -> dict:
             result["unaccepted_first_start_lines"] = unaccepted
         return result
 
-    unaccepted = max(int(faulted_start.get("unaccepted_count") or 0), len(faulted_start.get("unaccepted") or []))
+    if faulted_start:
+        unaccepted = max(int(faulted_start.get("unaccepted_count") or 0), len(faulted_start.get("unaccepted") or []))
+    else:
+        # An observation without this runner's reading of the faulted start (W379 kept such ones) accepted nothing, so
+        # every ERROR or FATAL line of that start counts.
+        unaccepted = len(observation.get("session_errors") or [])
     installed = report["installed"]
     skip = case.get("skip", 0)
     if report["invalid"] or report["malformed"]:
@@ -439,15 +444,14 @@ def classify_live(observation: dict) -> dict:
     refused = detection(restarts, case["store"])
     if unaccepted and ((seen and restarts_passed(restarts)) or (not seen and not healthy and refused)):
         # Every path below this point that ends in SEEN_HELD or CAUGHT_LATER passes here first.
-        runner = faulted_start.get("runner") or {}
-        if observation.get("error"):
-            reasons.append("The existing runner reported: " + str(observation["error"]).split("\n", 1)[0][:300])
+        runner, filtered = faulted_start.get("runner") or {}, faulted_start.get("filtered") or {}
         reasons.append(f"{unaccepted} ERROR or FATAL line(s) of the faulted start are not declared hold lines of the "
                        f"faulted store, so the case has no favourable class. The existing runner's own result for that "
                        f"start is kept apart: status={runner.get('status')}, error={runner.get('error')}; the evaluation "
-                       "without the accepted lines: " + str((faulted_start.get("filtered") or {}).get("status"))
-                       + (" (" + str(faulted_start["filtered"].get("error") or faulted_start["filtered"].get("reason")) + ")"
-                          if (faulted_start.get("filtered") or {}).get("status") != "PASS" else "") + ".")
+                       f"without the accepted lines: {filtered.get('status')}"
+                       + (f" ({filtered.get('error') or filtered.get('reason')})" if filtered.get("status") != "PASS" else "")
+                       + ". The existing runner reported for the case: "
+                       + (str(observation["error"]).split("\n", 1)[0][:300] if observation.get("error") else "no error") + ".")
         evidence.extend(faulted_start.get("unaccepted") or [])
         evidence.extend(line for line in observation.get("session_errors", []) if line not in evidence)
         return verdict(NEEDS_REVIEW)
