@@ -49,7 +49,19 @@ def observed(lines, case=None, restarts=((1, "PASS"), (2, "PASS")), error=None, 
                           for number, status in restarts])
 
 
-def offline(after=("d", "d"), statuses=("FAIL", "FAIL"), detected=("[main/ERROR]: refused",), error="oracle", **extra):
+def refusal(store="BAY_RECEIPTS", level="ERROR"):
+    """The production line of a start that refuses the store, as BetaWorldMigrationEvents logs it."""
+    return (f"[06:59:16] [Server thread/{level}] [io.gi.su.ad.AdvancedRocketryCommunity/]: [ARCE-BETA-2000] Beta world data "
+            f"check blocked startup; type={store}; reason=advancedrocketrycommunity cannot decode compressed SavedData.")
+
+
+REFUSAL = refusal()
+ASSERTION = ("[10:53:53] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Restart "
+             "violated cargo conservation, epoch, identity or pruning")
+YGGDRASIL = "[10:55:43] [Yggdrasil Key Fetcher/ERROR] [mojang/YggdrasilServicesKeyInfo]: Failed to request yggdrasil public key"
+
+
+def offline(after=("d", "d"), statuses=("FAIL", "FAIL"), detected=(REFUSAL,), error="oracle", **extra):
     return dict(case=dict(id="X02-BAY_RECEIPTS-BIT_FLIP", store="BAY_RECEIPTS", fault="BIT_FLIP"), damaged_sha256="d",
                 error=error, restarts=[dict(restart=number, status=statuses[number - 1], ready=False,
                                             store_sha256=after[number - 1], detected=list(detected if number == 1 else ()))
@@ -214,7 +226,14 @@ class LiveClassificationTests(unittest.TestCase):
         unseen = session("LOST_WRITE", unseen=True, retry=False)
         self.assertEqual(self.classify(unseen, case), faults.NOT_CAUGHT)
         self.assertEqual(self.classify(unseen, case, restarts=((1, "FAIL"), (2, "FAIL")), error="oracle",
-                                       detected=["[main/ERROR]: receipts refused"]), faults.CAUGHT_LATER)
+                                       detected=[REFUSAL]), faults.CAUGHT_LATER)
+        # R491, answer 1: a line that is not the production line declared for the faulted store is not detection.
+        for line in ("[main/ERROR]: receipts refused", ASSERTION, YGGDRASIL, refusal("RESOURCE_ESCROW"), refusal(level="FATAL")):
+            result = faults.classify_live(observed(unseen, case, restarts=((1, "FAIL"), (2, "FAIL")), error="oracle",
+                                                   detected=[line]))
+            self.assertEqual(result["classification"], faults.NOT_CAUGHT, line)
+            self.assertIn("none of which is a production line declared for the store", result["reasons"][-1])
+            self.assertIn(line, result["evidence"])
         self.assertEqual(self.classify(unseen, case, restarts=((1, "FAIL"), (2, "FAIL")), error="oracle"), faults.NOT_CAUGHT)
         # A faulted write without an end line, and a move flag against the fault's definition.
         self.assertEqual(self.classify([line for line in session() if "result=failed" not in line]), faults.NOT_CAUGHT)
@@ -253,7 +272,8 @@ class OfflineClassificationTests(unittest.TestCase):
         result = faults.classify_offline(offline())
         self.assertEqual(result["classification"], faults.CAUGHT_LATER)
         self.assertIn("damaged sha256=d", result["evidence"])
-        self.assertIn("[main/ERROR]: refused", result["evidence"])
+        self.assertIn("production line: " + REFUSAL, result["evidence"])
+        self.assertIn("declared production line", result["reasons"][-1])
 
     def test_an_accepted_or_replaced_file_is_not_caught(self):
         self.assertEqual(self.classify(detected=()), faults.NOT_CAUGHT)
@@ -276,6 +296,106 @@ class OfflineClassificationTests(unittest.TestCase):
                               reasons=["no earlier write"], evidence=[]))
         self.assertNotIn(faults.SEEN_HELD, {faults.classify_offline(offline(after=a, detected=d))["classification"]
                                             for a in (("d", "d"), ("r", "r")) for d in ((), ("e",))})
+
+
+# The observation that W379F's first smoke kept for X02-RESOURCE_ESCROW-STALE (sealed under
+# D:/GitHub/ARCE-Task-Evidence/root-queue/W379F/smoke1/x02, SHA256SUMS.txt
+# 3b3088222a354bca2c1733c4c77d289a49198b2d47ac97b5d9e6fc7a9f92564f). The hashes, the statuses and the detected lines are
+# the kept ones; the three `error` texts are cut after their first line, which is all the classifier reads.
+STALE_LEDGER = dict(
+    case=dict(id="X02-RESOURCE_ESCROW-STALE", store="RESOURCE_ESCROW", fault="STALE"),
+    native=dict(runner="F", case="FC_LOAD_L2_REPLACED"), recording="record-F-FC_LOAD_L2_REPLACED",
+    original_sha256="1d113745a60180ec6d3ef692f9bf2d2fa78c22fe95f0b57f71b26f496563aad7",
+    damaged_sha256="1f185c041473401fa16886e9ae7d760736b85f8ad98a91a4f0d8e5dffd32d7cd",
+    restarts=[
+        dict(restart=1, status="FAIL", ready=True, detected=[
+            "[10:53:53] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Restart violated cargo conservation, epoch, identity or pruning",
+            "[10:53:53] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception",
+            "[10:53:54] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID d6472339-da68-439d-ac60-b929b1540c0d",
+            "[10:53:54] [Server thread/ERROR] [minecraft/MinecraftServer]: This crash report has been saved to: D:\\GitHub\\ARCE-Task-Evidence\\Temp\\w379-c0d00f23c8834d009ce4817300c4010d\\.\\crash-reports\\crash-2026-11-18_10.53.54-server.txt"],
+             error="Server exited with code 0 before 'ARCE_RELEASE_CARGO_RESULT cut=FC_LOAD_L2_REPLACED '",
+             store_sha256="1f185c041473401fa16886e9ae7d760736b85f8ad98a91a4f0d8e5dffd32d7cd"),
+        dict(restart=2, status="FAIL", ready=True, detected=[
+            "[10:54:19] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Restart violated cargo conservation, epoch, identity or pruning",
+            "[10:54:19] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception",
+            "[10:54:19] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID 19ec8784-a52a-4544-bbb4-19162cd85be9",
+            "[10:54:19] [Server thread/ERROR] [minecraft/MinecraftServer]: This crash report has been saved to: D:\\GitHub\\ARCE-Task-Evidence\\Temp\\w379-c0d00f23c8834d009ce4817300c4010d\\.\\crash-reports\\crash-2026-11-18_10.54.19-server.txt"],
+             error="Server exited with code 0 before 'ARCE_RELEASE_CARGO_RESULT cut=FC_LOAD_L2_REPLACED '",
+             store_sha256="1f185c041473401fa16886e9ae7d760736b85f8ad98a91a4f0d8e5dffd32d7cd")],
+    error="SmokeError: First contradictory cut: FC_LOAD_L2_REPLACED: Server exited with code 0 before "
+          "'ARCE_RELEASE_CARGO_RESULT cut=FC_LOAD_L2_REPLACED '")
+
+
+class DetectionTests(unittest.TestCase):
+    """Root decision R491, answer 1: only a production line declared for the faulted store is detection."""
+
+    def test_exactly_one_refusal_line_is_declared_for_each_store_before_the_run(self):
+        self.assertEqual(faults.DETECTION_MARKERS, {
+            store: (f"[ARCE-BETA-2000] Beta world data check blocked startup; type={store};",) for store in faults.STORES})
+        declared = faults.declarations(faults.plan())
+        self.assertEqual(declared["detection_markers"], {store: list(markers) for store, markers in faults.DETECTION_MARKERS.items()})
+        self.assertIn("never detection", declared["detection_rule"])
+        text = faults.summary(dict(status="COMPLETE", results=[], uncovered=[], **declared))
+        self.assertIn("## Declared detection markers", text)
+        self.assertIn("- RESOURCE_ESCROW: [ARCE-BETA-2000] Beta world data check blocked startup; type=RESOURCE_ESCROW;", text)
+
+    def test_the_stale_ledger_that_w379f_kept_is_a_residual_and_not_caught_later(self):
+        # W379R, finding 1. Both starts of the stale ledger were ready and then failed on an assertion of the release
+        # test EscrowCargoReconciliationProbe; nothing in production refused, held or repaired the file.
+        result = faults.classify_offline(STALE_LEDGER)
+        self.assertEqual(result["classification"], faults.NOT_CAUGHT)
+        self.assertIn("8 ERROR or FATAL line(s), none of which is a production line declared for the store", result["reasons"][0])
+        self.assertIn("the existing oracle failed: SmokeError: First contradictory cut: FC_LOAD_L2_REPLACED", result["reasons"][0])
+        self.assertIn("left byte-identical", result["reasons"][0])
+        self.assertIn(STALE_LEDGER["restarts"][0]["detected"][0], result["evidence"])
+        self.assertFalse([line for line in result["evidence"] if line.startswith("production line: ")])
+        row = dict(case=result["case"], classification=result["classification"])
+        self.assertEqual(faults.status_of([row]), "COMPLETE_WITH_RESIDUALS")
+
+    def test_an_assertion_a_crash_wrapper_or_an_unrelated_error_is_never_detection(self):
+        crash = ("[10:53:53] [Server thread/ERROR] [minecraft/MinecraftServer]: Encountered an unexpected exception",
+                 "[10:53:54] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID d6472339")
+        for detected in ((ASSERTION,), crash, (YGGDRASIL,), ("[main/ERROR]: refused",),
+                         # The declared line of another store, the store's line at FATAL, and the text without its type.
+                         (refusal("RESOURCE_ESCROW"),), (refusal(level="FATAL"),),
+                         ("[x] [Server thread/ERROR] [x/]: [ARCE-BETA-2000] Beta world data check blocked startup: unreadable",)):
+            for kwargs in (dict(), dict(statuses=("PASS", "PASS"), error=None), dict(after=("r", "r")),
+                           dict(after=("r", "r"), statuses=("PASS", "PASS"), error=None)):
+                result = faults.classify_offline(offline(detected=detected, **kwargs))
+                self.assertEqual(result["classification"], faults.NOT_CAUGHT, (detected, kwargs))
+                self.assertIn(detected[0], result["evidence"])
+        # The unrelated service error with a passing oracle and unchanged bytes, which W379R reproduced as COMPLETE.
+        quiet = faults.classify_offline(offline(detected=(YGGDRASIL,), statuses=("PASS", "PASS"), error=None))
+        self.assertIn("the existing oracle passed", quiet["reasons"][0])
+        self.assertEqual(faults.status_of([dict(case="X02-A", classification=quiet["classification"])]), "COMPLETE_WITH_RESIDUALS")
+
+    def test_the_declared_refusal_of_the_faulted_store_is_detection(self):
+        # The lines that W379's second smoke kept for the truncated bay receipts: the refusal, then the crash wrapper.
+        kept = (REFUSAL, "[06:59:16] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: "
+                         "advancedrocketrycommunity_bay_receipts cannot decode compressed SavedData",
+                "[06:59:17] [Server thread/FATAL] [ne.mi.co.ForgeMod/]: Preparing crash report with UUID d63d4851")
+        result = faults.classify_offline(offline(detected=kept))
+        self.assertEqual(result["classification"], faults.CAUGHT_LATER)
+        self.assertEqual(result["evidence"][3], "production line: " + REFUSAL)
+        self.assertEqual(faults.production_lines([REFUSAL, ASSERTION, refusal("RESOURCE_ESCROW"), refusal(level="FATAL"),
+                                                  REFUSAL.replace("/ERROR]", "/INFO]")], "BAY_RECEIPTS"), [REFUSAL])
+        self.assertEqual(faults.production_lines([REFUSAL], "STATIONS"), [])
+
+    def test_a_row_names_the_production_lines_of_the_whole_log(self):
+        # More ERROR lines than the bound on the kept ones, and the refusal after them.
+        noise = [f"[x] [Server thread/ERROR] [x/]: noise {index}" for index in range(faults.EVIDENCE_LINES + 5)]
+        logs = {1: noise + [REFUSAL], 2: noise}
+        rows = faults.restart_rows(dict(cases=[dict(restarts=[])]), logs, {1: "d", 2: "d"}, "BAY_RECEIPTS")
+        self.assertEqual([row["production"] for row in rows], [[REFUSAL], []])
+        self.assertNotIn(REFUSAL, rows[0]["detected"])
+        observation = offline()
+        observation["restarts"] = rows
+        self.assertEqual(faults.classify_offline(observation)["classification"], faults.CAUGHT_LATER)
+        # The field of the whole log decides when the row has it: a row that names no production line detected nothing.
+        rows[0]["production"] = []
+        rows[0]["detected"] = [REFUSAL]
+        self.assertEqual(faults.classify_offline(observation)["classification"], faults.NOT_CAUGHT)
+        self.assertNotIn("production", faults.restart_rows(dict(cases=[dict(restarts=[])]), logs)[0])
 
 
 class DamageTests(unittest.TestCase):

@@ -115,6 +115,11 @@ DEFAULT_SKIP = {
                               "smoke 2, write 1). Skipping one write puts the fault on the terminal launch's write, "
                               "which is the write that R3 cuts."),
 }
+# Root decision R491, answer 1: the production lines that show a later start refusing the store. Exactly one is
+# declared for each store, and the manifest lists them before any case runs. A line counts only at ERROR, in a restart
+# of a case whose faulted store is that store. A release-test assertion, a crash wrapper, an unrelated service error or
+# any other line never counts as detection.
+DETECTION_MARKERS = {store: (f"[ARCE-BETA-2000] Beta world data check blocked startup; type={store};",) for store in STORES}
 MAX_CASES = 96
 TEMP = x01.TEMP
 LOCK = x01.LOCK
@@ -294,6 +299,22 @@ def hold_lines(lines, store: str) -> tuple[list[str], list[str], list[str]]:
     return accepted, other, kept
 
 
+def production_lines(lines, store: str) -> list[str]:
+    """The lines at ERROR that carry a detection marker declared for the store. Nothing else is detection."""
+    return [line.strip()[:400] for line in lines
+            if "/ERROR]" in line and any(marker in line for marker in DETECTION_MARKERS.get(store, ()))]
+
+
+def detection(restarts, store: str) -> list[str]:
+    """The declared production lines of the store in the restarts of one case.
+
+    A row written by this runner lists them under `production`, read from the whole log. A row without that field
+    (an observation kept by W379 or W379F) is read from its bounded `detected` lines.
+    """
+    return [line for entry in restarts
+            for line in (entry["production"] if "production" in entry else production_lines(entry.get("detected", []), store))]
+
+
 def first_start_held(first: dict | None) -> bool:
     """The faulted start failed the existing runner's check only by declared hold lines.
 
@@ -391,6 +412,7 @@ def classify_live(observation: dict) -> dict:
     for entry in restarts:
         evidence.append(f"restart={entry.get('restart')} status={entry.get('status')}")
     later = [line for entry in restarts for line in entry.get("detected", [])]
+    refused = detection(restarts, case["store"])
     if seen and healthy:
         reasons.append("Every faulted write failed inside the session, and both healthy restarts met the existing oracle.")
         return verdict(SEEN_HELD)
@@ -421,12 +443,18 @@ def classify_live(observation: dict) -> dict:
     if not healthy:
         reasons.append("An existing oracle failed after the fault: " + str(observation.get("error") or "restart status"))
         evidence.extend(later)
-    if not seen and not healthy and later:
-        # The session missed the fault; a later start reported it, and the existing oracle did not accept the result.
-        reasons.append("A later start logged the damage, and no existing oracle accepted the store.")
+    if not seen and not healthy and refused:
+        # The session missed the fault; a later start refused the store with its declared production line, and the
+        # existing oracle did not accept the result.
+        reasons.append(f"A later start refused the store with {len(refused)} declared production line(s), and no "
+                       "existing oracle accepted the store.")
         return verdict(CAUGHT_LATER)
     if seen:
         reasons.append("The session saw the fault, but held-as-designed is not shown; recorded as a residual.")
+    elif later:
+        # R491, answer 1: a failed assertion of a release test, a crash wrapper or an unrelated error is not detection.
+        reasons.append(f"The later starts logged {len(later)} ERROR or FATAL line(s), none of which is a production line "
+                       "declared for the store; recorded as a residual.")
     else:
         reasons.append("Nothing reported the fault; recorded as a residual.")
     return verdict(NOT_CAUGHT)
@@ -435,10 +463,12 @@ def classify_live(observation: dict) -> dict:
 def classify_offline(observation: dict) -> dict:
     """One class for an offline case: a damaged or stale store file meets two starts.
 
-    CAUGHT_LATER needs a start that reports the damage, and either the file is still byte-identical after both
-    starts (the server held), or the file changed and the existing oracle passed on both starts (a repair the
-    existing oracle accepts). A file that a start accepts or replaces without that is NOT_CAUGHT. An offline fault
-    is never seen by a running session, so SEEN_HELD does not occur.
+    CAUGHT_LATER needs a start that refuses the store with a production line declared for it before the run
+    (DETECTION_MARKERS), and either the file is still byte-identical after both starts (the server held), or the
+    file changed and the existing oracle passed on both starts (a repair the existing oracle accepts). Any other
+    ERROR or FATAL line is kept as evidence and is never detection: a case with a failed oracle and no declared
+    production line is NOT_CAUGHT, a residual. So is a file that a start accepts or replaces without the above. An
+    offline fault is never seen by a running session, so SEEN_HELD does not occur.
     """
     case = observation["case"]
     reasons, evidence = [], []
@@ -456,23 +486,36 @@ def classify_offline(observation: dict) -> dict:
     damaged = observation["damaged_sha256"]
     after = [entry.get("store_sha256") for entry in restarts]
     replaced = any(value != damaged for value in after)
-    detected = [line for entry in restarts for line in entry.get("detected", [])]
+    logged = [line for entry in restarts for line in entry.get("detected", [])]
+    detected = detection(restarts, case["store"])
     passed = restarts_passed(restarts) and not observation.get("error")
     evidence.append(f"damaged sha256={damaged}")
     for entry in restarts:
         evidence.append(f"restart={entry.get('restart')} status={entry.get('status')} ready={entry.get('ready')} "
                         f"store_sha256={entry.get('store_sha256')}")
-    evidence.extend(detected)
+    # The declared production lines come first, so that the bound on the evidence never drops them.
+    evidence.extend(f"production line: {line}" for line in detected)
+    evidence.extend(line for line in logged if line not in detected)
+    if not detected and logged:
+        outcome = ("the existing oracle passed" if passed else "the existing oracle failed: "
+                   + str(observation.get("error") or "restart status").split("\n", 1)[0][:300])
+        reasons.append(f"The starts logged {len(logged)} ERROR or FATAL line(s), none of which is a production line "
+                       f"declared for the store, and {outcome}. An assertion of a release test, a crash wrapper or an "
+                       "unrelated error is not detection; the file was "
+                       + ("rewritten" if replaced else "left byte-identical") + ". Recorded as a residual.")
+        return verdict(NOT_CAUGHT)
     if not detected:
         reasons.append("No start reported the file; it was accepted" + (" and rewritten." if replaced else "."))
         return verdict(NOT_CAUGHT)
     if not replaced:
-        reasons.append("A start reported the file, and it is byte-identical after both starts.")
+        reasons.append("A start refused the file with a declared production line, and it is byte-identical after both starts.")
         return verdict(CAUGHT_LATER)
     if passed:
-        reasons.append("A start reported the file and replaced it; the existing oracle passed on both starts.")
+        reasons.append("A start reported the file with a declared production line and replaced it; the existing oracle "
+                       "passed on both starts.")
         return verdict(CAUGHT_LATER)
-    reasons.append("A start reported the file but replaced it, and the existing oracle does not accept the result.")
+    reasons.append("A start reported the file with a declared production line but replaced it, and the existing oracle "
+                   "does not accept the result.")
     return verdict(NOT_CAUGHT)
 
 
@@ -609,7 +652,8 @@ def read_logs(output: Path) -> dict[int, list[str]]:
     return logs
 
 
-def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, str | None] | None = None) -> list[dict]:
+def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, str | None] | None = None,
+                 store: str | None = None) -> list[dict]:
     """The existing runner's verdict on each restart it reached, with what this harness saw beside it."""
     entries = (result.get("cases") or [{}])[0]
     listed = entries.get("restarts", entries.get("starts", []))
@@ -622,6 +666,8 @@ def restart_rows(result: dict, logs: dict[int, list[str]], hashes: dict[int, str
         row = dict(restart=number,
                    status="PASS" if observed is not None and observed.get("status") != "FAILED" else "FAIL",
                    ready=any(smoke.READY_MARKER.search(line) for line in lines), detected=detected_lines(lines))
+        if store is not None:
+            row["production"] = production_lines(lines, store)[:EVIDENCE_LINES]
         if observed is not None and observed.get("error"):
             row["error"] = str(observed["error"])[:400]
         if hashes is not None:
@@ -748,7 +794,7 @@ def run_live(args, case: Case, evidence: Path, scratch: Path, owner: str) -> dic
         shutil.copyfile(output / "results.json", evidence / "runner-results.json")
     first = logs.get(0, [])
     observation = dict(case=case.view(), native=dict(runner=alias, case=native), report=parse_markers(first), error=error,
-                       session_errors=detected_lines(first), restarts=restart_rows(result, logs),
+                       session_errors=detected_lines(first), restarts=restart_rows(result, logs, store=case.store),
                        first_start=evaluate_first_start(case, result, first_start_lines(output), first_world))
     return write_case(evidence, case, observation, classify_live(observation), list(arguments.replay_commands))
 
@@ -778,14 +824,14 @@ def record(args, alias: str, native: str, evidence: Path, scratch: Path, owner: 
 
 
 def start_twice(args, alias: str, native: str, kill: Path, state, context: dict, scratch: Path, owner: str,
-                evidence: Path, store_file: str):
+                evidence: Path, store: str):
     """Both restarts of the existing runner on one damaged copy; the store file is hashed after each process ends."""
     hashes, commands, errors = {}, [], []
 
     def observer(cwd: Path, log: Path):
         number = start_number(log)
         if number is not None:
-            hashes[number] = sha(cwd / ("world-" + native) / "data" / store_file)
+            hashes[number] = sha(cwd / ("world-" + native) / "data" / STORES[store])
 
     module = x01.RUNNERS[alias]
     output, after_first = scratch / "restart", scratch / "after-first"
@@ -825,7 +871,7 @@ def start_twice(args, alias: str, native: str, kill: Path, state, context: dict,
             if not listed:
                 listed.append({})
             listed[0].setdefault("restarts", []).extend((later.get("cases") or [{}])[0].get("restarts", []))
-    return restart_rows(result, logs, hashes), "; ".join(errors) or None, commands
+    return restart_rows(result, logs, hashes, store), "; ".join(errors) or None, commands
 
 
 def run_offline(args, cases: list[Case], evidence_root: Path, scratch: Path, owner: str) -> list[dict]:
@@ -864,7 +910,7 @@ def run_offline(args, cases: list[Case], evidence_root: Path, scratch: Path, own
             observation["damaged_sha256"] = replay.sha(content)
             state = replay.State(case.id, {name: content, name + replay.PENDING: None})
             restarts, error, commands = start_twice(args, alias, native, kill, state, context, scratch / case.id, owner,
-                                                    target, STORES[case.store])
+                                                    target, case.store)
             observation.update(restarts=restarts, error=error)
             if (scratch / case.id).exists():
                 shutil.rmtree(scratch / case.id)
@@ -924,6 +970,11 @@ def summary(manifest: dict) -> str:
     lines += [f"- {row['case']} ({row['store']}): {' '.join(row['reasons'])}" for row in residual] or ["None recorded."]
     lines += ["", "A class is read from the logs and the existing oracles; no oracle was changed. SEEN_HELD is not a",
               "proof of power-loss safety."]
+    if manifest.get("detection_markers"):
+        lines += ["", "## Declared detection markers", "",
+                  "Declared before any case ran. CAUGHT_LATER needs one of these lines, at ERROR, in a restart of a case",
+                  "that faulted the store. No other ERROR or FATAL line counts as detection.", ""]
+        lines += [f"- {store}: {', '.join(markers)}" for store, markers in manifest["detection_markers"].items()]
     if manifest.get("hold_markers"):
         lines += ["", "## Declared hold markers", "",
                   "Declared before any case ran. A line is accepted only at ERROR, in the faulted start of its store and",
@@ -947,7 +998,12 @@ def declarations(cases: list[Case]) -> dict:
     skips = [dict(store=store, skip=skip, cases=[case.id for case in live if (case.store, case.skip) == (store, skip)],
                   reason=DEFAULT_SKIP[store][1] if skip == default_skip(store) else "Named in the case identifier by the caller.")
              for store, skip in sorted({(case.store, case.skip) for case in live})]
-    return dict(hold_markers={store: list(markers) for store, markers in HOLD_MARKERS.items()},
+    return dict(detection_markers={store: list(markers) for store, markers in DETECTION_MARKERS.items()},
+                detection_rule="A later start has detected a fault only by a line at ERROR that carries a marker declared "
+                               "for the faulted store. A failed assertion of a release test, a crash report, an "
+                               "unrelated error or any undeclared line is evidence and never detection; a case with a "
+                               "failed oracle and no declared line is NOT_CAUGHT.",
+                hold_markers={store: list(markers) for store, markers in HOLD_MARKERS.items()},
                 hold_rule="A line at ERROR that carries a marker declared for the faulted store is accepted only in the "
                           "faulted start and only after an ARCE_RELEASE_STORAGE_FAULT injected line for that store. Any "
                           "other ERROR or FATAL line, and every such line of a restart, keeps its effect.",
