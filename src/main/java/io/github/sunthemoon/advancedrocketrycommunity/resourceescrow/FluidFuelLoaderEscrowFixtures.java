@@ -119,13 +119,15 @@ final class FluidFuelLoaderEscrowFixtures {
 
     /** Detached writer/admission traffic only; these typed values are not native endpoint proof evidence. */
     static EscrowNativeBinding.Admission modelCapture(EscrowOperation model) {
+        var source = admissionEndpoint(model.source(), ModIdentity.id("fluid_fuel_loader").toString());
+        var destination = admissionEndpoint(model.destination(), ModIdentity.id("rocket").toString());
         var wrapper = new RocketEscrowSection(null, model.rocket().beforeEpoch(), List.of());
-        var b = model.nativeBinding();
+        var b = EscrowNativeBinding.model(model.owner(), source, destination);
         var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), b.owner(), model.id(),
                 b.beforeFrontier(), b.invariant(), b.sourceReference(), b.destinationReference(), EscrowNativeEnvelope.digest(wrapper.encode()),
                 b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(), b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
         var op = new EscrowOperation(model.id(), model.sequence(), model.owner(), model.createdTick(), model.phase(), model.reason(),
-                model.payload(), model.payloadHash(), model.source(), model.destination(), model.guard(), model.kind(), model.settlement(), binding);
+                model.payload(), model.payloadHash(), source, destination, model.guard(), model.kind(), model.settlement(), binding);
         var payload = op.payload(); var id = ResourceLocation.tryParse(payload.getString("FluidName"));
         var tag = payload.contains("Tag") ? payload.getCompound("Tag") : null;
         var settings = RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of(id.toString()),
@@ -137,6 +139,12 @@ final class FluidFuelLoaderEscrowFixtures {
         var tank = LoaderTank.of(id, tag, 5_000);
         return EscrowAccountingCapture.fuel(op, wrapper, tank, tank.withAmount(5_000 - payload.getInt("Amount")), fuel,
                 fuel.withFluidBank(false, id, tag, amount + payload.getInt("Amount")));
+    }
+
+    private static EscrowEndpoint admissionEndpoint(EscrowEndpoint endpoint, String type) {
+        return new EscrowEndpoint(endpoint.kind(), endpoint.level(), endpoint.identity(), endpoint.logicalRocket(), type,
+                endpoint.x(), endpoint.y(), endpoint.z(), endpoint.unit(), endpoint.beforeEpoch(),
+                endpoint.beforeSignature(), endpoint.afterSignature());
     }
 
     /** A real loader holding an operator-loaded root: a fresh device, this binding, this tank, a pristine section. */
