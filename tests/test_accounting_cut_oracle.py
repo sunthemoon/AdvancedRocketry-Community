@@ -237,6 +237,11 @@ class AccountingCutOracleTest(unittest.TestCase):
                 oracle.check_loader(self.loader_disk(chained, [4000, 4000], 2000), "LF_M_C2_PARTIAL_REPLACED", 0)
             with self.assertRaisesRegex(SmokeError, "loader count"): oracle.check_loader(self.loader_disk(root, [5000], 0), "LF_M_C2", 0)
             with self.assertRaisesRegex(SmokeError, "No loader accounting"): oracle.check_loader(self.loader_disk(root, [5000], 0), "LF_M_K5", 0)
+            tagged = self.loader_disk(root, [5000], 0); tagged["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Tag"] = {}
+            with self.assertRaisesRegex(SmokeError, "tagged"): oracle.check_loader(tagged, "LF_M_D2_C1_REPLACED", 0)
+            tagged = self.loader_disk(root, [4000], 1000)
+            tagged["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["primary"]["tag"] = {}
+            with self.assertRaisesRegex(SmokeError, "tagged"): oracle.check_loader(tagged, "LF_M_D2_C7_BEFORE", 0)
             # No resource created: a bank that gained without a debit breaks the raw total.
             with self.assertRaises(SmokeError): oracle.check_loader(self.loader_disk(empty, [5000], 1000), "LF_M_D2_C7_ACK", 1)
 

@@ -291,6 +291,7 @@ def loader_states(disk):
     tanks = []
     for device in disk["loaders"]:
         root = device["arce_fluid_fuel_loader"]; tank = root["tank"]
+        require(not tank or "Tag" not in tank, "A loader tank holds a tagged fluid")
         tanks.append(dict(fluids={tank["FluidName"]: tank["Amount"]} if tank else {}, epoch=root["resource_escrow"]["resource_epoch"],
                           markers=len(root["resource_escrow"]["markers"]), device=root["device"]))
     data = disk["rocket"]["RocketEntityData"]; propulsion = data["flight_data"]["fuel"]["propulsion"]
@@ -299,8 +300,9 @@ def loader_states(disk):
         entry = propulsion[bank]
         if entry.get("amount"):
             # Amounts are aggregated per endpoint and key: the same fluid in both banks is one key.
-            fluid = entry.get("fluid", entry.get("FluidName"))
-            require(isinstance(fluid, str), "A filled bank does not name its fluid")
+            fluid = entry.get("fluid")
+            # RocketPropulsionFuelCodec: a FLUID bank saves `fluid` and, only for a tagged fluid, `tag`.
+            require(isinstance(fluid, str) and "tag" not in entry, "A filled bank holds an unnamed or tagged fluid")
             fluids[fluid] = fluids.get(fluid, 0) + entry["amount"]
     bank = dict(fluids=fluids, epoch=data["resource_escrow"]["resource_epoch"], markers=len(data["resource_escrow"]["markers"]))
     return tanks, bank
