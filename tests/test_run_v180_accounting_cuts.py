@@ -84,11 +84,15 @@ class AccountingCutsRunnerTest(unittest.TestCase):
         case = "FS_AC_READBACK"; plan = runner.spec(case)
         paused = "ARCE_RELEASE_CARGO_CUT_PAUSED cut=FS_AC_READBACK boundary=READBACK_HELD"
         held = "ARCE_ESCROW_SETTLEMENT_HELD digest=abc reason={} records=retained"
-        observed = runner.observe(case, plan, 0, [held.format("BARRIER_UNSTABLE"), held.format("Frozen settlement endpoint changed"), paused])
-        self.assertEqual(["BARRIER_UNSTABLE", "Frozen_settlement_endpoint_changed"], observed["held_reasons"])
+        observed = runner.observe(case, plan, 0, [held.format("ACCOUNTING_MISMATCH"), held.format("Frozen settlement endpoint changed"), paused])
+        self.assertEqual(["ACCOUNTING_MISMATCH", "Frozen_settlement_endpoint_changed"], observed["held_reasons"])
         with self.assertRaisesRegex(SmokeError, "never reported"): runner.observe(case, plan, 0, [paused])
-        with self.assertRaisesRegex(SmokeError, "live check"):
-            runner.observe(case, plan, 0, [held.format("Frozen settlement endpoint changed"), paused])
+        # The live check alone, or a storage reason, is not the typed per-fluid refusal this case is about.
+        for first in ("Frozen settlement endpoint changed", "BARRIER_UNSTABLE", "BARRIER_VETO"):
+            with self.assertRaisesRegex(SmokeError, "not the typed check"):
+                runner.observe(case, plan, 0, [held.format(first), paused])
+        with self.assertRaisesRegex(SmokeError, "later hold"):
+            runner.observe(case, plan, 0, [held.format("ACCOUNTING_MISMATCH"), held.format("BARRIER_IO"), paused])
         result = "ARCE_RELEASE_CARGO_CUT_RESULT cut=FS_AC_READBACK state=HELD reason=x rocket=4000 device=1000 receipts=0 locked=true"
         runner.observe(case, plan, 1, [result])
         with self.assertRaisesRegex(SmokeError, "retained hold"):

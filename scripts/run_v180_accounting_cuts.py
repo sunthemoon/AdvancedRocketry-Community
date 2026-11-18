@@ -40,7 +40,9 @@ BOUNDARIES = {"AC_O1_ACK": "O1_ACK", "AC_O3_ACK": "O3_ACK", "AC_O4_ACK": "O4_ACK
 OUTCOMES = ("AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "ABANDON_ROCKET", "ABANDON_DEVICE", "AC_READBACK")
 LOADER_CUTS = tuple("LF_M_D2_" + name for name in ("C1_BEFORE", "C1_REPLACED", "C1_ACK", "C7_BEFORE", "C7_REPLACED", "C7_ACK"))
 LOADER_OUTCOMES = ("LF_M_C2", "LF_M_C2_PARTIAL_REPLACED", "LF_M_E4L1_UNKNOWN", "LF_M_E4L2_UNKNOWN")
-# The live check's refusal. The readback case must be held by the store's readback, before this can be reported.
+# The readback case's first hold: the typed per-fluid check of the device slot refuses a vector that differs from the
+# frozen one (EscrowCargoReadback, design section 6). Later attempts meet the live check's refusal instead.
+TYPED_REFUSAL = "ACCOUNTING_MISMATCH"
 LIVE_REFUSAL = "Frozen_settlement_endpoint_changed"
 
 
@@ -151,7 +153,8 @@ def observe(case, plan, start, lines):
                            "The restart did not report the retained hold")
         else:
             oracle.require(bool(reasons), "The settlement never reported its hold")
-            oracle.require(reasons[0] != LIVE_REFUSAL, "The hold came from the live check, not from the store's readback")
+            oracle.require(reasons[0] == TYPED_REFUSAL, "The first hold is not the typed check of the stored device: " + reasons[0])
+            oracle.require(set(reasons[1:]) <= {LIVE_REFUSAL}, "A later hold has an unexpected reason: " + ", ".join(reasons[1:]))
     if plan["cut"] in ("AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "ABANDON_ROCKET", "ABANDON_DEVICE") and start:
         status = "UNKNOWN" if plan["cut"].startswith("ABANDON") else "KNOWN"
         oracle.require("state=RELEASED" in matches[0] and "accounting=" + status in matches[0],
