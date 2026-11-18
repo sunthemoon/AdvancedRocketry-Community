@@ -10,6 +10,11 @@ No oracle of an existing runner changes, and a NOT_CAUGHT case is reported as a 
 restarts passed (NEEDS_REVIEW) have no class. NOT_RUN, INCOMPLETE and NEEDS_REVIEW make the campaign INCOMPLETE; a
 case that the plan declares NOT_APPLICABLE before the run is listed as uncovered scope.
 
+Only the frozen plan gives NOT_APPLICABLE (Root decision R491, answer 4). The plan is frozen in two steps, both
+before the first case runs: the declarations that follow from the case itself, and a planning phase that records the
+native cut of each offline group and declares, with the facts of that recording, the cases whose damage the kept
+image cannot carry. An inability that shows only while a case runs is INCOMPLETE.
+
 The manifest declares, before any case runs, the hold markers of each store (Root decision R486). A hold line at
 ERROR is accepted only in the faulted start of that store and only after the injection. The existing runner's check
 of that start is not edited: its result is recorded, and beside it this runner's own evaluation of the same start
@@ -514,9 +519,12 @@ def classify_offline(observation: dict) -> dict:
     def verdict(value):
         return dict(case=case["id"], classification=value, reasons=reasons, evidence=evidence[:EVIDENCE_LINES])
 
-    if observation.get("not_applicable"):
-        reasons.append(observation["not_applicable"])
-        return verdict(NOT_APPLICABLE)
+    refused = observation.get("injection_refused") or observation.get("not_applicable")
+    if refused:
+        # R491, answer 4: NOT_APPLICABLE comes only from the frozen plan (declared_row). This case reached its run.
+        reasons.append("The damage could not be made while the case ran, and the frozen plan did not declare the case: "
+                       + str(refused))
+        return verdict(INCOMPLETE)
     restarts = observation["restarts"]
     if len(restarts) != 2 or [r.get("restart") for r in restarts] != [1, 2]:
         reasons.append("The damaged copy was not started twice: " + str(observation.get("error") or "no result"))
@@ -933,38 +941,74 @@ def start_twice(args, alias: str, native: str, kill: Path, state, context: dict,
     return restart_rows(result, logs, hashes, store), "; ".join(errors) or None, commands
 
 
-def run_offline(args, cases: list[Case], evidence_root: Path, scratch: Path, owner: str) -> list[dict]:
-    """One recording of the native cut, then each offline fault of the group on its own copy."""
+def prepared(case: Case, kill: Path, writes) -> tuple[bytes | None, str | None, dict]:
+    """The damaged store file of one offline case on a kept kill image, or the reason why the image cannot carry it,
+    with the facts of the recording that decide it."""
+    current = replay.read_optional(kill, "data/" + STORES[case.store])
+    earlier, has_earlier = earlier_generation(writes, case.store)
+    content, refusal = damage(case.fault, current, earlier, has_earlier)
+    facts = dict(original_sha256=replay.sha(current),
+                 completed_writes=sum(1 for write in writes if write.store == case.store and write.complete),
+                 earlier_generation=("no completed write recorded" if not has_earlier else
+                                     "absent file" if earlier is None else replay.sha(earlier)))
+    return content, refusal, facts
+
+
+def plan_recording(args, cases: list[Case], evidence_root: Path, scratch: Path, owner: str) -> dict:
+    """The planning phase of one offline group (Root decision R491, answer 4).
+
+    It records the native cut once and keeps the kill image for the group's cases. For each case it then decides, on
+    that image and its trace, whether the damage can be made. A case that cannot carry its damage is declared here,
+    with the facts that decide it, and the campaign writes the declaration into the manifest before any case runs.
+    No case is started in this phase.
+    """
     alias, native = cases[0].native
     scratch.mkdir(parents=True)
     group = evidence_root / ("record-" + alias + "-" + native)
     group.mkdir(parents=True)
-    rows = []
+    recording = dict(name=group.name, runner=alias, case=native, cases=[case.id for case in cases], declared=[], error=None)
     try:
         kill, trace, context = record(args, alias, native, group, scratch, owner)
         writes = replay.read_trace(trace, kill)
     except (FaultError, replay.ReplayError) as failure:
+        recording["error"] = "Recording failed: " + str(failure)
+        return recording
+    recording.update(kill=kill, context=context, writes=writes, trace_ops_sha256=sha(trace / "ops.jsonl"))
+    for case in cases:
+        _, refusal, facts = prepared(case, kill, writes)
+        if refusal:
+            recording["declared"].append(dict(case=case.id, reason=refusal, planning=dict(
+                recording=group.name, trace_ops_sha256=recording["trace_ops_sha256"], **facts)))
+    return recording
+
+
+def run_offline(args, cases: list[Case], evidence_root: Path, recording: dict, scratch: Path, owner: str) -> list[dict]:
+    """Each offline fault of the group on its own copy of the kill image that the planning phase kept."""
+    alias, native = cases[0].native
+    scratch.mkdir(parents=True)
+    rows = []
+    if recording.get("error"):
         for case in cases:
             target = evidence_root / case.id
             target.mkdir(parents=True)
             observation = dict(case=dict(id=case.id, store=case.store, fault=case.fault), restarts=[],
-                               native=dict(runner=alias, case=native), error="Recording failed: " + str(failure))
+                               native=dict(runner=alias, case=native), error=recording["error"])
             rows.append(write_case(target, case, observation, classify_offline(observation), []))
         return rows
+    kill, context = recording["kill"], recording["context"]
     for case in cases:
         x01.preflight()
         target = evidence_root / case.id
         target.mkdir(parents=True)
         name = "data/" + STORES[case.store]
-        current = replay.read_optional(kill, name)
-        earlier, has_earlier = earlier_generation(writes, case.store)
-        content, refusal = damage(case.fault, current, earlier, has_earlier)
+        content, refusal, facts = prepared(case, kill, recording["writes"])
         observation = dict(case=dict(id=case.id, store=case.store, fault=case.fault),
-                           native=dict(runner=alias, case=native), recording=group.name,
-                           original_sha256=replay.sha(current))
+                           native=dict(runner=alias, case=native), recording=recording["name"],
+                           original_sha256=facts["original_sha256"])
         commands = []
         if refusal:
-            observation.update(not_applicable=refusal, restarts=[])
+            # The planning phase could make this damage, or the case would have been declared. Nothing is started.
+            observation.update(injection_refused=refusal, restarts=[])
         else:
             observation["damaged_sha256"] = replay.sha(content)
             state = replay.State(case.id, {name: content, name + replay.PENDING: None})
@@ -1048,6 +1092,13 @@ def summary(manifest: dict) -> str:
     # A case without an outcome by construction is scope that this campaign did not cover.
     lines += [f"- {row['case']}: NOT_APPLICABLE" + (", declared before the run. " if row["case"] in declared else ". ")
               + " ".join(row["reasons"]) for row in rows if row["classification"] == NOT_APPLICABLE]
+    if manifest.get("planning"):
+        lines += ["", "## Planning phase", "",
+                  "Before any case ran, the native cut of each offline group was recorded, and a case whose damage the",
+                  "kept image cannot carry was declared NOT_APPLICABLE with the facts of that recording.", ""]
+        lines += [f"- {entry['name']}: " + (entry["error"] or (f"trace ops.jsonl sha256={entry.get('trace_ops_sha256')}; declared: "
+                                                               + (", ".join(entry["declared"]) or "none")))
+                  for entry in manifest["planning"]]
     return "\n".join(lines) + "\n"
 
 
@@ -1070,19 +1121,29 @@ def declarations(cases: list[Case]) -> dict:
                 not_applicable=[dict(case=case.id, reason=case.not_applicable) for case in cases if case.not_applicable])
 
 
-def declared_row(case: Case, evidence: Path) -> dict:
-    """A case that the plan declares NOT_APPLICABLE: recorded with its reason, and no server is started."""
+def declared_row(case: Case, evidence: Path, declaration: dict | None = None) -> dict:
+    """A case that the frozen plan declares NOT_APPLICABLE: recorded with its reason, and no server is started.
+
+    `declaration` is the case's entry in the manifest; without one, the declaration is the one of the case itself.
+    """
     evidence.mkdir(parents=True)
     alias, native = case.native
+    declaration = declaration or dict(case=case.id, reason=case.not_applicable)
     observation = dict(case=case.view(), native=dict(runner=alias, case=native), declared_before_run=True,
-                       not_applicable=case.not_applicable, restarts=[])
-    classification = dict(case=case.id, classification=NOT_APPLICABLE, reasons=[case.not_applicable], evidence=[])
+                       not_applicable=declaration["reason"], restarts=[])
+    if "planning" in declaration:
+        observation["planning"] = declaration["planning"]
+    classification = dict(case=case.id, classification=NOT_APPLICABLE, reasons=[declaration["reason"]], evidence=[])
     return write_case(evidence, case, observation, classification, [])
 
 
-def status_of(rows: list[dict]) -> str:
-    """COMPLETE when every case has a class or is not applicable; a residual is a finding, not a harness failure."""
+def status_of(rows: list[dict], declared=()) -> str:
+    """COMPLETE when every case has a class or was declared not applicable; a residual is a finding, not a harness
+    failure. `declared` names the cases of the frozen plan's NOT_APPLICABLE declarations: a NOT_APPLICABLE row of any
+    other case has no declaration behind it and makes the campaign INCOMPLETE (Root decision R491, answer 4)."""
     if any(row["classification"] in (INCOMPLETE, NOT_RUN, NEEDS_REVIEW) for row in rows):
+        return "INCOMPLETE"
+    if any(row["classification"] == NOT_APPLICABLE and row.get("case") not in declared for row in rows):
         return "INCOMPLETE"
     return "COMPLETE_WITH_RESIDUALS" if any(row["classification"] == NOT_CAUGHT for row in rows) else "COMPLETE"
 
@@ -1110,25 +1171,60 @@ def run(args) -> dict:
     scratch = TEMP / ("w379-campaign-" + uuid.uuid4().hex)
     evidence.mkdir(parents=True); scratch.mkdir()
     (evidence / "cases").mkdir()
+    return campaign(args, cases, evidence, scratch)
+
+
+def campaign(args, cases: list[Case], evidence: Path, scratch: Path) -> dict:
+    """The whole campaign on a prepared evidence directory and scratch directory: the planning phase, the frozen
+    plan, every case, and the sealed package."""
     manifest = dict(model=MODEL, source_commit=args.source_commit, candidate_commit=args.candidate_commit,
                     jar_sha256=args.jar_sha256, cases=[case.id for case in cases], **declarations(cases),
-                    uncovered=UNCOVERED, results=[], status="IN_PROGRESS")
-    # The declarations are on disk before any case runs.
+                    planning=[], phase="PLANNING", uncovered=UNCOVERED, results=[], status="IN_PROGRESS")
+    # The declarations that follow from the cases themselves are on disk before anything is started.
     x01.write_json(evidence / "MANIFEST.json", manifest)
+    holds = 0
+
+    @contextmanager
+    def hold():
+        """One hold of the heavy-JVM lock, after the cooldown that follows the hold before it."""
+        nonlocal holds
+        if holds:
+            time.sleep(args.cooldown)
+        holds += 1
+        x01.preflight()
+        with machine_lock() as owner:
+            yield owner
+
     try:
-        for case in cases:
-            if case.not_applicable:
-                manifest["results"].append(declared_row(case, evidence / "cases" / case.id))
+        # The planning phase: one recording for each offline group. It starts no case.
+        static = {entry["case"] for entry in manifest["not_applicable"]}
+        recordings = {}
+        for index, group in enumerate(group for group in groups([case for case in cases if case.id not in static])
+                                      if group[0].offline):
+            with hold() as owner:
+                recording = plan_recording(args, group, evidence / "cases", scratch / f"plan-{index:02d}", owner)
+            recordings[group[0].native] = recording
+            manifest["planning"].append({key: recording[key] for key in ("name", "runner", "case", "cases", "error",
+                                                                         "trace_ops_sha256") if key in recording}
+                                        | dict(declared=[entry["case"] for entry in recording["declared"]]))
+            manifest["not_applicable"].extend(recording["declared"])
+            x01.write_json(evidence / "MANIFEST.json", manifest)
+            check_size(evidence)
+        # The plan is frozen: every NOT_APPLICABLE declaration is on disk before the first case runs, and from here on
+        # nothing is added to it.
+        manifest["phase"] = "CASES"
         x01.write_json(evidence / "MANIFEST.json", manifest)
-        for index, group in enumerate(groups([case for case in cases if not case.not_applicable])):
-            if index:
-                time.sleep(args.cooldown)
-            x01.preflight()
+        declared = {entry["case"]: entry for entry in manifest["not_applicable"]}
+        for case in cases:
+            if case.id in declared:
+                manifest["results"].append(declared_row(case, evidence / "cases" / case.id, declared[case.id]))
+        x01.write_json(evidence / "MANIFEST.json", manifest)
+        for index, group in enumerate(groups([case for case in cases if case.id not in declared])):
             work = scratch / f"group-{index:02d}"
-            with machine_lock() as owner:
+            with hold() as owner:
                 try:
                     if group[0].offline:
-                        rows = run_offline(args, group, evidence / "cases", work, owner)
+                        rows = run_offline(args, group, evidence / "cases", recordings[group[0].native], work, owner)
                     else:
                         rows = [run_live(args, group[0], evidence / "cases" / group[0].id, work, owner)]
                 finally:
@@ -1137,7 +1233,7 @@ def run(args) -> dict:
             manifest["results"].extend(rows)
             x01.write_json(evidence / "MANIFEST.json", manifest)
             check_size(evidence)
-        manifest["status"] = status_of(manifest["results"])
+        manifest["status"] = status_of(manifest["results"], set(declared))
         return manifest
     except Exception as failure:
         manifest.update(status="FAILED", error=f"{type(failure).__name__}: {failure}")

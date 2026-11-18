@@ -1,4 +1,5 @@
 """Synthetic results for the X02 storage-fault runner (W379); never launches Java."""
+from contextlib import nullcontext
 import json
 from pathlib import Path
 import sys
@@ -291,9 +292,15 @@ class OfflineClassificationTests(unittest.TestCase):
         one = offline()
         one["restarts"].pop()
         self.assertEqual(faults.classify_offline(one)["classification"], faults.INCOMPLETE)
-        self.assertEqual(faults.classify_offline(dict(case=offline()["case"], restarts=[], not_applicable="no earlier write")),
-                         dict(case="X02-BAY_RECEIPTS-BIT_FLIP", classification=faults.NOT_APPLICABLE,
-                              reasons=["no earlier write"], evidence=[]))
+        # W379R finding 4 (R491, answer 4): W379F gave NOT_APPLICABLE here. A damage that is refused while the case runs
+        # was not declared in the frozen plan, so the case is INCOMPLETE, under the new field and under the old one.
+        for field in ("injection_refused", "not_applicable"):
+            self.assertEqual(faults.classify_offline(dict(case=offline()["case"], restarts=[], **{field: "no earlier write"})),
+                             dict(case="X02-BAY_RECEIPTS-BIT_FLIP", classification=faults.INCOMPLETE,
+                                  reasons=["The damage could not be made while the case ran, and the frozen plan did not "
+                                           "declare the case: no earlier write"], evidence=[]))
+        self.assertNotIn(faults.NOT_APPLICABLE, {faults.classify_offline(o)["classification"] for o in (
+            offline(), one, offline(not_applicable="x"), offline(injection_refused="x"), offline(declared_before_run=True))})
         self.assertNotIn(faults.SEEN_HELD, {faults.classify_offline(offline(after=a, detected=d))["classification"]
                                             for a in (("d", "d"), ("r", "r")) for d in ((), ("e",))})
 
@@ -669,7 +676,10 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(faults.status_of(rows + [dict(classification=faults.INCOMPLETE)]), "INCOMPLETE")
         self.assertEqual(faults.status_of(rows[:1] + [dict(classification=faults.NEEDS_REVIEW)]), "INCOMPLETE")
         self.assertIn("| NEEDS_REVIEW | 0 |", faults.summary(dict(status="COMPLETE", results=rows[:1], uncovered=[])))
-        self.assertEqual(faults.status_of([dict(classification=faults.NOT_APPLICABLE)]), "COMPLETE")
+        # W379R finding 4: W379F counted any NOT_APPLICABLE row as complete. Only a declared case is, now.
+        self.assertEqual(faults.status_of([dict(case="X02-C", classification=faults.NOT_APPLICABLE)], {"X02-C"}), "COMPLETE")
+        self.assertEqual(faults.status_of([dict(case="X02-C", classification=faults.NOT_APPLICABLE)]), "INCOMPLETE")
+        self.assertEqual(faults.status_of([dict(classification=faults.NOT_APPLICABLE)]), "INCOMPLETE")
         text = faults.summary(dict(status="COMPLETE_WITH_RESIDUALS", results=rows, uncovered=faults.UNCOVERED))
         self.assertIn("| SEEN_HELD | 1 |", text)
         self.assertIn("| NOT_CAUGHT | 1 |", text)
@@ -858,9 +868,14 @@ class NotApplicableTests(unittest.TestCase):
         late = dict(case="X02-C", store="BAY_RECEIPTS", fault="STALE", design="F7a", native="B/B3_MOVED",
                     classification=faults.NOT_APPLICABLE, reasons=["no earlier write"])
         manifest = dict(status="COMPLETE", results=[row, held, late], uncovered=["scope"], **faults.declarations([case]))
-        # The status rule is the one of W379: a case without an outcome by construction does not make it INCOMPLETE.
-        self.assertEqual(faults.status_of(manifest["results"]), "COMPLETE")
-        self.assertEqual(faults.status_of(manifest["results"] + [dict(classification=faults.NEEDS_REVIEW)]), "INCOMPLETE")
+        # A case that the plan declared does not make the campaign INCOMPLETE. The row X02-C has no declaration behind
+        # it, which W379F's status rule did not check (W379R finding 4), and it does.
+        declared_cases = {entry["case"] for entry in manifest["not_applicable"]}
+        self.assertEqual(declared_cases, {case.id})
+        self.assertEqual(faults.status_of([row, held], declared_cases), "COMPLETE")
+        self.assertEqual(faults.status_of(manifest["results"], declared_cases), "INCOMPLETE")
+        self.assertEqual(faults.status_of([row, held]), "INCOMPLETE")
+        self.assertEqual(faults.status_of([row, held, dict(classification=faults.NEEDS_REVIEW)], declared_cases), "INCOMPLETE")
         text = faults.summary(manifest)
         uncovered = text.split("## Uncovered", 1)[1]
         self.assertIn("- scope", uncovered)
@@ -871,6 +886,170 @@ class NotApplicableTests(unittest.TestCase):
         self.assertNotIn("## Skipped writes", text)
         self.assertIn("- SATELLITE_MISSIONS: the first 1 write(s) of the store pass before the faulted ones. Runner R",
                       faults.summary(dict(status="COMPLETE", results=[], uncovered=[], **faults.declarations(faults.plan()))))
+
+
+class Campaign:
+    """The whole orchestration (faults.campaign) around stand-ins for the recording, the restarts and a live case.
+
+    Nothing is started. The stand-ins write what the real functions write, and they keep the manifest that was on disk
+    when each of them was called.
+    """
+
+    def setUp(self):
+        RunnerTests.setUp(self)
+        self.args.cooldown = 0
+        self.evidence = self.root / "package"
+        (self.evidence / "cases").mkdir(parents=True)
+        self.work = self.scratch / "campaign"; self.work.mkdir()
+        self.calls, self.fail_recording, self.filler = [], None, 0
+        self.files = {store: b"current " + store.encode() * 8 for store in faults.STORES}
+        # The ledger and the receipts have an earlier generation. The registry's only write created the file, as in the
+        # recording that W379's second smoke kept for B3_MOVED.
+        self.writes = [replay.Write(0, "t", "BAY_RECEIPTS", "data/r", None, b"one", complete=True),
+                       replay.Write(7, "t", "BAY_RECEIPTS", "data/r", b"earlier receipts", b"two", complete=True),
+                       replay.Write(14, "t", "RESOURCE_ESCROW", "data/e", b"earlier ledger", b"two", complete=True),
+                       replay.Write(21, "t", "SATELLITE_MISSIONS", "data/s", None, b"first", complete=True)]
+
+    def on_disk(self):
+        return json.loads((self.evidence / "MANIFEST.json").read_text(encoding="utf-8"))
+
+    def record(self, args, alias, native, evidence, scratch, owner):
+        self.calls.append(("record", native, self.on_disk()))
+        if self.fail_recording:
+            raise faults.FaultError(self.fail_recording)
+        kill, trace = scratch / "kill", evidence / "trace"
+        (kill / "data").mkdir(parents=True); trace.mkdir()
+        for store, content in self.files.items():
+            if content is not None:
+                (kill / "data" / faults.STORES[store]).write_bytes(content)
+        (trace / "ops.jsonl").write_bytes(b'{"seq": 0}\n')
+        return kill, trace, {}
+
+    def start_twice(self, args, alias, native, kill, state, context, scratch, owner, evidence, store):
+        self.calls.append(("start", state.id, self.on_disk()))
+        digest = replay.sha(state.changes["data/" + faults.STORES[store]])
+        return [dict(restart=number, status="FAIL", ready=False, detected=[refusal(store)], production=[refusal(store)],
+                     store_observations=1, store_sha256=digest) for number in (1, 2)], "SmokeError: refused", []
+
+    def run_live(self, args, case, evidence, scratch, owner):
+        self.calls.append(("live", case.id, self.on_disk()))
+        evidence.mkdir(parents=True)
+        if self.filler:
+            (evidence / "filler.bin").write_bytes(bytes(self.filler))
+        classification = dict(case=case.id, classification=self.live_class, reasons=["A stand-in result."], evidence=[])
+        return faults.write_case(evidence, case, dict(case=case.view(), restarts=[]), classification, [])
+
+    live_class = faults.SEEN_HELD
+
+    def campaign(self, identifiers):
+        cases = [faults.by_id(identifier) for identifier in identifiers]
+        with patch.object(faults, "machine_lock", lambda: nullcontext("owner")), patch.object(x01, "preflight"), \
+                patch.object(faults, "record", self.record), patch.object(replay, "read_trace", lambda trace, kill: self.writes), \
+                patch.object(faults, "start_twice", self.start_twice), patch.object(faults, "run_live", self.run_live):
+            return faults.campaign(self.args, cases, self.evidence, self.work)
+
+
+class PlanningTests(Campaign, unittest.TestCase):
+    """Root decision R491, answer 4: NOT_APPLICABLE only by a declaration that is frozen before any case runs."""
+    REGISTRY_STALE = "X02-SATELLITE_MISSIONS-STALE"
+    CASES = ["X02-BAY_RECEIPTS-WRITE_ERROR-4", "X02-BAY_RECEIPTS-WRITE_ERROR-1", "X02-BAY_RECEIPTS-STALE", REGISTRY_STALE,
+             "X02-SATELLITE_MISSIONS-BIT_FLIP", "X02-RESOURCE_ESCROW-STALE"]
+
+    def test_the_planning_phase_declares_the_registrys_stale_case_before_any_case_runs(self):
+        # W379R finding 4: in the recording of B3_MOVED the registry's only completed write has an absent earlier root,
+        # so STALE cannot be made. W379F found that after the recording, while the cases ran, and called it NOT_APPLICABLE.
+        manifest = self.campaign(self.CASES)
+        absent = "The earlier generation is an absent file; an absent root is a different case."
+        declared = {entry["case"]: entry for entry in manifest["not_applicable"]}
+        self.assertEqual(list(declared), ["X02-BAY_RECEIPTS-WRITE_ERROR-4", self.REGISTRY_STALE])
+        self.assertEqual(declared[self.REGISTRY_STALE], dict(case=self.REGISTRY_STALE, reason=absent, planning=dict(
+            recording="record-B-B3_MOVED", trace_ops_sha256=replay.sha(b'{"seq": 0}\n'),
+            original_sha256=replay.sha(self.files["SATELLITE_MISSIONS"]), completed_writes=1, earlier_generation="absent file")))
+        self.assertNotIn("planning", declared["X02-BAY_RECEIPTS-WRITE_ERROR-4"])
+        # Both recordings came first, and no case was started for a declared case.
+        self.assertEqual([(kind, name) for kind, name, _ in self.calls], [
+            ("record", "B3_MOVED"), ("record", "FC_LOAD_L2_REPLACED"), ("live", "X02-BAY_RECEIPTS-WRITE_ERROR-1"),
+            ("start", "X02-BAY_RECEIPTS-STALE"), ("start", "X02-SATELLITE_MISSIONS-BIT_FLIP"), ("start", "X02-RESOURCE_ESCROW-STALE")])
+        # While the recordings ran the manifest said PLANNING and had no result. When the first case ran, and at every
+        # later one, the frozen plan with the declaration and its facts was already on disk.
+        for kind, _, seen in self.calls:
+            if kind == "record":
+                self.assertEqual((seen["phase"], seen["results"]), ("PLANNING", []))
+            else:
+                self.assertEqual(seen["phase"], "CASES")
+                self.assertEqual(seen["not_applicable"], manifest["not_applicable"])
+                self.assertEqual(seen["detection_markers"], manifest["detection_markers"])
+        # Before the first recording only the case's own declaration existed; the recording of B3_MOVED added the other.
+        self.assertEqual([[entry["case"] for entry in seen["not_applicable"]] for _, _, seen in self.calls[:2]],
+                         [["X02-BAY_RECEIPTS-WRITE_ERROR-4"], ["X02-BAY_RECEIPTS-WRITE_ERROR-4", self.REGISTRY_STALE]])
+        self.assertEqual([(entry["name"], entry["declared"], entry["error"]) for entry in manifest["planning"]],
+                         [("record-B-B3_MOVED", [self.REGISTRY_STALE], None), ("record-F-FC_LOAD_L2_REPLACED", [], None)])
+        classes = {row["case"]: row["classification"] for row in manifest["results"]}
+        self.assertEqual(classes, {"X02-BAY_RECEIPTS-WRITE_ERROR-4": faults.NOT_APPLICABLE, self.REGISTRY_STALE: faults.NOT_APPLICABLE,
+                                   "X02-BAY_RECEIPTS-WRITE_ERROR-1": faults.SEEN_HELD, "X02-BAY_RECEIPTS-STALE": faults.CAUGHT_LATER,
+                                   "X02-SATELLITE_MISSIONS-BIT_FLIP": faults.CAUGHT_LATER, "X02-RESOURCE_ESCROW-STALE": faults.CAUGHT_LATER})
+        self.assertEqual((manifest["status"], self.on_disk()["status"], self.on_disk()["phase"]), ("COMPLETE", "COMPLETE", "CASES"))
+        observation = json.loads((self.evidence / "cases" / self.REGISTRY_STALE / "observation.json").read_text(encoding="utf-8"))
+        self.assertEqual((observation["declared_before_run"], observation["not_applicable"], observation["restarts"]), (True, absent, []))
+        self.assertEqual(observation["planning"]["earlier_generation"], "absent file")
+        text = (self.evidence / "SUMMARY.md").read_text(encoding="utf-8")
+        self.assertIn(f"- {self.REGISTRY_STALE}: NOT_APPLICABLE, declared before the run. {absent}", text)
+        self.assertIn("- record-B-B3_MOVED: trace ops.jsonl sha256=" + replay.sha(b'{"seq": 0}\n') + "; declared: " + self.REGISTRY_STALE, text)
+        self.assertFalse(self.work.exists())
+
+    def test_an_inability_that_shows_only_while_the_case_runs_is_incomplete(self):
+        real, calls = faults.damage, []
+
+        def damage(kind, current, earlier, has_earlier):
+            calls.append(kind)
+            # The planning phase could make the damage; the image then refuses it when the case runs.
+            return real(kind, None, earlier, has_earlier) if calls.count(kind) > 1 else real(kind, current, earlier, has_earlier)
+
+        with patch.object(faults, "damage", damage):
+            manifest = self.campaign(["X02-BAY_RECEIPTS-BIT_FLIP", "X02-BAY_RECEIPTS-TRUNCATED"])
+        self.assertEqual((calls, manifest["not_applicable"]), (["BIT_FLIP", "TRUNCATED", "BIT_FLIP", "TRUNCATED"], []))
+        self.assertEqual([kind for kind, _, _ in self.calls], ["record"])
+        for row in manifest["results"]:
+            self.assertEqual(row["classification"], faults.INCOMPLETE)
+            self.assertEqual(row["reasons"], ["The damage could not be made while the case ran, and the frozen plan did not "
+                                              "declare the case: The store file is absent in the kill image."])
+            observation = json.loads((self.evidence / "cases" / row["case"] / "observation.json").read_text(encoding="utf-8"))
+            self.assertEqual((observation["injection_refused"], observation["restarts"]),
+                             ("The store file is absent in the kill image.", []))
+            self.assertNotIn("declared_before_run", observation)
+        self.assertEqual(manifest["status"], "INCOMPLETE")
+
+    def test_a_row_that_no_declaration_stands_behind_makes_the_campaign_incomplete(self):
+        self.live_class = faults.NOT_APPLICABLE  # a stand-in that reports what only the plan may say
+        manifest = self.campaign(["X02-BAY_RECEIPTS-WRITE_ERROR-1"])
+        self.assertEqual((manifest["not_applicable"], manifest["results"][0]["classification"]), ([], faults.NOT_APPLICABLE))
+        self.assertEqual((manifest["status"], self.on_disk()["status"]), ("INCOMPLETE", "INCOMPLETE"))
+
+    def test_a_failed_recording_declares_nothing_and_its_cases_are_incomplete(self):
+        self.fail_recording = "Missing capture or invalid trace marker"
+        manifest = self.campaign(["X02-SATELLITE_MISSIONS-STALE", "X02-BAY_RECEIPTS-STALE"])
+        self.assertEqual(manifest["not_applicable"], [])
+        self.assertEqual(manifest["planning"], [dict(name="record-B-B3_MOVED", runner="B", case="B3_MOVED",
+                                                     cases=["X02-SATELLITE_MISSIONS-STALE", "X02-BAY_RECEIPTS-STALE"],
+                                                     error="Recording failed: Missing capture or invalid trace marker", declared=[])])
+        self.assertEqual({row["classification"] for row in manifest["results"]}, {faults.INCOMPLETE})
+        self.assertEqual(manifest["status"], "INCOMPLETE")
+
+    def test_each_refusal_of_the_damage_is_declared_with_the_facts_that_decide_it(self):
+        self.files["BAY_RECEIPTS"] = None
+        self.writes = self.writes[2:]
+        manifest = self.campaign(["X02-BAY_RECEIPTS-STALE", "X02-BAY_RECEIPTS-BIT_FLIP", "X02-RESOURCE_ESCROW-STALE"])
+        declared = {entry["case"]: (entry["reason"], entry["planning"]["completed_writes"], entry["planning"]["earlier_generation"],
+                                    entry["planning"]["original_sha256"]) for entry in manifest["not_applicable"]}
+        self.assertEqual(declared, {
+            "X02-BAY_RECEIPTS-STALE": ("The recording has no completed earlier write of this store.", 0, "no completed write recorded", None),
+            "X02-BAY_RECEIPTS-BIT_FLIP": ("The store file is absent in the kill image.", 0, "no completed write recorded", None)})
+        self.assertEqual([(kind, name) for kind, name, _ in self.calls],
+                         [("record", "B3_MOVED"), ("record", "FC_LOAD_L2_REPLACED"), ("start", "X02-RESOURCE_ESCROW-STALE")])
+        self.assertEqual(manifest["status"], "COMPLETE")
+        # The stale ledger that was started is the earlier generation of the recording.
+        observation = json.loads((self.evidence / "cases" / "X02-RESOURCE_ESCROW-STALE" / "observation.json").read_text(encoding="utf-8"))
+        self.assertEqual(observation["damaged_sha256"], replay.sha(b"earlier ledger"))
 
 
 class HoldLineTests(unittest.TestCase):
