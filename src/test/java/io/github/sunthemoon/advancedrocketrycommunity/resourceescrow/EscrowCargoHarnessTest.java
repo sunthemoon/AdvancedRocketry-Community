@@ -39,7 +39,7 @@ final class EscrowCargoHarnessTest {
     }
 
     @Test void everyUnloadSettlementCutHasAnEqualLoadBoundary() {
-        assertEquals(40, EscrowCargoSettlementCuts.CASES.size());
+        assertEquals(54, EscrowCargoSettlementCuts.CASES.size()); // W373B adds seven accounting cuts in each direction.
         EscrowCargoSettlementCuts.CASES.forEach((name, cut) -> {
             if (!name.startsWith("FS_LOAD_")) {
                 var load = name.replace("FS_", "FS_LOAD_");
