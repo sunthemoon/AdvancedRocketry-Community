@@ -10,8 +10,9 @@ import copy
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_v180_x03_repair as runner
-from test_repair_v180_rebuild_source import RepairFixture, E
-from test_loader_cut_nbt import compound as C, section
+from test_repair_v180_rebuild_source import RepairFixture, E, I, L, U, A, vector
+from test_loader_cut_nbt import compound as C, string as S, section
+from test_cargo_s4_s5_cuts_runner import rocket as seed_rocket, stale_disk
 
 HOOKS = "-Dadvancedrocketrycommunity.releaseTestHooks=true"
 SCENARIO = "-Dadvancedrocketrycommunity.escrowScenario="
@@ -319,6 +320,205 @@ class NativeOperationFixtureTest(RepairFixture):
             with self.assertRaisesRegex(runner.oracle.OracleError,
                                         r"^CONTROL_FAILED_FOR_OTHER_REASON:OBJECT_CHANGED:\('region/r.0.0.mca', 0, 0\):"):
                 runner.controls(None, session, self.reports, cycles, context)
+
+
+class NativeRefusalSeedTest(RepairFixture):
+    """Design 5.3's three natively seeded refusals (W380R finding 1, R501); no server is started here."""
+
+    FENCE = '[Server thread/WARN] ARCE_TRANSFER_FENCED transfer={} reason={} repair=offline-whole-world'
+
+    def stale_prepared_disk(self):
+        disk = stale_disk()
+        disk['rockets'].append(seed_rocket(x=76.5, cargo=5000, epoch=0, bound=False))
+        disk['rocket'] = None
+        return disk
+
+    def seeded(self, case, disk, reason='FLOOR_CONFLICT'):
+        """seed_world with the starts and the raw read replaced; the seed family's real oracle judges `disk`."""
+        lines = [self.FENCE.format(self.transfer, reason)]
+        args = SimpleNamespace(jar=self.jar)
+        with patch.object(runner, 'start', return_value=(lines, self.log)) as start, \
+                patch.object(runner, 'transfer_id', return_value=self.transfer), \
+                patch.object(runner.seed, 'inspect', return_value=disk) as inspect, \
+                patch.object(runner.seed, 'check', wraps=runner.seed.check) as check:
+            result = runner.seed_world(args, self.base, self.reports, 'seed', case)
+        return result, start, inspect, check
+
+    def test_the_seed_table_is_the_three_rows_of_section_5_3(self):
+        self.assertEqual((('keep-source', 'FF_KEEP_SOURCE', 'DESTINATION_IN_TARGET_CHUNK', True),
+                          ('stale-prepared', 'FF_STALE_PREPARED', 'SECOND_PHYSICAL_ROCKET', False),
+                          ('reconnect', 'FF_RECONNECT', 'PASSENGER_ASSIGNMENT', False)), runner.NATIVE_REFUSAL_SEEDS)
+        for _, case, _, _ in runner.NATIVE_REFUSAL_SEEDS:
+            self.assertEqual('C-S5', runner.seed.CASES[case]['family'])
+            self.assertEqual('FLOOR_CONFLICT', runner.seed.CASES[case]['fence'])
+
+    def test_each_new_seed_is_one_forced_and_two_protected_starts_checked_by_the_seed_oracle(self):
+        for case, disk in (('FF_STALE_PREPARED', self.stale_prepared_disk()), ('FF_RECONNECT', stale_disk())):
+            with self.subTest(case=case):
+                (world, transfer, log), start, inspect, check = self.seeded(case, disk)
+                self.assertEqual((self.base / 'world-seed', self.transfer, self.log), (world, transfer, log))
+                self.assertEqual([('seed-forced', case, 'start', True), ('seed-protected-1', case, 'recover', False),
+                                  ('seed-protected-2', case, 'recover', False)],
+                                 [(call.args[3], call.args[5], call.args[6], call.kwargs.get('forced', False))
+                                  for call in start.call_args_list])
+                self.assertTrue(all(call.args[4] == world for call in start.call_args_list))
+                # The raw files are read and judged after each protected start, as restarted final states.
+                self.assertEqual([((world,),)] * 2, [(call.args,) for call in inspect.call_args_list])
+                self.assertEqual([(case, disk, True)] * 2, [call.args for call in check.call_args_list])
+
+    def test_a_world_of_another_shape_is_not_a_refusal_seed(self):
+        second = seed_rocket(x=76.5, cargo=5000, epoch=0, bound=False)
+        broken = {
+            'FF_STALE_PREPARED': [lambda d: d['rockets'].pop(), lambda d: d['rockets'][1].update(cargo=4000),
+                                  lambda d: d['rockets'][1].update(x=80.5), lambda d: d.update(journal=0),
+                                  lambda d: d['rockets'].append(copy.deepcopy(second))],
+            'FF_RECONNECT': [lambda d: d['rockets'].append(copy.deepcopy(second)), lambda d: d.update(journal=0),
+                             lambda d: d['rockets'][0].update(passengers=[dict(seat=0)]),
+                             lambda d: d['rockets'][0].update(cargo=5000), lambda d: d['device'].update(amount=0)]}
+        for case, mutations in broken.items():
+            for index, mutate in enumerate(mutations):
+                disk = self.stale_prepared_disk() if case == 'FF_STALE_PREPARED' else stale_disk()
+                mutate(disk)
+                with self.subTest(case=case, mutation=index), self.assertRaises(runner.smoke.SmokeError):
+                    self.seeded(case, disk)
+
+    def test_a_new_seed_without_its_declared_fence_reason_is_not_a_refusal_seed(self):
+        for case, disk in (('FF_STALE_PREPARED', self.stale_prepared_disk()), ('FF_RECONNECT', stale_disk())):
+            with self.subTest(case=case), self.assertRaisesRegex(runner.oracle.OracleError, '^SEED_FENCE_MISSING:' + case + '$'):
+                self.seeded(case, disk, reason='WAITING_UNLOADED')
+
+    def run_family(self, seed_world, refusal):
+        args = SimpleNamespace(measurement_mode=True, derive_runtime_list=False, lock_owner='owner', jar=self.jar,
+                               source_commit='a', candidate_commit='b', jar_sha256='c', java='java',
+                               session_dir=self.base / 'session', evidence_dir=self.base / 'evidence',
+                               source_server=self.base / 'template')
+        args.source_server.mkdir()
+        (args.source_server / 'libraries').mkdir()
+        argfile = args.source_server / runner._server_command('java')[-2].removeprefix('@')
+        argfile.parent.mkdir(parents=True, exist_ok=True)
+        argfile.touch()
+        row = dict(baseline_manifest=runner.oracle.manifest(self.source))
+        context = dict(original=self.source, backup=self.backup)
+        with patch.object(runner, 'require_lock'), patch.object(runner, 'verify_candidate', return_value={}), \
+                patch.object(runner, 'preflight'), patch.object(runner.evidence_tools, 'install_candidate'), \
+                patch.object(runner, 'seed_world', side_effect=seed_world) as seeds, \
+                patch.object(runner, 'refusal', side_effect=refusal) as refusals, \
+                patch.object(runner, 'repaired_cycle', return_value=(row, context)) as cycle:
+            try:
+                report = runner.run(args)
+            except (runner.smoke.SmokeError, runner.oracle.OracleError) as error:
+                report = error
+        return report, seeds, refusals, cycle, args
+
+    def test_run_seeds_and_refuses_all_three_before_the_first_cycle(self):
+        order = []
+
+        def seed_world(args, session, evidence, label, case):
+            order.append(('seed', label, case))
+            return session / ('world-' + label), self.transfer, self.log
+
+        def refusal(args, source, log, transfer, evidence, name, reason, mutate=None, exact=False):
+            order.append(('plan', name, source.name, reason, exact, mutate))
+            return dict(case=name, status='REFUSED_AS_REQUIRED', reasons=[reason, 'OTHER'])
+
+        report, seeds, refusals, cycle, args = self.run_family(seed_world, refusal)
+        self.assertEqual([('seed', 'keep-source', 'FF_KEEP_SOURCE'),
+                          ('plan', 'keep-source', 'world-keep-source', 'DESTINATION_IN_TARGET_CHUNK', True, None),
+                          ('seed', 'stale-prepared', 'FF_STALE_PREPARED'),
+                          ('plan', 'stale-prepared', 'world-stale-prepared', 'SECOND_PHYSICAL_ROCKET', False, None),
+                          ('seed', 'reconnect', 'FF_RECONNECT'),
+                          ('plan', 'reconnect', 'world-reconnect', 'PASSENGER_ASSIGNMENT', False, None)], order)
+        self.assertEqual(2, cycle.call_count)
+        self.assertEqual([('FF_KEEP_SOURCE', 'DESTINATION_IN_TARGET_CHUNK'), ('FF_STALE_PREPARED', 'SECOND_PHYSICAL_ROCKET'),
+                          ('FF_RECONNECT', 'PASSENGER_ASSIGNMENT')],
+                         [(row['seed'], row['required_reason']) for row in report['refusals']])
+        # Reasons beside the required one are kept for the record.
+        self.assertTrue(all(row['reasons'][1:] == ['OTHER'] and row['transfer'] == self.transfer for row in report['refusals']))
+
+    def test_a_failed_seed_stops_the_family_before_any_cycle(self):
+        def broken_seed(args, session, evidence, label, case):
+            if case == 'FF_STALE_PREPARED':
+                raise runner.smoke.SmokeError('Raw rockets differ: []')
+            return session / ('world-' + label), self.transfer, self.log
+
+        def refused(args, source, log, transfer, evidence, name, reason, mutate=None, exact=False):
+            return dict(case=name, status='REFUSED_AS_REQUIRED', reasons=[reason])
+
+        error, seeds, refusals, cycle, args = self.run_family(broken_seed, refused)
+        self.assertIsInstance(error, runner.smoke.SmokeError)
+        self.assertEqual((2, 1, 0), (seeds.call_count, refusals.call_count, cycle.call_count))
+        self.assertEqual('FAILED', runner.json.loads((args.evidence_dir / 'results.json').read_text(encoding='utf-8'))['status'])
+
+    def test_an_accepted_plan_on_a_seed_stops_the_family_before_any_cycle(self):
+        def seed_world(args, session, evidence, label, case):
+            return session / ('world-' + label), self.transfer, self.log
+
+        def accepted(args, source, log, transfer, evidence, name, reason, mutate=None, exact=False):
+            if name == 'reconnect':
+                raise runner.oracle.OracleError('REFUSAL_ACCEPTED:' + name)
+            return dict(case=name, status='REFUSED_AS_REQUIRED', reasons=[reason])
+
+        error, seeds, refusals, cycle, args = self.run_family(seed_world, accepted)
+        self.assertEqual('REFUSAL_ACCEPTED:reconnect', str(error))
+        self.assertEqual((3, 3, 0), (seeds.call_count, refusals.call_count, cycle.call_count))
+        report = runner.json.loads((args.evidence_dir / 'results.json').read_text(encoding='utf-8'))
+        self.assertEqual(('FAILED', 2), (report['status'], len(report['refusals'])))
+
+    def native_destination(self):
+        """The seeds' record puts its destination eight blocks east, in the source chunk (EscrowCargoRecoveryCuts)."""
+        record = runner.repair.at(self.data['rocket_transfers'], 'transfers').value[1][0]
+        record.value['destination_snapshot'].value['source_origin'] = A(76, 100, 64)
+        record.value['destination_flight'].value['current_origin'] = A(76, 100, 64)
+        return record
+
+    def stale_prepared_world(self):
+        record = self.native_destination()
+        self.write_roots()
+        landed = copy.deepcopy(record.value['destination_flight'])
+        landed.value['state'] = S('LANDED')
+        for key in ('plan', 'active_transfer_id'):
+            landed.value.pop(key)
+        stale = C(id=S('advancedrocketrycommunity:rocket'), UUID=U(30), Pos=vector(76.5, 100, 64.5), Motion=vector(0, 0, 0),
+                  RocketEntityData=C(schema_version=I(3), assembly_transaction_id=U(2), owner_id=U(4),
+                                     resource_escrow=C(schema_version=I(1), resource_epoch=L(0), markers=E()),
+                                     snapshot=copy.deepcopy(record.value['destination_snapshot']), flight_data=landed))
+        self.write_entities([self.entity, stale])
+        self.sync()
+
+    def reconnect_world(self):
+        record = self.native_destination()
+        for key in ('source_flight', 'destination_flight'):
+            record.value[key].value['passengers'] = C(seat_capacity=I(1), assignments=E(C(seat_index=I(0), passenger=U(9))))
+        self.write_roots()
+        self.sync()
+
+    def test_the_tool_refuses_both_synthetic_seed_shapes_with_the_required_reason_and_no_effect(self):
+        args = SimpleNamespace(jar=self.jar)
+        for name, build, reason, beside in (
+                ('stale-prepared', self.stale_prepared_world, 'SECOND_PHYSICAL_ROCKET',
+                 ['ADDITIONAL_ROCKET_IN_FOOTPRINT', 'DESTINATION_IN_TARGET_CHUNK']),
+                ('reconnect', self.reconnect_world, 'PASSENGER_ASSIGNMENT', ['DESTINATION_IN_TARGET_CHUNK'])):
+            with self.subTest(name=name):
+                self.seed()
+                build()
+                before = self.hashes(self.source)
+                row = runner.refusal(args, self.source, self.log, self.transfer, self.reports, name, reason)
+                self.assertEqual(('REFUSED_AS_REQUIRED', [reason] + beside), (row['status'], row['reasons']))
+                self.assertEqual(before, self.hashes(self.source))
+                self.assertFalse((self.reports / (name + '-plan.json')).exists())
+                self.assertEqual(row, runner.json.loads((self.reports / (name + '-refusal.json')).read_text(encoding='utf-8')))
+                # The required reason must be present: another refusal, or an accepted plan, is not this control.
+                for other, wanted in (('wrong', 'PASSENGER_ASSIGNMENT' if name == 'stale-prepared' else 'SECOND_PHYSICAL_ROCKET'),
+                                      ('alone', reason)):
+                    with self.assertRaisesRegex(runner.oracle.OracleError, '^WRONG_REFUSAL:'):
+                        runner.refusal(args, self.source, self.log, self.transfer, self.reports, name + '-' + other, wanted,
+                                       exact=other == 'alone')
+
+    def test_the_unseeded_fixture_is_not_refused_for_either_reason(self):
+        args = SimpleNamespace(jar=self.jar)
+        for reason in ('SECOND_PHYSICAL_ROCKET', 'PASSENGER_ASSIGNMENT'):
+            with self.subTest(reason=reason), self.assertRaisesRegex(runner.oracle.OracleError, '^REFUSAL_ACCEPTED:plain-'):
+                runner.refusal(args, self.source, self.log, self.transfer, self.reports, 'plain-' + reason, reason)
 
 
 if __name__ == "__main__":

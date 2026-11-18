@@ -56,6 +56,13 @@ CASES = {
 }
 # The functional descendant's starts, in order; each is followed by a clean stop (section 5.1).
 DESCENDANT_SEQUENCE = ("FF_X03_UNLOAD", "FF_X03_OBSERVE", "FF_X03_LAUNCH", "FF_X03_OBSERVE")
+# Design 5.3 (R501): `plan` must refuse each of these natively seeded worlds. Each row is the label, the
+# seed's case, the required reason, and whether that reason must be the only one.
+NATIVE_REFUSAL_SEEDS = (
+    ('keep-source', 'FF_KEEP_SOURCE', 'DESTINATION_IN_TARGET_CHUNK', True),
+    ('stale-prepared', 'FF_STALE_PREPARED', 'SECOND_PHYSICAL_ROCKET', False),
+    ('reconnect', 'FF_RECONNECT', 'PASSENGER_ASSIGNMENT', False),
+)
 
 
 def verification_command(java: str, case: str, route: str | None = None) -> list[str]:
@@ -199,6 +206,11 @@ def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE'):
         lines, log = start(args, session, evidence, label + '-protected-' + str(cycle), world, case, 'recover')
         if case in ('FF_REBUILD_SOURCE', 'FF_KEEP_SOURCE'):
             check_fence(lines, transfer)
+        else:
+            # The other seeds keep their own family's contract: the declared fence reason in every start.
+            wanted = seed.CASES[case].get('fence')
+            oracle.require(wanted is None or wanted in seed.fences(lines), 'SEED_FENCE_MISSING:' + case)
+        # The seed family's raw-file oracle: a later refusal cannot come from a world of another shape.
         disk = seed.inspect(world)
         seed.check(case, disk, True)
     return world, transfer, log
@@ -535,9 +547,12 @@ def run(args):
         shutil.copytree(args.source_server / 'libraries', session / 'libraries')
         (session / 'mods').mkdir()
         evidence_tools.install_candidate(args.jar, session / 'mods' / args.jar.name, args.jar_sha256)
-        keep, transfer, log = seed_world(args, session, evidence, 'keep-source', 'FF_KEEP_SOURCE')
-        report['refusals'] = [refusal(args, keep, log, transfer, evidence, 'keep-source',
-                                     'DESTINATION_IN_TARGET_CHUNK', exact=True)]
+        report['refusals'] = []
+        for label, case, reason, exact in NATIVE_REFUSAL_SEEDS:
+            world, transfer, log = seed_world(args, session, evidence, label, case)
+            row = refusal(args, world, log, transfer, evidence, label, reason, exact=exact)
+            report['refusals'].append(dict(row, seed=case, required_reason=reason, transfer=transfer))
+            write_json(evidence / 'results.json', report)
         contexts = []
         for number in (1, 2):
             row, context = repaired_cycle(args, session, evidence, number)
