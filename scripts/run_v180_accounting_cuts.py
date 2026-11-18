@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""W373B: native accounting cuts (W357-DESIGN section 7.3). One forced stop and two restarts per case, on a pinned
+candidate JAR, with the exact account oracle of accounting_cut_oracle. The caller holds the heavy-JVM lock.
+
+Cargo cases run the gated cargo probes directly. Fuel loader cases call run_v180_loader_cuts.run_cut unchanged and
+then apply the account oracle to the disks that runner decoded.
+"""
+from __future__ import annotations
+
+import copy
+import json
+from pathlib import Path
+import re
+import shutil
+
+import accounting_cut_oracle as oracle
+import run_dedicated_server_smoke as smoke
+import run_v180_loader_cuts as loader
+import w336_native as native
+from run_v180_escrow_forced_stop import LEDGER, digest, ledger, record
+from run_v180_escrow_pre_f2 import journal
+from run_v180_rocket_settlement_completion import slot_present
+
+REPO = Path(__file__).resolve().parents[1]
+# The inventory of native case producers recognises a runner by this literal property.
+CASE_PROPERTY = "-Dadvancedrocketrycommunity.escrowCase="
+CASE_KEY = CASE_PROPERTY.removeprefix("-Dadvancedrocketrycommunity.").removesuffix("=")
+DEVICE_POS = [64, 100, 64]
+ORDINARY = ("L1_BEFORE", "L1_REPLACED", "L1_ACK", "C6_JOINT_READBACK", "L2_REPLACED", "C7_ACKNOWLEDGED")
+# The probe's checkpoint label at each ordinary cut, and at the two ambiguous-replacement cuts.
+CHECKPOINTS = {"L1_BEFORE": "K1", "L1_REPLACED": "K2", "L1_ACK": "L1_ACK", "C6_JOINT_READBACK": "C6_JOINT_READBACK",
+               "L2_REPLACED": "K9", "C7_ACKNOWLEDGED": "C7_ACKNOWLEDGED", "E4L1_UNKNOWN": "WRITE_UNKNOWN",
+               "E4L2_UNKNOWN": "WRITE_UNKNOWN"}
+SETTLEMENT = ("O1_BEFORE", "O1_AFTER", "AC_O1_ACK", "O3_BEFORE", "O3_AFTER", "AC_O3_ACK", "O4_BEFORE", "O4_AFTER",
+              "AC_O4_ACK", "PRUNE_BEFORE", "PRUNE_AFTER")
+# The settlement probe's boundary name at each cut.
+BOUNDARIES = {"AC_O1_ACK": "O1_ACK", "AC_O3_ACK": "O3_ACK", "AC_O4_ACK": "O4_ACK", "AC_LOSS": "O1_AFTER",
+              "AC_GAIN": "O1_AFTER", "AC_SUBSTITUTE": "O1_AFTER", "AC_READBACK": "READBACK_HELD",
+              "ABANDON_ROCKET": "O1_AFTER", "ABANDON_DEVICE": "O1_AFTER"}
+OUTCOMES = ("AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "ABANDON_ROCKET", "ABANDON_DEVICE", "AC_READBACK")
+LOADER_CUTS = tuple("LF_M_D2_" + name for name in ("C1_BEFORE", "C1_REPLACED", "C1_ACK", "C7_BEFORE", "C7_REPLACED", "C7_ACK"))
+LOADER_OUTCOMES = ("LF_M_C2", "LF_M_C2_PARTIAL_REPLACED", "LF_M_E4L1_UNKNOWN", "LF_M_E4L2_UNKNOWN")
+# The live check's refusal. The readback case must be held by the store's readback, before this can be reported.
+LIVE_REFUSAL = "Frozen_settlement_endpoint_changed"
+
+
+def _cargo(direction):
+    load = direction == "LOAD"
+    prefix = "FS_LOAD_" if load else "FS_"
+    return ([f"FC_{direction}_{cut}" for cut in ORDINARY] + [prefix + cut for cut in SETTLEMENT])
+
+
+FAMILIES = {
+    "cargo-load": tuple(_cargo("LOAD")),
+    "cargo-unload": tuple(_cargo("UNLOAD")),
+    "loader": LOADER_CUTS,
+    "outcomes": tuple(prefix + cut for cut in OUTCOMES for prefix in ("FS_", "FS_LOAD_"))
+                + ("FC_LOAD_E4L1_UNKNOWN", "FC_LOAD_E4L2_UNKNOWN") + LOADER_OUTCOMES,
+}
+CASES = tuple(dict.fromkeys(case for cases in FAMILIES.values() for case in cases))
+
+
+def spec(case):
+    """How one probe case is run and which three states the oracle expects of it."""
+    if case.startswith("LF_M_"):
+        return dict(engine="loader")
+    if case.startswith("FC_"):
+        load = case.startswith("FC_LOAD_")
+        cut = case.removeprefix("FC_LOAD_" if load else "FC_UNLOAD_")
+        return dict(engine="ordinary", load=load, cut=cut, states=oracle.ordinary(cut), timeout=240,
+                    paused="ARCE_RELEASE_CARGO_PAUSED cut=" + case + " ", result="ARCE_RELEASE_CARGO_RESULT cut=" + case + " ",
+                    boundary="checkpoint=" + CHECKPOINTS[cut] + " ")
+    load = case.startswith("FS_LOAD_")
+    cut = case.removeprefix("FS_LOAD_" if load else "FS_")
+    return dict(engine="settlement", load=load, cut=cut, states=oracle.settlement(cut, load), timeout=420,
+                paused="ARCE_RELEASE_CARGO_CUT_PAUSED cut=" + case + " ", result="ARCE_RELEASE_CARGO_CUT_RESULT cut=" + case + " ",
+                boundary="boundary=" + BOUNDARIES.get(cut, cut))
+
+
+def rockets(world):
+    """Rocket entities of the fixture chunk [4,4] and, once a flight landed, the pad chunk [5,4]."""
+    path = world / "entities/r.0.0.mca"
+    found = []
+    for slot in (132, 133):
+        if slot_present(path, slot):
+            found += [entry for entry in record(path, slot)["Entities"] if "RocketEntityData" in entry]
+    return found
+
+
+def fluid_store(fluid, section):
+    """A raw store from a saved fluid and its escrow section; a tagged fluid is not one of this fixture's keys."""
+    oracle.require(not fluid or isinstance(fluid.get("FluidName"), str) and "Tag" not in fluid and fluid.get("Amount", 0) > 0,
+                   "A cargo store holds a malformed or tagged fluid")
+    return dict(fluids={fluid["FluidName"]: fluid["Amount"]} if fluid else {}, epoch=section["resource_epoch"],
+                markers=len(section["markers"]))
+
+
+def cargo_disk(world):
+    """The ledger and both cargo endpoints, decoded from the stopped world's files only."""
+    path = world / "data" / LEDGER
+    root = ledger(path) if path.is_file() else None
+    found = rockets(world)
+    oracle.require(len(found) <= 1, "The world holds more than one cargo rocket")
+    rocket = None
+    if found:
+        data = found[0]["RocketEntityData"]
+        blocks = [block["block_entity"] for block in data["snapshot"]["relative_blocks"] if "block_entity" in block]
+        oracle.require(len(blocks) == 1 and blocks[0]["adapter"] == "advancedrocketrycommunity:pressurized_tank_v1",
+                       "The cargo rocket lost its one tank payload")
+        rocket = fluid_store(blocks[0]["data"]["tank"]["fluid"], data["resource_escrow"])
+        rocket.update(uuid=found[0]["UUID"], logical=data["assembly_transaction_id"])
+    terrain = record(world / "region/r.0.0.mca")
+    devices = [entry for entry in terrain["block_entities"] if [entry.get(k) for k in ("x", "y", "z")] == DEVICE_POS
+               and "arce_rocket_fluid_cargo" in entry]
+    device = None
+    if devices:
+        saved = devices[0]["arce_rocket_fluid_cargo"]
+        device = fluid_store(saved["tank"], saved["resource_escrow"])
+        device.update(id=saved["device"], role=saved["role"])
+    return dict(ledger=root, rocket=rocket, device=device, journal=len(journal(world)["transfers"]),
+                files={name: digest(world / name) for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")
+                       if (world / name).is_file()})
+
+
+def errors(lines):
+    return [line for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+
+
+def held_reasons(lines):
+    """The settlement's reported holds, in order; the probe prints its view with underscores."""
+    return [match[1].replace(" ", "_") for line in lines
+            for match in [re.search(r"ARCE_ESCROW_SETTLEMENT_HELD digest=\S+ reason=(.+?) records=retained", line)] if match]
+
+
+def observe(case, plan, start, lines):
+    """Exactly one stop or result marker, at the planned boundary, and no ERROR or FATAL line."""
+    marker = plan["result"] if start else plan["paused"]
+    matches = [line for line in lines if marker in line]
+    oracle.require(len(matches) == 1, "Missing or repeated cut observation: " + marker.strip())
+    if not start:
+        oracle.require(re.search(re.escape(plan["boundary"].rstrip()) + r"(?:\s|$)", matches[0]) is not None,
+                       "The probe stopped at another boundary: " + matches[0].strip()[-120:])
+    logged = errors(lines)
+    oracle.require(not logged, "The native start logged ERROR or FATAL: " + (logged[0].strip()[:200] if logged else ""))
+    result = dict(marker=matches[0].strip()[matches[0].index(marker):][:300])
+    if plan["cut"] == "AC_READBACK":
+        reasons = held_reasons(lines)
+        result["held_reasons"] = reasons
+        if start:
+            oracle.require("state=HELD" in matches[0] and "receipts=0 locked=true" in matches[0],
+                           "The restart did not report the retained hold")
+        else:
+            oracle.require(bool(reasons), "The settlement never reported its hold")
+            oracle.require(reasons[0] != LIVE_REFUSAL, "The hold came from the live check, not from the store's readback")
+    if plan["cut"] in ("AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "ABANDON_ROCKET", "ABANDON_DEVICE") and start:
+        status = "UNKNOWN" if plan["cut"].startswith("ABANDON") else "KNOWN"
+        oracle.require("state=RELEASED" in matches[0] and "accounting=" + status in matches[0],
+                       "The restart did not report the released decision with its knowledge")
+    return result
+
+
+def run_cargo(run, case, plan, row):
+    """The three starts of one cargo case. A failed start stops the case; an oracle finding does not hide later starts."""
+    world = run.session / ("world-" + case)
+    roots = []
+    for start in range(3):
+        entry = dict(start=start); row["starts"].append(entry)
+        process = run.start(f"{case}-{start}", world=world.name,
+                            properties={"escrowScenario": "recover" if start else "start", CASE_KEY: case})
+        try:
+            process.wait_for(re.compile(re.escape(plan["result"] if start else plan["paused"])), plan["timeout"])
+            if start:
+                run.stop(f"{case}-{start}", audit=lambda lines: None)
+            else:
+                process.process.kill(); process.abort(); run.process = None; entry["forced_stop"] = True
+        except (OSError, ValueError, smoke.SmokeError) as failure:
+            if run.process is not None:
+                run.process.abort(); run.process = None
+            entry.update(status="FAILED", error="Start execution: " + str(failure))
+            row["findings"].append(f"start {start}: {entry['error']}")
+            entry["native_files"] = run.capture(world, f"{case}-{start}-failed-world") if world.is_dir() else None
+            return
+        try:
+            disk = cargo_disk(world)
+            raw = run.evidence / f"{case}-{start}-raw.json"
+            raw.write_text(json.dumps(disk, indent=1), encoding="utf-8")
+            entry["raw"] = dict(file=raw.name, sha256=digest(raw))
+            entry["observation"] = observe(case, plan, start, process.lines)
+            source, destination = (disk["device"], disk["rocket"]) if plan["load"] else (disk["rocket"], disk["device"])
+            entry["oracle"] = oracle.check_state(disk["ledger"], source, destination, plan["states"][start])
+            oracle.require(disk["journal"] == 0, "A cargo accounting cut left a transfer journal record")
+            if roots and roots[-1] is not None and disk["ledger"] is not None:
+                oracle.check_progress(roots[-1], disk["ledger"])
+            roots.append(disk["ledger"])
+            entry["status"] = "PASS"
+        except (OSError, ValueError, KeyError, TypeError, IndexError, smoke.SmokeError) as failure:
+            entry.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {start}: {failure}")
+            entry["native_files"] = run.capture(world, f"{case}-{start}-failed-world")
+            roots.append(None)
+    shutil.rmtree(world)
+
+
+def run_loader(run, case, row):
+    """The unchanged loader runner and oracle first, then the account oracle on the disks that runner decoded."""
+    args = copy.copy(run.args)
+    args.session_parent = run.session / "loader"
+    args.session_parent.mkdir(exist_ok=True)
+    args.follow_ups = False
+    pins = dict(run.pin, hooks={p: digest(REPO / p) for p in loader.HOOK_FILES},
+                harness={p: digest(REPO / p) for p in loader.HARNESS_FILES})
+    result = loader.run_cut(args, case, run.evidence / case, args.lock_owner, pins)
+    row["loader_status"] = result["status"]
+    if result["status"] != "PASS":
+        row["findings"].append("loader runner: " + str(result.get("error", result.get("reason", result["status"]))))
+    previous = None
+    for start in result["starts"]:
+        entry = dict(start=start["restart"]); row["starts"].append(entry)
+        try:
+            oracle.require("disk" in start, "The loader runner decoded no disk for this start")
+            entry["oracle"] = oracle.check_loader(start["disk"], case, start["restart"])
+            root = start["disk"]["ledger"]
+            if previous is not None and root is not None:
+                oracle.check_progress(previous, root)
+            previous = root
+            entry["status"] = "PASS"
+        except (ValueError, KeyError, TypeError, IndexError, smoke.SmokeError) as failure:
+            entry.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {start['restart']}: {failure}")
+    if len(result["starts"]) != 3:
+        row["findings"].append(f"The loader runner completed {len(result['starts'])} of 3 starts")
+
+
+def family(run):
+    cases = run.args.case or FAMILIES[run.args.family]
+    native.require(set(cases) <= set(FAMILIES[run.args.family]), "A selected case is not in the requested family")
+    report = dict(family=run.args.family, cases=[], partial=bool(run.args.case))
+    for case in cases:
+        plan = spec(case)
+        row = dict(case=case, engine=plan["engine"], starts=[], findings=[]); report["cases"].append(row)
+        if plan["engine"] == "loader":
+            run_loader(run, case, row)
+        else:
+            row.update(cut=plan["cut"], direction="LOAD" if plan["load"] else "UNLOAD")
+            run_cargo(run, case, plan, row)
+        row["status"] = "FAILED" if row["findings"] else "PASS"
+        native.write_json(run.evidence / "results.json", dict(status="IN_PROGRESS", **report))
+        print(f"{case}: {row['status']}" + ("" if not row["findings"] else " " + "; ".join(row["findings"])[:400]), flush=True)
+    # A production defect stops its own case only; every other case still ran and is reported.
+    report["status"] = "PASS" if all(row["status"] == "PASS" for row in report["cases"]) else "FAILED"
+    return report
+
+
+def main():
+    parser = native.parser(__doc__)
+    parser.add_argument("--family", required=True, choices=FAMILIES)
+    parser.add_argument("--case", action="append", choices=CASES, help="Selected cases of the family; partial evidence")
+    return native.execute(parser.parse_args(), family)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
