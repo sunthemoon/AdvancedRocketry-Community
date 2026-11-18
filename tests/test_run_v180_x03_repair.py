@@ -261,14 +261,15 @@ class NativeOperationFixtureTest(RepairFixture):
             row = runner.refusal(args, self.source, self.log, self.transfer, self.reports, name, reason, mutation)
             self.assertEqual('REFUSED_AS_REQUIRED', row['status'])
 
-    def test_both_controls_detect_actual_valid_file_mutations(self):
+    def control_inputs(self, positions=((0, 0),)):
         root, _ = runner.nbt.chunk(self.source / 'region', 4, 4)
         runner.nbt.write_chunk(self.source / 'region', 4, 4, root)
         # A non-target chunk, as the real native world's spawn area supplies.
         from test_loader_cut_nbt import region
         original = runner.oracle.chunks(self.source)
         terrain = {(key[1], key[2]): tag for key, tag in original.items() if key[0] == 'region/r.0.0.mca'}
-        terrain[(0, 0)] = C(sections=E(section(0, ['minecraft:air', 'minecraft:bedrock'], {})), block_entities=E())
+        for position in positions:
+            terrain[position] = C(sections=E(section(0, ['minecraft:air', 'minecraft:bedrock'], {})), block_entities=E())
         region(self.source / 'region', terrain)
         self.sync()
         plan = self.plan()
@@ -279,9 +280,45 @@ class NativeOperationFixtureTest(RepairFixture):
         context = dict(twice=self.output, baseline=runner.oracle.read(self.source), transfer=self.transfer)
         session = self.base / 'controls'
         session.mkdir()
-        results = runner.controls(None, session, self.reports, [cycle, copy.deepcopy(cycle)], context)
+        return session, [cycle, copy.deepcopy(cycle)], context
+
+    def test_both_controls_detect_actual_valid_file_mutations(self):
+        session, cycles, context = self.control_inputs()
+        results = runner.controls(None, session, self.reports, cycles, context)
         self.assertEqual(['unlisted-file', 'listed-object'], [row['control'] for row in results])
         self.assertTrue(all(row['target_checks'] == 'PASS' and row['status'] == 'REFUSED_AS_REQUIRED' for row in results))
+        # W380R finding 3 (R501): the reason names the tampered object's exact key, then its path.
+        self.assertEqual("('region/r.0.0.mca', 0, 0)", results[1]['location'])
+        self.assertTrue(results[1]['reason'].startswith("OBJECT_CHANGED:('region/r.0.0.mca', 0, 0):/sections/"))
+        self.assertEqual('UNLISTED_FILE:' + results[0]['location'], results[0]['reason'])
+
+    def test_object_control_refuses_a_difference_in_any_other_object(self):
+        # The slot-order rule selects chunk (1, 0). Chunk (0, 1) also differs and has the smaller key, so the
+        # oracle names it; "some object changed" must not pass for "the tampered object was detected".
+        tamper = runner.tamper_object
+
+        def tamper_two(world):
+            key = tamper(world)
+            self.assertEqual(('region/r.0.0.mca', 1, 0), key)
+            other, _ = runner.nbt.chunk(world / 'region', 0, 1)
+            runner.nbt.set_block(other, 0, 0, 16, 'minecraft:bedrock')
+            runner.nbt.write_chunk(world / 'region', 0, 1, other)
+            return key
+
+        session, cycles, context = self.control_inputs(positions=((1, 0), (0, 1)))
+        with patch.object(runner, 'tamper_object', side_effect=tamper_two):
+            with self.assertRaisesRegex(runner.oracle.OracleError,
+                                        r"^CONTROL_FAILED_FOR_OTHER_REASON:OBJECT_CHANGED:\('region/r.0.0.mca', 0, 1\):"):
+                runner.controls(None, session, self.reports, cycles, context)
+        self.assertFalse((self.reports / 'listed-object-control.json').exists())
+
+    def test_object_control_requires_the_whole_key(self):
+        tamper = runner.tamper_object
+        session, cycles, context = self.control_inputs()
+        with patch.object(runner, 'tamper_object', side_effect=lambda world: tamper(world)[:2]):
+            with self.assertRaisesRegex(runner.oracle.OracleError,
+                                        r"^CONTROL_FAILED_FOR_OTHER_REASON:OBJECT_CHANGED:\('region/r.0.0.mca', 0, 0\):"):
+                runner.controls(None, session, self.reports, cycles, context)
 
 
 if __name__ == "__main__":

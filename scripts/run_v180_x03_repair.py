@@ -398,8 +398,10 @@ def controls(args, session, evidence, cycles, context):
         try:
             coordinator(context, control, baseline)
         except oracle.OracleError as error:
-            required = 'UNLISTED_FILE:' + target if name == 'unlisted-file' else 'OBJECT_CHANGED:'
-            oracle.require(str(error).startswith(required), 'CONTROL_FAILED_FOR_OTHER_REASON:' + str(error))
+            # Each control names its own mutation: the exact file, or the tampered object's exact key (design 5.3).
+            oracle.require(str(error) == 'UNLISTED_FILE:' + target if name == 'unlisted-file'
+                           else str(error).startswith('OBJECT_CHANGED:' + location + ':'),
+                           'CONTROL_FAILED_FOR_OTHER_REASON:' + str(error))
             result = dict(control=name, location=location, target_checks='PASS', status='REFUSED_AS_REQUIRED', reason=str(error))
             results.append(result)
             write_json(evidence / (name + '-control.json'), result)
