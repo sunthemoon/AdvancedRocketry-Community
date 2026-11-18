@@ -186,11 +186,11 @@ final class W238OwnerPendingTest {
      * removes another; neither asks for a slot, and the saved file loads again with the same counts.
      */
     @Test void restartWithAnOverCapEscrowLedgerRefusesOnlyThatOwnerAndRecoversWithoutANewSlot() throws Exception {
-        var ops = java.util.stream.LongStream.rangeClosed(1, 24).mapToObj(EscrowTestFixtures::operation).toList();
+        var ops = java.util.stream.LongStream.rangeClosed(1, 24).mapToObj(EscrowTestFixtures::admissionOperation).toList();
         UUID owner = ops.get(0).owner(); assertTrue(ops.stream().allMatch(op -> op.owner().equals(owner)));
         var file = temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         CheckedSavedDataFile.replace(file, ManagedSavedDataType.RESOURCE_ESCROW,
-                () -> EscrowCodec.encode(EscrowTestFixtures.ledger(ops.toArray(EscrowOperation[]::new))));
+                () -> EscrowCodec.encode(EscrowTestFixtures.admissionLedger(ops.toArray(EscrowOperation[]::new))));
         var authority = new EscrowAdmissionAuthority(); var propulsion = authority.register(Consumer.PROPULSION);
         assertEquals(Result.UNAVAILABLE, check(authority, B));
         var data = ResourceEscrowSavedData.load(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
@@ -204,11 +204,11 @@ final class W238OwnerPendingTest {
             coordinator.transition(decided.id(), EscrowReason.OTHER_STATE);
             coordinator.tick(tick); coordinator.autosave(); io.awaitWrites(); coordinator.tick(++tick);
             assertEquals(EscrowReason.OTHER_STATE, coordinator.ledger().records().get(0).reason());
-            var observed = EscrowSettlementIntentTest.observations(EscrowTestFixtures.ledger(decided), false);
-            var preview = EscrowSettlementIntent.preview(coordinator.ledger(), decided.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+            var observed = EscrowSettlementIntentTest.observations(EscrowTestFixtures.admissionLedger(decided), false);
+            var preview = EscrowTestFixtures.previewModel(coordinator.ledger(), decided.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
                     B, "operator", tick, observed);
             var decisions = new ArrayList<Boolean>(); coordinator.tick(tick += 10);
-            assertTrue(coordinator.beginSettlement(preview.confirm(B, preview.digest(), tick, observed), decisions::add));
+            assertTrue(EscrowTestFixtures.beginModelSettlement(coordinator, preview.confirm(B, preview.digest(), tick, observed), decisions::add));
             io.awaitWrites(); coordinator.tick(++tick); assertEquals(List.of(true), decisions);
             assertEquals(EscrowOperation.Phase.SETTLING_ACCEPT, coordinator.ledger().records().get(0).phase());
             assertEquals(24, authority.pendingCount()); assertEquals(Result.OWNER_PENDING_FULL, check(authority, owner));
@@ -226,7 +226,7 @@ final class W238OwnerPendingTest {
             }
             assertEquals(2, proofs.size());
             var retirements = new ArrayList<Boolean>(); coordinator.tick(tick += 10);
-            assertTrue(coordinator.retire(java.util.Set.of(retired.id()), proofs, retirements::add));
+            assertTrue(EscrowTestFixtures.retireCapturedModel(coordinator, java.util.Set.of(retired.id()), proofs, retirements::add));
             io.awaitWrites(); coordinator.tick(++tick); assertEquals(List.of(true), retirements);
             assertEquals(23, coordinator.ledger().records().size()); assertEquals(23, authority.pendingCount());
             assertEquals(Result.OWNER_PENDING_FULL, check(authority, owner)); assertEquals(Result.RESERVED, check(authority, B));
@@ -259,7 +259,7 @@ final class W238OwnerPendingTest {
                     var coordinator = new EscrowCoordinator(data, writer)) {
                 coordinator.admissionAuthority().registerIndex(Consumer.BAY, () -> new Index(true, bays));
                 var payload = operation.payload(); var binding = operation.nativeBinding();
-                var result = coordinator.prepareTransfer(new EscrowNativeBinding.Admission(operation, RocketEscrowSection.neutral()), ignored -> fail());
+                var result = coordinator.prepareTransfer(EscrowTestFixtures.capturedModel(operation, RocketEscrowSection.neutral()), ignored -> fail());
                 assertEquals(EscrowCoordinator.Transfer.OWNER_PENDING_FULL, result, operation.kind().name());
                 assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus.OWNER_PENDING_FULL,
                         EscrowCargoRefusals.status(result));

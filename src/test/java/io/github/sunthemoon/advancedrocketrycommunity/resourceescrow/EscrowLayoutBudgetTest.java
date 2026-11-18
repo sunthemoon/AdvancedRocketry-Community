@@ -66,7 +66,7 @@ class EscrowLayoutBudgetTest {
             assertTrue(writer.capturedOperations().isEmpty());
         }
         assertFalse(java.nio.file.Files.exists(directory.resolve("escrow.dat")));
-        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(EscrowTestFixtures.ledger(original)));
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(EscrowTestFixtures.admissionLedger(original)));
         report("binding", original.nativeBinding().encode()); report("operation-max-fluid-unsettled", EscrowCodec.operation(tooLarge));
     }
     @Test void connectingAnotherBankReservesTheCompleteSharedComponentBeforeAnyMutation() {
@@ -74,11 +74,11 @@ class EscrowLayoutBudgetTest {
         for (int i = 1; i <= 8; i++) {
             operations.add(EscrowReceiptChargeTest.fill(i, 99, i - 1, i - 1, "a:" + "b".repeat(118), true, -1));
         }
-        var last = EscrowTestFixtures.ledger(operations.subList(0, 5).toArray(EscrowOperation[]::new));
+        var last = EscrowTestFixtures.admissionLedger(operations.subList(0, 5).toArray(EscrowOperation[]::new));
         assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(last));
-        var next = EscrowTestFixtures.ledger(operations.subList(0, 6).toArray(EscrowOperation[]::new));
+        var next = EscrowTestFixtures.admissionLedger(operations.subList(0, 6).toArray(EscrowOperation[]::new));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(next));
-        var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
+        var root = EscrowTestFixtures.admissionLedger(operations.toArray(EscrowOperation[]::new));
         var before = EscrowCodec.encode(root);
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));
         assertEquals(before, EscrowCodec.encode(root)); assertEquals(8, root.records().size());

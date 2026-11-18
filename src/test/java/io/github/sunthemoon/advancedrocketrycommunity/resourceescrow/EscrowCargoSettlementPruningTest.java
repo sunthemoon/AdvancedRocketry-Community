@@ -24,10 +24,10 @@ class EscrowCargoSettlementPruningTest {
     static Released released(boolean load) {
         var f = EscrowCargoReconciliationFixture.create(load); var op = f.op().withReason(EscrowReason.OTHER_STATE);
         var root = EscrowCargoSettlementProofTest.held(f, op);
-        var intent = EscrowCargoSettlementProofTest.intent(root, op, List.of(
+        var intent = EscrowCargoSettlementProofTest.intent(f, root, op, List.of(
                 EscrowCargoSettlementObservationTest.rocket(f, load ? f.before() : f.after()),
                 EscrowCargoSettlementObservationTest.device(f, f.deviceAfter())));
-        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent, 7);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root, f.settlementRows(root, intent.observations())), intent), intent, 7);
         return new Released(op, released, EscrowSettlementPruning.groups(released), EscrowFluidCargoEndpoint.root(f.deviceAfter()));
     }
     static RocketFluidCargoRoot with(RocketFluidCargoRoot root, RocketEscrowSection section) {

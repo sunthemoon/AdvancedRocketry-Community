@@ -21,8 +21,8 @@ class EscrowPrepareFillTest {
     @TempDir Path directory;
 
     /** A native fill into a rocket's fuel vector, captured with the neutral marker section. */
-    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true)); }
-    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()); }
+    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.accountedModel(EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true))); }
+    private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return EscrowTestFixtures.capturedModel(op, RocketEscrowSection.neutral()); }
     private static ResourceEscrowSavedData loaded(EscrowLedger root) { return ResourceEscrowSavedData.load(EscrowCodec.encode(root)); }
     private Path file(String name) throws Exception {
         return Files.createDirectories(directory.resolve(name)).resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
@@ -54,7 +54,7 @@ class EscrowPrepareFillTest {
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
         var bays = new ArrayList<EscrowAdmissionAuthority.Pending>();
         authority.registerIndex(EscrowAdmissionAuthority.Consumer.BAY, () -> new EscrowAdmissionAuthority.Index(true, bays));
-        var durable = fill(1, 1); var data = loaded(EscrowTestFixtures.ledger(durable));
+        var durable = fill(1, 1); var data = loaded(EscrowTestFixtures.appendModel(EscrowTestFixtures.ledger(), List.of(durable)));
         // ServerStartingEvent's early bind attaches the ledger; the first tick has not run a coordinator or writer tick.
         try (var writer = new EscrowLedgerWriter(file("first-tick"), 0); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             assertEquals(EscrowAdmissionAuthority.Delegate.State.LOADED, delegate.state());
@@ -83,14 +83,14 @@ class EscrowPrepareFillTest {
                     b.snapshotHash(), b.invariant(), b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(),
                     b.beforeFrontier(), b.afterFrontier(), b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), false));
             for (var op : List.of(fixtureKind, incomplete, nativeOp.withReason(EscrowReason.OTHER_STATE))) {
-                assertEquals(EscrowCoordinator.Fill.INVALID, coordinator.prepareFill(capture(op), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Fill.INVALID, coordinator.prepareFill(new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()), ignored -> fail()));
             }
             assertUnchanged(coordinator, writer, data, root, 1, 0);
             // STALE: a sequence other than the next one, and a capture whose section names another ledger.
             assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(capture(fill(2, 1)), ignored -> fail()));
             var foreign = new RocketEscrowSection(EscrowTestFixtures.id(501), 0, List.of());
             var foreignOp = EscrowTestFixtures.nativeModel(EscrowSettlementCapacityTest.operation(1, 1, 0, true), foreign);
-            assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(new EscrowNativeBinding.Admission(foreignOp, foreign), ignored -> fail()));
+            assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareFill(EscrowTestFixtures.capturedModel(foreignOp, foreign), ignored -> fail()));
             // IDENTITY_CONFLICT, SERVER_FULL and ROCKET_FULL come from the shared authority, after the pure check.
             var op = fill(1, 1);
             bays.add(new EscrowAdmissionAuthority.Pending(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.BAY));
@@ -138,7 +138,7 @@ class EscrowPrepareFillTest {
             // The same capture: a different section cannot even form the admission.
             assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()));
             try (var writer = new EscrowLedgerWriter(file("retired-" + retired), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                var result = coordinator.prepareFill(new EscrowNativeBinding.Admission(op, section), ignored -> { });
+                var result = coordinator.prepareFill(EscrowTestFixtures.capturedModel(op, section), ignored -> { });
                 if (retired < 5) {
                     assertEquals(EscrowCoordinator.Fill.QUEUED, result); assertEquals(101, coordinator.nextSequence());
                 } else {
@@ -157,12 +157,12 @@ class EscrowPrepareFillTest {
         var section = new RocketEscrowSection(empty.id(), 5, markers);
         var full = EscrowTestFixtures.nativeModel(EscrowSettlementCapacityTest.operation(1, 1, 5, true), section);
         assertEquals(java.util.Optional.of(EscrowCoordinator.Fill.ROCKET_LIMIT),
-                EscrowCoordinator.fillRefusal(empty, List.of(), new EscrowNativeBinding.Admission(full, section)));
+                EscrowCoordinator.fillRefusal(empty, List.of(), EscrowTestFixtures.capturedModel(full, section)));
         assertEquals(EscrowLedger.empty(EscrowTestFixtures.id(777)), empty);
     }
 
     /**
-     * Root-R6: with 29 retained floors the root admits its pinned 60 fills. The 61st would fit without the headroom,
+     * Root-R6: with 29 retained floors the root admits its pinned 53 fills. The 54th would fit without the headroom,
      * so its refusal is the headroom alone; after L1, a floor retirement still passes.
      */
     @Test void r6HeadroomRefusesTheFillThatWouldTakeTheFloorRetirementAndTheRetirementThenPasses() throws Exception {
@@ -175,34 +175,34 @@ class EscrowPrepareFillTest {
                 var result = coordinator.prepareFill(capture(op), replies::add);
                 if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); } else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; }
             }
-            assertEquals(60, admitted.size(), "The pinned capacity with 29 retained floors, unguarded");
+            assertEquals(53, admitted.size(), "The pinned capacity with 29 retained floors, unguarded");
             assertNotNull(refused);
             long next = coordinator.nextSequence(); assertEquals(refused.sequence(), next);
-            assertEquals(60, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.idle());
+            assertEquals(53, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.idle());
             assertTrue(writer.capturedOperations().isEmpty()); assertEquals(base, coordinator.ledger());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
-            var prospective = base.append(candidate);
-            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(prospective), "Without the headroom the 61st fill would fit");
+            var prospective = EscrowTestFixtures.appendModel(base, candidate);
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(prospective), "Without the headroom the 54th fill would fit");
             assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(prospective, admitted.get(0).id()));
             assertTrue(coordinator.commitPreparations());
             long tick = ledgerIo.tickUntil(coordinator::tick, 1, writer::idle);
-            assertEquals(60, replies.size()); assertTrue(replies.stream().allMatch(Boolean::booleanValue));
+            assertEquals(53, replies.size()); assertTrue(replies.stream().allMatch(Boolean::booleanValue));
             var root = coordinator.ledger(); assertEquals(admitted, root.records());
             tick += 210; coordinator.tick(tick);
             var results = new ArrayList<Boolean>();
             assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), EscrowTestFixtures.FLOOR_OWNER, results::add), "The reserved headroom admits one floor retirement");
             ledgerIo.tickUntil(coordinator::tick, tick + 1, writer::idle);
-            assertEquals(List.of(true), results); assertEquals(61, coordinator.ledger().records().size());
-            assertEquals(61, coordinator.admissionAuthority().pendingCount());
+            assertEquals(List.of(true), results); assertEquals(54, coordinator.ledger().records().size());
+            assertEquals(54, coordinator.admissionAuthority().pendingCount());
         }
     }
 
     /**
-     * Root-R8: with no floors the root admits its pinned 62 fills. Charged by its own preview only, the 63rd would fit
-     * even with the headroom, so its refusal is the ceiling charge.
+     * R469 pads R8 with 8 retained named floors to place the first refusal inside the candidate's real slack.
+     * Its real codec preview fits with headroom; the fixed ceiling charge does not.
      */
     @Test void r8ChargingRefusesACandidateThatWouldFitByItsPreviewOnly() throws Exception {
-        var base = EscrowTestFixtures.ledger(); var data = loaded(base);
+        var base = EscrowCombinedReservationTest.retainedFloors(8); var data = loaded(base);
         try (var writer = new EscrowLedgerWriter(file("r8"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             var admitted = new ArrayList<EscrowOperation>();
             EscrowOperation refused = null;
@@ -211,18 +211,28 @@ class EscrowPrepareFillTest {
                 var result = coordinator.prepareFill(capture(op), ignored -> { });
                 if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); } else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; }
             }
-            assertEquals(62, admitted.size(), "The pinned capacity with no floors, unguarded");
+            assertEquals(54, admitted.size(), "R469: 8 retained named floors");
             assertNotNull(refused);
-            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(62, coordinator.admissionAuthority().pendingCount());
+            assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(54, coordinator.admissionAuthority().pendingCount());
             assertEquals(base, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             var candidate = new ArrayList<>(admitted); candidate.add(refused);
-            var prospective = base.append(candidate);
+            var prospective = EscrowTestFixtures.appendModel(base, candidate);
             long ceiling = EscrowSettlementCapacity.reservedBytes(prospective);
-            long previewOnly = ceiling - (EscrowLimits.OP_BYTES + 2_048L) + previewBytes(prospective, refused);
+            long fullCharge = EscrowLimits.OP_BYTES + 2_048L + EscrowFluidAccountCodec.SAVED.bytes();
+            long realPreview = previewBytes(prospective, refused);
+            long slack = fullCharge - realPreview;
+            long overshoot = ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES - EscrowLimits.ROOT_BYTES;
+            assertTrue(overshoot > 0 && overshoot < slack, "R469 padding places refusal strictly inside real preview slack");
+            long previewOnly = ceiling - fullCharge + realPreview;
+            System.out.println("R469 R8 admitted=" + admitted.size() + " candidate=" + refused.sequence()
+                    + " ceiling=" + ceiling + " candidate_preview=" + previewBytes(prospective, refused)
+                    + " preview_only=" + previewOnly + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES
+                    + " limit=" + EscrowLimits.ROOT_BYTES + " padding_floors=8 full_charge=" + fullCharge
+                    + " slack=" + slack + " overshoot=" + overshoot);
             assertTrue(ceiling + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES);
             assertTrue(previewOnly + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES <= EscrowLimits.ROOT_BYTES,
                     "Charged by its preview only, with the headroom, the candidate would fit: " + previewOnly);
-            System.out.println("prepareFill R8 admitted=62 ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
+            System.out.println("prepareFill R8 admitted=" + admitted.size() + " ceiling_bytes=" + ceiling + " preview_only_bytes=" + previewOnly
                     + " headroom=" + EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES + " limit=" + EscrowLimits.ROOT_BYTES);
         }
     }
@@ -252,11 +262,19 @@ class EscrowPrepareFillTest {
         }
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> op.id().equals(candidate.id())
                 ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
+        var baseline = EscrowAccountingReconciliation.baseline(prospective, candidate);
+        var numbers = java.util.Map.of(candidate.source().key(), java.util.Map.of(candidate.id(), baseline.sourceAfter()),
+                candidate.destination().key(), java.util.Map.of(candidate.id(), baseline.destinationAfter()));
+        var rows = EscrowSettlementAccounting.project(hypothetical, component, observations, numbers);
         var preview = EscrowSettlementIntent.preview(hypothetical, candidate.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                new UUID(0, 1), "~".repeat(16), 0, observations);
+                new UUID(0, 1), "~".repeat(16), 0, observations).accounting(rows);
         var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var member = hypothetical.records().stream().filter(op -> op.id().equals(candidate.id())).findFirst().orElseThrow();
-        return listBytes(EscrowCodec.operation(member.settle(intent))) + listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent)));
+        long operationBytes = listBytes(EscrowCodec.operation(member.settle(intent)));
+        long receiptBytes = listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent, rows.get(0))));
+        long rowBytes = listBytes(EscrowFluidAccountCodec.encode(rows.get(0), EscrowFluidAccountCodec.SAVED).value());
+        System.out.println("R469_FUEL_PREVIEW operation=" + operationBytes + " receipt=" + receiptBytes + " row=" + rowBytes);
+        return operationBytes + receiptBytes + rowBytes;
     }
     private static int listBytes(net.minecraft.nbt.CompoundTag tag) { return RocketNbtSize.uncompressedBytes(tag) - 3; }
     private static EscrowSettlementIntent floorIntent(EscrowLedger root, int index, long tick) {

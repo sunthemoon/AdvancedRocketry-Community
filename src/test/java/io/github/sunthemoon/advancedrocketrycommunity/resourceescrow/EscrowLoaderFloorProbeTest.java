@@ -38,19 +38,19 @@ class EscrowLoaderFloorProbeTest {
     @Test void at255OneNewKeyEntersTheSecondDistinctKeyRefusesAndTheSameKeyCoalesces() {
         var root = ledger(List.of(), EscrowLoaderFloorProbe.floors(255));
         var first = named(256, 1, 0); var distinct = named(257, 2, 0); var same = named(257, 1, 1);
-        EscrowSettlementCapacity.preflight(root.append(List.of(first)), first.id());
-        assertEquals(new EscrowFloors.Usage(255, 1), EscrowFloors.usage(root.append(List.of(first)), List.of()));
-        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root.append(List.of(first, distinct)), distinct.id()));
-        EscrowSettlementCapacity.preflight(root.append(List.of(first, same)), same.id());
-        assertEquals(new EscrowFloors.Usage(255, 1), EscrowFloors.usage(root.append(List.of(first, same)), List.of()));
+        EscrowSettlementCapacity.preflight(EscrowTestFixtures.appendModel(root, List.of(first)), first.id());
+        assertEquals(new EscrowFloors.Usage(255, 1), EscrowFloors.usage(EscrowTestFixtures.appendModel(root, List.of(first)), List.of()));
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(EscrowTestFixtures.appendModel(root, List.of(first, distinct)), distinct.id()));
+        EscrowSettlementCapacity.preflight(EscrowTestFixtures.appendModel(root, List.of(first, same)), same.id());
+        assertEquals(new EscrowFloors.Usage(255, 1), EscrowFloors.usage(EscrowTestFixtures.appendModel(root, List.of(first, same)), List.of()));
     }
 
     @Test void at256ANamedKeyRefusesButANoneGuardFillNeedsNoFloor() {
         var root = ledger(List.of(), EscrowLoaderFloorProbe.floors(256));
         var named = named(257, 1, 0); var none = EscrowTestFixtures.operation(257);
-        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root.append(List.of(named)), named.id()));
-        EscrowSettlementCapacity.preflight(root.append(List.of(none)), none.id());
-        assertEquals(new EscrowFloors.Usage(256, 0), EscrowFloors.usage(root.append(List.of(none)), List.of()));
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(EscrowTestFixtures.appendModel(root, List.of(named)), named.id()));
+        EscrowSettlementCapacity.preflight(EscrowTestFixtures.appendModel(root, List.of(none)), none.id());
+        assertEquals(new EscrowFloors.Usage(256, 0), EscrowFloors.usage(EscrowTestFixtures.appendModel(root, List.of(none)), List.of()));
     }
 
     @Test void floorCutsAreSelectedApartFromTheMatrixAndHoldsOnlyForTheirCuts() {

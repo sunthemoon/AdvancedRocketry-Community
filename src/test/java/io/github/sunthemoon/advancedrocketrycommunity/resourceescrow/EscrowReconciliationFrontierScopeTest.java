@@ -15,10 +15,13 @@ class EscrowReconciliationFrontierScopeTest {
     @Test void singleMemberCheckpointSelectsItsEndpointsFromTheCompleteComponentView() {
         var f = EscrowReconciliationBindingBoundaryTest.sample(); var root = f.ledger();
         var a = source(root, f.a()); var b = source(root, f.b());
-        var rocket = EscrowSettlementDisk.observe(EscrowReconciliationCheckpointTest.rocketSlot(f.a().destination(), f.after()),
-                f.a().destination(), root.id());
+        var rocketSlot = EscrowReconciliationCheckpointTest.rocketSlot(f.a().destination(), f.after());
+        var rocket = EscrowSettlementDisk.observe(rocketSlot, f.a().destination(), root.id());
         var component = Map.of(a.endpoint().key(), a.state(), b.endpoint().key(), b.state(), rocket.endpoint().key(), rocket.state());
-        try (var checkpoint = new EscrowReconciliationCheckpoint(root, Set.of(f.a().id()), List.of(a, rocket), () -> true, component)) {
+        var numeric = Map.of(a.endpoint().key(), EscrowSettlementDisk.ordinary(EscrowReconciliationCheckpointTest.sourceSlot(f.a(), root),
+                f.a().source(), root.id(), null, List.of(f.a())).fluids(), rocket.endpoint().key(),
+                EscrowSettlementDisk.ordinary(rocketSlot, f.a().destination(), root.id(), null, root.records()).fluids());
+        try (var checkpoint = new EscrowReconciliationCheckpoint(root, Set.of(f.a().id()), List.of(a, rocket), () -> true, component, Map.of(), numeric)) {
             assertEquals(Set.of(a.endpoint().key(), rocket.endpoint().key()), checkpoint.frontiers.keySet());
             assertEquals(rocket.state(), checkpoint.frontiers.get(rocket.endpoint().key()));
             assertEquals(3, component.size());

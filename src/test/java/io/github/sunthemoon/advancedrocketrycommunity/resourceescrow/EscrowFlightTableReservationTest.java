@@ -44,16 +44,16 @@ class EscrowFlightTableReservationTest {
             committed(results, 64); results.clear();
             assertTrue(coordinator.ledger().armedFlights().stream().allMatch(arm -> arm.outcome() == EscrowFlightTables.Outcome.CANCELLED));
 
-            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(i)), results::add); }
+            for (int i = 30; i <= 82; i++) { EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.distributedOwner(EscrowTestFixtures.admissionOperation(i)), results::add); }
             assertThrows(IllegalArgumentException.class,
-                    () -> coordinator.prepareTest(EscrowTestFixtures.operation(90), ignored -> fail()));
+                    () -> EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(83), ignored -> fail()));
             coordinator.tick(20); assertTrue(coordinator.commitPreparations());
-            acknowledge(io, coordinator, file, 3, 21); committed(results, 60); results.clear();
+            acknowledge(io, coordinator, file, 3, 21); committed(results, 53); results.clear();
             var before = coordinator.ledger(); var intent = floorIntent(before);
-            assertEquals(60, before.records().size()); assertEquals(64, before.armedFlights().size());
+            assertEquals(53, before.records().size()); assertEquals(64, before.armedFlights().size());
             var retirementBefore = assertDoesNotThrow(() -> EscrowSettlementCapacity.floorRetirement(before, intent, coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER));
             // An independently assembled all-ceiling total includes root framing once.
-            assertEquals(bytes(EscrowTestFixtures.ledger()) + 128 * 1_024L + 29 * 1_024L + 60 * 14_336L, reserved(before));
+            assertEquals(bytes(EscrowTestFixtures.ledger()) + 128 * 1_024L + 29 * 1_024L + 53 * 16_384L, reserved(before));
 
             for (var arm : before.armedFlights()) {
                 assertTrue(coordinator.flightWrite(arm.logical(), (root, generation) -> EscrowFlightAuthority.prune(root, arm),
@@ -80,9 +80,9 @@ class EscrowFlightTableReservationTest {
             assertEquals(after.floors(), coordinator.ledger().floors());
             assertEquals(after.tombstones(), coordinator.ledger().tombstones());
             assertEquals(after.issuedLaunchSerial(), coordinator.ledger().issuedLaunchSerial());
-            assertFalse(data.isDirty()); assertEquals(61, coordinator.admissionAuthority().pendingCount());
+            assertFalse(data.isDirty()); assertEquals(54, coordinator.admissionAuthority().pendingCount());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
-            System.out.println("table-cleanup reservation fills=60 floors=29 terminal_entries=64 before=" + reserved(before)
+            System.out.println("table-cleanup reservation fills=53 floors=29 terminal_entries=64 before=" + reserved(before)
                     + " retirement_before=" + reserved(retirementBefore) + " after=" + reserved(after)
                     + " retirement_after=" + reserved(retirementAfter) + " increase=" + (reserved(after) - reserved(before)));
         }

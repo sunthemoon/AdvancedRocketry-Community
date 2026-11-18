@@ -27,7 +27,7 @@ class EscrowStartupTest {
     @Test void futureAndInvalidRootsRefusePreStartAndPreserveTheirBytes() throws Exception {
         Files.createDirectories(world.resolve("data"));
         for (java.util.function.Consumer<CompoundTag> mutation : List.<java.util.function.Consumer<CompoundTag>>of(
-                tag -> tag.putInt("schema_version", 3), tag -> tag.putInt("schema_version", 1), tag -> tag.putInt("schema_version", 0),
+                tag -> tag.putInt("schema_version", 4), tag -> tag.putInt("schema_version", 1), tag -> tag.putInt("schema_version", 0),
                 tag -> tag.remove("ledger_id"), tag -> tag.putLong("issued_through", -1),
                 tag -> tag.putInt("unexpected", 1))) {
             CompoundTag root = ResourceEscrowSavedData.create().save(new CompoundTag()); mutation.accept(root);

@@ -21,7 +21,7 @@ class EscrowCargoRefusalTest {
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind.name()), 0);
                     var coordinator = new EscrowCoordinator(data, writer)) {
                 assertEquals("CARGO_TOO_LARGE", coordinator.prepareTransfer(
-                        new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()), ignored -> fail()).name());
+                        capturedModel(op, RocketEscrowSection.neutral()), ignored -> fail()).name());
                 assertEquals(1, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
                 assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());
                 assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());
@@ -34,7 +34,7 @@ class EscrowCargoRefusalTest {
         var c = EscrowCargoEligibilityTest.sample(true, 1000, -1);
         var captured = EscrowCargoEligibility.check(ledger(), List.of(), c.op(), c.before(), c.after(),
                 c.deviceBefore(), c.deviceAfter(), 64_000).capture();
-        var root = ledger(captured.operation()); var saved = EscrowCodec.encode(root);
+        var root = EscrowAccountingCapture.append(ledger(), List.of(), captured); var saved = EscrowCodec.encode(root);
         var before = c.before().copy(); var device = c.deviceBefore().copy();
         var result = EscrowCargoEligibility.check(root, List.of(), c.op(), c.before(), c.after(),
                 c.deviceBefore(), c.deviceAfter(), 64_000);
@@ -45,12 +45,12 @@ class EscrowCargoRefusalTest {
 
     @Test void conflictingSequenceIsStaleBeforeAnyReservationOrWrite() {
         for (var kind : EscrowCargoFixtures.KINDS) {
-            var root = ledger(EscrowCargoFixtures.operation(kind, 1, 99));
+            var root = admissionLedger(EscrowCargoFixtures.operation(kind, 1, 99));
             var other = EscrowCargoFixtures.operation(kind, 2, 100);
             var op = new EscrowOperation(other.id(), 1, other.owner(), other.createdTick(), other.phase(), other.reason(),
                     other.payload(), other.payloadHash(), other.source(), other.destination(), other.guard(), other.kind(),
                     other.settlement(), other.nativeBinding());
-            var capture = new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral());
+            var capture = capturedModel(op, RocketEscrowSection.neutral());
             assertEquals(EscrowCoordinator.Transfer.STALE, EscrowCargoRefusals.capacity(root, List.of(), capture).orElseThrow());
             var saved = EscrowCodec.encode(root); var data = ResourceEscrowSavedData.load(saved);
             try (var writer = new EscrowLedgerWriter(temp.resolve("sequence-" + kind), 0);
@@ -67,7 +67,7 @@ class EscrowCargoRefusalTest {
         var root = ledger();
         for (var kind : EscrowCargoFixtures.KINDS) {
             var op = EscrowCargoFixtures.operation(kind, 1, 99, 1, -1, "minecraft:overworld");
-            var capture = new EscrowNativeBinding.Admission(op, EscrowCargoFixtures.wrapper(1));
+            var capture = capturedModel(op, EscrowCargoFixtures.wrapper(1));
             assertEquals(EscrowCoordinator.Transfer.ROCKET_LIMIT, EscrowCargoRefusals.capacity(root, List.of(), capture).orElseThrow());
             assertThrows(EscrowSettlementCapacity.MarkerLimit.class,
                     () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, capture.before()));
@@ -76,20 +76,20 @@ class EscrowCargoRefusalTest {
             var foreign = new RocketEscrowSection(id(600), 1, capture.before().markers());
             var foreignOp = nativeModel(op, foreign);
             assertEquals(EscrowCoordinator.Transfer.STALE, EscrowCargoRefusals.capacity(root, List.of(),
-                    new EscrowNativeBinding.Admission(foreignOp, foreign)).orElseThrow());
+                    capturedModel(foreignOp, foreign)).orElseThrow());
             assertEquals(0, root.issuedThrough()); assertTrue(root.records().isEmpty());
         }
         var records = new java.util.ArrayList<EscrowOperation>();
-        for (int i = 1; i <= 63; i++) {
+        for (int i = 1; i <= 55; i++) {
             records.add(EscrowSettlementCapacityTest.operation(i, i, 0, true));
         }
-        var full = ledger(records.toArray(EscrowOperation[]::new)); var before = EscrowCodec.encode(full);
-        var op = EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 64, 999);
+        var full = admissionLedger(records.toArray(EscrowOperation[]::new)); var before = EscrowCodec.encode(full);
+        var op = EscrowCargoFixtures.operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 56, 999);
         var data = ResourceEscrowSavedData.load(before);
         try (var writer = new EscrowLedgerWriter(temp.resolve("full"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(
-                    new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()), ignored -> fail()));
-            assertEquals(64, coordinator.nextSequence()); assertEquals(63, coordinator.admissionAuthority().pendingCount());
+                    capturedModel(op, RocketEscrowSection.neutral()), ignored -> fail()));
+            assertEquals(56, coordinator.nextSequence()); assertEquals(55, coordinator.admissionAuthority().pendingCount());
             assertEquals(before, EscrowCodec.encode(coordinator.ledger())); assertFalse(data.isDirty());
             assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());
         }
@@ -101,7 +101,7 @@ class EscrowCargoRefusalTest {
             var base = ledger();
             var complete = tooLarge ? null : EscrowCargoEligibility.check(base, List.of(), c.op(), c.before(), c.after(),
                     c.deviceBefore(), c.deviceAfter(), 64_000).capture();
-            var root = tooLarge ? base : ledger(complete.operation());
+            var root = tooLarge ? base : EscrowAccountingCapture.append(base, List.of(), complete);
             var session = new io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.CargoTicketTestFixture(c.op().guard().rocket(),
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec
                             .decode(c.before().getCompound("snapshot")).snapshot().orElseThrow(),

@@ -23,7 +23,7 @@ class EscrowJointProofTest {
     @Test void jointTargetLimitAcceptsAll128AndRefusesOverflowDuplicatesAndOtherSlots() {
         var targets = new ArrayList<EscrowBarrier.Target>();
         for (int i = 1; i <= 128; i++) {
-            var op = EscrowTestFixtures.operation(i);
+            var op = EscrowTestFixtures.admissionOperation(i);
             targets.add(new EscrowBarrier.Target(op.destination(), frontier(op.destination(), op), root -> true));
         }
         try (var barrier = new EscrowBarrier()) {
@@ -33,7 +33,7 @@ class EscrowJointProofTest {
             assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, overflow, 0, result -> { }));
             assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(), 0, result -> { }));
             assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(targets.get(0), targets.get(0)), 0, result -> { }));
-            var other = EscrowTestFixtures.operation(129);
+            var other = EscrowTestFixtures.admissionOperation(129);
             assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(targets.get(0),
                     new EscrowBarrier.Target(other.source(), frontier(other.source(), other), root -> true)), 0, result -> { }));
         }
@@ -47,7 +47,7 @@ class EscrowJointProofTest {
         tokens.get(127).release(); assertEquals(1, releases.get());
     }
     @Test void jointLeaseReleasesItsWatchOnlyAfterEveryEndpointAndSupersedesAllTokens() {
-        var a = EscrowTestFixtures.operation(1); var b = EscrowTestFixtures.operation(2);
+        var a = EscrowTestFixtures.admissionOperation(1); var b = EscrowTestFixtures.admissionOperation(2);
         AtomicInteger releases = new AtomicInteger(); AtomicLong generation = new AtomicLong(1);
         var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, directory,
                 new ChunkPos(0, 0), generation, 1, 0, () -> { }, releases::incrementAndGet);
@@ -60,8 +60,8 @@ class EscrowJointProofTest {
         proofs.get(b.source().key()).release(); proofs.get(b.source().key()).release(); assertEquals(1, releases.get());
     }
     @Test void partialPrefixRetirementKeepsEpochAndLaterMarkersButRequiresFreshBankProof() throws Exception {
-        var a = EscrowTestFixtures.operation(1, 99, 0); var b = EscrowTestFixtures.operation(2, 99, 1);
-        var ledger = EscrowTestFixtures.ledger(a, b).generation(1);
+        var a = EscrowTestFixtures.admissionOperation(1, 99, 0); var b = EscrowTestFixtures.admissionOperation(2, 99, 1);
+        var ledger = EscrowTestFixtures.admissionLedger(a, b).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger));
         var ledgerIo = new AwaitedLedgerIo();
         var writer = ledgerIo.writer(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1,
@@ -77,8 +77,8 @@ class EscrowJointProofTest {
                 proofs.put(last.endpoint().key(), new EscrowBarrier.Proof(state, capture, new AtomicBoolean(true), new AtomicBoolean(true)));
             }
             var bank = proofs.get(a.destination().key()); var outcomes = new ArrayList<Boolean>();
-            assertThrows(IllegalArgumentException.class, () -> coordinator.retire(Set.of(b.id()), proofs, outcomes::add));
-            assertTrue(coordinator.retire(Set.of(a.id()), proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.retireCapturedModel(coordinator, Set.of(b.id()), proofs, outcomes::add));
+            assertTrue(EscrowTestFixtures.retireCapturedModel(coordinator, Set.of(a.id()), proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
             assertEquals(List.of(true), outcomes); assertEquals(List.of(b), coordinator.ledger().records());
             assertTrue(coordinator.locked(b.destination().key())); assertFalse(coordinator.locked(a.source().key()));
             assertFalse(bank.valid()); assertFalse(coordinator.frozen(b.destination().key()));
@@ -87,19 +87,19 @@ class EscrowJointProofTest {
             assertEquals(List.of(b.id()), pruned.markers().stream().map(EscrowPrefix.Marker::operation).toList());
             assertEquals(EscrowPrefix.Classification.AFTER, EscrowPrefix.classify(ledger.id(), EscrowPrefix.chains(List.of(b)).get(b.destination().key()), pruned));
             coordinator.freeze(b.destination().key(), pruned); coordinator.tick(10);
-            assertThrows(IllegalArgumentException.class, () -> coordinator.retire(Set.of(b.id()), proofs, outcomes::add));
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.retireCapturedModel(coordinator, Set.of(b.id()), proofs, outcomes::add));
         }
     }
     /** Review W11b1 finding 2, probe "stale": a bank frozen before op1's queued L1 cannot retire op1. */
     @Test void aFrontierFrozenBeforeAQueuedAdmissionCannotRetireThatAdmission() throws Exception {
-        var op0 = EscrowTestFixtures.operation(1, 99, 0); var op1 = EscrowTestFixtures.operation(2, 99, 1);
-        var ledger = EscrowTestFixtures.ledger(op0).generation(1);
+        var op0 = EscrowTestFixtures.admissionOperation(1, 99, 0); var op1 = EscrowTestFixtures.admissionOperation(2, 99, 1);
+        var ledger = EscrowTestFixtures.admissionLedger(op0).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger)); var replies = new ArrayList<Boolean>();
         var ledgerIo = new AwaitedLedgerIo();
         var writer = ledgerIo.writer(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1,
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
         try (var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(op1, replies::add);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, op1, replies::add);
             var bank = op0.destination().key(); var staleBank = prefix(List.of(op0), bank, 1);
             coordinator.freeze(op0.source().key(), prefix(List.of(op0), op0.source().key(), 1));
             assertTrue(coordinator.admitting(bank));
@@ -120,7 +120,7 @@ class EscrowJointProofTest {
             // The complete AFTER bank frontier proves both operations and retires them together.
             frontiers.put(bank, prefix(records, bank, 2)); proofs.put(bank, proof(frontiers.get(bank)));
             frontiers.forEach(coordinator::freeze); var outcomes = new ArrayList<Boolean>();
-            coordinator.tick(20); assertTrue(coordinator.retire(both, proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
+            coordinator.tick(20); assertTrue(EscrowTestFixtures.retireCapturedModel(coordinator, both, proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
             assertEquals(List.of(true), outcomes); assertTrue(coordinator.ledger().records().isEmpty());
         }
     }

@@ -81,7 +81,7 @@ final class EscrowAdmissionAuthorityTest {
         try (var writer = new EscrowLedgerWriter(java.nio.file.Path.of("unused-admission-test.dat"), 0);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.admissionAuthority().registerIndex(Consumer.BAY, () -> new Index(true, rows));
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(EscrowTestFixtures.operation(1), ignored -> fail()));
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(1), ignored -> fail()));
             assertEquals(1, coordinator.nextSequence()); assertTrue(data.ledger().records().isEmpty()); assertFalse(data.isDirty());
         }
     }
@@ -104,7 +104,7 @@ final class EscrowAdmissionAuthorityTest {
                 }); var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.admissionAuthority().registerIndex(Consumer.BAY, () -> new Index(true, bay));
             var acknowledged = new java.util.concurrent.atomic.AtomicInteger();
-            coordinator.prepareTest(EscrowTestFixtures.operation(1), committed -> { assertTrue(committed); acknowledged.incrementAndGet(); });
+            EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(1), committed -> { assertTrue(committed); acknowledged.incrementAndGet(); });
             assertTrue(coordinator.commitPreparations());
             long tick = 1;
             try {
@@ -195,7 +195,7 @@ final class EscrowAdmissionAuthorityTest {
         delegate.noFile(); assertEquals(Delegate.State.NO_FILE, delegate.state());
         var bay = pending(1, 1, Consumer.BAY); assertEquals(Result.RESERVED, reserve(authority, bay)); bays.add(bay);
         assertEquals(1, authority.pendingCount(), "NO_FILE is loaded and known to be empty");
-        var durable = EscrowTestFixtures.operation(5); var data = loaded(EscrowTestFixtures.ledger(durable));
+        var durable = EscrowTestFixtures.admissionOperation(5); var data = loaded(EscrowTestFixtures.admissionLedger(durable));
         try (var writer = new EscrowLedgerWriter(ledgerFile("states"), 0); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             assertEquals(Delegate.State.LOADED, delegate.state()); assertSame(authority, coordinator.admissionAuthority());
             assertEquals(2, authority.pendingCount()); assertEquals(Result.ALREADY_HELD, reserve(authority, Pending.of(durable)));
@@ -213,12 +213,12 @@ final class EscrowAdmissionAuthorityTest {
         // Before the startup lookup both stores fail closed.
         for (var consumer : Consumer.values()) { assertEquals(Result.UNAVAILABLE, reserve(authority, pending(1, 1, consumer))); }
         // ServerStartingEvent: both startup indexes load, and the existing ledger binds before any tick.
-        bayLoaded.set(true); var durable = EscrowTestFixtures.operation(1); var data = loaded(EscrowTestFixtures.ledger(durable));
+        bayLoaded.set(true); var durable = EscrowTestFixtures.admissionOperation(1); var data = loaded(EscrowTestFixtures.admissionLedger(durable));
         try (var writer = new EscrowLedgerWriter(ledgerFile("first-tick"), 0); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             assertEquals(Delegate.State.LOADED, delegate.state());
             // The first tick: no coordinator or writer tick has run yet.
-            var fill = EscrowTestFixtures.operation(2);
-            assertDoesNotThrow(() -> coordinator.prepareTest(fill, ignored -> { }));
+            var fill = EscrowTestFixtures.admissionOperation(2);
+            assertDoesNotThrow(() -> EscrowTestFixtures.prepareCapturedModel(coordinator, fill, ignored -> { }));
             var bay = pending(1_001, 1, Consumer.BAY); assertEquals(Result.RESERVED, reserve(authority, bay)); bays.add(bay);
             assertEquals(3, authority.pendingCount()); assertEquals(3, coordinator.nextSequence());
         }
@@ -226,15 +226,15 @@ final class EscrowAdmissionAuthorityTest {
     @Test void durableQueuedCapturedAndUnknownCopiesOfOneLedgerCountOnce() throws Exception {
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(Consumer.PROPULSION);
         var bays = bays(62, 100); authority.registerIndex(Consumer.BAY, () -> new Index(true, bays));
-        var durable = EscrowTestFixtures.operation(1); var data = loaded(EscrowTestFixtures.ledger(durable));
+        var durable = EscrowTestFixtures.admissionOperation(1); var data = loaded(EscrowTestFixtures.admissionLedger(durable));
         var uncertain = new java.util.concurrent.atomic.AtomicBoolean(true); var ledgerIo = new AwaitedLedgerIo();
         try (var writer = ledgerIo.writer(ledgerFile("copies"), 0, (staged, target) -> {
                     if (uncertain.get()) { throw new java.io.IOException("Injected ambiguous replacement"); }
                     CheckedSavedDataFile.atomicMove(staged, target);
                 }); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             assertEquals(63, authority.pendingCount());
-            var replies = new ArrayList<Boolean>(); var queued = EscrowTestFixtures.operation(2);
-            coordinator.prepareTest(queued, replies::add); assertEquals(64, authority.pendingCount());
+            var replies = new ArrayList<Boolean>(); var queued = EscrowTestFixtures.admissionOperation(2);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, queued, replies::add); assertEquals(64, authority.pendingCount());
             assertTrue(coordinator.commitPreparations());
             assertEquals(List.of(durable, queued), writer.capturedOperations(), "Both are also captured candidates");
             assertEquals(64, authority.pendingCount());
@@ -250,7 +250,7 @@ final class EscrowAdmissionAuthorityTest {
         }
     }
     @Test void repairAndReleasedButUnresolvedEntriesKeepTheirSlotsAndRocketCount() throws Exception {
-        var repair = EscrowTestFixtures.operation(1, 7, 0).withReason(EscrowReason.OTHER_STATE);
+        var repair = EscrowTestFixtures.admissionOperation(1, 7, 0).withReason(EscrowReason.OTHER_STATE);
         assertEquals(EscrowOperation.Phase.REPAIR, repair.phase());
         var rocket = repair.guard().rocket();
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(Consumer.PROPULSION);
@@ -259,7 +259,7 @@ final class EscrowAdmissionAuthorityTest {
                 new Pending(EscrowTestFixtures.id(11), EscrowTestFixtures.id(900), rocket, Consumer.BAY)));
         authority.registerIndex(Consumer.BAY, () -> new Index(true, bays));
         try (var writer = new EscrowLedgerWriter(ledgerFile("repair"), 0);
-                var coordinator = new EscrowCoordinator(loaded(EscrowTestFixtures.ledger(repair)), writer, delegate)) {
+                var coordinator = new EscrowCoordinator(loaded(EscrowTestFixtures.admissionLedger(repair)), writer, delegate)) {
             assertEquals(3, authority.pendingCount()); assertEquals(3, authority.pendingFor(rocket));
             assertEquals(Result.ALREADY_HELD, reserve(authority, Pending.of(repair)));
             for (var receipt : List.copyOf(bays)) { assertEquals(Result.ALREADY_HELD, reserve(authority, receipt)); }
@@ -272,8 +272,9 @@ final class EscrowAdmissionAuthorityTest {
         }
     }
     @Test void overCapacityRestartIndexesEveryRecordWithoutEviction() throws Exception {
-        var old = EscrowTestFixtures.ledger(java.util.stream.LongStream.rangeClosed(1, 64)
-                .mapToObj(EscrowTestFixtures::operation).toArray(EscrowOperation[]::new));
+        // A maximum historical root-2 file is indexed without applying today's admission budget.
+        var old = EscrowTestFixtures.root2(EscrowTestFixtures.ledger(java.util.stream.LongStream.rangeClosed(1, 64)
+                .mapToObj(EscrowTestFixtures::operation).toArray(EscrowOperation[]::new)));
         // A restart is a new runtime: a new authority and delegate, and the loaded ledger binding at startup.
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(Consumer.PROPULSION);
         var bay = pending(1_000, 300, Consumer.BAY); var bays = new ArrayList<>(List.of(bay));
@@ -319,8 +320,8 @@ final class EscrowAdmissionAuthorityTest {
                     if (cut.equals("K1") && failures.getAndDecrement() > 0) { throw new IllegalStateException("Injected definite pre-replace failure"); }
                 }); var coordinator = new EscrowCoordinator(data, writer, delegate)) {
             var replies = new ArrayList<Boolean>();
-            coordinator.prepareTest(EscrowTestFixtures.operation(1), replies::add);
-            coordinator.prepareTest(EscrowTestFixtures.operation(2), replies::add);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(1), replies::add);
+            EscrowTestFixtures.prepareCapturedModel(coordinator, EscrowTestFixtures.admissionOperation(2), replies::add);
             assertEquals(64, authority.pendingCount()); assertTrue(delegate.holdsWork());
             assertEquals(Result.SERVER_FULL, reserve(authority, pending(9_000, 300, Consumer.BAY)));
             assertTrue(coordinator.commitPreparations());
@@ -330,7 +331,7 @@ final class EscrowAdmissionAuthorityTest {
             assertFalse(delegate.holdsWork());
             var bay = pending(9_000, 300, Consumer.BAY); assertEquals(Result.RESERVED, reserve(authority, bay)); bays.add(bay);
             // A later exact L1 keeps its slot: only an exact resolution would release it.
-            var durable = EscrowTestFixtures.operation(3); coordinator.prepareTest(durable, replies::add);
+            var durable = EscrowTestFixtures.admissionOperation(3); EscrowTestFixtures.prepareCapturedModel(coordinator, durable, replies::add);
             coordinator.tick(Math.max(tick, 10)); assertTrue(coordinator.commitPreparations());
             ledgerIo.tickUntil(coordinator::tick, Math.max(tick, 10) + 1, writer::idle);
             assertEquals(List.of(false, false, true), replies); assertEquals(List.of(durable), coordinator.ledger().records());
@@ -339,7 +340,7 @@ final class EscrowAdmissionAuthorityTest {
     }
     @Test void aSecondLedgerRetargetsAndReplacementRefusesWithoutThrowingWhileWorkIsHeld() throws Exception {
         var authority = new EscrowAdmissionAuthority(); var delegate = authority.register(Consumer.PROPULSION); delegate.noFile();
-        var earlier = EscrowTestFixtures.operation(7); var first = loaded(EscrowTestFixtures.ledger(earlier));
+        var earlier = EscrowTestFixtures.admissionOperation(7); var first = loaded(EscrowTestFixtures.admissionLedger(earlier));
         var second = ResourceEscrowSavedData.create();
         var uncertain = new java.util.concurrent.atomic.AtomicBoolean(true); var ledgerIo = new AwaitedLedgerIo();
         try (var firstWriter = new EscrowLedgerWriter(ledgerFile("first"), 0); var a = new EscrowCoordinator(first, firstWriter, delegate);
@@ -349,8 +350,8 @@ final class EscrowAdmissionAuthorityTest {
                 });
                 var b = assertDoesNotThrow(() -> new EscrowCoordinator(second, secondWriter, delegate), "A second ledger retargets")) {
             assertEquals(Delegate.State.LOADED, delegate.state()); assertEquals(0, authority.pendingCount());
-            var replies = new ArrayList<Boolean>(); var op = EscrowTestFixtures.operation(1);
-            b.prepareTest(op, replies::add); assertEquals(1, authority.pendingCount());
+            var replies = new ArrayList<Boolean>(); var op = EscrowTestFixtures.admissionOperation(1);
+            EscrowTestFixtures.prepareCapturedModel(b, op, replies::add); assertEquals(1, authority.pendingCount());
             // Queued, then captured, then UNKNOWN work each refuse replacement without throwing or changing anything.
             assertTrue(delegate.holdsWork());
             assertFalse(assertDoesNotThrow(a::attachAdmission)); assertFalse(assertDoesNotThrow(() -> delegate.retarget(null)));

@@ -117,7 +117,8 @@ public final class EscrowCargoPreparationGameTests {
                     check(!newSession.locked(rocket.assemblyTransactionId().orElseThrow()), "Restart retained preparation lock");
                     newSession.close();
                     root = new EscrowLedger(UUID.randomUUID(), 0, 0, List.of(), List.of(), List.of());
-                    operation = capture(rocket, delta, root); root = root.append(List.of(operation));
+                    var captured = accountedCapture(rocket, delta, root);
+                    operation = captured.operation(); root = EscrowAccountingCapture.append(root, List.of(), captured);
                     phase = 1;
                 }
                 if (phase == 1 || phase == 4 || phase == 6) {
@@ -261,5 +262,28 @@ public final class EscrowCargoPreparationGameTests {
         // Fixture-only capture. No device balance is exposed and no native proof is claimed.
         return EscrowCargoCapture.capture(root.id(), op, EscrowNativeEnvelope.rocket(rocket),
                 EscrowNativeEnvelope.rocket(rocket, after, flight, next), new CompoundTag(), new CompoundTag()).operation();
+    }
+
+    /** Detached preparation needs an account, but does not claim a world device or native readback proof. */
+    private static EscrowNativeBinding.Admission accountedCapture(RocketEntity rocket, EscrowCargoPayload delta, EscrowLedger root) {
+        var op = capture(rocket, delta, root);
+        var before = rocket.snapshot().orElseThrow(); var after = RocketCargoMutation.apply(before, delta, true);
+        var markers = new ArrayList<>(rocket.escrowSection().markers());
+        markers.add(new EscrowPrefix.Link(op, op.rocket(), "DESTINATION").marker());
+        var rocketBefore = EscrowNativeEnvelope.rocket(rocket);
+        var rocketAfter = EscrowNativeEnvelope.rocket(rocket, after, rocket.flightData().orElseThrow(),
+                new RocketEscrowSection(root.id(), op.rocket().afterEpoch(), markers));
+        var device = io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot.placed(
+                op.owner(), op.device().identity(), io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole.LOAD,
+                LoaderTank.of(new FluidStack(Fluids.WATER, 1)));
+        var deviceBefore = new CompoundTag(); deviceBefore.putString("id", op.device().type());
+        deviceBefore.putInt("x", op.device().x()); deviceBefore.putInt("y", op.device().y()); deviceBefore.putInt("z", op.device().z());
+        deviceBefore.put(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot.KEY, device.encode());
+        var deviceAfter = deviceBefore.copy();
+        deviceAfter.put(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot.KEY,
+                device.withTank(LoaderTank.EMPTY).encode());
+        var nativeCapture = EscrowCargoCapture.capture(root.id(), op, rocketBefore, rocketAfter, deviceBefore, deviceAfter);
+        return EscrowAccountingCapture.bind(nativeCapture.operation(), nativeCapture.before(), rocketBefore, rocketAfter,
+                deviceBefore, deviceAfter, before, after);
     }
 }

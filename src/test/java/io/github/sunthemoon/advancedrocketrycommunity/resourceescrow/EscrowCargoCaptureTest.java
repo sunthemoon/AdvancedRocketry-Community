@@ -37,7 +37,7 @@ class EscrowCargoCaptureTest {
             assertNotEquals(EscrowInvariant.rocket(c.op().rocket(), c.op().owner(), before), binding.invariant());
             assertEquals(c.before().getCompound("flight"), c.after().getCompound("flight"));
             assertEquals(admission.operation(), EscrowCodec.operation(EscrowCodec.operation(admission.operation())));
-            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(ledger(admission.operation()), c.op().id()));
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(EscrowAccountingCapture.append(ledger(), List.of(), admission), c.op().id()));
             var substituted = new RocketEscrowSection(id(500), 1, List.of());
             assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(admission.operation(), substituted));
         }
@@ -67,35 +67,14 @@ class EscrowCargoCaptureTest {
         }
     }
     private static EscrowNativeBinding.Admission capture(Capture c, CompoundTag before, CompoundTag after) {
-        return EscrowCargoCapture.capture(id(500), c.op(), before, after, c.deviceBefore(), c.deviceAfter());
+        var bound = EscrowCargoCapture.capture(id(500), c.op(), before, after, c.deviceBefore(), c.deviceAfter());
+        return EscrowAccountingCapture.bind(bound.operation(), bound.before(), before, after, c.deviceBefore(), c.deviceAfter(),
+                RocketSnapshotNbtCodec.decode(before.getCompound("snapshot")).snapshot().orElseThrow(),
+                RocketSnapshotNbtCodec.decode(after.getCompound("snapshot")).snapshot().orElseThrow());
     }
     private static Capture sample(EscrowOperation.Kind kind) {
-        var envelope = EscrowReconciliationBindingBoundaryTest.sample().before();
-        var original = RocketSnapshotNbtCodec.decode(envelope.getCompound("snapshot")).snapshot().orElseThrow();
-        var before = snapshot(original, 10); var after = snapshot(original, 11);
-        var beforeEnvelope = envelope.copy(); beforeEnvelope.put("snapshot", RocketSnapshotNbtCodec.encode(before));
-        beforeEnvelope.putString("content_hash", before.contentHash());
-        var fuel = RocketFlightNbtCodec.decode(envelope.getCompound("flight")).data().orElseThrow().fuel();
-        var chunk = envelope.getIntArray("chunk"); var logical = envelope.getUUID("logical");
-        var rocket = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, envelope.getString("level"), envelope.getUUID("physical"), logical,
-                EscrowAdapterIds.ROCKET, chunk[0], 0, chunk[1], EscrowEndpoint.Unit.TANK, 0,
-                EscrowSignatureKind.composite(logical, before.contentHash(), fuel.resourceSignature()),
-                EscrowSignatureKind.composite(logical, after.contentHash(), fuel.resourceSignature()));
-        var model = operation(kind, 1, 99); var old = model.device();
-        var device = new EscrowEndpoint(old.kind(), rocket.level(), old.identity(), null, old.type(), 0, 64, 0, old.unit(), 0, old.beforeSignature(), old.afterSignature());
-        var pos = before.blocks().get(0).position();
-        var payload = new EscrowCargoPayload(new EscrowCargoPayload.Cursor(before.snapshotId(), pos.x(), pos.y(), pos.z(), ADAPTER), fluid(-1)).encode();
-        boolean load = kind == EscrowOperation.Kind.FLUID_CARGO_LOAD;
-        var op = new EscrowOperation(id(1), 1, envelope.getUUID("owner"), 0, EscrowOperation.Phase.PREPARED, EscrowReason.NONE,
-                payload, RocketNativeResources.signature(payload), load ? device : rocket, load ? rocket : device,
-                new EscrowGuard(logical, null, 1, hash(400)), kind, new CompoundTag());
-        var afterEnvelope = beforeEnvelope.copy(); afterEnvelope.put("snapshot", RocketSnapshotNbtCodec.encode(after));
-        afterEnvelope.putString("content_hash", after.contentHash());
-        afterEnvelope.put("wrapper", new RocketEscrowSection(id(500), 1,
-                List.of(new EscrowPrefix.Link(op, rocket, load ? "DESTINATION" : "SOURCE").marker())).encode());
-        var deviceBefore = new CompoundTag(); deviceBefore.putInt("Amount", 2_000);
-        var deviceAfter = new CompoundTag(); deviceAfter.putInt("Amount", 1_000);
-        return new Capture(op, beforeEnvelope, afterEnvelope, deviceBefore, deviceAfter);
+        var c = EscrowCargoEligibilityTest.sample(kind.cargoLoad(), 1000, -1);
+        return new Capture(c.op(), c.before(), c.after(), c.deviceBefore(), c.deviceAfter());
     }
     private static RocketStructureSnapshot snapshot(RocketStructureSnapshot original, int amount) {
         var blocks = new ArrayList<>(original.blocks()); var block = blocks.get(0); var tag = new CompoundTag(); tag.putInt("amount", amount);

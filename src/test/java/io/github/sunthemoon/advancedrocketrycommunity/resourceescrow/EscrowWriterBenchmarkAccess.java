@@ -59,10 +59,10 @@ public final class EscrowWriterBenchmarkAccess implements AutoCloseable {
         EscrowLedger root = floors == 0 ? EscrowTestFixtures.ledger() : EscrowCombinedReservationTest.retainedFloors(floors);
         String stop = "REQUESTED_COUNT";
         for (int i = 1; i <= operations; i++) {
-            var op = EscrowTestFixtures.operation(floors + i, 50_000 + i, 0);
-            var admitted = root.append(List.of(op));
+            var op = EscrowTestFixtures.admissionOperation(floors + i, 50_000 + i, 0);
+            var admitted = EscrowTestFixtures.appendModel(root, List.of(op));
             try {
-                EscrowSettlementCapacity.requireAdmission(admitted, op, null);
+                EscrowSettlementCapacity.requireAdmission(admitted, op, RocketEscrowSection.neutral());
                 EscrowSettlementCapacity.preflight(admitted, op.id());
             } catch (EscrowSettlementCapacity.ReservationFull full) { stop = "REFUSED: " + full.getMessage(); break; }
             root = admitted; this.operations.add(op.id());

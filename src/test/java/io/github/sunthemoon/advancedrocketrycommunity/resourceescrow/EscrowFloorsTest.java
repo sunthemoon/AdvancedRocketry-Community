@@ -38,9 +38,9 @@ final class EscrowFloorsTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(temp.resolve("ledger.dat"), 1);
              var coordinator = new EscrowCoordinator(data, writer)) {
-            coordinator.prepareTest(named(3, 1, 0), ignored -> { });
+            EscrowTestFixtures.prepareCapturedModel(coordinator, named(3, 1, 0), ignored -> { });
             assertEquals(new EscrowFloors.Usage(255, 1), coordinator.floorUsage());
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(named(4, 2, 0), ignored -> { }));
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.prepareCapturedModel(coordinator, named(4, 2, 0), ignored -> { }));
             assertEquals(4, coordinator.nextSequence()); assertEquals(256, coordinator.floorUsage().total());
         }
     }
@@ -62,7 +62,7 @@ final class EscrowFloorsTest {
         var complete = EscrowFloors.retire(partial, Set.of(second.id()), Map.of(second.destination().key(), state));
         assertEquals(1, complete.floors().size()); assertEquals(0, EscrowFloors.usage(complete, List.of()).reserved());
         assertEquals(complete, EscrowCodec.decode(EscrowCodec.encode(complete)));
-        var none = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1));
+        var none = EscrowTestFixtures.admissionLedger(EscrowTestFixtures.admissionOperation(1));
         assertTrue(EscrowFloors.retire(none, Set.of(none.records().get(0).id()), Map.of()).floors().isEmpty());
     }
 
@@ -112,12 +112,12 @@ final class EscrowFloorsTest {
     }
 
     private static EscrowOperation named(long sequence, long rocket, long epoch) {
-        var op = EscrowTestFixtures.operation(sequence, rocket, epoch);
-        return new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(9_000 + rocket), 1, op.guard().journalDigest()));
+        var op = EscrowTestFixtures.admissionOperation(sequence, rocket, epoch);
+        return EscrowTestFixtures.accountedModel(EscrowTestFixtures.nativeModel(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
+                op.source(), op.destination(), new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(9_000 + rocket), 1, op.guard().journalDigest()))));
     }
     private static EscrowLedger ledger(List<EscrowOperation> records, List<CompoundTag> floors) {
-        return new EscrowLedger(EscrowTestFixtures.id(500), 2, 1, records, floors, List.of());
+        return EscrowTestFixtures.appendModel(new EscrowLedger(EscrowTestFixtures.id(500), 2, 1, List.of(), floors, List.of()), records);
     }
     private static CompoundTag floor(EscrowOperation op) {
         var tag = EscrowCodec.guard(op.guard()); tag.putInt("schema_version", 2); tag.putUUID("entity_id", op.destination().identity());
