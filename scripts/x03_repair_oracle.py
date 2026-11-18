@@ -79,6 +79,8 @@ def chunks(world):
         require(regions <= MAX_REGIONS, 'REGION_LIMIT')
         with path.open('rb') as stream:
             header = stream.read(8192)
+        if not header and path.stat().st_size == 0:
+            continue
         require(len(header) == 8192, 'TRUNCATED_REGION')
         rx, rz = map(int, match.groups())
         occupied = set()

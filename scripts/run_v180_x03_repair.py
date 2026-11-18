@@ -86,9 +86,14 @@ def copy_verified(source, output):
 
 
 def check_fence(lines, transfer):
-    expected = 'ARCE_TRANSFER_FENCED transfer=' + transfer + ' reason=FLOOR_CONFLICT repair=offline-whole-world'
     fences = [line for line in lines if 'ARCE_TRANSFER_FENCED' in line]
-    oracle.require(bool(fences) and all(expected in line for line in fences), 'SEED_FLOOR_CONFLICT_MISSING_OR_OTHER_TRANSFER')
+    matches = [re.search(r'ARCE_TRANSFER_FENCED transfer=([0-9a-f-]{36}) reason=([A-Z_]+) repair=offline-whole-world(?:\s|$)', line)
+               for line in fences]
+    oracle.require(bool(matches)
+                   and all(match is not None and match[1] == transfer
+                           and match[2] in ('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED') for match in matches)
+                   and any(match[2] == 'FLOOR_CONFLICT' for match in matches),
+                   'SEED_FLOOR_CONFLICT_MISSING_OR_OTHER_TRANSFER')
 
 
 def transfer_id(world):
@@ -362,11 +367,12 @@ def repaired_cycle(args, session, evidence, number):
                                             for k in baseline['chunks'].keys() & state['chunks'].keys()
                                             if baseline['chunks'][k] != state['chunks'][k]]))
         oracle.observe(lines, 'FF_X03_OBSERVE', state)
-        measure(lambda: oracle.compare_repair(baseline, state, transfer), findings, args.derive_runtime_list)
+        # List derivation measures filenames, not exceptions to the semantic contract.
+        oracle.compare_repair(baseline, state, transfer)
         manifest = oracle.manifest(candidate)
         diff = oracle.differences(original_hashes, manifest)
         measure(lambda: oracle.boundary(original_hashes, manifest, RUNTIME_FILES), findings, args.derive_runtime_list)
-        measure(lambda: repair.census(planfile, candidate, evidence / (label + '-census-' + str(restart) + '.json'), True), findings, args.derive_runtime_list)
+        repair.census(planfile, candidate, evidence / (label + '-census-' + str(restart) + '.json'), True)
         stages.append(dict(restart=restart, differences=diff, manifest=manifest))
         if restart == 2:
             # Functional verification is a separate descendant, never promoted.
@@ -394,7 +400,7 @@ def repaired_cycle(args, session, evidence, number):
         if case == 'FF_X03_UNLOAD':
             oracle.require(fields.get('switch') == 'withdrawn', 'UNLOAD_SWITCH_NOT_WITHDRAWN')
         action = 'unload' if i == 0 else 'launch' if i == 2 else None
-        measure(lambda: oracle.compare_functional(before, state, action=action), findings, args.derive_runtime_list)
+        oracle.compare_functional(before, state, action=action)
         debit = oracle.launch_debit(fields, before, state) if case == 'FF_X03_LAUNCH' else None
         measure(lambda: oracle.functional_boundary(snapshots[0], oracle.manifest(descendant), RUNTIME_FILES), findings,
                 args.derive_runtime_list)

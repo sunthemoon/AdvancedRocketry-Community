@@ -1100,5 +1100,65 @@ class RevisionTest(RepairFixture):
         self.refusal('UNVALIDATED_AUTHORITY:markers')
 
 
+class Revision3Test(RepairFixture):
+    def test_mixed_fence_sequence_binds_whole_log_and_first_floor_conflict(self):
+        floor = self.log.read_text(encoding='utf-8').rstrip('\n')
+        transient = floor.replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED')
+        first_floor = 'first ' + floor
+        self.log.write_text('\n'.join((transient, first_floor, transient, 'later ' + floor, transient)) + '\n',
+                            encoding='utf-8')
+        evidence = self.plan()['body']['fence']
+        self.assertEqual(first_floor, evidence['line'])
+        self.assertEqual(repair.file_digest(self.log), evidence['sha256'])
+
+    def test_transient_fence_for_another_transfer_refuses(self):
+        floor = self.log.read_text(encoding='utf-8')
+        other = floor.replace(self.transfer, str(uuid.UUID(int=99))).replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED')
+        self.log.write_text(floor + other, encoding='utf-8')
+        self.refusal('OTHER_TRANSFER_FENCED', lambda: repair.fence(self.log, self.transfer))
+
+    def test_other_derived_fence_reason_refuses_even_with_floor_conflict(self):
+        floor = self.log.read_text(encoding='utf-8')
+        self.log.write_text(floor + floor.replace('FLOOR_CONFLICT', 'WAITING_UNLOADED'), encoding='utf-8')
+        self.refusal('FENCE_REASON_DIFFERS', lambda: repair.fence(self.log, self.transfer))
+
+    def test_only_transient_fences_refuse(self):
+        self.log.write_text(self.log.read_text(encoding='utf-8').replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED') * 2,
+                            encoding='utf-8')
+        self.refusal('FENCE_EVIDENCE_MISSING', lambda: repair.fence(self.log, self.transfer))
+
+    def test_no_fence_lines_refuses(self):
+        self.log.write_text('unrelated server output\n', encoding='utf-8')
+        self.refusal('FENCE_EVIDENCE_MISSING', lambda: repair.fence(self.log, self.transfer))
+
+    def test_zero_byte_regions_stay_hashed_in_plan_apply_and_census(self):
+        names = [kind + '/r.1.1.mca' for kind in ('region', 'entities', 'poi')]
+        for relative in names:
+            path = self.source / relative
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(b'')
+        self.sync()
+        document = self.plan()
+        for relative in names:
+            self.assertEqual(0, document['body']['manifest'][relative]['size'])
+            self.assertEqual(n.digest(b''), document['body']['manifest'][relative]['sha256'])
+        repair.apply(self.planfile, self.output, document['digest'])
+        census = repair.census(self.planfile, self.output, self.reports / 'census.json')
+        for relative in names:
+            self.assertEqual(document['body']['manifest'][relative], census['manifest'][relative])
+            self.assertEqual(b'', (self.output / relative).read_bytes())
+
+    def test_short_nonempty_regions_refuse_but_full_empty_header_is_valid(self):
+        for kind in ('region', 'entities', 'poi'):
+            path = self.source / kind / 'r.1.1.mca'
+            path.parent.mkdir(exist_ok=True)
+            for size in (1, 8191):
+                with self.subTest(kind=kind, size=size):
+                    path.write_bytes(bytes(size))
+                    self.refusal('CORRUPT_REGION')
+            path.write_bytes(bytes(8192))
+            self.inspect()
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -208,5 +208,36 @@ class BoundaryTest(unittest.TestCase):
         self.assertNotIn('repair_v180_rebuild_source', imports)
 
 
+class RegionHeaderTest(unittest.TestCase):
+    def test_zero_byte_regions_are_empty_but_remain_in_manifest_and_boundary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            world = Path(directory)
+            for kind in ('region', 'entities', 'poi'):
+                path = world / kind / 'r.0.0.mca'
+                path.parent.mkdir()
+                path.write_bytes(b'')
+            before = oracle.manifest(world)
+            self.assertEqual({kind + '/r.0.0.mca': nbt.digest(b'') for kind in ('region', 'entities', 'poi')}, before)
+            self.assertEqual({}, oracle.chunks(world))
+            path.write_bytes(bytes(8192))
+            self.assertEqual({}, oracle.chunks(world))
+            with self.assertRaisesRegex(oracle.OracleError, 'UNLISTED_FILE:poi/r.0.0.mca'):
+                oracle.boundary(before, oracle.manifest(world), {})
+
+    def test_short_nonempty_regions_refuse_but_full_empty_header_is_valid(self):
+        with tempfile.TemporaryDirectory() as directory:
+            world = Path(directory)
+            for kind in ('region', 'entities', 'poi'):
+                path = world / kind / 'r.0.0.mca'
+                path.parent.mkdir()
+                for size in (1, 8191):
+                    with self.subTest(kind=kind, size=size):
+                        path.write_bytes(bytes(size))
+                        with self.assertRaisesRegex(oracle.OracleError, 'TRUNCATED_REGION'):
+                            oracle.chunks(world)
+                path.write_bytes(bytes(8192))
+                self.assertEqual({}, oracle.chunks(world))
+
+
 if __name__ == '__main__':
     unittest.main()

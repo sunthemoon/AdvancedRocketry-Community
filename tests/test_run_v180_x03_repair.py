@@ -86,6 +86,17 @@ class VerificationCommandTest(unittest.TestCase):
                 with self.assertRaisesRegex(runner.oracle.OracleError, 'COPY_HASH_MISMATCH'):
                     runner.copy_verified(source, root / 'partial')
 
+    def test_revision3_fence_sequence_accepts_only_transient_and_derived_floor_for_one_transfer(self):
+        transfer = '00000000-0000-0000-0000-000000000001'
+        floor = 'ARCE_TRANSFER_FENCED transfer=' + transfer + ' reason=FLOOR_CONFLICT repair=offline-whole-world'
+        transient = floor.replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED')
+        runner.check_fence([transient, floor, transient], transfer)
+        for lines in ([], [transient, transient], [floor, floor.replace('FLOOR_CONFLICT', 'WAITING_UNLOADED')],
+                      [floor, transient.replace(transfer, '00000000-0000-0000-0000-000000000099')],
+                      [floor, 'ARCE_TRANSFER_FENCED malformed']):
+            with self.subTest(lines=lines), self.assertRaisesRegex(runner.oracle.OracleError, 'SEED_FLOOR_CONFLICT'):
+                runner.check_fence(lines, transfer)
+
     def test_measurement_failure_is_not_a_passing_acceptance_check(self):
         def failing():
             raise runner.oracle.OracleError('collateral object')
@@ -120,6 +131,17 @@ class VerificationCommandTest(unittest.TestCase):
 
 
 class NativeOperationFixtureTest(RepairFixture):
+    def test_dry_run_stops_at_first_semantic_contradiction(self):
+        args = SimpleNamespace(jar=self.jar, derive_runtime_list=True)
+        with patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \
+                patch.object(runner, 'start', return_value=([], self.log)) as start, \
+                patch.object(runner.oracle, 'observe'), \
+                patch.object(runner.oracle, 'compare_repair', side_effect=runner.oracle.OracleError('OBJECT_CHANGED:collateral')):
+            with self.assertRaisesRegex(runner.oracle.OracleError, '^OBJECT_CHANGED:collateral$'):
+                runner.repaired_cycle(args, self.base, self.reports, 1)
+        self.assertEqual(1, start.call_count)
+        self.assertFalse((self.base / 'functional-cycle-1').exists())
+
     def test_fixture_witness_is_accepted_as_confirmed_without_editing_worlds(self):
         before = self.hashes(self.source)
         witness = runner.fixture_witness(runner.oracle.read(self.source), self.transfer, self.base / 'witness.json')

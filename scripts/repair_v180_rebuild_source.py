@@ -622,6 +622,8 @@ def regions(world, files):
         require(count <= MAX_REGIONS and len(levels - {'.', ''}) + 1 <= MAX_LEVELS, 'WORK_LIMIT')
         with (world / path).open('rb') as stream:
             header = stream.read(8192)
+        if not header and files[relative]['size'] == 0:
+            continue
         require(len(header) == 8192, 'CORRUPT_REGION')
         rx, rz = map(int, match.groups())
         used = set()
@@ -869,8 +871,9 @@ def fence(log, transfer):
             match = re.search(r'ARCE_TRANSFER_FENCED transfer=([0-9a-f-]{36}) reason=([A-Z_]+) repair=offline-whole-world(?:\s|$)', line)
             require(match is not None, 'FENCE_EVIDENCE_MISSING')
             require(match[1] == transfer, 'OTHER_TRANSFER_FENCED')
-            require(match[2] == 'FLOOR_CONFLICT', 'FENCE_REASON_DIFFERS')
-            matches.append(line.rstrip('\r\n'))
+            require(match[2] in ('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED'), 'FENCE_REASON_DIFFERS')
+            if match[2] == 'FLOOR_CONFLICT':
+                matches.append(line.rstrip('\r\n'))
     require(matches, 'FENCE_EVIDENCE_MISSING')
     return dict(sha256=file_digest(log), line=matches[0])
 
