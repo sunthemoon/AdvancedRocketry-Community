@@ -282,7 +282,7 @@ def identity(state):
                 owner=rocket['owner_id'], snapshot=rocket['snapshot']['snapshot_id'], device=device['device'])
 
 
-def check_state(state, baseline, *, repaired=True, unloaded=False, launched=False):
+def check_state(state, baseline, *, repaired=True, unloaded=False, launched=False, expected_schema=2):
     def check(condition, reason):
         if condition or _MEASUREMENT.get() is None:
             require(condition, reason)
@@ -296,7 +296,7 @@ def check_state(state, baseline, *, repaired=True, unloaded=False, launched=Fals
             'ESCROW_BINDING_OR_MARKERS': [dict(rocket_ref, path='/RocketEntityData/resource_escrow'), dict(device_ref, path='/arce_rocket_fluid_cargo/resource_escrow')],
             'FABRICATED_AUTHORITY': [dict(file=LEDGER, path='/data')],
             'JOURNAL_REMOVAL': [dict(file=JOURNAL, path='/data/transfers')],
-            'X03_B_REQUIRES_ROOT_2': [dict(file=LEDGER, path='/data/schema_version')],
+            'LEDGER_ROOT_NOT_CURRENT': [dict(file=LEDGER, path='/data/schema_version')],
             'PROPULSION_OR_FLIGHT': [dict(rocket_ref, path='/RocketEntityData/flight_data')],
             'ROCKET_MOVED': [dict(rocket_ref, path='/Pos')],
             'FABRICATED_HEAD': [dict(file=LEDGER, path='/data')],
@@ -320,7 +320,11 @@ def check_state(state, baseline, *, repaired=True, unloaded=False, launched=Fals
             and not ledger.get('fluid_accounts', []), 'FABRICATED_AUTHORITY')
     check(not rocket['flight_data']['passengers']['assignments'], 'PASSENGER_ASSIGNMENT')
     check(len(state['journal']['transfers']) == (0 if repaired else 1), 'JOURNAL_REMOVAL')
-    check(ledger['schema_version'] == 2, 'X03_B_REQUIRES_ROOT_2')
+    check(expected_schema in (2, 3) and ledger['schema_version'] == expected_schema
+          and ledger['format_epoch'] == ('v1.8.0-resource-escrow-fluid-accounting' if expected_schema == 3
+                                         else 'v1.8.0-resource-escrow')
+          and ('fluid_accounts' in ledger if expected_schema == 3 else 'fluid_accounts' not in ledger),
+          'LEDGER_ROOT_NOT_CURRENT')
     if not launched:
         check(rocket['flight_data']['state'] == 'FUELED' and rocket['flight_data']['fuel'] == baseline['rocket']['flight_data']['fuel'], 'PROPULSION_OR_FLIGHT')
         check(nbt.plain(state['entity'])['Pos'] == nbt.plain(baseline['entity'])['Pos'], 'ROCKET_MOVED')
@@ -360,8 +364,8 @@ def compare_chunks(before, after, *, generation_margin=False):
                                       for row in typed_differences(normalized(before[key], kind), normalized(after[key], kind)))
 
 
-def compare_repair(baseline, current, transfer):
-    checked(lambda: check_state(current, baseline))
+def compare_repair(baseline, current, transfer, *, expected_schema=2):
+    checked(lambda: check_state(current, baseline, expected_schema=expected_schema))
     compare_raids(baseline.get('raids', {}), current.get('raids', {}))
     compare_chunks(baseline['chunks'], current['chunks'])
     checked(lambda: require(baseline['managed'].keys() == current['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED'))

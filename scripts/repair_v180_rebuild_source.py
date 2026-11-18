@@ -672,11 +672,16 @@ def dimension(level):
     return parts[1] + ':' + '/'.join(parts[2:])
 
 
-def roots(world, files, profile):
+def current_roots(profile):
     require(profile in (PROFILE_DISABLED, PROFILE_ENABLED), 'UNKNOWN_PROFILE')
     table = dict(CURRENT_ROOTS)
     if profile == PROFILE_ENABLED:
         table['resource_escrow'] = (3, 'v1.8.0-resource-escrow-fluid-accounting')
+    return table
+
+
+def roots(world, files, profile):
+    table = current_roots(profile)
     result = {}
     reasons = []
     for relative in files:
@@ -947,7 +952,12 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
                     check(not reference(entity, identities), 'COMPETING_BLOCK_AUTHORITY')
     check(len(rockets) == 1, 'SECOND_PHYSICAL_ROCKET' if len(rockets) > 1 else 'ROCKET_MISSING')
     require(rockets, reasons + ['ROCKET_MISSING'])
-    dim, entity = rockets[0]
+    # A historical copy can precede the credited source in any region/list order.
+    # Keep the duplicate refusal, but diagnose the uniquely named physical source.
+    # If even that identity is ambiguous, stop before inspecting arbitrary cargo.
+    physical_sources = [row for row in rockets if uid(row[1], 'UUID') == physical]
+    require(len(rockets) == 1 or len(physical_sources) == 1, reasons)
+    dim, entity = physical_sources[0] if physical_sources else rockets[0]
     for other_dim, other in all_rockets:
         if other is entity:
             continue
@@ -1100,6 +1110,13 @@ def inspect(world, files, profile, transfer, repaired=False, retained=None):
                 amounts=dict(water_rocket=4000, water_device=1000, propulsion=1000))
 
 
+def signed_loss(before, after):
+    require(all(isinstance(pair, list) and len(pair) == 2
+                and all(type(amount) is int and 0 <= amount <= 2**63 - 1 for amount in pair)
+                for pair in (before, after)), 'WITNESS_INVALID')
+    return sum(before) - sum(after)
+
+
 def account(witness, observation):
     unknown = dict(version=1, status='UNKNOWN_BASELINE', water_current=[4000, 1000],
                    fluid='minecraft:water', native_tag=observation['native_tag'], offline_resource_delta=0)
@@ -1111,7 +1128,9 @@ def account(witness, observation):
     require(isinstance(body, dict) and document.get('sha256') == nbt.digest(canonical(body)), 'WITNESS_INVALID')
     require(body == dict(version=1, identity=observation['identity'], fluid='minecraft:water',
                          native_tag=observation['native_tag'], before=[5000, 0], after=[4000, 1000]), 'WITNESS_INVALID')
-    unknown.update(status='CONFIRMED', discrepancy=0, witness_sha256=file_digest(witness),
+    loss = signed_loss(body['before'], body['after'])
+    require(loss == 0, 'RESOURCE_DISCREPANCY')
+    unknown.update(status='CONFIRMED', discrepancy=loss, witness_sha256=file_digest(witness),
                    witness=str(strict_path(witness)), baseline=body)
     return unknown
 
@@ -1161,6 +1180,7 @@ def plan(source, backup, candidate, log, report, transfer, profile, operator, re
         body = dict(version=1, source=str(source), backup=str(backup), candidate=str(candidate),
                     candidate_sha256=file_digest(candidate), log=str(log), fence=evidence,
                     manifest=before, manifest_sha256=nbt.digest(canonical(before)), profile=profile,
+                    root_stamps={key: list(stamp) for key, stamp in current_roots(profile).items()},
                     toolchain=toolchain(), operator=operator, reason=reason, identity=observation['identity'],
                     epochs=[1, 1], amounts=observation['amounts'], account=account(witness, observation),
                     record_sha256=nbt.digest(typed(observation['record'])),
@@ -1192,6 +1212,8 @@ def check_external(body):
 
 
 def check_observation(body, observation):
+    require(body.get('root_stamps') == {key: list(stamp) for key, stamp in current_roots(body['profile']).items()},
+            'PLAN_ROOT_STAMPS_DIFFER')
     require(body['identity'] == observation['identity'] and body['amounts'] == observation['amounts']
             and body['epochs'] == [1, 1] and body['writes'] == [JOURNAL]
             and body['no_edits'] == ['ledger', 'entities', 'terrain', 'all other files']

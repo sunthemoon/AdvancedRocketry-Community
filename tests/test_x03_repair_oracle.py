@@ -15,6 +15,23 @@ from test_repair_v180_rebuild_source import RepairFixture, E, I, L, U, A, vector
 
 
 class BookkeepingClockTest(RepairFixture):
+    def test_root3_oracle_requires_the_enabled_stamp_and_empty_typed_accounts(self):
+        import repair_v180_rebuild_source as repair
+        self.seed(repair.PROFILE_ENABLED)
+        state = oracle.read(self.source)
+        oracle.check_state(state, state, repaired=False, expected_schema=3)
+        for mutate in (lambda ledger: ledger.update(schema_version=4),
+                       lambda ledger: ledger.update(format_epoch='v1.8.0-resource-escrow'),
+                       lambda ledger: ledger.pop('fluid_accounts')):
+            bad = copy.deepcopy(state)
+            mutate(bad['ledger'])
+            with self.assertRaisesRegex(oracle.OracleError, 'LEDGER_ROOT_NOT_CURRENT'):
+                oracle.check_state(bad, state, repaired=False, expected_schema=3)
+        bad = copy.deepcopy(state)
+        bad['ledger']['fluid_accounts'] = [{'opaque': 1}]
+        with self.assertRaisesRegex(oracle.OracleError, 'FABRICATED_AUTHORITY'):
+            oracle.check_state(bad, state, repaired=False, expected_schema=3)
+
     def compare_clock(self, observed=20, logical=20, extra=None, root_key='satellite_missions'):
         if root_key != 'satellite_missions':
             self.data[root_key].value['clock'] = C(logical_game_time=L(0), last_observed_game_time=L(0))

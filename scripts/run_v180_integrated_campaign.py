@@ -153,6 +153,9 @@ def command_for(row, plan):
                         "--start-counter", str(Path(row["output"]) / "start-counter.json")])
     if row.get("w336_family") == "downgrade":
         command.extend(["--old-jar", plan["downgrade_old_jar"] or "<required-downgrade-old-jar>"])
+    if row['name'] == x03.FAMILY:
+        for flag in ('root-2-jar', 'root-2-jar-sha256', 'root-2-commit'):
+            command.extend(['--' + flag, plan['x03_' + flag.replace('-', '_')] or '<required-x03-' + flag + '>'])
     return command
 
 
@@ -178,6 +181,9 @@ def make_plan(args):
                 old_source_commit=resolve_commit(args.old_source_commit) if args.old_source_commit else None,
                 downgrade_old_jar=str(args.downgrade_old_jar.resolve()) if args.downgrade_old_jar else None,
                 downgrade_old_jar_sha256=args.downgrade_old_jar_sha256.lower() if args.downgrade_old_jar_sha256 else None,
+                x03_root_2_jar=str(args.x03_root_2_jar.resolve()) if getattr(args, 'x03_root_2_jar', None) else None,
+                x03_root_2_jar_sha256=getattr(args, 'x03_root_2_jar_sha256', None),
+                x03_root_2_commit=getattr(args, 'x03_root_2_commit', None),
                 omitted_families=[row["name"] for row in specs if only and row["name"] not in only], families=[])
     campaign_id = uuid.uuid4().hex
     for spec in specs:
@@ -197,6 +203,9 @@ def make_plan(args):
     if any(row.get("w336_family") == "downgrade" for row in plan["families"]):
         plan["requirements"].extend(flag for flag, value in (("--downgrade-old-jar", plan["downgrade_old_jar"]),
                                                             ("--downgrade-old-jar-sha256", plan["downgrade_old_jar_sha256"])) if not value)
+    if any(row.get('name') == x03.FAMILY for row in plan['families']):
+        plan['requirements'].extend('--x03-' + flag for flag in ('root-2-jar', 'root-2-jar-sha256', 'root-2-commit')
+                                    if not plan['x03_' + flag.replace('-', '_')])
     return plan
 
 
@@ -216,6 +225,9 @@ def preflight(plan):
 
     checks["jar_sha256"] = digest(plan["jar"])
     require(checks["jar_sha256"] == plan["jar_sha256"], "Candidate JAR hash mismatch")
+    if any(row.get('name') == x03.FAMILY for row in plan['families']):
+        checks['x03_root_2_jar_sha256'] = digest(plan['x03_root_2_jar'])
+        require(checks['x03_root_2_jar_sha256'] == plan['x03_root_2_jar_sha256'], 'X03 root-2 JAR hash mismatch')
     if any(row.get("w336_family") == "downgrade" for row in plan["families"]):
         checks["downgrade_old_jar_sha256"] = digest(plan["downgrade_old_jar"])
         require(checks["downgrade_old_jar_sha256"] == plan["downgrade_old_jar_sha256"], "Downgrade old JAR hash mismatch")
@@ -458,6 +470,9 @@ def main(argv=None):
     parser.add_argument("--old-source-commit", help="Historical G2 JAR's source commit")
     parser.add_argument("--downgrade-old-jar", type=Path, help="W176 historical JAR for W336; separate from G2")
     parser.add_argument("--downgrade-old-jar-sha256", help="SHA-256 of the W176 historical JAR")
+    parser.add_argument('--x03-root-2-jar', type=Path, help='Historical accounting-disabled JAR for X03')
+    parser.add_argument('--x03-root-2-jar-sha256')
+    parser.add_argument('--x03-root-2-commit')
     args = parser.parse_args(argv)
     if args.only:
         args.only = [name for group in args.only for name in group]

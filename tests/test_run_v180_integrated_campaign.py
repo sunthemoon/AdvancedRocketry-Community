@@ -22,12 +22,27 @@ def arguments(root, **changes):
     values = dict(candidate_commit=CANDIDATE, jar=Path("placeholder.jar"), jar_sha256=HASH,
                   template=Path("placeholder-server"), evidence_root=root / "evidence", only=None,
                   suffix="unit", dry_run=False, java="java17.exe", old_jar=None, old_source_commit=None,
-                  downgrade_old_jar=None, downgrade_old_jar_sha256=None)
+                  downgrade_old_jar=None, downgrade_old_jar_sha256=None,
+                  x03_root_2_jar=Path('root2.jar'), x03_root_2_jar_sha256=OLD_HASH, x03_root_2_commit=CANDIDATE)
     values.update(changes)
     return argparse.Namespace(**values)
 
 
 class PlanTest(unittest.TestCase):
+    def test_x03_requires_separate_historical_pins_and_passes_them_to_the_runner(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(campaign, 'resolve_commit', return_value=SOURCE):
+            args = arguments(Path(directory), only=[campaign.x03.FAMILY], x03_root_2_jar=None,
+                             x03_root_2_jar_sha256=None, x03_root_2_commit=None)
+            self.assertEqual(['--x03-root-2-jar', '--x03-root-2-jar-sha256', '--x03-root-2-commit'],
+                             campaign.make_plan(args)['requirements'])
+            args = arguments(Path(directory), only=[campaign.x03.FAMILY])
+            plan = campaign.make_plan(args)
+            self.assertEqual([], plan['requirements'])
+            command = plan['families'][0]['command']
+            for flag, value in (('--root-2-jar', str(args.x03_root_2_jar.resolve())),
+                                ('--root-2-jar-sha256', OLD_HASH), ('--root-2-commit', CANDIDATE)):
+                self.assertEqual(value, command[command.index(flag) + 1])
+
     def test_every_native_w325_matrix_row_maps_to_a_selected_case(self):
         matrix = (campaign.REPO / "docs/work/v1.8.0-root-queue/records/W325-MATRIX.md").read_text(encoding="utf-8")
         matrix = matrix.split("## GameTest regression mappings")[0]
@@ -278,6 +293,17 @@ class PreflightTest(unittest.TestCase):
     def test_hash_mismatch_refuses_before_git_or_disk(self):
         self.hash.return_value = "d" * 64
         with self.assertRaisesRegex(campaign.PreconditionError, "hash mismatch"):
+            campaign.preflight(self.plan)
+        self.diff.assert_not_called()
+        self.disk.assert_not_called()
+
+    def test_x03_historical_hash_is_verified_before_git_or_disk(self):
+        self.plan.update(families=[dict(name=campaign.x03.FAMILY)], x03_root_2_jar='root2.jar', x03_root_2_jar_sha256=OLD_HASH)
+        self.hash.side_effect = [HASH, OLD_HASH]
+        self.assertEqual(OLD_HASH, campaign.preflight(self.plan)['x03_root_2_jar_sha256'])
+        self.diff.reset_mock(); self.disk.reset_mock()
+        self.hash.side_effect = [HASH, 'e' * 64]
+        with self.assertRaisesRegex(campaign.PreconditionError, 'X03 root-2 JAR hash mismatch'):
             campaign.preflight(self.plan)
         self.diff.assert_not_called()
         self.disk.assert_not_called()
