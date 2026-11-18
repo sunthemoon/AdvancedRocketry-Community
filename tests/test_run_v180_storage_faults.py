@@ -87,6 +87,20 @@ class PlanTests(unittest.TestCase):
             self.assertIn(native, faults.runner_of(case).CASES, case.id)
         self.assertEqual(set(faults.STORES.values()) - set(replay.SEAM_NAMES), set())
 
+    def test_registry_move_after_uses_the_existing_published_commit_case(self):
+        # W384: the renamed registration resolves COMMITTED before R3's MOVED pause, with no retry to reach it.
+        case = faults.by_id("X02-SATELLITE_MISSIONS-MOVE_AFTER-1")
+        self.assertEqual(case.skip, 1)
+        self.assertEqual(case.native, ("R", "R4"))
+        runner = faults.runner_of(case)
+        self.assertEqual(runner.CASES["R3"], ("terminal", "MOVED", "PAUSE", "kill", 1, False))
+        self.assertEqual(runner.CASES["R4"], ("terminal", None, None, "kill", 1, False))
+        for fault in faults.LIVE_FAULTS:
+            if fault != "MOVE_AFTER":
+                self.assertEqual(faults.Case("SATELLITE_MISSIONS", fault, 1, 1).native, ("R", "R3"))
+        for fault in faults.OFFLINE_FAULTS:
+            self.assertEqual(faults.Case("SATELLITE_MISSIONS", fault).native, ("B", "B3_MOVED"))
+
     def test_bay_writes_that_fail_before_the_move_use_the_outcome_of_the_existing_failed_write_case(self):
         before = dict(x01.bay.CASES)
         definite = [case for case in faults.plan(["BAY_RECEIPTS"]) if case.native == ("B", faults.BAY_FAILED_CASE)]

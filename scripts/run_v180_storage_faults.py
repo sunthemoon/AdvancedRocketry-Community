@@ -102,6 +102,10 @@ BAY_FAILED_CASE = "X02_D1_FAILED"
 # retries the exact candidate, and B1_MOVED is reached.
 BAY_COMMITTED = ("MOVE_AFTER",)
 BAY_COMMITTED_CASE = "B3_MOVED"
+# W384's native preflight: MOVE_AFTER throws inside the committer before R3's MOVED pause. The writer's readback
+# resolves the registration COMMITTED, so there is no retry to reach that pause. R4 holds the terminal effect after
+# publication instead; its unchanged checks require the same durable registration and idempotent package replay.
+REGISTRY_COMMITTED_CASE = "R4"
 # The default campaign: every live fault once, and the write error long enough to pass the three-failure limit.
 DEFAULT_COUNTS = {fault: (1, 4) if fault == "WRITE_ERROR" else (1,) for fault in LIVE_FAULTS}
 MAX_COUNT = 16
@@ -173,6 +177,8 @@ class Case:
             return "B", BAY_FAILED_CASE
         if self.store == "BAY_RECEIPTS" and self.fault in BAY_COMMITTED:
             return "B", BAY_COMMITTED_CASE
+        if self.store == "SATELLITE_MISSIONS" and self.fault == "MOVE_AFTER":
+            return "R", REGISTRY_COMMITTED_CASE
         return (OFFLINE_NATIVE if self.offline else LIVE_NATIVE)[self.store]
 
     @property
