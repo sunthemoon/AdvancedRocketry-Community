@@ -143,10 +143,26 @@ class VerificationCommandTest(unittest.TestCase):
             runner.measure(failing, [], False)
 
     def test_runtime_allowances_have_exact_names_and_reasons(self):
+        self.assertEqual(set(runner.RUNTIME_FILES), {
+            *runner.oracle.RAID_FILES, runner.repair.JOURNAL,
+            'data/advancedrocketrycommunity_satellite_missions.dat', 'entities/r.0.0.mca',
+            'level.dat', 'level.dat_old', 'region/r.-1.-1.mca', 'region/r.-1.0.mca',
+            'region/r.0.-1.mca', 'region/r.0.0.mca'})
+        self.assertEqual(18, len(runner.RUNTIME_FILES))
+        self.assertEqual(set(runner.repair.RAID_FILES), set(runner.oracle.RAID_FILES))
+        for name in ('session.lock', 'data/unrelated.dat', 'region/r.1.0.mca'):
+            with self.assertRaisesRegex(runner.oracle.OracleError, 'UNLISTED_FILE'):
+                runner.oracle.boundary({}, {name: 'changed'}, runner.RUNTIME_FILES)
         for name, reason in runner.RUNTIME_FILES.items():
             self.assertNotIn('*', name)
             self.assertNotIn('..', Path(name).parts)
             self.assertTrue(reason.strip())
+
+    def test_generation_rule_refuses_when_the_measured_ring_does_not_fit(self):
+        self.assertEqual(288, runner.generation_rule()['measured_ring_chunks'])
+        with patch.dict(runner.oracle.FUNCTIONAL_BOXES, {runner.oracle.MOON: (-12, 13, -13, 13)}):
+            with self.assertRaisesRegex(runner.oracle.OracleError, 'MEASURED_RING_OUTSIDE_DERIVED_BOX'):
+                runner.generation_rule()
 
     def test_cli_requires_the_lock_and_all_candidate_pins(self):
         arguments = ['template', '--jar', 'candidate.jar', '--session-dir', 'session', '--evidence-dir', 'evidence',

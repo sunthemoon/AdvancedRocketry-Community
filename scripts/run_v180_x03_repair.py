@@ -30,13 +30,18 @@ from run_v060_flight_server_smoke import _server_command
 REPO = Path(__file__).resolve().parents[1]
 FAMILY = 'cargo-X03-REPAIR'
 ROUTE = 'MOON'
-# Candidate list; Root reviews both dry-run reports before using this family in
-# an acceptance campaign. These are exact names, not directory wildcards.
+# R490 / design 9.4: the reviewed union of W380G's two complete dry runs.
+# Exact names, never directory wildcards; session.lock was unchanged and is absent.
 RUNTIME_FILES = {
     'level.dat': 'Vanilla full save of level metadata and game time.',
     'level.dat_old': 'Vanilla previous level metadata retained at every save.',
-    'session.lock': 'Vanilla rewrites and locks this file at each start.',
     repair.JOURNAL: 'Checked journal baseline capture in each verification start.',
+    'data/advancedrocketrycommunity_satellite_missions.dat': 'Monotonic mission clock autosave; only the reviewed equal-delta clock change is admitted.',
+    **{name: 'Raids.tick advances data/Tick and marks dirty every 200 ticks; Raids.save checkpoints it in this Level.'
+       for name in oracle.RAID_FILES},
+    'region/r.-1.-1.mca': 'Vanilla spawn tickets; chunk clocks and region-header timestamps, all other object fields compared.',
+    'region/r.-1.0.mca': 'Vanilla spawn tickets; chunk clocks and region-header timestamps, all other object fields compared.',
+    'region/r.0.-1.mca': 'Vanilla spawn tickets; chunk clocks and region-header timestamps, all other object fields compared.',
     'region/r.0.0.mca': 'Source, pad and device chunks held by probe tickets; chunk clocks advance.',
     'entities/r.0.0.mca': 'Source rocket entity storage flushed by the probe.',
 }
@@ -506,6 +511,7 @@ def run(args):
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
     require_lock(args.lock_owner)
     pins = verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
+    generation = generation_rule()
     preflight()
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     oracle.require(not session.exists() and not evidence.exists() and session not in evidence.parents and evidence not in session.parents,
@@ -519,7 +525,7 @@ def run(args):
     token = uuid.uuid4().hex
     sentinel = session / '.w380-owned'
     sentinel.write_text(token, encoding='ascii')
-    report = dict(status='IN_PROGRESS', pins=pins, runtime_files=RUNTIME_FILES, cycles=[], cleanup=False,
+    report = dict(status='IN_PROGRESS', pins=pins, runtime_files=RUNTIME_FILES, generation_rule=generation, cycles=[], cleanup=False,
                   development=args.derive_runtime_list, promotion_approved=False,
                   harness={name: oracle.digest(REPO / 'scripts' / name) for name in
                            ('run_v180_x03_repair.py', 'x03_repair_oracle.py', 'repair_v180_rebuild_source.py', 'loader_cut_nbt.py')})
@@ -574,6 +580,14 @@ def run(args):
             report['cleanup'] = not session.exists()
         write_json(evidence / 'results.json', report)
     return report
+
+
+def generation_rule():
+    ring = [(x, z) for x in range(-13, 14) for z in range(-13, 14) if max(abs(x), abs(z)) > 10]
+    oracle.require(len(ring) == 288 and all(oracle.in_functional_box((oracle.MOON + '/region/r.0.0.mca', x, z))
+                                          for x, z in ring), 'MEASURED_RING_OUTSIDE_DERIVED_BOX')
+    return dict(boxes=oracle.FUNCTIONAL_BOXES, destination_ticket_radius=oracle.DESTINATION_TICKET_RADIUS,
+                vanilla_dependency_margin=oracle.GENERATION_MARGIN, existing_margin_chunks='immutable', measured_ring_chunks=len(ring))
 
 
 def main(argv=None):

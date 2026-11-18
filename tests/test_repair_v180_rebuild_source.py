@@ -1100,6 +1100,35 @@ class RevisionTest(RepairFixture):
         self.refusal('UNVALIDATED_AUTHORITY:markers')
 
 
+class RaidClockTest(RepairFixture):
+    def raid_census(self, change):
+        for relative in repair.RAID_FILES:
+            path = self.source / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            n.write_gzip(path, b'', C(data=C(Tick=I(1), NextAvailableID=I(2)), DataVersion=I(3465)))
+        self.sync()
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        for relative in repair.RAID_FILES:
+            path = self.output / relative
+            name, root = n.read_gzip(path)
+            change(root.value['data'])
+            n.write_gzip(path, name, root)
+        return repair.census(self.planfile, self.output, self.reports / 'raids.json', True)
+
+    def test_only_forward_raid_tick_is_admitted(self):
+        self.assertEqual('SEMANTIC_CENSUS_ONLY', self.raid_census(lambda data: data.value.update(Tick=I(2)))['status'])
+
+    def test_raid_tick_cannot_decrease(self):
+        self.refusal('RAID_TICK_DECREASE_OR_TYPE', lambda: self.raid_census(lambda data: data.value.update(Tick=I(0))))
+
+    def test_raid_tick_type_cannot_change(self):
+        self.refusal('RAID_TICK_DECREASE_OR_TYPE', lambda: self.raid_census(lambda data: data.value.update(Tick=L(2))))
+
+    def test_other_raid_fields_cannot_change(self):
+        self.refusal('RAID_OBJECT_CHANGED', lambda: self.raid_census(lambda data: data.value.update(NextAvailableID=I(3))))
+
+
 class BookkeepingClockTest(RepairFixture):
     def clock_census(self, observed=20, logical=20, extra=None, root_key='satellite_missions'):
         document = self.plan()

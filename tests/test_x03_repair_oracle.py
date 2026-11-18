@@ -99,12 +99,27 @@ class BookkeepingClockTest(RepairFixture):
         with self.assertRaisesRegex(oracle.OracleError, 'WRITER_GENERATION'):
             oracle.compare_functional(before, after, action='unload')
 
-    def test_progression_source_field_is_not_newly_admitted(self):
+    def test_progression_receipt_has_exact_codec_fields_and_matches_the_landing(self):
         root = C(data=C(schema_version=I(1), format_epoch=S('v1.8.0-classic-progression'),
                         first_moon_landing=C(occurred=nbt.Tag(nbt.BYTE, 1), source=S('rocket_transfers'), event=C()),
                         first_station_warp=C(occurred=nbt.Tag(nbt.BYTE, 0))), DataVersion=I(3465))
+        name = 'data/advancedrocketrycommunity_classic_progression.dat'
+        oracle.validate_new_functional_root(name, root, C())
+        for field, value in (('source', S('stations')), ('source', I(1)), ('occurred', I(1)),
+                             ('occurred', nbt.Tag(nbt.BYTE, 0)), ('other', I(1))):
+            changed = copy.deepcopy(root)
+            changed.value['data'].value['first_moon_landing'].value[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(oracle.OracleError):
+                oracle.validate_new_functional_root(name, changed, C())
+        changed = copy.deepcopy(root)
+        changed.value['data'].value['first_station_warp'].value['occurred'].value = 1
         with self.assertRaisesRegex(oracle.OracleError, 'NEW_CLASSIC_AUTHORITY'):
-            oracle.validate_new_functional_root('data/advancedrocketrycommunity_classic_progression.dat', root, C())
+            oracle.validate_new_functional_root(name, changed, C())
+        with self.assertRaisesRegex(oracle.OracleError, 'first-moon-receipt'):
+            oracle.validate_new_functional_root(name, root, C(terminal_origin=A(8, 100, 8)))
+        del root.value['data'].value['first_moon_landing'].value['source']
+        with self.assertRaisesRegex(oracle.OracleError, 'NEW_CLASSIC_AUTHORITY'):
+            oracle.validate_new_functional_root(name, root, C())
 
 
 class RawOracleTest(RepairFixture):
@@ -236,6 +251,40 @@ class RawOracleTest(RepairFixture):
 
 
 class BoundaryTest(unittest.TestCase):
+    def test_generation_extent_contains_the_measured_ring_but_no_next_chunk(self):
+        ring = [(x, z) for x in range(-13, 14) for z in range(-13, 14) if max(abs(x), abs(z)) > 10]
+        self.assertEqual(288, len(ring))
+        name = oracle.MOON + '/region/r.0.0.mca'
+        self.assertTrue(all(oracle.in_functional_box((name, x, z)) for x, z in ring))
+        for x, z in ((14, 0), (-14, 0), (0, 14), (0, -14)):
+            self.assertFalse(oracle.in_functional_box((name, x, z)))
+
+    def test_existing_margin_chunks_are_immutable_even_for_clock_only_writes(self):
+        key = (oracle.MOON + '/region/r.0.0.mca', 3, 0)
+        before = {key: C(LastUpdate=L(1), InhabitedTime=L(0))}
+        oracle.compare_chunks(before, copy.deepcopy(before), generation_margin=True)
+        after = copy.deepcopy(before)
+        after[key].value['LastUpdate'].value += 1
+        with self.assertRaisesRegex(oracle.OracleError, 'EXISTING_GENERATION_MARGIN'):
+            oracle.compare_chunks(before, after, generation_margin=True)
+        # The same ordinary clock step in the FULL ticket box remains permitted.
+        key2 = (key[0], 2, 0)
+        oracle.compare_chunks({key2: before[key]}, {key2: after[key]}, generation_margin=True)
+
+    def test_every_raid_allows_only_nondecreasing_int_tick(self):
+        for name in oracle.RAID_FILES:
+            before = {name: C(data=C(Tick=I(1), NextAvailableID=I(2)), DataVersion=I(3465))}
+            after = copy.deepcopy(before)
+            after[name].value['data'].value['Tick'].value = 2
+            oracle.compare_raids(before, after)
+            for field, value in (('Tick', I(0)), ('Tick', L(2)), ('NextAvailableID', I(3)), ('other', I(1))):
+                bad = copy.deepcopy(before)
+                bad[name].value['data'].value[field] = value
+                with self.subTest(name=name, field=field), self.assertRaises(oracle.OracleError):
+                    oracle.compare_raids(before, bad)
+        with self.assertRaisesRegex(oracle.OracleError, 'RAID_FILE_SET_CHANGED'):
+            oracle.compare_raids(before, {})
+
     def test_functional_file_allowance_is_dimension_and_box_bounded(self):
         self.assertEqual(['data/advancedrocketrycommunity_resource_escrow.dat'],
                          oracle.functional_boundary({}, {'data/advancedrocketrycommunity_resource_escrow.dat': 'x'}, {})['added'])

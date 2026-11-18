@@ -75,6 +75,10 @@ ROOT_REQUIRED = {
 }
 # No unreviewed runtime normalization; a false refusal is safer than data loss.
 ENTITY_CLOCK_FIELDS = ()
+# R490: exact raid-clock files of the fixed fixture, not a directory allowance.
+RAID_FILES = ('DIM-1/data/raids.dat', 'DIM1/data/raids_end.dat', 'data/raids.dat',
+              *(f'dimensions/advancedrocketrycommunity/{body}/data/raids.dat'
+                for body in ('mars', 'moon', 'space', 'tau_ceti_f', 'tau_ceti_g', 'venus')))
 ROOT_BOOKKEEPING_FIELDS = {
     'data/advancedrocketrycommunity_satellite_missions.dat': {
         'data/clock/logical_game_time': 'MonotonicMissionClock adds the forward observed-time delta; observeClock dirties the root without changing its epoch.',
@@ -1323,6 +1327,13 @@ def census(plan_path, world, report, after_start=False):
         # Forced-chunk lists may be newly written by the operator's loading commands,
         # but their decoded contents must return to the backup's state.
         for path in diff['added'] + diff['changed'] if after_start else []:
+            if path in RAID_FILES:
+                require(path in body['manifest'], 'RAID_FILE_SET_CHANGED')
+                before_raid, after_raid = read_gzip(backup / path)[1], read_gzip(world / path)[1]
+                a, b = at(before_raid, 'data', 'Tick'), at(after_raid, 'data', 'Tick')
+                require(a.type == b.type == nbt.INT and b.value >= a.value, 'RAID_TICK_DECREASE_OR_TYPE:' + path)
+                b.value = a.value
+                require(typed(before_raid) == typed(after_raid), 'RAID_OBJECT_CHANGED:' + path)
             if Path(path).name == 'chunks.dat':
                 new_forced = at(read_gzip(world / path)[1], 'data')
                 if path in body['manifest']:

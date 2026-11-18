@@ -23,6 +23,9 @@ MAX_FILES, MAX_REGIONS, MAX_DECODED = 100_000, 4096, 256 * 1024**2
 # Vanilla chunk clocks advance while the verification probe holds its tickets.
 CHUNK_CLOCKS = ('LastUpdate', 'InhabitedTime')
 ENTITY_CLOCKS = ()
+RAID_FILES = ('DIM-1/data/raids.dat', 'DIM1/data/raids_end.dat', 'data/raids.dat',
+              *(f'dimensions/advancedrocketrycommunity/{body}/data/raids.dat'
+                for body in ('mars', 'moon', 'space', 'tau_ceti_f', 'tau_ceti_g', 'venus')))
 ROOT_BOOKKEEPING_FIELDS = {
     'data/advancedrocketrycommunity_satellite_missions.dat': {
         'data/clock/logical_game_time': 'MonotonicMissionClock adds forward observed-time deltas; clock-only autosaves retain the epoch.',
@@ -52,9 +55,14 @@ def checked(check):
         findings.append(dict(reason=str(error)))
         return None
 # The runner fixes the first, virgin Moon landing pad at (8, 8). Its one-column
-# footprint is in chunk (0, 0); two ticket columns plus eight vanilla generation
-# neighbours bound the disposable descendant. A different selected pad refuses.
-FUNCTIONAL_BOXES = {'': (-6, 15, -6, 14), 'dimensions/advancedrocketrycommunity/moon': (-10, 10, -10, 10)}
+# footprint is in chunk (0, 0). Candidate warmup distance 2 -> ticket level 31;
+# FULL level 33 -> FULL radius 2. ChunkStatus.STATUS_BY_RANGE has 12 entries,
+# with the final non-EMPTY status at distance 11. The resulting radius is 13.
+# javap derivation: W380H record. Existing chunks in that margin are immutable.
+MOON = 'dimensions/advancedrocketrycommunity/moon'
+DESTINATION_TICKET_RADIUS, GENERATION_MARGIN = 2, 11
+GENERATION_RADIUS = DESTINATION_TICKET_RADIUS + GENERATION_MARGIN
+FUNCTIONAL_BOXES = {'': (-6, 15, -6, 14), MOON: (-GENERATION_RADIUS, GENERATION_RADIUS) * 2}
 FUNCTIONAL_DATA_FILES = {
     LEDGER: 'Ordinary unload and flight authority writes.',
     'data/advancedrocketrycommunity_stations.dat': 'The admin flight resolves the station registry even for a body route.',
@@ -249,7 +257,8 @@ def read(world):
     require(len(payloads) == 1 and payloads[0]['adapter'] == 'advancedrocketrycommunity:pressurized_tank_v1', 'TANK_PAYLOAD')
     fluid = payloads[0]['data']['tank']['fluid']
     require(fluid['FluidName'] == device['tank']['FluidName'] == 'minecraft:water' and not fluid.get('Tag') and not device['tank'].get('Tag'), 'FLUID_IDENTITY')
-    return dict(chunks=decoded, managed=managed, entity=entity, block=block, rocket=rocket, device=device,
+    raids = {name: nbt.read_gzip(world / name)[1] for name in RAID_FILES if (world / name).is_file()}
+    return dict(chunks=decoded, managed=managed, raids=raids, entity=entity, block=block, rocket=rocket, device=device,
                 rocket_key=rockets[0][0], device_key=devices[0][0], cargo=fluid['Amount'], tank=device['tank']['Amount'],
                 ledger=nbt.plain(managed[LEDGER])['data'], journal=nbt.plain(managed[JOURNAL])['data'])
 
@@ -320,7 +329,7 @@ def normalized(root, kind):
     return result
 
 
-def compare_chunks(before, after):
+def compare_chunks(before, after, *, generation_margin=False):
     """Full typed comparison, including non-target objects in target-containing files."""
     checked(lambda: require(before.keys() == after.keys(), 'CHUNK_SET_CHANGED'))
     if _MEASUREMENT.get() is not None:
@@ -328,6 +337,9 @@ def compare_chunks(before, after):
             _MEASUREMENT.get().append(dict(reason='CHUNK_SET_CHANGED', file=key[0], chunk=list(key[1:]), path=''))
     for key in sorted(before.keys() & after.keys()):
         kind = Path(key[0]).parent.name
+        if generation_margin and in_generation_margin(key):
+            equal(before[key], after[key], 'EXISTING_GENERATION_MARGIN:' + repr(key))
+            continue
         if _MEASUREMENT.get() is None:
             equal(normalized(before[key], kind), normalized(after[key], kind), repr(key))
         else:
@@ -337,6 +349,7 @@ def compare_chunks(before, after):
 
 def compare_repair(baseline, current, transfer):
     checked(lambda: check_state(current, baseline))
+    compare_raids(baseline.get('raids', {}), current.get('raids', {}))
     compare_chunks(baseline['chunks'], current['chunks'])
     checked(lambda: require(baseline['managed'].keys() == current['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED'))
     for name, root in baseline['managed'].items():
@@ -410,6 +423,7 @@ def compare_functional(before, after, *, action=None):
     No action allowance applies to unrelated entities, terrain or managed roots.
     The target's amounts/identity are checked separately by check_state.
     """
+    compare_raids(before.get('raids', {}), after.get('raids', {}))
     left, right = copy.deepcopy(before['chunks']), copy.deepcopy(after['chunks'])
     if action == 'unload':
         for state, tree in ((before, left), (after, right)):
@@ -441,7 +455,7 @@ def compare_functional(before, after, *, action=None):
             checked(lambda: require(in_functional_box(key), 'OUTSIDE_FUNCTIONAL_BOX:' + repr(key)))
             checked(lambda: require(Path(key[0]).parent.name != 'entities' or not right[key].value['Entities'].value[1], 'NEW_UNRELATED_ENTITY'))
         right = {key: right[key] for key in left if key in right}
-    checked(lambda: compare_chunks(left, right))
+    checked(lambda: compare_chunks(left, right, generation_margin=True))
     new_roots = after['managed'].keys() - before['managed'].keys()
     allowed_new = set(FUNCTIONAL_DATA_FILES) - {LEDGER} if action == 'launch' else set()
     checked(lambda: require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED'))
@@ -470,7 +484,7 @@ def compare_functional(before, after, *, action=None):
                 root.value['data'].value['orbital_clock'].value.pop('logical_tick')
         if action == 'launch' and name.endswith('_classic_progression.dat'):
             require(nbt.plain(a)['data']['first_moon_landing'] == dict(occurred=0), 'PREEXISTING_MOON_RECEIPT')
-            equal(b.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
+            validate_moon_receipt(b.value['data'].value['first_moon_landing'], event)
             for root in (a, b):
                 root.value['data'].value.pop('first_moon_landing')
         equal(*bookkeeping_pair(name, a, b), name)
@@ -520,13 +534,36 @@ def validate_new_functional_root(name, root, event):
         require(set(data) == {'schema_version', 'format_epoch', 'first_moon_landing', 'first_station_warp'}
                 and data['schema_version'] == 1 and data['format_epoch'] == 'v1.8.0-classic-progression'
                 and data['first_station_warp'] == dict(occurred=0)
-                and set(data['first_moon_landing']) == {'occurred', 'event'}
+                and set(data['first_moon_landing']) == {'occurred', 'source', 'event'}
                 and data['first_moon_landing']['occurred'] == 1, 'NEW_CLASSIC_AUTHORITY')
         require(all(typed_data.value[key].type == nbt.COMPOUND and typed_data.value[key].value['occurred'].type == nbt.BYTE
                     for key in ('first_moon_landing', 'first_station_warp')), 'NEW_CLASSIC_TYPES')
-        equal(root.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
+        validate_moon_receipt(root.value['data'].value['first_moon_landing'], event)
     else:
         raise OracleError('UNEXPECTED_NEW_ROOT:' + name)
+
+
+def validate_moon_receipt(receipt, event):
+    require(receipt.type == nbt.COMPOUND and set(receipt.value) == {'occurred', 'source', 'event'}
+            and receipt.value['occurred'].type == nbt.BYTE and receipt.value['occurred'].value == 1
+            and receipt.value['source'].type == nbt.STRING and nbt.plain(receipt.value['source']) == 'rocket_transfers',
+            'NEW_CLASSIC_AUTHORITY')
+    equal(receipt.value['event'], event, 'first-moon-receipt')
+
+
+def compare_raids(before, after):
+    checked(lambda: require(before.keys() == after.keys(), 'RAID_FILE_SET_CHANGED'))
+    for name in before.keys() & after.keys():
+        left, right = copy.deepcopy(before[name]), copy.deepcopy(after[name])
+        a, b = nbt.compound(left, 'data', 'Tick'), nbt.compound(right, 'data', 'Tick')
+        checked(lambda: require(a.type == b.type == nbt.INT and b.value >= a.value, 'RAID_TICK_DECREASE_OR_TYPE:' + name))
+        b.value = a.value
+        equal(left, right, name)
+
+
+def in_generation_margin(key):
+    name, x, z = key
+    return Path(name).parent.parent.as_posix() == MOON and max(abs(x), abs(z)) > DESTINATION_TICKET_RADIUS
 
 
 def in_functional_box(key):
