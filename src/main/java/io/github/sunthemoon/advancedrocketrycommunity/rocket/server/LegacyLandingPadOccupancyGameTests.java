@@ -118,6 +118,14 @@ public final class LegacyLandingPadOccupancyGameTests {
             var parked = f.parkWideRocket();
             f.assertReviewGeometry(parked, f.arrival());
             f.leaveToDiscovery(parked);
+            // W383: the arrival holds PREPARED while any column of its ticket set still loads entities. The detached
+            // service's transfer is not live in the runtime's service, so the runtime's journal recovery would take a
+            // waiting record over within two ticks, keep the source and log an undeclared ARCE_TRANSFER_RECOVERY WARN,
+            // and every assertion below would still pass (run 44254384368 and W301F, both "columns=3/4").
+            var columns = RocketTransferEntities.destinationTicketSet(record.destinationSnapshot());
+            int loaded = RocketTransferEntities.entitiesLoadedColumns(columns, f.space::areEntitiesLoaded);
+            helper.assertTrue(f.arrivalColumns().containsAll(columns) && loaded == columns.size(),
+                    "Fixture readiness does not cover the arrival's ticket set: entities loaded in " + loaded + " of " + columns);
             var selector = new RocketLandingPadSelector();
             String reason = selector.unavailable(f.space, record.destinationSnapshot(), null, false);
             helper.assertTrue(reason != null && reason.endsWith("occupied"), "Pre-spawn occupancy reason was not stated: " + reason);
@@ -125,6 +133,9 @@ public final class LegacyLandingPadOccupancyGameTests {
                     "Pre-spawn recheck accepted the wide occupant");
             source.updateFlightData(record.sourceFlightData());
             service.spawnDestination(f.space.getServer(), journal, record, source);
+            // W383: the refusal itself, not a later recovery, returns the rocket: this service's coordinator holds it.
+            helper.assertTrue(RocketSourceRetirementFixtures.recovery(service).retirements().pending(record.logicalRocketId()),
+                    "Pre-spawn refusal did not begin the ordinary return to the source");
             // W98 (N3-A1): the record leaves once the returned source's own entity slot is read back.
             f.afterRetired(service, record.logicalRocketId(), () -> {
                 f.assertNothingCreated(transfer, 1);
@@ -328,6 +339,8 @@ public final class LegacyLandingPadOccupancyGameTests {
             for (int x = (pad.getX() - 17) >> 4; x <= (pad.getX() + 21) >> 4; x++) {
                 ready &= space.areEntitiesLoaded(ChunkPos.asLong(x, pad.getZ() >> 4));
             }
+            // W383: the pad's z is a multiple of 16, so the arrival's ticket set also spans the row before the pad's.
+            for (ChunkPos column : arrivalColumns()) { ready &= space.areEntitiesLoaded(column.toLong()); }
             if (ready || helper.getTick() >= 80) {
                 helper.assertTrue(ready, "Legacy occupancy fixture entity chunks did not become ready");
                 try { action.run(); } finally { if (!deferred) { close(); } }
@@ -338,6 +351,20 @@ public final class LegacyLandingPadOccupancyGameTests {
 
         private RocketRegion arrival() {
             return new RocketRegion(space.dimension().location(), position(pad.offset(-1, 0, 0)), position(pad.offset(1, 2, 0)));
+        }
+
+        /**
+         * W383: the columns an arrival at the default pad waits for, {@code RocketDiscoveryColumns}' rectangle of its
+         * footprint: {@code (min - 1) >> 4} to {@code (max + 2) >> 4} in x and z. All lie within the fixture's
+         * distance-2 region ticket. The pre-spawn test checks this against the prepared record's own ticket set.
+         */
+        private List<ChunkPos> arrivalColumns() {
+            RocketRegion arrival = arrival();
+            List<ChunkPos> columns = new ArrayList<>();
+            for (int x = (arrival.minimum().x() - 1) >> 4; x <= (arrival.maximum().x() + 2) >> 4; x++) {
+                for (int z = (arrival.minimum().z() - 1) >> 4; z <= (arrival.maximum().z() + 2) >> 4; z++) { columns.add(new ChunkPos(x, z)); }
+            }
+            return columns;
         }
 
         /**
