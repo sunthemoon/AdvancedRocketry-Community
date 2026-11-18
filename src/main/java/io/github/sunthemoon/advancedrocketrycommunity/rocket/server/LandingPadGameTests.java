@@ -152,11 +152,13 @@ public final class LandingPadGameTests {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Arrival");
-        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && DetachedTransferReadinessGameTestSupport.ready(f.space, padColumns(f.pad)), () -> {
             RocketEntity source = addSource(helper, snapshot, f.station.ownerId());
             UUID logical = source.assemblyTransactionId().orElseThrow(); UUID transfer = UUID.randomUUID();
             var result = RocketRuntime.requestAdminPadFlight(source, f.station.stationId(), entry.reference(), transfer);
             f.retainFlight(transfer);
+            DetachedTransferReadinessGameTestSupport.assertReady(helper, f.space,
+                    RocketTransferSavedData.get(f.space.getServer()).find(transfer).orElseThrow(), padColumns(f.pad));
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper, result, source);
             helper.assertTrue(transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()), "Prepared claim missing");
             await(helper, driver, helper.getTick() + 270, () -> {
@@ -195,7 +197,7 @@ public final class LandingPadGameTests {
         // W187: as in the recovery matrix, an autosave that supersedes the fail-back's survivor capture releases its
         // reservation, and the runtime's own recovery can then remove T and log an undeclared ARCE_TRANSFER_RECOVERY
         // WARN. Cancel only when the next autosave falls after this test's 60-tick wait for the proof.
-        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()),
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && DetachedTransferReadinessGameTestSupport.ready(f.space, padColumns(f.pad)),
                 () -> await(helper, driver, helper.getTick() + CANCEL_WINDOW_TICKS + 1L,
                         () -> !GameTestAutosave.within(f.space.getServer(), CANCEL_WINDOW_TICKS), () -> {
             var source = addSource(helper, snapshot, f.station.ownerId()); var transfer = UUID.randomUUID();
@@ -204,9 +206,13 @@ public final class LandingPadGameTests {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper,
                     service.prepareLaunch(source, countdown), source);
             f.retainFlight(transfer);
+            DetachedTransferReadinessGameTestSupport.assertReady(helper, f.space,
+                    RocketTransferSavedData.get(f.space.getServer()).find(transfer).orElseThrow(), padColumns(f.pad));
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(service.cancelCountdown(source).code() == RocketFlightRequestCode.JOURNAL_PENDING,
                     "Cancellation did not await its removal acknowledgement");
+            helper.assertTrue(RocketSourceRetirementFixtures.recovery(service).retirements().pending(source.assemblyTransactionId().orElseThrow()),
+                    "Countdown cancellation did not begin this service's ordinary return to the source");
             // W98 (N3-A1): the record and claim stay until the returned source's own entity slot is read back.
             helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isPresent()
                     && transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()),
@@ -231,7 +237,7 @@ public final class LandingPadGameTests {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Recovery");
-        await(helper, driver, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()),
+        await(helper, driver, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && DetachedTransferReadinessGameTestSupport.ready(f.space, padColumns(f.pad)),
                 () -> recoveryCut(helper, driver, f, snapshot, entry, 0));
     }
 
@@ -273,6 +279,7 @@ public final class LandingPadGameTests {
         RocketTransferEntities.positionAtAltitude(destination, destinationSnapshot.sourceOrigin());
         var record = RocketTransferRecord.create(transfer, transit.logicalRocketId(), f.station.ownerId(), source.getUUID(), snapshot,
                 destinationSnapshot, transit, arrival, transit.plan().orElseThrow().requiredFuel(), 0);
+        DetachedTransferReadinessGameTestSupport.assertReady(helper, f.space, record, padColumns(f.pad));
         if (phase != RocketTransferPhase.PREPARED) {
             record = record.destinationSpawned(destination.getUUID());
             while (record.phase() != phase) { record = record.advance(RocketTransferPhase.values()[record.phase().ordinal() + 1]); }
@@ -350,16 +357,20 @@ public final class LandingPadGameTests {
         return fixture;
     }
 
-    private static void retainPadChunks(GameTestHelper helper, Fixture fixture) {
-        ServerLevel space = fixture.space;
-        UUID ticket = fixture.station.stationId();
-        BlockPos pad = fixture.pad;
+    private static List<ChunkPos> padColumns(BlockPos pad) {
         var chunks = new ArrayList<ChunkPos>();
         for (int x = (pad.getX() - 2) >> 4; x <= (pad.getX() + 2) >> 4; x++) {
             for (int z = (pad.getZ() - 2) >> 4; z <= (pad.getZ() + 2) >> 4; z++) {
                 chunks.add(new ChunkPos(x, z));
             }
         }
+        return chunks;
+    }
+
+    private static void retainPadChunks(GameTestHelper helper, Fixture fixture) {
+        ServerLevel space = fixture.space;
+        UUID ticket = fixture.station.stationId();
+        var chunks = padColumns(fixture.pad);
         helper.assertTrue(chunks.size() <= 4, "Pad fixture exceeded its four-chunk footprint");
         // getChunk's UNKNOWN ticket lasts only one tick. If entity IO misses that window, the
         // paced wait can observe an unloaded pad forever. Retain FULL, not ENTITY_TICKING: the

@@ -75,6 +75,7 @@ public final class RocketConcurrentFlightGameTests {
                 if (stage == 0) { setup(); }
                 else if (stage == 1) {
                     if (held.entered()) {
+                        DetachedTransferReadinessGameTestSupport.assertReady(helper, helper.getLevel(), initial[0], arrivalColumns(0));
                         service.spawnDestination(helper.getLevel().getServer(), journal, initial[0], sources[0]);
                         helper.assertTrue(journal.find(initial[0].transferId()).orElseThrow().phase()
                                 == RocketTransferPhase.DESTINATION_SPAWNED, "First flight did not queue its spawn");
@@ -92,6 +93,7 @@ public final class RocketConcurrentFlightGameTests {
                 for (var pos : List.of(origin(i, false), origin(i, true))) {
                     if (!level.isPositionEntityTicking(pos)) { return; }
                 }
+                if (!DetachedTransferReadinessGameTestSupport.ready(level, arrivalColumns(i))) { return; }
             }
             directory = Files.createTempDirectory("arce-concurrent-flight-");
             file = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
@@ -117,6 +119,7 @@ public final class RocketConcurrentFlightGameTests {
                         plan.destinationDimension(), destination.sourceOrigin(), now);
                 initial[i] = RocketTransferRecord.create(transfer, logical, owner, source.getUUID(), snapshot, destination,
                         transit, arrival, 500, now);
+                DetachedTransferReadinessGameTestSupport.assertReady(helper, level, initial[i], arrivalColumns(i));
                 source.initializeTransferred(snapshot, logical, owner, delayed && i == 0 ? transit : countdown);
                 RocketTransferEntities.positionAtOrigin(source, snapshot.sourceOrigin());
                 helper.assertTrue(level.addFreshEntity(source), "Source publication failed");
@@ -140,6 +143,9 @@ public final class RocketConcurrentFlightGameTests {
             int stepped = 0;
             for (int i = 0; i < 2; i++) {
                 var before = journal.find(initial[i].transferId()).orElseThrow();
+                if (before.phase() == RocketTransferPhase.PREPARED) {
+                    DetachedTransferReadinessGameTestSupport.assertReady(helper, helper.getLevel(), before, arrivalColumns(i));
+                }
                 var sourceFlight = sources[i].flightData().orElseThrow(); double y = sources[i].getY();
                 if (!landed[i]) { service.tickLive(server, journal, before); }
                 var after = journal.find(before.transferId()).orElseThrow();
@@ -201,6 +207,11 @@ public final class RocketConcurrentFlightGameTests {
 
         BlockPos origin(int index, boolean destination) {
             return helper.absolutePos(new BlockPos(destination ? 14 : 3, 2, 3 + index * 5));
+        }
+
+        List<net.minecraft.world.level.ChunkPos> arrivalColumns(int index) {
+            var zero = new RocketPosition(0, 0, 0);
+            return DetachedTransferReadinessGameTestSupport.columns(origin(index, true), new RocketBounds(zero, zero));
         }
 
         String describeWait() {
