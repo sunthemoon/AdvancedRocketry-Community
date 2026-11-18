@@ -63,5 +63,5 @@ cuts, not X01 power loss or X02 fault injection.
   not the pyenv shim. Keep evidence under `D:/GitHub/ARCE-Task-Evidence/root-queue/W373B/`.
 - If you change Java, run its unit tests, the full unit suite once, and one full GameTest run with the log checker.
 - Commit on the branch in reviewable commits, with messages in the style of AGENTS.md section 6. Do not push.
-- A read-only review by Claude follows before the merge.
+- A read-only review by a Codex session follows before the merge.
 - The last line of the record, and the last line of your answer, is the path of `records/W373B.md`.
