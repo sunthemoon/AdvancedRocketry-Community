@@ -557,6 +557,11 @@ What is still open:
   Java source passed all 1,863. W379's slice is not on that path, and no earlier failure of this test is recorded.
   The log does not say which of the three checks failed. It stays open until later runs show no recurrence or a
   cause is found; a recurrence gets its own diagnosis task.
+- **Transfer recovery GameTest (2026-11-18).** W380's local full GameTest run failed
+  `transferRecoveryReconcilesAllEntityPresenceCases` once ("both recovery did not complete: RETRY_LATER"), with the
+  duplicate-destination recovery WARN in an undeclared batch. W380 changed no Java. It ran while other workers
+  compiled on the same machine, as W379's item-cargo failure did. It stays open until later runs show no
+  recurrence or a cause is found; a hosted recurrence gets its own diagnosis task.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not

@@ -13,6 +13,9 @@ Revision 2 resolves the findings of the independent review W367R
 that maps each finding to its section is in [W367](W367.md). The top-level section numbers are unchanged from
 revision 1, so existing references to sections 1 to 8 still point at the same subjects.
 
+Revision 3 (2026-11-18, Root decision R487) adds [section 9](#9-revision-3-root-decision-r487-after-w380s-native-runs),
+which amends sections 2.2, 3.5, 5.2 and 5.3 after W380's native runs. The other sections are unchanged.
+
 Terms used below:
 
 - **T** is the one stale transfer record in the journal. **R** is the one physical rocket. **The device** is
@@ -797,3 +800,38 @@ Two points are new in revision 2 and are put to Root for acceptance with it:
   predicate and its refusal case are removed. That costs about a quarter of a day in X03-B.
 - The gated mode uses a new scenario value, `verify`, and three `FF_X03_` cases, rather than an external
   agent (section 5.1).
+
+## 9. Revision 3 (Root decision R487), after W380's native runs
+
+W380's native runs (record `W380.md` on branch `codex/v1.8.0-w380`, commit `269cf73c2`) met two facts that
+revision 2 did not describe. Both are properties of the candidate and of vanilla, not of the damaged world, so
+the contract changes and no check is dropped.
+
+### 9.1 The fence evidence is a sequence of reason changes (amends 2.2 and 5.3)
+
+`RocketTransferFences` logs `ARCE_TRANSFER_FENCED` each time a transfer's reason changes, not once per start.
+When an endpoint of T joins a Level, `joined` fences T with the transient reason `ENDPOINT_JOIN_PROOF_REQUIRED`,
+and the next reevaluation with both ends loaded logs the derived reason. A qualifying log therefore holds
+`ENDPOINT_JOIN_PROOF_REQUIRED` lines for T around the `FLOOR_CONFLICT` line. The rule becomes:
+
+- every `ARCE_TRANSFER_FENCED` line names T, or the tool refuses with `OTHER_TRANSFER_FENCED`;
+- every reason is `FLOOR_CONFLICT` or `ENDPOINT_JOIN_PROOF_REQUIRED`, or the tool refuses with
+  `FENCE_REASON_DIFFERS` (WAITING_UNLOADED and every other derived reason still refuse);
+- at least one line carries `FLOOR_CONFLICT`, or the tool refuses with `FENCE_EVIDENCE_MISSING`; a log with
+  only the transient reason shows that no reevaluation derived the fence;
+- the plan binds the log's SHA-256 and the first `FLOOR_CONFLICT` line.
+
+The native family asserts the same rule in both protected starts.
+
+### 9.2 A zero-byte region file is an empty region (amends 3.5 and 5.2)
+
+Vanilla opens region, entity and POI files with `CREATE`, so a start that only reads a region leaves a zero-byte
+`.mca` file. Its `RegionFile` constructor treats a header read that returns end-of-file as an empty header, and
+only warns about a header of another short length. Root checked this in the bytecode of the Forge 47.4.10
+mapped jar: the constructor compares `FileChannel.read` with -1, skips the offset table on -1, and logs
+"Region file {} has truncated header" for any other length but 8,192. Therefore:
+
+- the tool and the independent oracle read a `.mca` file of exactly zero bytes as a region with no chunks;
+- the file stays in the census with its size and hash, and a later change of it is judged by section 3.6;
+- a file of 1 to 8,191 bytes still refuses with `CORRUPT_REGION`, which is stricter than vanilla;
+- neither the tool nor the runner creates, fills, removes or normalizes such a file.
