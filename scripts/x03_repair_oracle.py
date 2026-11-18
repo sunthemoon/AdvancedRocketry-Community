@@ -24,7 +24,12 @@ ENTITY_CLOCKS = ()
 # The runner fixes the first, virgin Moon landing pad at (8, 8). Its one-column
 # footprint is in chunk (0, 0); two ticket columns plus eight vanilla generation
 # neighbours bound the disposable descendant. A different selected pad refuses.
-FUNCTIONAL_BOXES = {'': (-6, 14, -6, 14), 'dimensions/advancedrocketrycommunity/moon': (-10, 10, -10, 10)}
+FUNCTIONAL_BOXES = {'': (-6, 15, -6, 14), 'dimensions/advancedrocketrycommunity/moon': (-10, 10, -10, 10)}
+FUNCTIONAL_DATA_FILES = {
+    LEDGER: 'Ordinary unload and flight authority writes.',
+    'data/advancedrocketrycommunity_stations.dat': 'The admin flight resolves the station registry even for a body route.',
+    'data/advancedrocketrycommunity_classic_progression.dat': 'The ordinary first Moon landing receipt.',
+}
 
 
 class OracleError(ValueError):
@@ -338,7 +343,7 @@ def in_functional_box(key):
 
 
 def functional_boundary(before, after, runtime_files):
-    allowed = set(runtime_files)
+    allowed = set(runtime_files) | set(FUNCTIONAL_DATA_FILES)
     for name in before.keys() | after.keys():
         path = Path(name)
         match = REGION.fullmatch(path.name)

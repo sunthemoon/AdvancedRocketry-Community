@@ -95,6 +95,20 @@ class RawOracleTest(RepairFixture):
 
 
 class BoundaryTest(unittest.TestCase):
+    def test_functional_file_allowance_is_dimension_and_box_bounded(self):
+        self.assertEqual(['data/advancedrocketrycommunity_resource_escrow.dat'],
+                         oracle.functional_boundary({}, {'data/advancedrocketrycommunity_resource_escrow.dat': 'x'}, {})['added'])
+        inside = 'dimensions/advancedrocketrycommunity/moon/region/r.-1.-1.mca'
+        oracle.functional_boundary({}, {inside: 'x'}, {})
+        for outside in ('dimensions/example/other/region/r.0.0.mca',
+                        'dimensions/advancedrocketrycommunity/moon/region/r.1.1.mca', 'playerdata/unrelated.dat'):
+            with self.subTest(outside=outside), self.assertRaisesRegex(oracle.OracleError, 'UNLISTED_FILE'):
+                oracle.functional_boundary({}, {outside: 'x'}, {})
+
+    def test_chunk_box_does_not_admit_unrelated_slots_in_an_allowed_region_file(self):
+        self.assertTrue(oracle.in_functional_box(('dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca', 0, 0)))
+        self.assertFalse(oracle.in_functional_box(('dimensions/advancedrocketrycommunity/moon/region/r.0.0.mca', 31, 31)))
+
     def test_added_removed_and_unlisted_changed_files_refuse(self):
         for after in ({'b': '1'}, {}, {'a': '2'}):
             with self.subTest(after=after), self.assertRaises(oracle.OracleError):
