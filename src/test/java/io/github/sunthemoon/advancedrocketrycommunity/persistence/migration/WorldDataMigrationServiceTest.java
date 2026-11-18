@@ -207,6 +207,67 @@ class WorldDataMigrationServiceTest {
         assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
     }
 
+    /**
+     * W386: a zero-length managed file (a torn write) is invalid data, not oversized data. The refusal still comes
+     * before any backup or write and leaves the file as it was.
+     */
+    @Test
+    void emptyManagedFileIsRefusedAsInvalidBeforeBackupOrWrite(@TempDir Path temporaryDirectory) throws Exception {
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            Path world = Files.createDirectory(temporaryDirectory.resolve("world-" + type.dataName()));
+            Files.createDirectory(world.resolve("data"));
+            Files.write(dataFile(world, type), new byte[0]);
+
+            SavedDataMigrationException failure = assertThrows(
+                    SavedDataMigrationException.class,
+                    () -> service().migrate(world),
+                    type.toString()
+            );
+
+            assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, failure.diagnosticId(), type.toString());
+            assertEquals(type.dataName() + " " + BoundedSavedDataIo.EMPTY_FILE_DETAIL, failure.getMessage());
+            assertEquals(0L, Files.size(dataFile(world, type)), type.toString());
+            try (var children = Files.list(world.resolve("data"))) {
+                assertEquals(1L, children.count(), type.toString());
+            }
+            assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")), type.toString());
+        }
+    }
+
+    /**
+     * W386: an empty staged file is a staging failure. Before W386 the bounded reader called it oversized, which
+     * {@code stageMigrations} passes through; now it is INVALID_SCHEMA, wrapped as STAGING_FAILED like every other
+     * invalid staged output. The originals stay byte-exact and no staging file is left.
+     */
+    @Test
+    void emptyStagedFileReportsStagingFailedAndKeepsTheOriginal(@TempDir Path temporaryDirectory) throws Exception {
+        Path world = createWorld(temporaryDirectory);
+        ManagedSavedDataType type = ManagedSavedDataType.CELESTIAL;
+        writeSavedData(world, type, legacyFixture(type));
+        byte[] original = Files.readAllBytes(dataFile(world, type));
+        AtomicInteger commits = new AtomicInteger();
+        WorldDataMigrationService migrations = new WorldDataMigrationService(
+                CLOCK,
+                (staged, target) -> commits.incrementAndGet(),
+                (target, content) -> Files.write(target, new byte[0])
+        );
+
+        SavedDataMigrationException failure = assertThrows(
+                SavedDataMigrationException.class,
+                () -> migrations.migrate(world)
+        );
+
+        assertEquals(MigrationDiagnosticId.STAGING_FAILED, failure.diagnosticId());
+        SavedDataMigrationException cause = (SavedDataMigrationException) failure.getCause();
+        assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, cause.diagnosticId());
+        assertEquals(type.dataName() + " " + BoundedSavedDataIo.EMPTY_FILE_DETAIL, cause.getMessage());
+        assertEquals(0, commits.get());
+        assertArrayEquals(original, Files.readAllBytes(dataFile(world, type)));
+        try (var children = Files.list(world.resolve("data"))) {
+            assertFalse(children.anyMatch(path -> path.getFileName().toString().contains(".migrating-")));
+        }
+    }
+
     @Test
     void backupLimitBlocksBeforeAuthoritativeWrite(@TempDir Path temporaryDirectory) throws Exception {
         Path world = createWorld(temporaryDirectory);

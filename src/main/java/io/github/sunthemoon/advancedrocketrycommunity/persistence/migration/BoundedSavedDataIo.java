@@ -38,6 +38,8 @@ public final class BoundedSavedDataIo {
     static final long INFLATED_SLACK_BYTES = 64L * 1_024L;
     /** Inflated read-ahead; well inside {@link #INFLATED_SLACK_BYTES}, the output the reader may still hold. */
     static final int INFLATED_BUFFER_BYTES = 8 * 1_024;
+    /** The refusal detail for a file of 0 bytes, after the type's data name. */
+    static final String EMPTY_FILE_DETAIL = "file is empty (0 bytes)";
     private static final int WRAPPER_BYTES = wrapperBytes();
 
     private BoundedSavedDataIo() {
@@ -46,7 +48,11 @@ public final class BoundedSavedDataIo {
     static CompoundTag read(Path path, ManagedSavedDataType type) {
         try {
             long compressedBytes = Files.size(path);
-            if (compressedBytes <= 0L || compressedBytes > type.maxCompressedBytes()) {
+            if (compressedBytes <= 0L) {
+                // A torn or zero-length write leaves no data at all: that is invalid, not too large.
+                throw invalid(type, EMPTY_FILE_DETAIL);
+            }
+            if (compressedBytes > type.maxCompressedBytes()) {
                 throw oversized(type, "compressed file size is " + compressedBytes + " bytes");
             }
 

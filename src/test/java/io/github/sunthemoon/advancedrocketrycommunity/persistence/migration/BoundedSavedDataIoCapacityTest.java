@@ -153,6 +153,49 @@ final class BoundedSavedDataIoCapacityTest {
     }
 
     /**
+     * W386: a file of 0 bytes holds no data, so every managed type refuses it as INVALID_SCHEMA with the
+     * empty-file detail, not as OVERSIZED_DATA, and the read leaves the file as it was.
+     */
+    @Test
+    void anEmptyFileIsInvalidNotOversizedForEveryManagedType() throws Exception {
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            Path file = root.resolve("empty-" + type.fileName());
+            Files.write(file, new byte[0]);
+            SavedDataMigrationException refused = assertThrows(SavedDataMigrationException.class,
+                    () -> BoundedSavedDataIo.read(file, type), type.toString());
+            assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, refused.diagnosticId(), type.toString());
+            assertEquals(type.dataName() + " file is empty (0 bytes)", refused.getMessage());
+            assertEquals(BoundedSavedDataIo.EMPTY_FILE_DETAIL, "file is empty (0 bytes)");
+            assertTrue(Files.isRegularFile(file), type.toString());
+            assertEquals(0, Files.readAllBytes(file).length, type.toString());
+        }
+    }
+
+    /** W386: one byte over the compressed limit is still OVERSIZED_DATA, and one byte of garbage is invalid. */
+    @Test
+    void theCompressedSizePrecheckStillSeparatesOversizedFromInvalid() throws Exception {
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            Path over = root.resolve("over-" + type.fileName());
+            byte[] overBytes = new byte[Math.toIntExact(type.maxCompressedBytes() + 1L)];
+            Files.write(over, overBytes);
+            SavedDataMigrationException oversized = assertThrows(SavedDataMigrationException.class,
+                    () -> BoundedSavedDataIo.read(over, type), type.toString());
+            assertEquals(MigrationDiagnosticId.OVERSIZED_DATA, oversized.diagnosticId(), type.toString());
+            assertEquals(type.dataName() + " compressed file size is " + overBytes.length + " bytes",
+                    oversized.getMessage());
+            assertEquals(overBytes.length, Files.size(over), type.toString());
+            Files.delete(over);
+
+            Path one = root.resolve("one-" + type.fileName());
+            Files.write(one, new byte[]{0});
+            SavedDataMigrationException invalid = assertThrows(SavedDataMigrationException.class,
+                    () -> BoundedSavedDataIo.read(one, type), type.toString());
+            assertEquals(MigrationDiagnosticId.INVALID_SCHEMA, invalid.diagnosticId(), type.toString());
+            assertEquals(1L, Files.size(one), type.toString());
+        }
+    }
+
+    /**
      * W21b review F1: the payload bound measured during the validation write is exact, and incompressible data
      * at that bound still passes the compressed-size check of the fastest deflate level.
      */
