@@ -131,6 +131,56 @@ class VerificationCommandTest(unittest.TestCase):
 
 
 class NativeOperationFixtureTest(RepairFixture):
+    def test_measurement_continues_all_observations_and_functional_actions(self):
+        args = SimpleNamespace(jar=self.jar, derive_runtime_list=True, measurement_mode=True)
+        with patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \
+                patch.object(runner, 'start', return_value=([], self.log)) as start, \
+                patch.object(runner.oracle, 'observe', return_value={'switch': 'withdrawn'}), \
+                patch.object(runner.oracle, 'compare_repair', side_effect=runner.oracle.OracleError('OBJECT_CHANGED:collateral')), \
+                patch.object(runner.oracle, 'compare_functional', side_effect=runner.oracle.OracleError('OBJECT_CHANGED:descendant')), \
+                patch.object(runner.oracle, 'launch_debit', return_value={'primary': 1}):
+            row, _ = runner.repaired_cycle(args, self.base, self.reports, 1)
+        self.assertEqual(7, start.call_count)
+        self.assertEqual(3, len(row['stages']))
+        self.assertEqual(4, len(row['functional']))
+        self.assertEqual('MEASURED_NOT_PROMOTED', row['status'])
+        self.assertTrue(all(stage['contradictions'] for stage in row['stages'] + row['functional']))
+
+    def test_measurement_file_boundary_reports_every_changed_file(self):
+        args = SimpleNamespace(derive_runtime_list=True, measurement_mode=True)
+        findings = []
+        runner.file_check(args, {'a': '1', 'b': '2'}, {'a': '3', 'b': '4'}, findings)
+        self.assertEqual(['a', 'b'], [row['file'] for row in findings])
+        self.assertTrue(all(row['path'] == ':file-sha256' for row in findings))
+
+    def test_measurement_mode_cannot_enter_controls_or_promotion(self):
+        args = SimpleNamespace(measurement_mode=True, derive_runtime_list=False, lock_owner='owner', jar=self.jar,
+                               source_commit='a', candidate_commit='b', jar_sha256='c', java='java',
+                               session_dir=self.base / 'session', evidence_dir=self.base / 'evidence',
+                               source_server=self.base / 'template')
+        args.source_server.mkdir()
+        (args.source_server / 'libraries').mkdir()
+        argfile = args.source_server / runner._server_command('java')[-2].removeprefix('@')
+        argfile.parent.mkdir(parents=True, exist_ok=True)
+        argfile.touch()
+        manifest = runner.oracle.manifest(self.source)
+        row = dict(baseline_manifest=manifest)
+        context = dict(original=self.source, backup=self.backup)
+        with patch.object(runner, 'require_lock'), patch.object(runner, 'verify_candidate', return_value={}), \
+                patch.object(runner, 'preflight'), patch.object(runner.evidence_tools, 'install_candidate'), \
+                patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \
+                patch.object(runner, 'refusal', return_value={}), \
+                patch.object(runner, 'repaired_cycle', return_value=(row, context)) as cycle, \
+                patch.object(runner, 'controls') as controls, patch.object(runner, 'start') as start:
+            report = runner.run(args)
+        self.assertEqual(2, cycle.call_count)
+        controls.assert_not_called()
+        start.assert_not_called()
+        self.assertEqual('MEASURED_NOT_PROMOTED', report['status'])
+        self.assertFalse(report['promotion_approved'])
+        self.assertNotIn('whole_world_replacement', report)
+        self.assertTrue(report['cleanup'])
+
     def test_dry_run_stops_at_first_semantic_contradiction(self):
         args = SimpleNamespace(jar=self.jar, derive_runtime_list=True)
         with patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \

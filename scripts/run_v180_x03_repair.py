@@ -120,6 +120,8 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
     verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
     oracle.require(oracle.digest(session / 'mods' / args.jar.name) == args.jar_sha256, 'INSTALLED_CANDIDATE_CHANGED')
     preflight()
+    measured = getattr(args, 'measurement_mode', False)
+    before = disk_snapshot(world) if measured else None
     port = smoke.allocate_port()
     configure_session(session, world, port)
     if scenario == SCENARIO:
@@ -155,6 +157,8 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
                 row['configuration'].update({path.relative_to(session).as_posix(): oracle.digest(path)
                                              for path in directory.rglob('*') if path.is_file()})
         row['manifest'] = oracle.manifest(world)
+        if measured:
+            record_stage(evidence, label, before, disk_snapshot(world))
         write_json(evidence / (label + '-invocation.json'), row)
         return process.lines, log
     finally:
@@ -240,6 +244,50 @@ def measure(check, findings, derive):
             raise
         findings.append(str(error))
         return None
+
+
+def disk_snapshot(world):
+    if not world.exists():
+        return dict(manifest={}, objects={})
+    objects = {(name, ''): root for name, root in
+               ((p.relative_to(world).as_posix(), nbt.read_gzip(p)[1])
+                for p in world.rglob('advancedrocketrycommunity_*.dat'))}
+    objects.update(oracle.chunks(world))
+    return dict(manifest=oracle.manifest(world), objects=objects)
+
+
+def record_stage(evidence, label, before, after, findings=None):
+    changes = []
+    for key in sorted(before['objects'].keys() | after['objects'].keys()):
+        left, right = before['objects'].get(key), after['objects'].get(key)
+        rows = [dict(path='', before_type=left.type if left else None, after_type=right.type if right else None)] \
+            if left is None or right is None else oracle.typed_differences(left, right)
+        changes.extend(dict(file=key[0], chunk=list(key[1:]) if len(key) == 3 else None, **row) for row in rows)
+    row = dict(stage=label, status='MEASUREMENT_ONLY', promotion_approved=False,
+               differences=oracle.differences(before['manifest'], after['manifest']),
+               manifest=after['manifest'], typed_changes=changes, contradictions=findings or [])
+    write_json(evidence / (label + '-measurement.json'), row)
+    return row
+
+
+def stage_check(args, check, findings):
+    if not getattr(args, 'measurement_mode', False):
+        return check()
+    with oracle.measurement(findings):
+        return oracle.checked(check)
+
+
+def file_check(args, before, after, findings, *, functional=False):
+    if not getattr(args, 'measurement_mode', False):
+        check = oracle.functional_boundary if functional else oracle.boundary
+        return measure(lambda: check(before, after, RUNTIME_FILES), findings, args.derive_runtime_list)
+    # Check every file separately so the first unlisted write cannot hide others.
+    check = oracle.functional_boundary if functional else oracle.boundary
+    for name in sorted(before.keys() | after.keys()):
+        try:
+            check({name: before[name]} if name in before else {}, {name: after[name]} if name in after else {}, RUNTIME_FILES)
+        except oracle.OracleError as error:
+            findings.append(dict(reason=str(error), file=name, path=':file-sha256'))
 
 
 def numeric_leaf(tag):
@@ -341,6 +389,8 @@ def repaired_cycle(args, session, evidence, number):
                 for key in ('entity', 'block', 'ledger', 'journal', 'cargo', 'tank')})
     backup = session / ('backup-' + label)
     original_hashes = copy_verified(original, backup)
+    if getattr(args, 'measurement_mode', False):
+        record_stage(evidence, label + '-backup', disk_snapshot(original), disk_snapshot(backup))
     world_size = sum(path.stat().st_size for path in original.rglob('*') if path.is_file())
     oracle.require(shutil.disk_usage(session).free >= 6 * world_size, 'INSUFFICIENT_SPACE_FOR_HARNESS_COPIES')
     planfile = evidence / (label + '-plan.json')
@@ -351,12 +401,17 @@ def repaired_cycle(args, session, evidence, number):
     # 5000/0 water pair, then logged the applied ordinary unload before the cut.
     witness = fixture_witness(baseline, transfer, evidence / (label + '-fixture-witness.json'))
     document = make_plan(args, original, backup, log, transfer, planfile, witness)
+    if getattr(args, 'measurement_mode', False):
+        record_stage(evidence, label + '-plan', disk_snapshot(original), disk_snapshot(backup))
     candidate = session / ('candidate-' + label)
     applied = repair.apply(planfile, candidate, document['digest'])
+    if getattr(args, 'measurement_mode', False):
+        record_stage(evidence, label + '-apply', disk_snapshot(backup), disk_snapshot(candidate))
     oracle.require(oracle.differences(original_hashes, oracle.manifest(candidate)) == dict(added=[], removed=[], changed=[repair.JOURNAL]),
                    'OFFLINE_EDIT_BOUNDARY')
     findings, stages, snapshots = [], [], []
     for restart in (1, 2, 3):
+        stage_findings = []
         lines, _ = start(args, session, evidence, label + '-observe-' + str(restart), candidate, 'FF_X03_OBSERVE', SCENARIO)
         state = oracle.read(candidate)
         write_json(evidence / (label + '-observe-' + str(restart) + '-raw.json'),
@@ -366,14 +421,17 @@ def repaired_cycle(args, session, evidence, number):
                                                  path=oracle.first_difference(baseline['chunks'][k], state['chunks'][k]))
                                             for k in baseline['chunks'].keys() & state['chunks'].keys()
                                             if baseline['chunks'][k] != state['chunks'][k]]))
-        oracle.observe(lines, 'FF_X03_OBSERVE', state)
+        stage_check(args, lambda: oracle.observe(lines, 'FF_X03_OBSERVE', state), stage_findings)
         # List derivation measures filenames, not exceptions to the semantic contract.
-        oracle.compare_repair(baseline, state, transfer)
+        stage_check(args, lambda: oracle.compare_repair(baseline, state, transfer), stage_findings)
         manifest = oracle.manifest(candidate)
         diff = oracle.differences(original_hashes, manifest)
-        measure(lambda: oracle.boundary(original_hashes, manifest, RUNTIME_FILES), findings, args.derive_runtime_list)
-        repair.census(planfile, candidate, evidence / (label + '-census-' + str(restart) + '.json'), True)
-        stages.append(dict(restart=restart, differences=diff, manifest=manifest))
+        file_check(args, original_hashes, manifest, stage_findings)
+        census = measure(lambda: repair.census(planfile, candidate, evidence / (label + '-census-' + str(restart) + '.json'), True),
+                         stage_findings, getattr(args, 'measurement_mode', False))
+        findings.extend(stage_findings)
+        stages.append(dict(restart=restart, differences=diff, manifest=manifest, contradictions=stage_findings, census=census))
+        write_json(evidence / (label + '-observe-' + str(restart) + '-checks.json'), stages[-1])
         if restart == 2:
             # Functional verification is a separate descendant, never promoted.
             twice = session / ('twice-' + label)
@@ -384,6 +442,7 @@ def repaired_cycle(args, session, evidence, number):
     functional = []
     before = oracle.read(descendant)
     for i, case in enumerate(DESCENDANT_SEQUENCE):
+        stage_findings = []
         lines, _ = start(args, session, evidence, label + '-functional-' + str(i), descendant, case, SCENARIO)
         state = oracle.read(descendant)
         write_json(evidence / (label + '-functional-' + str(i) + '-raw.json'),
@@ -395,17 +454,18 @@ def repaired_cycle(args, session, evidence, number):
                                             for k in before['chunks'].keys() & state['chunks'].keys()
                                             if before['chunks'][k] != state['chunks'][k]]))
         launched = i >= 2
-        oracle.check_state(state, baseline, unloaded=True, launched=launched)
-        fields = oracle.observe(lines, case, state, landed=launched)
+        stage_check(args, lambda: oracle.check_state(state, baseline, unloaded=True, launched=launched), stage_findings)
+        fields = stage_check(args, lambda: oracle.observe(lines, case, state, landed=launched), stage_findings) or {}
         if case == 'FF_X03_UNLOAD':
-            oracle.require(fields.get('switch') == 'withdrawn', 'UNLOAD_SWITCH_NOT_WITHDRAWN')
+            stage_check(args, lambda: oracle.require(fields.get('switch') == 'withdrawn', 'UNLOAD_SWITCH_NOT_WITHDRAWN'), stage_findings)
         action = 'unload' if i == 0 else 'launch' if i == 2 else None
-        oracle.compare_functional(before, state, action=action)
-        debit = oracle.launch_debit(fields, before, state) if case == 'FF_X03_LAUNCH' else None
-        measure(lambda: oracle.functional_boundary(snapshots[0], oracle.manifest(descendant), RUNTIME_FILES), findings,
-                args.derive_runtime_list)
+        stage_check(args, lambda: oracle.compare_functional(before, state, action=action), stage_findings)
+        debit = stage_check(args, lambda: oracle.launch_debit(fields, before, state), stage_findings) if case == 'FF_X03_LAUNCH' else None
+        file_check(args, snapshots[0], oracle.manifest(descendant), stage_findings, functional=True)
+        findings.extend(stage_findings)
         functional.append(dict(case=case, observation=fields, debit=debit,
-                               differences=oracle.differences(snapshots[0], oracle.manifest(descendant))))
+                               differences=oracle.differences(snapshots[0], oracle.manifest(descendant)), contradictions=stage_findings))
+        write_json(evidence / (label + '-functional-' + str(i) + '-checks.json'), functional[-1])
         before = state
     oracle.require(oracle.manifest(original) == original_hashes == oracle.manifest(backup), 'SOURCE_OR_BACKUP_CHANGED')
     row = dict(status='MEASURED_NOT_PROMOTED' if args.derive_runtime_list else 'VERIFIED_NOT_PROMOTED',
@@ -417,6 +477,8 @@ def repaired_cycle(args, session, evidence, number):
 
 
 def run(args):
+    if getattr(args, 'measurement_mode', False):
+        args.derive_runtime_list = True
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
     require_lock(args.lock_owner)
     pins = verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
@@ -496,6 +558,8 @@ def main(argv=None):
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--startup-timeout', type=float, default=420)
     parser.add_argument('--derive-runtime-list', action='store_true')
+    parser.add_argument('--measurement-mode', action='store_true',
+                        help='Collect contradictions through both sequences; never accept or promote (implies derivation).')
     try:
         run(parser.parse_args(argv))
         return 0
