@@ -162,9 +162,10 @@ public final class EscrowReconciliationGameTests {
         }
         void assertCachedBoundary() {
             var root = coordinator.ledger();
+            // Materialize ForgeData before capture so removing the probe restores the exact envelope.
+            var persistent = fixture.loader().getPersistentData();
             var view = EscrowReconciliationView.capture(helper.getLevel().getServer(), root, root.records());
             helper.assertTrue(view.current(coordinator) && view.unchanged(coordinator), "Fresh native binding is not current");
-            var persistent = fixture.loader().getPersistentData();
             persistent.putBoolean("c39_changed", true);
             helper.assertTrue(!view.current(coordinator), "Fixture mutation did not invalidate the cached binding");
             persistent.remove("c39_changed");

@@ -121,7 +121,7 @@ final class FluidFuelLoaderEscrowFixtures {
     static EscrowNativeBinding.Admission modelCapture(EscrowOperation model) {
         var wrapper = new RocketEscrowSection(null, model.rocket().beforeEpoch(), List.of());
         var b = model.nativeBinding();
-        var binding = new EscrowNativeBinding(EscrowSignatureKind.FUEL_VECTOR_V1, b.physical(), b.logical(), b.owner(), model.id(),
+        var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), b.owner(), model.id(),
                 b.beforeFrontier(), b.invariant(), b.sourceReference(), b.destinationReference(), EscrowNativeEnvelope.digest(wrapper.encode()),
                 b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(), b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
         var op = new EscrowOperation(model.id(), model.sequence(), model.owner(), model.createdTick(), model.phase(), model.reason(),
