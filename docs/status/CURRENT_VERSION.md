@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: da9b21dc3 (W379 merged, R482 to R496: X01 and X02 simulation slice S4, the gated storage fault injector `ReleaseTestStorageFault` and the X02 runner, after W379F, W379G and W379R2's approval; branch run 44251866178 and governance run 44251868134 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44262916205 at 2c1ab8d24 (W379 merged at `da9b21dc3`) passed on its first attempt: build 12.2 minutes, shards 0 to 3 in 16.0, 18.7, 20.7 and 15.9 minutes, 1,864 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44262916124 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: e00f11989 (W382 merged, R497: the fluid cargo R39 fixture replaces the ledger only under an idle writer, with a held-write GameTest; test side only; branch run 44271767659 and governance run 44271769366 passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44277202687 at 1f7fca6a5 (W382 merged at `e00f11989`) passed on its first attempt: build 11.1 minutes, shards 0 to 3 in 16.2, 19.3, 20.0 and 18.1 minutes, 1,865 GameTests, with 3, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44277202831 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
