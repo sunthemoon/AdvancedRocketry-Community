@@ -38,6 +38,9 @@ REFUSAL = re.compile(r"/ERROR\] .*\[(ARCE-BETA-\d+)\] Beta world data check bloc
 # The designed reason of an escrow-aware root-2 reader that meets root 3 (WorldDataMigrationService, FUTURE_SCHEMA).
 DESIGNED_REFUSAL = "advancedrocketrycommunity_resource_escrow uses future schema 3"
 SETTLE_TICKS = 200
+# Both endpoints of the fixture stand in chunk [4,4]; a forced chunk is loaded and entity-ticking without a probe.
+FIXTURE = [(64, 100, 64), (68, 100, 64)]
+HELD = re.compile(r"accounting=UNKNOWN_BASELINE(?:\s|$)")
 
 
 def record_digests(world):
@@ -94,16 +97,24 @@ def seed(run):
     hashes = world_hashes(backup)
     native.require(hashes == world_hashes(world), "The whole-world backup differs from the root-2 world")
     return dict(world=world, backup=backup, hashes=hashes, digests=digests, ledger_sha256=smoke.digest_file(world / "data" / LEDGER),
+                operation=accounting.identity(disk["ledger"]["records"][0]["op_id"]),
                 archive=run.capture(backup, "root2-whole-world-backup"))
 
 
-def settle(run):
-    """Let the ready server tick long enough for reconciliation to visit the open operation several times."""
+def settle(run, operation):
+    """The legacy hold, exercised: both endpoints loaded for 200 ticks (reconciliation retries every 20), the server's
+    own classification of the operation, then a full save. Without the hold the transfer would complete here, as it
+    does on the root-2 JAR."""
+    run.load(FIXTURE)
     first = run.tick(); deadline = time.monotonic() + 120
     while run.tick() - first < SETTLE_TICKS:
         native.require(time.monotonic() < deadline, "The server did not advance its game time")
         time.sleep(0.5)
+    line = run.send("arce escrow inspect " + operation, HELD, 30)
+    for x, _, z in FIXTURE[:1]:
+        run.send(f"forceload remove {x} {z}")
     run.send("save-all flush", native.SAVED, 180)
+    return dict(ticks=run.tick() - first, inspect=line.strip()[-400:])
 
 
 def check_upgraded(world, base):
@@ -128,7 +139,7 @@ def candidate_start(run, label, world, base, kill=False):
         process.process.kill(); process.abort(); run.process = None
         row["forced_stop"] = True; row["errors"] = errors(process.lines)
     else:
-        settle(run)
+        row["hold"] = settle(run, base["operation"])
         row["errors"] = errors(run.stop(label, audit=lambda lines: None))
     native.require(not row["errors"], "The candidate start logged ERROR or FATAL: " + (row["errors"] or [""])[0][:200])
     row["state"] = check_upgraded(world, base)

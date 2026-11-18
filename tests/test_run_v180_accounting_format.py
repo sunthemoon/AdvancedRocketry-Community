@@ -86,6 +86,29 @@ class AccountingFormatRunnerTest(unittest.TestCase):
             self.assertEqual(b"y", (copy / "data/other.dat").read_bytes())
             with self.assertRaisesRegex(ValueError, "Unsafe world copy"): runner.copy_world(world, copy)
 
+    def test_settling_loads_both_endpoints_waits_and_asks_the_server_for_its_classification(self):
+        calls = []; ticks = iter([1000, 1100, 1250, 1260])
+
+        def send(value, marker=None, timeout=60):
+            calls.append((value, getattr(marker, "pattern", marker)))
+            return "[12:00:00] [Server thread/INFO]: Escrow operation 1 phase=PREPARED accounting=UNKNOWN_BASELINE\n"
+
+        run = types.SimpleNamespace(load=lambda positions: calls.append(("load", positions)), tick=lambda: next(ticks), send=send)
+        with patch.object(runner.time, "sleep", lambda seconds: None):
+            hold = runner.settle(run, "00000000-0000-0000-0000-000000000001")
+        self.assertEqual(("load", runner.FIXTURE), calls[0])
+        self.assertEqual(("arce escrow inspect 00000000-0000-0000-0000-000000000001", runner.HELD.pattern), calls[1])
+        self.assertEqual([("forceload remove 64 64", None), ("save-all flush", runner.native.SAVED.pattern)], calls[2:])
+        self.assertEqual(260, hold["ticks"]); self.assertIn("accounting=UNKNOWN_BASELINE", hold["inspect"])
+        self.assertIsNotNone(runner.HELD.search("x accounting=UNKNOWN_BASELINE"))
+        for other in ("accounting=UNKNOWN", "accounting=UNKNOWN_BASELINE_X", "accounting=KNOWN"):
+            self.assertIsNone(runner.HELD.search(other))
+        stuck = types.SimpleNamespace(load=lambda positions: None, tick=lambda: 5, send=send)
+        clock = iter([0, 0, 200])
+        with patch.object(runner.time, "sleep", lambda seconds: None), patch.object(runner.time, "monotonic", lambda: next(clock)), \
+                self.assertRaisesRegex(ValueError, "did not advance"):
+            runner.settle(stuck, "x")
+
     def watch(self, directory, kind, process, prepare=lambda world: None, timeout=30):
         world = Path(directory) / "world"; (world / "data").mkdir(parents=True)
         prepare(world)
