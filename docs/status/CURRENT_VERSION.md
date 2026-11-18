@@ -551,6 +551,12 @@ What is still open:
   warm-up, and the test now waits only while that preparation exists (merged at `70745784c` after branch run
   42691451822 passed; no production finding). It stays open until later runs show no
   recurrence.
+- **Item-cargo replay mismatch GameTest (2026-11-18).** W379's first local full GameTest run failed
+  `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` at phase 14 of its
+  second direction ("A mismatched replay lost its operation or changed an endpoint"); the second run of the same
+  Java source passed all 1,863. W379's slice is not on that path, and no earlier failure of this test is recorded.
+  The log does not say which of the three checks failed. It stays open until later runs show no recurrence or a
+  cause is found; a recurrence gets its own diagnosis task.
 - **Concurrent-flight fixture wait in a branch regression (2026-11-17).** Attempt 1 of W370's branch run 44109049691
   failed `pendingSpawnDoesNotPauseAnotherCountdownAscentOrTransit` in shard 2 with "Concurrent-flight fixture
   exceeded its bounded wait". The same game code passed on the shared branch, and the run was re-run. W378 did not
