@@ -31,7 +31,7 @@ class RawOracleTest(RepairFixture):
                             current_dimension=S('advancedrocketrycommunity:moon'), current_origin=A(8, 100, 8),
                             state_started_game_time=L(201), current_target=target('advancedrocketrycommunity:moon'))
         fuel = flight.value['fuel']
-        fuel.value.update(amount=L(683), committed_debits=E(U(12)))
+        fuel.value.update(amount=L(683), committed_debits=nbt.Tag(nbt.LIST, (nbt.INTS, [U(12)])))
         fuel.value['propulsion'].value['primary'].value['amount'] = L(683)
         fuel.value['propulsion'].value['revision'] = L(2)
         after['rocket'] = nbt.plain(entity)['RocketEntityData']

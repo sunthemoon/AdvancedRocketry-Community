@@ -4,9 +4,14 @@ import sys
 import unittest
 from unittest.mock import patch
 import tempfile
+from types import SimpleNamespace
+import copy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_v180_x03_repair as runner
+from test_repair_v180_rebuild_source import RepairFixture, E
+from test_loader_cut_nbt import compound as C, section
 
 HOOKS = "-Dadvancedrocketrycommunity.releaseTestHooks=true"
 SCENARIO = "-Dadvancedrocketrycommunity.escrowScenario="
@@ -100,6 +105,45 @@ class VerificationCommandTest(unittest.TestCase):
         self.assertEqual(runner.FAMILY, row['name'])
         self.assertEqual('scripts/run_v180_x03_repair.py', row['runner'])
         self.assertEqual([], row['arguments'])
+
+
+class NativeOperationFixtureTest(RepairFixture):
+    def test_fixture_witness_is_accepted_as_confirmed_without_editing_worlds(self):
+        before = self.hashes(self.source)
+        witness = runner.fixture_witness(runner.oracle.read(self.source), self.transfer, self.base / 'witness.json')
+        plan = self.plan(witness=witness)
+        self.assertEqual('CONFIRMED', plan['body']['account']['status'])
+        self.assertEqual(0, plan['body']['account']['discrepancy'])
+        self.assertEqual(before, self.hashes(self.source))
+
+    def test_current_root_and_uninterpreted_row_refusals_are_no_effect(self):
+        args = SimpleNamespace(jar=self.jar)
+        for name, reason, mutation in (('old', 'ROOT_NOT_CURRENT', runner.old_root),
+                                       ('opaque', 'UNVALIDATED_AUTHORITY', runner.unknown_authority)):
+            row = runner.refusal(args, self.source, self.log, self.transfer, self.reports, name, reason, mutation)
+            self.assertEqual('REFUSED_AS_REQUIRED', row['status'])
+
+    def test_both_controls_detect_actual_valid_file_mutations(self):
+        root, _ = runner.nbt.chunk(self.source / 'region', 4, 4)
+        runner.nbt.write_chunk(self.source / 'region', 4, 4, root)
+        # A non-target chunk, as the real native world's spawn area supplies.
+        from test_loader_cut_nbt import region
+        original = runner.oracle.chunks(self.source)
+        terrain = {(key[1], key[2]): tag for key, tag in original.items() if key[0] == 'region/r.0.0.mca'}
+        terrain[(0, 0)] = C(sections=E(section(0, ['minecraft:air', 'minecraft:bedrock'], {})), block_entities=E())
+        region(self.source / 'region', terrain)
+        self.sync()
+        plan = self.plan()
+        runner.repair.apply(self.planfile, self.output, plan['digest'])
+        manifest = runner.oracle.manifest(self.source)
+        stopped = runner.oracle.manifest(self.output)
+        cycle = dict(baseline_manifest=manifest, stages=[{}, dict(manifest=stopped)])
+        context = dict(twice=self.output, baseline=runner.oracle.read(self.source), transfer=self.transfer)
+        session = self.base / 'controls'
+        session.mkdir()
+        results = runner.controls(None, session, self.reports, [cycle, copy.deepcopy(cycle)], context)
+        self.assertEqual(['unlisted-file', 'listed-object'], [row['control'] for row in results])
+        self.assertTrue(all(row['target_checks'] == 'PASS' and row['status'] == 'REFUSED_AS_REQUIRED' for row in results))
 
 
 if __name__ == "__main__":
