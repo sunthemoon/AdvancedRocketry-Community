@@ -78,8 +78,14 @@ class PlanTests(unittest.TestCase):
         before = dict(x01.bay.CASES)
         definite = [case for case in faults.plan(["BAY_RECEIPTS"]) if case.native == ("B", faults.BAY_FAILED_CASE)]
         self.assertEqual({case.fault for case in definite}, set(faults.BAY_DEFINITE))
-        for fault in ("MOVE_ERROR", "MOVE_DENIED", "MOVE_AFTER", "READ_ERROR", "READ_CORRUPT"):
+        for fault in ("MOVE_ERROR", "MOVE_DENIED", "READ_ERROR", "READ_CORRUPT"):
             self.assertEqual(faults.Case("BAY_RECEIPTS", fault, 1).native, ("B", "B1_MOVED"))
+        # W379F smoke 1: a move that fails after the rename commits the INTENT write without a retry, and the cut then
+        # pauses the REGISTERED write. That is the kill image of the existing cut B3_MOVED, not of B1_MOVED.
+        self.assertEqual(faults.Case("BAY_RECEIPTS", "MOVE_AFTER", 1).native, ("B", "B3_MOVED"))
+        self.assertEqual(x01.bay.CASES["B3_MOVED"], dict(cut="B3_MOVED", end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED")))
+        self.assertEqual({case.fault for case in faults.plan(["BAY_RECEIPTS"]) if case.native == ("B", "B3_MOVED") and not case.offline},
+                         {"MOVE_AFTER"})
         self.assertEqual(faults.Case("RESOURCE_ESCROW", "WRITE_ERROR", 1).native, ("F", "FC_LOAD_L1_REPLACED"))
         spec = faults.BayFailedWrite.CASES[faults.BAY_FAILED_CASE]
         self.assertEqual(spec, dict(cut=None, end="land", durable="NONE", first="LANDED_UNCONSUMED",

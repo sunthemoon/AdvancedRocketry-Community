@@ -89,6 +89,14 @@ OFFLINE_NATIVE = {
 # staging path.
 BAY_DEFINITE = ("WRITE_ERROR", "DISK_FULL", "DISK_FULL_OPEN", "FLUSH_ERROR", "CLOSE_ERROR", "LOST_WRITE", "DELETE_ERROR")
 BAY_FAILED_CASE = "X02_D1_FAILED"
+# A receipt move that fails after the rename is resolved COMMITTED by the writer's readback, without a retry. The
+# INTENT write is then complete before the cut of B1_MOVED is reached, the deployment goes on, and the armed cut
+# pauses the next receipt write, the REGISTERED one (W379F smoke 1: the kill image had a REGISTERED receipt, and the
+# restart landed where B1_MOVED expects an interrupted deployment). That image is the one of the existing cut
+# B3_MOVED, so that case and its unchanged oracle are used. The two READ faults keep the outcome unknown, the writer
+# retries the exact candidate, and B1_MOVED is reached.
+BAY_COMMITTED = ("MOVE_AFTER",)
+BAY_COMMITTED_CASE = "B3_MOVED"
 # The default campaign: every live fault once, and the write error long enough to pass the three-failure limit.
 DEFAULT_COUNTS = {fault: (1, 4) if fault == "WRITE_ERROR" else (1,) for fault in LIVE_FAULTS}
 MAX_COUNT = 16
@@ -153,6 +161,8 @@ class Case:
     def native(self) -> tuple[str, str]:
         if self.store == "BAY_RECEIPTS" and self.fault in BAY_DEFINITE:
             return "B", BAY_FAILED_CASE
+        if self.store == "BAY_RECEIPTS" and self.fault in BAY_COMMITTED:
+            return "B", BAY_COMMITTED_CASE
         return (OFFLINE_NATIVE if self.offline else LIVE_NATIVE)[self.store]
 
     @property
