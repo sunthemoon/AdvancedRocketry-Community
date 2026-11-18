@@ -14,9 +14,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.util.Unit;
 
 /**
  * X03-V (W367-DESIGN section 5.1): the gated verification mode for a repaired copy whose stale transfer record is gone.
@@ -42,6 +45,7 @@ final class EscrowCargoRepairVerifyProbe extends EscrowCargoCutProbe {
     static final int REQUESTS = 20, REQUEST_INTERVAL_TICKS = 100;
 
     private final RocketDestination route;
+    private final LandingTicket landingTicket = new LandingTicket();
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
     private RocketFluidCargoBlockEntity device;
@@ -97,14 +101,54 @@ final class EscrowCargoRepairVerifyProbe extends EscrowCargoCutProbe {
     }
     static boolean expired(long now, long since) { return now - since > WAIT_TICKS; }
 
+    /** The playerless Level stops block-entity ticks after 300 ticks, before our 400-tick settle ends. */
+    static void keepUnloadTicking(String name, int step, Runnable resetEmptyTime) {
+        if (UNLOAD.equals(name) && step >= 2 && step <= 4) { resetEmptyTime.run(); }
+    }
+
+    /** A quiet writer alone is insufficient while even a terminal flight row for this rocket survives. */
+    static boolean launchSettled(EscrowLedger ledger, UUID logical, boolean writersQuiet) {
+        return writersQuiet && ledger.armedFlights().stream().noneMatch(row -> logical.equals(row.logical()));
+    }
+
+    /** R495: a probe-owned, non-persistent landing ticket, held through pruning and the final live readback. */
+    static final class LandingTicket implements AutoCloseable {
+        private Runnable remove;
+
+        boolean observe(boolean alive, Runnable add, Runnable release) {
+            if (!alive) { return false; }
+            if (remove == null) { add.run(); remove = release; }
+            return true;
+        }
+
+        void tick(Runnable action, BooleanSupplier ended) {
+            try {
+                action.run();
+                if (ended.getAsBoolean()) { close(); }
+            } catch (RuntimeException | Error failure) {
+                try { close(); } catch (RuntimeException | Error cleanup) { failure.addSuppressed(cleanup); }
+                throw failure;
+            }
+        }
+
+        @Override public void close() {
+            if (remove != null) { remove.run(); remove = null; }
+        }
+    }
+
     @Override void checkpoint(String label) { }
 
     @Override void tick() {
+        landingTicket.tick(this::advanceTick, () -> done);
+    }
+
+    private void advanceTick() {
         if (done) { return; }
         long now = server.getTickCount();
         if (began < 0) { began = since = now; }
         EscrowTags.require(!expired(now, since), "X03 verification exceeded its bounded 6,000 ticks at step " + step);
         if (!loaded()) { return; }
+        keepUnloadTicking(name, step, level::resetEmptyTime);
         if (data == null) { data = ResourceEscrowSavedData.existing(server); } // Load-only: this mode never creates a ledger.
         if (data == null) { return; }
         var journal = RocketTransferSavedData.get(server);
@@ -152,7 +196,13 @@ final class EscrowCargoRepairVerifyProbe extends EscrowCargoCutProbe {
     /** Withdraws the switch as soon as the ledger shows the operation, as the seed fixture does. */
     private void admitted() {
         boolean recorded = data.ledger().records().stream().anyMatch(value -> value.device().identity().equals(named));
-        if (!recorded && rocket.escrowSection().epoch() == epochBefore && tank(device) == tankBefore) { return; }
+        if (!recorded && rocket.escrowSection().epoch() == epochBefore && tank(device) == tankBefore) {
+            if (server.getTickCount() % 100 == 0) {
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_X03_UNLOAD_WAIT device={} status={} game_time={} players={} forced_chunks={}",
+                        named, device.displayStatus(), level.getGameTime(), level.players().size(), level.getForcedChunks().size());
+            }
+            return;
+        }
         EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_UNLOAD, named, false);
         advance(4);
     }
@@ -182,7 +232,12 @@ final class EscrowCargoRepairVerifyProbe extends EscrowCargoCutProbe {
         if (now % 10 != 0) { return; }
         for (ServerLevel each : server.getAllLevels()) {
             for (var entity : each.getAllEntities()) {
-                if (entity instanceof RocketEntity candidate && candidate.isAlive() && arrived(candidate.flightData().orElse(null))) {
+                if (entity instanceof RocketEntity candidate && arrived(candidate.flightData().orElse(null))) {
+                    var chunk = candidate.chunkPosition();
+                    EscrowTags.require(landingTicket.observe(candidate.isAlive(),
+                            () -> each.getChunkSource().addRegionTicket(TicketType.START, chunk, 0, Unit.INSTANCE),
+                            () -> each.getChunkSource().removeRegionTicket(TicketType.START, chunk, 0, Unit.INSTANCE)),
+                            "ROCKET_READBACK_ABSENT");
                     rocket = candidate; advance(4); return;
                 }
             }
@@ -195,7 +250,7 @@ final class EscrowCargoRepairVerifyProbe extends EscrowCargoCutProbe {
 
     /** The unload's retirement, or the journal and the ledger at rest after the landing. */
     private boolean settled(RocketTransferSavedData journal, EscrowCoordinator coordinator) {
-        if (LAUNCH.equals(name)) { return quiet(journal, coordinator); }
+        if (LAUNCH.equals(name)) { return launchSettled(data.ledger(), logical, quiet(journal, coordinator)); }
         return data.ledger().records().isEmpty() && section(device).markers().isEmpty() && rocket.escrowSection().markers().isEmpty()
                 && coordinator.writerIdle();
     }

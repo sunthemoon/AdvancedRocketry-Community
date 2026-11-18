@@ -1100,5 +1100,177 @@ class RevisionTest(RepairFixture):
         self.refusal('UNVALIDATED_AUTHORITY:markers')
 
 
+class RaidClockTest(RepairFixture):
+    def raid_census(self, change):
+        for relative in repair.RAID_FILES:
+            path = self.source / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            n.write_gzip(path, b'', C(data=C(Tick=I(1), NextAvailableID=I(2)), DataVersion=I(3465)))
+        self.sync()
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        for relative in repair.RAID_FILES:
+            path = self.output / relative
+            name, root = n.read_gzip(path)
+            change(root.value['data'])
+            n.write_gzip(path, name, root)
+        return repair.census(self.planfile, self.output, self.reports / 'raids.json', True)
+
+    def test_only_forward_raid_tick_is_admitted(self):
+        self.assertEqual('SEMANTIC_CENSUS_ONLY', self.raid_census(lambda data: data.value.update(Tick=I(2)))['status'])
+
+    def test_raid_tick_cannot_decrease(self):
+        self.refusal('RAID_TICK_DECREASE_OR_TYPE', lambda: self.raid_census(lambda data: data.value.update(Tick=I(0))))
+
+    def test_raid_tick_type_cannot_change(self):
+        self.refusal('RAID_TICK_DECREASE_OR_TYPE', lambda: self.raid_census(lambda data: data.value.update(Tick=L(2))))
+
+    def test_other_raid_fields_cannot_change(self):
+        self.refusal('RAID_OBJECT_CHANGED', lambda: self.raid_census(lambda data: data.value.update(NextAvailableID=I(3))))
+
+
+class BookkeepingClockTest(RepairFixture):
+    def clock_census(self, observed=20, logical=20, extra=None, root_key='satellite_missions'):
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        path = self.output / ('data/advancedrocketrycommunity_' + root_key + '.dat')
+        name, root = n.read_gzip(path)
+        data = root.value['data']
+        if root_key != 'satellite_missions':
+            data.value['clock'] = C(logical_game_time=L(0), last_observed_game_time=L(0))
+        data.value['clock'].value['logical_game_time'].value = logical
+        data.value['clock'].value['last_observed_game_time'].value = observed
+        if extra:
+            extra(data)
+        n.write_gzip(path, name, root)
+        return repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True)
+
+    def test_forward_equal_clock_step_is_accepted(self):
+        self.assertEqual('SEMANTIC_CENSUS_ONLY', self.clock_census()['status'])
+
+    def test_decreased_observed_time_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(-1, -1))
+
+    def test_unequal_clock_increases_are_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(20, 19))
+
+    def test_clock_step_with_changed_epoch_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(extra=lambda data: data.value.update(save_epoch=L(2))))
+
+    def test_clock_step_with_other_changed_field_is_rejected(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(extra=lambda data: data.value.update(other=I(1))))
+
+    def test_same_paths_in_another_root_are_not_exempt(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(root_key='endgame'))
+
+    def test_clock_scalar_type_change_is_not_exempt(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clock_census(
+            extra=lambda data: data.value['clock'].value.update(logical_game_time=I(20))))
+
+    def clockless_census(self, clock, change=None):
+        """W380R finding 5. The planner's own framing refuses a satellite clock without its two LONG leaves
+        (UNSUPPORTED_OBJECT_FIELDS or INVALID_NBT_TYPE), so census can meet such a root only behind a plan
+        that framing did not make. That framing is patched out here to reach the census comparison itself."""
+        self.data['satellite_missions'].value['clock'] = clock
+        self.write_roots()
+        self.sync()
+        with self.assertRaises(repair.Refusal):
+            self.plan()
+        self.assertFalse(self.planfile.exists())
+        with patch.object(repair, 'authority_collections'):
+            document = self.plan()
+            repair.apply(self.planfile, self.output, document['digest'])
+            if change:
+                path = self.output / 'data/advancedrocketrycommunity_satellite_missions.dat'
+                name, root = n.read_gzip(path)
+                change(root.value['data'])
+                n.write_gzip(path, name, root)
+            return repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True)
+
+    def test_unchanged_satellite_root_without_the_clock_leaves_is_equal(self):
+        for clock in (C(), C(logical_game_time=L(0)), C(logical_game_time=I(0), last_observed_game_time=I(0))):
+            with self.subTest(clock=sorted(clock.value)):
+                self.seed()
+                for stale in (self.planfile, self.reports / 'clock-census.json'):
+                    stale.unlink(missing_ok=True)
+                if self.output.exists():
+                    shutil.rmtree(self.output)
+                self.assertEqual('SEMANTIC_CENSUS_ONLY', self.clockless_census(clock)['status'])
+
+    def test_changed_satellite_root_without_the_clock_leaves_still_refuses(self):
+        self.refusal('MANAGED_ROOT_CHANGED', lambda: self.clockless_census(
+            C(), lambda data: data.value['save_epoch'].__setattr__('value', 2)))
+
+    def test_changed_ordinary_root_still_refuses_after_the_equal_first_return(self):
+        document = self.plan()
+        repair.apply(self.planfile, self.output, document['digest'])
+        path = self.output / 'data/advancedrocketrycommunity_endgame.dat'
+        name, root = n.read_gzip(path)
+        root.value['data'].value['save_epoch'].value = 2
+        n.write_gzip(path, name, root)
+        self.refusal('MANAGED_ROOT_CHANGED:data/advancedrocketrycommunity_endgame.dat',
+                     lambda: repair.census(self.planfile, self.output, self.reports / 'clock-census.json', True))
+
+
+class Revision3Test(RepairFixture):
+    def test_mixed_fence_sequence_binds_whole_log_and_first_floor_conflict(self):
+        floor = self.log.read_text(encoding='utf-8').rstrip('\n')
+        transient = floor.replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED')
+        first_floor = 'first ' + floor
+        self.log.write_text('\n'.join((transient, first_floor, transient, 'later ' + floor, transient)) + '\n',
+                            encoding='utf-8')
+        evidence = self.plan()['body']['fence']
+        self.assertEqual(first_floor, evidence['line'])
+        self.assertEqual(repair.file_digest(self.log), evidence['sha256'])
+
+    def test_transient_fence_for_another_transfer_refuses(self):
+        floor = self.log.read_text(encoding='utf-8')
+        other = floor.replace(self.transfer, str(uuid.UUID(int=99))).replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED')
+        self.log.write_text(floor + other, encoding='utf-8')
+        self.refusal('OTHER_TRANSFER_FENCED', lambda: repair.fence(self.log, self.transfer))
+
+    def test_other_derived_fence_reason_refuses_even_with_floor_conflict(self):
+        floor = self.log.read_text(encoding='utf-8')
+        self.log.write_text(floor + floor.replace('FLOOR_CONFLICT', 'WAITING_UNLOADED'), encoding='utf-8')
+        self.refusal('FENCE_REASON_DIFFERS', lambda: repair.fence(self.log, self.transfer))
+
+    def test_only_transient_fences_refuse(self):
+        self.log.write_text(self.log.read_text(encoding='utf-8').replace('FLOOR_CONFLICT', 'ENDPOINT_JOIN_PROOF_REQUIRED') * 2,
+                            encoding='utf-8')
+        self.refusal('FENCE_EVIDENCE_MISSING', lambda: repair.fence(self.log, self.transfer))
+
+    def test_no_fence_lines_refuses(self):
+        self.log.write_text('unrelated server output\n', encoding='utf-8')
+        self.refusal('FENCE_EVIDENCE_MISSING', lambda: repair.fence(self.log, self.transfer))
+
+    def test_zero_byte_regions_stay_hashed_in_plan_apply_and_census(self):
+        names = [kind + '/r.1.1.mca' for kind in ('region', 'entities', 'poi')]
+        for relative in names:
+            path = self.source / relative
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(b'')
+        self.sync()
+        document = self.plan()
+        for relative in names:
+            self.assertEqual(0, document['body']['manifest'][relative]['size'])
+            self.assertEqual(n.digest(b''), document['body']['manifest'][relative]['sha256'])
+        repair.apply(self.planfile, self.output, document['digest'])
+        census = repair.census(self.planfile, self.output, self.reports / 'census.json')
+        for relative in names:
+            self.assertEqual(document['body']['manifest'][relative], census['manifest'][relative])
+            self.assertEqual(b'', (self.output / relative).read_bytes())
+
+    def test_short_nonempty_regions_refuse_but_full_empty_header_is_valid(self):
+        for kind in ('region', 'entities', 'poi'):
+            path = self.source / kind / 'r.1.1.mca'
+            path.parent.mkdir(exist_ok=True)
+            for size in (1, 8191):
+                with self.subTest(kind=kind, size=size):
+                    path.write_bytes(bytes(size))
+                    self.refusal('CORRUPT_REGION')
+            path.write_bytes(bytes(8192))
+            self.inspect()
+
+
 if __name__ == '__main__':
     unittest.main()

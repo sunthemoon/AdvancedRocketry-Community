@@ -86,7 +86,7 @@ class PlanTest(unittest.TestCase):
         # W339 adds 17 W336 families; W345 appends six R-042 cases after those 51, and W346 one save-boundary
         # family after them.
         # W358's six and W363's three native gap families (R451 removed W358_B6_BOUND), then W360's four R-042 cases.
-        self.assertEqual(len(rows), 71)
+        self.assertEqual(len(rows), 72)  # W380: independent whole-world X03 repair.
 
     def test_dry_run_plan_reports_ordinary_f9_as_not_covered_in_its_family(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(campaign, "resolve_commit", return_value=SOURCE), \
@@ -95,7 +95,7 @@ class PlanTest(unittest.TestCase):
             args = arguments(Path(directory), dry_run=True)
             self.assertEqual(campaign.run_campaign(args), 0)
             plan = json.loads((args.evidence_root / "plan.json").read_text(encoding="utf-8"))
-            self.assertEqual(len(plan["families"]), 71)
+            self.assertEqual(len(plan["families"]), 72)
             row = next(item for item in plan["families"] if item["name"] == "cargo-B3-S6-REUSE")
             self.assertEqual(len(row["cases"]), 96)
             self.assertEqual(row["cases"], list(campaign.cargo.REUSE["B3-S6-REUSE"][1]))
@@ -138,9 +138,9 @@ class PlanTest(unittest.TestCase):
         self.assertEqual([row["name"] for row in rows[51:57]], ["r042-" + case for case in expected])
         added = ["X_BAY", "X_LEDGER", "R031_FUTURE", "R031_INVALID"]
         # The nine bay uncovered-row families are rows 58 to 66; W360's four R-042 cases follow them.
-        selected = rows[51:57] + rows[67:]
+        selected = rows[51:57] + rows[67:71]
         self.assertEqual(Counter(row["r042_case"] for row in selected), Counter(campaign.r042.CASES.keys()))
-        self.assertEqual([row["name"] for row in rows[67:]], ["r042-" + case for case in added])
+        self.assertEqual([row["name"] for row in rows[67:71]], ["r042-" + case for case in added])
         for row, case in zip(selected, expected + added):
             self.assertEqual(row["runner"], "scripts/run_v180_r042_native.py")
             self.assertEqual(row["cases"], [case])
@@ -215,8 +215,8 @@ class PlanTest(unittest.TestCase):
             self.assertEqual(plan["requirements"], [])
             modules = {"scripts/" + Path(module.__file__).name: module for module in (
                 campaign.forced, campaign.save_boundary, campaign.uncovered, campaign.released, campaign.exits, campaign.cargo,
-                campaign.timing, campaign.saturation, campaign.downgrade, campaign.r042)}
-            self.assertEqual(len(plan["families"]), 71)
+                campaign.timing, campaign.saturation, campaign.downgrade, campaign.r042, campaign.x03)}
+            self.assertEqual(len(plan["families"]), 72)
             for row in plan["families"]:
                 command = row["command"]
                 module = campaign.cargo if command[2] == campaign.SELF else modules[command[2]]
@@ -578,8 +578,8 @@ class ExecutionTest(unittest.TestCase):
             plan = json.loads((root / "plan.json").read_text())
             self.assertEqual(json.loads(output.getvalue()), plan)
             # W345 adds six R-042 families to W339's 51, and W346 one more, without executing any of them.
-            self.assertEqual(len(plan["families"]), 71)
-            self.assertEqual(len(list(root.glob("*/invocation.json"))), 71)
+            self.assertEqual(len(plan["families"]), 72)
+            self.assertEqual(len(list(root.glob("*/invocation.json"))), 72)
             self.assertEqual(json.loads((root / "campaign-attempt1.done").read_text())["status"], "DRY_RUN")
             self.assertTrue(all(row["command"] for row in plan["families"]))
 

@@ -289,6 +289,85 @@ class EscrowCargoCutProbeTest {
         assertTrue(code.contains("EscrowTestEndpoints.requireEnabled(server)"));
     }
 
+    @Test void verificationLaunchWaitsForTerminalAuthorityPruningAndQuietWriters() {
+        var initial = GovernedTransferFixture.create().record();
+        var arm = initial.nativeTransfer().orElseThrow().armed();
+        var empty = EscrowLedger.empty(arm.ledger()).generation(arm.generation() - 1);
+        var terminal = EscrowCargoFlightCuts.governedRoot(empty, initial, true);
+        assertEquals(EscrowFlightTables.Outcome.HANDED_OFF, terminal.armedFlights().get(0).outcome());
+        assertFalse(EscrowCargoRepairVerifyProbe.launchSettled(terminal, arm.logical(), true));
+        assertFalse(EscrowCargoRepairVerifyProbe.launchSettled(empty, arm.logical(), false));
+        assertTrue(EscrowCargoRepairVerifyProbe.launchSettled(empty, arm.logical(), true));
+        assertTrue(EscrowCargoRepairVerifyProbe.launchSettled(terminal, UUID.randomUUID(), true));
+    }
+
+    @Test void verificationUnloadKeepsTheOrdinaryPacerRunningAfterThePlayerlessSettle() throws Exception {
+        var pacer = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer.loadedAt(0);
+        int[] emptyTime = {400};
+        int attempts = 0;
+        for (int tick = 400; tick <= 440; tick++) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking("FF_X03_UNLOAD", 3, () -> emptyTime[0] = 0);
+            if (emptyTime[0]++ < 300 && pacer.tryStart(tick)) { attempts++; }
+        }
+        assertEquals(3, attempts, "The real 20-tick pacer must run after the 400-tick playerless settle");
+        for (String name : List.of("FF_X03_OBSERVE", "FF_X03_LAUNCH", "FF_REBUILD_SOURCE")) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking(name, 3, () -> fail("Other cases must not reset the Level"));
+        }
+        for (int step : List.of(0, 1, 5)) {
+            EscrowCargoRepairVerifyProbe.keepUnloadTicking("FF_X03_UNLOAD", step, () -> fail("Outside the unload interval"));
+        }
+        String source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowCargoRepairVerifyProbe.java"));
+        assertTrue(source.contains("keepUnloadTicking(name, step, level::resetEmptyTime)"));
+        assertTrue(source.contains("launchSettled(data.ledger(), logical, quiet(journal, coordinator))"));
+    }
+
+    @Test void verificationLandingTicketIsAddedOnceAndHeldThroughTheFinalObservation() {
+        var ticket = new EscrowCargoRepairVerifyProbe.LandingTicket();
+        var calls = new java.util.ArrayList<String>();
+        assertTrue(ticket.observe(true, () -> calls.add("add"), () -> calls.add("remove")));
+        assertTrue(ticket.observe(true, () -> fail("A second landing ticket"), () -> fail("A second removal")));
+        ticket.tick(() -> calls.add("pruning"), () -> false);
+        ticket.tick(() -> {
+            assertEquals(List.of("add", "pruning"), calls);
+            calls.add("live-readback");
+        }, () -> true);
+        assertEquals(List.of("add", "pruning", "live-readback", "remove"), calls);
+        ticket.close();
+        assertEquals(4, calls.size(), "Completion removes the ticket exactly once");
+    }
+
+    @Test void verificationLandingTicketIsRemovedOnFailureWithoutSwallowingIt() {
+        for (Throwable failure : List.of(new IllegalArgumentException("save refused"), new AssertionError("readback failed"))) {
+            var ticket = new EscrowCargoRepairVerifyProbe.LandingTicket();
+            var calls = new java.util.ArrayList<String>();
+            ticket.observe(true, () -> calls.add("add"), () -> calls.add("remove"));
+            Throwable thrown = assertThrows(failure.getClass(), () -> ticket.tick(() -> {
+                if (failure instanceof Error error) { throw error; }
+                throw (RuntimeException) failure;
+            }, () -> false));
+            assertSame(failure, thrown);
+            assertEquals(List.of("add", "remove"), calls);
+            ticket.close();
+            assertEquals(2, calls.size());
+        }
+    }
+
+    @Test void verificationAbsentLandingNeverAddsATicketOrBecomesALiveObservation() throws Exception {
+        var ticket = new EscrowCargoRepairVerifyProbe.LandingTicket();
+        assertFalse(ticket.observe(false, () -> fail("An absent rocket cannot acquire a ticket"),
+                () -> fail("No ticket was acquired")));
+        ticket.tick(() -> { }, () -> true);
+        String source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowCargoRepairVerifyProbe.java"));
+        assertTrue(source.contains("landingTicket.tick(this::advanceTick, () -> done)"));
+        assertTrue(source.contains("landingTicket.observe(candidate.isAlive(),"));
+        assertTrue(source.contains("addRegionTicket(TicketType.START, chunk, 0, Unit.INSTANCE)"));
+        assertTrue(source.contains("removeRegionTicket(TicketType.START, chunk, 0, Unit.INSTANCE)"));
+        assertTrue(source.contains("\"ROCKET_READBACK_ABSENT\""));
+        assertTrue(source.contains("if (rocket == null || !rocket.isAlive()) { text.append(\" rocket=absent\"); }"));
+    }
+
     @Test void theJournalSeamIsInertOutsideItsTwoStartCases() {
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS);
         assertSame(policy, EscrowCargoCutProbe.journalPolicy(null, policy));
