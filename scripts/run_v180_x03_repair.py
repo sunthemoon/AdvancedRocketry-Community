@@ -98,6 +98,17 @@ def transfer_id(world):
     return str(uuid.UUID(bytes=b''.join((word & 0xffffffff).to_bytes(4, 'big') for word in words)))
 
 
+def configure_session(session, world, port):
+    # The smoke helper creates an immutable startup-properties witness. It is
+    # a session operation, not a per-restart operation.
+    if not (session / 'eula.txt').exists():
+        smoke.write_server_configuration(session, port, True)
+    properties = smoke.expected_server_properties(port, True)
+    properties.update({'level-name': world.name, 'level-type': 'minecraft:flat', 'max-tick-time': '60000',
+                       'generator-settings': json.dumps({'layers': [{'block': 'minecraft:bedrock', 'height': 1}], 'biome': 'minecraft:plains'})})
+    (session / 'server.properties').write_text(''.join(f'{k}={v}\n' for k, v in sorted(properties.items())), encoding='ascii')
+
+
 def start(args, session, evidence, label, world, case, scenario, *, forced=False):
     require_lock(args.lock_owner)
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
@@ -105,11 +116,7 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
     oracle.require(oracle.digest(session / 'mods' / args.jar.name) == args.jar_sha256, 'INSTALLED_CANDIDATE_CHANGED')
     preflight()
     port = smoke.allocate_port()
-    smoke.write_server_configuration(session, port, True)
-    properties = smoke.expected_server_properties(port, True)
-    properties.update({'level-name': world.name, 'level-type': 'minecraft:flat', 'max-tick-time': '60000',
-                       'generator-settings': json.dumps({'layers': [{'block': 'minecraft:bedrock', 'height': 1}], 'biome': 'minecraft:plains'})})
-    (session / 'server.properties').write_text(''.join(f'{k}={v}\n' for k, v in sorted(properties.items())), encoding='ascii')
+    configure_session(session, world, port)
     if scenario == SCENARIO:
         command = verification_command(args.java, case, ROUTE if case == 'FF_X03_LAUNCH' else None)
         expected = marker(case)

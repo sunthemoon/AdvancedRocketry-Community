@@ -20,6 +20,18 @@ ROUTE = "-Dadvancedrocketrycommunity.escrowVerifyRoute="
 
 
 class VerificationCommandTest(unittest.TestCase):
+    def test_restarts_reuse_the_session_startup_properties_witness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = Path(directory)
+            runner.configure_session(session, session / 'first-world', 25565)
+            witness = session / 'server.properties.v002-startup'
+            original = witness.read_bytes()
+            runner.configure_session(session, session / 'second-world', 25566)
+            self.assertEqual(original, witness.read_bytes())
+            properties = runner.smoke.parse_java_properties((session / 'server.properties').read_bytes())
+            self.assertEqual('second-world', properties['level-name'])
+            self.assertEqual('25566', properties['server-port'])
+
     def test_each_case_sets_the_hooks_the_verify_scenario_and_exactly_that_case(self):
         self.assertEqual(["FF_X03_LAUNCH", "FF_X03_OBSERVE", "FF_X03_UNLOAD"], sorted(runner.CASES))
         for case in runner.CASES:
