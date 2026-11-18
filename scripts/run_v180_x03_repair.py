@@ -135,6 +135,11 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
         oracle.require(not any('/ERROR]' in line or '/FATAL]' in line for line in process.lines), 'NATIVE_ERROR:' + label)
         row['status'] = 'STOPPED'
         row['log_sha256'] = oracle.digest(log)
+        row['configuration'] = {'server.properties': oracle.digest(session / 'server.properties')}
+        for directory in (session / 'config', world / 'serverconfig'):
+            if directory.is_dir():
+                row['configuration'].update({path.relative_to(session).as_posix(): oracle.digest(path)
+                                             for path in directory.rglob('*') if path.is_file()})
         row['manifest'] = oracle.manifest(world)
         write_json(evidence / (label + '-invocation.json'), row)
         return process.lines, log
@@ -159,6 +164,22 @@ def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE'):
 def make_plan(args, source, backup, log, transfer, report, witness=None):
     return repair.plan(source, backup, args.jar, log, report, transfer, repair.PROFILE_DISABLED,
                        'W380 native harness', 'X03 whole-world copy repair; no resource reconstruction', witness)
+
+
+def fixture_witness(state, transfer, path):
+    def uuid_text(words):
+        return str(uuid.UUID(bytes=b''.join((word & 0xffffffff).to_bytes(4, 'big') for word in words)))
+    identity = oracle.identity(state)
+    identity = {key: uuid_text(value) if isinstance(value, list) else value for key, value in identity.items()}
+    identity.update(transfer=transfer, ledger=uuid_text(state['ledger']['ledger_id']))
+    # These before-values describe the pinned native fixture's create() call,
+    # not an inference that an operator's historical journal is a baseline.
+    # Both protected restart files independently prove its physical after-pair.
+    oracle.require((state['cargo'], state['tank']) == (4000, 1000), 'WITNESS_ENDPOINTS')
+    body = dict(version=1, identity=identity, fluid='minecraft:water', native_tag='absent', before=[5000, 0], after=[4000, 1000])
+    raw = json.dumps(body, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False).encode('ascii')
+    write_json(path, dict(body=body, sha256=nbt.digest(raw)))
+    return path
 
 
 def refusal(args, source, log, transfer, evidence, name, reason, mutate=None, exact=False):
@@ -303,7 +324,8 @@ def repaired_cycle(args, session, evidence, number):
                         'UNVALIDATED_AUTHORITY', unknown_authority)]
     # The seed's ordinary fixture is the numeric before-witness. It created a
     # 5000/0 water pair, then logged the applied ordinary unload before the cut.
-    document = make_plan(args, original, backup, log, transfer, planfile)
+    witness = fixture_witness(baseline, transfer, evidence / (label + '-fixture-witness.json'))
+    document = make_plan(args, original, backup, log, transfer, planfile, witness)
     candidate = session / ('candidate-' + label)
     applied = repair.apply(planfile, candidate, document['digest'])
     oracle.require(oracle.differences(original_hashes, oracle.manifest(candidate)) == dict(added=[], removed=[], changed=[repair.JOURNAL]),
@@ -396,10 +418,15 @@ def run(args):
         keep, transfer, log = seed_world(args, session, evidence, 'keep-source', 'FF_KEEP_SOURCE')
         report['refusals'] = [refusal(args, keep, log, transfer, evidence, 'keep-source',
                                      'DESTINATION_IN_TARGET_CHUNK', exact=True)]
+        contexts = []
         for number in (1, 2):
             row, context = repaired_cycle(args, session, evidence, number)
             report['cycles'].append(row)
+            contexts.append(context)
             write_json(evidence / 'results.json', report)
+        for row, context in zip(report['cycles'], contexts):
+            oracle.require(oracle.manifest(context['original']) == row['baseline_manifest'] == oracle.manifest(context['backup']),
+                           'SOURCE_OR_BACKUP_CHANGED_AFTER_ALL_RUNS')
         if args.derive_runtime_list:
             report['status'] = 'MEASURED_NOT_PROMOTED'
         else:
@@ -417,6 +444,11 @@ def run(args):
                            and oracle.manifest(preserved) == original_before
                            and oracle.manifest(context['backup']) == original_before, 'PROMOTION_COPY_DIFFERS')
             report['whole_world_replacement'] = dict(status='REPLACED_COMPLETE_COPY', manifest=expected)
+            lines, _ = start(args, session, evidence, 'promoted-observe', context['original'], 'FF_X03_OBSERVE', SCENARIO)
+            oracle.observe(lines, 'FF_X03_OBSERVE', oracle.read(context['original']))
+            coordinator(context, context['original'], original_before)
+            oracle.require(oracle.manifest(preserved) == original_before == oracle.manifest(context['backup']),
+                           'PRESERVED_ORIGINAL_OR_BACKUP_CHANGED')
             report['status'] = 'PASS_DEVELOPMENT_ROOT_2'
     except BaseException as error:
         report.update(status='FAILED', error=str(error))

@@ -378,6 +378,9 @@ def validate_new_functional_root(name, root, event):
     require(set(root.value) == {'data', 'DataVersion'} and root.value['DataVersion'].type == nbt.INT
             and root.value['DataVersion'].value == 3465, 'NEW_MANAGED_ROOT_WRAPPER')
     data = nbt.plain(root)['data']
+    typed_data = root.value['data']
+    require(typed_data.type == nbt.COMPOUND and typed_data.value['schema_version'].type == nbt.INT
+            and typed_data.value['format_epoch'].type == nbt.STRING, 'NEW_MANAGED_ROOT_TYPES')
     if name.endswith('_stations.dat'):
         require(set(data) == {'schema_version', 'format_epoch', 'stations', 'reservations', 'warp_energy', 'orbital_clock', 'classic_first_warp'}
                 and data['schema_version'] == 5 and data['format_epoch'] == 'v1.8.0-station-first-warp'
@@ -385,12 +388,17 @@ def validate_new_functional_root(name, root, event):
                 and set(data['orbital_clock']) == {'schema_version', 'logical_tick'}
                 and data['orbital_clock']['schema_version'] == 1 and data['orbital_clock']['logical_tick'] >= 0
                 and data['classic_first_warp'] == dict(schema_version=1, state='EMPTY'), 'NEW_STATION_AUTHORITY')
+        require(all(typed_data.value[key].type == nbt.LIST for key in ('stations', 'reservations', 'warp_energy'))
+                and typed_data.value['orbital_clock'].type == typed_data.value['classic_first_warp'].type == nbt.COMPOUND
+                and typed_data.value['orbital_clock'].value['logical_tick'].type == nbt.LONG, 'NEW_STATION_TYPES')
     elif name.endswith('_classic_progression.dat'):
         require(set(data) == {'schema_version', 'format_epoch', 'first_moon_landing', 'first_station_warp'}
                 and data['schema_version'] == 1 and data['format_epoch'] == 'v1.8.0-classic-progression'
                 and data['first_station_warp'] == dict(occurred=0)
                 and set(data['first_moon_landing']) == {'occurred', 'event'}
                 and data['first_moon_landing']['occurred'] == 1, 'NEW_CLASSIC_AUTHORITY')
+        require(all(typed_data.value[key].type == nbt.COMPOUND and typed_data.value[key].value['occurred'].type == nbt.BYTE
+                    for key in ('first_moon_landing', 'first_station_warp')), 'NEW_CLASSIC_TYPES')
         equal(root.value['data'].value['first_moon_landing'].value['event'], event, 'first-moon-receipt')
     else:
         raise OracleError('UNEXPECTED_NEW_ROOT:' + name)
