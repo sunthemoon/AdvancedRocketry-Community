@@ -23,6 +23,30 @@ def seed():
 
 
 class FlightOracleTests(unittest.TestCase):
+    def test_root3_prearm_uses_the_versioned_reader_and_keeps_exact_native_authority(self):
+        import escrow_accounting as accounting
+        from test_escrow_accounting_readers import fixture
+        image = seed(); root = image["native"]["ledger"]
+        root.update(schema_version=3, format_epoch=accounting.EPOCHS[3], fluid_accounts=[])
+        identity = flight.check(image, 0)["identity"]
+        for restart in (1, 2):
+            self.assertEqual(identity, flight.check(image, restart, identity)["identity"])
+        for mutate in (
+                lambda r: r.update(schema_version=4),
+                lambda r: r.update(format_epoch=accounting.EPOCHS[2]),
+                lambda r: r.pop("fluid_accounts"),
+                lambda r: r.update(fluid_accounts=[flight.nbt.plain(fixture("fuel-planned"))["fluid_accounts"][0]]),
+                lambda r: r.update(writer_generation=4),
+                lambda r: r.update(issued_launch_serial=1),
+                lambda r: r["floors"].append({})):
+            changed = copy.deepcopy(image); mutate(changed["native"]["ledger"])
+            with self.assertRaises(SmokeError): flight.check(changed, 0)
+        for mutate in (
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=3999),
+                lambda d: d["source"]["RocketEntityData"]["flight_data"]["fuel"].update(amount=999)):
+            changed = copy.deepcopy(image); mutate(changed["native"])
+            with self.assertRaises(SmokeError): flight.check(changed, 0)
+
     def test_armed_cuts_require_one_complete_staged_witness_before_the_pause(self):
         cut = "LF_S6_F1_ARM_REPLACED"
         baseline = "ARCE_LOADER_S6_FLIGHT_FILLED cut=" + cut + " operation=o source=s logical=l owner=u ledger=d source_digest=" + "a"*64 + " tank=4000 bank=1000 epoch=1"
