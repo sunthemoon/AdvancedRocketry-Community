@@ -162,6 +162,14 @@ def observe(case, plan, start, lines):
     return result
 
 
+def check_cargo(disk, plan, start):
+    """The account oracle on one decoded cargo state: the device is the source of a load, the rocket of an unload."""
+    source, destination = (disk["device"], disk["rocket"]) if plan["load"] else (disk["rocket"], disk["device"])
+    summary = oracle.check_state(disk["ledger"], source, destination, plan["states"][start])
+    oracle.require(disk["journal"] == 0, "A cargo accounting cut left a transfer journal record")
+    return summary
+
+
 def run_cargo(run, case, plan, row):
     """The three starts of one cargo case. A failed start stops the case; an oracle finding does not hide later starts."""
     world = run.session / ("world-" + case)
@@ -189,9 +197,7 @@ def run_cargo(run, case, plan, row):
             raw.write_text(json.dumps(disk, indent=1), encoding="utf-8")
             entry["raw"] = dict(file=raw.name, sha256=digest(raw))
             entry["observation"] = observe(case, plan, start, process.lines)
-            source, destination = (disk["device"], disk["rocket"]) if plan["load"] else (disk["rocket"], disk["device"])
-            entry["oracle"] = oracle.check_state(disk["ledger"], source, destination, plan["states"][start])
-            oracle.require(disk["journal"] == 0, "A cargo accounting cut left a transfer journal record")
+            entry["oracle"] = check_cargo(disk, plan, start)
             if roots and roots[-1] is not None and disk["ledger"] is not None:
                 oracle.check_progress(roots[-1], disk["ledger"])
             roots.append(disk["ledger"])

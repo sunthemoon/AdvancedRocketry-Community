@@ -29,9 +29,8 @@ def key_digest(fluid):
 
 
 def store(fluid=None, amount=0, epoch=0, markers=0):
-    """One raw endpoint store: its fluids, its saved resource epoch and how many markers it may hold."""
-    return dict(fluids={fluid: amount} if amount else {}, epoch=epoch,
-                markers=tuple(markers) if isinstance(markers, (tuple, list)) else (markers,))
+    """One raw endpoint store: its fluids, its saved resource epoch and its exact marker count."""
+    return dict(fluids={fluid: amount} if amount else {}, epoch=epoch, markers=markers)
 
 
 def row(scope, fluid, source, destination, frozen=None, knowledge=KNOWN, quantity=QUANTITY):
@@ -89,7 +88,8 @@ def check_store(name, got, want):
     require(got is not None, f"The {name} store is missing")
     require(got["fluids"] == want["fluids"], f"Raw {name} amounts differ: {got['fluids']}, expected {want['fluids']}")
     require(got["epoch"] == want["epoch"], f"Raw {name} epoch differs: {got['epoch']}, expected {want['epoch']}")
-    require(got["markers"] in want["markers"], f"Raw {name} marker count differs: {got['markers']}, expected one of {want['markers']}")
+    require(type(got["markers"]) is int and got["markers"] == want["markers"],
+            f"Raw {name} marker count differs: {got['markers']}, expected {want['markers']}")
 
 
 def check_plan(spec, source, destination):
@@ -204,8 +204,9 @@ def ordinary(cut):
     elif cut in ("C6_JOINT_READBACK", "E4L2_UNKNOWN"):
         first = _expect(["PREPARED"], [PLANNED], [], _ends(TOTAL - QUANTITY, QUANTITY, 1, 1), 1, "PLAN")
     elif cut in ("L2_REPLACED", "C7_ACKNOWLEDGED"):
-        # The row left with its operation; the stores were last written with their markers, or already pruned.
-        first = _expect([], [], [], _ends(TOTAL - QUANTITY, QUANTITY, 1, (0, 1)), 1, "NONE")
+        # The row left with its operation. Both cuts stop before the acknowledged retirement calls pruning, so each
+        # store still holds exactly its one marker; a store without it was pruned before its acknowledgement.
+        first = _expect([], [], [], _ends(TOTAL - QUANTITY, QUANTITY, 1, 1), 1, "NONE")
     else:
         raise SmokeError("No ordinary accounting expectation for " + cut)
     return [first, RETIRED, RETIRED]

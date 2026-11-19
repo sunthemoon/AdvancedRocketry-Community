@@ -106,6 +106,37 @@ class AccountingCutsRunnerTest(unittest.TestCase):
         for fluid in (dict(FluidName=oracle.WATER, Amount=1000, Tag={}), dict(FluidName=oracle.WATER, Amount=0), dict(Amount=5)):
             with self.assertRaisesRegex(SmokeError, "malformed or tagged"): runner.fluid_store(fluid, section)
 
+    def test_an_l2_cut_refuses_a_pruned_marker_on_either_endpoint_in_both_directions(self):
+        """W373C, review finding 2: zero markers, or one-sided pruning, at L2_REPLACED and C7_ACKNOWLEDGED."""
+        import run_v180_escrow_forced_stop as forced
+        root = forced.ledger(REPO / "tests/fixtures/escrow_accounting/cargo-planned.dat"); root.update(records=[], fluid_accounts=[])
+
+        def disk(load, device_markers, rocket_markers, epoch=1):
+            device = dict(fluids={oracle.WATER: 4000 if load else 1000}, epoch=epoch, markers=device_markers)
+            rocket = dict(fluids={oracle.WATER: 1000 if load else 4000}, epoch=epoch, markers=rocket_markers)
+            return dict(ledger=root, device=device, rocket=rocket, journal=0)
+
+        for direction in ("LOAD", "UNLOAD"):
+            load = direction == "LOAD"
+            for cut in ("L2_REPLACED", "C7_ACKNOWLEDGED"):
+                plan = runner.spec(f"FC_{direction}_{cut}")
+                with self.subTest(direction=direction, cut=cut):
+                    self.assertEqual(0, runner.check_cargo(disk(load, 1, 1), plan, 0)["rows"])
+                    for device, rocket in ((0, 0), (0, 1), (1, 0)):
+                        # The message names the side that lost its marker, through the direction's own mapping;
+                        # the source is checked first, so it is named when both sides lost theirs.
+                        lost = "device" if device == 0 else "rocket"
+                        side = "source" if device == rocket or (lost == "device") == load else "destination"
+                        with self.assertRaisesRegex(SmokeError, f"Raw {side} marker count differs: 0, expected 1"):
+                            runner.check_cargo(disk(load, device, rocket), plan, 0)
+                    for start in (1, 2):
+                        runner.check_cargo(disk(load, 0, 0), plan, start)
+                        for device, rocket in ((1, 1), (0, 1), (1, 0)):
+                            with self.assertRaisesRegex(SmokeError, "marker count differs: 1, expected 0"):
+                                runner.check_cargo(disk(load, device, rocket), plan, start)
+                    with self.assertRaisesRegex(SmokeError, "transfer journal"):
+                        runner.check_cargo(dict(disk(load, 1, 1), journal=1), plan, 0)
+
     def loader_run(self, directory):
         root = Path(directory).resolve()
         (root / "session").mkdir(); (root / "evidence").mkdir()

@@ -24,11 +24,11 @@ def ends(state):
 
 
 def observed(state, markers=None):
-    """Raw stores as a runner extracts them: one marker count, not the tuple of allowed counts."""
+    """Raw stores as a runner extracts them; `markers` replaces both marker counts."""
     result = []
     for end in ends(state):
-        if end is not None:
-            end["markers"] = end["markers"][0] if markers is None else markers
+        if end is not None and markers is not None:
+            end["markers"] = markers
         result.append(end)
     return result
 
