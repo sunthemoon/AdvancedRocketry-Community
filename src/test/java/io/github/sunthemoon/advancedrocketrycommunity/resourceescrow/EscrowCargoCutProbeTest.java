@@ -417,14 +417,68 @@ class EscrowCargoCutProbeTest {
                 assertFalse(EscrowCargoSettlementCuts.pauses(boundary, label, "O4", true, 0, 1));
             }
         }
-        assertEquals(40, EscrowCargoSettlementCuts.CASES.size());
+        // W373B adds seven FS_AC_ cases in each direction; the 40 earlier cases keep their boundaries.
+        assertEquals(54, EscrowCargoSettlementCuts.CASES.size());
+        assertEquals(40, EscrowCargoSettlementCuts.CASES.keySet().stream().filter(name -> !name.contains("_AC_")).count());
         var known = Set.of("O1_BEFORE", "O1_AFTER", "O_BIND_BEFORE", "O_BIND_AFTER", "O2_ROCKET_BEFORE", "O2_ROCKET_AFTER",
                 "O2_DEVICE_BEFORE", "O2_DEVICE_AFTER", "O3_BEFORE", "O3_AFTER", "O3J_BEFORE", "O3J_REPLACED", "O4_BEFORE", "O4_AFTER",
                 "PRUNE_BEFORE", "PRUNE_AFTER", "O_VETO", "NORMALIZATION_VETO");
+        var accounting = Set.of("O1_ACK", "O3_ACK", "O4_ACK", "O1_AFTER", "READBACK_HELD");
         EscrowCargoSettlementCuts.CASES.forEach((name, cut) -> {
             assertTrue(name.startsWith("FS_") && EscrowCargoCutProbe.accepts(name), name);
-            assertTrue(known.contains(cut.boundary()), name);
+            assertTrue((name.contains("_AC_") ? accounting : known).contains(cut.boundary()), name);
         });
+    }
+
+    @Test void theAccountingAcknowledgementBoundariesPauseOnlyInTheirOwnerCallbacks() {
+        assertTrue(EscrowCargoSettlementCuts.pauses("O3_ACK", "O3_AFTER", "O3", false, 0, 1));
+        assertTrue(EscrowCargoSettlementCuts.pauses("O4_ACK", "O4_AFTER", "O4", false, 0, 1));
+        for (String label : List.of("K1", "K2", "K8", "K9", "O3_CAPTURE", "O4_CAPTURE", "O_VETO", "BARRIER_STORE_BEFORE")) {
+            assertFalse(EscrowCargoSettlementCuts.pauses("O3_ACK", label, "O3", true, 0, 1), label);
+            assertFalse(EscrowCargoSettlementCuts.pauses("O4_ACK", label, "O4", true, 0, 1), label);
+        }
+        assertFalse(EscrowCargoSettlementCuts.pauses("O3_ACK", "O4_AFTER", "O4", false, 0, 1));
+        assertFalse(EscrowCargoSettlementCuts.pauses("O4_ACK", "O3_AFTER", "O3", false, 0, 1));
+        // O1's acknowledgement and the readback hold are decided by the owner tick, never by a checkpoint label.
+        for (String boundary : List.of("O1_ACK", "READBACK_HELD")) {
+            for (String label : List.of("K1", "K2", "K8", "K9", "O_VETO", "O3_AFTER", "O4_AFTER", "BARRIER_STORE_BEFORE")) {
+                assertFalse(EscrowCargoSettlementCuts.pauses(boundary, label, "O4", true, 0, 1), boundary + "/" + label);
+            }
+        }
+    }
+
+    @Test void theReadbackScenarioChangesTheDeviceOnlyAtTheStoreOfItsOwnSlot() {
+        // The device is the first frozen observation: the first store after O1 is its own.
+        assertTrue(EscrowCargoSettlementCuts.changesBeforeStore(true, false, "BARRIER_STORE_BEFORE", 1, 0, false));
+        // The rocket is first: its store passes unchanged, and the device changes only after the rocket's proof.
+        assertFalse(EscrowCargoSettlementCuts.changesBeforeStore(true, false, "BARRIER_STORE_BEFORE", 0, 1, false));
+        assertTrue(EscrowCargoSettlementCuts.changesBeforeStore(true, false, "BARRIER_STORE_BEFORE", 0, 1, true));
+        // Never before O1 is acknowledged, never twice, never at another checkpoint, never without a device slot.
+        assertFalse(EscrowCargoSettlementCuts.changesBeforeStore(false, false, "BARRIER_STORE_BEFORE", 1, 0, true));
+        assertFalse(EscrowCargoSettlementCuts.changesBeforeStore(true, true, "BARRIER_STORE_BEFORE", 1, 0, true));
+        assertFalse(EscrowCargoSettlementCuts.changesBeforeStore(true, false, "BARRIER_STORE_AFTER", 1, 0, true));
+        assertFalse(EscrowCargoSettlementCuts.changesBeforeStore(true, false, "BARRIER_STORE_BEFORE", 0, -1, true));
+    }
+
+    @Test void theAccountingScenariosAreAppliedAndOnlyThreeChangeTheDeviceBeforeThePreview() {
+        for (var scenario : EscrowCargoSettlementCuts.Scenario.values()) {
+            boolean accounting = Set.of("LOSS", "GAIN", "SUBSTITUTE", "READBACK").contains(scenario.name());
+            assertEquals(accounting || scenario == EscrowCargoSettlementCuts.Scenario.APPLIED, scenario.applied(), scenario.name());
+            assertEquals(Set.of("LOSS", "GAIN", "SUBSTITUTE").contains(scenario.name()), scenario.adjusts(), scenario.name());
+            assertFalse(scenario.applied() && scenario.prepared(), scenario.name());
+            assertFalse(accounting && scenario.abandon(), scenario.name());
+        }
+        // The earlier scenarios keep their classification.
+        assertFalse(EscrowCargoSettlementCuts.Scenario.VETO.prepared());
+        assertFalse(EscrowCargoSettlementCuts.Scenario.APPLIED.prepared());
+        for (var prepared : List.of("NEUTRAL", "NAMED", "ABANDON_ROCKET", "ABANDON_DEVICE", "BIND_VETO")) {
+            assertTrue(EscrowCargoSettlementCuts.Scenario.valueOf(prepared).prepared(), prepared);
+        }
+        assertEquals(-100, EscrowCargoSettlementCuts.Scenario.LOSS.deviceDelta());
+        assertEquals(100, EscrowCargoSettlementCuts.Scenario.GAIN.deviceDelta());
+        for (var unchanged : List.of("APPLIED", "SUBSTITUTE", "READBACK", "VETO", "NEUTRAL")) {
+            assertEquals(0, EscrowCargoSettlementCuts.Scenario.valueOf(unchanged).deviceDelta(), unchanged);
+        }
     }
 
     @Test void onlyTheVetoCaseSelectsTheDestinationStore() {

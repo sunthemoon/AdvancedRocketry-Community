@@ -13,13 +13,23 @@ import java.util.concurrent.TimeUnit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 
-/** Real-loader operator decisions on a deliberately held, fully applied fill. Release-gated fixture only. */
+/**
+ * Real-loader operator decisions on a deliberately held, fully applied fill. Release-gated fixture only.
+ *
+ * <p>W373C (LF_S6_AC_ cases, W357-DESIGN section 7.3): PRUNE_BEFORE stops once the released survivors' markers are
+ * pruned in memory, PRUNE_AFTER after that pruning is saved. LOSS and GAIN change the held loader's tank by -100 mB
+ * or +100 mB before the operator's preview and stop after O1's replacement, so O1 freezes the signed discrepancy.
+ */
 final class EscrowLoaderS6SettlementProbe {
     static final String BEFORE = "LF_S6_O1_BEFORE", REPLACED = "LF_S6_O1_REPLACED", ACK = "LF_S6_O1_ACK";
+    static final String PRUNE_BEFORE = "LF_S6_AC_PRUNE_BEFORE", PRUNE_AFTER = "LF_S6_AC_PRUNE_AFTER";
+    static final String LOSS = "LF_S6_AC_LOSS", GAIN = "LF_S6_AC_GAIN";
+    static final int ADJUSTMENT = 100;
     private static final List<String> CASES = List.of(BEFORE, REPLACED, ACK,
             "LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0", "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1",
             "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE",
-            "LF_S6_O4_REPLACED", "LF_S6_O4_ACK", "LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK");
+            "LF_S6_O4_REPLACED", "LF_S6_O4_ACK", "LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK",
+            PRUNE_BEFORE, PRUNE_AFTER, LOSS, GAIN);
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private static final BlockPos DEVICE = new BlockPos(66, 100, 64);
     private final MinecraftServer server;
@@ -27,7 +37,7 @@ final class EscrowLoaderS6SettlementProbe {
     private final boolean recovery, named;
     private final EscrowLoaderCutProbe setup;
     private final EscrowLoaderS6NamedSetup namedSetup;
-    private boolean held, baseline, queued, done;
+    private boolean held, baseline, queued, done, adjusted;
     private volatile boolean writingIntent;
     private volatile String ledgerPhase = "";
     private long began = -1;
@@ -35,7 +45,14 @@ final class EscrowLoaderS6SettlementProbe {
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
     static boolean boundary(String cut, String hook) {
         return BEFORE.equals(cut) && "K1".equals(hook) || REPLACED.equals(cut) && "K2".equals(hook)
-                || ACK.equals(cut) && "O1_ACK".equals(hook);
+                || ACK.equals(cut) && "O1_ACK".equals(hook) || tankDelta(cut) != 0 && "K2".equals(hook);
+    }
+    /** The signed change of the held loader's tank before the preview; zero for every other case. */
+    static int tankDelta(String cut) { return LOSS.equals(cut) ? -ADJUSTMENT : GAIN.equals(cut) ? ADJUSTMENT : 0; }
+    static boolean prunes(String cut) { return PRUNE_BEFORE.equals(cut) || PRUNE_AFTER.equals(cut); }
+    /** The pruning cuts stop only after release, with no record left and both survivors' markers pruned in memory. */
+    static boolean pruned(String cut, int records, boolean released, int loaderMarkers, int rocketMarkers) {
+        return prunes(cut) && records == 0 && released && loaderMarkers == 0 && rocketMarkers == 0;
     }
     static boolean manualHoldDurable(EscrowReason reason) {
         // Idle is not acknowledgement: the ordinary ten-tick writer pace can defer this transition.
@@ -111,7 +128,8 @@ final class EscrowLoaderS6SettlementProbe {
         var data = ResourceEscrowSavedData.existing(server);
         EscrowTags.require(data != null, "Settlement lost its ledger");
         var coordinator = data.bind(server);
-        EscrowTags.require(amount(loader) == 4_000 && bank(rocket, false) == 1_000 && bank(rocket, true) == 0
+        int tank = 4_000 + (recovery || adjusted ? tankDelta(cut) : 0);
+        EscrowTags.require(amount(loader) == tank && bank(rocket, false) == 1_000 && bank(rocket, true) == 0
                 && section(loader).epoch() == 1 && rocket.escrowSection().epoch() == 1 && data.ledger().issuedThrough() == 1,
                 "Settlement changed its exact resources or epochs");
         if (!coordinator.writerIdle()) { return; }
@@ -130,8 +148,10 @@ final class EscrowLoaderS6SettlementProbe {
             }
             if (server.getTickCount() - began < 100) { return; }
             done = true;
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_O_RESULT cut={} tank=4000 bank=1000 epochs=1,1 records={} receipts={} state={}",
-                    cut, data.ledger().records().size(), data.ledger().tombstones().size(), BEFORE.equals(cut) ? "PRE_O1" : "RELEASED");
+            // The W373C cases also report the receipt's knowledge; the earlier cases keep their exact line.
+            String accounting = cut.startsWith("LF_S6_AC_") ? " accounting=" + data.ledger().tombstones().get(0).getString("accounting_status") : "";
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_O_RESULT cut={} tank={} bank=1000 epochs=1,1 records={} receipts={} state={}{}",
+                    cut, tank, data.ledger().records().size(), data.ledger().tombstones().size(), BEFORE.equals(cut) ? "PRE_O1" : "RELEASED", accounting);
             return;
         }
         if (!baseline) {
@@ -153,7 +173,23 @@ final class EscrowLoaderS6SettlementProbe {
             EscrowTags.require(server.saveEverything(false, true, true), "Settlement pre-decision baseline save refused");
             baseline = true; return;
         }
-        if (queued) { return; }
+        if (queued) {
+            var ledger = data.ledger();
+            if (!writingIntent && pruned(cut, ledger.records().size(), !ledger.tombstones().isEmpty() && ledger.tombstones().get(0).getBoolean("released"),
+                    section(loader).markers().size(), rocket.escrowSection().markers().size())) {
+                if (PRUNE_AFTER.equals(cut)) {
+                    EscrowTags.require(server.saveEverything(false, true, true), "Settlement pruned-survivor save refused");
+                }
+                pause(cut.substring("LF_S6_AC_".length()));
+            }
+            return;
+        }
+        if (tankDelta(cut) != 0 && !adjusted) {
+            // The held loader changes outside any fill; the operator's preview then proposes the signed discrepancy.
+            changeTank(loader, 4_000 + tankDelta(cut)); adjusted = true;
+            EscrowTags.require(server.saveEverything(false, true, true), "Settlement changed-tank save refused");
+            return;
+        }
         var selected = data.ledger().records().get(0).id();
         var operator = EscrowRuntime.of(server).settlement();
         var preview = operator.preview(server, selected, EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, "Server");
@@ -164,6 +200,27 @@ final class EscrowLoaderS6SettlementProbe {
             writingIntent = false;
         });
         if (!queued) { writingIntent = false; }
+    }
+    /**
+     * Replaces only the tank amount of the held loader's root; its identity, binding and escrow section stay as they
+     * are. A live protected loader refuses a replaced root (ARCE_FLUID_FUEL_LOADER_LIVE_REPLACEMENT_REFUSED), so the
+     * stored block entity is replaced as a whole, as an edit outside the game would do.
+     */
+    private void changeTank(FluidFuelLoaderBlockEntity loader, int amount) {
+        var root = loader.root().orElseThrow(); var level = server.overworld();
+        var tag = new net.minecraft.nbt.CompoundTag();
+        tag.put(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot.KEY,
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot(
+                        root.owner(), root.device(), root.binding(), root.tank().withAmount(amount), root.escrow()).encode());
+        level.removeBlockEntity(DEVICE);
+        EscrowTags.require(level.getBlockEntity(DEVICE) instanceof FluidFuelLoaderBlockEntity fresh && fresh != loader,
+                "W373C loader replacement did not create a fresh block entity");
+        var replaced = (FluidFuelLoaderBlockEntity) level.getBlockEntity(DEVICE);
+        replaced.load(tag); replaced.setChanged();
+        EscrowTags.require(replaced.root().isPresent() && replaced.root().orElseThrow().device().equals(root.device())
+                && amount(replaced) == amount && section(replaced).equals(root.escrow())
+                && java.util.Objects.equals(replaced.root().orElseThrow().tank().fluid(), root.tank().fluid()),
+                "W373C loader replacement was refused");
     }
     private void pause(String hook) {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_O_PAUSED cut={} hook={}", cut, hook);

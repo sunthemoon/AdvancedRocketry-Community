@@ -132,4 +132,48 @@ class EscrowLoaderS6SettlementProbeTest {
             assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, "K2", "O3"));
         }
     }
+    @Test void accountingCutsAreGatedAndStopOnlyAtTheirOwnBoundary() {
+        // W373C: the pruning cuts, and a known loss and gain of the held loader's tank.
+        var added = java.util.List.of("LF_S6_AC_PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER", "LF_S6_AC_LOSS", "LF_S6_AC_GAIN");
+        for (String cut : added) {
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(false, cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(true, cut + "_OTHER"));
+            // None of them stops at a completion checkpoint of another case.
+            for (String hook : java.util.List.of("K1", "K2", "K8", "K9", "O2_BEFORE_0", "O2_AFTER_1", "O3_AFTER", "O4_AFTER", "O3J_AFTER")) {
+                for (String phase : java.util.List.of("", "O3", "O4")) {
+                    assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, hook, phase), cut + " " + hook);
+                }
+            }
+        }
+        assertEquals(-100, EscrowLoaderS6SettlementProbe.tankDelta("LF_S6_AC_LOSS"));
+        assertEquals(100, EscrowLoaderS6SettlementProbe.tankDelta("LF_S6_AC_GAIN"));
+        for (String cut : java.util.List.of("LF_S6_AC_LOSS", "LF_S6_AC_GAIN")) {
+            // The signed outcomes stop after O1's replacement, as LF_S6_O1_REPLACED does, and at no other hook.
+            assertTrue(EscrowLoaderS6SettlementProbe.boundary(cut, "K2"));
+            assertFalse(EscrowLoaderS6SettlementProbe.boundary(cut, "K1"));
+            assertFalse(EscrowLoaderS6SettlementProbe.boundary(cut, "O1_ACK"));
+            assertFalse(EscrowLoaderS6SettlementProbe.prunes(cut));
+        }
+        for (String cut : java.util.List.of("LF_S6_AC_PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER")) {
+            assertEquals(0, EscrowLoaderS6SettlementProbe.tankDelta(cut));
+            for (String hook : java.util.List.of("K1", "K2", "O1_ACK")) { assertFalse(EscrowLoaderS6SettlementProbe.boundary(cut, hook)); }
+            assertTrue(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 0, 0));
+            // A live record, an unreleased receipt, or a marker left on either survivor is not the pruned state.
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 1, true, 0, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, false, 0, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 1, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 0, 1));
+        }
+        // The sixteen earlier cases keep their boundaries: none changes the tank, prunes, or stops at the pruned state.
+        for (String cut : java.util.List.of("LF_S6_O1_BEFORE", "LF_S6_O1_REPLACED", "LF_S6_O1_ACK", "LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0",
+                "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1", "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE",
+                "LF_S6_O4_REPLACED", "LF_S6_O4_ACK", "LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK")) {
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+            assertEquals(0, EscrowLoaderS6SettlementProbe.tankDelta(cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 0, 0));
+        }
+        assertEquals(java.util.List.of(false, true, false),
+                java.util.List.of("K1", "K2", "O1_ACK").stream().map(hook -> EscrowLoaderS6SettlementProbe.boundary("LF_S6_O1_REPLACED", hook)).toList());
+    }
 }

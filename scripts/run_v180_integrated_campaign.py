@@ -6,6 +6,7 @@ invocation needs a new external evidence directory. --only is partial evidence,
 not a substitute for rerunning the complete matrix after a production change.
 G2-REUSE additionally requires --old-jar and --old-source-commit.
 W336 downgrade separately requires --downgrade-old-jar and its --downgrade-old-jar-sha256.
+W373B's accounting format families require --root2-jar and --root2-jar-sha256 (candidate C3's JAR).
 """
 from __future__ import annotations
 
@@ -34,6 +35,8 @@ import run_v180_w336_saturation as saturation
 import run_v180_w336_downgrade as downgrade
 import run_v180_r042_native as r042
 import run_v180_x03_repair as x03
+import run_v180_accounting_cuts as accounting_cuts
+import run_v180_accounting_format as accounting_format
 
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path(r"D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm")
@@ -134,6 +137,15 @@ def family_specs():
                          r042_case=case, cases=[case], arguments=["--case", case]))
     rows.append(dict(name="cargo-X03-REPAIR", runner="scripts/run_v180_x03_repair.py",
                      cases=["X03-REPAIR"], arguments=[]))
+    # W373B: the native accounting cuts and format boundaries of W357-DESIGN section 7.3, appended after every
+    # earlier family. A finding stops its own case only, so one family's failure does not block the others.
+    for key, cases in accounting_cuts.FAMILIES.items():
+        rows.append(dict(name="accounting-" + (key if key == "outcomes" else "cuts-" + key),
+                         runner="scripts/" + Path(accounting_cuts.__file__).name, accounting_family="cuts",
+                         cases=list(cases), arguments=["--family", key], independent=True))
+    for key, cases in accounting_format.FAMILIES.items():
+        rows.append(dict(name="accounting-" + key, runner="scripts/" + Path(accounting_format.__file__).name,
+                         accounting_family="format", cases=list(cases), arguments=["--family", key], independent=True))
     return rows
 
 
@@ -156,6 +168,8 @@ def command_for(row, plan):
     if row['name'] == x03.FAMILY:
         for flag in ('root-2-jar', 'root-2-jar-sha256', 'root-2-commit'):
             command.extend(['--' + flag, plan['x03_' + flag.replace('-', '_')] or '<required-x03-' + flag + '>'])
+    if row.get("accounting_family") == "format":
+        command.extend(["--root2-jar", plan["root2_jar"] or "<required-root2-jar>"])
     return command
 
 
@@ -164,6 +178,9 @@ def make_plan(args):
         raise ValueError("--jar-sha256 must be 64 hexadecimal characters")
     if args.downgrade_old_jar_sha256 is not None and not re.fullmatch(r"[0-9a-fA-F]{64}", args.downgrade_old_jar_sha256):
         raise ValueError("--downgrade-old-jar-sha256 must be 64 hexadecimal characters")
+    root2_jar, root2_sha256 = getattr(args, "root2_jar", None), getattr(args, "root2_jar_sha256", None)
+    if root2_sha256 is not None and root2_sha256.lower() != accounting_format.ROOT2_SHA256:
+        raise ValueError("--root2-jar-sha256 must be candidate C3's pinned SHA-256")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,47}", args.suffix):
         raise ValueError("--suffix must be a short filename component")
     specs = family_specs()
@@ -184,6 +201,8 @@ def make_plan(args):
                 x03_root_2_jar=str(args.x03_root_2_jar.resolve()) if getattr(args, 'x03_root_2_jar', None) else None,
                 x03_root_2_jar_sha256=getattr(args, 'x03_root_2_jar_sha256', None),
                 x03_root_2_commit=getattr(args, 'x03_root_2_commit', None),
+                root2_jar=str(root2_jar.resolve()) if root2_jar else None,
+                root2_jar_sha256=root2_sha256.lower() if root2_sha256 else None,
                 omitted_families=[row["name"] for row in specs if only and row["name"] not in only], families=[])
     campaign_id = uuid.uuid4().hex
     for spec in specs:
@@ -206,6 +225,9 @@ def make_plan(args):
     if any(row.get('name') == x03.FAMILY for row in plan['families']):
         plan['requirements'].extend('--x03-' + flag for flag in ('root-2-jar', 'root-2-jar-sha256', 'root-2-commit')
                                     if not plan['x03_' + flag.replace('-', '_')])
+    if any(row.get("accounting_family") == "format" for row in plan["families"]):
+        plan["requirements"].extend(flag for flag, value in (("--root2-jar", plan["root2_jar"]),
+                                                            ("--root2-jar-sha256", plan["root2_jar_sha256"])) if not value)
     return plan
 
 
@@ -231,6 +253,9 @@ def preflight(plan):
     if any(row.get("w336_family") == "downgrade" for row in plan["families"]):
         checks["downgrade_old_jar_sha256"] = digest(plan["downgrade_old_jar"])
         require(checks["downgrade_old_jar_sha256"] == plan["downgrade_old_jar_sha256"], "Downgrade old JAR hash mismatch")
+    if any(row.get("accounting_family") == "format" for row in plan["families"]):
+        checks["root2_jar_sha256"] = digest(plan["root2_jar"])
+        require(checks["root2_jar_sha256"] == plan["root2_jar_sha256"], "Root-2 JAR hash mismatch")
     command = ["git", "diff", "--quiet", plan["candidate_commit"], "HEAD", "--", *PRODUCTION_PATHS]
     checks["production_diff_command"] = command
     result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
@@ -385,7 +410,7 @@ def run_campaign(args):
                 write_json(output / "cleanup.json", dict(session=family["session"],
                            session_exists=Path(family["session"]).exists(), driver_deleted=False,
                            runner_cleanup_report="native/results.json", ended=utc_now()))
-            if row["status"] != "PASS":
+            if row["status"] != "PASS" and not family.get("independent"):
                 blocked[family["runner"]] = family["name"]
         row["ended"] = utc_now()
         write_json(invocation, row)
@@ -473,6 +498,8 @@ def main(argv=None):
     parser.add_argument('--x03-root-2-jar', type=Path, help='Historical accounting-disabled JAR for X03')
     parser.add_argument('--x03-root-2-jar-sha256')
     parser.add_argument('--x03-root-2-commit')
+    parser.add_argument("--root2-jar", type=Path, help="Candidate C3's JAR, the root-2 escrow reader of W373B's format families")
+    parser.add_argument("--root2-jar-sha256", help="SHA-256 of candidate C3's JAR; only the pinned value is accepted")
     args = parser.parse_args(argv)
     if args.only:
         args.only = [name for group in args.only for name in group]

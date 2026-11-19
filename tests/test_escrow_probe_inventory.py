@@ -21,15 +21,28 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # W360: seven item before-write and store-veto cuts in each direction (R448, R450).
         # W370: tests/test_v180_crash_replay.py names IC_UNLOAD_K9, which no producer spells out.
         # W376 (X03-V): the three verification cases of scripts/run_v180_x03_repair.py.
-        self.assertEqual(677, len(self.rows))
+        # W373B: the fourteen FS_AC_ accounting cuts of scripts/run_v180_accounting_cuts.py and the FC_UNLOAD_
+        # prefix token of its test (692).
+        # W373C: the four LF_S6_AC_ loader settlement cuts of scripts/run_v180_accounting_cuts.py. The thirteen
+        # existing LF_S6_ operator cuts it also runs only gain that runner as an origin.
+        self.assertEqual(696, len(self.rows))
+        for case in ("LF_S6_AC_PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER", "LF_S6_AC_LOSS", "LF_S6_AC_GAIN"):
+            self.assertEqual({"scripts/run_v180_accounting_cuts.py"}, {o for o in self.rows[case] if o.startswith("scripts/")})
+        self.assertEqual({"scripts/run_v180_accounting_cuts.py", "scripts/run_v180_loader_s6.py"},
+                         {o for o in self.rows["LF_S6_O4_ACK"] if o.startswith("scripts/")})
         # W376 (X03-V): run_v180_x03_repair is a new direct producer.
-        self.assertEqual(24, len(self.coverage["direct"]))
+        # W373B: run_v180_accounting_cuts is a new direct producer.
+        self.assertEqual(25, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         # W353 adds the load-veto log regression test to the related-test inventory.
         # W360 adds tests/test_w360_uncovered_rows.py; W365 adds the accounting reader and oracle test modules.
         # W370 adds tests/test_v180_crash_replay.py.
         # W376 (X03-V) adds tests/test_run_v180_x03_repair.py.
-        self.assertEqual(42, len(self.coverage["tests"]))
+        # W373B adds tests/test_accounting_cut_oracle.py and tests/test_run_v180_accounting_cuts.py.
+        self.assertEqual(44, len(self.coverage["tests"]))
+        self.assertIn("run_v180_accounting_cuts", self.coverage["direct"])
+        for case in ("FS_AC_LOSS", "FS_LOAD_AC_READBACK", "FS_AC_O4_ACK"):
+            self.assertEqual({"scripts/run_v180_accounting_cuts.py"}, {o for o in self.rows[case] if o.startswith("scripts/")})
         self.assertIn("run_v180_x03_repair", self.coverage["direct"])
         self.assertIn("tests/test_run_v180_x03_repair.py", self.coverage["tests"])
         for case in ("FF_X03_OBSERVE", "FF_X03_UNLOAD", "FF_X03_LAUNCH"):

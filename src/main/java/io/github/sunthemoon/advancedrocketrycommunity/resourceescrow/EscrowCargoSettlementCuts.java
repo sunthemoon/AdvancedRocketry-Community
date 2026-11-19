@@ -2,9 +2,11 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +15,33 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * C-S4 (FS_ cases): operator settlement of a real 1,000 mB fluid cargo load or unload,
  * cut at each boundary of W11CD section 3.3. APPLIED holds the unload after both sides published; NEUTRAL, NAMED and
  * the ABANDON scenarios hold it at PREPARED; NAMED adds a COMMITTED landed record, so O3J removes it; VETO stores only
  * the device before the hold and then vetoes the rocket's O2 store; BIND_VETO moves the neutral survivor after O1.
+ *
+ * <p>W373B (FS_AC_ cases, W357-DESIGN section 7.3): LOSS, GAIN and SUBSTITUTE are APPLIED with the held device tank
+ * changed before the operator's preview, by -100 mB, +100 mB or to the same amount of another Fluid. READBACK is
+ * APPLIED with the device tank replaced by the same amount of another Fluid immediately before the O2 store of the
+ * device's slot, after the live check of the frozen choice. The acknowledgement boundaries O1_ACK, O3_ACK and O4_ACK
+ * stop in the owner callbacks of those writes.
  */
 final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
-    enum Scenario { APPLIED, NEUTRAL, NAMED, ABANDON_ROCKET, ABANDON_DEVICE, VETO, BIND_VETO;
+    enum Scenario { APPLIED, NEUTRAL, NAMED, ABANDON_ROCKET, ABANDON_DEVICE, VETO, BIND_VETO, LOSS, GAIN, SUBSTITUTE, READBACK;
         boolean abandon() { return this == ABANDON_ROCKET || this == ABANDON_DEVICE; }
-        boolean prepared() { return this != APPLIED && this != VETO; }
+        /** Both sides published before the hold; the W373B scenarios change only the device tank afterwards. */
+        boolean applied() { return this == APPLIED || this == LOSS || this == GAIN || this == SUBSTITUTE || this == READBACK; }
+        boolean prepared() { return !applied() && this != VETO; }
+        /** The device tank changes before the operator's preview, so O1 freezes the signed discrepancy. */
+        boolean adjusts() { return this == LOSS || this == GAIN || this == SUBSTITUTE; }
+        /** The signed change of the device tank's own amount; a substitution keeps the amount. */
+        int deviceDelta() { return this == LOSS ? -ADJUSTMENT : this == GAIN ? ADJUSTMENT : 0; }
     }
+    static final int ADJUSTMENT = 100;
     record Cut(Scenario scenario, String boundary) { }
     private static final Map<String, Cut> UNLOAD_CASES = Map.ofEntries(
             Map.entry("FS_O1_BEFORE", new Cut(Scenario.APPLIED, "O1_BEFORE")),
@@ -46,7 +63,14 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             Map.entry("FS_ABANDON_ROCKET", new Cut(Scenario.ABANDON_ROCKET, "O1_AFTER")),
             Map.entry("FS_ABANDON_DEVICE", new Cut(Scenario.ABANDON_DEVICE, "O1_AFTER")),
             Map.entry("FS_VETO_DESTINATION_SAVED", new Cut(Scenario.VETO, "O_VETO")),
-            Map.entry("FS_BIND_VETO", new Cut(Scenario.BIND_VETO, "NORMALIZATION_VETO")));
+            Map.entry("FS_BIND_VETO", new Cut(Scenario.BIND_VETO, "NORMALIZATION_VETO")),
+            Map.entry("FS_AC_O1_ACK", new Cut(Scenario.APPLIED, "O1_ACK")),
+            Map.entry("FS_AC_O3_ACK", new Cut(Scenario.APPLIED, "O3_ACK")),
+            Map.entry("FS_AC_O4_ACK", new Cut(Scenario.APPLIED, "O4_ACK")),
+            Map.entry("FS_AC_LOSS", new Cut(Scenario.LOSS, "O1_AFTER")),
+            Map.entry("FS_AC_GAIN", new Cut(Scenario.GAIN, "O1_AFTER")),
+            Map.entry("FS_AC_SUBSTITUTE", new Cut(Scenario.SUBSTITUTE, "O1_AFTER")),
+            Map.entry("FS_AC_READBACK", new Cut(Scenario.READBACK, "READBACK_HELD")));
     static final Map<String, Cut> CASES = cases();
     private static Map<String, Cut> cases() {
         var values = new java.util.LinkedHashMap<>(UNLOAD_CASES);
@@ -67,7 +91,8 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
     private volatile int rocketIndex = -1, deviceIndex = -1;
     private volatile boolean writingIntent, held, destinationSelected, destinationStored, vetoInstalled, holdSeen;
     private volatile String phase = "";
-    private boolean executorPaused, heldChecked, moved, movedSaved, restored;
+    private boolean executorPaused, heldChecked, moved, movedSaved, restored, adjusted;
+    private volatile boolean readbackArmed, rocketProved, readbackChanged;
     private EscrowCargoCutLaunch flight;
 
     EscrowCargoSettlementCuts(MinecraftServer server) {
@@ -90,8 +115,18 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             case "O3_AFTER" -> phase.equals("O3") && label.equals("K2");
             case "O4_BEFORE" -> phase.equals("O4") && (label.equals("K1") || label.equals("K8"));
             case "O4_AFTER" -> phase.equals("O4") && (label.equals("K2") || label.equals("K9"));
+            // W373B: the owner callbacks of the acknowledged O3 and O4 writes; O1's callback pauses in confirm().
+            case "O3_ACK" -> label.equals("O3_AFTER");
+            case "O4_ACK" -> label.equals("O4_AFTER");
             default -> false;
         };
+    }
+    /**
+     * READBACK changes the device at the store of the device's own slot: the first store after O1 when the device is
+     * the first frozen observation, otherwise the first store after the rocket's proof.
+     */
+    static boolean changesBeforeStore(boolean armed, boolean changed, String label, int rocket, int device, boolean rocketProved) {
+        return armed && !changed && label.equals("BARRIER_STORE_BEFORE") && device >= 0 && (device < rocket || rocketProved);
     }
     /** VETO's ordinary reconciliation stores only the destination; every other run keeps production order. */
     static boolean storeAllowed(boolean selecting, boolean ours, boolean destination) { return !selecting || !ours || destination; }
@@ -112,13 +147,20 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             return;
         }
         if (done || stopped()) { return; }
-        if (cut.scenario() == Scenario.APPLIED && !held && label.equals("C2_DESTINATION_AFTER") && deviceId != null && server.isSameThread()) {
+        if (cut.scenario().applied() && !held && label.equals("C2_DESTINATION_AFTER") && deviceId != null && server.isSameThread()) {
             // Both sides published: hold the ordinary executor before any barrier store.
             EscrowRuntime.of(server).cargoSwitches.pause(deviceId, true); held = true;
         }
         if (cut.scenario() == Scenario.VETO) {
             if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { destinationSelected = true; }
             if (label.equals("BARRIER_FORCE_AFTER") && destinationSelected) { destinationStored = true; }
+        }
+        if (cut.scenario() == Scenario.READBACK && server.isSameThread()) {
+            if (rocketIndex >= 0 && label.equals("O2_AFTER_" + rocketIndex)) { rocketProved = true; }
+            if (changesBeforeStore(readbackArmed, readbackChanged, label, rocketIndex, deviceIndex, rocketProved)) {
+                // After the live check of the frozen choice and before the store: the readback meets another Fluid.
+                changeDevice(LoaderTank.of(new FluidStack(Fluids.LAVA, tank(device)))); readbackChanged = true; vetoInstalled = true;
+            }
         }
         if (label.equals("O3_CAPTURE") || label.equals("O4_CAPTURE")) { phase = label.substring(0, 2); }
         if (label.equals("O_VETO") && vetoInstalled) { holdSeen = true; }
@@ -183,7 +225,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
     }
 
     private void hold() {
-        if (cut.scenario() == Scenario.APPLIED && !held) { return; }
+        if (cut.scenario().applied() && !held) { return; }
         if (cut.scenario() == Scenario.VETO && (!executorPaused || server.getTickCount() - since < 40)) { return; }
         coordinator.transition(opId, EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
     }
@@ -214,7 +256,15 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
                 poison.setNoGravity(true); EscrowTags.require(level.addFreshEntity(poison), "W142 veto entity was not added");
             }
             vetoInstalled = true;
-        } else { save(); }
+        } else {
+            if (cut.scenario().adjusts() && !adjusted) {
+                // The held device changes outside any transfer; the operator's preview then proposes the signed discrepancy.
+                changeDevice(cut.scenario() == Scenario.SUBSTITUTE ? LoaderTank.of(new FluidStack(Fluids.LAVA, afterDevice()))
+                        : LoaderTank.of(new FluidStack(Fluids.WATER, afterDevice() + cut.scenario().deviceDelta())));
+                adjusted = true;
+            }
+            save();
+        }
         var choice = cut.scenario().abandon() ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
         preview = EscrowRuntime.of(server).settlement().preview(server, opId, choice, ACTOR, "Server");
         for (int i = 0; i < preview.observations().size(); i++) {
@@ -229,6 +279,8 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         writingIntent = true;
         boolean queued = EscrowRuntime.of(server).settlement().confirm(server, opId, preview.choice(), ACTOR, preview.digest(), committed -> {
             EscrowTags.require(committed, "W142 O1 was not acknowledged"); writingIntent = false;
+            if (cut.scenario() == Scenario.READBACK) { readbackArmed = true; }
+            if (cut.boundary().equals("O1_ACK")) { pause("O1_ACK"); }
             if (cut.scenario() == Scenario.BIND_VETO) {
                 // In the same owner callback, before normalization can run: the chosen neutral survivor moves.
                 rocket.setPos(rocket.getX() + 0.25D, rocket.getY(), rocket.getZ()); moved = true; vetoInstalled = true;
@@ -246,7 +298,14 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             var intent = EscrowSettlementIntent.decode(member().settlement());
             var view = EscrowRuntime.of(server).settlementRecovery().view(intent);
             if (view.reason().equals("NONE") || cut.scenario() == Scenario.BIND_VETO && !movedSaved) { return; }
-            if (cut.scenario() == Scenario.VETO) {
+            if (cut.scenario() == Scenario.READBACK) {
+                // The reason is observed, not chosen here; the runner's oracle compares it.
+                EscrowTags.require(root.tombstones().isEmpty() && member().phase() == EscrowOperation.Phase.SETTLING_ACCEPT,
+                        "The changed device store did not hold the settlement: " + view.reason());
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_RELEASE_CARGO_CUT_HELD cut={} reason={} proved={} receipts=0", name, view.reason().replace(' ', '_'), view.provedSlots());
+                save();
+            } else if (cut.scenario() == Scenario.VETO) {
                 EscrowTags.require(view.reason().equals("BARRIER_VETO") && root.tombstones().isEmpty() && view.provedSlots() <= 1,
                         "The rocket store veto did not hold O2: " + view.reason());
             } else {
@@ -290,6 +349,15 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             requireDevice(device, load ? beforeDevice() : afterDevice(), load ? 0 : 1, load ? 0 : 1); requireLocked();
             result("HELD", "reason=FROZEN_ENDPOINT_CHANGED rocket=" + cargo(rocket) + " device=" + tank(device) + " raw=6000 spendable=0 locked=true"); return;
         }
+        if (cut.scenario() == Scenario.READBACK) {
+            var view = view(single(root)); if (view.reason().equals("NONE")) { return; }
+            // The frozen choice names water; the device durably holds another Fluid. Nothing is released or rebuilt.
+            EscrowTags.require(root.tombstones().isEmpty() && single(root).phase() == EscrowOperation.Phase.SETTLING_ACCEPT
+                    && cargo(rocket) == afterRocket() && tank(device) == afterDevice() && !water(device),
+                    "The readback hold released or changed its endpoints: " + view.reason());
+            requireLocked();
+            result("HELD", "reason=" + view.reason().replace(' ', '_') + " rocket=" + cargo(rocket) + " device=" + tank(device) + " receipts=0 locked=true"); return;
+        }
         if (cut.scenario() == Scenario.BIND_VETO && !root.records().isEmpty()) {
             if (restored) { return; }
             var view = view(single(root)); if (view.reason().equals("NONE")) { return; }
@@ -310,7 +378,7 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
 
     /** The receipt, head and both survivors exactly as section 3.3 derives them from the frozen O1 choice. */
     private void released(EscrowLedger root, RocketTransferSavedData journal) {
-        var scenario = cut.scenario(); boolean applied = scenario == Scenario.APPLIED;
+        var scenario = cut.scenario(); boolean applied = scenario.applied();
         var receipt = root.tombstones().get(0);
         int survivors = scenario.abandon() ? 1 : 2;
         EscrowTags.require(root.tombstones().size() == 1 && receipt.getBoolean("released") && receipt.getInt("payload_amount") == 0
@@ -339,8 +407,10 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         requireRocket(rocket, applied ? afterRocket() : beforeRocket(), applied ? 1 : 0, 0, true);
         EscrowTags.require(RocketEscrowGate.idle(rocket), "The released rocket stayed locked");
         if (device != null) {
-            requireDevice(device, applied ? afterDevice() : beforeDevice(), applied ? 1 : 0, 0);
-            EscrowTags.require(!device.escrowLocked() && cargo(rocket) + tank(device) == 5_000, "The released device stayed locked or broke conservation");
+            requireDevice(device, applied ? afterDevice() + scenario.deviceDelta() : beforeDevice(), applied ? 1 : 0, 0);
+            // An approved discrepancy stays exactly as it was accepted: nothing is refunded or rebuilt.
+            EscrowTags.require(!device.escrowLocked() && cargo(rocket) + tank(device) == 5_000 + scenario.deviceDelta()
+                    && water(device) == (scenario != Scenario.SUBSTITUTE), "The released device stayed locked or broke conservation");
         }
     }
 
@@ -385,6 +455,26 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
         result("LANDED", "rocket=" + afterRocket() + " device=" + afterDevice() + " fuel=700 serial=1 armed=0 journal=idle");
     }
 
+    /**
+     * Replaces only the tank of the held device's root; its identity, binding and escrow section stay as they are.
+     * A live protected device refuses a replaced root (ARCE_FLUID_CARGO_LIVE_REPLACEMENT_REFUSED), so the change is
+     * made the only way it can reach a locked device: the stored block entity is replaced as a whole, as an edit
+     * outside the game would do.
+     */
+    private void changeDevice(LoaderTank tank) {
+        var tag = new CompoundTag(); tag.put(RocketFluidCargoRoot.KEY, device.root().orElseThrow().withTank(tank).encode());
+        level.removeBlockEntity(DEVICE);
+        var replaced = existingDevice(DEVICE);
+        EscrowTags.require(replaced != null && replaced != device && replaced.root().isEmpty(), "W373B device replacement did not create a fresh block entity");
+        replaced.load(tag); replaced.setChanged();
+        EscrowTags.require(replaced.root().isPresent() && id(replaced).equals(deviceId) && tank(replaced) == tank.amount()
+                && String.valueOf(tank.fluid()).equals(String.valueOf(replaced.root().orElseThrow().tank().fluid())),
+                "W373B device replacement was refused");
+        device = replaced;
+    }
+    private static boolean water(RocketFluidCargoBlockEntity device) {
+        return "minecraft:water".equals(String.valueOf(device.root().orElseThrow().tank().fluid()));
+    }
     private int beforeRocket() { return load ? 0 : 5_000; }
     private int afterRocket() { return load ? 1_000 : 4_000; }
     private int beforeDevice() { return load ? 5_000 : 0; }
