@@ -87,6 +87,12 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
 
   A script that takes the lock several times in a row (for example one native case at a time) waits at least
   90 seconds after each release before it tries again, so a script that polls once a minute gets its turn.
+
+  If your own launcher stops a heavy step on a timeout, stop the whole process tree (`taskkill /PID <parent> /T /F`)
+  and confirm that no `java.exe` of yours is left before you release the lock or delete a world. (Added by Root on
+  2026-11-20, R524: W373's launcher killed only the `cmd` parent of `runGameTestServer`, released the lock and
+  deleted the world while the JVM ran on for about 25 minutes, so its GameTest result was invalid and another
+  worker's heavy step overlapped it.)
   (Added by Root on 2026-10-22, after W132F waited behind W133's back-to-back native cases.)
 
   Release the lock only in the `finally` of the same script that took it, as above, and run
