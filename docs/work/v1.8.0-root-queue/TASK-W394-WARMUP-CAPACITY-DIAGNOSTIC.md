@@ -6,7 +6,7 @@ Root: Claude. Date: 2026-11-20. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w394`, branch `codex/v1.8.0-w394` from the shared branch |
 | Decision | Root decision R525 (QUEUE row W394) |
-| Source | [W392](records/W392.md), "Commands and results" (the filtered run); W392R's review, item 5 (outside Git: `D:/GitHub/ARCE-Task-Evidence/root-queue/W392-review/REVIEW.md`) |
+| Source | `records/W392.md` (on branch `codex/v1.8.0-w392` until it is merged), "Commands and results" (the filtered run); W392R's review, item 5 (outside Git: `D:/GitHub/ARCE-Task-Evidence/root-queue/W392-review/REVIEW.md`) |
 | Record | `docs/work/v1.8.0-root-queue/records/W394.md` |
 | Write scope | `resourceescrow/EscrowWarmupFixtures.java` (the `predict` helper), `resourceescrow/EscrowGovernedWarmupGameTests.java` (the capacity assertion), the record. Test support and GameTest code only; no product class. |
 
