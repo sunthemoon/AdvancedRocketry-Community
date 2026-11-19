@@ -119,17 +119,48 @@ final class EscrowWarmupFixtures {
 
     /** The product's next {@code count} surface picks for this rocket's shape, as consecutive requests would reserve them. */
     static List<RocketStructureSnapshot> predict(MinecraftServer server, ServerLevel level, RocketEntity rocket, int count) {
+        var prediction = predictWithDiagnostic(server, level, rocket, count);
+        return prediction.success() ? new ArrayList<>(prediction.picks()) : null;
+    }
+
+    /** The same selection, retaining the first refusal and the reservations before any predicted pick. */
+    static Prediction predictWithDiagnostic(MinecraftServer server, ServerLevel level, RocketEntity rocket, int count) {
         var reservations = new ArrayList<>(RocketWarmupGameTestSupport.launchReservations(server,
                 RocketTransferSavedData.get(server), logical(rocket)));
+        var initialReservations = List.copyOf(reservations);
         var picks = new ArrayList<RocketStructureSnapshot>();
         for (int i = 0; i < count; i++) {
             var selected = new RocketLandingPadSelector().select(level, rocket.snapshot().orElseThrow(), UUID.randomUUID(),
                     reservations, level.getGameTime(), true);
-            if (!selected.success()) { return null; }
+            if (!selected.success()) { return new Prediction(picks, initialReservations, i, selected.detail()); }
             picks.add(selected.snapshot().orElseThrow());
             reservations.add(region(selected.snapshot().orElseThrow()));
         }
-        return picks;
+        return new Prediction(picks, initialReservations, -1, "selected");
+    }
+
+    record Prediction(List<RocketStructureSnapshot> picks, List<RocketRegion> initialReservations,
+                      int failedPick, String detail) {
+        Prediction {
+            picks = List.copyOf(picks);
+            initialReservations = List.copyOf(initialReservations);
+        }
+
+        boolean success() { return failedPick < 0; }
+
+        /** One bounded assertion line; the result itself retains every region even if the line is truncated. */
+        String failureMessage(String assertion) {
+            String message = (assertion + "; failedPick=" + failedPick + "; detail=" + detail
+                    + "; pickedCount=" + picks.size() + "; initialReservationCount=" + initialReservations.size()
+                    + "; picked=" + regions(picks.stream().map(EscrowWarmupFixtures::region).toList())
+                    + "; initialReservations=" + regions(initialReservations)).replaceAll("\\R", " ");
+            return message.length() <= 2_048 ? message : message.substring(0, 2_045) + "...";
+        }
+
+        private static List<String> regions(List<RocketRegion> regions) {
+            return regions.stream().map(r -> r.dimension() + "@(" + r.minimum().x() + "," + r.minimum().y() + ","
+                    + r.minimum().z() + ")..(" + r.maximum().x() + "," + r.maximum().y() + "," + r.maximum().z() + ")").toList();
+        }
     }
 
     /** The surface pad that ordinary selection, without a kept pad, would give this rocket now. */
