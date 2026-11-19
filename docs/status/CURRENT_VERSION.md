@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: b1e470b0d (W373B and W373C merged, R514, R515 and R517: the native accounting cut and outcome cases, the root-2 upgrade and old-JAR boundary cases, and the fuel loader's settlement cuts with the exact account oracle, after W373BR's two read-only reviews; scripts, tests and gated probes only; branch run 44486517836 and governance run 44486518843 at `a032ee4bb` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44435213421 at 9685a289a (X03-C merged at `102c97fe5`) passed on its first attempt: build 16.6 minutes, shards 0 to 3 in 14.6, 18.9, 21.6 and 17.1 minutes, 1,865 GameTests, with 3, 3, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44435213708 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44497323300 at fe90d68ef (W373B and W373C merged at `b1e470b0d`) passed on its first attempt: build 12.3 minutes, shards 0 to 3 in 13.6, 17.1, 21.1 and 18.0 minutes, 1,865 GameTests, with 3, 3, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44497323466 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
