@@ -60,7 +60,8 @@ final class EscrowFlightSource {
      * R17 item 5: delta movement that the rocket's own tick zeroes is transient, so it answers "not now" without the
      * sticky flag. Proof callbacks run in ServerTickEvent END, after that tick. The disk validators still compare the
      * saved Motion, so a save taken with the motion still refuses its proof. A launch-boundary refusal is also
-     * "not now". Native comparisons and the terminal's separate passenger prerequisite stay sticky.
+     * "not now". Native comparisons and the terminal's separate passenger prerequisite stay sticky and run before
+     * the boundary, so a refusal cannot hide a persistent change from an off-thread write lease.
      */
     static boolean observe(AtomicBoolean unchanged, net.minecraft.world.phys.Vec3 motion, java.util.function.BooleanSupplier same) {
         return observe(unchanged, motion, () -> true, same);
@@ -68,10 +69,9 @@ final class EscrowFlightSource {
 
     static boolean observe(AtomicBoolean unchanged, net.minecraft.world.phys.Vec3 motion,
                            java.util.function.BooleanSupplier boundary, java.util.function.BooleanSupplier same) {
-        if (!unchanged.get() || EscrowGovernedFrame.transientMotion(motion) || !boundary.getAsBoolean()) { return false; }
-        boolean result = same.getAsBoolean();
-        if (!result) { unchanged.set(false); }
-        return result;
+        if (!unchanged.get() || EscrowGovernedFrame.transientMotion(motion)) { return false; }
+        if (!same.getAsBoolean()) { unchanged.set(false); return false; }
+        return boundary.getAsBoolean();
     }
 
     private boolean same() {

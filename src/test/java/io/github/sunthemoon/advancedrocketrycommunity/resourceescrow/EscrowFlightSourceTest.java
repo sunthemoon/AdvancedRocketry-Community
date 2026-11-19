@@ -137,7 +137,7 @@ class EscrowFlightSourceTest {
         assertEquals(captures, source.rocket.governedCaptures(), "Boundary polling serialized the rocket again");
     }
 
-    @Test void aRefusedBoundarySkipsPersistentComparisonsAndNeverClearsAnExistingStickyFlag() {
+    @Test void aRefusedBoundaryStillComparesPersistentFieldsAndNeverClearsAnExistingStickyFlag() {
         var unchanged = new java.util.concurrent.atomic.AtomicBoolean(true);
         var boundary = new java.util.concurrent.atomic.AtomicBoolean(false);
         var comparisons = new java.util.concurrent.atomic.AtomicInteger();
@@ -145,17 +145,42 @@ class EscrowFlightSourceTest {
             assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get,
                     () -> { comparisons.incrementAndGet(); return true; }));
         }
-        assertTrue(unchanged.get()); assertEquals(0, comparisons.get());
+        assertTrue(unchanged.get()); assertEquals(2_000, comparisons.get());
         boundary.set(true);
         assertTrue(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get,
                 () -> { comparisons.incrementAndGet(); return true; }));
-        assertEquals(1, comparisons.get());
-        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> false));
+        assertEquals(2_001, comparisons.get());
         boundary.set(false);
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> false));
+        assertFalse(unchanged.get(), "A refused boundary hid a persistent mismatch");
         assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> true));
         boundary.set(true);
         assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> true));
         assertFalse(unchanged.get());
+    }
+
+    @Test void aNativeMoveDuringARefusalRevokesTheF1LeaseEvenAfterTheMoveIsUndone() {
+        var boundary = new java.util.concurrent.atomic.AtomicBoolean(true);
+        var source = liveSource(boundary::get);
+        var original = source.rocket.position();
+        // The off-thread ARMED guard's native-source leg is frozen.unchanged.get().
+        java.util.function.BooleanSupplier lease = source.unchanged::get;
+        try (var checkpoint = new EscrowFlightCheckpoint()) {
+            java.util.Map<java.util.UUID, EscrowFlightSource> pending =
+                    io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.get(
+                            EscrowFlightCheckpoint.class, checkpoint, "pending");
+            pending.put(source.rocket.assemblyTransactionId().orElseThrow(), source);
+            assertTrue(java.util.concurrent.CompletableFuture.supplyAsync(lease::getAsBoolean).join());
+            boundary.set(false);
+            position(source.rocket, original.add(1, 0, 0));
+            checkpoint.observe(source.rocket);
+            assertFalse(source.unchanged.get(), "The owner-thread observation hid a native move behind the boundary");
+            assertFalse(java.util.concurrent.CompletableFuture.supplyAsync(lease::getAsBoolean).join(), "F1 kept its native lease");
+            position(source.rocket, original);
+            boundary.set(true);
+            assertFalse(source.observe(), "Restoring the native field resurrected the capture");
+            assertFalse(java.util.concurrent.CompletableFuture.supplyAsync(lease::getAsBoolean).join());
+        }
     }
 
     // Exercise the real observer and native getters without constructing a Level or publishing an entity.
