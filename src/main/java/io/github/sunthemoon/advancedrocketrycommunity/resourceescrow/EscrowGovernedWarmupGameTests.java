@@ -364,8 +364,9 @@ public final class EscrowGovernedWarmupGameTests {
                 return;
             }
             if (!journal.retryChecked(server) || !RocketWarmupGameTestSupport.live(server).isEmpty()) { return; }
-            pads = predict(server, moon, mine.get(0), 8);
-            helper.assertTrue(pads != null, "The Moon does not offer eight admissible pads");
+            var prediction = predictWithDiagnostic(server, moon, mine.get(0), 8);
+            helper.assertTrue(prediction.success(), prediction.failureMessage("The Moon does not offer eight admissible pads"));
+            pads = prediction.picks();
             var stationPad = new RocketLandingPadSelector().selectStation(space, admin.get(6).snapshot().orElseThrow(), UUID.randomUUID(),
                     station, List.of(), space.getGameTime(), true);
             helper.assertTrue(stationPad.success(), "The station pad is not admissible: " + stationPad.detail());
