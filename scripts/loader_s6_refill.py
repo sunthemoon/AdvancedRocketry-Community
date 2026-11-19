@@ -1,6 +1,7 @@
 """Strict mono/BI successor refill; complete witnessed state, not scalar totals."""
 import copy
 import re
+import escrow_accounting as accounting
 import loader_s6_terminal as terminal
 from loader_s6_terminal import forward, flight, legacy, SmokeError
 
@@ -45,9 +46,10 @@ def baseline(witness, bi):
     capture = forward.normalize(witness["baseline"]); source = capture["rocket"]; root = capture["ledger"]
     banks = 2 if bi else 1; descriptor = copy.deepcopy(flight.integrity.MONO_DESCRIPTOR)
     if bi: descriptor.update(mode="BIPROPELLANT", oxidizer=2000)
-    legacy.require(set(root) == {"schema_version", "format_epoch", "ledger_id", "issued_through", "writer_generation",
+    framing = accounting.resource_projection(root)
+    legacy.require(set(framing) == {"schema_version", "format_epoch", "ledger_id", "issued_through", "writer_generation",
         "records", "floors", "tombstones", "rocket_authorities", "armed_flights", "issued_launch_serial"}
-        and root["schema_version"] == 2 and root["format_epoch"] == "v1.8.0-resource-escrow"
+        and framing["schema_version"] == 2 and framing["format_epoch"] == "v1.8.0-resource-escrow"
         and root["issued_through"] == banks and root["writer_generation"] == generation(banks)
         and root["issued_launch_serial"] == 0
         and not any(root[k] for k in ("records", "floors", "tombstones", "rocket_authorities", "armed_flights")),

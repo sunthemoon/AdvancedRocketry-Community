@@ -64,6 +64,35 @@ def sample(bi=False):
 
 
 class RefillOracleTests(unittest.TestCase):
+    def test_root3_refill_uses_versioned_framing_without_changing_native_authority(self):
+        import escrow_accounting as accounting
+        from test_escrow_accounting_readers import fixture
+        for bi in (False, True):
+            image, witness = sample(bi); cut = refill.CASES[int(bi)]
+            for root in (image["native"]["ledger"], witness["baseline"]["ledger"], witness["pruned"]):
+                root.update(schema_version=3, format_epoch=accounting.EPOCHS[3], fluid_accounts=[])
+            before = copy.deepcopy(image)
+            identity = refill.check(image, 0, None, cut, witness)["identity"]
+            self.assertEqual(before, image)
+            for restart in (1, 2):
+                self.assertEqual(identity, refill.check(image, restart, identity, cut,
+                    dict(final_digest=witness["final_digest"]))["identity"])
+            for mutate in (
+                    lambda r: r.update(schema_version=4),
+                    lambda r: r.update(format_epoch=accounting.EPOCHS[2]),
+                    lambda r: r.pop("fluid_accounts"),
+                    lambda r: r.update(fluid_accounts=[flight.nbt.plain(fixture("fuel-planned"))["fluid_accounts"][0]]),
+                    lambda r: r.update(writer_generation=99),
+                    lambda r: r.update(issued_launch_serial=1),
+                    lambda r: r.update(extra=1)):
+                changed = copy.deepcopy(witness); mutate(changed["baseline"]["ledger"])
+                with self.subTest(bi=bi), self.assertRaises(SmokeError):
+                    refill.check(image, 0, None, cut, changed)
+            for key in ("schema_version", "fluid_accounts", "writer_generation", "issued_through"):
+                changed = copy.deepcopy(image); changed["native"]["ledger"].pop(key)
+                with self.subTest(bi=bi, field=key), self.assertRaises(SmokeError):
+                    refill.check(changed, 0, None, cut, witness)
+
     def test_bounded_native_uuid_captures_and_ordered_refusal_pruning_logs_are_required(self):
         image, witness = sample(True); cut = refill.CASES[1]; nbt = flight.nbt
         def tag(value, key=""):
