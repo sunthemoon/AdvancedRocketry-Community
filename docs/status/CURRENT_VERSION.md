@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 79997f223 (W393 merged, R524: the exit family's safe exit check accepts the rider grounded on its pad with either grounded vertical motion, 0.0 or -0.0784; test oracle only; branch run 44584137976 and governance run 44584138708 at `f013fc7ab` passed; W373's campaign oracle fixes were merged just before as `378d59491`). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44578438960 at 1d38704b0 (W390 merged at `815e363d9`) passed on its first attempt: build 10.4 minutes, shards 0 to 3 in 15.7, 20.9, 20.5 and 18.1 minutes, 1,866 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44578439261 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44591135484 at 89a00a3ed (W373 and W393 merged at `378d59491` and `79997f223`) passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 16.8, 17.9, 20.2 and 16.6 minutes, 1,866 GameTests, with 4, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44591135635 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
