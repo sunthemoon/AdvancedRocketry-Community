@@ -211,19 +211,27 @@ def saved_rider(world: Path) -> dict:
                 riding="RootVehicle" in root, sha256=bay.digest(path))
 
 
+# The vertical velocity vanilla leaves on a grounded living entity after one physics tick: gravity 0.08 times the
+# float drag 0.98F, (0.0 - 0.08) * (double) 0.98F. The collision stops the move but the stored value stays. C2, C3 and
+# the 2026-11-09 integrated run saved the safe exit's rider with exactly this value; W373's attempts 5 and 7 saved it
+# one tick earlier, at 0.0 (Root decision R524, W393).
+GROUNDED_MOTION_Y = -0.0784000015258789
+
+
 def check_saved_rider(saved: dict, case: str, at_cut: dict | None) -> None:
-    """A flushed cut's save contains the exit: the rider detached, at its position at the cut, and falling or standing
-    under vanilla's gravity, not at the zero velocity of a seated rider (X5's exit position is its seat's). The other
-    cases are recorded."""
+    """A flushed cut's save contains the exit: the rider detached and at its position at the cut. A falling exit moves
+    down under vanilla's gravity, not at the zero velocity of a seated rider (X5's exit position is its seat's). The
+    safe exit stands on its checked pad, saved either before its first grounded physics tick (0.0) or after it
+    (``GROUNDED_MOTION_Y``); no other vertical velocity is accepted. The other cases are recorded."""
     if CASES[case].get("flush"):
         require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]),
                 f"{case}: the save after the phase does not hold the exited rider: {saved}; at the cut: {at_cut}")
         if CASES[case]["phase"] == "SAFE":
-            require(saved["motion_y"] == 0 and (saved.get("x"), saved["y"], saved.get("z")) ==
+            require(saved["motion_y"] in (0.0, GROUNDED_MOTION_Y) and (saved.get("x"), saved["y"], saved.get("z")) ==
                     (bay.ORIGIN[0] + 0.5, bay.ORIGIN[1], bay.ORIGIN[2] + 0.5)
                     and at_cut["mounted"] == "false" and at_cut["slot"] == "SAFE"
                     and at_cut["offer"] == "none" and at_cut["history"] == "closed",
-                    f"{case}: the saved safe exit is not stationary on its checked pad: {saved}; at the cut: {at_cut}")
+                    f"{case}: the saved safe exit is not grounded on its checked pad: {saved}; at the cut: {at_cut}")
         else:
             require(saved["motion_y"] < 0,
                     f"{case}: the saved falling exit lost its vanilla downward velocity: {saved}")

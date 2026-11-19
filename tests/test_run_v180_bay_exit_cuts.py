@@ -2,6 +2,7 @@
 from copy import deepcopy
 import base64
 import json
+import math
 from pathlib import Path
 import sys
 import tempfile
@@ -247,6 +248,41 @@ class SavedRiderAndCounts(unittest.TestCase):
             with self.subTest(cut=key), self.assertRaises(SmokeError):
                 runner.check_saved_rider(saved, "X8_SAFE_MENU", dict(at_cut, **{key: value}))
         with self.assertRaises(SmokeError): runner.check_saved_rider(saved, "X8_SAFE_MENU", None)
+
+    def test_a_flushed_safe_menu_exit_is_grounded_with_either_grounded_vertical_motion(self):
+        """W393 (R524): the save comes before the first grounded physics tick (0.0) or after it."""
+        self.assertEqual(-0.0784000015258789, runner.GROUNDED_MOTION_Y)
+        at_cut = dict(y="2.0", mounted="false", slot="SAFE", offer="none", history="closed")
+        for motion in (0.0, runner.GROUNDED_MOTION_Y):
+            saved = dict(x=8.5, y=2.0, z=8.5, riding=False, motion_y=motion)
+            with self.subTest(motion=motion):
+                runner.check_saved_rider(saved, "X8_SAFE_MENU", at_cut)
+            for key, value in (("x", 9.5), ("y", 3.0), ("z", 9.5), ("riding", True)):
+                with self.subTest(motion=motion, saved=key), self.assertRaises(SmokeError):
+                    cut = dict(at_cut, y="3.0") if key == "y" else at_cut  # the rider and the cut agree off the pad
+                    runner.check_saved_rider(dict(saved, **{key: value}), "X8_SAFE_MENU", cut)
+            for key, value in (("y", "3.0"), ("mounted", "true"), ("slot", "NO_SAFE_EXIT"),
+                               ("offer", "live"), ("history", "issued")):
+                with self.subTest(motion=motion, cut=key), self.assertRaises(SmokeError):
+                    runner.check_saved_rider(saved, "X8_SAFE_MENU", dict(at_cut, **{key: value}))
+            with self.subTest(motion=motion, cut=None), self.assertRaises(SmokeError):
+                runner.check_saved_rider(saved, "X8_SAFE_MENU", None)
+
+    def test_a_flushed_safe_menu_exit_refuses_every_other_vertical_motion_at_the_pad(self):
+        at_cut = dict(y="2.0", mounted="false", slot="SAFE", offer="none", history="closed")
+        grounded = runner.GROUNDED_MOTION_Y
+        for motion in (-0.1552, -0.15523200451660156, -0.0784, math.nextafter(grounded, 0.0),
+                       math.nextafter(grounded, -1.0), -grounded, 0.1, 1e-9, -1e-9, float("nan")):
+            with self.subTest(motion=motion), self.assertRaises(SmokeError):
+                runner.check_saved_rider(dict(x=8.5, y=2.0, z=8.5, riding=False, motion_y=motion),
+                                         "X8_SAFE_MENU", at_cut)
+
+    def test_the_grounded_value_does_not_change_the_falling_cases(self):
+        at_cut = dict(y="41.0")
+        runner.check_saved_rider(dict(y=41.0, riding=False, motion_y=runner.GROUNDED_MOTION_Y), "X4_LANDING", at_cut)
+        runner.check_saved_rider(dict(y=41.0, riding=False, motion_y=-0.1552), "X4_LANDING", at_cut)
+        with self.assertRaises(SmokeError):
+            runner.check_saved_rider(dict(y=41.0, riding=False, motion_y=0.0), "X4_LANDING", at_cut)
 
     def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
         state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
