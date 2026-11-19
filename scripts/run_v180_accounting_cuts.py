@@ -53,7 +53,9 @@ LOADER_SETTLEMENT = tuple("LF_S6_" + name for name in (
     "O3_BEFORE", "O3_REPLACED", "O3_ACK", "O4_BEFORE", "O4_REPLACED", "O4_ACK"))
 # W373C's gated cases, and the hook each one's forced stop reports.
 LOADER_ACCOUNTING = {"LF_S6_AC_PRUNE_BEFORE": "PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER": "PRUNE_AFTER",
-                     "LF_S6_AC_LOSS": "K2", "LF_S6_AC_GAIN": "K2"}
+                     "LF_S6_AC_LOSS": "K2", "LF_S6_AC_GAIN": "K2", "LF_S6_AC_SUBSTITUTE": "K2",
+                     "LF_S6_AC_BANK_LOSS": "K2", "LF_S6_AC_BANK_GAIN": "K2",
+                     "LF_S6_AC_PRUNE_SPLIT_TANK": "PRUNE_SPLIT_TANK", "LF_S6_AC_PRUNE_SPLIT_BANK": "PRUNE_SPLIT_BANK"}
 # The readback case's first hold: the typed per-fluid check of the device slot refuses a vector that differs from the
 # frozen one (EscrowCargoReadback, design section 6). Later attempts meet the live check's refusal instead.
 TYPED_REFUSAL = "ACCOUNTING_MISMATCH"
@@ -83,10 +85,12 @@ def spec(case):
     if case in LOADER_SETTLEMENT:
         return dict(engine="loader-s6")
     if case in LOADER_ACCOUNTING:
-        tank = oracle.loader_settlement(case)[2]["source"]["fluids"][oracle.FUEL]
+        state = oracle.loader_settlement(case)[2]
+        tank = sum(state["source"]["fluids"].values())
+        bank = sum(state["destination"]["fluids"].values())
         return dict(engine="loader-settlement", timeout=420,
                     paused=f"ARCE_LOADER_S6_O_PAUSED cut={case} hook={LOADER_ACCOUNTING[case]}",
-                    result=f"ARCE_LOADER_S6_O_RESULT cut={case} tank={tank} bank=1000 epochs=1,1 records=0 receipts=1 "
+                    result=f"ARCE_LOADER_S6_O_RESULT cut={case} tank={tank} bank={bank} epochs=1,1 records=0 receipts=1 "
                            "state=RELEASED accounting=KNOWN")
     if case.startswith("FC_"):
         load = case.startswith("FC_LOAD_")

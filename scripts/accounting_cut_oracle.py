@@ -358,10 +358,11 @@ def check_loader(disk, cut, restart):
 LOADER_SETTLEMENT_PREFIX = "LF_S6_"
 # The loader tank is the source and the rocket's bank the destination. Both were published before the hold, so
 # every cut starts from 4,000 mB and 1,000 mB at epoch 1 with one marker each.
-LOADER_O1_AFTER = ("O1_REPLACED", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "O3_BEFORE", "AC_LOSS", "AC_GAIN")
+LOADER_O1_AFTER = ("O1_REPLACED", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "O3_BEFORE", "AC_LOSS", "AC_GAIN",
+                   "AC_SUBSTITUTE", "AC_BANK_LOSS", "AC_BANK_GAIN")
 LOADER_O3_AFTER = ("O3_REPLACED", "O3_ACK", "O4_BEFORE")
 LOADER_O4_AFTER = ("O4_REPLACED", "O4_ACK", "AC_PRUNE_BEFORE")
-LOADER_SETTLEMENT = ("O1_BEFORE",) + LOADER_O1_AFTER + LOADER_O3_AFTER + LOADER_O4_AFTER + ("AC_PRUNE_AFTER",)
+LOADER_SETTLEMENT = ("O1_BEFORE",) + LOADER_O1_AFTER + LOADER_O3_AFTER + LOADER_O4_AFTER + ("AC_PRUNE_AFTER", "AC_PRUNE_SPLIT_TANK", "AC_PRUNE_SPLIT_BANK")
 
 
 def loader_settlement(cut):
@@ -370,13 +371,19 @@ def loader_settlement(cut):
     require(cut.startswith(LOADER_SETTLEMENT_PREFIX) and name in LOADER_SETTLEMENT, "No loader settlement accounting expectation for " + cut)
     # A known loss or gain is the held tank changed by 100 mB before the preview: a = -(dS + dD).
     delta = {"AC_LOSS": -ADJUSTMENT, "AC_GAIN": ADJUSTMENT}.get(name, 0)
+    bank_delta = {"AC_BANK_LOSS": -ADJUSTMENT, "AC_BANK_GAIN": ADJUSTMENT}.get(name, 0)
     tank = TOTAL - QUANTITY + delta
+    bank = QUANTITY + bank_delta
+    fluid = WATER if name == "AC_SUBSTITUTE" else FUEL
+    totals = {FUEL: bank, WATER: tank} if name == "AC_SUBSTITUTE" else {FUEL: tank + bank}
     planned = row(FUEL_SCOPE, FUEL, TOTAL, 0)
-    frozen = row(FUEL_SCOPE, FUEL, TOTAL, 0, [(FUEL, tank, QUANTITY, -delta)])
+    entries = [(FUEL, tank, bank, -delta - bank_delta)] if fluid == FUEL else [(FUEL, 0, bank, tank), (WATER, tank, 0, -tank)]
+    frozen = row(FUEL_SCOPE, FUEL, TOTAL, 0, entries)
 
-    def expect(records, rows, receipts, markers, balance):
-        return dict(records=records, rows=rows, receipts=receipts, source=store(FUEL, tank, 1, markers),
-                    destination=store(FUEL, QUANTITY, 1, markers), issued=1, balance=balance, totals={FUEL: tank + QUANTITY})
+    def expect(records, rows, receipts, markers, balance, bank_markers=None):
+        return dict(records=records, rows=rows, receipts=receipts, source=store(fluid, tank, 1, markers),
+                    destination=store(FUEL, bank, 1, markers if bank_markers is None else bank_markers),
+                    issued=1, balance=balance, totals=totals)
 
     done = expect([], [frozen], [(True, "KNOWN", 0)], 0, "FROZEN")
     if name == "O1_BEFORE":
@@ -389,6 +396,9 @@ def loader_settlement(cut):
     if name in LOADER_O4_AFTER:
         # Released, and neither survivor's pruning is stored yet.
         return [expect([], [frozen], [(True, "KNOWN", 0)], 1, "FROZEN"), done, done]
+    if name in ("AC_PRUNE_SPLIT_TANK", "AC_PRUNE_SPLIT_BANK"):
+        source, target = (0, 1) if name == "AC_PRUNE_SPLIT_TANK" else (1, 0)
+        return [expect([], [frozen], [(True, "KNOWN", 0)], source, "FROZEN", target), done, done]
     return [done, done, done]
 
 

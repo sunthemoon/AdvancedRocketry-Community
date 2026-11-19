@@ -25,7 +25,7 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # prefix token of its test (692).
         # W373C: the four LF_S6_AC_ loader settlement cuts of scripts/run_v180_accounting_cuts.py. The thirteen
         # existing LF_S6_ operator cuts it also runs only gain that runner as an origin.
-        self.assertEqual(696, len(self.rows))
+        self.assertEqual(701, len(self.rows))
         for case in ("LF_S6_AC_PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER", "LF_S6_AC_LOSS", "LF_S6_AC_GAIN"):
             self.assertEqual({"scripts/run_v180_accounting_cuts.py"}, {o for o in self.rows[case] if o.startswith("scripts/")})
         self.assertEqual({"scripts/run_v180_accounting_cuts.py", "scripts/run_v180_loader_s6.py"},

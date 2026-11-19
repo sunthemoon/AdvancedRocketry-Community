@@ -31,7 +31,7 @@ class AccountingFormatRunnerTest(unittest.TestCase):
         self.assertIn("SHA-256\n  `" + runner.ROOT2_SHA256 + "`", report)
         self.assertIn("The commit is `" + runner.ROOT2_COMMIT + "`", report)
         self.assertEqual("FC_LOAD_L1_ACK", runner.SEED_CASE)
-        self.assertEqual(4, sum(len(cases) for cases in runner.FAMILIES.values()))
+        self.assertEqual(5, sum(len(cases) for cases in runner.FAMILIES.values()))
         # Its cases are the runner's own labels; the only probe case it starts is the existing seed case.
         self.assertNotIn("-Dadvancedrocketrycommunity.escrowCase=",
                          (REPO / "scripts/run_v180_accounting_format.py").read_text(encoding="utf-8"))
@@ -244,6 +244,66 @@ class AccountingFormatRunnerTest(unittest.TestCase):
                 # Without completion the same observation is a stop during the migration.
                 row = self.case(seen(artifact, False), "bb", case=case)
                 self.assertEqual(("PASS", False), (row["status"], row["starts"][0]["completed"]))
+
+    def test_startup_watcher_requires_this_attempts_replacement_and_no_staged_file(self):
+        def backup(world):
+            target = world / runner.BACKUPS / "this-attempt"; target.mkdir(parents=True)
+            (target / runner.LEDGER).write_bytes(b"old")
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.cuts, "ledger", return_value=dict(schema_version=3)):
+            watched, _ = self.watch(directory, "STARTUP", Process(), prepare=backup)
+            self.assertEqual(("ROOT3_REPLACED", False), (watched["seen"], watched["completed"]))
+        for schema, staged in ((2, False), (3, True)):
+            with tempfile.TemporaryDirectory() as directory, patch.object(runner.cuts, "ledger", return_value=dict(schema_version=schema)):
+                def prepare(world):
+                    backup(world)
+                    if staged: (world / "data/.ledger.migrating-this-attempt").write_bytes(b"staged")
+                with self.assertRaisesRegex(SmokeError, "before the upgrade was observed"):
+                    self.watch(directory, "STARTUP", Process(), prepare=prepare, timeout=0)
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.cuts, "ledger", return_value=dict(schema_version=3)), \
+                self.assertRaisesRegex(SmokeError, "before the upgrade was observed"):
+            self.watch(directory, "STARTUP", Process(), stale=backup, timeout=0)
+        for line in (self.DONE, '[12:00:00] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.210s)! For help, type "help"'):
+            with tempfile.TemporaryDirectory() as directory:
+                watched, _ = self.watch(directory, "STARTUP", Process([line]), prepare=backup)
+                self.assertEqual(("NOT_SEEN_BEFORE_COMPLETION", True), (watched["seen"], watched["completed"]))
+
+    def test_startup_cut_keeps_exact_migrated_content_and_this_attempts_backup(self):
+        import copy
+        root2 = runner.cuts.ledger(REPO / "tests/fixtures/escrow_accounting/cargo-root2.dat")
+        root2["records"][0]["phase"] = "PREPARED"; root2["record_digests"] = ["unchanged"]
+        root3 = dict(copy.deepcopy(root2), schema_version=3, format_epoch=runner.accounting.EPOCHS[3], fluid_accounts=[])
+        disk = dict(ledger=root3, device=runner.oracle.store(runner.oracle.WATER, 5000), rocket=runner.oracle.store(), files={})
+        base = dict(digests=["unchanged"], ledger_sha256="old-sha")
+        first = dict(created=[runner.BACKUPS + "/this-attempt"],
+                     migration_files=dict(backups={"this-attempt": {runner.LEDGER: "old-sha"}}, staged=[]))
+        self.assertTrue(runner.check_startup_cut(None, base, first, disk)["legacy"])
+        with self.assertRaisesRegex(SmokeError, "not root 3"):
+            runner.check_startup_cut(None, base, first, dict(disk, ledger=root2))
+        for change, message in ((lambda d: d["ledger"].update(record_digests=["changed"]), "bytes changed"),
+                                (lambda d: d["device"].update(fluids={runner.oracle.WATER: 4000}), "Raw source amounts")):
+            bad = copy.deepcopy(disk); change(bad)
+            with self.assertRaisesRegex(SmokeError, message): runner.check_startup_cut(None, base, first, bad)
+        for change, message in ((lambda f: f.update(created=[runner.BACKUPS + "/old-attempt"]), "this attempt"),
+                                (lambda f: f["migration_files"]["backups"]["this-attempt"].update({runner.LEDGER: "wrong"}), "this attempt"),
+                                (lambda f: f["migration_files"].update(staged=[".ledger.migrating-this-attempt"]), "staged")):
+            bad = copy.deepcopy(first); change(bad)
+            with self.assertRaisesRegex(ValueError, message): runner.check_startup_cut(None, base, bad, disk)
+
+    def test_startup_case_keeps_the_cut_snapshot_and_completion_is_not_coverage(self):
+        watched = dict(seen="ROOT3_REPLACED", created=[runner.BACKUPS + "/this-attempt"], existed_before=[], completed=False)
+        checks = []
+        with patch.object(runner, "check_startup_cut", lambda world, base, first, disk: checks.append((first, disk)) or dict(migration=dict(backups={}, staged=[]))):
+            row = self.case(watched, "bb", case="UPGRADE_DURING_STARTUP")
+            self.assertEqual("PASS", row["status"])
+            self.assertEqual("AFTER_COMMIT", row["starts"][0]["landed"])
+            self.assertEqual(["UPGRADE_DURING_STARTUP-0-raw.json"], row["raw_files"])
+            self.assertEqual(1, len(checks))
+            for start in row["starts"][1:]: self.assertEqual(0, start["migration"]["migrated"])
+            for observed, lines in ((dict(watched, completed=True), ()), (watched, [self.DONE])):
+                row = self.case(observed, "bb", lines=lines, case="UPGRADE_DURING_STARTUP")
+                self.assertEqual("NOT_COVERED", row["status"])
+            # A root-2 cut cannot use two non-migrating restarts as proof of a post-replacement stop.
+            self.assertEqual("FAILED", self.case(watched, "aa", case="UPGRADE_DURING_STARTUP")["status"])
 
     def test_the_before_commit_snapshot_is_checked_and_kept(self):
         """W373C, review finding 3: the decoded endpoints of the root-2 cut reach the oracle, and the raw file is kept."""

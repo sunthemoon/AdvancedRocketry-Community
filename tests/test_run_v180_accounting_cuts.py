@@ -23,12 +23,12 @@ LOADER_PROBE = PROBE.with_name("EscrowLoaderS6SettlementProbe.java")
 class AccountingCutsRunnerTest(unittest.TestCase):
     def test_families_hold_the_planned_cases_once(self):
         # W373C: the loader family grows from W373B's 6 cases by the 13 existing operator cuts and 4 gated cases.
-        self.assertEqual({"cargo-load": 17, "cargo-unload": 17, "loader": 23, "outcomes": 18},
+        self.assertEqual({"cargo-load": 17, "cargo-unload": 17, "loader": 28, "outcomes": 18},
                          {name: len(cases) for name, cases in runner.FAMILIES.items()})
-        self.assertEqual(75, len(runner.CASES))
-        self.assertEqual(75, sum(len(cases) for cases in runner.FAMILIES.values()))
+        self.assertEqual(80, len(runner.CASES))
+        self.assertEqual(80, sum(len(cases) for cases in runner.FAMILIES.values()))
         self.assertEqual(runner.LOADER_CUTS, runner.FAMILIES["loader"][:6])
-        self.assertEqual((13, 4), (len(runner.LOADER_SETTLEMENT), len(runner.LOADER_ACCOUNTING)))
+        self.assertEqual((13, 9), (len(runner.LOADER_SETTLEMENT), len(runner.LOADER_ACCOUNTING)))
         self.assertEqual(58, len([case for case in runner.CASES if not case.startswith(oracle.LOADER_SETTLEMENT_PREFIX)]))
         self.assertTrue(all(case.startswith(("FC_LOAD_", "FS_LOAD_")) for case in runner.FAMILIES["cargo-load"]))
         self.assertTrue(all(case.startswith(("FC_UNLOAD_", "FS_")) and "_LOAD_" not in case for case in runner.FAMILIES["cargo-unload"]))
@@ -245,11 +245,13 @@ class AccountingCutsRunnerTest(unittest.TestCase):
     def test_the_new_loader_cases_stop_at_their_own_hook_and_report_the_exact_released_state(self):
         plans = {case: runner.spec(case) for case in runner.LOADER_ACCOUNTING}
         self.assertEqual({"loader-settlement"}, {plan["engine"] for plan in plans.values()})
-        self.assertEqual({"LF_S6_AC_PRUNE_BEFORE": 4000, "LF_S6_AC_PRUNE_AFTER": 4000, "LF_S6_AC_LOSS": 3900, "LF_S6_AC_GAIN": 4100},
+        self.assertEqual({"LF_S6_AC_PRUNE_BEFORE": 4000, "LF_S6_AC_PRUNE_AFTER": 4000, "LF_S6_AC_LOSS": 3900, "LF_S6_AC_GAIN": 4100,
+                          "LF_S6_AC_SUBSTITUTE": 4000, "LF_S6_AC_BANK_LOSS": 4000, "LF_S6_AC_BANK_GAIN": 4000,
+                          "LF_S6_AC_PRUNE_SPLIT_TANK": 4000, "LF_S6_AC_PRUNE_SPLIT_BANK": 4000},
                          {case: int(re.search(r"tank=(\d+) ", plan["result"])[1]) for case, plan in plans.items()})
         java = LOADER_PROBE.read_text(encoding="utf-8")
         self.assertIn('"ARCE_LOADER_S6_O_PAUSED cut={} hook={}"', java)
-        self.assertIn('"ARCE_LOADER_S6_O_RESULT cut={} tank={} bank=1000 epochs=1,1 records={} receipts={} state={}{}"', java)
+        self.assertIn('"ARCE_LOADER_S6_O_RESULT cut={} tank={} bank={} epochs=1,1 records={} receipts={} state={}{}"', java)
         plan = plans["LF_S6_AC_LOSS"]
         paused = "[12:00:00] [Server thread/INFO] [x/]: ARCE_LOADER_S6_O_PAUSED cut=LF_S6_AC_LOSS hook=K2"
         result = ("[12:00:00] [Server thread/INFO] [x/]: ARCE_LOADER_S6_O_RESULT cut=LF_S6_AC_LOSS tank=3900 bank=1000 epochs=1,1 "
@@ -268,6 +270,17 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             with self.subTest(start=start, lines=lines), self.assertRaisesRegex(SmokeError, message):
                 runner.observe_loader(plan, start, lines)
         self.assertTrue(plans["LF_S6_AC_PRUNE_AFTER"]["paused"].endswith("cut=LF_S6_AC_PRUNE_AFTER hook=PRUNE_AFTER"))
+
+    def test_w391_variants_have_exact_results_not_scalar_zero_or_refunded_banks(self):
+        for name, bank in (("SUBSTITUTE", 1000), ("BANK_LOSS", 900), ("BANK_GAIN", 1100),
+                           ("PRUNE_SPLIT_TANK", 1000), ("PRUNE_SPLIT_BANK", 1000)):
+            case = oracle.LOADER_SETTLEMENT_PREFIX + "AC_" + name; plan = runner.spec(case)
+            expected = f"ARCE_LOADER_S6_O_RESULT cut={case} tank=4000 bank={bank} epochs=1,1 records=0 receipts=1 state=RELEASED accounting=KNOWN"
+            self.assertEqual(expected, plan["result"])
+            for start in (1, 2):
+                runner.observe_loader(plan, start, [expected])
+                for wrong in (expected.replace("tank=4000", "tank=0"), expected.replace(f"bank={bank}", "bank=800")):
+                    with self.assertRaises(SmokeError): runner.observe_loader(plan, start, [wrong])
 
     def native_run(self, directory, logs):
         """A stand-in for the native session: every start returns a process whose captured lines are `logs[start]`."""

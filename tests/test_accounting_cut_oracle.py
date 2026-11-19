@@ -261,14 +261,14 @@ class AccountingCutOracleTest(unittest.TestCase):
             check = lambda root, cut, start, markers: oracle.check_loader_settlement(self.settlement_disk(root, 4000, 1000, markers), cut, start)
             for start in range(3):
                 self.assertEqual(["REPAIR"], check(planned, "LF_S6_O1_BEFORE", start, 1)["records"])
-            for name in oracle.LOADER_O1_AFTER[:-2]:
+            for name in (n for n in oracle.LOADER_O1_AFTER if not n.startswith("AC_")):
                 self.assertEqual((1, 0), (lambda s: (s["rows"], s["receipts"]))(check(o1, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)))
             for name in oracle.LOADER_O3_AFTER:
                 self.assertEqual(1, check(o3, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)["receipts"])
             for name in oracle.LOADER_O4_AFTER:
                 self.assertEqual([], check(o4, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)["records"])
-            unchanged = [name for name in oracle.LOADER_SETTLEMENT if name not in ("O1_BEFORE", "AC_LOSS", "AC_GAIN")]
-            self.assertEqual(14, len(unchanged))
+            unchanged = [name for name in oracle.LOADER_SETTLEMENT if name not in ("O1_BEFORE", "AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "AC_BANK_LOSS", "AC_BANK_GAIN")]
+            self.assertEqual(16, len(unchanged))
             for name in unchanged:
                 for start in (1, 2):
                     check(o4, oracle.LOADER_SETTLEMENT_PREFIX + name, start, 0)
@@ -334,6 +334,68 @@ class AccountingCutOracleTest(unittest.TestCase):
                         oracle.check_loader_settlement(self.settlement_disk(adjusted, 4000, 1000), cut, 0)
         for cut in ("LF_S6_O3J_ACK", "LF_S6_F7_ACK", "LF_M_D2_C1_ACK", "O1_BEFORE"):
             with self.assertRaisesRegex(SmokeError, "No loader settlement accounting"): oracle.loader_settlement(cut)
+
+    def test_loader_substitution_preserves_two_sorted_keys_and_rejects_wrong_order_or_digest(self):
+        cut = "LF_S6_AC_SUBSTITUTE"
+        states = oracle.loader_settlement(cut)
+        expected = [(oracle.FUEL, 0, 1000, 4000), (oracle.WATER, 4000, 0, -4000)]
+        self.assertEqual(expected, states[0]["rows"][0]["frozen"]["entries"])
+        for state in states:
+            self.assertEqual({oracle.FUEL: 1000, oracle.WATER: 4000}, state["totals"])
+            self.assertEqual(5000, sum(state["source"]["fluids"].values()) + sum(state["destination"]["fluids"].values()))
+            oracle.check_frozen(state["rows"][0], state["source"], state["destination"])
+        for start in range(3):
+            root = ledger("fuel-known-o1" if start == 0 else "fuel-known-o4")
+            account = root["fluid_accounts"][0]
+            # The codec fixture moves water. This test isolates the exact comparison from shared hash validation.
+            account["b"]["e"][0].update(i=oracle.FUEL, d=list(bytes.fromhex(oracle.key_digest(oracle.FUEL))))
+            prototype = account["f"]["e"][0]
+            account["f"]["e"] = [dict(prototype, i=f, d=list(bytes.fromhex(oracle.key_digest(f))), s=s, t=t, a=a) for f, s, t, a in expected]
+            disk = self.settlement_disk(root, 4000, 1000, markers=1 if start == 0 else 0)
+            disk["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["primary"]["fluid"] = oracle.FUEL
+            with patch.object(oracle.accounting, "check", lambda root, fresh_fluid: {oracle.accounting.identity(r["op"]): r for r in root["fluid_accounts"]}):
+                oracle.check_loader_settlement(disk, cut, start)
+                for mutate in (lambda a: a["f"]["e"].reverse(), lambda a: a["f"]["e"][0].update(d=[0] * 32),
+                               lambda a: a["f"]["e"][1].update(a=0)):
+                    bad = copy.deepcopy(disk); mutate(bad["ledger"]["fluid_accounts"][0])
+                    with self.assertRaisesRegex(SmokeError, "Frozen entries differ"): oracle.check_loader_settlement(bad, cut, start)
+                bad = copy.deepcopy(disk); bad["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 0
+                with self.assertRaises(SmokeError): oracle.check_loader_settlement(bad, cut, start)
+
+    def test_loader_bank_loss_and_gain_are_target_adjustments_not_refunds(self):
+        with patch.object(oracle, "FUEL", oracle.WATER):
+            for cut, bank, adjustment in (("LF_S6_AC_BANK_LOSS", 900, 100), ("LF_S6_AC_BANK_GAIN", 1100, -100)):
+                for start in range(3):
+                    state = oracle.loader_settlement(cut)[start]
+                    self.assertEqual([(oracle.WATER, 4000, bank, adjustment)], state["rows"][0]["frozen"]["entries"])
+                    self.assertEqual({oracle.WATER: 4000 + bank}, state["totals"])
+                    root = ledger("fuel-known-o1" if start == 0 else "fuel-known-o4")
+                    root["fluid_accounts"][0]["f"]["e"][0].update(t=bank, a=adjustment)
+                    with patch.object(oracle.accounting, "check", lambda root, fresh_fluid: {oracle.accounting.identity(r["op"]): r for r in root["fluid_accounts"]}):
+                        disk = self.settlement_disk(root, 4000, bank, markers=1 if start == 0 else 0)
+                        oracle.check_loader_settlement(disk, cut, start)
+                        wrong = copy.deepcopy(disk); wrong["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["primary"]["amount"] = 1000
+                        with self.assertRaisesRegex(SmokeError, "Raw destination amounts"): oracle.check_loader_settlement(wrong, cut, start)
+                        wrong = copy.deepcopy(disk); wrong["ledger"]["fluid_accounts"][0]["f"]["e"][0]["a"] *= -1
+                        with self.assertRaisesRegex(SmokeError, "Frozen entries differ"): oracle.check_loader_settlement(wrong, cut, start)
+
+    def test_loader_split_pruning_requires_the_marker_on_exactly_the_unsaved_side(self):
+        with patch.object(oracle, "FUEL", oracle.WATER):
+            for cut, source, target in (("LF_S6_AC_PRUNE_SPLIT_TANK", 0, 1), ("LF_S6_AC_PRUNE_SPLIT_BANK", 1, 0)):
+                for start in range(3):
+                    s, t = (source, target) if start == 0 else (0, 0)
+                    root = ledger("fuel-known-o4")
+                    disk = self.settlement_disk(root, 4000, 1000, markers=s)
+                    disk["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = [{}] * t
+                    oracle.check_loader_settlement(disk, cut, start)
+                    wrong = copy.deepcopy(disk)
+                    wrong["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"] = [{}] * (1 - s)
+                    wrong["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = [{}] * (1 - t)
+                    with self.assertRaisesRegex(SmokeError, "marker count"): oracle.check_loader_settlement(wrong, cut, start)
+                    wrong = copy.deepcopy(disk); wrong["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 3900
+                    with self.assertRaisesRegex(SmokeError, "Raw source amounts"): oracle.check_loader_settlement(wrong, cut, start)
+                    wrong = copy.deepcopy(disk); wrong["ledger"]["tombstones"][0]["released"] = False
+                    with self.assertRaisesRegex(SmokeError, "Receipts differ"): oracle.check_loader_settlement(wrong, cut, start)
 
     def upgraded(self):
         root = ledger("cargo-root2"); root["records"][0]["phase"] = "PREPARED"
