@@ -91,6 +91,11 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, false, Fault.CANCEL, false, false, false, true).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_return_proof_boundary", timeoutTicks = 600)
+    public static void boundaryDuringReturnProofsIsTransientAndCompletesCancelledF7AndF8(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.CANCEL, false, false, false, false, true).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
@@ -130,6 +135,10 @@ public final class EscrowGovernedLiveReturnGameTests {
         private final boolean proofMotion;
         private final int[] impulses = new int[2];
         private final boolean[] proofMotionDone = new boolean[2];
+        private final boolean proofBoundary;
+        private final EscrowFlightSource[] boundarySources = new EscrowFlightSource[2];
+        private final int[] boundaryRefusals = new int[2];
+        private final boolean[] boundaryReleased = new boolean[2];
 
         Scenario(GameTestHelper helper, boolean shared) {
             this(helper, shared, Fault.CANCEL);
@@ -148,13 +157,18 @@ public final class EscrowGovernedLiveReturnGameTests {
         }
         Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut, boolean departureAfterReturn,
                  boolean proofMotion) {
+            this(helper, shared, fault, dismountCut, retryCut, departureAfterReturn, proofMotion, false);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut, boolean departureAfterReturn,
+                 boolean proofMotion, boolean proofBoundary) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             this.fault = fault; this.dismountCut = dismountCut;
             this.departureAfterReturn = departureAfterReturn; this.proofMotion = proofMotion;
+            this.proofBoundary = proofBoundary;
             this.retryCut = retryCut ? new EscrowTerminalRetryCut() : null;
             position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal()
                     + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0) + (departureAfterReturn ? 8_192 : 0)
-                    + (proofMotion ? 16_384 : 0), 100, 594_008);
+                    + (proofMotion ? 16_384 : 0) + (proofBoundary ? 32_768 : 0), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -183,6 +197,7 @@ public final class EscrowGovernedLiveReturnGameTests {
                 terminal(journal);
                 // After this tick's assertions, so the impulse is seen only by END and zeroed by the next entity tick.
                 if (proofMotion && !done) { proofMotion(); }
+                if (proofBoundary && !done) { proofBoundary(); }
                 return;
             }
             var returns = EscrowRuntime.of(server).returns(); var flight = rocket.flightData().orElseThrow();
@@ -345,6 +360,45 @@ public final class EscrowGovernedLiveReturnGameTests {
         }
         private net.minecraft.world.phys.Vec3 windowStart;
 
+        /** Refuse exactly the first live observation made by each return proof callback, not an early visit.
+         * The original launch predicate still runs on every call. No disk predicate or saved proof is replaced. */
+        private void proofBoundary() {
+            var work = returnWork();
+            if (work == null || work.terminal) { return; }
+            int window = work.returned ? 1 : 0;
+            if (boundarySources[window] != null) {
+                helper.assertTrue(work.source == boundarySources[window], "Boundary recovery recaptured the return source");
+                if (boundaryRefusals[window] != 0) {
+                    helper.assertTrue(work.source.unchanged.get()
+                            && !EscrowRuntime.of(level.getServer()).executorHolds().held(record),
+                            "A callback boundary refusal poisoned the return capture or held the flight");
+                }
+                return;
+            }
+            boundarySources[window] = work.source;
+            try {
+                var field = EscrowFlightSource.class.getDeclaredField("boundary"); field.setAccessible(true);
+                var original = (java.util.function.BooleanSupplier) field.get(work.source);
+                field.set(work.source, (java.util.function.BooleanSupplier) () -> {
+                    if (!original.getAsBoolean()) { return false; }
+                    boolean callback = StackWalker.getInstance().walk(frames -> frames.anyMatch(frame ->
+                            frame.getClassName().equals(EscrowGovernedReturn.class.getName())
+                                    && frame.getMethodName().startsWith("lambda$checked$")));
+                    if (boundaryRefusals[window] == 0 && callback) {
+                        helper.assertTrue(!work.pending, "Boundary refusal missed the proof callback");
+                        boundaryRefusals[window]++;
+                        return false;
+                    }
+                    if (boundaryRefusals[window] != 0 && !boundaryReleased[window]) {
+                        helper.assertTrue(work.source.unchanged.get() && work.proofs.isEmpty(),
+                                "The refused callback retained its proof or poisoned the capture");
+                        boundaryReleased[window] = true;
+                    }
+                    return true;
+                });
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+        }
+
         private EscrowGovernedReturn.Work returnWork() {
             try {
                 var field = EscrowGovernedReturn.class.getDeclaredField("work"); field.setAccessible(true);
@@ -366,6 +420,11 @@ public final class EscrowGovernedLiveReturnGameTests {
 
         private void finish(RocketTransferSavedData journal) {
             var server = level.getServer();
+            if (proofBoundary) {
+                helper.assertTrue(boundaryRefusals[0] == 1 && boundaryRefusals[1] == 1
+                                && boundaryReleased[0] && boundaryReleased[1] && sawF6 && sawF7,
+                        "Boundary fixture missed an absence/F6 callback or CANCELLED F7/F8 completion");
+            }
             passenger.stopRiding();
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             server.getPlayerList().remove(passenger); rocket.discard();

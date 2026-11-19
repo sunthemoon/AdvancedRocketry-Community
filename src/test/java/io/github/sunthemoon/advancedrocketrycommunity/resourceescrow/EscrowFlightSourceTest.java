@@ -124,6 +124,61 @@ class EscrowFlightSourceTest {
         assertTrue(EscrowFlightSource.validator(endpoint, envelope).test(root));
     }
 
+    @Test void launchBoundaryRefusalIsTransientAndDoesNotComparePersistentFields() {
+        var boundary = new java.util.concurrent.atomic.AtomicBoolean(false);
+        var source = liveSource(boundary::get);
+        for (int visit = 0; visit < 2_000; visit++) {
+            assertFalse(source.observe());
+            assertTrue(source.unchanged.get(), "A launch-boundary refusal poisoned the capture");
+        }
+        boundary.set(true);
+        assertTrue(source.observe(), "The same capture did not recover after the boundary opened");
+    }
+
+    // Exercise the real observer and native getters without constructing a Level or publishing an entity.
+    static EscrowFlightSource liveSource(java.util.function.BooleanSupplier boundary) {
+        var fixture = io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture.create();
+        var rocket = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.allocate(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class);
+        var level = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.allocate(net.minecraft.server.level.ServerLevel.class);
+        set(net.minecraft.server.level.ServerLevel.class, level, "server",
+                io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.owned());
+        set(net.minecraft.world.level.Level.class, level, "dimension", net.minecraft.world.level.Level.OVERWORLD);
+        set(net.minecraft.world.entity.Entity.class, rocket, "level", level);
+        set(net.minecraft.world.entity.Entity.class, rocket, "type", net.minecraft.world.entity.EntityType.ARMOR_STAND);
+        set(net.minecraft.world.entity.Entity.class, rocket, "chunkPosition", new net.minecraft.world.level.ChunkPos(0, 0));
+        set(net.minecraft.world.entity.Entity.class, rocket, "uuid", fixture.record().sourceEntityId());
+        position(rocket, new Vec3(8.5, 80, 8.5));
+        set(net.minecraft.world.entity.Entity.class, rocket, "deltaMovement", Vec3.ZERO);
+        set(net.minecraft.world.entity.Entity.class, rocket, "isAddedToWorld", true);
+        set(net.minecraft.world.entity.Entity.class, rocket, "passengers", com.google.common.collect.ImmutableList.of());
+        var data = new net.minecraft.network.syncher.SynchedEntityData(rocket);
+        try {
+            var field = net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_NO_GRAVITY"); field.setAccessible(true);
+            @SuppressWarnings("unchecked") var key = (net.minecraft.network.syncher.EntityDataAccessor<Boolean>) field.get(null);
+            data.define(key, true);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+        set(net.minecraft.world.entity.Entity.class, rocket, "entityData", data);
+        var flight = EscrowGovernedReturnAction.flight(fixture.source());
+        var wrapper = RocketEscrowSection.decode(fixture.source().getCompound("wrapper"));
+        set(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class, rocket, "flightData", flight);
+        set(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class, rocket, "snapshot", fixture.record().sourceSnapshot());
+        set(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class, rocket, "ownerId", fixture.record().ownerId());
+        set(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class, rocket, "assemblyTransactionId", fixture.record().logicalRocketId());
+        set(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class, rocket, "escrowSection", wrapper);
+        rocket.noPhysics = true;
+        return new EscrowFlightSource(rocket, boundary);
+    }
+
+    static void position(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket, Vec3 position) {
+        set(net.minecraft.world.entity.Entity.class, rocket, "position", position);
+    }
+
+    private static void set(Class<?> owner, Object target, String field, Object value) {
+        io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.set(owner, target, field, value);
+    }
+
+
     private static ListTag vector(double x, double y, double z) {
         var list = new ListTag(); list.add(DoubleTag.valueOf(x)); list.add(DoubleTag.valueOf(y)); list.add(DoubleTag.valueOf(z)); return list;
     }
