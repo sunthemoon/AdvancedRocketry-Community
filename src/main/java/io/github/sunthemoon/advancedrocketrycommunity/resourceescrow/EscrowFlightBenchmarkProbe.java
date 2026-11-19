@@ -46,6 +46,12 @@ final class EscrowFlightBenchmarkProbe {
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
         arrivalCost = EscrowFlightBenchmarkArrivalCost.selected(System.getProperty("advancedrocketrycommunity.escrowScenario"))
                 ? new EscrowFlightBenchmarkArrivalCost(server) : null;
+        if (arrivalCost != null) {
+            // Capture the opt-in first, then use the existing start lifecycle's strict first-event seam.
+            // No product/test gate is widened; this dedicated JVM still requires the benchmark case and hooks.
+            System.setProperty("advancedrocketrycommunity.escrowScenario", EscrowFlightBenchmarkArrivalCost.lifecycleScenario(
+                    System.getProperty("advancedrocketrycommunity.escrowScenario")));
+        }
         load = new EscrowFlightBenchmarkLoad(server);
     }
     void tick() {
@@ -80,7 +86,7 @@ final class EscrowFlightBenchmarkProbe {
                 tag.getCompound("RocketEntityData").put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 0, List.of()).encode());
                 rocket.load(tag); EscrowTags.require(load.earth.addFreshEntity(rocket), "Benchmark source publication refused"); sources.add(rocket);
             }
-            competing = new EscrowFlightBenchmarkWork(server, data, metrics); competing.create();
+            competing = new EscrowFlightBenchmarkWork(server, data, metrics, arrivalCost != null); competing.create();
             initialized = true;
         }
         competing.tick();

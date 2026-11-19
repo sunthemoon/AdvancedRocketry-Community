@@ -34,6 +34,7 @@ final class EscrowFlightBenchmarkArrivalCost {
     private int comparedResults;
 
     static boolean selected(String scenario) { return SCENARIO.equals(scenario); }
+    static String lifecycleScenario(String scenario) { return selected(scenario) ? "start" : scenario; }
 
     EscrowFlightBenchmarkArrivalCost(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);

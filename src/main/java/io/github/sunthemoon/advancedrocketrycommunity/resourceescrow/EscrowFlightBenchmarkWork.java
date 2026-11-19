@@ -27,9 +27,10 @@ final class EscrowFlightBenchmarkWork {
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity ordinaryLoader;
     private FluidFuelLoaderEscrowFixtures.NativeFill ordinaryNative, settlementNative;
 
-    EscrowFlightBenchmarkWork(MinecraftServer server, ResourceEscrowSavedData data, EscrowFlightBenchmarkMetrics metrics) {
+    EscrowFlightBenchmarkWork(MinecraftServer server, ResourceEscrowSavedData data, EscrowFlightBenchmarkMetrics metrics,
+                             boolean nativeAccounting) {
         this.server = server; this.data = data; this.metrics = metrics; coordinator = data.bind(server);
-        nativeAccounting = EscrowFlightBenchmarkArrivalCost.selected(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        this.nativeAccounting = nativeAccounting;
     }
     void create() {
         if (nativeAccounting) { createAccounted(); return; }

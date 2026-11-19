@@ -12,8 +12,10 @@ class EscrowFlightBenchmarkArrivalCostTest {
     @Test void attributionRequiresItsExplicitScenarioAndIsOffForNormalAndRecoveryRuns() {
         for (var scenario : new String[] {null, "", "start", "recover", "arrival-second-call-cost-extra"}) {
             assertFalse(EscrowFlightBenchmarkArrivalCost.selected(scenario));
+            assertEquals(scenario, EscrowFlightBenchmarkArrivalCost.lifecycleScenario(scenario));
         }
         assertTrue(EscrowFlightBenchmarkArrivalCost.selected("arrival-second-call-cost"));
+        assertEquals("start", EscrowFlightBenchmarkArrivalCost.lifecycleScenario("arrival-second-call-cost"));
     }
 
     @Test void changedStateOrHoldFailsInsteadOfBecomingATimingSample() {
