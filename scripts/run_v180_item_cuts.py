@@ -135,7 +135,9 @@ def check_frozen_progress(case, before, after):
     if case in ("IS_O1_BEFORE", "IS_LOAD_O1_BEFORE", "IS_VETO_DESTINATION_SAVED", "IS_LOAD_VETO_DESTINATION_SAVED"):
         require(native.same_typed(before, after), "Restart changed the held ledger")
     else:
-        require_progress(before, after)
+        # Item receipts deliberately remain schema-3 UNKNOWN without fluid rows.
+        # check_settlement has already enforced that typed item-only boundary.
+        require_progress(before, after, fresh_fluid=False)
 
 def run(args):
     native.assert_pin(args.source_commit); native.require_lock(args.lock_owner); native.preflight()

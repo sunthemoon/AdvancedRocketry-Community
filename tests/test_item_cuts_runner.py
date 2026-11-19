@@ -18,6 +18,35 @@ from test_loader_cut_nbt import compound, string, region
 
 
 class ItemCutsRunnerTest(unittest.TestCase):
+    def test_root3_item_release_keeps_unknown_and_exact_frozen_choice(self):
+        import escrow_accounting as accounting
+        endpoint = dict(kind="ENTITY", identity=[5, 6, 7, 8])
+        observation = dict(endpoint=endpoint, missing=0, quantity=0, normalized_wrapper={})
+        intent = dict(schema_version=2, actor=[1, 1, 1, 1], actor_name="Server", digest="a" * 64,
+                      choice="ACCEPT_CURRENT", confirmed_tick=10, observations=[observation],
+                      members=[dict(op_id=[1, 2, 3, 4])])
+        op = dict(schema_version=2, op_id=[1, 2, 3, 4], kind="ITEM_CARGO_UNLOAD", source=endpoint,
+                  destination=dict(kind="BLOCK_ENTITY"), transfer_guard=dict(transfer_id=[9, 9, 9, 9]), settlement=intent)
+        receipt = dict(schema_version=3, accounting_status="UNKNOWN", op_id=op["op_id"], actor=intent["actor"],
+                       actor_name="Server", decision_digest=intent["digest"], choice="ACCEPT_CURRENT", confirmed_tick=10,
+                       guards=[op["transfer_guard"]], before_choice=[{k: v for k, v in observation.items() if k != "normalized_wrapper"}])
+        before = dict(schema_version=3, format_epoch=accounting.EPOCHS[3], fluid_accounts=[], records=[op], tombstones=[])
+        after = dict(before, records=[], tombstones=[receipt])
+        runner.check_frozen_progress("IS_BIND_BEFORE", before, after)
+        runner.check_frozen_progress("IS_BIND_BEFORE", after, copy.deepcopy(after))
+        for key, value in (("actor_name", "changed"), ("decision_digest", "b" * 64), ("choice", "ABANDON"),
+                           ("guards", []), ("before_choice", []), ("op_id", [8, 8, 8, 8]),
+                           ("accounting_status", "KNOWN"), ("accounting_digest", [0] * 32), ("schema_version", 4)):
+            changed = copy.deepcopy(after); changed["tombstones"][0][key] = value
+            with self.assertRaises(runner.native.smoke.SmokeError):
+                runner.check_frozen_progress("IS_BIND_BEFORE", before, changed)
+        changed = copy.deepcopy(after); changed.update(schema_version=2); changed.pop("fluid_accounts")
+        with self.assertRaises(runner.native.smoke.SmokeError):
+            runner.check_frozen_progress("IS_BIND_BEFORE", before, changed)
+        # The generic fresh-fluid mode still refuses a rowless UNKNOWN receipt.
+        with self.assertRaises(runner.native.smoke.SmokeError):
+            runner.require_progress(before, after)
+
     def test_matrix_and_genuine_replacement_boundaries(self):
         self.assertEqual(57, len(runner.CASES))
         self.assertEqual(12, sum(v["family"] == "D-S1" for v in runner.CASES.values()))
