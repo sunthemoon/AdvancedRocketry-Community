@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 102c97fe5 (X03-C merged, W387, R507, R512 and R513: the operator's whole-world repair on the accounting-enabled build, for fresh root-3 worlds and root-2 worlds the activated JAR upgrades, after W387R's read-only review and Root's; scripts and tests only; branch run 44430696682 and governance run 44430709971 at `337c4261b` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: b1e470b0d (W373B and W373C merged, R514, R515 and R517: the native accounting cut and outcome cases, the root-2 upgrade and old-JAR boundary cases, and the fuel loader's settlement cuts with the exact account oracle, after W373BR's two read-only reviews; scripts, tests and gated probes only; branch run 44486517836 and governance run 44486518843 at `a032ee4bb` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 44435213421 at 9685a289a (X03-C merged at `102c97fe5`) passed on its first attempt: build 16.6 minutes, shards 0 to 3 in 14.6, 18.9, 21.6 and 17.1 minutes, 1,865 GameTests, with 3, 3, 3 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44435213708 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
@@ -136,7 +136,7 @@ What is still open:
   are merged (W361, W362, W364, W365 and W366). The activation is merged as `5951d6df2` after W372R's read-only
   review (R466 to R505): `EscrowAccountingFormat.ENABLED` is true, so every native world now writes a root-3 ledger.
   Slice E part 2 runs the campaign families on root 3 (W373) and adds the native accounting cuts, including R-044's
-  old-JAR case (W373B). The revised R-044 text for both format boundaries is drafted from that case
+  old-JAR case (W373B, merged with W373C's loader cuts as `b1e470b0d`, R517). The revised R-044 text for both format boundaries is drafted from that case
   ([R044-SIGNOFF-DRAFT](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) section 5, R516). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
   governed (escrow-fuelled) flight got no D0 decision, which W363 fixed (R444). W360 built the remaining cargo and
   ledger rows (R448).

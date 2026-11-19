@@ -5,7 +5,7 @@
 | Status | **DRAFT, not signed.** Root wrote it on 2026-11-13 under Root decision R433 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). R-044 stays unaccepted until the owner signs. On 2026-11-19 Root added section 5, the revised text for both format boundaries, which replaces section 1 for signing once candidate C4 repeats the root-3 case. The same day Root corrected item 4 of section 1: the Chinese text said the backup taken before the upgrade, but W176 and W336 restored the backup taken before the downgrade, as the English rendering already said. |
 | Kept as failed | `cargo-G2-REUSE` rows 3 to 5 and `w336-downgrade` on candidate C3, W176's three downgrade rows, and W373B's `accounting-root3-old-jar`, with C4's reruns of these families, stay FAIL in every record before and after a signature. No assertion is relaxed or waived. |
 | Register | The downgrade paragraph of R-044 in the [risk register](../../../11-RISK-REGISTER.md) (Root decision R138). |
-| Evidence | [W176](W176.md), [W336](W336.md), C3's `cargo-G2-REUSE` and `w336-downgrade` ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 2.1, 8.5 and 9.3), and W373B's `accounting-root3-old-jar` (`records/W373B.md` on branch `codex/v1.8.0-w373b` until it is merged; evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W373B/campaign2/accounting-root3-old-jar-attempt2/`). |
+| Evidence | [W176](W176.md), [W336](W336.md), C3's `cargo-G2-REUSE` and `w336-downgrade` ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 2.1, 8.5 and 9.3), and W373B's `accounting-root3-old-jar` ([W373B](W373B.md); evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W373B/campaign2/accounting-root3-old-jar-attempt2/`). |
 
 ## 1. Proposed text for the owner to sign
 
@@ -87,7 +87,7 @@ Until then, R-044 is not accepted, and the two families are the failed families 
 ## 5. Revised text for both format boundaries (draft, 2026-11-19)
 
 W373B ran C3's JAR on a world whose escrow ledger the activated build had upgraded to root 3 (`OLD_JAR_REFUSAL` in
-section 3 and observation O1 of `records/W373B.md` on branch `codex/v1.8.0-w373b`). Root also decoded the three
+section 3 and observation O1 of [W373B](W373B.md)). Root also decoded the three
 worlds that case archived after each refused start (`old-0-world.zip` to `old-2-world.zip`). In each, `level.dat`
 differed from the previous one only in `/Data/LastPlayed`. `level.dat_old` was the previous `level.dat`. The block and
 item registries kept all 1,137 and 1,506 entries. The text below replaces section 1 for signing. Candidate C4 runs the
