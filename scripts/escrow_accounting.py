@@ -322,11 +322,11 @@ def expect_frozen(row, source, destination):
         raise SmokeError("Chosen one-fluid cargo fixture acquired another fluid")
 
 
-def check_progress(before, after):
+def check_progress(before, after, *, fresh_fluid=True):
     """A restart may retire a planned row, but cannot replace a baseline or an O1-frozen account."""
     if before.get("schema_version", 2) != 3:
         return
-    old = check(before); new = check(after)
+    old = check(before, fresh_fluid=fresh_fluid); new = check(after, fresh_fluid=fresh_fluid)
     if after.get("schema_version") != 3: raise SmokeError("Restart downgraded the accounting root")
     for uid, row in old.items():
         if "f" in row and new.get(uid) != row:

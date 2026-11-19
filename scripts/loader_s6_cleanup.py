@@ -1,6 +1,7 @@
 """Exact terminal authority, checked removal and pruning prefixes for the loader fixture."""
 import copy
 import re
+import escrow_accounting as accounting
 import loader_s6_terminal as terminal
 from loader_s6_terminal import forward, flight, progress, legacy, SmokeError
 
@@ -15,7 +16,8 @@ def check(image, restart, identity, cut, witness):
     if restart: return terminal.recover(image, restart, identity, witness)
     try:
         disk = forward.normalize(image["native"]); capture = forward.normalize(witness["capture"])
-        legacy.require(set(disk["ledger"]) == FIELDS and len(capture["transfers"]) == 1, "Cleanup changed its complete root or captured T")
+        framing = accounting.resource_projection(disk["ledger"])
+        legacy.require(set(framing) == FIELDS and len(capture["transfers"]) == 1, "Cleanup changed its complete root or captured T")
         row = capture["transfers"][0]; arm = row["native_transfer"]["armed"]
         original = progress.prelaunch(dict(id=legacy.ROCKET, RocketEntityData=dict(schema_version=3)), row, disk["ledger"]["ledger_id"])
         baseline = copy.deepcopy(image); baseline["native"].update(source=original, destination=None, journal=capture)

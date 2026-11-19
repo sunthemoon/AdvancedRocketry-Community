@@ -58,6 +58,48 @@ def retired_disk():
 
 
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
+    def test_accounted_veto_keeps_the_o1_choice_separate_from_one_sided_disk(self):
+        import escrow_accounting as accounting
+        import loader_cut_nbt as nbt
+        from test_escrow_accounting_readers import fixture
+
+        for load in (False, True):
+            case = "FS_LOAD_VETO_DESTINATION_SAVED" if load else "FS_VETO_DESTINATION_SAVED"
+            with self.subTest(case=case):
+                disk = released_disk()
+                root = nbt.plain(fixture("cargo-known-o1"))
+                op = root["records"][0]
+                op["kind"] = "FLUID_CARGO_LOAD" if load else "FLUID_CARGO_UNLOAD"
+                disk["ledger"] = root
+                disk["rocket"].update(cargo=1000 if load else 5000, epoch=int(load), bound=load,
+                                      markers=[dict(op_id=op["op_id"], seq=op["seq"], role="DESTINATION", epoch_after=1)] if load else [])
+                disk["device"].update(amount=5000 if load else 1000, epoch=int(not load), role="LOAD" if load else "UNLOAD",
+                                     markers=[] if load else [dict(op_id=op["op_id"], seq=op["seq"], role="DESTINATION", epoch_after=1)])
+                account = root["fluid_accounts"][0]
+                self.assertEqual((1, 4000, 1000, 0), (account["f"]["k"], *(
+                    account["f"]["e"][0][key] for key in ("s", "t", "a"))))
+                for restarted in (False, True):
+                    runner.check(case, disk, restarted)
+                    for mutate in (
+                            lambda d: d["rocket"].update(cargo=2000 if load else 4000),
+                            lambda d: d["device"].update(amount=4000 if load else 2000),
+                            lambda d: d["ledger"].update(records=[]),
+                            lambda d: d["ledger"].update(fluid_accounts=[])):
+                        changed = copy.deepcopy(disk); mutate(changed)
+                        with self.assertRaises(runner.smoke.SmokeError):
+                            runner.check(case, changed, restarted)
+                # Even a self-consistent, re-committed account must retain the original O1 choice.
+                changed = copy.deepcopy(disk)
+                row = changed["ledger"]["fluid_accounts"][0]
+                row["f"]["e"][0].update(s=5000, a=-1000)
+                commitment = accounting.digest(nbt.Tag(nbt.COMPOUND, {"rows": nbt.Tag(nbt.LIST, (nbt.COMPOUND, [
+                    nbt.Tag(nbt.COMPOUND, {"op": nbt.Tag(nbt.INTS, row["op"]), "digest": nbt.Tag(
+                        nbt.BYTES, bytes.fromhex(accounting.digest(accounting.row_tag(row))))})]))}))
+                changed["ledger"]["records"][0]["settlement"]["account_commitment"] = list(bytes.fromhex(commitment))
+                accounting.check(changed["ledger"])
+                with self.assertRaisesRegex(runner.smoke.SmokeError, "Frozen transfer"):
+                    runner.check(case, changed, True)
+
     def test_f6_requires_the_joint_boundary_and_a_stored_landed_destination(self):
         case = "FF_F6_AFTER_CARGO"
         prefix = "ARCE_RELEASE_CARGO_CUT_PAUSED cut=" + case + " boundary="

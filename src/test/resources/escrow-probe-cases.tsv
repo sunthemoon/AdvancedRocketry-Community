@@ -176,7 +176,7 @@ FS_LOAD_O4_AFTER	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s
 FS_LOAD_O4_BEFORE	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s5_cuts.py
 FS_LOAD_PRUNE_AFTER	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_w330_runner.py
 FS_LOAD_PRUNE_BEFORE	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s5_cuts.py
-FS_LOAD_VETO_DESTINATION_SAVED	scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_load_veto_log.py;tests/test_cargo_w330_runner.py
+FS_LOAD_VETO_DESTINATION_SAVED	scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_load_veto_log.py;tests/test_cargo_s4_s5_cuts_runner.py;tests/test_cargo_w330_runner.py
 FS_O1_AFTER	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_s4_s5_cuts_runner.py;tests/test_run_v180_accounting_cuts.py
 FS_O1_BEFORE	scripts/run_v180_accounting_cuts.py;scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_s4_s5_cuts_runner.py
 FS_O2_DEVICE_AFTER	scripts/run_v180_cargo_s4_s5_cuts.py;tests/test_cargo_s4_s5_cuts_runner.py
@@ -250,7 +250,7 @@ IR_ROOT	scripts/run_v180_item_cuts.py
 IS_ABANDON_DEVICE	scripts/run_v180_item_cuts.py
 IS_ABANDON_ROCKET	scripts/run_v180_item_cuts.py
 IS_BIND_AFTER	scripts/run_v180_item_cuts.py
-IS_BIND_BEFORE	scripts/run_v180_item_cuts.py
+IS_BIND_BEFORE	scripts/run_v180_item_cuts.py;tests/test_item_cuts_runner.py
 IS_BIND_VETO	scripts/run_v180_item_cuts.py
 IS_LOAD_	tests/test_cargo_load_veto_log.py;tests/test_cargo_w330_runner.py;tests/test_w360_uncovered_rows.py
 IS_LOAD_ABANDON_DEVICE	scripts/run_v180_item_cuts.py

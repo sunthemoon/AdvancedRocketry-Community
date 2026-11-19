@@ -2,6 +2,7 @@
 import copy
 import re
 import struct
+import escrow_accounting as accounting
 
 import loader_cut_nbt as nbt
 import loader_cut_oracle as legacy
@@ -82,7 +83,8 @@ def check(image, restart, identity=None, cut=F1[0], witness=None):
                        classic_first_moon_landing=dict(schema_version=1, state="EMPTY"),
                        format_epoch="v1.8.0-first-moon-landing"), "Pre-F2 acquired a destination or T")
         armed_cut = cut in F1[-2:] + F2[:1]
-        legacy.require(root["schema_version"] == 2 and root["format_epoch"] == "v1.8.0-resource-escrow" and root["issued_through"] == 1
+        framing = accounting.resource_projection(root)
+        legacy.require(framing["schema_version"] == 2 and framing["format_epoch"] == "v1.8.0-resource-escrow" and root["issued_through"] == 1
                        and not any(root[key] for key in ("records", "floors", "tombstones", "rocket_authorities"))
                        and root["issued_launch_serial"] == int(armed_cut)
                        and root["writer_generation"] == (6 if restart and armed_cut else 4 if armed_cut else 3)
