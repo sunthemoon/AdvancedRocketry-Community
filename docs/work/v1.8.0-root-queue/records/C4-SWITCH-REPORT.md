@@ -53,11 +53,11 @@ requires these fields to stay PENDING; the drafting checkout and worker smokes a
 
 | Identity or evidence | C4 |
 |---|---|
-| Candidate commit | PENDING |
-| Hosted regression run and attempt | PENDING |
-| Governance run and attempt | PENDING |
-| Candidate JAR SHA-256 | PENDING |
-| Campaign run, selection and evidence location | PENDING |
+| Candidate commit | `659bbcb6a745885565c07d98f5d695d43beef3f2` (Root decision R529) |
+| Hosted regression run and attempt | 44630684725, attempt 1: build 15.2 minutes, shards 0 to 3 in 16.9, 21.3, 19.7 and 18.5 minutes, 1,867 GameTests, 4, 5, 1 and 3 `server-overloaded` entries (maximum 8) |
+| Governance run and attempt | 44630684714, attempt 1 |
+| Candidate JAR SHA-256 | `c048743e61da4f939ce0492ca3ec73b7d69ef1634577bebc3279c91cf506cea1` (the hosted build artifact `v180-build-659bbcb6a745885565c07d98f5d695d43beef3f2-1`; the same hash is in its build evidence `artifact-sha256.txt` and `runtime-identity.json`) |
+| Campaign run, selection and evidence location | Started 2026-11-20 at 07:18 from a worktree detached at the candidate: all 78 families of `scripts/run_v180_integrated_campaign.py` (dry run: 78 families, no unmet requirement), then X01 S3 (`scripts/run_v180_crash_replay.py`, all 12 cases) and X02 S5 (`scripts/run_v180_storage_faults.py`, all 72 cases); evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/C4/` (outside Git). Results PENDING |
 
 The intended candidate carries the separately reviewed accounting activation (section 12), the work since C3
 (sections 2.2 and 2.3), and all five admission switches still off. This is a target, not a claim that activation,

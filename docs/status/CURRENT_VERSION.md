@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 7282c4be6 (W391 merged, R520, R527 and R528: the fuel loader's missing native accounting variants (fluid substitution, rocket-bank loss and gain, split pruning saves, a stop after the migration's replacement) with exact oracles, after W391R's read-only review; gated probe, scripts and tests; branch run 44625121627 and governance run 44625124399 at `44866dc62` passed; W394's capacity diagnostic was merged just before as `79aabbadf`). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44615417839 at 7f0cdad78 (W392 merged at `3f7562467`) passed on its first attempt: build 15.1 minutes, shards 0 to 3 in 15.9, 17.4, 19.4 and 15.3 minutes, 1,867 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44615417756 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44630684725 at 659bbcb6a (candidate C4: W395, W394 and W391 merged) passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 16.9, 21.3, 19.7 and 18.5 minutes, 1,867 GameTests, with 4, 5, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44630684714 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -150,7 +150,9 @@ What is still open:
   on the candidate.
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
-  and the rows merge, the next hosted build is candidate C4, on which every family runs again. W327's
+  and the rows merge, the next hosted build is candidate C4, on which every family runs again. Candidate C4 is
+  `659bbcb6a` (R529: hosted run 44630684725 passed on its first attempt, JAR SHA-256 `c048743e…f506cea1`); its
+  78 campaign families, X01 S3 and X02 S5 started natively on 2026-11-20 at 07:18. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
