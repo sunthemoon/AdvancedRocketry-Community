@@ -1831,7 +1831,11 @@ Gate result.
   bullets in the part 1 note. The measured cold, border-crossing and largest-margin costs and
   readiness times remain before admission (R22 answer 6).
 - A launch-boundary refusal at the exact moment of a return proof callback holds that return
-  until a restart (flight fix review residual).
+  until a restart (flight fix review residual): fixed by W389 (`7c8265395`, Root decision R522). The
+  flight source compares its native fields first and then treats a boundary refusal as "not now", so the
+  callback releases its proofs and the return proves again on a later visit. A boundary-only refusal that
+  begins after an F1 or F7 capture no longer revokes the queued write; F1 repeats the boundary after ARMED
+  and before F2, and F7 has no later boundary check (accepted in R522).
 - N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect).
 - Arrival entity readiness (W13-N1): fixed by W83b (`ff5e5dc1`, Root decision R32). An arrival waits at its
   PREPARED wait until every column of the destination's checked column set has its entity sections
