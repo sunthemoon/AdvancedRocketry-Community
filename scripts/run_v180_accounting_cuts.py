@@ -203,11 +203,19 @@ def run_cargo(run, case, plan, row):
     shutil.rmtree(world)
 
 
+def loader_parent(run):
+    """A short sibling of the session for the loader runner's own sessions. Nested under the campaign's session
+    name, the copied Forge libraries exceed Windows' 260-character path limit."""
+    parent = run.session.parent / ("AL-" + run.token[:12])
+    native.require(parent.parent == native.TEMP.resolve() and not smoke.is_link_or_junction(parent), "Unsafe loader session parent")
+    parent.mkdir(exist_ok=True)
+    return parent
+
+
 def run_loader(run, case, row):
     """The unchanged loader runner and oracle first, then the account oracle on the disks that runner decoded."""
     args = copy.copy(run.args)
-    args.session_parent = run.session / "loader"
-    args.session_parent.mkdir(exist_ok=True)
+    args.session_parent = loader_parent(run)
     args.follow_ups = False
     pins = dict(run.pin, hooks={p: digest(REPO / p) for p in loader.HOOK_FILES},
                 harness={p: digest(REPO / p) for p in loader.HARNESS_FILES})
@@ -230,6 +238,10 @@ def run_loader(run, case, row):
             entry.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {start['restart']}: {failure}")
     if len(result["starts"]) != 3:
         row["findings"].append(f"The loader runner completed {len(result['starts'])} of 3 starts")
+    # The loader runner removes its own session; this parent is removed only when nothing is left in it.
+    row["loader_parent_left"] = sorted(p.name for p in args.session_parent.iterdir())
+    if not row["loader_parent_left"]:
+        args.session_parent.rmdir()
 
 
 def family(run):

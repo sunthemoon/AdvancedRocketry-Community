@@ -107,10 +107,12 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             with self.assertRaisesRegex(SmokeError, "malformed or tagged"): runner.fluid_store(fluid, section)
 
     def loader_run(self, directory):
-        root = Path(directory)
+        root = Path(directory).resolve()
         (root / "session").mkdir(); (root / "evidence").mkdir()
         args = argparse.Namespace(lock_owner="owner", jar=root / "candidate.jar")
-        return types.SimpleNamespace(args=args, session=root / "session", evidence=root / "evidence", pin=dict(jar_sha256="0" * 64))
+        patcher = patch.object(runner.native, "TEMP", root); patcher.start(); self.addCleanup(patcher.stop)
+        return types.SimpleNamespace(args=args, session=root / "session", evidence=root / "evidence", pin=dict(jar_sha256="0" * 64),
+                                     token="0123456789abcdef0123456789abcdef")
 
     def test_loader_cases_keep_the_loader_runner_and_add_the_account_oracle(self):
         calls = []
@@ -123,9 +125,30 @@ class AccountingCutsRunnerTest(unittest.TestCase):
                 patch.object(runner.oracle, "check_loader", lambda disk, case, restart: dict(checked=(case, restart, disk["index"]))):
             run = self.loader_run(directory); row = dict(starts=[], findings=[])
             runner.run_loader(run, "LF_M_D2_C1_ACK", row)
-            self.assertEqual([("LF_M_D2_C1_ACK", "LF_M_D2_C1_ACK", "owner", "loader", False, ["harness", "hooks", "jar_sha256"])], calls)
+            # The loader's own sessions go to a short sibling of the session, never below its long campaign name.
+            self.assertEqual([("LF_M_D2_C1_ACK", "LF_M_D2_C1_ACK", "owner", "AL-0123456789ab", False, ["harness", "hooks", "jar_sha256"])], calls)
             self.assertEqual([], row["findings"])
             self.assertEqual([("LF_M_D2_C1_ACK", index, index) for index in range(3)], [s["oracle"]["checked"] for s in row["starts"]])
+            self.assertEqual([], row["loader_parent_left"])
+            self.assertFalse((run.session.parent / "AL-0123456789ab").exists())
+            # The longest loader path of a campaign stays inside Windows' limit.
+            longest = (Path("D:/GitHub/ARCE-Task-Evidence/Temp") / "AL-0123456789ab" / ("LF_M_C2_PARTIAL_REPLACED-" + "0" * 32)
+                       / "libraries/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412-mappings-merged.txt")
+            self.assertLess(len(str(longest)), 248)
+
+    def test_a_loader_session_left_behind_keeps_its_parent_and_is_reported(self):
+        def run_cut(args, case, evidence, owner, pins):
+            (args.session_parent / "LF_M_D2_C1_ACK-left").mkdir()
+            return dict(status="PASS", starts=[dict(restart=index, disk=dict(ledger=None)) for index in range(3)])
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader, "run_cut", run_cut), \
+                patch.object(runner.oracle, "check_loader", lambda disk, case, restart: {}):
+            run = self.loader_run(directory); row = dict(starts=[], findings=[])
+            runner.run_loader(run, "LF_M_D2_C1_ACK", row)
+            self.assertEqual(["LF_M_D2_C1_ACK-left"], row["loader_parent_left"])
+            self.assertTrue((run.session.parent / "AL-0123456789ab").is_dir())
+            run.session = Path(directory).resolve() / "elsewhere" / "session"
+            with self.assertRaisesRegex(ValueError, "Unsafe loader session parent"): runner.loader_parent(run)
 
     def test_a_loader_finding_an_oracle_finding_and_a_missing_start_all_fail_the_case(self):
         def failing(disk, case, restart):
