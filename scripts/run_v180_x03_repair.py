@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""X03 root-2 native repair family. Run under the caller's heavy-JVM lock.
+"""X03 accounting-enabled native repair family. Run under the caller's heavy-JVM lock.
 
 --derive-runtime-list collects two complete, non-promotable development runs.
 It reports deviations instead of authorizing them. Campaign runs use only the
@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import uuid
 
@@ -126,11 +127,14 @@ def configure_session(session, world, port):
     (session / 'server.properties').write_text(''.join(f'{k}={v}\n' for k, v in sorted(properties.items())), encoding='ascii')
 
 
-def start(args, session, evidence, label, world, case, scenario, *, forced=False):
+def start(args, session, evidence, label, world, case, scenario, *, forced=False, legacy=False):
     require_lock(args.lock_owner)
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
     verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
-    oracle.require(oracle.digest(session / 'mods' / args.jar.name) == args.jar_sha256, 'INSTALLED_CANDIDATE_CHANGED')
+    installed_hash = args.root_2_jar_sha256 if legacy else args.jar_sha256
+    if legacy:
+        verify_root_2(args)
+    oracle.require(oracle.digest(session / 'mods' / args.jar.name) == installed_hash, 'INSTALLED_CANDIDATE_CHANGED')
     preflight()
     measured = getattr(args, 'measurement_mode', False)
     before = disk_snapshot(world) if measured else None
@@ -146,7 +150,8 @@ def start(args, session, evidence, label, world, case, scenario, *, forced=False
                          '-Dadvancedrocketrycommunity.escrowCase=' + case]
         expected = seed.marker(case, 0 if forced else 1)
     log = evidence / (label + '.log')
-    row = dict(label=label, case=case, scenario=scenario, command=command, log=log.name)
+    row = dict(label=label, case=case, scenario=scenario, command=command, log=log.name,
+               jar_sha256=installed_hash, legacy_root_2=legacy)
     write_json(evidence / (label + '-invocation.json'), row)
     process = smoke.CapturedProcess(command, session, log)
     try:
@@ -198,12 +203,13 @@ def observation_stop(process, expected, timeout, label, measured):
     return dict(exit_code=code, contradictions=contradictions)
 
 
-def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE'):
+def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE', *, legacy=False):
     world = session / ('world-' + label)
-    start(args, session, evidence, label + '-forced', world, case, 'start', forced=True)
+    seed_options = {'legacy': True} if legacy else {}
+    start(args, session, evidence, label + '-forced', world, case, 'start', forced=True, **seed_options)
     transfer = transfer_id(world)
     for cycle in (1, 2):
-        lines, log = start(args, session, evidence, label + '-protected-' + str(cycle), world, case, 'recover')
+        lines, log = start(args, session, evidence, label + '-protected-' + str(cycle), world, case, 'recover', **seed_options)
         if case in ('FF_REBUILD_SOURCE', 'FF_KEEP_SOURCE'):
             check_fence(lines, transfer)
         else:
@@ -217,8 +223,45 @@ def seed_world(args, session, evidence, label, case='FF_REBUILD_SOURCE'):
 
 
 def make_plan(args, source, backup, log, transfer, report, witness=None):
-    return repair.plan(source, backup, args.jar, log, report, transfer, repair.PROFILE_DISABLED,
-                       'W380 native harness', 'X03 whole-world copy repair; no resource reconstruction', witness)
+    return repair.plan(source, backup, args.jar, log, report, transfer, getattr(args, 'profile', repair.PROFILE_ENABLED),
+                       'X03 native harness', 'X03 whole-world copy repair; no resource reconstruction', witness)
+
+
+def verify_root_2(args):
+    # An explicitly supplied historical artifact, not the activated candidate.
+    oracle.require(bool(args.root_2_jar and args.root_2_commit and args.root_2_jar_sha256), 'ROOT_2_PINS_REQUIRED')
+    oracle.require(bool(re.fullmatch(r'[0-9a-f]{40}', args.root_2_commit))
+                   and bool(re.fullmatch(r'[0-9a-f]{64}', args.root_2_jar_sha256)), 'ROOT_2_PINS_INVALID')
+    oracle.require(oracle.digest(args.root_2_jar) == args.root_2_jar_sha256, 'ROOT_2_JAR_CHANGED')
+    subprocess.run(['git', 'merge-base', '--is-ancestor', args.root_2_commit, args.source_commit], cwd=REPO, check=True)
+    source = subprocess.run(['git', 'show', args.root_2_commit + ':src/main/java/io/github/sunthemoon/'
+                             'advancedrocketrycommunity/resourceescrow/EscrowAccountingFormat.java'],
+                            cwd=REPO, capture_output=True, text=True, check=True).stdout
+    oracle.require('public static final boolean ENABLED = false;' in source, 'ROOT_2_SOURCE_NOT_DISABLED')
+    return dict(commit=args.root_2_commit, jar_sha256=args.root_2_jar_sha256)
+
+
+def prepare_world(args, session, evidence, label):
+    if getattr(args, 'world_origin', 'fresh-root-3') != 'upgraded-root-2':
+        return seed_world(args, session, evidence, label)
+    evidence_tools.install_candidate(args.root_2_jar, session / 'mods' / args.jar.name, args.root_2_jar_sha256)
+    world, transfer, log = seed_world(args, session, evidence, label, legacy=True)
+    before = oracle.read(world)
+    oracle.check_state(before, before, repaired=False, expected_schema=2)
+    refusal(args, world, log, transfer, evidence, label + '-root-2-before-upgrade', 'ROOT_NOT_CURRENT')
+    evidence_tools.install_candidate(args.jar, session / 'mods' / args.jar.name, args.jar_sha256)
+    lines, log = start(args, session, evidence, label + '-qualifying-upgrade', world, 'FF_REBUILD_SOURCE', 'recover')
+    check_fence(lines, transfer)
+    after = oracle.read(world)
+    oracle.check_state(after, before, repaired=False, expected_schema=3)
+    oracle.require(after['ledger']['ledger_id'] == before['ledger']['ledger_id'], 'MIGRATION_LEDGER_ID_CHANGED')
+    backups = {name: digest for name, digest in oracle.manifest(world).items()
+               if 'advancedrocketrycommunity-backups' in Path(name).parts}
+    oracle.require(backups, 'MIGRATION_BACKUP_MISSING')
+    write_json(evidence / (label + '-upgrade.json'), dict(status='MIGRATED_BEFORE_REPAIR',
+               before_ledger=before['ledger'], after_ledger=after['ledger'], migration_backups=backups,
+               transfer=transfer, qualifying_log=log.name, qualifying_log_sha256=oracle.digest(log)))
+    return world, transfer, log
 
 
 def fixture_witness(state, transfer, path):
@@ -263,6 +306,13 @@ def old_root(world):
     path = world / repair.LEDGER
     name, root = nbt.read_gzip(path)
     root.value['data'].value['schema_version'].value = 1
+    nbt.write_gzip(path, name, root)
+
+
+def future_root(world):
+    path = world / repair.LEDGER
+    name, root = nbt.read_gzip(path)
+    root.value['data'].value['schema_version'].value = 4
     nbt.write_gzip(path, name, root)
 
 
@@ -385,9 +435,9 @@ def tamper_object(world):
 
 def coordinator(context, world, baseline_manifest):
     current = oracle.read(world)
-    oracle.check_state(current, context['baseline'])
+    oracle.check_state(current, context['baseline'], expected_schema=context.get('expected_schema', 2))
     oracle.boundary(baseline_manifest, oracle.manifest(world), RUNTIME_FILES)
-    oracle.compare_repair(context['baseline'], current, context['transfer'])
+    oracle.compare_repair(context['baseline'], current, context['transfer'], expected_schema=context.get('expected_schema', 2))
 
 
 def controls(args, session, evidence, cycles, context):
@@ -406,7 +456,7 @@ def controls(args, session, evidence, cycles, context):
         location = tamper_file(control, target) if name == 'unlisted-file' else repr(tamper_object(control))
         # This check alone deliberately cannot see either collateral mutation.
         # The shipped coordinator below always includes both independent boundaries.
-        oracle.check_state(oracle.read(control), context['baseline'])
+        oracle.check_state(oracle.read(control), context['baseline'], expected_schema=context.get('expected_schema', 2))
         try:
             coordinator(context, control, baseline)
         except oracle.OracleError as error:
@@ -424,9 +474,10 @@ def controls(args, session, evidence, cycles, context):
 
 def repaired_cycle(args, session, evidence, number):
     label = 'cycle-' + str(number)
-    original, transfer, log = seed_world(args, session, evidence, label)
+    original, transfer, log = prepare_world(args, session, evidence, label)
     baseline = oracle.read(original)
-    oracle.check_state(baseline, baseline, repaired=False)
+    expected_schema = repair.current_roots(getattr(args, 'profile', repair.PROFILE_ENABLED))['resource_escrow'][0]
+    oracle.check_state(baseline, baseline, repaired=False, expected_schema=expected_schema)
     write_json(evidence / (label + '-baseline.json'),
                {key: nbt.plain(baseline[key]) if isinstance(baseline[key], nbt.Tag) else baseline[key]
                 for key in ('entity', 'block', 'ledger', 'journal', 'cargo', 'tank')})
@@ -440,6 +491,11 @@ def repaired_cycle(args, session, evidence, number):
     refusals = [refusal(args, original, log, transfer, evidence, label + '-old-root', 'ROOT_NOT_CURRENT', old_root),
                 refusal(args, original, log, transfer, evidence, label + '-unknown-authority',
                         'UNVALIDATED_AUTHORITY', unknown_authority)]
+    if expected_schema == 3:
+        refusals.append(refusal(args, original, log, transfer, evidence, label + '-future-root', 'ROOT_NOT_CURRENT', future_root))
+        unknown = make_plan(args, original, backup, log, transfer, evidence / (label + '-unknown-baseline-plan.json'))
+        oracle.require(unknown['body']['account']['status'] == 'UNKNOWN_BASELINE'
+                       and 'discrepancy' not in unknown['body']['account'], 'INVENTED_ACCOUNT_ZERO')
     # The seed's ordinary fixture is the numeric before-witness. It created a
     # 5000/0 water pair, then logged the applied ordinary unload before the cut.
     witness = fixture_witness(baseline, transfer, evidence / (label + '-fixture-witness.json'))
@@ -466,7 +522,7 @@ def repaired_cycle(args, session, evidence, number):
                                             if baseline['chunks'][k] != state['chunks'][k]]))
         stage_check(args, lambda: oracle.observe(lines, 'FF_X03_OBSERVE', state), stage_findings)
         # List derivation measures filenames, not exceptions to the semantic contract.
-        stage_check(args, lambda: oracle.compare_repair(baseline, state, transfer), stage_findings)
+        stage_check(args, lambda: oracle.compare_repair(baseline, state, transfer, expected_schema=expected_schema), stage_findings)
         manifest = oracle.manifest(candidate)
         diff = oracle.differences(original_hashes, manifest)
         file_check(args, original_hashes, manifest, stage_findings)
@@ -497,7 +553,8 @@ def repaired_cycle(args, session, evidence, number):
                                             for k in before['chunks'].keys() & state['chunks'].keys()
                                             if before['chunks'][k] != state['chunks'][k]]))
         launched = i >= 2
-        stage_check(args, lambda: oracle.check_state(state, baseline, unloaded=True, launched=launched), stage_findings)
+        stage_check(args, lambda: oracle.check_state(state, baseline, unloaded=True, launched=launched,
+                                                   expected_schema=expected_schema), stage_findings)
         fields = stage_check(args, lambda: oracle.observe(lines, case, state, landed=launched), stage_findings) or {}
         if case == 'FF_X03_UNLOAD':
             stage_check(args, lambda: oracle.require(fields.get('switch') == 'withdrawn', 'UNLOAD_SWITCH_NOT_WITHDRAWN'), stage_findings)
@@ -516,15 +573,19 @@ def repaired_cycle(args, session, evidence, number):
                findings=findings, refusals=refusals, apply=applied, plan_digest=document['digest'])
     write_json(evidence / (label + '-result.json'), row)
     return row, dict(original=original, backup=backup, candidate=candidate, twice=twice, plan=planfile,
-                     transfer=transfer, baseline=baseline, log=log)
+                     transfer=transfer, baseline=baseline, log=log, expected_schema=expected_schema)
 
 
 def run(args):
+    if getattr(args, 'world_origin', None) == 'both':
+        return run_both(args)
     if getattr(args, 'measurement_mode', False):
         args.derive_runtime_list = True
     oracle.require(bool(args.lock_owner), 'LOCK_OWNER_REQUIRED')
     require_lock(args.lock_owner)
     pins = verify_candidate(args.jar, args.source_commit, args.candidate_commit, args.jar_sha256)
+    if getattr(args, 'world_origin', None) == 'upgraded-root-2':
+        pins['root_2_seed'] = verify_root_2(args)
     generation = generation_rule()
     preflight()
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
@@ -541,6 +602,8 @@ def run(args):
     sentinel.write_text(token, encoding='ascii')
     report = dict(status='IN_PROGRESS', pins=pins, runtime_files=RUNTIME_FILES, generation_rule=generation, cycles=[], cleanup=False,
                   development=args.derive_runtime_list, promotion_approved=False,
+                  world_origin=getattr(args, 'world_origin', 'fresh-root-3'),
+                  profile=getattr(args, 'profile', repair.PROFILE_ENABLED),
                   harness={name: oracle.digest(REPO / 'scripts' / name) for name in
                            ('run_v180_x03_repair.py', 'x03_repair_oracle.py', 'repair_v180_rebuild_source.py', 'loader_cut_nbt.py')})
     try:
@@ -587,7 +650,7 @@ def run(args):
             coordinator(context, context['original'], original_before)
             oracle.require(oracle.manifest(preserved) == original_before == oracle.manifest(context['backup']),
                            'PRESERVED_ORIGINAL_OR_BACKUP_CHANGED')
-            report['status'] = 'PASS_DEVELOPMENT_ROOT_2'
+            report['status'] = 'PASS_ACCOUNTING_ENABLED' if report['profile'] == repair.PROFILE_ENABLED else 'PASS_DEVELOPMENT_ROOT_2'
     except BaseException as error:
         report.update(status='FAILED', error=str(error))
         raise
@@ -597,6 +660,30 @@ def run(args):
             report['cleanup'] = not session.exists()
         write_json(evidence / 'results.json', report)
     return report
+
+
+def run_both(args):
+    if getattr(args, 'measurement_mode', False):
+        args.derive_runtime_list = True
+    verify_root_2(args)
+    oracle.require(not args.evidence_dir.exists(), 'EXISTING_OR_OVERLAPPING_OUTPUT')
+    args.evidence_dir.mkdir(parents=True)
+    result = dict(status='IN_PROGRESS', cases=[], promotion_approved=False)
+    try:
+        for origin in ('fresh-root-3', 'upgraded-root-2'):
+            child = copy.copy(args)
+            child.world_origin = origin
+            child.evidence_dir = args.evidence_dir / origin
+            child.session_dir = args.session_dir.with_name(args.session_dir.name + '-' + origin)
+            report = run(child)
+            result['cases'].append(dict(origin=origin, status=report['status'], cleanup=report['cleanup']))
+        result['status'] = 'MEASURED_NOT_PROMOTED' if args.derive_runtime_list else 'PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS'
+    except BaseException as error:
+        result.update(status='FAILED', error=str(error))
+        raise
+    finally:
+        write_json(args.evidence_dir / 'results.json', result)
+    return result
 
 
 def generation_rule():
@@ -619,6 +706,10 @@ def main(argv=None):
     parser.add_argument('--derive-runtime-list', action='store_true')
     parser.add_argument('--measurement-mode', action='store_true',
                         help='Collect contradictions through both sequences; never accept or promote (implies derivation).')
+    parser.add_argument('--world-origin', choices=('both', 'fresh-root-3', 'upgraded-root-2'), default='both')
+    parser.add_argument('--root-2-jar', type=Path)
+    parser.add_argument('--root-2-jar-sha256')
+    parser.add_argument('--root-2-commit')
     try:
         run(parser.parse_args(argv))
         return 0

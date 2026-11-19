@@ -202,6 +202,63 @@ class RepairFixture(unittest.TestCase):
 
 
 class RepairTest(RepairFixture):
+    def test_enabled_profile_pins_root3_stamps_and_preserves_accounts_and_unknown_history(self):
+        self.seed(repair.PROFILE_ENABLED)
+        document = self.plan(profile=repair.PROFILE_ENABLED)
+        self.assertEqual([3, 'v1.8.0-resource-escrow-fluid-accounting'], document['body']['root_stamps']['resource_escrow'])
+        self.assertEqual('UNKNOWN_BASELINE', document['body']['account']['status'])
+        self.assertNotIn('discrepancy', document['body']['account'])
+        before = self.hashes(self.source)
+        repair.apply(self.planfile, self.output, document['digest'])
+        self.assertEqual(before[repair.LEDGER], (self.output / repair.LEDGER).read_bytes())
+        self.assertEqual(repair.typed(repair.at(repair.read_gzip(self.backup / repair.LEDGER)[1], 'data', 'fluid_accounts')),
+                         repair.typed(repair.at(repair.read_gzip(self.output / repair.LEDGER)[1], 'data', 'fluid_accounts')))
+        self.assertEqual(before, self.hashes(self.source))
+        self.assertEqual(before, self.hashes(self.backup))
+
+    def test_enabled_profile_refuses_future_schema_without_effect(self):
+        self.seed(repair.PROFILE_ENABLED)
+        self.data['resource_escrow'].value['schema_version'] = I(4)
+        self.write_roots(); self.sync()
+        before = self.hashes(self.source)
+        with self.assertRaisesRegex(repair.Refusal, 'ROOT_NOT_CURRENT:resource_escrow'):
+            self.plan(profile=repair.PROFILE_ENABLED)
+        self.assertEqual(before, self.hashes(self.source))
+        self.assertEqual(before, self.hashes(self.backup))
+        self.assertFalse(self.planfile.exists())
+
+    def test_signed_audit_loss_positive_loss_negative_gain_and_invalid_amounts(self):
+        self.assertEqual(0, repair.signed_loss([5000, 0], [4000, 1000]))
+        self.assertEqual(1, repair.signed_loss([5000, 0], [3999, 1000]))
+        self.assertEqual(-1, repair.signed_loss([5000, 0], [4001, 1000]))
+        for invalid in ([True, 0], [-1, 0], [1.0, 0], [2**63, 0], [0], '5000'):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(repair.Refusal, 'WITNESS_INVALID'):
+                repair.signed_loss(invalid, [4000, 1000])
+
+    def test_root3_nonzero_witnesses_do_not_create_an_account_or_repair(self):
+        self.seed(repair.PROFILE_ENABLED)
+        observation = self.inspect(repair.PROFILE_ENABLED)
+        for delta in (-1, 1):
+            witness = self.base / ('witness-' + str(delta) + '.json')
+            body = dict(version=1, identity=observation['identity'], fluid='minecraft:water', native_tag='absent',
+                        before=[5000 + delta, 0], after=[4000, 1000])
+            witness.write_bytes(repair.canonical(dict(body=body, sha256=n.digest(repair.canonical(body)))))
+            before = self.hashes(self.source)
+            with self.assertRaisesRegex(repair.Refusal, 'WITNESS_INVALID'):
+                self.plan(profile=repair.PROFILE_ENABLED, witness=witness)
+            self.assertFalse(self.planfile.exists())
+            self.assertEqual(before, self.hashes(self.source))
+            self.assertEqual(before, self.hashes(self.backup))
+
+    def test_plan_root_stamp_tampering_refuses_even_with_recomputed_digest(self):
+        document = self.plan()
+        document['body']['root_stamps']['resource_escrow'][0] = 3
+        document['digest'] = n.digest(repair.canonical(document['body']))
+        self.planfile.write_bytes(repair.canonical(document))
+        with self.assertRaisesRegex(repair.Refusal, 'PLAN_ROOT_STAMPS_DIFFER'):
+            repair.apply(self.planfile, self.output, document['digest'])
+        self.assertFalse(self.output.exists())
+
     def test_one_record_whole_world_copy_and_offline_census(self):
         original = self.hashes(self.source)
         document = self.plan()
@@ -745,6 +802,15 @@ class RepairTest(RepairFixture):
         names = set(re.findall(r'"advancedrocketrycommunity_([a-z_]+)"', text))
         self.assertEqual(set(repair.CURRENT_ROOTS), names)
         self.assertIn('EscrowAccountingFormat.ENABLED ? 3 : 2', text)
+        for profile, schema in ((repair.PROFILE_DISABLED, 2), (repair.PROFILE_ENABLED, 3)):
+            table = repair.current_roots(profile)
+            epoch = table['resource_escrow'][1]
+            self.assertEqual(schema, table['resource_escrow'][0])
+            self.assertIn('case ' + str(schema) + ' -> "' + epoch + '";', text)
+            self.assertEqual({key: stamp for key, stamp in repair.CURRENT_ROOTS.items() if key != 'resource_escrow'},
+                             {key: stamp for key, stamp in table.items() if key != 'resource_escrow'})
+        activation = (root / 'resourceescrow/EscrowAccountingFormat.java').read_text(encoding='utf-8')
+        self.assertIn('public static final boolean ENABLED = true;', activation)
         switch = text.split('public int currentSchemaVersion()')[1].split('public String formatEpoch()')[0]
         self.assertRegex(switch, r'case CLASSIC_PROGRESSION, ROCKET_REJOINS -> 1;')
         self.assertIn('default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;', switch)

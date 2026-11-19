@@ -186,8 +186,102 @@ class VerificationCommandTest(unittest.TestCase):
 
 
 class NativeOperationFixtureTest(RepairFixture):
+    def test_both_origins_run_in_order_and_a_contradiction_stops_the_sequence(self):
+        args = SimpleNamespace(root_2_jar=self.jar, root_2_commit='a' * 40, root_2_jar_sha256='b' * 64,
+                               world_origin='both', evidence_dir=self.base / 'both', session_dir=self.base / 'session',
+                               derive_runtime_list=False)
+        with patch.object(runner, 'verify_root_2'), patch.object(runner, 'run', return_value={
+                'status': 'PASS_ACCOUNTING_ENABLED', 'cleanup': True}) as run:
+            report = runner.run_both(args)
+        self.assertEqual(['fresh-root-3', 'upgraded-root-2'], [call.args[0].world_origin for call in run.call_args_list])
+        self.assertEqual('PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS', report['status'])
+        self.assertEqual('both', args.world_origin)
+        self.assertFalse(report['promotion_approved'])
+        args.evidence_dir = self.base / 'measurement'
+        args.measurement_mode = True
+        with patch.object(runner, 'verify_root_2'), patch.object(runner, 'run', return_value={
+                'status': 'MEASURED_NOT_PROMOTED', 'cleanup': True}):
+            self.assertEqual('MEASURED_NOT_PROMOTED', runner.run_both(args)['status'])
+        self.assertTrue(args.derive_runtime_list)
+        args.evidence_dir = self.base / 'failure'
+        with patch.object(runner, 'verify_root_2'), patch.object(runner, 'run', side_effect=runner.oracle.OracleError('fact')) as run:
+            with self.assertRaisesRegex(runner.oracle.OracleError, 'fact'):
+                runner.run_both(args)
+        self.assertEqual(1, run.call_count)
+        self.assertEqual('FAILED', runner.json.loads((args.evidence_dir / 'results.json').read_text())['status'])
+
+    def test_historical_jar_pins_and_disabled_source_are_checked(self):
+        args = SimpleNamespace(root_2_jar=self.jar, root_2_commit='a' * 40, root_2_jar_sha256=runner.oracle.digest(self.jar),
+                               source_commit='b' * 40)
+        with patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(
+                stdout='public static final boolean ENABLED = false;')) as git:
+            self.assertEqual(args.root_2_commit, runner.verify_root_2(args)['commit'])
+        self.assertEqual('merge-base', git.call_args_list[0].args[0][1])
+        self.assertEqual('show', git.call_args_list[1].args[0][1])
+        with patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(
+                stdout='public static final boolean ENABLED = true;')):
+            with self.assertRaisesRegex(runner.oracle.OracleError, 'ROOT_2_SOURCE_NOT_DISABLED'):
+                runner.verify_root_2(args)
+        args.root_2_jar_sha256 = 'f' * 64
+        with patch.object(runner.subprocess, 'run') as git:
+            with self.assertRaisesRegex(runner.oracle.OracleError, 'ROOT_2_JAR_CHANGED'):
+                runner.verify_root_2(args)
+            git.assert_not_called()
+
+    def test_planner_defaults_to_the_enabled_profile(self):
+        with patch.object(runner.repair, 'plan') as plan:
+            runner.make_plan(SimpleNamespace(jar=self.jar), self.source, self.backup, self.log,
+                             self.transfer, self.planfile)
+        self.assertEqual(runner.repair.PROFILE_ENABLED, plan.call_args.args[6])
+
+    def upgrade_attempt(self, *, start_error=None, fence_error=None):
+        self.seed()
+        args = SimpleNamespace(jar=self.jar, root_2_jar=self.jar, root_2_jar_sha256='a' * 64,
+                               jar_sha256='b' * 64, world_origin='upgraded-root-2')
+        before = runner.oracle.read(self.source)
+        self.seed(runner.repair.PROFILE_ENABLED)
+        after = runner.oracle.read(self.source)
+        calls = []
+        def install(jar, target, digest):
+            calls.append(('install', digest))
+        def seed(*a, **kw):
+            self.assertEqual({'legacy': True}, kw)
+            calls.append(('seed',))
+            return self.source, self.transfer, self.log
+        def refuse(*a):
+            calls.append(('refuse', a[-1]))
+        def start(*a):
+            calls.append(('qualifying-start', a[-1]))
+            if start_error:
+                raise start_error
+            return [], self.log
+        with patch.object(runner.evidence_tools, 'install_candidate', side_effect=install), \
+                patch.object(runner, 'seed_world', side_effect=seed), \
+                patch.object(runner, 'refusal', side_effect=refuse), \
+                patch.object(runner, 'start', side_effect=start), \
+                patch.object(runner, 'check_fence', side_effect=fence_error), \
+                patch.object(runner.oracle, 'read', side_effect=[before, after]), \
+                patch.object(runner.oracle, 'manifest', return_value={'advancedrocketrycommunity-backups/ledger.dat': 'old-bytes'}):
+            result = runner.prepare_world(args, self.base, self.reports, 'upgrade')
+        return calls, result
+
+    def test_root2_is_refused_then_migrated_by_qualifying_start_before_new_backup(self):
+        calls, result = self.upgrade_attempt()
+        self.assertEqual([('install', 'a' * 64), ('seed',), ('refuse', 'ROOT_NOT_CURRENT'),
+                          ('install', 'b' * 64), ('qualifying-start', 'recover')], calls)
+        self.assertEqual((self.source, self.transfer, self.log), result)
+        evidence = runner.json.loads((self.reports / 'upgrade-upgrade.json').read_text())
+        self.assertEqual((2, 3), (evidence['before_ledger']['schema_version'], evidence['after_ledger']['schema_version']))
+        self.assertEqual({'advancedrocketrycommunity-backups/ledger.dat': 'old-bytes'}, evidence['migration_backups'])
+
+    def test_upgrade_start_or_fence_failure_stops_without_claiming_migration(self):
+        for stage in ('start', 'fence'):
+            with self.subTest(stage=stage), self.assertRaisesRegex(runner.oracle.OracleError, stage):
+                self.upgrade_attempt(**{stage + '_error': runner.oracle.OracleError(stage)})
+            self.assertFalse((self.reports / 'upgrade-upgrade.json').exists())
+
     def test_measurement_continues_all_observations_and_functional_actions(self):
-        args = SimpleNamespace(jar=self.jar, derive_runtime_list=True, measurement_mode=True)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED, derive_runtime_list=True, measurement_mode=True)
         with patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \
                 patch.object(runner, 'start', return_value=([], self.log)) as start, \
                 patch.object(runner.oracle, 'observe', return_value={'switch': 'withdrawn'}), \
@@ -237,7 +331,7 @@ class NativeOperationFixtureTest(RepairFixture):
         self.assertTrue(report['cleanup'])
 
     def test_dry_run_stops_at_first_semantic_contradiction(self):
-        args = SimpleNamespace(jar=self.jar, derive_runtime_list=True)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED, derive_runtime_list=True)
         with patch.object(runner, 'seed_world', return_value=(self.source, self.transfer, self.log)), \
                 patch.object(runner, 'start', return_value=([], self.log)) as start, \
                 patch.object(runner.oracle, 'observe'), \
@@ -256,7 +350,7 @@ class NativeOperationFixtureTest(RepairFixture):
         self.assertEqual(before, self.hashes(self.source))
 
     def test_current_root_and_uninterpreted_row_refusals_are_no_effect(self):
-        args = SimpleNamespace(jar=self.jar)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED)
         for name, reason, mutation in (('old', 'ROOT_NOT_CURRENT', runner.old_root),
                                        ('opaque', 'UNVALIDATED_AUTHORITY', runner.unknown_authority)):
             row = runner.refusal(args, self.source, self.log, self.transfer, self.reports, name, reason, mutation)
@@ -323,6 +417,25 @@ class NativeOperationFixtureTest(RepairFixture):
 
 
 class NativeRefusalSeedTest(RepairFixture):
+    def test_stale_physical_copy_is_refused_in_both_entity_orders(self):
+        for stale_first in (False, True):
+            with self.subTest(stale_first=stale_first):
+                self.seed()
+                self.stale_prepared_world()
+                if stale_first:
+                    entries = runner.oracle.chunks(self.source)[('entities/r.0.0.mca', 4, 4)]
+                    entries.value['Entities'].value[1].reverse()
+                    self.write_entities(entries.value['Entities'].value[1])
+                    self.sync()
+                before = self.hashes(self.source)
+                with self.assertRaises(runner.repair.Refusal) as caught:
+                    self.plan()
+                self.assertEqual(['SECOND_PHYSICAL_ROCKET', 'ADDITIONAL_ROCKET_IN_FOOTPRINT', 'DESTINATION_IN_TARGET_CHUNK'],
+                                 caught.exception.reasons)
+                self.assertEqual(before, self.hashes(self.source))
+                self.assertEqual(before, self.hashes(self.backup))
+                self.assertFalse(self.planfile.exists())
+
     """Design 5.3's three natively seeded refusals (W380R finding 1, R501); no server is started here."""
 
     FENCE = '[Server thread/WARN] ARCE_TRANSFER_FENCED transfer={} reason={} repair=offline-whole-world'
@@ -336,7 +449,7 @@ class NativeRefusalSeedTest(RepairFixture):
     def seeded(self, case, disk, reason='FLOOR_CONFLICT'):
         """seed_world with the starts and the raw read replaced; the seed family's real oracle judges `disk`."""
         lines = [self.FENCE.format(self.transfer, reason)]
-        args = SimpleNamespace(jar=self.jar)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED)
         with patch.object(runner, 'start', return_value=(lines, self.log)) as start, \
                 patch.object(runner, 'transfer_id', return_value=self.transfer), \
                 patch.object(runner.seed, 'inspect', return_value=disk) as inspect, \
@@ -493,7 +606,7 @@ class NativeRefusalSeedTest(RepairFixture):
         self.sync()
 
     def test_the_tool_refuses_both_synthetic_seed_shapes_with_the_required_reason_and_no_effect(self):
-        args = SimpleNamespace(jar=self.jar)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED)
         for name, build, reason, beside in (
                 ('stale-prepared', self.stale_prepared_world, 'SECOND_PHYSICAL_ROCKET',
                  ['ADDITIONAL_ROCKET_IN_FOOTPRINT', 'DESTINATION_IN_TARGET_CHUNK']),
@@ -515,7 +628,7 @@ class NativeRefusalSeedTest(RepairFixture):
                                        exact=other == 'alone')
 
     def test_the_unseeded_fixture_is_not_refused_for_either_reason(self):
-        args = SimpleNamespace(jar=self.jar)
+        args = SimpleNamespace(jar=self.jar, profile=runner.repair.PROFILE_DISABLED)
         for reason in ('SECOND_PHYSICAL_ROCKET', 'PASSENGER_ASSIGNMENT'):
             with self.subTest(reason=reason), self.assertRaisesRegex(runner.oracle.OracleError, '^REFUSAL_ACCEPTED:plain-'):
                 runner.refusal(args, self.source, self.log, self.transfer, self.reports, 'plain-' + reason, reason)
