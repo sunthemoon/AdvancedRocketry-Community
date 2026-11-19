@@ -71,6 +71,20 @@ class GovernedBenchmarkTest(unittest.TestCase):
                 with self.assertRaises(runner.smoke.SmokeError):
                     runner.arrival_cost(path, bad)
 
+    def test_attribution_census_requires_the_exact_zero_descent_arming_end(self):
+        proof = dict(calls_per_flight={str(i): 1 for i in range(8)},
+                     concurrent_committed_descents_per_tick={"0": 1399, "8": 2})
+        runner.arrival_window(proof, 1400)
+        self.assertEqual(1, proof["arming_end_census_ticks"])
+        self.assertEqual(1400, proof["measured_tick_samples"])
+        for histogram in ({"0": 1398, "8": 2}, {"0": 1400, "8": 2}, {"8": 1401}):
+            bad = copy.deepcopy(proof); bad["concurrent_committed_descents_per_tick"] = histogram
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.arrival_window(bad, 1400)
+        bad = copy.deepcopy(proof); bad["calls_per_flight"].pop("0")
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.arrival_window(bad, 1400)
+
     def test_every_catalogued_phase_is_accepted_and_preserved(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root) / "samples.csv"

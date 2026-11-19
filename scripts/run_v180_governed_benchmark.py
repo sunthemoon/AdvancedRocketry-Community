@@ -78,6 +78,16 @@ def arrival_cost(path: Path, observation: dict) -> dict:
     return summary
 
 
+def arrival_window(cost: dict, tick_samples: int) -> None:
+    # Probe.tickWork arms measuring during END. The census includes that zero-descent END;
+    # Metrics.startTick first observes the following START. Require this exact one-tick offset.
+    histogram = cost["concurrent_committed_descents_per_tick"]
+    if (len(cost["calls_per_flight"]) != 8 or histogram.get("0", 0) < 1
+            or sum(histogram.values()) != tick_samples + 1):
+        raise smoke.SmokeError("Arrival attribution did not cover eight flights and the exact armed window")
+    cost.update(arming_end_census_ticks=1, measured_tick_samples=tick_samples)
+
+
 def utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -305,9 +315,7 @@ def run(args) -> dict:
                 report["arrival_second_call_cost"] = arrival_cost(evidence / "arrival-second-call-cost.csv",
                                                                  load.get("arrival_second_call_cost", {}))
                 cost = report["arrival_second_call_cost"]
-                if (len(cost["calls_per_flight"]) != 8
-                        or sum(cost["concurrent_committed_descents_per_tick"].values()) != phases["tick_main"]["count"]):
-                    raise smoke.SmokeError("Arrival attribution did not cover eight flights and every measured tick")
+                arrival_window(cost, phases["tick_main"]["count"])
             report["status"] = ("INCOMPLETE_COVERAGE" if report["coverage_gaps"] else
                                 "MEASURED_LOCAL_THRESHOLDS_MET" if all(report["comparisons"].values()) else "BUDGET_FAILED")
             return report
