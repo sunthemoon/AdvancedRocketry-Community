@@ -343,6 +343,13 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             self.assertEqual(["start 0: Raw source marker count differs: 0, expected 1"], row["findings"])
             self.assertEqual(["FAILED", "PASS", "PASS"], [entry["status"] for entry in row["starts"]])
             self.assertEqual([case + "-0-failed-world"], run.captured)
+        # A start that never reaches its marker stops the case and keeps the world.
+        with tempfile.TemporaryDirectory() as directory:
+            run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
+            run.waits = types.SimpleNamespace(append=lambda item: (_ for _ in ()).throw(SmokeError("Timed out waiting for server marker")))
+            runner.run_loader_settlement(run, case, plan, row)
+            self.assertEqual(1, len(row["starts"])); self.assertIn("Start execution: Timed out", row["findings"][0])
+            self.assertEqual([case + "-0-failed-world"], run.captured)
 
     def test_w391_released_receipt_is_byte_equal_after_both_restarts(self):
         case = "LF_S6_AC_PRUNE_SPLIT_TANK"; plan = runner.spec(case)
@@ -355,13 +362,6 @@ class AccountingCutsRunnerTest(unittest.TestCase):
                 run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
                 runner.run_loader_settlement(run, case, plan, row)
                 self.assertEqual(["start 2: A restart changed the released loader receipt"] if changed else [], row["findings"])
-        # A start that never reaches its marker stops the case and keeps the world.
-        with tempfile.TemporaryDirectory() as directory:
-            run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
-            run.waits = types.SimpleNamespace(append=lambda item: (_ for _ in ()).throw(SmokeError("Timed out waiting for server marker")))
-            runner.run_loader_settlement(run, case, plan, row)
-            self.assertEqual(1, len(row["starts"])); self.assertIn("Start execution: Timed out", row["findings"][0])
-            self.assertEqual([case + "-0-failed-world"], run.captured)
 
     def test_a_family_reports_every_case_and_fails_on_any_finding(self):
         seen = []
