@@ -277,6 +277,9 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             case = oracle.LOADER_SETTLEMENT_PREFIX + "AC_" + name; plan = runner.spec(case)
             expected = f"ARCE_LOADER_S6_O_RESULT cut={case} tank=4000 bank={bank} epochs=1,1 records=0 receipts=1 state=RELEASED accounting=KNOWN"
             self.assertEqual(expected, plan["result"])
+            runner.observe_loader(plan, 0, [plan["paused"], plan["cut_result"]])
+            for wrong in ([], [plan["cut_result"], plan["cut_result"]], [plan["cut_result"] + "_OTHER"]):
+                with self.assertRaises(SmokeError): runner.observe_loader(plan, 0, [plan["paused"], *wrong])
             for start in (1, 2):
                 runner.observe_loader(plan, start, [expected])
                 for wrong in (expected.replace("tank=4000", "tank=0"), expected.replace(f"bank={bank}", "bank=800")):
@@ -340,6 +343,18 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             self.assertEqual(["start 0: Raw source marker count differs: 0, expected 1"], row["findings"])
             self.assertEqual(["FAILED", "PASS", "PASS"], [entry["status"] for entry in row["starts"]])
             self.assertEqual([case + "-0-failed-world"], run.captured)
+
+    def test_w391_released_receipt_is_byte_equal_after_both_restarts(self):
+        case = "LF_S6_AC_PRUNE_SPLIT_TANK"; plan = runner.spec(case)
+        logs = [[plan["paused"], plan["cut_result"]], [plan["result"]], [plan["result"]]]
+        for changed in (False, True):
+            disks = iter([dict(ledger=dict(tombstones=[dict(released=True, actor="original")])) for _ in range(2)] +
+                         [dict(ledger=dict(tombstones=[dict(released=True, actor="different" if changed else "original")]))])
+            with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader.oracle, "inspect", lambda world: next(disks)), \
+                    patch.object(runner.oracle, "check_loader_settlement", lambda *a: {}), patch.object(runner.oracle, "check_progress", lambda *a: None):
+                run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
+                runner.run_loader_settlement(run, case, plan, row)
+                self.assertEqual(["start 2: A restart changed the released loader receipt"] if changed else [], row["findings"])
         # A start that never reaches its marker stops the case and keeps the world.
         with tempfile.TemporaryDirectory() as directory:
             run = self.native_run(directory, logs); row = dict(starts=[], findings=[])

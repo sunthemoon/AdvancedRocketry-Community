@@ -263,6 +263,10 @@ final class EscrowLoaderS6SettlementProbe {
         fuel.getCompound("propulsion").getCompound("primary").putLong("amount", amount);
     }
     private void pause(String hook) {
+        if (List.of(SUBSTITUTE, BANK_LOSS, BANK_GAIN, SPLIT_TANK, SPLIT_BANK).contains(cut)) {
+            // Report the observed cut only. The stopped world's independent reader supplies the numeric result.
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_AC_RESULT cut={} hook={}", cut, hook);
+        }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_O_PAUSED cut={} hook={}", cut, hook);
         try { TimeUnit.SECONDS.sleep(30); }
         catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
