@@ -42,6 +42,12 @@ def scenario(stage: str, arrival_second_call_cost: bool = False) -> str:
     return ARRIVAL_SCENARIO if arrival_second_call_cost and stage == "start" else stage
 
 
+def timing_summary(load: dict, phases: dict) -> dict:
+    """Keep whole-tick costs, the deliberate DEFER window and flight latency distinct."""
+    return dict(tick_main=phases["tick_main"], largest_nonsave_tick_ms=phases["tick_main_nonsave"]["maximum"],
+                world_first_hold=load["world_first_hold"], flight_handoff_latency=phases["flight_handoff_latency"])
+
+
 def arrival_cost(path: Path, observation: dict) -> dict:
     """N6 attribution is separate from the normal sample vocabulary and millisecond report."""
     values = []; compared = 0; identities = set(); flights = {}
@@ -311,6 +317,7 @@ def run(args) -> dict:
             phases, generations = read_samples(evidence / "governed-benchmark.csv")
             report.update(load=load, samples=phases, generations=generations, rss_max_bytes=max(all_rss) if all_rss else None,
                           restarted=restarted, coverage_gaps=coverage(load, phases, generations, restarted), comparisons=compare(phases, all_rss))
+            report["timing_summary"] = timing_summary(load, phases)
             if attribution:
                 report["arrival_second_call_cost"] = arrival_cost(evidence / "arrival-second-call-cost.csv",
                                                                  load.get("arrival_second_call_cost", {}))

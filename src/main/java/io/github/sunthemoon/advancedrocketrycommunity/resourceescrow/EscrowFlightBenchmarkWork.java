@@ -1,14 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
-import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
 /** Competing real-rocket fixture fills: ordinary C0-C8 and a separate operator O1-O4. */
@@ -17,85 +11,35 @@ final class EscrowFlightBenchmarkWork {
     private final ResourceEscrowSavedData data;
     private final EscrowCoordinator coordinator;
     private final EscrowFlightBenchmarkMetrics metrics;
-    private EscrowTestEndpoints.Fixture ordinary, settlement;
     private RocketEntity ordinaryRocket, settlementRocket;
     private UUID ordinaryId, settlementId;
     private long ordinaryStart;
     private boolean ordinaryDone, ordinaryPrepared, settlementPrepared, confirming, settlementDone;
     private EscrowSettlementIntent preview;
-    private final boolean nativeAccounting;
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity ordinaryLoader;
     private FluidFuelLoaderEscrowFixtures.NativeFill ordinaryNative, settlementNative;
 
-    EscrowFlightBenchmarkWork(MinecraftServer server, ResourceEscrowSavedData data, EscrowFlightBenchmarkMetrics metrics,
-                             boolean nativeAccounting) {
+    EscrowFlightBenchmarkWork(MinecraftServer server, ResourceEscrowSavedData data, EscrowFlightBenchmarkMetrics metrics) {
         this.server = server; this.data = data; this.metrics = metrics; coordinator = data.bind(server);
-        this.nativeAccounting = nativeAccounting;
     }
     void create() {
-        if (nativeAccounting) { createAccounted(); return; }
-        ordinary = fixture(new BlockPos(64, 100, 160)); settlement = fixture(new BlockPos(96, 100, 160));
-        ordinaryRocket = rocket(ordinary); settlementRocket = rocket(settlement);
-        EscrowTags.require(server.overworld().addFreshEntity(ordinaryRocket), "Ordinary benchmark rocket publication refused");
-        // A complete credited BEFORE-choice fixture, held for an operator choice. It never uses the model-bank scheduler.
-        var admission = operation(settlement, settlementRocket, coordinator.nextSequence());
-        var op = admission.operation(); settlementId = op.id();
-        var tag = settlementRocket.saveWithoutId(new CompoundTag()); var wrapper = tag.getCompound("RocketEntityData");
-        var flight = settlementRocket.flightData().orElseThrow();
-        wrapper.put("flight_data", RocketFlightNbtCodec.encode(flight.withFuel(flight.fuel().withFluidBank(false,
-                ResourceLocation.tryParse("minecraft:water"), null, 1000), server.overworld().getGameTime())));
-        wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
-                List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", 1))).encode());
-        settlementRocket.load(tag);
-        coordinator.prepareTest(op, admission.before(), committed -> {
-            EscrowTags.require(committed, "Settlement baseline not acknowledged");
-            settlement.applySource(op);
-            coordinator.transition(settlementId, EscrowReason.OTHER_STATE); coordinator.persistTransitions();
-            EscrowTags.require(server.overworld().addFreshEntity(settlementRocket), "Settlement rocket publication refused");
-            settlementPrepared = true;
-        });
-    }
-    private EscrowTestEndpoints.Fixture fixture(BlockPos pos) {
-        var fixture = EscrowTestEndpoints.create(server.overworld(), pos, data.ledger().id()); fixture.bank().discard(); return fixture;
-    }
-    private RocketEntity rocket(EscrowTestEndpoints.Fixture fixture) {
-        var pos = fixture.source().getBlockPos();
-        return EscrowRocketAuditProbe.createRocket(server.overworld(), fixture.logical(), true,
-                new RocketPosition(pos.getX(), pos.getY(), pos.getZ() + 4));
-    }
-    private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, RocketEntity rocket, long sequence) {
-        var sample = fixture.operation(sequence); var fuel = rocket.flightData().orElseThrow().fuel();
-        var after = fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1000);
-        var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, rocket.level().dimension().location().toString(),
-                rocket.getUUID(), fixture.logical(), EscrowAdapterIds.ROCKET, rocket.chunkPosition().x, 0, rocket.chunkPosition().z,
-                EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(), after.resourceSignature());
-        var guard = RocketTransferSavedData.get(server).acknowledgedGuard(fixture.logical()).orElseThrow();
-        var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
-                sample.payload(), sample.payloadHash(), sample.source(), destination,
-                new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), fuel, after, data.ledger());
+        createAccounted();
     }
     boolean ready() { return settlementPrepared && coordinator.writerIdle(); }
     void start() {
         ordinaryStart = System.nanoTime();
-        if (nativeAccounting) {
-            ordinaryNative = admitNative(ordinaryLoader, ordinaryRocket, committed -> {
-                EscrowTags.require(committed, "Ordinary benchmark fill not acknowledged"); ordinaryPrepared = true;
-            });
-            ordinaryId = ordinaryNative.operation().id(); return;
-        }
-        var admission = operation(ordinary, ordinaryRocket, coordinator.nextSequence()); ordinaryId = admission.operation().id();
-        coordinator.prepareNativeTest(admission.operation(), ordinaryRocket, ordinary.source(), committed -> {
+        ordinaryNative = admitNative(ordinaryLoader, ordinaryRocket, committed -> {
             EscrowTags.require(committed, "Ordinary benchmark fill not acknowledged"); ordinaryPrepared = true;
         });
+        ordinaryId = ordinaryNative.operation().id();
     }
     void tick() {
         coordinator.commitPreparations();
         if (ordinaryPrepared && !ordinaryDone && data.ledger().records().stream().noneMatch(op -> op.id().equals(ordinaryId))
                 && ordinaryRocket.escrowSection().markers().isEmpty()
-                && (nativeAccounting ? ordinaryNative.state(data.ledger().id()) : ordinary.sourceState()).markers().isEmpty()) {
+                && ordinaryNative.state(data.ledger().id()).markers().isEmpty()) {
             EscrowTags.require(ordinaryRocket.flightData().orElseThrow().fuel().totalAmount() == 1000
-                    && (nativeAccounting ? ordinaryNative.amount() : EscrowTestEndpoints.amount(ordinary.source().getPersistentData())) == 4000,
+                    && ordinaryNative.amount() == 4000,
                     "Ordinary retirement conservation failed");
             metrics.sample("ordinary_start_to_c8", System.nanoTime() - ordinaryStart); ordinaryDone = true;
         }
@@ -115,12 +59,12 @@ final class EscrowFlightBenchmarkWork {
             settlementDone = settlementPruned(
                     data.ledger().records().stream().anyMatch(op -> op.id().equals(settlementId)),
                     settlementRocket.flightData().orElseThrow().fuel().totalAmount(),
-                    nativeAccounting ? settlementNative.amount() : EscrowTestEndpoints.amount(settlement.source().getPersistentData()),
+                    settlementNative.amount(),
                     settlementRocket.escrowSection().markers().size(),
-                    (nativeAccounting ? settlementNative.state(data.ledger().id()) : settlement.sourceState()).markers().size());
+                    settlementNative.state(data.ledger().id()).markers().size());
         }
     }
-    /** Schema-3 attribution uses the existing native fixture; normal benchmark setup remains unchanged. */
+    /** Every mode uses the accounted native-loader fixture required by the schema-3 ledger. */
     private void createAccounted() {
         var level = server.overworld(); var owner = EscrowFlightBenchmarkLoad.id("operator");
         ordinaryRocket = FluidFuelLoaderEscrowFixtures.rocket(level, new BlockPos(64, 100, 164), owner,

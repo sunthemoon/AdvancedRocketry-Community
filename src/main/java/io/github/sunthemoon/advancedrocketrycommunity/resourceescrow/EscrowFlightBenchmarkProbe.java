@@ -86,7 +86,7 @@ final class EscrowFlightBenchmarkProbe {
                 tag.getCompound("RocketEntityData").put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 0, List.of()).encode());
                 rocket.load(tag); EscrowTags.require(load.earth.addFreshEntity(rocket), "Benchmark source publication refused"); sources.add(rocket);
             }
-            competing = new EscrowFlightBenchmarkWork(server, data, metrics, arrivalCost != null); competing.create();
+            competing = new EscrowFlightBenchmarkWork(server, data, metrics); competing.create();
             initialized = true;
         }
         competing.tick();

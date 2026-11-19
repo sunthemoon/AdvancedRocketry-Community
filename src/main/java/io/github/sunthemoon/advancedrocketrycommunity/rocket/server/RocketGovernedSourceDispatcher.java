@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedArrival;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceFlight;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedTerminalPassengers;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFlightTables;
@@ -167,6 +168,17 @@ final class RocketGovernedSourceDispatcher {
 
     private static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                                     RocketEntity source, RocketTransferBayDispatch bays) {
+        destination(server, journal, record, source, bays,
+                (arrival, boundary) -> EscrowRuntime.of(server).arrivals().tick(server, journal, record, arrival, boundary),
+                () -> { }, () -> { });
+    }
+
+    /** Package-local execution seam: GameTests count real computations and exercise changes between F4 and F5. */
+    static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                            RocketEntity source, RocketTransferBayDispatch bays,
+                            java.util.function.BiFunction<RocketEntity, java.util.function.BooleanSupplier,
+                                    EscrowGovernedArrival.Result> arrivalTick,
+                            Runnable afterDestination, Runnable afterPhase) {
         if (source != null && (record.phase() == RocketTransferPhase.PREPARED || record.phase() == RocketTransferPhase.DESTINATION_SPAWNED)
                 && RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays) && !landingAvailable(server, record)) {
             requestReturn(server, journal, record, source, bays, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED, () -> { });
@@ -174,11 +186,15 @@ final class RocketGovernedSourceDispatcher {
         }
         // Restore a warm COMMITTED descent's planned pose before F4/F5 inspect it. This is the
         // same checked arrival movement, never landing, a passenger move or a new phase authority.
+        RocketGovernedArrivalDispatcher.Visit first = null;
         if (source == null && record.phase() == RocketTransferPhase.COMMITTED) {
             var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
             if (level != null && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) instanceof RocketEntity arrival) {
-                EscrowRuntime.of(server).arrivals().tick(server, journal, record, arrival,
+                var computed = arrivalTick.apply(arrival,
                         () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays));
+                first = new RocketGovernedArrivalDispatcher.Visit(record, arrival, arrival.governedObservation(),
+                        server.getTickCount(), arrival.level().getGameTime(),
+                        EscrowRuntime.of(server).arrivals().reuseBinding(record, arrival), computed);
             }
         }
         var result = EscrowRuntime.of(server).destinations().tick(server, journal, record, source,
@@ -186,6 +202,7 @@ final class RocketGovernedSourceDispatcher {
                         && !EscrowRuntime.of(server).returns().handles(checked, from)
                         && EscrowRuntime.of(server).flightPhases().allowsNative(from, to)
                         && (to != null || landingAvailable(server, checked)));
+        afterDestination.run();
         if (result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.CREATE_FAILED
                 || result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.SPAWN_FAILED) {
             requestReturn(server, journal, record, source, bays,
@@ -201,9 +218,12 @@ final class RocketGovernedSourceDispatcher {
                     () -> RocketGovernedLaunchBoundary.allows(server, journal, record,
                             source != null && source.isRemoved() ? null : source, arrival, bays)
                             && EscrowRuntime.of(server).flightPhases().allowsNative(source, arrival));
+            afterPhase.run();
             if (phase == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPhases.Result.COMMITTED
                     && source == null) {
-                RocketGovernedArrivalDispatcher.tick(server, journal, record, arrival, bays);
+                RocketGovernedArrivalDispatcher.tick(server, journal, record, arrival, bays, first,
+                        () -> arrivalTick.apply(arrival,
+                                () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays)));
             }
         }
     }
