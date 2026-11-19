@@ -127,12 +127,35 @@ class EscrowFlightSourceTest {
     @Test void launchBoundaryRefusalIsTransientAndDoesNotComparePersistentFields() {
         var boundary = new java.util.concurrent.atomic.AtomicBoolean(false);
         var source = liveSource(boundary::get);
+        long captures = source.rocket.governedCaptures();
         for (int visit = 0; visit < 2_000; visit++) {
             assertFalse(source.observe());
             assertTrue(source.unchanged.get(), "A launch-boundary refusal poisoned the capture");
         }
         boundary.set(true);
         assertTrue(source.observe(), "The same capture did not recover after the boundary opened");
+        assertEquals(captures, source.rocket.governedCaptures(), "Boundary polling serialized the rocket again");
+    }
+
+    @Test void aRefusedBoundarySkipsPersistentComparisonsAndNeverClearsAnExistingStickyFlag() {
+        var unchanged = new java.util.concurrent.atomic.AtomicBoolean(true);
+        var boundary = new java.util.concurrent.atomic.AtomicBoolean(false);
+        var comparisons = new java.util.concurrent.atomic.AtomicInteger();
+        for (int visit = 0; visit < 2_000; visit++) {
+            assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get,
+                    () -> { comparisons.incrementAndGet(); return true; }));
+        }
+        assertTrue(unchanged.get()); assertEquals(0, comparisons.get());
+        boundary.set(true);
+        assertTrue(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get,
+                () -> { comparisons.incrementAndGet(); return true; }));
+        assertEquals(1, comparisons.get());
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> false));
+        boundary.set(false);
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> true));
+        boundary.set(true);
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, boundary::get, () -> true));
+        assertFalse(unchanged.get());
     }
 
     // Exercise the real observer and native getters without constructing a Level or publishing an entity.

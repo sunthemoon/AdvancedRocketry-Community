@@ -23,14 +23,21 @@ final class EscrowFlightSource {
     private final RocketEscrowSection wrapper;
 
     private final java.util.function.BooleanSupplier boundary;
+    private final java.util.function.BooleanSupplier persistent;
 
     EscrowFlightSource(RocketEntity rocket) {
         this(rocket, () -> true);
     }
 
     EscrowFlightSource(RocketEntity rocket, java.util.function.BooleanSupplier boundary) {
+        this(rocket, boundary, () -> true);
+    }
+
+    EscrowFlightSource(RocketEntity rocket, java.util.function.BooleanSupplier boundary,
+                       java.util.function.BooleanSupplier persistent) {
         this.rocket = rocket;
         this.boundary = java.util.Objects.requireNonNull(boundary);
+        this.persistent = java.util.Objects.requireNonNull(persistent);
         envelope = EscrowGovernedEnvelope.capture(rocket);
         digest = EscrowNativeEnvelope.digest(envelope);
         signature = signature(rocket.flightData().orElseThrow().fuel());
@@ -46,16 +53,22 @@ final class EscrowFlightSource {
 
     /** Cheap owner-thread observation of immutable model identities and native mutable fields. */
     boolean observe() {
-        return observe(unchanged, rocket.getDeltaMovement(), this::same);
+        return observe(unchanged, rocket.getDeltaMovement(), boundary, this::same);
     }
 
     /**
      * R17 item 5: delta movement that the rocket's own tick zeroes is transient, so it answers "not now" without the
      * sticky flag. Proof callbacks run in ServerTickEvent END, after that tick. The disk validators still compare the
-     * saved Motion, so a save taken with the motion still refuses its proof. Any other change stays sticky.
+     * saved Motion, so a save taken with the motion still refuses its proof. A launch-boundary refusal is also
+     * "not now". Native comparisons and the terminal's separate passenger prerequisite stay sticky.
      */
     static boolean observe(AtomicBoolean unchanged, net.minecraft.world.phys.Vec3 motion, java.util.function.BooleanSupplier same) {
-        if (!unchanged.get() || EscrowGovernedFrame.transientMotion(motion)) { return false; }
+        return observe(unchanged, motion, () -> true, same);
+    }
+
+    static boolean observe(AtomicBoolean unchanged, net.minecraft.world.phys.Vec3 motion,
+                           java.util.function.BooleanSupplier boundary, java.util.function.BooleanSupplier same) {
+        if (!unchanged.get() || EscrowGovernedFrame.transientMotion(motion) || !boundary.getAsBoolean()) { return false; }
         boolean result = same.getAsBoolean();
         if (!result) { unchanged.set(false); }
         return result;
@@ -63,7 +76,7 @@ final class EscrowFlightSource {
 
     private boolean same() {
         var pos = envelope.getList("pos", Tag.TAG_DOUBLE); var motion = envelope.getList("motion", Tag.TAG_DOUBLE);
-        return boundary.getAsBoolean() && !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
+        return persistent.getAsBoolean() && !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
                 && rocket.flightData().orElse(null) == flight && rocket.snapshot().orElse(null) == snapshot
                 && rocket.escrowSection().equals(wrapper) && rocket.getUUID().equals(endpoint.identity())
                 && rocket.ownerId().filter(envelope.getUUID("owner")::equals).isPresent()

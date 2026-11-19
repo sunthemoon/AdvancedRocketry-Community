@@ -144,7 +144,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
 
     /** R13/R16: waits observe immutable identities and live riders, not a fresh serialized survivor each tick. */
     static EscrowFlightSource waitSource(RocketEntity survivor, BooleanSupplier passengersPresent, BooleanSupplier boundary) {
-        return new EscrowFlightSource(survivor, () -> passengersPresent.getAsBoolean() && boundary.getAsBoolean());
+        return new EscrowFlightSource(survivor, boundary, passengersPresent);
     }
 
     void observe(RocketEntity rocket) {

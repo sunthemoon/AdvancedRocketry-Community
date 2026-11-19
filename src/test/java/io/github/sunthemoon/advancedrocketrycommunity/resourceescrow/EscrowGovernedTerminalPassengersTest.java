@@ -15,6 +15,40 @@ class EscrowGovernedTerminalPassengersTest {
         io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
     }
 
+    @Test void launchBoundaryWaitsAreTransientButThePassengerPrerequisiteStaysSticky() {
+        var boundary = new AtomicBoolean(false); var passengers = new AtomicBoolean(true);
+        var rocket = EscrowFlightSourceTest.liveSource(() -> true).rocket;
+        var source = EscrowGovernedTerminal.waitSource(rocket, passengers::get, boundary::get);
+        long captures = rocket.governedCaptures();
+        for (int visit = 0; visit < 2_000; visit++) {
+            assertFalse(source.observe()); assertTrue(source.unchanged.get());
+        }
+        boundary.set(true); assertTrue(source.observe());
+        passengers.set(false); assertFalse(source.observe()); assertFalse(source.unchanged.get());
+        passengers.set(true); assertFalse(source.observe(), "A restored passenger prerequisite resurrected the lease");
+        assertEquals(captures, rocket.governedCaptures());
+    }
+
+    @Test void explicitPassengerDepartureInvalidatesEvenWhileTheLaunchBoundaryRefuses() throws Exception {
+        var record = io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture.create().record();
+        var boundary = new AtomicBoolean(false);
+        var source = EscrowGovernedTerminal.waitSource(EscrowFlightSourceTest.liveSource(() -> true).rocket, () -> true, boundary::get);
+        var type = Class.forName(EscrowGovernedTerminal.class.getName() + "$Work");
+        var constructor = type.getDeclaredConstructor(record.getClass(), EscrowFlightTables.Outcome.class,
+                EscrowFlightSource.class, EscrowGovernedTerminal.JournalHold.class);
+        constructor.setAccessible(true);
+        var work = constructor.newInstance(record, EscrowFlightTables.Outcome.CANCELLED, source, null);
+        try (var terminal = new EscrowGovernedTerminal()) {
+            java.util.Map<UUID, Object> states = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.get(
+                    EscrowGovernedTerminal.class, terminal, "work");
+            states.put(record.transferId(), work);
+            assertFalse(source.observe()); assertTrue(source.unchanged.get());
+            terminal.passengerLeft(record.sourceFlightData().passengers().assignments().get(0).passengerId());
+            assertFalse(source.unchanged.get());
+            boundary.set(true); assertFalse(source.observe(), "Departure was hidden by a temporary launch-boundary refusal");
+        }
+    }
+
     @Test void cancellationAcceptsOnlyOnlineSourceLevelPassengersWithoutAnotherVehicle() {
         var outcome = EscrowFlightTables.Outcome.CANCELLED;
         assertTrue(EscrowGovernedTerminalPassengers.placement(outcome, true, true, true, false));
