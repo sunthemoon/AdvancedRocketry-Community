@@ -4,6 +4,11 @@ candidate JAR, with the exact account oracle of accounting_cut_oracle. The calle
 
 Cargo cases run the gated cargo probes directly. Fuel loader cases call run_v180_loader_cuts.run_cut unchanged and
 then apply the account oracle to the disks that runner decoded.
+
+W373C: the fuel loader's operator settlement. The existing LF_S6_ operator cuts (O1 to O4) call
+run_v180_loader_s6.run_cut unchanged, with its own log and raw oracle, and then the account oracle. The four
+LF_S6_AC_ cases (pruning before and after its save, a known loss and a known gain) have no expectation in that
+runner, so they run here with the loader's independent disk reader and the same account oracle.
 """
 from __future__ import annotations
 
@@ -16,6 +21,7 @@ import shutil
 import accounting_cut_oracle as oracle
 import run_dedicated_server_smoke as smoke
 import run_v180_loader_cuts as loader
+import run_v180_loader_s6 as loader_s6
 import w336_native as native
 from run_v180_escrow_forced_stop import LEDGER, digest, ledger, record
 from run_v180_escrow_pre_f2 import journal
@@ -40,6 +46,14 @@ BOUNDARIES = {"AC_O1_ACK": "O1_ACK", "AC_O3_ACK": "O3_ACK", "AC_O4_ACK": "O4_ACK
 OUTCOMES = ("AC_LOSS", "AC_GAIN", "AC_SUBSTITUTE", "ABANDON_ROCKET", "ABANDON_DEVICE", "AC_READBACK")
 LOADER_CUTS = tuple("LF_M_D2_" + name for name in ("C1_BEFORE", "C1_REPLACED", "C1_ACK", "C7_BEFORE", "C7_REPLACED", "C7_ACK"))
 LOADER_OUTCOMES = ("LF_M_C2", "LF_M_C2_PARTIAL_REPLACED", "LF_M_E4L1_UNKNOWN", "LF_M_E4L2_UNKNOWN")
+# W373C: the loader's operator settlement at O1, O2, O3 and O4, each before and after its write. These thirteen probe
+# cases exist; the S6 loader runner keeps its unchanged oracle for them.
+LOADER_SETTLEMENT = tuple("LF_S6_" + name for name in (
+    "O1_BEFORE", "O1_REPLACED", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1",
+    "O3_BEFORE", "O3_REPLACED", "O3_ACK", "O4_BEFORE", "O4_REPLACED", "O4_ACK"))
+# W373C's gated cases, and the hook each one's forced stop reports.
+LOADER_ACCOUNTING = {"LF_S6_AC_PRUNE_BEFORE": "PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER": "PRUNE_AFTER",
+                     "LF_S6_AC_LOSS": "K2", "LF_S6_AC_GAIN": "K2"}
 # The readback case's first hold: the typed per-fluid check of the device slot refuses a vector that differs from the
 # frozen one (EscrowCargoReadback, design section 6). Later attempts meet the live check's refusal instead.
 TYPED_REFUSAL = "ACCOUNTING_MISMATCH"
@@ -55,7 +69,7 @@ def _cargo(direction):
 FAMILIES = {
     "cargo-load": tuple(_cargo("LOAD")),
     "cargo-unload": tuple(_cargo("UNLOAD")),
-    "loader": LOADER_CUTS,
+    "loader": LOADER_CUTS + LOADER_SETTLEMENT + tuple(LOADER_ACCOUNTING),
     "outcomes": tuple(prefix + cut for cut in OUTCOMES for prefix in ("FS_", "FS_LOAD_"))
                 + ("FC_LOAD_E4L1_UNKNOWN", "FC_LOAD_E4L2_UNKNOWN") + LOADER_OUTCOMES,
 }
@@ -66,6 +80,14 @@ def spec(case):
     """How one probe case is run and which three states the oracle expects of it."""
     if case.startswith("LF_M_"):
         return dict(engine="loader")
+    if case in LOADER_SETTLEMENT:
+        return dict(engine="loader-s6")
+    if case in LOADER_ACCOUNTING:
+        tank = oracle.loader_settlement(case)[2]["source"]["fluids"][oracle.FUEL]
+        return dict(engine="loader-settlement", timeout=420,
+                    paused=f"ARCE_LOADER_S6_O_PAUSED cut={case} hook={LOADER_ACCOUNTING[case]}",
+                    result=f"ARCE_LOADER_S6_O_RESULT cut={case} tank={tank} bank=1000 epochs=1,1 records=0 receipts=1 "
+                           "state=RELEASED accounting=KNOWN")
     if case.startswith("FC_"):
         load = case.startswith("FC_LOAD_")
         cut = case.removeprefix("FC_LOAD_" if load else "FC_UNLOAD_")
@@ -218,24 +240,24 @@ def loader_parent(run):
     return parent
 
 
-def run_loader(run, case, row):
-    """The unchanged loader runner and oracle first, then the account oracle on the disks that runner decoded."""
+def delegate(run, case, row, run_cut, hooks, harness, label, disk_of, check):
+    """An unchanged loader runner and its oracle first, then the account oracle on the disks that runner decoded."""
     args = copy.copy(run.args)
     args.session_parent = loader_parent(run)
     args.follow_ups = False
-    pins = dict(run.pin, hooks={p: digest(REPO / p) for p in loader.HOOK_FILES},
-                harness={p: digest(REPO / p) for p in loader.HARNESS_FILES})
-    result = loader.run_cut(args, case, run.evidence / case, args.lock_owner, pins)
+    pins = dict(run.pin, hooks={p: digest(REPO / p) for p in hooks}, harness={p: digest(REPO / p) for p in harness})
+    result = run_cut(args, case, run.evidence / case, args.lock_owner, pins)
     row["loader_status"] = result["status"]
     if result["status"] != "PASS":
-        row["findings"].append("loader runner: " + str(result.get("error", result.get("reason", result["status"]))))
+        row["findings"].append(label + ": " + str(result.get("error", result.get("reason", result.get("findings") or result["status"])))[:600])
     previous = None
     for start in result["starts"]:
         entry = dict(start=start["restart"]); row["starts"].append(entry)
         try:
-            oracle.require("disk" in start, "The loader runner decoded no disk for this start")
-            entry["oracle"] = oracle.check_loader(start["disk"], case, start["restart"])
-            root = start["disk"]["ledger"]
+            disk = disk_of(start)
+            oracle.require(isinstance(disk, dict), "The loader runner decoded no disk for this start")
+            entry["oracle"] = check(disk, case, start["restart"])
+            root = disk["ledger"]
             if previous is not None and root is not None:
                 oracle.check_progress(previous, root)
             previous = root
@@ -250,6 +272,75 @@ def run_loader(run, case, row):
         args.session_parent.rmdir()
 
 
+def run_loader(run, case, row):
+    """L1, L2, the chain and the ambiguous replacement, through run_v180_loader_cuts."""
+    delegate(run, case, row, loader.run_cut, loader.HOOK_FILES, loader.HARNESS_FILES, "loader runner",
+             lambda start: start.get("disk"), oracle.check_loader)
+
+
+def s6_disk(start):
+    """The S6 runner's independently decoded image of one start; an unreadable image is never a disk."""
+    image = start.get("image") or {}
+    return image.get("native") if image.get("read_status") == "KNOWN" else None
+
+
+def run_loader_s6(run, case, row):
+    """The loader's operator settlement at O1 to O4, through run_v180_loader_s6 and its unchanged oracle."""
+    delegate(run, case, row, loader_s6.run_cut, loader_s6.HOOKS, loader_s6.HARNESSES, "loader S6 runner",
+             s6_disk, oracle.check_loader_settlement)
+
+
+def observe_loader(plan, start, lines):
+    """Exactly one stop or result line that ends with the exact expected text, and no ERROR or FATAL line."""
+    marker = plan["result"] if start else plan["paused"]
+    matches = [line.strip() for line in lines if line.rstrip().endswith(marker)]
+    label = "ARCE_LOADER_S6_O_" + ("RESULT" if start else "PAUSED")
+    oracle.require(len(matches) == 1 and sum(label in line for line in lines) == 1,
+                   "Missing, repeated or different loader settlement observation: " + marker)
+    logged = errors(lines)
+    oracle.require(not logged, "The native start logged ERROR or FATAL: " + (logged[0].strip()[:200] if logged else ""))
+    return dict(marker=matches[0][matches[0].index(label):][:300])
+
+
+def run_loader_settlement(run, case, plan, row):
+    """The three starts of one LF_S6_AC_ case: the loader's own disk reader, then the exact account oracle."""
+    world = run.session / ("world-" + case)
+    previous = None
+    for start in range(3):
+        entry = dict(start=start); row["starts"].append(entry)
+        process = run.start(f"{case}-{start}", world=world.name,
+                            properties={"escrowScenario": "recover" if start else "start", CASE_KEY: case})
+        try:
+            process.wait_for(re.compile(re.escape(plan["result"] if start else plan["paused"]) + r"\s*$"), plan["timeout"])
+            if start:
+                run.stop(f"{case}-{start}", audit=lambda lines: None)
+            else:
+                process.process.kill(); process.abort(); run.process = None; entry["forced_stop"] = True
+        except (OSError, ValueError, smoke.SmokeError) as failure:
+            if run.process is not None:
+                run.process.abort(); run.process = None
+            entry.update(status="FAILED", error="Start execution: " + str(failure))
+            row["findings"].append(f"start {start}: {entry['error']}")
+            entry["native_files"] = run.capture(world, f"{case}-{start}-failed-world") if world.is_dir() else None
+            return
+        try:
+            disk = loader.oracle.inspect(world)
+            raw = run.evidence / f"{case}-{start}-raw.json"
+            raw.write_text(json.dumps(disk, indent=1), encoding="utf-8")
+            entry["raw"] = dict(file=raw.name, sha256=digest(raw))
+            entry["observation"] = observe_loader(plan, start, process.lines)
+            entry["oracle"] = oracle.check_loader_settlement(disk, case, start)
+            if previous is not None:
+                oracle.check_progress(previous, disk["ledger"])
+            previous = disk["ledger"]
+            entry["status"] = "PASS"
+        except (OSError, ValueError, KeyError, TypeError, IndexError, smoke.SmokeError) as failure:
+            entry.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {start}: {failure}")
+            entry["native_files"] = run.capture(world, f"{case}-{start}-failed-world")
+            previous = None
+    shutil.rmtree(world)
+
+
 def family(run):
     cases = run.args.case or FAMILIES[run.args.family]
     native.require(set(cases) <= set(FAMILIES[run.args.family]), "A selected case is not in the requested family")
@@ -259,6 +350,10 @@ def family(run):
         row = dict(case=case, engine=plan["engine"], starts=[], findings=[]); report["cases"].append(row)
         if plan["engine"] == "loader":
             run_loader(run, case, row)
+        elif plan["engine"] == "loader-s6":
+            run_loader_s6(run, case, row)
+        elif plan["engine"] == "loader-settlement":
+            run_loader_settlement(run, case, plan, row)
         else:
             row.update(cut=plan["cut"], direction="LOAD" if plan["load"] else "UNLOAD")
             run_cargo(run, case, plan, row)

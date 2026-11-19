@@ -353,6 +353,55 @@ def check_loader(disk, cut, restart):
     return dict(records=records, rows=len(rows), bank=bank["fluids"], tanks=[tank["fluids"] for tank in tanks])
 
 
+# ---- The fuel loader's operator settlement (W373C): one applied fill of 1,000 mB, held, then ACCEPT_CURRENT.
+
+LOADER_SETTLEMENT_PREFIX = "LF_S6_"
+# The loader tank is the source and the rocket's bank the destination. Both were published before the hold, so
+# every cut starts from 4,000 mB and 1,000 mB at epoch 1 with one marker each.
+LOADER_O1_AFTER = ("O1_REPLACED", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "O3_BEFORE", "AC_LOSS", "AC_GAIN")
+LOADER_O3_AFTER = ("O3_REPLACED", "O3_ACK", "O4_BEFORE")
+LOADER_O4_AFTER = ("O4_REPLACED", "O4_ACK", "AC_PRUNE_BEFORE")
+LOADER_SETTLEMENT = ("O1_BEFORE",) + LOADER_O1_AFTER + LOADER_O3_AFTER + LOADER_O4_AFTER + ("AC_PRUNE_AFTER",)
+
+
+def loader_settlement(cut):
+    """LF_S6_ cuts: the three expected states of the loader's operator settlement cut at `cut`."""
+    name = cut.removeprefix(LOADER_SETTLEMENT_PREFIX)
+    require(cut.startswith(LOADER_SETTLEMENT_PREFIX) and name in LOADER_SETTLEMENT, "No loader settlement accounting expectation for " + cut)
+    # A known loss or gain is the held tank changed by 100 mB before the preview: a = -(dS + dD).
+    delta = {"AC_LOSS": -ADJUSTMENT, "AC_GAIN": ADJUSTMENT}.get(name, 0)
+    tank = TOTAL - QUANTITY + delta
+    planned = row(FUEL_SCOPE, FUEL, TOTAL, 0)
+    frozen = row(FUEL_SCOPE, FUEL, TOTAL, 0, [(FUEL, tank, QUANTITY, -delta)])
+
+    def expect(records, rows, receipts, markers, balance):
+        return dict(records=records, rows=rows, receipts=receipts, source=store(FUEL, tank, 1, markers),
+                    destination=store(FUEL, QUANTITY, 1, markers), issued=1, balance=balance, totals={FUEL: tank + QUANTITY})
+
+    done = expect([], [frozen], [(True, "KNOWN", 0)], 0, "FROZEN")
+    if name == "O1_BEFORE":
+        held = expect(["REPAIR"], [planned], [], 1, "PLAN")
+        return [held, held, held]
+    if name in LOADER_O1_AFTER:
+        return [expect(["SETTLING_ACCEPT"], [frozen], [], 1, "FROZEN"), done, done]
+    if name in LOADER_O3_AFTER:
+        return [expect(["SETTLING_ACCEPT"], [frozen], [(False, "KNOWN", 0)], 1, "FROZEN"), done, done]
+    if name in LOADER_O4_AFTER:
+        # Released, and neither survivor's pruning is stored yet.
+        return [expect([], [frozen], [(True, "KNOWN", 0)], 1, "FROZEN"), done, done]
+    return [done, done, done]
+
+
+def check_loader_settlement(disk, cut, start):
+    """One start of a loader settlement cut: the exact fuel-scope row, receipt, epochs, markers and signed balance."""
+    tanks, bank = loader_states(disk)
+    require(len(tanks) == 1, "Wrong loader count for the settlement accounting cut")
+    root = disk["ledger"]
+    require(root is not None and all(op["kind"] == "FLUID_PROPULSION_FILL" for op in root["records"]),
+            "The loader settlement's record is not a propulsion fill")
+    return check_state(root, tanks[0], bank, loader_settlement(cut)[start])
+
+
 # ---- Format boundaries (root-2 upgrade and the old JAR's refusal); the runner supplies digests and decoded roots.
 
 def check_upgraded(root, legacy_digests, source, destination):

@@ -17,14 +17,19 @@ from run_dedicated_server_smoke import SmokeError
 
 REPO = Path(__file__).resolve().parents[1]
 PROBE = REPO / "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowCargoSettlementCuts.java"
+LOADER_PROBE = PROBE.with_name("EscrowLoaderS6SettlementProbe.java")
 
 
 class AccountingCutsRunnerTest(unittest.TestCase):
     def test_families_hold_the_planned_cases_once(self):
-        self.assertEqual({"cargo-load": 17, "cargo-unload": 17, "loader": 6, "outcomes": 18},
+        # W373C: the loader family grows from W373B's 6 cases by the 13 existing operator cuts and 4 gated cases.
+        self.assertEqual({"cargo-load": 17, "cargo-unload": 17, "loader": 23, "outcomes": 18},
                          {name: len(cases) for name, cases in runner.FAMILIES.items()})
-        self.assertEqual(58, len(runner.CASES))
-        self.assertEqual(58, sum(len(cases) for cases in runner.FAMILIES.values()))
+        self.assertEqual(75, len(runner.CASES))
+        self.assertEqual(75, sum(len(cases) for cases in runner.FAMILIES.values()))
+        self.assertEqual(runner.LOADER_CUTS, runner.FAMILIES["loader"][:6])
+        self.assertEqual((13, 4), (len(runner.LOADER_SETTLEMENT), len(runner.LOADER_ACCOUNTING)))
+        self.assertEqual(58, len([case for case in runner.CASES if not case.startswith(oracle.LOADER_SETTLEMENT_PREFIX)]))
         self.assertTrue(all(case.startswith(("FC_LOAD_", "FS_LOAD_")) for case in runner.FAMILIES["cargo-load"]))
         self.assertTrue(all(case.startswith(("FC_UNLOAD_", "FS_")) and "_LOAD_" not in case for case in runner.FAMILIES["cargo-unload"]))
         self.assertIn(runner.CASE_PROPERTY, (REPO / "scripts/run_v180_accounting_cuts.py").read_text(encoding="utf-8"))
@@ -37,6 +42,13 @@ class AccountingCutsRunnerTest(unittest.TestCase):
             with self.subTest(case=case):
                 if plan["engine"] == "loader":
                     self.assertIn(case, runner.loader.oracle.CASES)
+                    continue
+                if plan["engine"] in ("loader-s6", "loader-settlement"):
+                    self.assertIn('"' + case + '"', LOADER_PROBE.read_text(encoding="utf-8"))
+                    self.assertEqual(3, len(oracle.loader_settlement(case)))
+                    # The S6 runner already drives the thirteen operator cuts; it has no expectation for the new four.
+                    self.assertEqual(plan["engine"] == "loader-s6", case in runner.loader_s6.oracle.OPERATOR)
+                    self.assertEqual(plan["engine"] == "loader-s6", case in runner.loader_s6.CASES)
                     continue
                 self.assertEqual(3, len(plan["states"]))
                 if plan["engine"] == "ordinary":
@@ -196,6 +208,132 @@ class AccountingCutsRunnerTest(unittest.TestCase):
                 row = dict(starts=[], findings=[])
                 runner.run_loader(self.loader_run(directory), "LF_M_D2_C7_ACK", row)
                 self.assertEqual(expected, row["findings"])
+
+    def test_loader_settlement_cuts_keep_the_s6_runner_and_add_the_account_oracle(self):
+        """W373C: the thirteen existing operator cuts go through run_v180_loader_s6.run_cut, then the account oracle."""
+        calls = []
+
+        def run_cut(args, case, evidence, owner, pins):
+            calls.append((case, evidence.name, owner, args.session_parent.name, sorted(pins), len(pins["hooks"]), len(pins["harness"])))
+            return dict(status="PASS", findings=[], starts=[
+                dict(restart=index, image=dict(read_status="KNOWN", native=dict(ledger=None, index=index))) for index in range(3)])
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader_s6, "run_cut", run_cut), \
+                patch.object(runner.oracle, "check_loader_settlement", lambda disk, case, restart: dict(checked=(case, restart, disk["index"]))):
+            run = self.loader_run(directory); row = dict(starts=[], findings=[])
+            runner.run_loader_s6(run, "LF_S6_O3_REPLACED", row)
+            self.assertEqual([("LF_S6_O3_REPLACED", "LF_S6_O3_REPLACED", "owner", "AL-0123456789ab", ["harness", "hooks", "jar_sha256"],
+                               len(runner.loader_s6.HOOKS), len(runner.loader_s6.HARNESSES))], calls)
+            self.assertEqual([], row["findings"])
+            self.assertEqual([("LF_S6_O3_REPLACED", index, index) for index in range(3)], [s["oracle"]["checked"] for s in row["starts"]])
+            self.assertFalse((run.session.parent / "AL-0123456789ab").exists())
+        # An unreadable image is never a disk, and the S6 runner's own findings fail the case.
+        self.assertIsNone(runner.s6_disk(dict(restart=0, image=dict(read_status="UNKNOWN", native=None))))
+        self.assertIsNone(runner.s6_disk(dict(restart=0)))
+        failed = dict(status="FAILED", findings=[dict(restart=1, kind="RAW", error="Settlement changed endpoint/ledger identity")],
+                      starts=[dict(restart=0, image=dict(read_status="KNOWN", native=dict(ledger=None))),
+                              dict(restart=1, image=dict(read_status="UNKNOWN", native=None, error="x"))])
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader_s6, "run_cut", lambda *a: failed), \
+                patch.object(runner.oracle, "check_loader_settlement", lambda disk, case, restart: {}):
+            row = dict(starts=[], findings=[])
+            runner.run_loader_s6(self.loader_run(directory), "LF_S6_O1_ACK", row)
+            self.assertEqual(3, len(row["findings"]))
+            self.assertIn("loader S6 runner: ", row["findings"][0]); self.assertIn("Settlement changed endpoint", row["findings"][0])
+            self.assertEqual(["start 1: The loader runner decoded no disk for this start", "The loader runner completed 2 of 3 starts"],
+                             row["findings"][1:])
+
+    def test_the_new_loader_cases_stop_at_their_own_hook_and_report_the_exact_released_state(self):
+        plans = {case: runner.spec(case) for case in runner.LOADER_ACCOUNTING}
+        self.assertEqual({"loader-settlement"}, {plan["engine"] for plan in plans.values()})
+        self.assertEqual({"LF_S6_AC_PRUNE_BEFORE": 4000, "LF_S6_AC_PRUNE_AFTER": 4000, "LF_S6_AC_LOSS": 3900, "LF_S6_AC_GAIN": 4100},
+                         {case: int(re.search(r"tank=(\d+) ", plan["result"])[1]) for case, plan in plans.items()})
+        java = LOADER_PROBE.read_text(encoding="utf-8")
+        self.assertIn('"ARCE_LOADER_S6_O_PAUSED cut={} hook={}"', java)
+        self.assertIn('"ARCE_LOADER_S6_O_RESULT cut={} tank={} bank=1000 epochs=1,1 records={} receipts={} state={}{}"', java)
+        plan = plans["LF_S6_AC_LOSS"]
+        paused = "[12:00:00] [Server thread/INFO] [x/]: ARCE_LOADER_S6_O_PAUSED cut=LF_S6_AC_LOSS hook=K2"
+        result = ("[12:00:00] [Server thread/INFO] [x/]: ARCE_LOADER_S6_O_RESULT cut=LF_S6_AC_LOSS tank=3900 bank=1000 epochs=1,1 "
+                  "records=0 receipts=1 state=RELEASED accounting=KNOWN")
+        self.assertEqual("ARCE_LOADER_S6_O_PAUSED cut=LF_S6_AC_LOSS hook=K2", runner.observe_loader(plan, 0, ["noise", paused + "\n"])["marker"])
+        self.assertTrue(runner.observe_loader(plan, 2, [result])["marker"].endswith("accounting=KNOWN"))
+        for start, lines, message in ((0, [], "Missing, repeated or different"), (0, [paused, paused], "Missing, repeated or different"),
+                                      (0, [paused.replace("hook=K2", "hook=K1")], "Missing, repeated or different"),
+                                      (0, [paused, paused.replace("hook=K2", "hook=O1_ACK")], "Missing, repeated or different"),
+                                      (0, [paused, "[12:00:01] [Server thread/ERROR] [x/]: failed"], "ERROR or FATAL"),
+                                      (1, [result.replace("tank=3900", "tank=4000")], "Missing, repeated or different"),
+                                      (1, [result.replace("accounting=KNOWN", "accounting=UNKNOWN")], "Missing, repeated or different"),
+                                      (1, [result.replace("records=0 receipts=1", "records=1 receipts=0")], "Missing, repeated or different"),
+                                      (2, [result + " extra"], "Missing, repeated or different"),
+                                      (2, [result, "[12:00:01] [Server thread/FATAL] [x/]: failed"], "ERROR or FATAL")):
+            with self.subTest(start=start, lines=lines), self.assertRaisesRegex(SmokeError, message):
+                runner.observe_loader(plan, start, lines)
+        self.assertTrue(plans["LF_S6_AC_PRUNE_AFTER"]["paused"].endswith("cut=LF_S6_AC_PRUNE_AFTER hook=PRUNE_AFTER"))
+
+    def native_run(self, directory, logs):
+        """A stand-in for the native session: every start returns a process whose captured lines are `logs[start]`."""
+        root = Path(directory).resolve(); (root / "session").mkdir(); (root / "evidence").mkdir()
+        run = types.SimpleNamespace(session=root / "session", evidence=root / "evidence", process=None, started=[], stopped=[], captured=[])
+
+        def start(label, world, properties):
+            (run.session / world).mkdir(exist_ok=True)
+            run.started.append((label, world, properties))
+            killed = types.SimpleNamespace(kill=lambda: run.stopped.append("kill " + label))
+            run.process = types.SimpleNamespace(lines=logs[len(run.started) - 1], process=killed, abort=lambda: None,
+                                                wait_for=lambda pattern, timeout: run.waits.append((pattern.pattern, timeout)))
+            return run.process
+
+        def stop(label, audit=None):
+            run.stopped.append("stop " + label); run.process = None
+
+        run.waits = []; run.start = start; run.stop = stop
+        run.capture = lambda world, label: run.captured.append(label) or dict(file=label)
+        return run
+
+    def test_a_new_loader_case_runs_three_starts_with_the_account_oracle_and_keeps_its_raw_states(self):
+        case = "LF_S6_AC_GAIN"; plan = runner.spec(case)
+        logs = [[plan["paused"]], [plan["result"]], [plan["result"]]]
+        disks = iter([dict(ledger=dict(n=index), loaders=[], rocket={}) for index in range(3)])
+        checked, progress = [], []
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader.oracle, "inspect", lambda world: next(disks)), \
+                patch.object(runner.oracle, "check_loader_settlement", lambda disk, cut, start: checked.append((disk["ledger"]["n"], cut, start)) or {}), \
+                patch.object(runner.oracle, "check_progress", lambda before, after: progress.append((before["n"], after["n"]))):
+            run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
+            runner.run_loader_settlement(run, case, plan, row)
+            self.assertEqual([], row["findings"])
+            self.assertEqual([(case + "-0", "world-" + case, {"escrowScenario": "start", "escrowCase": case}),
+                              (case + "-1", "world-" + case, {"escrowScenario": "recover", "escrowCase": case}),
+                              (case + "-2", "world-" + case, {"escrowScenario": "recover", "escrowCase": case})], run.started)
+            # One forced stop, then two restarts that end with an ordinary stop.
+            self.assertEqual(["kill " + case + "-0", "stop " + case + "-1", "stop " + case + "-2"], run.stopped)
+            self.assertEqual([(0, case, 0), (1, case, 1), (2, case, 2)], checked)
+            self.assertEqual([(0, 1), (1, 2)], progress)
+            self.assertEqual([True, None, None], [entry.get("forced_stop") for entry in row["starts"]])
+            self.assertEqual([case + f"-{index}-raw.json" for index in range(3)], sorted(p.name for p in run.evidence.iterdir()))
+            self.assertTrue(all(pattern.endswith(r"\s*$") and timeout == 420 for pattern, timeout in run.waits))
+            self.assertFalse((run.session / ("world-" + case)).exists())
+
+    def test_a_new_loader_case_reports_an_oracle_finding_and_still_runs_the_later_starts(self):
+        case = "LF_S6_AC_PRUNE_BEFORE"; plan = runner.spec(case)
+        logs = [[plan["paused"]], [plan["result"]], [plan["result"]]]
+
+        def check(disk, cut, start):
+            if start == 0: raise SmokeError("Raw source marker count differs: 0, expected 1")
+            return {}
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner.loader.oracle, "inspect", lambda world: dict(ledger={})), \
+                patch.object(runner.oracle, "check_loader_settlement", check), patch.object(runner.oracle, "check_progress", lambda *a: None):
+            run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
+            runner.run_loader_settlement(run, case, plan, row)
+            self.assertEqual(["start 0: Raw source marker count differs: 0, expected 1"], row["findings"])
+            self.assertEqual(["FAILED", "PASS", "PASS"], [entry["status"] for entry in row["starts"]])
+            self.assertEqual([case + "-0-failed-world"], run.captured)
+        # A start that never reaches its marker stops the case and keeps the world.
+        with tempfile.TemporaryDirectory() as directory:
+            run = self.native_run(directory, logs); row = dict(starts=[], findings=[])
+            run.waits = types.SimpleNamespace(append=lambda item: (_ for _ in ()).throw(SmokeError("Timed out waiting for server marker")))
+            runner.run_loader_settlement(run, case, plan, row)
+            self.assertEqual(1, len(row["starts"])); self.assertIn("Start execution: Timed out", row["findings"][0])
+            self.assertEqual([case + "-0-failed-world"], run.captured)
 
     def test_a_family_reports_every_case_and_fails_on_any_finding(self):
         seen = []

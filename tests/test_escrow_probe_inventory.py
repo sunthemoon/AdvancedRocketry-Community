@@ -22,8 +22,14 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # W370: tests/test_v180_crash_replay.py names IC_UNLOAD_K9, which no producer spells out.
         # W376 (X03-V): the three verification cases of scripts/run_v180_x03_repair.py.
         # W373B: the fourteen FS_AC_ accounting cuts of scripts/run_v180_accounting_cuts.py and the FC_UNLOAD_
-        # prefix token of its test.
-        self.assertEqual(692, len(self.rows))
+        # prefix token of its test (692).
+        # W373C: the four LF_S6_AC_ loader settlement cuts of scripts/run_v180_accounting_cuts.py. The thirteen
+        # existing LF_S6_ operator cuts it also runs only gain that runner as an origin.
+        self.assertEqual(696, len(self.rows))
+        for case in ("LF_S6_AC_PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER", "LF_S6_AC_LOSS", "LF_S6_AC_GAIN"):
+            self.assertEqual({"scripts/run_v180_accounting_cuts.py"}, {o for o in self.rows[case] if o.startswith("scripts/")})
+        self.assertEqual({"scripts/run_v180_accounting_cuts.py", "scripts/run_v180_loader_s6.py"},
+                         {o for o in self.rows["LF_S6_O4_ACK"] if o.startswith("scripts/")})
         # W376 (X03-V): run_v180_x03_repair is a new direct producer.
         # W373B: run_v180_accounting_cuts is a new direct producer.
         self.assertEqual(25, len(self.coverage["direct"]))

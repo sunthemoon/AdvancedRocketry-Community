@@ -245,6 +245,96 @@ class AccountingCutOracleTest(unittest.TestCase):
             # No resource created: a bank that gained without a debit breaks the raw total.
             with self.assertRaises(SmokeError): oracle.check_loader(self.loader_disk(empty, [5000], 1000), "LF_M_D2_C7_ACK", 1)
 
+    def settlement_disk(self, root, tank, bank, markers=1, epoch=1):
+        section = lambda: dict(resource_epoch=epoch, markers=[{}] * markers)
+        device = dict(arce_fluid_fuel_loader=dict(device=[0, 0, 0, 1], tank=dict(FluidName=oracle.WATER, Amount=tank) if tank else {},
+                                                  resource_escrow=section()))
+        primary = dict(amount=bank, fluid=oracle.WATER) if bank else dict(amount=0)
+        rocket = dict(RocketEntityData=dict(resource_escrow=section(),
+                      flight_data=dict(fuel=dict(propulsion=dict(primary=primary, oxidizer=dict(amount=0))))))
+        return dict(ledger=root, loaders=[device], rocket=rocket)
+
+    def test_loader_settlement_cuts_match_the_real_codec_states(self):
+        """W373C: the loader's O1 to O4 and pruning cuts, with the codec fixtures of a settled fuel-scope fill."""
+        planned, o1, o3, o4 = (ledger("fuel-" + name) for name in ("planned", "known-o1", "known-o3", "known-o4"))
+        with patch.object(oracle, "FUEL", oracle.WATER):  # The codec fixture's fill moves water.
+            check = lambda root, cut, start, markers: oracle.check_loader_settlement(self.settlement_disk(root, 4000, 1000, markers), cut, start)
+            for start in range(3):
+                self.assertEqual(["REPAIR"], check(planned, "LF_S6_O1_BEFORE", start, 1)["records"])
+            for name in oracle.LOADER_O1_AFTER[:-2]:
+                self.assertEqual((1, 0), (lambda s: (s["rows"], s["receipts"]))(check(o1, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)))
+            for name in oracle.LOADER_O3_AFTER:
+                self.assertEqual(1, check(o3, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)["receipts"])
+            for name in oracle.LOADER_O4_AFTER:
+                self.assertEqual([], check(o4, oracle.LOADER_SETTLEMENT_PREFIX + name, 0, 1)["records"])
+            unchanged = [name for name in oracle.LOADER_SETTLEMENT if name not in ("O1_BEFORE", "AC_LOSS", "AC_GAIN")]
+            self.assertEqual(14, len(unchanged))
+            for name in unchanged:
+                for start in (1, 2):
+                    check(o4, oracle.LOADER_SETTLEMENT_PREFIX + name, start, 0)
+            check(o4, "LF_S6_AC_PRUNE_AFTER", 0, 0)
+            # Each ledger state belongs to its own cut only.
+            for root, cut, start, markers in ((o1, "LF_S6_O1_BEFORE", 0, 1), (planned, "LF_S6_O1_REPLACED", 0, 1), (o1, "LF_S6_O3_REPLACED", 0, 1),
+                                              (o3, "LF_S6_O3_BEFORE", 0, 1), (o3, "LF_S6_O4_REPLACED", 0, 1), (o4, "LF_S6_O4_BEFORE", 0, 1),
+                                              (o3, "LF_S6_O2_AFTER_1", 1, 0), (o1, "LF_S6_AC_PRUNE_AFTER", 0, 0)):
+                with self.subTest(cut=cut, start=start), self.assertRaises(SmokeError): check(root, cut, start, markers)
+            # Markers are exact at the cut and after the restarts: pruning is stored only by PRUNE_AFTER.
+            for cut, start, markers in (("LF_S6_O4_ACK", 0, 0), ("LF_S6_AC_PRUNE_BEFORE", 0, 0), ("LF_S6_AC_PRUNE_AFTER", 0, 1),
+                                        ("LF_S6_O4_ACK", 1, 1), ("LF_S6_AC_PRUNE_BEFORE", 2, 1)):
+                with self.subTest(cut=cut, start=start), self.assertRaisesRegex(SmokeError, "marker count"): check(o4, cut, start, markers)
+            one_sided = self.settlement_disk(o4, 4000, 1000, 1); one_sided["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = []
+            with self.assertRaisesRegex(SmokeError, "Raw destination marker count differs: 0, expected 1"):
+                oracle.check_loader_settlement(one_sided, "LF_S6_AC_PRUNE_BEFORE", 0)
+            # Amounts, epochs and the loader count are exact; a raw change the row does not approve fails the balance.
+            for disk, message in ((self.settlement_disk(o1, 3900, 1000), "Raw source amounts"), (self.settlement_disk(o1, 4000, 1100), "Raw destination amounts"),
+                                  (self.settlement_disk(o1, 4000, 1000, epoch=0), "epoch"), (dict(self.settlement_disk(o1, 4000, 1000), loaders=[]), "loader count"),
+                                  (dict(self.settlement_disk(o1, 4000, 1000), ledger=None), "not a propulsion fill")):
+                with self.assertRaisesRegex(SmokeError, message): oracle.check_loader_settlement(disk, "LF_S6_O1_ACK", 0)
+            cargo = copy.deepcopy(o1); cargo["records"][0]["kind"] = "FLUID_CARGO_LOAD"
+            with self.assertRaisesRegex(SmokeError, "not a propulsion fill"):
+                oracle.check_loader_settlement(self.settlement_disk(cargo, 4000, 1000), "LF_S6_O1_ACK", 0)
+            legacy = copy.deepcopy(planned); legacy["fluid_accounts"] = []
+            legacy["records"][0]["schema_version"] = 2; legacy["records"][0].pop("accounting_baseline")
+            with self.assertRaisesRegex(SmokeError, "legacy branch"):
+                oracle.check_loader_settlement(self.settlement_disk(legacy, 4000, 1000), "LF_S6_O1_BEFORE", 0)
+
+    def test_a_loader_loss_and_gain_freeze_their_signed_adjustment(self):
+        """W373C: the held tank changed by 100 mB; the unchanged fixture row approves nothing, so it cannot pass."""
+        entries = lambda cut, start=0: oracle.loader_settlement(cut)[start]["rows"][0]["frozen"]["entries"]
+        self.assertEqual([(oracle.FUEL, 3900, 1000, 100)], entries("LF_S6_AC_LOSS"))
+        self.assertEqual([(oracle.FUEL, 4100, 1000, -100)], entries("LF_S6_AC_GAIN"))
+        self.assertEqual([(oracle.FUEL, 4000, 1000, 0)], entries("LF_S6_O4_ACK"))
+        for cut, total in (("LF_S6_AC_LOSS", 4900), ("LF_S6_AC_GAIN", 5100), ("LF_S6_O1_BEFORE", 5000), ("LF_S6_AC_PRUNE_AFTER", 5000)):
+            states = oracle.loader_settlement(cut)
+            self.assertEqual(3, len(states))
+            for state in states:
+                self.assertEqual({oracle.FUEL: total}, state["totals"])
+                self.assertEqual(total, oracle.raw_total((state["source"], state["destination"]), oracle.FUEL))
+                if state["balance"] == "FROZEN": oracle.check_frozen(state["rows"][0], state["source"], state["destination"])
+                if state["balance"] == "PLAN": oracle.check_plan(state["rows"][0], state["source"], state["destination"])
+        # The released states keep the accepted amounts: nothing is refunded after the restarts.
+        self.assertEqual([{oracle.FUEL: 3900}] * 3, [state["source"]["fluids"] for state in oracle.loader_settlement("LF_S6_AC_LOSS")])
+        self.assertEqual([1, 0, 0], [state["source"]["markers"] for state in oracle.loader_settlement("LF_S6_AC_GAIN")])
+        with patch.object(oracle, "FUEL", oracle.WATER):
+            o1 = ledger("fuel-known-o1")
+            for cut, tank in (("LF_S6_AC_LOSS", 3900), ("LF_S6_AC_GAIN", 4100)):
+                # The fixture row says a = 0 over 4,000 mB: with the changed tank the frozen entry differs.
+                with self.assertRaisesRegex(SmokeError, "Frozen entries differ"):
+                    oracle.check_loader_settlement(self.settlement_disk(o1, tank, 1000), cut, 0)
+                adjusted = copy.deepcopy(o1); entry = adjusted["fluid_accounts"][0]["f"]["e"][0]
+                entry["s"] = tank; entry["a"] = 4000 - tank
+                # Row consistency (hash, digest) is the shared reader's own check; here only the fixture comparison is shown.
+                with patch.object(oracle.accounting, "check", lambda root, fresh_fluid: {oracle.accounting.identity(r["op"]): r for r in root["fluid_accounts"]}):
+                    oracle.check_loader_settlement(self.settlement_disk(adjusted, tank, 1000), cut, 0)
+                    wrong = copy.deepcopy(adjusted); wrong["fluid_accounts"][0]["f"]["e"][0]["a"] = tank - 4000
+                    with self.assertRaisesRegex(SmokeError, "Frozen entries differ"):
+                        oracle.check_loader_settlement(self.settlement_disk(wrong, tank, 1000), cut, 0)
+                    # The raw tank must be the accepted amount, not the unchanged one.
+                    with self.assertRaisesRegex(SmokeError, "Raw source amounts"):
+                        oracle.check_loader_settlement(self.settlement_disk(adjusted, 4000, 1000), cut, 0)
+        for cut in ("LF_S6_O3J_ACK", "LF_S6_F7_ACK", "LF_M_D2_C1_ACK", "O1_BEFORE"):
+            with self.assertRaisesRegex(SmokeError, "No loader settlement accounting"): oracle.loader_settlement(cut)
+
     def upgraded(self):
         root = ledger("cargo-root2"); root["records"][0]["phase"] = "PREPARED"
         legacy = copy.deepcopy(root); legacy["record_digests"] = ["aa"]
