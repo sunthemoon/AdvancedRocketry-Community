@@ -1836,7 +1836,11 @@ Gate result.
   callback releases its proofs and the return proves again on a later visit. A boundary-only refusal that
   begins after an F1 or F7 capture no longer revokes the queued write; F1 repeats the boundary after ARMED
   and before F2, and F7 has no later boundary check (accepted in R522).
-- N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect).
+- N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect): fixed by W392
+  (`3f7562467`, Root decision R525) after W390 measured the second, warm computation at 69 microseconds
+  mean (4.4 ms per tick at 64 transfers, above the stated rule). The dispatcher reuses the first computation's
+  result within the visit when its record, arrival, clocks, observation and binding are unchanged and it was
+  not HELD; landing, the terminal and the first-event seam keep their own checks.
 - Arrival entity readiness (W13-N1): fixed by W83b (`ff5e5dc1`, Root decision R32). An arrival waits at its
   PREPARED wait until every column of the destination's checked column set has its entity sections
   loaded; the check only reads. To end that wait, every flight's destination ticket covers that set (at

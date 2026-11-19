@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 79997f223 (W393 merged, R524: the exit family's safe exit check accepts the rider grounded on its pad with either grounded vertical motion, 0.0 or -0.0784; test oracle only; branch run 44584137976 and governance run 44584138708 at `f013fc7ab` passed; W373's campaign oracle fixes were merged just before as `378d59491`). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 3f7562467 (W392 merged, R523 and R525: a COMMITTED visit computes the governed arrival once and reuses the result under identity, observation and binding guards (F19b), and the gated benchmark's default modes use the accounted root-3 fixture; after W392R's read-only review; branch run 44608729332 and governance run 44608731684 at `62c261e39` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 44591135484 at 89a00a3ed (W373 and W393 merged at `378d59491` and `79997f223`) passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 16.8, 17.9, 20.2 and 16.6 minutes, 1,866 GameTests, with 4, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44591135635 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
@@ -384,7 +384,7 @@ What is still open:
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
-  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04, five 2026-11-05 and one 2026-11-06 entries below.
+  proof timeout above and the relogin, planetary flight, bay hold, two adapter, three 2026-11-04, five 2026-11-05, one 2026-11-06 and one 2026-11-20 entries below.
 - **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
@@ -579,6 +579,12 @@ What is still open:
   takes it, and on a slow runner the writer can skip enough mutations that fewer than ten are published. The same
   code passed on W364's branch run, and attempt 2 passed every job (R455). It stays open until later runs show no
   recurrence or the test's dependence on runner speed is removed.
+- **Warm-up capacity GameTest in a filtered local run (2026-11-20).** In W392's filtered run of 59 batches,
+  `rocket_warmup_capacity` failed before its launch with "The Moon does not offer eight admissible pads"; it
+  passed in W392's full run and alone, and hosted runs have not logged it. W392R found no leftover of the new
+  arrival GameTest and no batch-order cause. W394 (R525) makes the assertion name the failing pick, the
+  selector's reason and the reservations it saw. It stays open until the cause is known or runs show no
+  recurrence.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
