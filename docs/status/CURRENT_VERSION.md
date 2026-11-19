@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 815e363d9 (W390 merged, R520 and R523: a gated attribution mode of the governed benchmark that times the second arrival-executor call of a COMMITTED visit; the cost scaled to 64 transfers, 4.419 ms mean and 13.459 ms at P99 on this machine, exceeds the rule, so W392 removes the second computation; branch run 44571518956 and governance run 44571520990 at `8c4976512` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44567130380 at 02619d208 (W389 merged at `7c8265395`) passed on its first attempt: build 15.6 minutes, shards 0 to 3 in 14.5, 21.4, 21.6 and 15.0 minutes, 1,866 GameTests, with 3, 4, 2 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44567130339 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 79997f223 (W393 merged, R524: the exit family's safe exit check accepts the rider grounded on its pad with either grounded vertical motion, 0.0 or -0.0784; test oracle only; branch run 44584137976 and governance run 44584138708 at `f013fc7ab` passed; W373's campaign oracle fixes were merged just before as `378d59491`). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44578438960 at 1d38704b0 (W390 merged at `815e363d9`) passed on its first attempt: build 10.4 minutes, shards 0 to 3 in 15.7, 20.9, 20.5 and 18.1 minutes, 1,866 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44578439261 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -135,7 +135,7 @@ What is still open:
   ([W357-DESIGN](../work/v1.8.0-root-queue/records/W357-DESIGN.md), R440 to R442). Slices A to D and Slice E part 1
   are merged (W361, W362, W364, W365 and W366). The activation is merged as `5951d6df2` after W372R's read-only
   review (R466 to R505): `EscrowAccountingFormat.ENABLED` is true, so every native world now writes a root-3 ledger.
-  Slice E part 2 runs the campaign families on root 3 (W373) and adds the native accounting cuts, including R-044's
+  Slice E part 2 ran the campaign families on root 3 (W373, all 31 passing, merged as `378d59491`, R524) and adds the native accounting cuts, including R-044's
   old-JAR case (W373B, merged with W373C's loader cuts as `b1e470b0d`, R517). The revised R-044 text for both format boundaries is drafted from that case
   ([R044-SIGNOFF-DRAFT](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) section 5, R516). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
   governed (escrow-fuelled) flight got no D0 decision, which W363 fixed (R444). W360 built the remaining cargo and
