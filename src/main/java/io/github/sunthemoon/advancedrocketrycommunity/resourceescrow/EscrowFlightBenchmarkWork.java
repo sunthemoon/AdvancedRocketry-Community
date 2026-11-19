@@ -23,11 +23,16 @@ final class EscrowFlightBenchmarkWork {
     private long ordinaryStart;
     private boolean ordinaryDone, ordinaryPrepared, settlementPrepared, confirming, settlementDone;
     private EscrowSettlementIntent preview;
+    private final boolean nativeAccounting;
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity ordinaryLoader;
+    private FluidFuelLoaderEscrowFixtures.NativeFill ordinaryNative, settlementNative;
 
     EscrowFlightBenchmarkWork(MinecraftServer server, ResourceEscrowSavedData data, EscrowFlightBenchmarkMetrics metrics) {
         this.server = server; this.data = data; this.metrics = metrics; coordinator = data.bind(server);
+        nativeAccounting = EscrowFlightBenchmarkArrivalCost.selected(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
     void create() {
+        if (nativeAccounting) { createAccounted(); return; }
         ordinary = fixture(new BlockPos(64, 100, 160)); settlement = fixture(new BlockPos(96, 100, 160));
         ordinaryRocket = rocket(ordinary); settlementRocket = rocket(settlement);
         EscrowTags.require(server.overworld().addFreshEntity(ordinaryRocket), "Ordinary benchmark rocket publication refused");
@@ -72,6 +77,12 @@ final class EscrowFlightBenchmarkWork {
     boolean ready() { return settlementPrepared && coordinator.writerIdle(); }
     void start() {
         ordinaryStart = System.nanoTime();
+        if (nativeAccounting) {
+            ordinaryNative = admitNative(ordinaryLoader, ordinaryRocket, committed -> {
+                EscrowTags.require(committed, "Ordinary benchmark fill not acknowledged"); ordinaryPrepared = true;
+            });
+            ordinaryId = ordinaryNative.operation().id(); return;
+        }
         var admission = operation(ordinary, ordinaryRocket, coordinator.nextSequence()); ordinaryId = admission.operation().id();
         coordinator.prepareNativeTest(admission.operation(), ordinaryRocket, ordinary.source(), committed -> {
             EscrowTags.require(committed, "Ordinary benchmark fill not acknowledged"); ordinaryPrepared = true;
@@ -80,9 +91,11 @@ final class EscrowFlightBenchmarkWork {
     void tick() {
         coordinator.commitPreparations();
         if (ordinaryPrepared && !ordinaryDone && data.ledger().records().stream().noneMatch(op -> op.id().equals(ordinaryId))
-                && ordinaryRocket.escrowSection().markers().isEmpty() && ordinary.sourceState().markers().isEmpty()) {
+                && ordinaryRocket.escrowSection().markers().isEmpty()
+                && (nativeAccounting ? ordinaryNative.state(data.ledger().id()) : ordinary.sourceState()).markers().isEmpty()) {
             EscrowTags.require(ordinaryRocket.flightData().orElseThrow().fuel().totalAmount() == 1000
-                    && EscrowTestEndpoints.amount(ordinary.source().getPersistentData()) == 4000, "Ordinary retirement conservation failed");
+                    && (nativeAccounting ? ordinaryNative.amount() : EscrowTestEndpoints.amount(ordinary.source().getPersistentData())) == 4000,
+                    "Ordinary retirement conservation failed");
             metrics.sample("ordinary_start_to_c8", System.nanoTime() - ordinaryStart); ordinaryDone = true;
         }
         if (ordinaryStart == 0 || !settlementPrepared || settlementDone) { return; }
@@ -101,9 +114,47 @@ final class EscrowFlightBenchmarkWork {
             settlementDone = settlementPruned(
                     data.ledger().records().stream().anyMatch(op -> op.id().equals(settlementId)),
                     settlementRocket.flightData().orElseThrow().fuel().totalAmount(),
-                    EscrowTestEndpoints.amount(settlement.source().getPersistentData()),
-                    settlementRocket.escrowSection().markers().size(), settlement.sourceState().markers().size());
+                    nativeAccounting ? settlementNative.amount() : EscrowTestEndpoints.amount(settlement.source().getPersistentData()),
+                    settlementRocket.escrowSection().markers().size(),
+                    (nativeAccounting ? settlementNative.state(data.ledger().id()) : settlement.sourceState()).markers().size());
         }
+    }
+    /** Schema-3 attribution uses the existing native fixture; normal benchmark setup remains unchanged. */
+    private void createAccounted() {
+        var level = server.overworld(); var owner = EscrowFlightBenchmarkLoad.id("operator");
+        ordinaryRocket = FluidFuelLoaderEscrowFixtures.rocket(level, new BlockPos(64, 100, 164), owner,
+                FluidFuelLoaderEscrowFixtures.mono(2000));
+        settlementRocket = FluidFuelLoaderEscrowFixtures.rocket(level, new BlockPos(96, 100, 164), owner,
+                FluidFuelLoaderEscrowFixtures.mono(2000));
+        EscrowTags.require(level.addFreshEntity(ordinaryRocket) && level.addFreshEntity(settlementRocket),
+                "Accounted benchmark rocket publication refused");
+        ordinaryLoader = nativeLoader(new BlockPos(64, 100, 160), ordinaryRocket);
+        var settlementLoader = nativeLoader(new BlockPos(96, 100, 160), settlementRocket);
+        settlementNative = admitNative(settlementLoader, settlementRocket, committed -> {
+            EscrowTags.require(committed, "Settlement baseline not acknowledged");
+            var op = settlementNative.operation();
+            settlementNative.applySource(coordinator);
+            settlementRocket.applyEscrowFill(EscrowReconciliationAction.issue(data.ledger(), op,
+                    EscrowNativeEnvelope.rocket(settlementRocket), true, () -> true));
+            coordinator.transition(op.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions();
+            settlementPrepared = true;
+        });
+        settlementId = settlementNative.operation().id();
+    }
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity nativeLoader(
+            BlockPos position, RocketEntity rocket) {
+        return FluidFuelLoaderEscrowFixtures.loader(server.overworld(), position, rocket.ownerId().orElseThrow(),
+                FluidFuelLoaderEscrowFixtures.tank(FluidFuelLoaderEscrowFixtures.ROCKET_FUEL, 5000),
+                FluidFuelLoaderEscrowFixtures.binding(rocket));
+    }
+    private FluidFuelLoaderEscrowFixtures.NativeFill admitNative(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity loader,
+            RocketEntity rocket, java.util.function.Consumer<Boolean> completion) {
+        var result = EscrowLoaderAdmission.admitDetachedForTests(loader, rocket, coordinator, completion);
+        EscrowTags.require(result == EscrowCoordinator.Fill.QUEUED, "Accounted benchmark admission refused: " + result);
+        var op = coordinator.pendingAdmissions().stream()
+                .filter(member -> member.source().identity().equals(FluidFuelLoaderEscrowFixtures.device(loader))).findFirst().orElseThrow();
+        return new FluidFuelLoaderEscrowFixtures.NativeFill(loader, rocket, op);
     }
     static boolean settlementPruned(boolean recordPresent, long fuel, long sourceAmount, int rocketMarkers, int sourceMarkers) {
         EscrowTags.require(!recordPresent && fuel == 1000 && sourceAmount == 4000,
