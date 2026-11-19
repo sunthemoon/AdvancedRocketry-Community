@@ -144,7 +144,9 @@ What is still open:
   after its native accepting run and two read-only reviews (W380 to W380J, R509), and X03-C, the same repair on
   root 3 and on a root-2 world the activated JAR upgrades, is merged as `102c97fe5` (W387, R513). The draft
   operator text is [X03-D-OPERATOR-GUIDANCE](../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md),
-  for the final packet. The X02 storage-fault runner passed its native preflight (W384, R506); slices S5 (X02) and S3 (X01) run
+  for the final packet. Root collects the owner's yes-or-no items, each with Root's recommendation, in
+  [OWNER-FINAL-PACKET-DRAFT](../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) (R521); the switch
+  items wait for C4, and the fuel loader's item also for W389 to W391. The X02 storage-fault runner passed its native preflight (W384, R506); slices S5 (X02) and S3 (X01) run
   on the candidate.
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
