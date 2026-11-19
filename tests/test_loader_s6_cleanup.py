@@ -26,6 +26,31 @@ def prefix(cut):
 
 
 class CleanupOracleTests(unittest.TestCase):
+    def test_accounting_root_cleanup_preserves_exact_authority_and_two_restarts(self):
+        import escrow_accounting as accounting
+        from test_escrow_accounting_readers import fixture
+        for cut in cleanup.CASES:
+            image, witness, recovered, end = prefix(cut)
+            for root in (image["native"]["ledger"], recovered["native"]["ledger"],
+                         *([witness["staged_ledger"]] if "staged_ledger" in witness else [])):
+                root.update(schema_version=3, format_epoch=accounting.EPOCHS[3], fluid_accounts=[])
+            before = copy.deepcopy(image)
+            identity = cleanup.check(image, 0, None, cut, witness)["identity"]
+            self.assertEqual(before, image)
+            for restart in (1, 2):
+                identity = cleanup.check(recovered, restart, identity, cut, end)["identity"]
+            for mutate in (
+                    lambda r: r.update(schema_version=4),
+                    lambda r: r.update(format_epoch=accounting.EPOCHS[2]),
+                    lambda r: r.pop("fluid_accounts"),
+                    lambda r: r.update(fluid_accounts=[flight.nbt.plain(fixture("fuel-planned"))["fluid_accounts"][0]]),
+                    lambda r: r.update(writer_generation=7),
+                    lambda r: r.update(issued_launch_serial=2),
+                    lambda r: r.update(extra=1)):
+                changed = copy.deepcopy(image); mutate(changed["native"]["ledger"])
+                with self.subTest(cut=cut), self.assertRaises(SmokeError):
+                    cleanup.check(changed, 0, None, cut, witness)
+
     def test_native_uuid_array_forms_in_each_checked_capture_agree(self):
         for cut in cleanup.CASES:
             image, witness, _, _ = prefix(cut)
