@@ -133,6 +133,14 @@ public final class EscrowGovernedArrival {
     }
     boolean bound(UUID transfer) { return bindings.containsKey(transfer); }
 
+    /** Read-only identity witness for one dispatcher visit, never a movement or landing permit. */
+    public Object reuseBinding(RocketTransferRecord record, RocketEntity destination) {
+        var binding = bindings.get(record.transferId());
+        return binding != null && !binding.changed && binding.authority.record() == record
+                && binding.entity == destination && binding.observation == destination.governedObservation()
+                ? binding : null;
+    }
+
     private static void report(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         var runtime = EscrowRuntime.of(server);
         if (runtime.governedFlights().classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {

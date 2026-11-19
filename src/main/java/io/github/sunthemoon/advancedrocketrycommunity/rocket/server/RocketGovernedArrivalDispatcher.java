@@ -16,10 +16,27 @@ import net.minecraft.server.level.ServerLevel;
 final class RocketGovernedArrivalDispatcher {
     private RocketGovernedArrivalDispatcher() { }
 
+    /** Stack-local result of the pre-F4/F5 computation. Final actions still acquire their own authority. */
+    record Visit(RocketTransferRecord record, RocketEntity arrival, long observation, int tick, long levelTime,
+                 Object binding, EscrowGovernedArrival.Result result) { }
+
+    static EscrowGovernedArrival.Result result(EscrowGovernedArrival.Result first, boolean sameRecord,
+                                               boolean sameArrival, boolean sameTick, boolean sameObservation,
+                                               boolean sameBinding,
+                                               java.util.function.Supplier<EscrowGovernedArrival.Result> compute) {
+        return first != null && first != EscrowGovernedArrival.Result.HELD && sameRecord && sameArrival
+                && sameTick && sameObservation && sameBinding ? first : compute.get();
+    }
+
     static void tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
-                     RocketEntity arrival, RocketTransferBayDispatch bays) {
-        var result = EscrowRuntime.of(server).arrivals().tick(server, journal, record, arrival,
-                () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays));
+                     RocketEntity arrival, RocketTransferBayDispatch bays, Visit first,
+                     java.util.function.Supplier<EscrowGovernedArrival.Result> compute) {
+        var result = result(first == null ? null : first.result(), first != null && first.record() == record,
+                first != null && first.arrival() == arrival,
+                first != null && first.tick() == server.getTickCount() && first.levelTime() == arrival.level().getGameTime(),
+                first != null && first.observation() == arrival.governedObservation(),
+                first != null && first.binding() != null
+                        && first.binding() == EscrowRuntime.of(server).arrivals().reuseBinding(record, arrival), compute);
         if (result == EscrowGovernedArrival.Result.DESCENDING) {
             RocketFlightFeedback.descentTrail(arrival, Math.max(0, arrival.level().getGameTime()
                     - arrival.flightData().orElseThrow().stateStartedGameTime()));

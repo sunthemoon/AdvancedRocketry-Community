@@ -65,6 +65,11 @@ public final class EscrowGovernedSourceFlightGameTests {
         new Scenario(helper, Fault.LANDING).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_arrival_single_call", timeoutTicks = 600)
+    public static void committedVisitReusesOnlyUnchangedSuccessfulArrivalAndCompletesHandoff(GameTestHelper helper) {
+        new Scenario(helper).start();
+    }
+
     @GameTest(template = "empty", batch = "escrow_ascent_dismount_complete", timeoutTicks = 600)
     public static void ascentDismountCompletesCheckedHandoffAndCleanup(GameTestHelper helper) {
         new Scenario(helper, Departure.ASCENT).start();
@@ -169,7 +174,18 @@ public final class EscrowGovernedSourceFlightGameTests {
         private boolean descentCost;
         private DescentSample descentAfter;
         private int descentWarm, descentMeasured;
+        private boolean arrivalReuse, reuseChecked, landedReuseChecked;
+        private io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox firstBefore;
         private record DescentSample(long tick, long captures, long digests, long observation, double y) { }
+
+        Scenario(GameTestHelper helper) {
+            this.helper = helper; fault = Fault.LANDING; arrivalReuse = true; terminalCheckpoint = true;
+            level = helper.getLevel().getServer().getLevel(
+                    io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.MOON_LEVEL);
+            helper.assertTrue(level != null, "Arrival reuse fixture needs the Moon");
+            pacer = new GameTestTickPacer(level.getServer());
+            position = new BlockPos(606_008, 100, 606_008); destination = position.offset(32, 0, 0);
+        }
 
         Scenario(GameTestHelper helper, Fault fault) { this(helper, fault, false); }
         Scenario(GameTestHelper helper, Fault fault, boolean descentCost) {
@@ -421,6 +437,15 @@ public final class EscrowGovernedSourceFlightGameTests {
                 dismountForRemount(record, arrival); return;
             }
             helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "Checked F5 reconnect duplicated its passenger");
+            if (arrivalReuse && !reuseChecked && arrival.flightData().orElseThrow().state() == RocketFlightState.DESCENT
+                    && arrival.getY() < destination.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS
+                    && arrival.getY() > destination.getY()) {
+                arrivalVisit(journal, record, arrival, 1, false, () -> { }, () -> { });
+                arrivalVisit(journal, record, arrival, 2, false, () -> arrival.saveWithoutId(new CompoundTag()), () -> { });
+                arrivalVisit(journal, record, arrival, 2, false, () -> { }, () -> arrival.saveWithoutId(new CompoundTag()));
+                arrivalVisit(journal, record, arrival, 2, true, () -> { }, () -> { });
+                reuseChecked = true;
+            }
             if (fault == Fault.LANDING) {
                 helper.assertTrue(arrival.getY() <= arrivalY && arrival.getY() >= destination.getY(), "Descent escaped its monotonic column");
                 arrivalY = arrival.getY();
@@ -438,6 +463,16 @@ public final class EscrowGovernedSourceFlightGameTests {
                         && arrival.flightData().orElseThrow().passengers().equals(record.destinationFlightData().passengers()),
                         "Governed landing changed the frozen debit or assignments");
                 if (terminalCheckpoint) {
+                    if (arrivalReuse) {
+                        helper.assertTrue(reuseChecked, "No warm arrival visit was counted");
+                        var known = journal.durableFirstMoonLanding().knownEvent().orElseThrow();
+                        helper.assertTrue(!firstBefore.isEmpty() && known.equals(firstBefore.event())
+                                || known instanceof io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                                        .FirstEvent.MoonLanding landing && landing.transferId().equals(transfer),
+                                "LANDED preceded the exact world-first acknowledgement");
+                        arrivalVisit(journal, record, arrival, 1, false, () -> { }, () -> { });
+                        landedReuseChecked = true;
+                    }
                     terminalRecord = record; terminalArrival = arrival;
                     leaseCut = new EscrowTerminalLeaseCut(helper, data, record);
                     step = 5; return;
@@ -450,6 +485,41 @@ public final class EscrowGovernedSourceFlightGameTests {
         private DescentSample sample(RocketTransferRecord record, RocketEntity arrival) {
             return new DescentSample(level.getServer().getTickCount(), arrival.governedCaptures(),
                     record.nativeTransfer().orElseThrow().envelopeDigests(), arrival.governedObservation(), arrival.getY());
+        }
+
+        /** Drive the actual dispatcher with its installed bays; only the computation and between-step cuts are observed. */
+        private void arrivalVisit(RocketTransferSavedData journal, RocketTransferRecord record, RocketEntity arrival,
+                                  int expected, boolean holdFirst, Runnable afterDestination, Runnable afterPhase) {
+            try {
+                var runtime = EscrowRuntime.of(level.getServer());
+                var installed = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.class
+                        .getDeclaredMethod("installedTransfers"); installed.setAccessible(true);
+                var transfers = installed.invoke(null);
+                var recoveryField = transfers.getClass().getDeclaredField("recovery"); recoveryField.setAccessible(true);
+                var recovery = recoveryField.get(transfers);
+                var baysField = recovery.getClass().getDeclaredField("bays"); baysField.setAccessible(true);
+                var bays = baysField.get(recovery);
+                var dispatcher = Class.forName("io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketGovernedSourceDispatcher");
+                var method = dispatcher.getDeclaredMethod("destination", net.minecraft.server.MinecraftServer.class,
+                        RocketTransferSavedData.class, RocketTransferRecord.class, RocketEntity.class, bays.getClass(),
+                        java.util.function.BiFunction.class, Runnable.class, Runnable.class);
+                method.setAccessible(true);
+                int[] calls = {0};
+                java.util.function.BiFunction<RocketEntity, java.util.function.BooleanSupplier, EscrowGovernedArrival.Result> compute =
+                        (entity, boundary) -> {
+                            helper.assertTrue(entity == arrival, "Dispatcher computed another arrival");
+                            boolean held = ++calls[0] == 1 && holdFirst;
+                            var result = runtime.arrivals().tick(level.getServer(), journal, record, entity, held ? () -> false : boundary);
+                            long captures = entity.governedCaptures(), observation = entity.governedObservation();
+                            runtime.arrivals().reuseBinding(record, entity);
+                            helper.assertTrue(captures == entity.governedCaptures() && observation == entity.governedObservation(), "Binding witness captured or serialized");
+                            helper.assertTrue(!held || result == EscrowGovernedArrival.Result.HELD, "First computation was not HELD");
+                            return result;
+                        };
+                method.invoke(null, level.getServer(), journal, record, null, bays, compute, afterDestination, afterPhase);
+                helper.assertTrue(calls[0] == expected, "Arrival computations in one COMMITTED visit: " + calls[0] + ", expected " + expected);
+                helper.assertTrue(!runtime.executorHolds().held(record), "Checked arrival visit added a hold");
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Cannot drive arrival dispatcher visit", failure); }
         }
 
         /**
@@ -588,6 +658,10 @@ public final class EscrowGovernedSourceFlightGameTests {
         }
 
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
+            if (arrivalReuse) {
+                helper.assertTrue(reuseChecked && landedReuseChecked && sawF6 && sawF7 && journal.find(transfer).isEmpty(),
+                        "Single-call flight did not finish checked LANDED/F8");
+            }
             if (supersedeF1) {
                 helper.assertTrue(launch.attempts() == 2 && launch.superseded() == 1,
                         "Forced F1 supersession did not finish via exactly one retry");
@@ -651,7 +725,8 @@ public final class EscrowGovernedSourceFlightGameTests {
 
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
-            if (departure != Departure.NONE || descentCost) {
+            if (arrivalReuse) { firstBefore = RocketTransferSavedData.get(level.getServer()).firstMoonLandingRam(); }
+            if (departure != Departure.NONE || descentCost || arrivalReuse) {
                 // Remote generated chunks are not covered by the empty GameTest template.
                 // Own and restore only the two-block source and destination footprints.
                 for (var origin : List.of(position, destination)) {
@@ -696,11 +771,12 @@ public final class EscrowGovernedSourceFlightGameTests {
                     && level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null,
                     "Governed pad check loaded an absent terrain chunk");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
-            if (departure != Departure.NONE || descentCost) {
+            if (departure != Departure.NONE || descentCost || arrivalReuse) {
                 helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
                         .availableLoaded(level, to), "Departure fixture's landing footprint is not clear");
             }
-            var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
+            var plan = new RocketFlightPlan(3, transfer, initial.currentBody(),
+                    arrivalReuse ? RocketFlightPlanner.EARTH.bodyId() : RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("F3 source fixture")));
             launch = new EscrowGameTestLaunch(helper, data.ledger().id(), initial.logicalRocketId(), transfer,
