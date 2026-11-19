@@ -109,8 +109,9 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             state = new Work(record, authority, capture, true, () -> { }); work.put(record.transferId(), state);
         }
         if (EscrowGovernedFrame.transientMotion(source)) { return Result.WAITING; }
-        if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) {
-            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE);
+        var sourceHold = sourceHold(state, record, source);
+        if (sourceHold != null) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, sourceHold);
             return Result.HELD;
         }
         EscrowRuntime.of(server).executorHolds().healthy(record);
@@ -180,6 +181,11 @@ public final class EscrowGovernedReturn implements AutoCloseable {
     static void requireCapacity(Map<UUID, ?> work, UUID transfer) {
         EscrowTags.require(work.containsKey(transfer) || work.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS,
                 "Return work limit exceeded");
+    }
+
+    static EscrowGovernedExecutorHolds.Reason sourceHold(Work state, RocketTransferRecord record, RocketEntity source) {
+        return !state.record.equals(record) || state.source.rocket != source || !state.source.observe()
+                ? EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE : null;
     }
 
     private void prune(RocketTransferSavedData journal) {

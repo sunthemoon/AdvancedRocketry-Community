@@ -36,4 +36,36 @@ class EscrowGovernedReturnTest {
         pending.remove(new UUID(0, 0));
         assertDoesNotThrow(() -> EscrowGovernedReturn.requireCapacity(pending, UUID.randomUUID()));
     }
+
+    @Test void aCallbackBoundaryRefusalDoesNotHoldTheNextVisitOrReplaceTheSource() {
+        for (boolean returned : new boolean[] { false, true }) {
+            var boundary = new java.util.concurrent.atomic.AtomicBoolean(false);
+            var source = EscrowFlightSourceTest.liveSource(boundary::get);
+            var record = io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture.create().record();
+            var state = new EscrowGovernedReturn.Work(record, null, source, returned, () -> fail("Observation called completion"));
+            assertFalse(state.source.observe(), "A callback accepted a refused boundary");
+            state.release();
+            boundary.set(true);
+            assertNull(EscrowGovernedReturn.sourceHold(state, record, source.rocket));
+            assertSame(source, state.source, "Boundary recovery recaptured the return source");
+            assertTrue(state.ready(1, () -> true));
+            assertEquals(0, state.retry.failures());
+        }
+    }
+
+    @Test void aMovedSourceStillHoldsWithReturnEnvelopeEvenAfterItsPositionIsRestored() {
+        var source = EscrowFlightSourceTest.liveSource(() -> true);
+        var record = io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture.create().record();
+        var state = new EscrowGovernedReturn.Work(record, null, source, false, () -> fail("Hold called completion"));
+        assertNull(EscrowGovernedReturn.sourceHold(state, record, source.rocket));
+        var original = source.rocket.position();
+        EscrowFlightSourceTest.position(source.rocket, original.add(1, 0, 0));
+        assertEquals(EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE,
+                EscrowGovernedReturn.sourceHold(state, record, source.rocket));
+        assertFalse(source.unchanged.get());
+        EscrowFlightSourceTest.position(source.rocket, original);
+        assertEquals(EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE,
+                EscrowGovernedReturn.sourceHold(state, record, source.rocket));
+        assertSame(source, state.source);
+    }
 }
