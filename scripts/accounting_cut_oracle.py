@@ -370,11 +370,16 @@ def check_upgraded(root, legacy_digests, source, destination):
     return dict(records=1, rows=0, legacy=True)
 
 
-def check_root2(root, legacy_digests):
-    require(root["schema_version"] == 2 and root["format_epoch"] == accounting.EPOCHS[2], "The ledger is not root 2")
+def check_root2(root, legacy_digests, source, destination):
+    """The root-2 world before any upgrade commit: the open operation unchanged and both stores exactly BEFORE."""
+    require(root is not None and root["schema_version"] == 2 and root["format_epoch"] == accounting.EPOCHS[2],
+            "The ledger is not root 2")
     accounting.check(root, fresh_fluid=False)
     require(root["record_digests"] == legacy_digests and [op["phase"] for op in root["records"]] == ["PREPARED"],
             "The root-2 ledger's open operation changed")
+    check_store("source", source, store(WATER, TOTAL, 0, 0))
+    check_store("destination", destination, store(None, 0, 0, 0))
+    return dict(records=1, rows=0, legacy=True, source=source, destination=destination)
 
 
 def changed_files(before, after):

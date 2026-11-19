@@ -255,10 +255,10 @@ class AccountingCutOracleTest(unittest.TestCase):
         legacy, root = self.upgraded()
         before = (oracle.store(oracle.WATER, 5000), oracle.store())
         for end in before: end["markers"] = 0
-        oracle.check_root2(legacy, ["aa"])
+        oracle.check_root2(legacy, ["aa"], *before)
         oracle.check_upgraded(root, ["aa"], *before)
         with self.assertRaisesRegex(SmokeError, "not root 3"): oracle.check_upgraded(legacy, ["aa"], *before)
-        with self.assertRaisesRegex(SmokeError, "not root 2"): oracle.check_root2(root, ["aa"])
+        with self.assertRaisesRegex(SmokeError, "not root 2"): oracle.check_root2(root, ["aa"], *before)
         with self.assertRaisesRegex(SmokeError, "bytes changed"): oracle.check_upgraded(root, ["bb"], *before)
         for mutate, message in ((lambda r: r["records"][0].update(phase="REPAIR"), "retired, settled or changed"),
                                 (lambda r: r.update(records=[], record_digests=[]), "promoted|bytes changed")):
@@ -268,6 +268,48 @@ class AccountingCutOracleTest(unittest.TestCase):
         with self.assertRaisesRegex(SmokeError, "Raw source"): oracle.check_upgraded(root, ["aa"], *applied)
         invented = copy.deepcopy(root); invented["fluid_accounts"] = ledger("cargo-planned")["fluid_accounts"]
         with self.assertRaises(SmokeError): oracle.check_upgraded(invented, ["aa"], *before)
+
+    def test_the_root2_cut_checks_both_endpoints_while_the_ledger_stays_the_same(self):
+        """W373C, review finding 3: the BEFORE_COMMIT snapshot is the fixture's exact BEFORE state, not only its ledger."""
+        legacy, _ = self.upgraded()
+        before = lambda: (oracle.store(oracle.WATER, 5000), oracle.store())
+        summary = oracle.check_root2(legacy, ["aa"], *before())
+        self.assertEqual(({oracle.WATER: 5000}, {}), (summary["source"]["fluids"], summary["destination"]["fluids"]))
+        for side, change, message in ((0, dict(fluids={oracle.WATER: 4000}), "Raw source amounts"),
+                                      (0, dict(fluids={oracle.WATER: 5001}), "Raw source amounts"),
+                                      (0, dict(fluids={oracle.LAVA: 5000}), "Raw source amounts"),
+                                      (0, dict(epoch=1), "Raw source epoch"), (0, dict(markers=1), "Raw source marker"),
+                                      (1, dict(fluids={oracle.WATER: 1000}), "Raw destination amounts"),
+                                      (1, dict(epoch=1), "Raw destination epoch"), (1, dict(markers=1), "Raw destination marker")):
+            stores = before(); stores[side].update(change)
+            with self.subTest(side=side, change=change), self.assertRaisesRegex(SmokeError, message):
+                oracle.check_root2(copy.deepcopy(legacy), ["aa"], *stores)
+        with self.assertRaisesRegex(SmokeError, "store is missing"): oracle.check_root2(legacy, ["aa"], None, before()[1])
+        with self.assertRaisesRegex(SmokeError, "not root 2"): oracle.check_root2(None, ["aa"], *before())
+
+    def test_an_l2_cut_needs_exactly_one_marker_on_each_endpoint_and_none_after_the_restarts(self):
+        """W373C, review finding 2: pruning before the acknowledged retirement, on one side or both, fails the cut."""
+        root = ledger("cargo-planned"); root.update(records=[], fluid_accounts=[])
+        for cut in ("L2_REPLACED", "C7_ACKNOWLEDGED"):
+            first, *restarts = oracle.ordinary(cut)
+            self.assertEqual((1, 1), (first["source"]["markers"], first["destination"]["markers"]))
+            oracle.check_state(root, *observed(first), first)
+            for source, destination, message in ((0, 0, "Raw source marker"), (0, 1, "Raw source marker"),
+                                                 (1, 0, "Raw destination marker"), (2, 1, "Raw source marker"),
+                                                 (1, 2, "Raw destination marker")):
+                stores = observed(first); stores[0]["markers"] = source; stores[1]["markers"] = destination
+                with self.subTest(cut=cut, markers=(source, destination)), self.assertRaisesRegex(SmokeError, message):
+                    oracle.check_state(root, *stores, first)
+            for state in restarts:
+                oracle.check_state(root, *observed(state), state)
+                for source, destination in ((1, 1), (1, 0), (0, 1)):
+                    stores = observed(state); stores[0]["markers"] = source; stores[1]["markers"] = destination
+                    with self.assertRaisesRegex(SmokeError, "marker count"): oracle.check_state(root, *stores, state)
+        # A marker count is one exact integer: a set of allowed counts is not an expectation any more.
+        with self.assertRaisesRegex(SmokeError, "marker count"):
+            oracle.check_store("source", dict(fluids={}, epoch=0, markers=(0, 1)), oracle.store(None, 0, 0, 0))
+        with self.assertRaisesRegex(SmokeError, "marker count"):
+            oracle.check_store("source", dict(fluids={}, epoch=0, markers=True), oracle.store(None, 0, 0, 1))
 
     def test_changed_files_lists_changes_additions_and_removals(self):
         before = {"level.dat": "1", "data/a.dat": "2", "region/r.0.0.mca": "3"}

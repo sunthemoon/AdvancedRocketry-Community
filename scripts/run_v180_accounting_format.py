@@ -8,7 +8,7 @@ candidate twice. The root-2 JAR is candidate C3; no other file is accepted. The 
 """
 from __future__ import annotations
 
-import os
+import json
 from pathlib import Path
 import re
 import shutil
@@ -88,9 +88,7 @@ def seed(run):
     native.require(not errors(process.lines), "The root-2 seed start logged ERROR or FATAL")
     disk = read(world)
     digests = disk["ledger"]["record_digests"]
-    oracle.check_root2(disk["ledger"], digests)
-    oracle.check_store("source", disk["device"], oracle.store(oracle.WATER, oracle.TOTAL, 0, 0))
-    oracle.check_store("destination", disk["rocket"], oracle.store(None, 0, 0, 0))
+    oracle.check_root2(disk["ledger"], digests, disk["device"], disk["rocket"])
     # The whole-world backup the operator takes before the upgrade: every file, with its SHA-256.
     backup = run.session / "backup-root2"
     copy_world(world, backup)
@@ -146,24 +144,43 @@ def candidate_start(run, label, world, base, kill=False):
     return row
 
 
-def watch_and_kill(run, process, world, kind):
-    """Kill as soon as the migrator's backup directory (BACKUP) or staged file (COMMIT) is seen; never wait for it."""
-    backups, data = world / BACKUPS, world / "data"
+def completed(lines):
+    """The first start finished its migration: the world data check reported, or the server became ready."""
+    return any(MIGRATION.search(line) or smoke.READY_MARKER.search(line) for line in lines)
+
+
+def artifacts(world, kind):
+    """The migrator's artifacts of one kind, by name: the backup root and its directories, or the staged files."""
+    if kind == "BACKUP":
+        backups = world / BACKUPS
+        return {BACKUPS} | {BACKUPS + "/" + p.name for p in backups.iterdir() if p.is_dir()} if backups.is_dir() else set()
+    native.require(kind == "COMMIT", "Unknown upgrade watcher kind")
+    data = world / "data"
+    return {p.name for p in data.iterdir() if ".migrating-" in p.name} if data.is_dir() else set()
+
+
+def watch_and_kill(run, process, world, kind, before):
+    """Kill as soon as this attempt's backup directory (BACKUP) or staged file (COMMIT) is seen; never wait for it.
+
+    `before` holds the artifact names that existed before the start, so an older attempt's leftovers are never taken
+    for this one's. Completion is checked first, and again in the captured log after the kill: a first start whose
+    migration completed is not a stop during the migration, whatever artifact was seen.
+    """
     deadline = time.monotonic() + run.args.startup_timeout
-    seen, checked = None, 0
+    seen, created, checked = None, [], 0
     while seen is None:
-        if kind == "BACKUP" and backups.exists():
-            seen = "BACKUP_DIRECTORY"
-        elif kind == "COMMIT" and any(".migrating-" in name for name in os.listdir(data)):
-            seen = "STAGED_FILE"
-        elif len(process.lines) != checked:
-            checked = len(process.lines)
-            if any(MIGRATION.search(line) or smoke.READY_MARKER.search(line) for line in process.lines):
-                seen = "NOT_SEEN_BEFORE_COMPLETION"
+        lines = process.lines[checked:]
+        checked += len(lines)
+        if completed(lines):
+            seen = "NOT_SEEN_BEFORE_COMPLETION"
+            break
+        created = sorted(artifacts(world, kind) - before)
+        if created:
+            seen = "BACKUP_DIRECTORY" if kind == "BACKUP" else "STAGED_FILE"
         elif process.process.poll() is not None or time.monotonic() > deadline:
             raise smoke.SmokeError("The candidate ended or timed out before the upgrade was observed")
     process.process.kill(); process.abort(); run.process = None
-    return seen
+    return dict(seen=seen, created=created, existed_before=sorted(before), completed=completed(process.lines))
 
 
 def upgrade_case(run, case, base):
@@ -180,16 +197,26 @@ def upgrade_case(run, case, base):
                            "The migrator's backup does not hold the byte-equal root-2 ledger")
             row["starts"].append(first)
         else:
+            kind = case.removeprefix("UPGRADE_DURING_")
+            # The names present before the start: only what this attempt creates counts as its artifact.
+            before = artifacts(world, kind)
             process = run.start(case + "-0", world=world.name)
-            seen = watch_and_kill(run, process, world, case.removeprefix("UPGRADE_DURING_"))
+            watched = watch_and_kill(run, process, world, kind, before)
             ledger_sha = smoke.digest_file(world / "data" / LEDGER)
-            first = dict(label=case + "-0", forced_stop=True, seen=seen, errors=errors(process.lines), migration_files=migration_files(world),
+            first = dict(label=case + "-0", forced_stop=True, **watched, errors=errors(process.lines), migration_files=migration_files(world),
                          ledger_sha256=ledger_sha, migration=migrated(process.lines))
+            # The complete captured log decides, also when the watcher's own two looks missed the line.
+            first["completed"] = first["completed"] or first["migration"] is not None or completed(process.lines)
             row["starts"].append(first)
             if ledger_sha == base["ledger_sha256"]:
-                # The kill landed before the commit: the root-2 file is untouched, byte for byte.
+                # The kill landed before the commit: the root-2 file is untouched, byte for byte, and both stores
+                # are exactly the fixture's BEFORE state. The decoded snapshot is kept.
                 first["landed"] = "BEFORE_COMMIT"
-                oracle.check_root2(read(world)["ledger"], base["digests"])
+                disk = read(world)
+                raw = run.evidence / f"{case}-0-raw.json"
+                raw.write_text(json.dumps(disk, indent=1), encoding="utf-8")
+                first["raw"] = dict(file=raw.name, sha256=smoke.digest_file(raw))
+                first["state"] = oracle.check_root2(disk["ledger"], base["digests"], disk["device"], disk["rocket"])
             else:
                 # The kill landed after the atomic replacement: the file must be a complete, valid root 3.
                 first["landed"] = "AFTER_COMMIT"
@@ -201,7 +228,7 @@ def upgrade_case(run, case, base):
             expected = 1 if restart == 1 and row["starts"][0].get("landed") == "BEFORE_COMMIT" else 0
             native.require(entry["migration"] is not None and entry["migration"]["migrated"] == expected,
                            f"Restart {restart} migrated {entry['migration']} file(s), expected {expected}")
-        states = [start["state"] for start in row["starts"] if "state" in start]
+        states = [start["state"] for start in row["starts"][1:]]
         row["final_backups"] = sorted(states[-1]["migration"]["backups"]); row["final_staged"] = states[-1]["migration"]["staged"]
     except (OSError, ValueError, KeyError, TypeError, IndexError, smoke.SmokeError) as failure:
         if run.process is not None:
@@ -209,8 +236,10 @@ def upgrade_case(run, case, base):
         row["findings"].append(str(failure))
         row["failure_world"] = run.capture(world, case + "-failed-world")
     row["status"] = "FAILED" if row["findings"] else "PASS"
-    if row["status"] == "PASS" and row["starts"][0].get("seen") == "NOT_SEEN_BEFORE_COMPLETION":
-        # The upgrade finished before the watcher saw it: a valid stop after the upgrade, not one during it.
+    first = row["starts"][0] if row["starts"] else {}
+    if row["status"] == "PASS" and (first.get("completed") or first.get("seen") == "NOT_SEEN_BEFORE_COMPLETION"):
+        # The first start completed its migration: a valid stop after the upgrade, not one during it, whatever
+        # artifact the watcher saw.
         row.update(status="NOT_COVERED", reason="The kill followed the completed upgrade; not evidence for a stop during it")
     return row
 

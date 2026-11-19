@@ -109,54 +109,113 @@ class AccountingFormatRunnerTest(unittest.TestCase):
                 self.assertRaisesRegex(ValueError, "did not advance"):
             runner.settle(stuck, "x")
 
-    def watch(self, directory, kind, process, prepare=lambda world: None, timeout=30):
+    def watch(self, directory, kind, process, prepare=lambda world: None, timeout=30, stale=lambda world: None):
+        """`stale` runs before the names are recorded (an older attempt's leftovers); `prepare` after (this attempt's)."""
         world = Path(directory) / "world"; (world / "data").mkdir(parents=True)
+        stale(world)
+        before = runner.artifacts(world, kind)
         prepare(world)
         run = types.SimpleNamespace(args=argparse.Namespace(startup_timeout=timeout), process=process)
-        return runner.watch_and_kill(run, process, world, kind), run
+        return runner.watch_and_kill(run, process, world, kind, before), run
+
+    DONE = PREFIX.format("INFO") + "[ARCE-BETA-1001] Beta world data check complete: managed=3, migrated=1, backup=b"
 
     def test_the_watcher_kills_at_the_first_sight_of_the_upgrade_and_says_when_it_missed_it(self):
-        done = PREFIX.format("INFO") + "[ARCE-BETA-1001] Beta world data check complete: managed=3, migrated=1, backup=b"
         with tempfile.TemporaryDirectory() as directory:
             process = Process()
-            seen, run = self.watch(directory, "BACKUP", process, lambda world: (world / runner.BACKUPS).mkdir())
-            self.assertEqual(("BACKUP_DIRECTORY", True, None), (seen, process.killed, run.process))
+            watched, run = self.watch(directory, "BACKUP", process, lambda world: (world / runner.BACKUPS).mkdir())
+            self.assertEqual(("BACKUP_DIRECTORY", False, [runner.BACKUPS], True, None),
+                             (watched["seen"], watched["completed"], watched["created"], process.killed, run.process))
         with tempfile.TemporaryDirectory() as directory:
             process = Process()
-            seen, _ = self.watch(directory, "COMMIT", process, lambda world: (world / "data/.x.migrating-1").write_bytes(b""))
-            self.assertEqual(("STAGED_FILE", True), (seen, process.killed))
+            watched, _ = self.watch(directory, "COMMIT", process, lambda world: (world / "data/.x.migrating-1").write_bytes(b""))
+            self.assertEqual(("STAGED_FILE", False, [".x.migrating-1"], True),
+                             (watched["seen"], watched["completed"], watched["created"], process.killed))
         with tempfile.TemporaryDirectory() as directory:
             # A backup directory alone is not the staged file.
-            process = Process([done])
-            seen, _ = self.watch(directory, "COMMIT", process, lambda world: (world / runner.BACKUPS).mkdir())
-            self.assertEqual(("NOT_SEEN_BEFORE_COMPLETION", True), (seen, process.killed))
+            process = Process([self.DONE])
+            watched, _ = self.watch(directory, "COMMIT", process, lambda world: (world / runner.BACKUPS).mkdir())
+            self.assertEqual(("NOT_SEEN_BEFORE_COMPLETION", True, True), (watched["seen"], watched["completed"], process.killed))
         for process in (Process(code=1), Process()):
             with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(SmokeError, "before the upgrade was observed"):
                 self.watch(directory, "BACKUP", process, timeout=0 if process.code is None else 30)
+        with self.assertRaisesRegex(ValueError, "Unknown upgrade watcher kind"): runner.artifacts(Path("unused"), "OTHER")
+
+    def test_a_completed_migration_is_never_a_stop_during_it_whatever_artifact_exists(self):
+        """W373C, review finding 1: completion is checked before the artifact, and again after the kill."""
+        ready = '[12:00:00] [Server thread/INFO] [minecraft/DedicatedServer]: Done (3.210s)! For help, type "help"'
+        self.assertIsNotNone(runner.smoke.READY_MARKER.search(ready))
+        backup = lambda world: (world / runner.BACKUPS / "20261119T030000Z-managed").mkdir(parents=True)
+        staged = lambda world: (world / "data/.advancedrocketrycommunity_resource_escrow.migrating-1").write_bytes(b"x")
+        for line in (self.DONE, ready):
+            # Completion with the backup directory that every successful migration leaves behind.
+            with tempfile.TemporaryDirectory() as directory:
+                process = Process([line])
+                watched, _ = self.watch(directory, "BACKUP", process, backup)
+                self.assertEqual(("NOT_SEEN_BEFORE_COMPLETION", True, [], True),
+                                 (watched["seen"], watched["completed"], watched["created"], process.killed))
+            # Completion with a staged file left by an earlier interrupted attempt.
+            with tempfile.TemporaryDirectory() as directory:
+                process = Process([line])
+                watched, _ = self.watch(directory, "COMMIT", process, stale=staged)
+                self.assertEqual(("NOT_SEEN_BEFORE_COMPLETION", True, [".advancedrocketrycommunity_resource_escrow.migrating-1"]),
+                                 (watched["seen"], watched["completed"], watched["existed_before"]))
+        # A stale artifact alone is never this attempt's: the watcher keeps waiting and then reports no observation.
+        for kind, stale in (("BACKUP", backup), ("COMMIT", staged)):
+            with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(SmokeError, "before the upgrade was observed"):
+                self.watch(directory, kind, Process(), stale=stale, timeout=0)
+        # A new backup directory beside an older one, and a new staged file beside a stale one, are this attempt's.
+        with tempfile.TemporaryDirectory() as directory:
+            watched, _ = self.watch(directory, "BACKUP", Process(), stale=backup,
+                                    prepare=lambda world: (world / runner.BACKUPS / "20261119T040000Z-managed").mkdir())
+            self.assertEqual(("BACKUP_DIRECTORY", [runner.BACKUPS + "/20261119T040000Z-managed"], False),
+                             (watched["seen"], watched["created"], watched["completed"]))
+        with tempfile.TemporaryDirectory() as directory:
+            watched, _ = self.watch(directory, "COMMIT", Process(), stale=staged,
+                                    prepare=lambda world: (world / "data/.x.migrating-2").write_bytes(b""))
+            self.assertEqual(("STAGED_FILE", [".x.migrating-2"]), (watched["seen"], watched["created"]))
+
+        # The artifact is seen first and the completion line arrives while the process is being killed.
+        class Late(Process):
+            def kill(self):
+                super().kill(); self.lines.append(AccountingFormatRunnerTest.DONE)
+
+        with tempfile.TemporaryDirectory() as directory:
+            process = Late()
+            watched, _ = self.watch(directory, "BACKUP", process, backup)
+            self.assertEqual(("BACKUP_DIRECTORY", True, True), (watched["seen"], watched["completed"], process.killed))
+
+    def case(self, watched, ledger_sha, lines=(), root2=None, case="UPGRADE_DURING_COMMIT"):
+        """One upgrade case with stand-ins for the native starts; `watched` is the watcher's report."""
+        base = dict(backup=None, ledger_sha256="aa", digests=["d"], hashes={}, archive={})
+        state = dict(files={}, migration=dict(backups={"b": {}}, staged=[]))
+        start = lambda run, label, world, base, kill=False: dict(label=label, migration=dict(migrated=0, backup="none"), state=state)
+        accept = lambda root, digests, source, destination: dict(source=source, destination=destination)
+        with tempfile.TemporaryDirectory() as directory:
+            run = types.SimpleNamespace(session=Path(directory) / "session", evidence=Path(directory), process=None,
+                                        start=lambda *a, **k: Process(lines), capture=lambda world, label: dict(file=label))
+            disk = dict(ledger=dict(root="2"), device=dict(fluids={"minecraft:water": 5000}, epoch=0, markers=0),
+                        rocket=dict(fluids={}, epoch=0, markers=0))
+            with patch.object(runner, "copy_world", lambda *a: None), patch.object(runner, "watch_and_kill", lambda *a: dict(watched)), \
+                    patch.object(runner, "artifacts", lambda world, kind: set()), \
+                    patch.object(runner.smoke, "digest_file", lambda path: "raw-sha" if Path(path).suffix == ".json" else ledger_sha), \
+                    patch.object(runner, "candidate_start", start), \
+                    patch.object(runner, "migration_files", lambda world: dict(backups={}, staged=[])), \
+                    patch.object(runner, "check_upgraded", lambda world, base: state), \
+                    patch.object(runner, "read", lambda world: disk), \
+                    patch.object(runner.oracle, "check_root2", root2 or accept):
+                row = runner.upgrade_case(run, case, base)
+                row["raw_files"] = sorted(p.name for p in Path(directory).glob("*-raw.json"))
+                return row
 
     def test_a_missed_upgrade_is_not_covered_and_a_family_with_it_is_not_a_pass(self):
         base = dict(backup=None, ledger_sha256="aa", digests=["d"], hashes={}, archive={})
-        state = dict(files={}, migration=dict(backups={"b": {}}, staged=[]))
-
-        def start(run, label, world, base, kill=False):
-            return dict(label=label, migration=dict(migrated=0, backup="none"), state=state)
-
-        def case(seen, ledger_sha):
-            run = types.SimpleNamespace(session=Path("unused"), start=lambda *a, **k: Process(), process=None,
-                                        capture=lambda world, label: dict(file=label))
-            with patch.object(runner, "copy_world", lambda *a: None), patch.object(runner, "watch_and_kill", lambda *a: seen), \
-                    patch.object(runner.smoke, "digest_file", lambda path: ledger_sha), patch.object(runner, "candidate_start", start), \
-                    patch.object(runner, "migration_files", lambda world: dict(backups={}, staged=[])), \
-                    patch.object(runner, "check_upgraded", lambda world, base: state), \
-                    patch.object(runner, "read", lambda world: dict(ledger=dict())), \
-                    patch.object(runner.oracle, "check_root2", lambda root, digests: None):
-                return runner.upgrade_case(run, "UPGRADE_DURING_COMMIT", base)
-
-        missed = case("NOT_SEEN_BEFORE_COMPLETION", "bb")
+        seen = lambda name, completed=False: dict(seen=name, created=[], existed_before=[], completed=completed)
+        missed = self.case(seen("NOT_SEEN_BEFORE_COMPLETION", True), "bb")
         self.assertEqual(("NOT_COVERED", "AFTER_COMMIT"), (missed["status"], missed["starts"][0]["landed"]))
-        self.assertEqual("PASS", case("STAGED_FILE", "bb")["status"])
+        self.assertEqual("PASS", self.case(seen("STAGED_FILE"), "bb")["status"])
         # Landing before the commit leaves root 2, so the first restart has to migrate; this stand-in never does.
-        before = case("STAGED_FILE", "aa")
+        before = self.case(seen("STAGED_FILE"), "aa")
         self.assertEqual("BEFORE_COMMIT", before["starts"][0]["landed"])
         self.assertEqual("FAILED", before["status"]); self.assertIn("expected 1", before["findings"][0])
         with patch.object(runner, "seed", lambda run: dict(base, ledger_sha256="aa")), \
@@ -166,6 +225,54 @@ class AccountingFormatRunnerTest(unittest.TestCase):
             self.assertEqual("FAILED", runner.family(run)["status"])
             run.args.case = ["OLD_JAR_REFUSAL"]
             with self.assertRaisesRegex(ValueError, "not in the requested family"): runner.family(run)
+
+    def test_a_completed_first_start_is_not_covered_in_both_during_cases(self):
+        """W373C, review finding 1 at the case level: an observed artifact does not turn a completed migration into a cut."""
+        seen = lambda name, completed: dict(seen=name, created=["x"], existed_before=[], completed=completed)
+        for case, artifact in (("UPGRADE_DURING_BACKUP", "BACKUP_DIRECTORY"), ("UPGRADE_DURING_COMMIT", "STAGED_FILE")):
+            with self.subTest(case=case):
+                # The reviewer's reproduction: the artifact was seen, the root hash changed and every later state is valid.
+                row = self.case(seen(artifact, True), "bb", case=case)
+                self.assertEqual(("NOT_COVERED", "AFTER_COMMIT", True),
+                                 (row["status"], row["starts"][0]["landed"], row["starts"][0]["completed"]))
+                # The watcher's own looks missed it, but the captured log of the killed start holds the line.
+                row = self.case(seen(artifact, False), "bb", lines=[self.DONE], case=case)
+                self.assertEqual(("NOT_COVERED", True), (row["status"], row["starts"][0]["completed"]))
+                # Completion with the ledger still root 2 cannot be a consistent start; it is not a pass either.
+                row = self.case(seen(artifact, True), "aa", case=case)
+                self.assertNotEqual("PASS", row["status"])
+                # Without completion the same observation is a stop during the migration.
+                row = self.case(seen(artifact, False), "bb", case=case)
+                self.assertEqual(("PASS", False), (row["status"], row["starts"][0]["completed"]))
+
+    def test_the_before_commit_snapshot_is_checked_and_kept(self):
+        """W373C, review finding 3: the decoded endpoints of the root-2 cut reach the oracle, and the raw file is kept."""
+        seen = dict(seen="STAGED_FILE", created=["x"], existed_before=[], completed=False)
+        calls = []
+
+        def root2(root, digests, source, destination):
+            calls.append((root, digests, source, destination))
+            return dict(checked=True)
+
+        row = self.case(seen, "aa", root2=root2)
+        self.assertEqual([(dict(root="2"), ["d"], dict(fluids={"minecraft:water": 5000}, epoch=0, markers=0),
+                           dict(fluids={}, epoch=0, markers=0))], calls)
+        self.assertEqual(["UPGRADE_DURING_COMMIT-0-raw.json"], row["raw_files"])
+        self.assertEqual(dict(file="UPGRADE_DURING_COMMIT-0-raw.json", sha256="raw-sha"), row["starts"][0]["raw"])
+        self.assertEqual(dict(checked=True), row["starts"][0]["state"])
+
+        def changed(root, digests, source, destination):
+            # The same root-2 ledger with another endpoint amount: the real store check refuses it.
+            return runner.oracle.check_store("source", dict(source, fluids={"minecraft:water": 4000}),
+                                             runner.oracle.store(runner.oracle.WATER, 5000, 0, 0))
+
+        row = self.case(seen, "aa", root2=changed)
+        self.assertEqual("FAILED", row["status"]); self.assertIn("Raw source amounts differ", row["findings"][0])
+        # The seed's own check passes its endpoints too.
+        source = (REPO / "scripts/run_v180_accounting_format.py").read_text(encoding="utf-8")
+        self.assertEqual(1, source.count('oracle.check_root2(disk["ledger"], digests, disk["device"], disk["rocket"])'))
+        self.assertEqual(1, source.count('oracle.check_root2(disk["ledger"], base["digests"], disk["device"], disk["rocket"])'))
+        self.assertEqual(2, source.count("oracle.check_root2("))
 
 
 if __name__ == "__main__":
