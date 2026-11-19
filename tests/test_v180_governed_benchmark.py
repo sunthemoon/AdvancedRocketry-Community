@@ -10,6 +10,67 @@ import run_v180_governed_benchmark as runner
 
 
 class GovernedBenchmarkTest(unittest.TestCase):
+    def test_attribution_is_off_by_default_and_does_not_change_recovery(self):
+        self.assertEqual("start", runner.scenario("start"))
+        self.assertEqual("recover", runner.scenario("recover"))
+        self.assertEqual("arrival-second-call-cost", runner.scenario("start", True))
+        self.assertEqual("recover", runner.scenario("recover", True))
+
+    def arrival_proof(self, root, nanos=1000):
+        path = Path(root) / "arrival.csv"
+        path.write_text("tick,logical,nanos,result,expected\n"
+                        f"1,00000000-0000-0000-0000-000000000001,{nanos},DESCENDING,DESCENDING\n", encoding="utf-8")
+        proof = dict(timed_calls=1, known_results_compared=1, binding_capacity=64,
+                     concurrent_committed_descents_per_tick={"0": 1400, "1": 1})
+        return path, proof
+
+    def test_arrival_attribution_units_percentiles_and_capacity_rule(self):
+        with tempfile.TemporaryDirectory() as root:
+            path, proof = self.arrival_proof(root)
+            result = runner.arrival_cost(path, proof)
+            self.assertEqual("us", result["unit"])
+            for key in ("mean", "p95", "p99", "maximum"):
+                self.assertEqual(1, result[key])
+            self.assertEqual(.064, result["capacity_mean_ms"])
+            self.assertEqual("KEEP_BOTH_CALLS", result["disposition"])
+            path, proof = self.arrival_proof(root, 15625)
+            self.assertEqual("KEEP_BOTH_CALLS", runner.arrival_cost(path, proof)["disposition"])
+            path, proof = self.arrival_proof(root, 15626)
+            self.assertEqual("DESIGN_REQUIRED", runner.arrival_cost(path, proof)["disposition"])
+            path, proof = self.arrival_proof(root, 78126)
+            with path.open("a", encoding="utf-8") as stream:
+                for tick in range(2, 101):
+                    stream.write(f"{tick},00000000-0000-0000-0000-000000000001,0,DESCENDING,DESCENDING\n")
+            proof.update(timed_calls=100, known_results_compared=100, concurrent_committed_descents_per_tick={"1": 100})
+            result = runner.arrival_cost(path, proof)
+            self.assertEqual("KEEP_BOTH_CALLS", result["disposition"])
+            # Two slow calls out of 100 keep the mean small but exceed the independent P99 rule.
+            with path.open("a", encoding="utf-8") as stream:
+                stream.write("101,00000000-0000-0000-0000-000000000001,78126,DESCENDING,DESCENDING\n")
+            proof.update(timed_calls=101, known_results_compared=101, concurrent_committed_descents_per_tick={"1": 101})
+            result = runner.arrival_cost(path, proof)
+            self.assertLess(result["capacity_mean_ms"], 1)
+            self.assertGreater(result["capacity_p99_ms"], 5)
+            self.assertEqual("DESIGN_REQUIRED", result["disposition"])
+
+    def test_attribution_rejects_mutation_missing_proof_and_duplicate_calls(self):
+        with tempfile.TemporaryDirectory() as root:
+            path, proof = self.arrival_proof(root)
+            original = path.read_text()
+            for replacement in (original.replace("DESCENDING,DESCENDING", "HELD,DESCENDING"),
+                                original.replace("DESCENDING,DESCENDING", "DESCENDING,READY_TO_LAND"),
+                                original.replace("DESCENDING,DESCENDING", "DESCENDING,"),
+                                original.replace(",1000,", ",-1,"), original + original.splitlines()[1] + "\n"):
+                path.write_text(replacement)
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.arrival_cost(path, proof)
+            path.write_text(original)
+            for key, value in (("timed_calls", 0), ("binding_capacity", 8), ("known_results_compared", 0),
+                               ("concurrent_committed_descents_per_tick", {"9": 1})):
+                bad = copy.deepcopy(proof); bad[key] = value
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.arrival_cost(path, bad)
+
     def test_every_catalogued_phase_is_accepted_and_preserved(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root) / "samples.csv"

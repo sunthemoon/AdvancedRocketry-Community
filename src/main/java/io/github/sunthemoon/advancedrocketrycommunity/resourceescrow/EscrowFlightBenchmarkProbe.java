@@ -27,6 +27,7 @@ final class EscrowFlightBenchmarkProbe {
     private final EscrowFlightBenchmarkLoad load;
     private final EscrowFlightBenchmarkDefer worldFirst = new EscrowFlightBenchmarkDefer();
     private final boolean recovery;
+    private final EscrowFlightBenchmarkArrivalCost arrivalCost;
     private final List<RocketEntity> sources = new ArrayList<>();
     private final List<UUID> logical = new ArrayList<>();
     private final boolean[] requested = new boolean[8];
@@ -43,6 +44,8 @@ final class EscrowFlightBenchmarkProbe {
     EscrowFlightBenchmarkProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        arrivalCost = EscrowFlightBenchmarkArrivalCost.selected(System.getProperty("advancedrocketrycommunity.escrowScenario"))
+                ? new EscrowFlightBenchmarkArrivalCost(server) : null;
         load = new EscrowFlightBenchmarkLoad(server);
     }
     void tick() {
@@ -236,6 +239,7 @@ final class EscrowFlightBenchmarkProbe {
     }
     void startTick() { metrics.startTick(); }
     void endTick() {
+        if (arrivalCost != null && measuring && !done) { arrivalCost.endTick(server, logical); }
         metrics.endTick(savedTick == server.getTickCount());
         if (!finishing || done) { return; }
         metrics.stop();
@@ -255,6 +259,10 @@ final class EscrowFlightBenchmarkProbe {
             report.add("generation_topology", new com.google.gson.Gson().toJsonTree(metrics.topology()));
             report.add("checkpoints", new com.google.gson.Gson().toJsonTree(metrics.checkpoints()));
             report.add("world_first_hold", new com.google.gson.Gson().toJsonTree(worldFirst.report()));
+            if (arrivalCost != null) {
+                arrivalCost.write(root);
+                report.add("arrival_second_call_cost", new com.google.gson.Gson().toJsonTree(arrivalCost.report()));
+            }
             Files.writeString(root.resolve("governed-benchmark.json"), new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
         } catch (java.io.IOException failure) { throw new IllegalStateException("Benchmark export failed", failure); }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_DONE ticks={} flights=8 peak=8 saves={}", elapsed, saves); done = true;

@@ -35,6 +35,47 @@ REQUIRED_PHASES = {"capture_main", "ledger_capture_main", "ledger_io", "force_io
                    "autosave_main", "flight_writer_queue_age"} | GENERATION_PHASES
 FLIGHT_POINTS = ("F1_ARM_ACK", "BENCH_F2_ACKNOWLEDGED", "BENCH_COUNTDOWN_OBSERVED", "F4_DESTINATION_ACK", "F4_PUBLICATION_AFTER",
                  "F5_SOURCE_REMOVAL_AFTER", "F6_LANDED", "F7_ACK", "F8_JOURNAL_ACK", "F8_PRUNE_ACK")
+ARRIVAL_SCENARIO = "arrival-second-call-cost"
+
+
+def scenario(stage: str, arrival_second_call_cost: bool = False) -> str:
+    return ARRIVAL_SCENARIO if arrival_second_call_cost and stage == "start" else stage
+
+
+def arrival_cost(path: Path, observation: dict) -> dict:
+    """N6 attribution is separate from the normal sample vocabulary and millisecond report."""
+    values = []; compared = 0; identities = set(); flights = {}
+    with path.open(newline="", encoding="utf-8") as stream:
+        reader = csv.DictReader(stream)
+        if reader.fieldnames != ["tick", "logical", "nanos", "result", "expected"]:
+            raise smoke.SmokeError("Invalid arrival attribution columns")
+        for row in reader:
+            identity = (int(row["tick"]), str(uuid.UUID(row["logical"])))
+            value = int(row["nanos"])
+            if (len(values) >= 131_072 or identity[0] < 0 or identity in identities or value < 0
+                    or row["result"] not in ("DESCENDING", "READY_TO_LAND")
+                    or row["expected"] and row["expected"] != row["result"]):
+                raise smoke.SmokeError("Changed state or malformed arrival attribution sample")
+            identities.add(identity); values.append(value / 1000)
+            flights[identity[1]] = flights.get(identity[1], 0) + 1
+            compared += bool(row["expected"])
+    histogram = observation.get("concurrent_committed_descents_per_tick", {})
+    capacity = observation.get("binding_capacity")
+    if (not values or observation.get("timed_calls") != len(values) or compared <= 0
+            or observation.get("known_results_compared") != compared or type(capacity) is not int or capacity != 64
+            or not histogram or any(not key.isdigit() or not 0 <= int(key) <= 8
+                or type(count) is not int or count <= 0 for key, count in histogram.items())
+            or sum(int(key) * count for key, count in histogram.items()) < len(values)):
+        raise smoke.SmokeError("Incomplete arrival attribution coverage")
+    summary = dict(count=len(values), mean=statistics.mean(values), p95=percentile(values, .95),
+                   p99=percentile(values, .99), maximum=max(values), unit="us",
+                   binding_capacity=capacity, known_results_compared=compared,
+                   concurrent_committed_descents_per_tick=histogram, calls_per_flight=flights)
+    summary["capacity_mean_ms"] = capacity * summary["mean"] / 1000
+    summary["capacity_p99_ms"] = capacity * summary["p99"] / 1000
+    summary["disposition"] = ("KEEP_BOTH_CALLS" if summary["capacity_mean_ms"] <= 1.0
+                              and summary["capacity_p99_ms"] <= 5.0 else "DESIGN_REQUIRED")
+    return summary
 
 
 def utc() -> str:
@@ -193,6 +234,9 @@ def run(args) -> dict:
     report = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=escrow.digest(args.jar), budgets=BUDGETS,
                   machine=dict(platform=platform.platform(), cpu=platform.processor(), logical_cpus=os.cpu_count()),
                   reference_machine=False, heap_max_bytes=4 * 1024**3, commands=[], sessions=[])
+    attribution = args.arrival_second_call_cost
+    if attribution:
+        report["attribution_mode"] = ARRIVAL_SCENARIO
     owned = uuid.uuid4().hex; marker = session / ".arce-governed-benchmark-owned"
     try:
         with heavy_lock(args.lock.resolve(), args.quiet_timeout) as token:
@@ -215,7 +259,7 @@ def run(args) -> dict:
                         raise smoke.SmokeError(f"Less than 10 GiB free before {stage}: {path}")
                 command = escrow._server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-XX:ActiveProcessorCount=4", "-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH",
-                                "-Dadvancedrocketrycommunity.escrowScenario=" + stage]
+                                "-Dadvancedrocketrycommunity.escrowScenario=" + scenario(stage, attribution)]
                 report["commands"].append(command)
                 process = smoke.CapturedProcess(command, session, evidence / f"{stage}.log")
                 stop = threading.Event(); rss = []; foreign = []; failures = []
@@ -246,7 +290,8 @@ def run(args) -> dict:
                         process.abort()
                     report["sessions"].append(dict(stage=stage, rss_bytes=rss, foreign_jvms=foreign, monitor_failures=failures))
                     # Preserve raw samples even if subsequent validation, restart or coverage fails.
-                    for name in ("governed-benchmark.csv", "governed-benchmark.json"):
+                    for name in (("governed-benchmark.csv", "governed-benchmark.json")
+                                 + (("arrival-second-call-cost.csv",) if attribution else ())):
                         if (session / "world" / name).is_file():
                             shutil.copy2(session / "world" / name, evidence / name)
                 if foreign or failures or sampler.is_alive():
@@ -256,6 +301,13 @@ def run(args) -> dict:
             phases, generations = read_samples(evidence / "governed-benchmark.csv")
             report.update(load=load, samples=phases, generations=generations, rss_max_bytes=max(all_rss) if all_rss else None,
                           restarted=restarted, coverage_gaps=coverage(load, phases, generations, restarted), comparisons=compare(phases, all_rss))
+            if attribution:
+                report["arrival_second_call_cost"] = arrival_cost(evidence / "arrival-second-call-cost.csv",
+                                                                 load.get("arrival_second_call_cost", {}))
+                cost = report["arrival_second_call_cost"]
+                if (len(cost["calls_per_flight"]) != 8
+                        or sum(cost["concurrent_committed_descents_per_tick"].values()) != phases["tick_main"]["count"]):
+                    raise smoke.SmokeError("Arrival attribution did not cover eight flights and every measured tick")
             report["status"] = ("INCOMPLETE_COVERAGE" if report["coverage_gaps"] else
                                 "MEASURED_LOCAL_THRESHOLDS_MET" if all(report["comparisons"].values()) else "BUDGET_FAILED")
             return report
@@ -276,6 +328,7 @@ def main() -> int:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--java", required=True)
+    parser.add_argument("--arrival-second-call-cost", action="store_true", help="Attribute one extra warm arrival call per descent per tick")
     parser.add_argument("--lock", type=Path, default=Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm"))
     parser.add_argument("--quiet-timeout", type=float, default=7200)
     parser.add_argument("--startup-timeout", type=float, default=360)
