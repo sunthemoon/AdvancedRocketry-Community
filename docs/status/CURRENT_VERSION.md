@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 3f7562467 (W392 merged, R523 and R525: a COMMITTED visit computes the governed arrival once and reuses the result under identity, observation and binding guards (F19b), and the gated benchmark's default modes use the accounted root-3 fixture; after W392R's read-only review; branch run 44608729332 and governance run 44608731684 at `62c261e39` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44591135484 at 89a00a3ed (W373 and W393 merged at `378d59491` and `79997f223`) passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 16.8, 17.9, 20.2 and 16.6 minutes, 1,866 GameTests, with 4, 3, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44591135635 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44615417839 at 7f0cdad78 (W392 merged at `3f7562467`) passed on its first attempt: build 15.1 minutes, shards 0 to 3 in 15.9, 17.4, 19.4 and 15.3 minutes, 1,867 GameTests, with 3, 3, 1 and 2 `server-overloaded` entries against the per-shard maximum of 8; governance run 44615417756 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
