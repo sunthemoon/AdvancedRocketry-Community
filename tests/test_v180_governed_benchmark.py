@@ -10,6 +10,18 @@ import run_v180_governed_benchmark as runner
 
 
 class GovernedBenchmarkTest(unittest.TestCase):
+    def test_timing_summary_preserves_tick_latency_and_defer_measurements(self):
+        phases = dict(tick_main=dict(mean=4, p95=11, p99=35, maximum=200, unit="ms"),
+                      tick_main_nonsave=dict(maximum=175),
+                      flight_handoff_latency=dict(count=8, mean=18000, p95=19000, p99=20000, unit="ms"))
+        hold = dict(deferred_ticks=20, deferred_visits=21)
+        result = runner.timing_summary(dict(world_first_hold=hold), phases)
+        self.assertEqual(phases["tick_main"], result["tick_main"])
+        self.assertEqual(175, result["largest_nonsave_tick_ms"])
+        self.assertEqual(hold, result["world_first_hold"])
+        self.assertEqual(phases["flight_handoff_latency"], result["flight_handoff_latency"])
+        self.assertNotIn("arrival_second_call_cost", result)
+
     def test_attribution_is_off_by_default_and_does_not_change_recovery(self):
         self.assertEqual("start", runner.scenario("start"))
         self.assertEqual("recover", runner.scenario("recover"))
