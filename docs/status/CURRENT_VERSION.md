@@ -136,7 +136,8 @@ What is still open:
   are merged (W361, W362, W364, W365 and W366). The activation is merged as `5951d6df2` after W372R's read-only
   review (R466 to R505): `EscrowAccountingFormat.ENABLED` is true, so every native world now writes a root-3 ledger.
   Slice E part 2 runs the campaign families on root 3 (W373) and adds the native accounting cuts, including R-044's
-  old-JAR case (W373B). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
+  old-JAR case (W373B). The revised R-044 text for both format boundaries is drafted from that case
+  ([R044-SIGNOFF-DRAFT](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) section 5, R516). W358 (merged, R446) built six of the uncovered bay rows natively and found that a bay on a
   governed (escrow-fuelled) flight got no D0 decision, which W363 fixed (R444). W360 built the remaining cargo and
   ledger rows (R448).
   For the three residual-risk tests: X03-B, the operator's whole-world repair on root 2, is merged as `97576e2be`
