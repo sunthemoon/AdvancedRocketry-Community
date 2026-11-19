@@ -149,6 +149,11 @@ def completed(lines):
     return any(MIGRATION.search(line) or smoke.READY_MARKER.search(line) for line in lines)
 
 
+def cut_completed(lines, kind):
+    """R527: STARTUP ends at ready, while BACKUP and COMMIT still end at the migration report or ready."""
+    return any(smoke.READY_MARKER.search(line) for line in lines) if kind == "STARTUP" else completed(lines)
+
+
 def artifacts(world, kind):
     """The migrator's artifacts of one kind, by name: the backup root and its directories, or the staged files."""
     if kind in ("BACKUP", "STARTUP"):
@@ -179,8 +184,9 @@ def watch_and_kill(run, process, world, kind, before):
     """Kill as soon as this attempt's backup directory (BACKUP) or staged file (COMMIT) is seen; never wait for it.
 
     `before` holds the artifact names that existed before the start, so an older attempt's leftovers are never taken
-    for this one's. Completion is checked first, and again in the captured log after the kill: a first start whose
-    migration completed is not a stop during the migration, whatever artifact was seen.
+    for this one's. Completion is checked first, and again in the captured log after the kill. BACKUP and COMMIT
+    end at the migration report or ready; R527's STARTUP window ends only at ready, and records whether the report
+    had been seen before the kill. STARTUP still requires this attempt's complete root-3 replacement artifacts.
     """
     deadline = time.monotonic() + run.args.startup_timeout
     seen, created, checked = None, [], 0
@@ -188,7 +194,7 @@ def watch_and_kill(run, process, world, kind, before):
     while seen is None:
         lines = process.lines[checked:]
         checked += len(lines)
-        if completed(lines):
+        if cut_completed(lines, kind):
             seen = "NOT_SEEN_BEFORE_COMPLETION"
             break
         created = sorted(artifacts(world, kind) - before)
@@ -198,8 +204,13 @@ def watch_and_kill(run, process, world, kind, before):
             seen = "BACKUP_DIRECTORY" if kind == "BACKUP" else "STAGED_FILE"
         elif process.process.poll() is not None or time.monotonic() > deadline:
             raise smoke.SmokeError("The candidate ended or timed out before the upgrade was observed")
+    # Freeze this observation before kill/abort can drain additional buffered output.
+    report_seen = any(MIGRATION.search(line) for line in process.lines) if kind == "STARTUP" else None
     process.process.kill(); process.abort(); run.process = None
-    return dict(seen=seen, created=created, existed_before=sorted(before), completed=completed(process.lines))
+    result = dict(seen=seen, created=created, existed_before=sorted(before), completed=cut_completed(process.lines, kind))
+    if kind == "STARTUP":
+        result["report_seen"] = report_seen
+    return result
 
 
 def check_startup_cut(world, base, first, disk):
@@ -236,7 +247,7 @@ def upgrade_case(run, case, base):
             first = dict(label=case + "-0", forced_stop=True, **watched, errors=errors(process.lines), migration_files=migration_files(world),
                          ledger_sha256=ledger_sha, migration=migrated(process.lines))
             # The complete captured log decides, also when the watcher's own two looks missed the line.
-            first["completed"] = first["completed"] or first["migration"] is not None or completed(process.lines)
+            first["completed"] = first["completed"] or cut_completed(process.lines, kind)
             row["starts"].append(first)
             if ledger_sha == base["ledger_sha256"]:
                 # The kill landed before the commit: the root-2 file is untouched, byte for byte, and both stores
@@ -274,9 +285,9 @@ def upgrade_case(run, case, base):
     row["status"] = "FAILED" if row["findings"] else "PASS"
     first = row["starts"][0] if row["starts"] else {}
     if row["status"] == "PASS" and (first.get("completed") or first.get("seen") == "NOT_SEEN_BEFORE_COMPLETION"):
-        # The first start completed its migration: a valid stop after the upgrade, not one during it, whatever
-        # artifact the watcher saw.
-        row.update(status="NOT_COVERED", reason="The kill followed the completed upgrade; not evidence for a stop during it")
+        reason = ("The kill followed the ready line; not evidence for a stop during startup" if case == "UPGRADE_DURING_STARTUP"
+                  else "The kill followed the completed upgrade; not evidence for a stop during it")
+        row.update(status="NOT_COVERED", reason=reason)
     return row
 
 
