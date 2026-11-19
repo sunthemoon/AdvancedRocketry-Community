@@ -113,7 +113,8 @@ class PlanTest(unittest.TestCase):
     def test_accounting_families_are_independent_and_the_format_ones_need_the_pinned_root2_jar(self):
         rows = campaign.family_specs()[72:]
         # W373C: accounting-cuts-loader grows from 6 to 23 cases (13 existing LF_S6_ operator cuts and 4 LF_S6_AC_ cases).
-        self.assertEqual([len(row["cases"]) for row in rows], [17, 17, 23, 18, 3, 1])
+        # W391 adds five native loader variants and one post-replacement startup cut.
+        self.assertEqual([len(row["cases"]) for row in rows], [17, 17, 28, 18, 4, 1])
         self.assertEqual([row["accounting_family"] for row in rows], ["cuts"] * 4 + ["format"] * 2)
         self.assertTrue(all(row["independent"] and "stop_on_failure" not in row for row in rows))
         self.assertEqual([row["arguments"] for row in rows], [["--family", key] for key in (

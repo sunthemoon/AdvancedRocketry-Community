@@ -14,6 +14,46 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Mana
 class EscrowLoaderS6SettlementProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
+    @Test void storedBankEditChangesOnlyPrimaryAndItsRequiredProjection() {
+        var tag = new net.minecraft.nbt.CompoundTag();
+        var data = new net.minecraft.nbt.CompoundTag(); tag.put("RocketEntityData", data);
+        var flight = new net.minecraft.nbt.CompoundTag(); data.put("flight_data", flight);
+        var fuel = new net.minecraft.nbt.CompoundTag(); flight.put("fuel", fuel);
+        var propulsion = new net.minecraft.nbt.CompoundTag(); fuel.put("propulsion", propulsion);
+        var primary = new net.minecraft.nbt.CompoundTag(); primary.putLong("amount", 1000); propulsion.put("primary", primary);
+        fuel.putLong("amount", 1000); propulsion.putLong("revision", 17); data.putString("identity", "unchanged");
+        for (int amount : new int[] {900, 1100}) {
+            var changed = tag.copy(); EscrowLoaderS6SettlementProbe.changeStoredBank(changed, amount);
+            var expected = tag.copy(); var expectedFuel = expected.getCompound("RocketEntityData").getCompound("flight_data").getCompound("fuel");
+            expectedFuel.putLong("amount", amount); expectedFuel.getCompound("propulsion").getCompound("primary").putLong("amount", amount);
+            assertEquals(expected, changed); assertNotEquals(tag, changed);
+        }
+    }
+    @Test void accountingVariantsKeepSeparateEditsAndSplitSaveGates() {
+        for (String name : java.util.List.of("SUBSTITUTE", "BANK_LOSS", "BANK_GAIN", "PRUNE_SPLIT_TANK", "PRUNE_SPLIT_BANK")) {
+            String cut = "LF_S6_AC_" + name;
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(false, cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(true, cut + "_OTHER"));
+            assertEquals(0, EscrowLoaderS6SettlementProbe.tankDelta(cut));
+            boolean pruning = name.startsWith("PRUNE");
+            assertEquals(!pruning, EscrowLoaderS6SettlementProbe.boundary(cut, "K2"));
+            assertFalse(EscrowLoaderS6SettlementProbe.boundary(cut, "K1"));
+            assertFalse(EscrowLoaderS6SettlementProbe.boundary(cut, "O1_ACK"));
+            assertEquals(pruning, EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 0, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 1, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, true, 0, 1));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 1, true, 0, 0));
+            assertFalse(EscrowLoaderS6SettlementProbe.pruned(cut, 0, false, 0, 0));
+        }
+        assertEquals(-100, EscrowLoaderS6SettlementProbe.bankDelta("LF_S6_AC_BANK_LOSS"));
+        assertEquals(100, EscrowLoaderS6SettlementProbe.bankDelta("LF_S6_AC_BANK_GAIN"));
+        assertEquals(0, EscrowLoaderS6SettlementProbe.bankDelta("LF_S6_AC_LOSS"));
+        var water = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank.of(
+                net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 4000);
+        assertEquals(water, io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank.decode(water.encode()));
+        assertNotEquals(water, water.withAmount(3900));
+    }
     @Test void idleWriterDoesNotAcknowledgeAPacedManualTransition() throws Exception {
         var op = EscrowTestFixtures.operation(1);
         var initial = EscrowTestFixtures.ledger(op).generation(1);

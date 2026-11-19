@@ -53,7 +53,10 @@ LOADER_SETTLEMENT = tuple("LF_S6_" + name for name in (
     "O3_BEFORE", "O3_REPLACED", "O3_ACK", "O4_BEFORE", "O4_REPLACED", "O4_ACK"))
 # W373C's gated cases, and the hook each one's forced stop reports.
 LOADER_ACCOUNTING = {"LF_S6_AC_PRUNE_BEFORE": "PRUNE_BEFORE", "LF_S6_AC_PRUNE_AFTER": "PRUNE_AFTER",
-                     "LF_S6_AC_LOSS": "K2", "LF_S6_AC_GAIN": "K2"}
+                     "LF_S6_AC_LOSS": "K2", "LF_S6_AC_GAIN": "K2", "LF_S6_AC_SUBSTITUTE": "K2",
+                     "LF_S6_AC_BANK_LOSS": "K2", "LF_S6_AC_BANK_GAIN": "K2",
+                     "LF_S6_AC_PRUNE_SPLIT_TANK": "PRUNE_SPLIT_TANK", "LF_S6_AC_PRUNE_SPLIT_BANK": "PRUNE_SPLIT_BANK"}
+LOADER_VARIANTS = tuple(LOADER_ACCOUNTING)[4:]
 # The readback case's first hold: the typed per-fluid check of the device slot refuses a vector that differs from the
 # frozen one (EscrowCargoReadback, design section 6). Later attempts meet the live check's refusal instead.
 TYPED_REFUSAL = "ACCOUNTING_MISMATCH"
@@ -83,10 +86,13 @@ def spec(case):
     if case in LOADER_SETTLEMENT:
         return dict(engine="loader-s6")
     if case in LOADER_ACCOUNTING:
-        tank = oracle.loader_settlement(case)[2]["source"]["fluids"][oracle.FUEL]
+        state = oracle.loader_settlement(case)[2]
+        tank = sum(state["source"]["fluids"].values())
+        bank = sum(state["destination"]["fluids"].values())
         return dict(engine="loader-settlement", timeout=420,
                     paused=f"ARCE_LOADER_S6_O_PAUSED cut={case} hook={LOADER_ACCOUNTING[case]}",
-                    result=f"ARCE_LOADER_S6_O_RESULT cut={case} tank={tank} bank=1000 epochs=1,1 records=0 receipts=1 "
+                    cut_result=f"ARCE_LOADER_S6_AC_RESULT cut={case} hook={LOADER_ACCOUNTING[case]}" if case in LOADER_VARIANTS else None,
+                    result=f"ARCE_LOADER_S6_O_RESULT cut={case} tank={tank} bank={bank} epochs=1,1 records=0 receipts=1 "
                            "state=RELEASED accounting=KNOWN")
     if case.startswith("FC_"):
         load = case.startswith("FC_LOAD_")
@@ -297,6 +303,9 @@ def observe_loader(plan, start, lines):
     label = "ARCE_LOADER_S6_O_" + ("RESULT" if start else "PAUSED")
     oracle.require(len(matches) == 1 and sum(label in line for line in lines) == 1,
                    "Missing, repeated or different loader settlement observation: " + marker)
+    if not start and plan.get("cut_result"):
+        results = [line.strip() for line in lines if "ARCE_LOADER_S6_AC_RESULT " in line]
+        oracle.require(len(results) == 1 and results[0].endswith(plan["cut_result"]), "Missing or different loader cut result")
     logged = errors(lines)
     oracle.require(not logged, "The native start logged ERROR or FATAL: " + (logged[0].strip()[:200] if logged else ""))
     return dict(marker=matches[0][matches[0].index(label):][:300])
@@ -332,6 +341,8 @@ def run_loader_settlement(run, case, plan, row):
             entry["oracle"] = oracle.check_loader_settlement(disk, case, start)
             if previous is not None:
                 oracle.check_progress(previous, disk["ledger"])
+                if case in LOADER_VARIANTS and previous.get("tombstones"):
+                    oracle.require(previous["tombstones"] == disk["ledger"]["tombstones"], "A restart changed the released loader receipt")
             previous = disk["ledger"]
             entry["status"] = "PASS"
         except (OSError, ValueError, KeyError, TypeError, IndexError, smoke.SmokeError) as failure:

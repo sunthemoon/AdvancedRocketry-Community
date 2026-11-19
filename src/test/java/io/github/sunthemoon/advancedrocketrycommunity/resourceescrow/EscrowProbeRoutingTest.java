@@ -75,7 +75,8 @@ class EscrowProbeRoutingTest {
         // cargoCuts, and EscrowCargoCutProbe.attach refuses them outside the verify scenario.
         // W373B: fourteen FS_AC_ accounting cuts and one FC_UNLOAD_ prefix token (692). W373C: the four LF_S6_AC_ loader
         // settlement cuts; they are not item or cargo cut cases, so they keep the route every LF_S6_ case has.
-        assertEquals(696, seen.size());
+        // W391: five loader accounting variants, routed through the unchanged LF_ dispatch.
+        assertEquals(701, seen.size());
         assertTrue(seen.containsAll(EscrowCargoRepairVerifyProbe.CASES));
         assertTrue(seen.containsAll(List.of(EscrowLoaderS6PublicationProbe.RETURN, EscrowLoaderS6PublicationProbe.HELD)));
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));

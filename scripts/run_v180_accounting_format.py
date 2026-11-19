@@ -30,7 +30,7 @@ ROOT2_SHA256 = "459669bf802ea7ca0ca88bf5a84902eb69274f4a3313305319843c6d8f81744b
 SEED_CASE = "FC_LOAD_L1_ACK"
 SEED_PAUSED = re.compile(r"ARCE_RELEASE_CARGO_PAUSED cut=" + SEED_CASE + r" ")
 SEED_RESULT = re.compile(r"ARCE_RELEASE_CARGO_RESULT cut=" + SEED_CASE + r" cargo=1000 device=4000 epoch=1 records=0(?:\s|$)")
-FAMILIES = {"root2-upgrade": ("UPGRADE_AFTER", "UPGRADE_DURING_BACKUP", "UPGRADE_DURING_COMMIT"),
+FAMILIES = {"root2-upgrade": ("UPGRADE_AFTER", "UPGRADE_DURING_BACKUP", "UPGRADE_DURING_COMMIT", "UPGRADE_DURING_STARTUP"),
             "root3-old-jar": ("OLD_JAR_REFUSAL",)}
 BACKUPS = "advancedrocketrycommunity-backups"
 MIGRATION = re.compile(r"\[(ARCE-BETA-\d+)\] Beta world data check complete: managed=(\d+), migrated=(\d+), backup=(\S+)")
@@ -149,38 +149,79 @@ def completed(lines):
     return any(MIGRATION.search(line) or smoke.READY_MARKER.search(line) for line in lines)
 
 
+def cut_completed(lines, kind):
+    """R527: STARTUP ends at ready, while BACKUP and COMMIT still end at the migration report or ready."""
+    return any(smoke.READY_MARKER.search(line) for line in lines) if kind == "STARTUP" else completed(lines)
+
+
 def artifacts(world, kind):
     """The migrator's artifacts of one kind, by name: the backup root and its directories, or the staged files."""
-    if kind == "BACKUP":
+    if kind in ("BACKUP", "STARTUP"):
         backups = world / BACKUPS
-        return {BACKUPS} | {BACKUPS + "/" + p.name for p in backups.iterdir() if p.is_dir()} if backups.is_dir() else set()
+        names = {BACKUPS} | {BACKUPS + "/" + p.name for p in backups.iterdir() if p.is_dir()} if backups.is_dir() else set()
+        return names | artifacts(world, "COMMIT") if kind == "STARTUP" else names
     native.require(kind == "COMMIT", "Unknown upgrade watcher kind")
     data = world / "data"
     return {p.name for p in data.iterdir() if ".migrating-" in p.name} if data.is_dir() else set()
+
+
+def startup_replaced(world, created, staged_before):
+    """This attempt has a completed backup and root-3 replacement, with none of its staging files left.
+
+    Only the small target ledger is decoded while the migrator runs. An absent or incomplete file is not evidence.
+    Older backups/staging files cannot satisfy this attempt's observation.
+    """
+    backups = [name for name in created if (world / name / LEDGER).is_file()]
+    if not backups or artifacts(world, "COMMIT") - staged_before:
+        return False
+    try:
+        return cuts.ledger(world / "data" / LEDGER)["schema_version"] == 3
+    except (OSError, EOFError, ValueError, KeyError):
+        return False
 
 
 def watch_and_kill(run, process, world, kind, before):
     """Kill as soon as this attempt's backup directory (BACKUP) or staged file (COMMIT) is seen; never wait for it.
 
     `before` holds the artifact names that existed before the start, so an older attempt's leftovers are never taken
-    for this one's. Completion is checked first, and again in the captured log after the kill: a first start whose
-    migration completed is not a stop during the migration, whatever artifact was seen.
+    for this one's. Completion is checked first, and again in the captured log after the kill. BACKUP and COMMIT
+    end at the migration report or ready; R527's STARTUP window ends only at ready, and records whether the report
+    had been seen before the kill. STARTUP still requires this attempt's complete root-3 replacement artifacts.
     """
     deadline = time.monotonic() + run.args.startup_timeout
     seen, created, checked = None, [], 0
+    staged_before = {name for name in before if ".migrating-" in name} if kind == "STARTUP" else set()
     while seen is None:
         lines = process.lines[checked:]
         checked += len(lines)
-        if completed(lines):
+        if cut_completed(lines, kind):
             seen = "NOT_SEEN_BEFORE_COMPLETION"
             break
         created = sorted(artifacts(world, kind) - before)
-        if created:
+        if created and kind == "STARTUP" and startup_replaced(world, created, staged_before):
+            seen = "ROOT3_REPLACED"
+        elif created and kind != "STARTUP":
             seen = "BACKUP_DIRECTORY" if kind == "BACKUP" else "STAGED_FILE"
         elif process.process.poll() is not None or time.monotonic() > deadline:
             raise smoke.SmokeError("The candidate ended or timed out before the upgrade was observed")
+    # Freeze this observation before kill/abort can drain additional buffered output.
+    report_seen = any(MIGRATION.search(line) for line in process.lines) if kind == "STARTUP" else None
     process.process.kill(); process.abort(); run.process = None
-    return dict(seen=seen, created=created, existed_before=sorted(before), completed=completed(process.lines))
+    result = dict(seen=seen, created=created, existed_before=sorted(before), completed=cut_completed(process.lines, kind))
+    if kind == "STARTUP":
+        result["report_seen"] = report_seen
+    return result
+
+
+def check_startup_cut(world, base, first, disk):
+    """The kept post-replacement cut, not a root-2 or completed-start substitute for it."""
+    state = oracle.check_upgraded(disk["ledger"], base["digests"], disk["device"], disk["rocket"])
+    files = first["migration_files"]
+    new_backups = [name.removeprefix(BACKUPS + "/") for name in first["created"] if name.startswith(BACKUPS + "/")]
+    native.require(any(files["backups"].get(name, {}).get(LEDGER) == base["ledger_sha256"] for name in new_backups),
+                   "The startup cut lacks this attempt's byte-equal root-2 backup")
+    native.require(not files["staged"], "The startup cut still has a staged migration file")
+    return dict(state, migration=files, files=disk["files"])
 
 
 def upgrade_case(run, case, base):
@@ -206,7 +247,7 @@ def upgrade_case(run, case, base):
             first = dict(label=case + "-0", forced_stop=True, **watched, errors=errors(process.lines), migration_files=migration_files(world),
                          ledger_sha256=ledger_sha, migration=migrated(process.lines))
             # The complete captured log decides, also when the watcher's own two looks missed the line.
-            first["completed"] = first["completed"] or first["migration"] is not None or completed(process.lines)
+            first["completed"] = first["completed"] or cut_completed(process.lines, kind)
             row["starts"].append(first)
             if ledger_sha == base["ledger_sha256"]:
                 # The kill landed before the commit: the root-2 file is untouched, byte for byte, and both stores
@@ -221,6 +262,12 @@ def upgrade_case(run, case, base):
                 # The kill landed after the atomic replacement: the file must be a complete, valid root 3.
                 first["landed"] = "AFTER_COMMIT"
                 first["state"] = check_upgraded(world, base)
+            if kind == "STARTUP":
+                disk = read(world)
+                raw = run.evidence / f"{case}-0-raw.json"
+                raw.write_text(json.dumps(disk, indent=1), encoding="utf-8")
+                first["raw"] = dict(file=raw.name, sha256=smoke.digest_file(raw))
+                first["state"] = check_startup_cut(world, base, first, disk)
             native.require(not first["errors"], "The killed candidate start logged ERROR or FATAL")
         for restart in (1, 2):
             entry = candidate_start(run, f"{case}-{restart}", world, base)
@@ -238,9 +285,9 @@ def upgrade_case(run, case, base):
     row["status"] = "FAILED" if row["findings"] else "PASS"
     first = row["starts"][0] if row["starts"] else {}
     if row["status"] == "PASS" and (first.get("completed") or first.get("seen") == "NOT_SEEN_BEFORE_COMPLETION"):
-        # The first start completed its migration: a valid stop after the upgrade, not one during it, whatever
-        # artifact the watcher saw.
-        row.update(status="NOT_COVERED", reason="The kill followed the completed upgrade; not evidence for a stop during it")
+        reason = ("The kill followed the ready line; not evidence for a stop during startup" if case == "UPGRADE_DURING_STARTUP"
+                  else "The kill followed the completed upgrade; not evidence for a stop during it")
+        row.update(status="NOT_COVERED", reason=reason)
     return row
 
 
