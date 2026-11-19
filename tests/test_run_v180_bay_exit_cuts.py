@@ -234,6 +234,20 @@ class SavedRiderAndCounts(unittest.TestCase):
                 runner.check_saved_rider(saved, "X4_LANDING", cut)
         runner.check_saved_rider(dict(y=51.15, riding=True, motion_y=0.0), "X7_REVOKED", at_cut)  # unflushed: recorded
 
+    def test_a_flushed_safe_menu_exit_is_stationary_on_its_checked_origin_pad(self):
+        saved = dict(x=8.5, y=2.0, z=8.5, riding=False, motion_y=0.0)
+        at_cut = dict(y="2.0", mounted="false", slot="SAFE", offer="none", history="closed")
+        runner.check_saved_rider(saved, "X8_SAFE_MENU", at_cut)
+        for key, value in (("x", 9.5), ("y", 51.15), ("z", 9.5), ("riding", True),
+                           ("motion_y", -0.0784), ("motion_y", 0.1)):
+            with self.subTest(saved=key, value=value), self.assertRaises(SmokeError):
+                runner.check_saved_rider(dict(saved, **{key: value}), "X8_SAFE_MENU", at_cut)
+        for key, value in (("y", "3.0"), ("mounted", "true"), ("slot", "NO_SAFE_EXIT"),
+                           ("offer", "live"), ("history", "issued")):
+            with self.subTest(cut=key), self.assertRaises(SmokeError):
+                runner.check_saved_rider(saved, "X8_SAFE_MENU", dict(at_cut, **{key: value}))
+        with self.assertRaises(SmokeError): runner.check_saved_rider(saved, "X8_SAFE_MENU", None)
+
     def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
         state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
         self.assertEqual(["2209", "2209"], runner.check_counts(state(), state(tick="600"), "X5_EXPIRY", "the wait")["loadedChunks"])

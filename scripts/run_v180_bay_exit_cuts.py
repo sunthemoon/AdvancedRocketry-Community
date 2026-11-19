@@ -216,8 +216,17 @@ def check_saved_rider(saved: dict, case: str, at_cut: dict | None) -> None:
     under vanilla's gravity, not at the zero velocity of a seated rider (X5's exit position is its seat's). The other
     cases are recorded."""
     if CASES[case].get("flush"):
-        require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]) and saved["motion_y"] < 0,
+        require(at_cut is not None and not saved["riding"] and saved["y"] == float(at_cut["y"]),
                 f"{case}: the save after the phase does not hold the exited rider: {saved}; at the cut: {at_cut}")
+        if CASES[case]["phase"] == "SAFE":
+            require(saved["motion_y"] == 0 and (saved.get("x"), saved["y"], saved.get("z")) ==
+                    (bay.ORIGIN[0] + 0.5, bay.ORIGIN[1], bay.ORIGIN[2] + 0.5)
+                    and at_cut["mounted"] == "false" and at_cut["slot"] == "SAFE"
+                    and at_cut["offer"] == "none" and at_cut["history"] == "closed",
+                    f"{case}: the saved safe exit is not stationary on its checked pad: {saved}; at the cut: {at_cut}")
+        else:
+            require(saved["motion_y"] < 0,
+                    f"{case}: the saved falling exit lost its vanilla downward velocity: {saved}")
 
 
 def check_closed(state: dict, case: str, left: dict) -> None:
