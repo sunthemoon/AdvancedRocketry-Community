@@ -6,9 +6,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlatePressBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -21,7 +23,9 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
@@ -168,9 +172,15 @@ public final class SimpleDeviceRestartGameTests {
         private final ChunkPos chunk;
         private final GameTestTickPacer pacer;
         private Object before;
+        private boolean unloaded;
         private boolean read;
         Reload(UnlitTorchFixture f) {
             this.f = f; chunk = new ChunkPos(f.origin); pacer = new GameTestTickPacer(f.level.getServer());
+            Consumer<ChunkEvent.Unload> listener = event -> {
+                if (event.getLevel() == f.level && event.getChunk() == before) { unloaded = true; }
+            };
+            MinecraftForge.EVENT_BUS.addListener(listener);
+            f.onClose(() -> MinecraftForge.EVENT_BUS.unregister(listener));
         }
         void release() {
             before = f.level.getChunkAt(f.origin);
@@ -179,9 +189,12 @@ public final class SimpleDeviceRestartGameTests {
         boolean ready() {
             if (!read) {
                 GameTestChunkUnloadPump.drainReady(f.level);
-                if (f.level.getChunkSource().getChunkNow(chunk.x, chunk.z) != null) { pacer.pace(); return false; }
+                // A chunk stops being FULL before its pending unload callback has removed/saved the old instance.
+                if (!unloaded || f.level.getChunkSource().getChunkNow(chunk.x, chunk.z) != null) {
+                    pacer.pace(); return false;
+                }
                 f.level.setChunkForced(chunk.x, chunk.z, true);
-                if (f.level.getChunkAt(f.origin) == before) { throw new AssertionError("Chunk instance did not change"); }
+                if (f.level.getChunkAt(f.origin) == before) { throw new GameTestAssertException("Chunk instance did not change"); }
                 read = true;
             }
             if (!f.level.areEntitiesLoaded(chunk.toLong())) { pacer.pace(); return false; }
