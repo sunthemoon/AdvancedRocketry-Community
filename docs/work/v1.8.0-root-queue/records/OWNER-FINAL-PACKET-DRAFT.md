@@ -1,6 +1,6 @@
 # v1.8 所有者最终决定包（草稿）
 
-Root: Claude. Date: 2026-11-19. Root decision R521. **Status: DRAFT. 尚未交给所有者；C5 和最终实机战役的结果填入后才提交。**
+Root: Claude. Date: 2026-11-19. Root decision R521. **Status: DRAFT. 尚未交给所有者；C6 和最终实机战役的结果填入后才提交。**
 
 依据：所有者 2026-11-17 的决定（[OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md)，R456 至 R459）。设计和排序由
 Root 决定；所有者保留四类事项：Gate、版本和发布的通过、打标签和合入 `main`；以签名接受残余风险（R-044 和每个开关的
@@ -10,21 +10,21 @@ Root 决定；所有者保留四类事项：Gate、版本和发布的通过、�
 
 | 编号 | 要决定的事 | Root 建议 | 状态 |
 |---|---|---|---|
-| P1 | 签署 R-044 降级限制（完整备份恢复，修订稿） | 是 | 等 C5 重跑 `accounting-root3-old-jar` |
+| P1 | 签署 R-044 降级限制（完整备份恢复，修订稿） | 是 | 等 C6 重跑 `accounting-root3-old-jar` |
 | P2 | 把"中断的升级会留下暂存文件和备份目录"列为 v1.8 已知限制 KI-V180-UPGRADE-01 | 是 | 文本已备好（第 3 节） |
-| P3 | 发布 X03-D 操作指南，使 FF_REBUILD_SOURCE 后的整世界修复成为受支持的修复 | 是，条件是 C5 的 `cargo-X03-REPAIR` 两种世界来源都通过 | 等 C5 |
-| P4 | 卫星舱部署准入开关（`BayDeploymentSwitches.PRODUCTION_ADMISSION`） | 待定 | 等 C5，见 C5-SWITCH-REPORT 第 3 节 |
-| P5 | 物品装货开关（`EscrowCargoSwitches`，`ITEM_CARGO_LOAD`） | 待定 | 等 C5，第 4 节 |
-| P6 | 物品卸货开关（`ITEM_CARGO_UNLOAD`） | 待定 | 等 C5，第 5 节 |
-| P7 | 流体装货开关（`FLUID_CARGO_LOAD`） | 待定 | 等 C5，第 6 节 |
-| P8 | 流体卸货开关（`FLUID_CARGO_UNLOAD`） | 待定 | 等 C5，第 7 节 |
+| P3 | 发布 X03-D 操作指南，使 FF_REBUILD_SOURCE 后的整世界修复成为受支持的修复 | 是，条件是 C6 的 `cargo-X03-REPAIR` 两种世界来源都通过 | 等 C6 |
+| P4 | 卫星舱部署准入开关（`BayDeploymentSwitches.PRODUCTION_ADMISSION`） | 待定 | 等 C6，见 C6-SWITCH-REPORT 第 3 节 |
+| P5 | 物品装货开关（`EscrowCargoSwitches`，`ITEM_CARGO_LOAD`） | 待定 | 等 C6，第 4 节 |
+| P6 | 物品卸货开关（`ITEM_CARGO_UNLOAD`） | 待定 | 等 C6，第 5 节 |
+| P7 | 流体装货开关（`FLUID_CARGO_LOAD`） | 待定 | 等 C6，第 6 节 |
+| P8 | 流体卸货开关（`FLUID_CARGO_UNLOAD`） | 待定 | 等 C6，第 7 节 |
 | P9 | 燃料装填器开关（`EscrowCoordinator.PRODUCTION_ADMISSION`） | 待定 | 技术项进行中（第 5 节） |
 | P10 | 最终实机战役中需要所有者资源的安排 | 见第 6 节 | 战役开始前确认 |
 | P11 | v1.8 的 Gate、版本和发布通过，打标签，合入 `main` | 最后决定 | 全部证据齐备后 |
 | P12 | 批准资产来源记录（ADR-061 第 4.5 节：维护者的视觉和许可审核设为 APPROVED，G0 需要全部记录都已批准） | 是，在看过对照图之后 | W412 发现四条 c17a 记录没有批准块，并且一部分新增或生成资产没有最终批次记录；W414 已补写 58 条最终批次记录（覆盖 583 个资产，状态 PENDING_HUMAN_REVIEW，见 [W414](W414.md)），加上四条 c17a 记录，共 62 条待批准；26 张对照图在 `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/provenance-review/` |
 
 每个开关的"是"只把对应常量改为 `true`，作为一个单独提交，经托管 CI 后合入；"否"则该功能在 v1.8 保持关闭，关闭时的行为见
-C5-SWITCH-REPORT 各节的第一小节。签署 P1 不会打开任何开关，也不会把失败的结果改为通过。
+C6-SWITCH-REPORT 各节的第一小节。签署 P1 不会打开任何开关，也不会把失败的结果改为通过。
 
 ## 2. P1：R-044 降级限制
 
@@ -32,7 +32,7 @@ C5-SWITCH-REPORT 各节的第一小节。签署 P1 不会打开任何开关，�
 拒绝：旧版读到 schema 3 的日志（a），以及旧版读到第 3 版账本根（b）。恢复方式是整个世界文件夹替换；迁移备份目录不是完整
 备份；旧版拒绝时退出码为 0，操作员须在日志中查找 `ARCE-BETA-2001`。
 
-Root 建议签署。条件：C5 重跑 `accounting-root3-old-jar` 并得到与 W373B 相同的结果（只改动 `level.dat` 和 `level.dat_old`，
+Root 建议签署。条件：C6 重跑 `accounting-root3-old-jar` 并得到与 W373B 相同的结果（只改动 `level.dat` 和 `level.dat_old`，
 完整备份可恢复）。失败的结果保留为失败（R458）。
 
 ## 3. P2：KI-V180-UPGRADE-01 的拟定文本
@@ -59,29 +59,29 @@ R-035 已记载这一限制。Root 建议接受为 v1.8 已知限制，不改迁
 ## 4. P3 至 P8：X03-D 和五个开关
 
 - **P3。** 操作指南见 [X03-D-OPERATOR-GUIDANCE](X03-D-OPERATOR-GUIDANCE.md)。X03-B（第 2 版账本根）和 X03-C（启用记账的
-  构建）已有原生通过记录和只读审核；最终证据是 C5 上的 `cargo-X03-REPAIR`，两种世界来源都要通过（R463）。
-- **P4 至 P8。** 每个开关的风险范围、证据和剩余工作见 [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md) 第 3 至 7 节，共用部分见
-  第 8、12 和 13 节。Root 只根据 C5 本身的证据填写建议；现在每节的建议都是 PLACEHOLDER。
+  构建）已有原生通过记录和只读审核；最终证据是 C6 上的 `cargo-X03-REPAIR`，两种世界来源都要通过（R463）。
+- **P4 至 P8。** 每个开关的风险范围、证据和剩余工作见 [C6-SWITCH-REPORT](C6-SWITCH-REPORT.md) 第 3 至 7 节，共用部分见
+  第 8、12 和 13 节。Root 只根据 C6 本身的证据填写建议；现在每节的建议都是 PLACEHOLDER。
 
 ## 5. P9：燃料装填器开关
 
-清单见 [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md)：31 项前提，13 项完成，9 项部分完成，6 项未完成，3 项等 C5。
+清单见 [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md)：31 项前提，13 项完成，9 项部分完成，6 项未完成，3 项等 C6。
 本包提交前还要完成的技术项：
 
 | 项 | 内容 | 进度 |
 |---|---|---|
 | F19a | 返程证明回调时发射边界拒绝，使该返程一直保持到重启 | 已修复：W389 合入为 `7c8265395`（R522），经跨引擎审核 |
 | F19b | COMMITTED 访问中到达执行器的第二次调用 | 已修复：W390 测得超出规则后，W392 改为每次访问只计算一次，合入为 `3f7562467`（R525），经跨引擎审核 |
-| F23 | 装填器缺少的原生记账变体（流体替换、火箭侧的损失和增加、修剪中的分开保存、迁移替换后的停止） | 已补齐：W391 合入为 `7282c4be6`（R527、R528），经跨引擎审核；C5 重跑这些用例，差异向量的稳定回读由 X02 S5 覆盖 |
+| F23 | 装填器缺少的原生记账变体（流体替换、火箭侧的损失和增加、修剪中的分开保存、迁移替换后的停止） | 已补齐：W391 合入为 `7282c4be6`（R527、R528），经跨引擎审核；C6 重跑这些用例，差异向量的稳定回读由 X02 S5 覆盖 |
 | F24 | R-044 签名 | 即 P1 |
 | F14 至 F18 | 参考节点的成本、四小时 soak、真实客户端 V1 和 V2 | 最终实机战役 |
 
-在 C5 和这些项完成前，Root 不对燃料开关给出建议。
+在 C6 和这些项完成前，Root 不对燃料开关给出建议。
 
 ## 6. P10：最终实机战役需要所有者资源的安排
 
 计划见 [FINAL-CAMPAIGN-PLAN](FINAL-CAMPAIGN-PLAN.md) 第 7.3 节。按 R456，O1、O2、O3 和 O6 由 Root 采用计划中的建议：
-C5 的重启战役跑完后开始第 1 至 3 阶段，第 4 阶段前决定开关；舱和货物的实机用例在 R298 的一次性标记世界上进行；新候选只
+C6 的重启战役跑完后开始第 1 至 3 阶段，第 4 阶段前决定开关；舱和货物的实机用例在 R298 的一次性标记世界上进行；新候选只
 重复改动所涉及系统的手动用例（Root 每次列出清单）；第三方模组用例在 v1.8 记为 NOT_COVERED，移到 v1.9。下列几项用到
 所有者的时间、账户或设备，需要所有者确认：
 
@@ -100,7 +100,7 @@ W401 的分解（[CAMPAIGN-PREP-BREAKDOWN](CAMPAIGN-PREP-BREAKDOWN.md)，R535）
 
 ## 7. 还没写进本包的内容
 
-- C5 的结果和 C5-SWITCH-REPORT 的建议。
+- C6 的结果和 C6-SWITCH-REPORT 的建议。
 - 最终实机战役的结果和发布证据。
 - P11 所需的 `docs/releases/v1.8.0/RELEASE-EVIDENCE.md`。
 

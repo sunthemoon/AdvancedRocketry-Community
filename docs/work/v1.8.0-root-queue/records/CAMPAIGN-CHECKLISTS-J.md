@@ -1,13 +1,13 @@
 # Campaign checklists J: retained acceptance and gated interactions
 
 These are unrun P4 lists for J01–J29 of [the campaign](FINAL-CAMPAIGN-PLAN.md).
-They are procedures, not C5 results, switch approval or Required Gate approval. R555 identifies C5 as
-`9172113ad`; the full commit, hosted release hash and artifact path are pinned by C1 in checklist A.
+They are procedures, not C6 results, switch approval or Required Gate approval. R581 identifies C6 as
+`c8fa16e16`; the full commit, hosted release hash and artifact path are pinned by C1 in checklist A.
 Sources/API artifacts still **needs package K01**.
 Historical results in the sources are not copied into the blank result fields.
 
 Accepted common procedures for **every J row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -17,14 +17,14 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 
 H marks a harness/operator action; P marks a person's action or judgement. Each arrow gives the expected result.
 Numbered steps are performed in order, repeating an explicitly named matrix for each separate fixture copy.
-P1's identical hosted C5 JAR is required on server and clients. Use Java 17, Forge 47.4.10 without JEI for the
+P1's identical hosted C6 JAR is required on server and clients. Use Java 17, Forge 47.4.10 without JEI for the
 full pass; repeat affected compatibility smokes on 47.4.23 and with client JEI 15.56.0.205. Record the exact cell;
 JEI is not added to a server merely to label a JEI-present client run. I04 owns the complete four-cell campaign.
 Pin difficulty, distances, mods, configs and server properties before each run. No source specifies a universal
 set of coordinates or command to construct every J fixture: the P2 manifest must supply the missing values.
 
 Use P2's immutable source fixtures: representative v1.3–v1.7 worlds, the many-machine layout (W62 item 10.2),
-the API fixture mod against C5, the 64/512/2,048-block rockets, and the docs/17 reference workload world.
+the API fixture mod against C6, the 64/512/2,048-block rockets, and the docs/17 reference workload world.
 J-specific bay/cargo/fuel, progression and sleep arrangements are additions to copies of these fixtures, not
 newly claimed P2 archive names. Record source archive/hash, copied-world path, seed, dimensions, positions,
 IDs, account roles, initial resources, expected boundaries and driver revision before step 1. Never edit a source
@@ -87,7 +87,7 @@ pending; an enabling change creates a new candidate and requires affected rows a
 
 ### Evidence common to every row
 
-E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`. Keep as-run lists under `E/checklists/`,
+E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. Keep as-run lists under `E/checklists/`,
 candidate identities under `E/candidate/` and immutable source-fixture hashes under `E/fixtures/`.
 Use `phase2-v1/<machine>/<round>/`, `phase3-ds/<row>/`, `phase4-v2/<sitting>/` and `phase5-ref/<run>/`.
 Keep native `server.log`, client logs, `results.jsonl`, `summary.json`, commands, UTC step/boundary times,
@@ -104,7 +104,7 @@ source worlds and sealed evidence. Root, not these checklists, fills release rep
 **Phase/level/machine/accounts:** 2 V1, main GPU client A, packaged dedicated server; scripted then owner review.
 **Gate:** Ordinary disabled comparison plus marked campaign copy; all production admission off.
 **Preconditions:** P2 legal bay rocket and accepted/locked solar packages; Root's bounded status/cap fixture.
-Sources: [C5 switch report section 3.4 and 9.1](C5-SWITCH-REPORT.md), [owner cap decision R244](OWNER-DECISIONS-20261101.md).
+Sources: [C6 switch report section 3.4 and 9.1](C6-SWITCH-REPORT.md), [owner cap decision R244](OWNER-DECISIONS-20261101.md).
 
 1. [H] Open the bay's ordinary no-hook menu. → Disabled admission is represented honestly; inspecting it does not deploy.
 2. [H] On the gated copy, open the bay in each status prepared by the fixture. → Visible reason matches the server;
@@ -119,7 +119,7 @@ Sources: [C5 switch report section 3.4 and 9.1](C5-SWITCH-REPORT.md), [owner cap
 
 **Accepted preparation/action steps (W408):**
 
-(C1/C33) Pin the common C5 identity, not a historical candidate. Claim cap coverage only for the owner actually used by the fixture; a different owner's admission is tested only as B owning B's ordinary bay. **Needs package K11**: current menu/status/cap recipes and marked world; owner O10 supplies the two real UUIDs.
+(C1/C33) Pin the common C6 identity, not a historical candidate. Claim cap coverage only for the owner actually used by the fixture; a different owner's admission is tested only as B owning B's ordinary bay. **Needs package K11**: current menu/status/cap recipes and marked world; owner O10 supplies the two real UUIDs.
 
 **Evidence to keep:** Phase-2 disabled/status/cap screens, pending-union identities and totals, server/client logs,
 config/marker/properties, plus phase-3 restart comparison if step 6 uses that sitting.
@@ -232,13 +232,13 @@ versus unsaved-stop player/seat comparisons under phase 4. If the LAN route is m
 
 **Phase/level/machine/accounts:** 4 V2 with DS/S3 cuts, two real clients A/B; owner plus harness.
 **Gate:** Marked dedicated campaign copy; production admission off.
-**Preconditions:** [C5 sections 3.2–3.4](C5-SWITCH-REPORT.md), [W325 matrix](W325-MATRIX.md).
+**Preconditions:** [C6 sections 3.2–3.4](C6-SWITCH-REPORT.md), [W325 matrix](W325-MATRIX.md).
 Real-client cut controls/checkpoints **needs package K11**; facility-player native passes are not V2.
 The B4 native case names below come from `W331.md` section 3, not W325's older missing-fixture rows.
 Use P2 bay copies with a real seated passenger and record source present/absent, X live/absent and save boundaries.
 
 1. [H] Build the real-client case map for B3.8–B3.11, B4.6–B4.9, B8.5–B8.6 and EXIT.0–EXIT.10 below. → Ten
-   online-passenger variants and the eleven S3 exit boundaries remain separate; use C5's W331 B4 additions rather
+   online-passenger variants and the eleven S3 exit boundaries remain separate; use C6's W331 B4 additions rather
    than W325's historical missing-fixture description. Synthetic-only boundaries are not relabelled as V2.
 2. [P-B] Board the mapped passenger seat. → Server manifest, actual rider and both client views agree before the cut.
 3. [H] Stop the owned server externally at the selected S3 boundary. → Preserve whole-world state and boundary evidence;
@@ -290,13 +290,13 @@ comparisons, both videos/logs and seat states under phase 4 with phase-3 state r
 
 **Phase/level/machine/accounts:** 5 REF, normal-user reference server; harness, verified player equivalents if needed.
 **Gate:** Gated disposable reference fixture, production admission off; do not grant production admission for load.
-**Preconditions:** P2 reference load plus bay census fixture. [C5 section 9.2](C5-SWITCH-REPORT.md) and R-043
+**Preconditions:** P2 reference load plus bay census fixture. [C6 section 9.2](C6-SWITCH-REPORT.md) and R-043
 define the waits. Pin the measurement driver and boundary instrumentation before running; include **more than
 three census slots and more than two queued claims**, not just W336's development-host profiles.
 
 1. [H] Calibrate native whole-tick and boundary timestamps on the reference host. → Keep observation cost included;
    raw game-time brackets and wall time are distinguishable from exclusive service execution time.
-2. [H] Run the ten C5 timing profiles from section 3.2 on the candidate. → B12_D4, B12_D7, B13_FAILED,
+2. [H] Run the ten C6 timing profiles from section 3.2 on the candidate. → B12_D4, B12_D7, B13_FAILED,
    B13_UNKNOWN, B16_MOTION, B10_BLOCKED, RECONNECT, TURNS-2, TURNS-3 and D6_RETRY have both restart observations.
 3. [H] Run the larger census/queue workload. → Actual D6 service, per-slot and whole-queue waits are measured;
    the “about one minute/36 minutes” figures remain estimates, not maximum latency promises.
@@ -349,7 +349,7 @@ reference-host configuration, tick/RSS/GC/JFR data and restart states under phas
 **Phase/level/machine/accounts:** 2 V1, main GPU A and packaged dedicated server; scripted then owner review.
 **Gate:** O2 marked campaign copy, all production switches off.
 **Preconditions:** P2 cargo rocket copies; [W11CD leaf C-V](W11CD-DESIGN.md) and
-[C5 section 4.4](C5-SWITCH-REPORT.md). Devices are `advancedrocketrycommunity:rocket_fluid_loader`,
+[C6 section 4.4](C6-SWITCH-REPORT.md). Devices are `advancedrocketrycommunity:rocket_fluid_loader`,
 `rocket_fluid_unloader`, `rocket_item_loader`, `rocket_item_unloader` in that namespace, not the fuel loader.
 Pin a 64,000 mB cargo tank and a supported vanilla chest/barrel payload, four-slot item buffers and exact stacks.
 
@@ -450,7 +450,7 @@ cycle table, capture/apply/hash/publication samples and host/tick/RSS/GC records
 
 **Phase/level/machine/accounts:** 5 REF, normal-user reference server; harness with pinned load actors.
 **Gate:** Gated disposable mixed fixture, all production admission off.
-**Preconditions:** J05/J08 workload, R-043/R438 and [C5 section 9.2 rows 6 and 14](C5-SWITCH-REPORT.md).
+**Preconditions:** J05/J08 workload, R-043/R438 and [C6 section 9.2 rows 6 and 14](C6-SWITCH-REPORT.md).
 Pin real concurrent bay D4/D5, four-kind cargo preparation, F1, W98 and sealed-disassembly capture workloads.
 
 1. [H] Run the cargo-only baseline. → Keep aggregate work/visits/capture grants and per-request wait intervals.
@@ -501,7 +501,7 @@ generated-but-cold controls are distinct; generated controls are saved by a sepa
    no repaired/replaced source or artificial destination ticket.
 10. [H] Compare all-tick, active-work and checkpoint-bearing cohorts separately. → Nearest-rank percentiles keep
     cold generation, first-use/relaunch and callbacks; no observer subtraction. W207's 118.937–164.162 ms checkpoint
-    P99 and 131.482 ms restart relaunch are historical failures, not C5/reference results or exemptions.
+    P99 and 131.482 ms restart relaunch are historical failures, not C6/reference results or exemptions.
 
 **Accepted preparation/action steps (W408):**
 
@@ -561,12 +561,12 @@ SINGULARITY station contexts. Pin matching client celestial snapshots and statio
    tick by setting, at most 8 attempts between ticks/128 tracked; off produces no accent motes and moves no actor.
 5. [P] Change context/Level, disconnect and reload resources in separate views. → Old motes/mesh context clears;
    unknown/missing context uses fallback, not a stale black hole.
-6. [P] Record the owner's judgement on colours, sizes and mote density. → Keep/change is specific to C5/GPU/view;
+6. [P] Record the owner's judgement on colours, sizes and mote density. → Keep/change is specific to C6/GPU/view;
    tuning requests are findings and a changed JAR requires a new candidate, not silent screenshot replacement.
 
 **Accepted preparation/action steps (W408):**
 
-(C38) Enumerate sound-producing sky contexts from C5's delivered K13 producer map, not W16's older list; use an audio-enabled profile. **Needs package K13**: that live profile, **needs package K16**: orbit/control scene. Owners O9/O12 arrange second GPU and sitting time; audio is not proved by screenshots.
+(C38) Enumerate sound-producing sky contexts from C6's delivered K13 producer map, not W16's older list; use an audio-enabled profile. **Needs package K13**: that live profile, **needs package K16**: orbit/control scene. Owners O9/O12 arrange second GPU and sitting time; audio is not proved by screenshots.
 
 **Evidence to keep:** Labeled sky/black-hole/Earth-disc videos and screens, context/switch/reload records, both GPU
 identities and owner judgement under phase 2; E06 supplies its full independent two-GPU sky matrix.
@@ -593,10 +593,10 @@ Moon dimension-type `fixed_time=18000`; record game time, local day time and sky
 
 **Accepted preparation/action steps (W408):**
 
-(C38) Keep C5's producer map and audio-enabled profile, not old W16 paths; fixed-midnight D12 remains unchanged. **Needs package K13**: live audio profile; **needs package K16**: actual Moon/time scene. O9/O12 supply hardware/time.
+(C38) Keep C6's producer map and audio-enabled profile, not old W16 paths; fixed-midnight D12 remains unchanged. **Needs package K13**: live audio profile; **needs package K16**: actual Moon/time scene. O9/O12 supply hardware/time.
 
 **Evidence to keep:** Time-stamped before/after/re-entry Moon screens/video, runtime type/time observations, candidate/GPU
-identity and owner's C5 confirmation under phase 2.
+identity and owner's C6 confirmation under phase 2.
 **Actual:**
 **Screenshot or video:**
 **Tester:**
@@ -638,18 +638,18 @@ ridden readout video and both-client independent-layout views under phases 2/4.
 **Date:**
 **Build hash:**
 
-## J15 — C5 audio seams, ranges and caps
+## J15 — C6 audio seams, ranges and caps
 
 **Phase/level/machine/accounts:** 2 V1, real GPU/audio output A; owner listens.
 **Gate:** Ordinary P2 many-source fixture; production admission off.
 **Preconditions:** [W16](W16.md), [D5 of 2026-11-04](OWNER-DECISIONS-20261104.md).
 The ten approved NEW sounds are air_hiss_loop, basic_laser_gun, combustion_rocket, electric_shock_small,
 gravity_controller, laser_drill, lathe, machine_large, railgun_bang and rolling_machine. Prior audio approval
-is not C5 playback evidence. Pin source coordinates, audio settings and actual producer/preview paths.
+is not C6 playback evidence. Pin source coordinates, audio settings and actual producer/preview paths.
 
 1. [P] Listen to each of the ten candidate sounds through its actual trigger where available. → Keep the D5 sound
    design; disclose preview-only/unbound sources (notably historical machine_large), rather than claiming a producer.
-   C5's preview command is `/playsound advancedrocketrycommunity:<id> master <A>` (W402 section 5, R546).
+   C6's preview command is `/playsound advancedrocketrycommunity:<id> master <A>` (W402 section 5, R546).
 2. [P] Listen through several complete cycles of each loop. → No unintended seam/click/stutter on this audio device.
 3. [P] Approach an inactive loop source from beyond 32 to within 30 blocks. → Loop begins within the 30-block start range.
 4. [P] Walk away past 32 blocks. → The loop stops beyond 32; the 30–32 band is hysteresis, not repeated start/stop.
@@ -664,10 +664,10 @@ is not C5 playback evidence. Pin source coordinates, audio settings and actual p
 
 **Accepted preparation/action steps (W408):**
 
-(C38; W402 section 5, R546) Use the C5 sound-events/producer tables: eleven events, including `ui_select` from machine casing. `lathe` has lathe/precision-laser-etcher producers, `rolling_machine` has rolling-machine/chemical-reactor producers, and the laser gun has its item; `machine_large` alone remains preview-only. Preview in namespace `advancedrocketrycommunity`, never `_v180`. **Needs package K13**: actual audio-enabled profile/producer placements; **needs package K16**: integrated pause/control round. O9/O12 supply hardware/time.
+(C38; W402 section 5, R546) Use the C6 sound-events/producer tables: eleven events, including `ui_select` from machine casing. `lathe` has lathe/precision-laser-etcher producers, `rolling_machine` has rolling-machine/chemical-reactor producers, and the laser gun has its item; `machine_large` alone remains preview-only. Preview in namespace `advancedrocketrycommunity`, never `_v180`. **Needs package K13**: actual audio-enabled profile/producer placements; **needs package K16**: integrated pause/control round. O9/O12 supply hardware/time.
 
 **Evidence to keep:** Audio-bearing recording, per-sound trigger/preview table, range coordinates and distances,
-cap/lifecycle logs, C5 JAR and audio hardware/settings under phase 2. Owner records any C5 regression separately from D5 approval.
+cap/lifecycle logs, C6 JAR and audio hardware/settings under phase 2. Owner records any C6 regression separately from D5 approval.
 **Actual:**
 **Screenshot or video:**
 **Tester:**
@@ -697,7 +697,7 @@ Server disables classic equipment; client keeps its default, so client configura
 
 **Accepted preparation/action steps (W408):**
 
-(C38; J21 A-F5/A-F7/B-2) At scale 3 in both languages, open railgun, black-hole generator, drill and target with longest reason lines: fit with full hover. Have a non-owner legitimately click railgun Launch with screen open: visible `UNAUTHORIZED` inside; on elevator Ride, keep the screen open and read "Ride starting". With server `equipment.classicEnabled=false`/client default, mine obsidian for 2.5 seconds: disabled notice at START, at most once/20 ticks, no progress/drop/durability debit. C5 producer inventory/audio-enabled profile **needs package K13** live qualification; regenerated scene/actions **needs package K16**. R546 refusal proof applies; N4's client-tooltip mismatch is accepted design, not a demanded sync change.
+(C38; J21 A-F5/A-F7/B-2) At scale 3 in both languages, open railgun, black-hole generator, drill and target with longest reason lines: fit with full hover. Have a non-owner legitimately click railgun Launch with screen open: visible `UNAUTHORIZED` inside; on elevator Ride, keep the screen open and read "Ride starting". With server `equipment.classicEnabled=false`/client default, mine obsidian for 2.5 seconds: disabled notice at START, at most once/20 ticks, no progress/drop/durability debit. C6 producer inventory/audio-enabled profile **needs package K13** live qualification; regenerated scene/actions **needs package K16**. R546 refusal proof applies; N4's client-tooltip mismatch is accepted design, not a demanded sync change.
 
 **Evidence to keep:** Drill translations, banner appearance/expiry/clear video, disabled START timing and resource/tool
 comparison, both-client refusal/railgun video and logs under phases 2/4.
@@ -712,7 +712,7 @@ comparison, both-client refusal/railgun video and logs under phases 2/4.
 **Phase/level/machine/accounts:** 3 DS restart setup; 4 V2, eligible participant A and nonparticipant B; both.
 **Gate:** Production admission off. **No `arce.releaseTest.firstEventCut` property or headless halt seam** in real-client runs.
 **Preconditions:** [W44I “Not done”](W44I.md), [W44 design sections 3 and 6](W44-DESIGN.md).
-Debugger breakpoints, owned PIDs and exact C5 source lines **needs package K12**. Use controlled external stop X,
+Debugger breakpoints, owned PIDs and exact C6 source lines **needs package K12**. Use controlled external stop X,
 not headless H: gate relaxation is forbidden. Actual criterion oracle is vanilla `AdvancementProgress` plus
 saved player advancement JSON for `classic/one_small_step` or `classic/first_station_warp`; a receipt alone is insufficient.
 Moon C-M means A aboard the unique completing rocket/B watching without a seat. Station C-W means A eligible
@@ -848,7 +848,7 @@ analysis credit 120 points. Record starting balances, job/instance and device UU
 
 **Accepted preparation/action steps (W408):**
 
-(C41) Read UI strings and section-7 effective values from C5 before using the numeric controls. Produce owner, competitor, rebind, full-account and pause variants only by ordinary player actions on complete copies; never edit balances or force-load a chunk. **Needs package K14**: real values, scenes and variant recipes.
+(C41) Read UI strings and section-7 effective values from C6 before using the numeric controls. Produce owner, competitor, rebind, full-account and pause variants only by ordinary player actions on complete copies; never edit balances or force-load a chunk. **Needs package K14**: real values, scenes and variant recipes.
 
 **Evidence to keep:** Both menus/rotations/languages and live-job video, FE/points/job/instance before/after, owner
 refusals, pause/rebind/restart records and both clients' logs under phases 2/4 with phase-3 references.
@@ -890,7 +890,7 @@ coordinates and survival/creative reopen views, named-pad refusal duration/actio
 **Date:**
 **Build hash:**
 
-## J21 — Earlier real-client findings repeated on C5
+## J21 — Earlier real-client findings repeated on C6
 
 **Phase/level/machine/accounts:** 2 DS/V1 main GPU A; packaged restarts in phase 3 where required; scripted.
 **Gate:** Ordinary copies except explicitly marked J fuel/cargo/bay follow-ups; all production switches off.
@@ -925,13 +925,13 @@ An old report's offline Forge 47.4.22 profiles are not campaign profiles.
 8. [H] Repeat rounds 7–8 regressions. → High-seat disconnect/assignment cleanup, console reopening, compressed text,
    tooltip IDs, named-pad refusal persistence, authoritative versus last-refusal text, rocket-box interaction trade-off
    and removed-station `/arcepad list` wording are all recorded, including remaining untested side-seat/multiplayer cases.
-9. [H] Compare all findings with C5 code and current owner decisions. → Fixed items have fresh reproducer evidence;
+9. [H] Compare all findings with C6 code and current owner decisions. → Fixed items have fresh reproducer evidence;
    accepted limitations cite their scoped decision (for example fixed-midnight Moon); unresolved/missing cases are
    FAIL/NOT_COVERED, never a blanket pass on merged-task status.
 
 **Accepted preparation/action steps (W408):**
 
-(C42; R542) Use `J21-FINDING-MAP.md` for all 74 historical findings. Each has one base disposition: fixed (task/commit), known issue, matches design, or recheck on C5; a fixed item not yet seen in a client also owes its recheck. All fixed items still get fresh C5 evidence under original step 9. The 21 owed rechecks and N15-N19 below are actions, not closed results. K19's map is delivered; **needs package K16**: current-viewpoint/control batches, plus K14's physical scenes. Missing native receipt/control means NOT_COVERED with reason, not a blanket merged-task pass.
+(C42; R542) Use `J21-FINDING-MAP.md` for all 74 historical findings. Each has one base disposition: fixed (task/commit), known issue, matches design, or recheck on C6; a fixed item not yet seen in a client also owes its recheck. All fixed items still get fresh C6 evidence under original step 9. The 21 owed rechecks and N15-N19 below are actions, not closed results. K19's map is delivered; **needs package K16**: current-viewpoint/control batches, plus K14's physical scenes. Missing native receipt/control means NOT_COVERED with reason, not a blanket merged-task pass.
 
 **Candidate recheck actions (C42/R542; all must retain individual results).**
 `J21-FINDING-MAP.md` section 4 supplies these scene,
@@ -990,7 +990,7 @@ N23 is accepted action-bar-only loader feedback: actually read it in both
 languages (J23/J25), not merely quote the design. N15-N19 remain rechecks
 above, never automatically accepted or passed.
 
-**Evidence to keep:** Finding-to-task/batch/disposition matrix, original-reference hashes, every C5 repro result and
+**Evidence to keep:** Finding-to-task/batch/disposition matrix, original-reference hashes, every C6 repro result and
 failure attempt, screens/video, restart/state comparisons and native logs under phases 2/3. Preserve sealed old reports unchanged.
 **Actual:**
 **Screenshot or video:**
@@ -1002,17 +1002,17 @@ failure attempt, screens/video, restart/state comparisons and native logs under 
 
 **Phase/level/machine/accounts:** 3 packaged DS/S2, harness on development host; no real clients for headless-only cuts.
 **Gate:** Existing per-family release-test gates only; all production admission off, no widened hook permissions.
-**Preconditions:** P1 C5 JAR/hash and source, P2 immutable fixtures, free disk and exclusive heavy-JVM lock.
+**Preconditions:** P1 C6 JAR/hash and source, P2 immutable fixtures, free disk and exclusive heavy-JVM lock.
 Sources: [current S1 status](../../../status/CURRENT_VERSION.md), [owner brief item 5](OWNER-BRIEF-20261103.md),
-R386/R438, [current integrated runner](../../../../scripts/run_v180_integrated_campaign.py) and C5 report.
+R386/R438, [current integrated runner](../../../../scripts/run_v180_integrated_campaign.py) and C6 report.
 Pin explicit historical G2, downgrade, X03 root-2 and C3 reader JARs/hashes/commits; never guess a historical artifact.
 
-1. [H] Freeze the current runner's complete family plan on P1's candidate. → Expected inventory is the C5 report's
+1. [H] Freeze the current runner's complete family plan on P1's candidate. → Expected inventory is the C6 report's
    78 families at this source; explain a changed selection before execution, not by editing a result after the fact.
 2. [H] Dry-run the exact selected command below with `--dry-run` appended. → No unmet requirement; no native start.
 
    ```text
-   python -B scripts/run_v180_integrated_campaign.py --candidate-commit <full-C5-SHA> --jar <P1-jar> --jar-sha256 <P1-hash> --template <P3-template> --evidence-root <new-J22-attempt> --java <Java17-executable> --old-jar <G2-jar> --old-source-commit <G2-SHA> --downgrade-old-jar <W176-jar> --downgrade-old-jar-sha256 <W176-hash> --x03-root-2-jar <X03-jar> --x03-root-2-jar-sha256 <X03-hash> --x03-root-2-commit <X03-SHA> --root2-jar <C3-jar> --root2-jar-sha256 <C3-hash>
+   python -B scripts/run_v180_integrated_campaign.py --candidate-commit <full-C6-SHA> --jar <P1-jar> --jar-sha256 <P1-hash> --template <P3-template> --evidence-root <new-J22-attempt> --java <Java17-executable> --old-jar <G2-jar> --old-source-commit <G2-SHA> --downgrade-old-jar <W176-jar> --downgrade-old-jar-sha256 <W176-hash> --x03-root-2-jar <X03-jar> --x03-root-2-jar-sha256 <X03-hash> --x03-root-2-commit <X03-SHA> --root2-jar <C3-jar> --root2-jar-sha256 <C3-hash>
    ```
 
 3. [H] Run the same command without `--dry-run` and without `--only`. → Every family executes with the same candidate;
@@ -1021,18 +1021,18 @@ Pin explicit historical G2, downgrade, X03 root-2 and C3 reader JARs/hashes/comm
    save/cut boundaries, replay and refusal expectations hold; source worlds and historical evidence remain unchanged.
 5. [H] Reconcile totals and failures with the full plan. → Keep expected downgrade failures, ordinary-route exclusions,
    unobservable E4 residuals, fixture failures and NOT_COVERED separately; no full-campaign PASS from a process exit alone.
-6. [H] Refill candidate-specific results and the switch/fuel reports through Root's report task. → Actual C5 family
+6. [H] Refill candidate-specific results and the switch/fuel reports through Root's report task. → Actual C6 family
    evidence replaces PENDING only where supported, never copied from C1/C2/C3 or this unrun checklist.
-7. [H] Run the separately selected C5 X01 S3 and X02 S5 campaigns under their own approved plans. → They remain
+7. [H] Run the separately selected C6 X01 S3 and X02 S5 campaigns under their own approved plans. → They remain
    separately accounted: this runner's 78 families do not imply all external storage/fault evidence is complete.
 
 **Accepted preparation/action steps (W408):**
 
-(C43) Root reviews the actual C5 outputs with a retained hashed manifest. Keep X01, X02, failed downgrade verdicts and open risk decisions as distinct result rows, never mark an entire family passed by assumption. Historical JAR/source identities still **needs package K01** / **needs package K02** and the per-family manifests **needs package K12**. Root's finished-output review is a Root action, not an invented package or verdict.
+(C43) Root reviews the actual C6 outputs with a retained hashed manifest. Keep X01, X02, failed downgrade verdicts and open risk decisions as distinct result rows, never mark an entire family passed by assumption. Historical JAR/source identities still **needs package K01** / **needs package K02** and the per-family manifests **needs package K12**. Root's finished-output review is a Root action, not an invented package or verdict.
 
 **Evidence to keep:** Exact dry/full commands and runner revision, full family/case inventory, candidate and historical
-artifact identities, raw per-start logs/results/state/hash comparisons and aggregate report under phase 3. C5's existing
-`D:/GitHub/ARCE-Task-Evidence/root-queue/C5/` may be referenced by a hashed manifest, not modified or relabelled blindly.
+artifact identities, raw per-start logs/results/state/hash comparisons and aggregate report under phase 3. C6's existing
+`D:/GitHub/ARCE-Task-Evidence/root-queue/C6/` may be referenced by a hashed manifest, not modified or relabelled blindly.
 **Actual:**
 **Screenshot or video:**
 **Tester:**
@@ -1048,7 +1048,7 @@ single-Fluid local tank, exact server-owned binding, same-Level FULL device/rock
 Actor interaction is within 8 blocks; endpoints are within 6. The rocket is stationary, ASSEMBLED/FUELED/LANDED,
 with one unambiguous compatible propulsion bank and no unproved transfer/assembly/bay/flight hold.
 An assigned seat, actual passenger or anything riding makes it busy; walking away is not proof the assignment cleared.
-Owner-only access has no OP bypass. Pin C5's actual menu controls, boundary-hold driver and probe commands first;
+Owner-only access has no OP bypass. Pin C6's actual menu controls, boundary-hold driver and probe commands first;
 the design does not give those invocation spellings. Do not introduce code or hidden client state to fill that gap.
 
 For a single-operation control: device 5,000 mB, bank 0, one 1,000 mB move gives 4,000/1,000. A partial control
@@ -1272,7 +1272,7 @@ binding/seat state and raw/available totals at each boundary under phase 4, plus
 
 ## Open questions for Root
 
-- **Answered:** C1 candidate, W399 sessions/commands, W400 cells, W403 bounded observers/seals; C33-C44 cap scope, LAN/expiry non-coverage, per-variant dispositions, comparison/wait rules, REF first-event requirement, C5 audio, X-only cuts, unimplemented respawn extension, ordinary research variants, C42 findings and owner-only fuel views. R542 decides each residual; R546 fixes preview and refusal proof.
+- **Answered:** C1 candidate, W399 sessions/commands, W400 cells, W403 bounded observers/seals; C33-C44 cap scope, LAN/expiry non-coverage, per-variant dispositions, comparison/wait rules, REF first-event requirement, C6 audio, X-only cuts, unimplemented respawn extension, ordinary research variants, C42 findings and owner-only fuel views. R542 decides each residual; R546 fixes preview and refusal proof.
 - **All J rows:** source/API/historical identities **needs package K01** / **needs package K02**; current manifests **needs package K11**, **needs package K12**, **needs package K14** or **needs package K16** as each row specifies. Direct raw-tick/cache/all-ticket integration **needs package K15**. O10/O11/O12 supply UUIDs/node access/sitting arrangements.
 - **J01/J02:** cap/menu/held-rocket/pad/seat recipes **needs package K11**. J03 remains NOT_COVERED while switches off/no LAN gate; an owner-enabled different candidate is not authorized here.
 - **J04:** all 21 variants have individual synthetic-only/native references for this pass. Potential real-client external-stop recipes each **needs package K11** before changing coverage; EXIT.5 real-client expiry is unreachable.
@@ -1280,7 +1280,7 @@ binding/seat state and raw/available totals at each boundary under phase 4, plus
 - **J11:** actual-event REF run **needs package K12** / **needs package K15**. An over-budget tick opens R245's separate designed/reviewed task, not a waiver.
 - **J12-J16:** producer tables/long-text pack are delivered; audio-enabled live profile **needs package K13**, scene/pause/recheck batches **needs package K16**. O9/O12 supply machine/time. Preview uses the corrected namespace.
 - **J17:** fourteen external-stop/save/deferral recipes and real award probes **needs package K12**; connected-player H cuts remain forbidden.
-- **J18/J19:** freeze/B1/R1 qualification and ordinary owner/competitor/rebind/full-account/pause scenes/C5 values **needs package K14**. The planet-point extension is not a test.
+- **J18/J19:** freeze/B1/R1 qualification and ordinary owner/competitor/rebind/full-account/pause scenes/C6 values **needs package K14**. The planet-point extension is not a test.
 - **J20/J21:** K19 map is delivered; all 21 owed rechecks, all Fixed finding evidence and N15-N19 actions **needs package K16** batches plus **needs package K14** scenes; disc **needs package K10**, station/warp **needs package K08**, machines **needs package K05**. Missing receipt probes **needs package K18**.
 - **J22:** historical/per-family manifests **needs package K12**, JAR/source identities **needs package K01** / **needs package K02**. Root reviews finished output hashes; X01/X02, downgrade verdicts and risk decisions remain separate.
 - **J23-J29:** menus/permitted B views/holds/probes/legitimate seat-clear and refusal recipes **needs package K11**; no invented packet or forced owner-menu access.

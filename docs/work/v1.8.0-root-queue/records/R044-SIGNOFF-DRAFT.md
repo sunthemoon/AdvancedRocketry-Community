@@ -3,11 +3,12 @@
 | Item | Value |
 |---|---|
 | Status | **DRAFT, not signed.** Root wrote it on 2026-11-13 under Root decision R433 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). R-044 stays unaccepted until the owner signs. On 2026-11-19 Root added section 5, the revised text for both format boundaries, which replaces section 1 for signing once candidate C4 repeats the root-3 case. The same day Root corrected item 4 of section 1: the Chinese text said the backup taken before the upgrade, but W176 and W336 restored the backup taken before the downgrade, as the English rendering already said. |
-| Kept as failed | `cargo-G2-REUSE` rows 3 to 5 and `w336-downgrade` on candidate C3, W176's three downgrade rows, and W373B's `accounting-root3-old-jar`, with C5's reruns of these families, stay FAIL in every record before and after a signature. No assertion is relaxed or waived. |
+| Kept as failed | `cargo-G2-REUSE` rows 3 to 5 and `w336-downgrade` on candidate C3, W176's three downgrade rows, and W373B's `accounting-root3-old-jar`, with C6's reruns of these families, stay FAIL in every record before and after a signature. No assertion is relaxed or waived. |
 | Register | The downgrade paragraph of R-044 in the [risk register](../../../11-RISK-REGISTER.md) (Root decision R138). |
 | Evidence | [W176](W176.md), [W336](W336.md), C3's `cargo-G2-REUSE` and `w336-downgrade` ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 2.1, 8.5 and 9.3), and W373B's `accounting-root3-old-jar` ([W373B](W373B.md); evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W373B/campaign2/accounting-root3-old-jar-attempt2/`). |
 
 R555 (2026-11-20) supersedes C4 with C5 for the pending repetition and final packet; C4's record remains history.
+R581 (2026-11-21) now selects C6 for that pending repetition and packet; C5's pre-run is history.
 
 ## 1. Proposed text for the owner to sign
 
@@ -92,8 +93,8 @@ W373B ran C3's JAR on a world whose escrow ledger the activated build had upgrad
 section 3 and observation O1 of [W373B](W373B.md)). Root also decoded the three
 worlds that case archived after each refused start (`old-0-world.zip` to `old-2-world.zip`). In each, `level.dat`
 differed from the previous one only in `/Data/LastPlayed`. `level.dat_old` was the previous `level.dat`. The block and
-item registries kept all 1,137 and 1,506 entries. The text below replaces section 1 for signing. Candidate C5 runs the
-same case on its own JAR. If C5's result differs from W373B's, Root revises the text again before it goes to the
+item registries kept all 1,137 and 1,506 entries. The text below replaces section 1 for signing. Candidate C6 runs the
+same case on its own JAR. If C6's result differs from W373B's, Root revises the text again before it goes to the
 owner.
 
 > **R-044 降级限制签核（完整备份恢复，修订稿）**
@@ -111,7 +112,7 @@ owner.
 >    - **继续使用 v1.8。** 用降级前的完整备份恢复，再用 v1.8 启动。实测 (a)：恢复后所有哈希一致，候选 JAR 的两次后续启动都没有 ERROR，五个设备根都保留。对于 (b)，也可以不恢复，直接用 v1.8 启动被拒绝的世界。实测：两次启动都没有 ERROR，账本仍为 root 3，遗留操作字节不变并仍处于保留状态。对于 (a)，不恢复备份就直接用 v1.8 打开被改写的世界，没有证据支持，不受支持。
 >    - **回到旧版。** 用升级到 v1.8 之前的完整备份恢复，再用旧版启动；在 v1.8 上进行的一切都会丢失。实测 (b)：恢复的 root 2 世界在 C3 的 JAR 上通过数据检查，未完成的转移恰好完成一次。
 > 5. **运营要求。** 升级到 v1.8 之前，以及任何降级尝试之前，都必须做完整世界备份。发布说明和升级说明写明这一点，写明降级就是恢复升级前的备份，并写明旧版 JAR 拒绝时进程退出码为 0，须以日志中的 `ARCE-BETA-2001` 为准。
-> 6. **保留失败结果。** W176 的三条降级行、C3 的 `cargo-G2-REUSE` 第 3 至 5 行和 `w336-downgrade`、W373B 的 `accounting-root3-old-jar`，以及 C5 对这些族的重跑，继续记为失败；本签核不放宽、不豁免任何断言，也不把失败改为通过。
+> 6. **保留失败结果。** W176 的三条降级行、C3 的 `cargo-G2-REUSE` 第 3 至 5 行和 `w336-downgrade`、W373B 的 `accounting-root3-old-jar`，以及 C6 对这些族的重跑，继续记为失败；本签核不放宽、不豁免任何断言，也不把失败改为通过。
 > 7. **不包括。** 本签核只接受上述降级残余风险。它不接受 R-044 的其他部分（不受支持的设备根、256 坐标共享池等），不开启任何生产开关，不批准任何 Gate、版本或发布。
 > 8. **复审条件。** v1.9.0 发布前复审；转移日志 schema、托管账本 root、方块或物品注册 ID、或世界元数据的写入方式发生变化时，本签核失效，需要重新签核。
 >
@@ -152,7 +153,7 @@ owner.
    notes and the upgrade instructions say so, say that a downgrade means restoring the pre-upgrade backup, and say that
    an older JAR's refusal exits with code 0, so the log line `ARCE-BETA-2001` is what counts.
 6. **Failures kept.** W176's three downgrade rows, C3's `cargo-G2-REUSE` rows 3 to 5 and `w336-downgrade`, W373B's
-   `accounting-root3-old-jar`, and C5's reruns of these families stay failed. The signature relaxes and waives no
+   `accounting-root3-old-jar`, and C6's reruns of these families stay failed. The signature relaxes and waives no
    assertion and turns no failure into a pass.
 7. **Not included.** Unchanged from section 1, item 7.
 8. **Re-review.** Before v1.9.0 is released. The signature lapses, and needs a new one, if the transfer journal's
@@ -161,6 +162,6 @@ owner.
 **Root's choices in the revised text, which the owner can change:**
 
 - **Starting v1.8 on a world refused at boundary (b).** Root lists it as supported. A refused start at (b) changed
-  only what every normal start changes (LastPlayed and the rotation), and two later starts were measured. C5 repeats
+  only what every normal start changes (LastPlayed and the rotation), and two later starts were measured. C6 repeats
   the case. A narrower text drops the sentence, and then (b) also needs the pre-downgrade backup.
 - **Items 1 and 8.** The same choices as in section 2 apply.
