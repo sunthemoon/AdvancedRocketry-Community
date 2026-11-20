@@ -11,7 +11,20 @@ Create a session JSON outside Git. Paths are absolute or relative to that JSON.
 The cell follows schema 1 and identifies Forge 47.4.10 or 47.4.23, its isolated
 runtime, server and client template, candidate path/SHA-256 and optional JEI
 path/SHA-256. The candidate must occur exactly once in both mods directories.
-JEI is detected by filename and mod metadata, including renamed JARs.
+JEI is detected only from `[[mods]]` declarations in each JAR's `mods.toml`,
+including renamed JARs. Optional dependencies and filenames do not establish
+that JEI is installed. Metadata is limited to 1 MiB and 256 mod declarations.
+
+Schema 1 accepts the original fields or the extended manifest with both `mods`
+and `server_forge_args`. The extended manifest's `mods.server` and `mods.client`
+arrays contain 1–256 `{path, sha256}` records each, covering exactly the JARs in
+that side's mods directory. Each recorded file must exist within the cell and
+match its hash; candidate and JEI records must identify listed client files.
+`server_forge_args` uses the same record format and must identify the selected
+server's `libraries/net/minecraftforge/forge/1.20.1-<forge>/win_args.txt` with its
+matching hash. The runtime input may remain outside the cell. Paths resolve
+relative to `cell.json`; unknown fields, partial extensions and other schema
+versions are refused.
 
 Example disposable single-client dedicated-server session:
 
