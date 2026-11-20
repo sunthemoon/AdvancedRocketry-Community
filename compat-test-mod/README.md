@@ -82,8 +82,17 @@ directory, not a remote repository URL.
 
 ## Inspect the boundary
 
-`build` runs two finite checks, also available individually:
+The project applies and packages its own
+[`accesstransformer.cfg`](src/main/resources/META-INF/accesstransformer.cfg), not
+the host's transformer. It exposes only vanilla `ServerLevel.entityManager` and
+`PersistentEntitySectionManager.storeChunkSections`, needed by the shared pending
+request GameTest fixture to trigger real entity saves. The complete shared fixture
+still compiles; this does not expose any host implementation class or add one to
+the consumer classpath.
 
+`build` runs three finite checks, also available individually:
+
+- `verifyFixtureAccessTransformer` pins those exact two platform access rules.
 - `verifyApiClasspath` records requested/resolved coordinates, raw publication
   and remapped API hashes, the complete compiler classpath, and fixture source
   hashes. It requires the 27 exported API 1.7 classes and rejects host internals,
@@ -92,7 +101,8 @@ directory, not a remote repository URL.
   same classpath, requires the missing internal-package diagnostic, and checks
   the final reobfuscated fixture JAR for bundled host/API/platform classes. It
   reads the published normal host JAR to confirm the internal class exists,
-  without ever adding that JAR to the compiler classpath.
+  without ever adding that JAR to the compiler classpath. It also requires the
+  packaged transformer to match the audited fixture-owned file byte for byte.
 
 Reports are written to `compat-test-mod/build/reports/consumer/`. The resulting
 mod is `compat-test-mod/build/libs/arce-adapter-compat-test-1.0.0.jar`.
