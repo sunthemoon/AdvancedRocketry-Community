@@ -246,3 +246,24 @@ Root accepts or rejects each one. None is accepted by default, and none is count
   text; ancestry was checked, the merge content was not.
 
 Validator result: `python -B scripts/validate_repository.py` ended with "Summary: 45 passed, 0 pending, 0 warnings, 0 failed", with this record staged.
+
+## 8. Root decision R542
+
+Root (Claude) reviewed this record on 2026-11-20 and accepted it. The residuals of section 5 are decided as
+follows. No decision here changes product code, signs a risk or marks a Gate.
+
+| Residual | Decision |
+|---|---|
+| N1 | Accepted as a known issue: KI-V180-CONNECT-01 in the v1.8.0 known issues. Row A18 measures the rate (C6). |
+| N2 | Accepted as the current balance. No v1.8 change; a balance review belongs to v1.9. |
+| N3 | Accepted as a known issue: KI-V180-CONFIG-01 covers the client file beside W295's COMMON rule. |
+| N4 | Accepted as the design: the client cannot know a server-side switch without a new sync, which v1.8 does not add. |
+| N5 to N8, N12 | Accepted as the design, with the sources the table names. |
+| N9 | Accepted as W233's design. Phase 2's screenshots of formed machines show it to the owner; it is not hidden. |
+| N10, N11, N13 | Accepted as Low findings: KI-V180-UI-01. A fix changes menu data or screens and is left to v1.9, under the plan's rule for Low findings. |
+| N14, N24 | Accepted: KI-V180-USER-01 lists them with their user documents. |
+| N15 to N19 | Not accepted as untested: package K20 adds each as a recheck step to the checklist row the table names, or to J21. |
+| N20 | Accepted as the design (any entry is a visit; an operator teleport is an administrative act): KI-V180-USER-01 states it. |
+| N21, N22 | Accepted: vanilla movement warnings with no effect, the one intended first-event WARN per world entry, and the dedicated server printing language keys because servers load no client language files. |
+| N23 | Accepted as the design: the action bar is the loader's feedback channel; the campaign checks that the line is visible and readable in both languages. |
+| Report A | K20 names the 2026-10-06 report in J21's preconditions and adds steps for A-F4 (the disc seen from above) and A-F10c (the rocket's entity name). |
