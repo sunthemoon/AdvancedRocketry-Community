@@ -133,6 +133,7 @@ class CellCheckTests(unittest.TestCase):
         self.assertEqual(1, len(result["native_findings"]))
 
     def test_explicit_offline_and_known_forge_warning(self):
+        self.assertEqual(4, len(check.OFFLINE_WARNINGS))
         lines = [f"[12:00:00] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: {s}"
                  for s in sorted(check.OFFLINE_WARNINGS)]
         lines.append("[12:00:00] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: "
@@ -140,6 +141,8 @@ class CellCheckTests(unittest.TestCase):
         result = self.audit(lines)
         self.assertEqual([], result["unexpected_warnings"])
         self.assertEqual([], result["native_findings"])
+        self.assertEqual(4, result["expected_counts"]["explicit-offline-mode"])
+        self.assertEqual(1, len(self.audit(lines + [lines[0]])["unexpected_warnings"]))
 
     def test_packaged_missing_refmap_is_not_excused_as_userdev(self):
         result = self.audit(["[12:00:00] [main/WARN] [mixin/]: Reference map 'advancedrocketrycommunity.refmap.json' "

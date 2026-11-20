@@ -36,6 +36,7 @@ HEADER = re.compile(r"\[(?:[^\]]+)/(?P<level>WARN|ERROR|FATAL)\] \[(?P<logger>[^
 OFFLINE_WARNINGS = {
     "**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!",
     "The server will make no attempt to authenticate usernames. Beware.",
+    "While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.",
     'To change this, set "online-mode" to "true" in the server.properties file.',
 }
 
@@ -130,7 +131,7 @@ def audit_log(path):
 
     Packaged logs must not need userdev's missing-refmap allowance. Offline-mode
     notices are expected only because the caller explicitly selects loopback/offline.
-    Unknown warnings remain findings; none are silently whitelisted after a run.
+    Unknown warnings remain findings. All matched native lines are retained.
     """
     lines = path.read_text(encoding="utf-8").splitlines()
     specs = read_object(SCRIPTS / "gametest_expected_log.json")["expectations"]
@@ -156,7 +157,7 @@ def audit_log(path):
                 and match["message"] in OFFLINE_WARNINGS:
             identifier = "explicit-offline-mode"
             counts[identifier] = counts.get(identifier, 0) + 1
-            if counts[identifier] > 3:
+            if counts[identifier] > len(OFFLINE_WARNINGS):
                 unexpected.append(line)
         if identifier is None and "ARCE_FIRST_EVENT_HELD" in match["message"]:
             # The native scanner below enforces the exact logger, message and 0..1 limit.
@@ -193,7 +194,8 @@ def run_cell(manifest, output, java, expected, token, port):
     if output == source_cell or output.is_relative_to(source_cell) or source_cell.is_relative_to(output):
         raise ValueError("Evidence and source cell must not overlap")
     output.mkdir(parents=True, exist_ok=False)
-    result = {"started_utc": now(), "checks": {}, "commands": [], "processes": [], "findings": []}
+    result = {"started_utc": now(), "checker_sha256": prep.digest_file(Path(__file__)),
+              "checks": {}, "commands": [], "processes": [], "findings": []}
     server, active, cleanup_safe = output / "server-copy", None, True
     before = tree_hashes(source_cell)
     write_json(output / "source-before.json", before)
@@ -266,10 +268,16 @@ def run_cell(manifest, output, java, expected, token, port):
                 for name in ("latest.log", "debug.log"):
                     if (server / "logs" / name).exists():
                         shutil.copy2(server / "logs" / name, output / f"{epoch}-{name}")
+                if (server / "server.properties").exists():
+                    shutil.copy2(server / "server.properties", output / f"{epoch}-server.properties")
                 audit = audit_log(output / f"{epoch}-latest.log")
+                audit["console_errors_and_fatals"] = [line for line in
+                    (output / f"{epoch}-console.log").read_text(encoding="utf-8").splitlines()
+                    if re.search(r"\[[^\]]+/(?:ERROR|FATAL)\]", line)]
                 write_json(output / f"{epoch}-log-audit.json", audit)
                 result["checks"][epoch + "_logs"] = ("FAIL" if audit["errors_and_fatals"] or
-                    audit["unexpected_warnings"] or audit["native_findings"] else "PASS")
+                    audit["console_errors_and_fatals"] or audit["unexpected_warnings"] or
+                    audit["native_findings"] else "PASS")
             shutil.copy2(server / "world/level.dat", output / f"{epoch}-level.dat")
             identity = world_identity(output / f"{epoch}-level.dat")
             write_json(output / f"{epoch}-world.json", identity)
