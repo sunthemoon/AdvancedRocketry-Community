@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -410,7 +411,8 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
             requireDevice(device, applied ? afterDevice() + scenario.deviceDelta() : beforeDevice(), applied ? 1 : 0, 0);
             // An approved discrepancy stays exactly as it was accepted: nothing is refunded or rebuilt.
             EscrowTags.require(!device.escrowLocked() && cargo(rocket) + tank(device) == 5_000 + scenario.deviceDelta()
-                    && water(device) == (scenario != Scenario.SUBSTITUTE), "The released device stayed locked or broke conservation");
+                    && releasedDeviceFluidMatches(scenario, device.root().orElseThrow().tank()),
+                    "The released device stayed locked or broke conservation");
         }
     }
 
@@ -474,6 +476,11 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
     }
     private static boolean water(RocketFluidCargoBlockEntity device) {
         return "minecraft:water".equals(String.valueOf(device.root().orElseThrow().tank().fluid()));
+    }
+    /** Empty tanks have no Fluid identity; non-empty accepted tanks retain the scenario's exact Fluid. */
+    static boolean releasedDeviceFluidMatches(Scenario scenario, LoaderTank tank) {
+        if (tank.isEmpty()) { return tank.fluid() == null; }
+        return ResourceLocation.tryParse(scenario == Scenario.SUBSTITUTE ? "minecraft:lava" : "minecraft:water").equals(tank.fluid());
     }
     private int beforeRocket() { return load ? 0 : 5_000; }
     private int afterRocket() { return load ? 1_000 : 4_000; }
