@@ -64,6 +64,7 @@ public final class StationWarpRestartGameTests {
         List<BlockPos> placed = new ArrayList<>();
         ChunkPos chunk = new ChunkPos(f.pad);
         RestartTestSupport.cleanup(helper, () -> {
+            f.warp.fold(f.server);
             f.warp.clear();
             f.warp.installRocketAuthority(previous);
             f.online.forEach(f.server.getPlayerList()::remove);
@@ -72,6 +73,17 @@ public final class StationWarpRestartGameTests {
             StationControlsGameTests.clear(f, placed);
             // Delete only this station from the latest authority: never roll back unrelated first-warp metadata.
             var live = StationRegistrySavedData.get(f.server);
+            int balance = live.warpEnergy(f.id());
+            if (balance > 0) {
+                var station = live.find(f.id()).orElseThrow();
+                var target = station.orbitBody().equals(CelestialIds.EARTH_ID)
+                        ? CelestialIds.MOON_ID : CelestialIds.EARTH_ID;
+                // Teardown only: spend the remaining balance through the ordinary checked debit before deletion.
+                helper.assertTrue(live.checkedRelocation(f.server, station, target, balance)
+                                == StationRegistrySavedData.CheckedUpdate.COMMITTED,
+                        "Fixture cleanup did not commit its remaining warp-energy debit");
+            }
+            helper.assertTrue(live.warpEnergy(f.id()) == 0, "Fixture deletion would drop warp energy");
             live.delete(f.id());
             io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData.get(f.server)
                     .remove(f.id());
