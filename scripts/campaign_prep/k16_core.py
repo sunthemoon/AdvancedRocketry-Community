@@ -16,9 +16,13 @@ import re
 import shutil
 import struct
 import subprocess
+import sys
 import time
 from uuid import UUID
 import zipfile
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.campaign_client.protocol import validate_request
 

@@ -2,6 +2,8 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -124,6 +126,12 @@ class BatchTest(unittest.TestCase):
 
 
 class PatternAndOutputTest(unittest.TestCase):
+    def test_direct_cli_help_does_not_start_a_process_session(self):
+        result = subprocess.run([sys.executable, "-B", str(k16.ROOT / "scripts/campaign_prep/k16_core.py"), "--help"],
+                                capture_output=True, text=True, timeout=30, cwd=k16.ROOT)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("generate,build,singleplayer,seal", result.stdout)
+
     def fixture_jar(self, path):
         pattern = {"controller_anchor": {"x": 1, "y": 0, "z": 0}, "cells": [
             {"x": 1, "y": 0, "z": 0, "matcher": {"controller": True}},
