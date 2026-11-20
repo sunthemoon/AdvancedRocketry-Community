@@ -6,24 +6,24 @@ No result or Gate is approved. The campaign plan remains the scheduling authorit
 
 ## Run conventions and prerequisites
 
-- (C1, R535) Pin C4 commit `659bbcb6a745885565c07d98f5d695d43beef3f2`,
+- (C1, R535) Pin C5 commit `9172113ad4ecfb9047432f02b97d240fc06130b6`,
   hosted release `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256
-  `c048743e61da4f939ce0492ca3ec73b7d69ef1634577bebc3279c91cf506cea1`.
-  Its location is `D:/GitHub/ARCE-Task-Evidence/root-queue/C4/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar`.
-  Hosted regression run `44630684725` attempt `1` and governance run
-  `44630684714` identify these inputs (not new verdicts). The manifest's section 2 supersedes the plan's old "not built" text. Sources/API
+  `e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+  Its location is `D:/GitHub/ARCE-Task-Evidence/root-queue/C5/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar`.
+  Hosted regression run `44681973284` attempt `1` and governance run
+  `44681973374` identify these inputs (not new verdicts). R555 and C5-SWITCH-REPORT section 2.1 supersede the plan's old "not built" text. Sources/API
   JARs and local Maven publication still **needs package K01** at that same commit,
   with local-build labels/hashes; report any locally rebuilt release-hash difference
   without replacing the hosted tested JAR. Do not silently repin to a later candidate.
 - P2 names the immutable fixtures: the **v0.9 Beta world archive**, **a v1.0 world**,
-  **representative v1.3 to v1.7 worlds**, **the API fixture mod against C4**,
+  **representative v1.3 to v1.7 worlds**, **the API fixture mod against C5**,
   **three rockets of 64, 512 and 2,048 blocks**, **the many-machine layout**, and
   **the reference workload world of docs/17 section 4**. A fresh-world row uses a
   new disposable world, not an upgraded fixture. Record the copy identity and
   before/after hashes of every immutable source. The relevant K02-K21 run manifests below must supply
   actual paths, dimensions, coordinates, owners, recipes, resource ledgers and
   pack hashes; these names alone are not a placement script.
-- Unless a row says otherwise: Java 17; Minecraft 1.20.1; packaged C4 server and
+- Unless a row says otherwise: Java 17; Minecraft 1.20.1; packaged C5 server and
   matching real client; Forge **47.4.10**, JEI **absent**. Matrix overrides are
   Forge **47.4.23** and JEI **15.56.0.205**. Record each cell separately.
 - DS uses one real client on the development PC and a loopback packaged server;
@@ -50,7 +50,7 @@ No result or Gate is approved. The campaign plan remains the scheduling authorit
 
 ### Evidence convention for every row
 
-Use `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/` (outside Git).
+Use `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/` (outside Git).
 Archive these checklists as run in `checklists/`. V1 goes in
 `phase2-v1/<machine>/<round>/`; DS/S2 in `phase3-ds/<row>/`; V2 in
 `phase4-v2/<sitting>/`; REF/SOAK in `phase5-ref/<run>/`. Use screenshots
@@ -86,10 +86,10 @@ candidate/JEI copies and hashes; JEI is client-only.
 
 | Cell | Manifest (outside Git) | Manifest SHA-256 |
 |---|---|---|
-| `47.4.10-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-nojei/cell.json` | `58facd694f3fb2f3ea703c79dfb540bf70624805d5ce16a0ca216221861f0aa3` |
-| `47.4.10-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-jei/cell.json` | `216e60f4482945697039cc5ad3d5a252e1ac496da3608f5fd7ed0d1e8f308ccb` |
-| `47.4.23-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-nojei/cell.json` | `7b5e3e0da222a8517bbaabd141a3b3bbec2fe84cb9e7f9efc482bfa77b09858c` |
-| `47.4.23-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-jei/cell.json` | `c8fe0f5743e8fd2febc3f0f2beac7a8daa98ec076bc83d5a0fc01e45f8d26f0f` |
+| `47.4.10-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-nojei/cell.json` | `be0ea5d9e7b1086fa416c371fee5113e235159de5d2f464f512bdf6c32389cca` |
+| `47.4.10-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-jei/cell.json` | `27afd57cfa430089fa89d7586187d4335bc0db260adab3ef79516718cebd3e58` |
+| `47.4.23-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-nojei/cell.json` | `956c5a625b77719182c43f453d9ef7952e36e0361c3075d24106c0647c542c6f` |
+| `47.4.23-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-jei/cell.json` | `23e8f1404e34f5ee4bb4b3bf28c8456284da39f939a4054f13123ecb95fafa4b` |
 
 **Harness commands and session fields (W399).** Read the
 tracked guide `scripts/campaign_client/README.md`.
@@ -125,7 +125,7 @@ Historical regex waits need conversion to literal substrings. Live launch,
 input, window sizing and cleanup still **needs package K16** qualification.
 
 **Delivered K13 inventories/resource packs (W402).** The directory is
-`D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K13/`.
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K13/`.
 Use its tables for C30/C38/I11, not older inventories. These hashes identify
 prepared inputs, not successful live resource loads. K13 still owes live JEI
 counts and the audio-enabled profile; scenes/batches are the row's K05/K14/K16
@@ -135,8 +135,8 @@ it is not a fabricated different font.
 | File | SHA-256 | Use |
 |---|---|---|
 | `classification.csv` | `a34f4246da91c11f0d2ef1325938cff19496ecec2f532b21a8811169b2048297` | I02/I06/I08 complete high-risk and sampled classes (C30). |
-| `screens.csv` | `b5824fe01660dd16c6fef94b8bbee163c13ffc7a7fe333d833164780bbcfcc90` | Every-screen/every-language navigation, including eleven unnamed elsewhere. |
-| `sound-producers.csv` | `84cafa56eaa18848e21dd7f87497b26a5a720e7d66aa164105834d2785ef48cf` | J12-J16 actual C4 producers and previews (C38). |
+| `screens.csv` | `ffeceeb9340c2d08fef7669218d372acb7c2891606507d4879248686eea0219f` | Every-screen/every-language navigation, including eleven unnamed elsewhere. |
+| `sound-producers.csv` | `84cafa56eaa18848e21dd7f87497b26a5a720e7d66aa164105834d2785ef48cf` | J12-J16 actual C5 producers and previews (C38). |
 | `access-matrix.csv` | `3888f04c844db2deeb2cec16770f2d2f417a7414de031126672ae481d111d882` | I11 holder/policy/receipt branches, not blanket ownership. |
 | `k13-long-text-pack.zip` | `ae33c19e54517030aa3ad51232effb4c2fb6b7baa4c4b4900c5e393f64ad5a30` | J16 long-text/reason/hover stress; actual load **needs package K16**. |
 | `k13-missing-resource-pack.zip` | `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf` | I07's seven missing/corrupt resource controls; actual load **needs package K14**. |
@@ -169,7 +169,7 @@ baselines' spread triggers Root review, **not** automatic failure or Medium
 severity; severity follows docs/17 section 3. REF's absolute budgets still apply.
 
 **Observers and evidence utilities (W403).** E is
-`D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`; keep the plan's
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`; keep the plan's
 nine folders, row results, native media and hashes. Bind `$identity` to JSON
 with `git_commit`, `jar_sha256`, `forge`, `java`; bind `$phase` to
 the completed phase folder. K06/K13 already created fixture directories: the
@@ -178,8 +178,8 @@ identity exist; never overwrite them. Root creation/identity reconciliation stil
 **needs package K15** integration, with all existing fixtures preserved.
 
 ```powershell
-python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 659bbcb6a --identity $identity --drive C:/
-python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 659bbcb6a --identity $identity --drive C:/ --check
+python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 9172113ad --identity $identity --drive C:/
+python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 9172113ad --identity $identity --drive C:/ --check
 python -B scripts/run_campaign_observer.py process $serverPid $rssCsv --duration 600 --interval 1
 python -B scripts/run_campaign_observer.py host $hostJson --provider $provider --plan $plan --disk $disk --run-json $runFields
 python -B scripts/run_campaign_observer.py jfr-file $recording $jfrJson --jfr $jdkJfr
@@ -226,7 +226,7 @@ actual launcher command, server properties and initially empty world directory.
 
 | Step | Action | Expected observation |
 |---|---|---|
-| 1 | [H] Start the packaged server with its Forge-generated launcher. | Server reaches readiness; correct C4 mod version; no client-only class-loading failure. |
+| 1 | [H] Start the packaged server with its Forge-generated launcher. | Server reaches readiness; correct C5 mod version; no client-only class-loading failure. |
 | 2 | [H] Connect A using the matching clean client. | A enters the new world; client Mods entry agrees with the installed candidate. |
 | 3 | [H] Issue `save-all flush`. | Save succeeds. |
 | 4 | [H] Issue `stop`. | Server exits normally; retain exit code and complete log. |
@@ -287,7 +287,7 @@ coordinates or all quantities; record those inputs before execution.
 
 **Accepted preparation/action steps (W408):**
 
-(C2) Run the effective display cells in A's common procedure. **Needs package K16**: C4 core scene, exact recipe/resource/position manifest and regenerated controls. Apply R546 to invalid-fuel/structure and replay refusals.
+(C2) Run the effective display cells in A's common procedure. **Needs package K16**: C5 core scene, exact recipe/resource/position manifest and regenerated controls. Apply R546 to invalid-fuel/structure and replay refusals.
 
 **Evidence to keep:** V1 screenshots at steps 3, 5-8, 10, 14-15, 19-24; client
 and server logs, `results.jsonl`, `summary.json`, resource ledgers and identity
@@ -317,7 +317,7 @@ and Moon rockets, station rights, active/ready/claimed missions and research.
 |---|---|---|
 | 1 | [H] Hash the original archive and each original world file. | Archive matches the stated hash; retain the complete file baseline. |
 | 2 | [H] Copy the stopped fixture to a new run directory. | Original is not the server's writable world. |
-| 3 | [H] Open the copy with hash-checked C4. | Supported migration or an explicit retained failure; no silent loss. |
+| 3 | [H] Open the copy with hash-checked C5. | Supported migration or an explicit retained failure; no silent loss. |
 | 4 | [H] Capture field-level machine, atmosphere, rocket, station, mission, research and schema state. | IDs and resources reconcile; legitimate elapsed processing/oxygen consumption is accounted for. |
 | 5 | [H] Save/stop the copy using the run convention. | Complete saved state and clean exit. |
 | 6 | [H] Reopen the same copy. | No second migration debit, reward, duplication or reset. |
@@ -329,7 +329,7 @@ and Moon rockets, station rights, active/ready/claimed missions and research.
 **Evidence to keep:** `phase3-ds/A03/` archive/file hashes, copy manifest,
 all three open logs, pre/post projections and comparisons, gameplay receipts,
 backup verification and any failed copy. Do not expect the old report's
-tick-dependent final machine progress on a different-duration C4 run.
+tick-dependent final machine progress on a different-duration C5 run.
 
 Actual:
 Screenshot or video:
@@ -346,7 +346,7 @@ ordinary isolated copies, switches off. **Sources:** [v1.0 section 10.4](../../.
 [commands](../../v1.0.0-transaction-recovery/COMMANDS.md).
 
 **Preconditions:** Baseline Forge/JEI absent; fresh per-case copies of the P2
-core rocket fixture and its baseline summary, retargeted to C4. The historical
+core rocket fixture and its baseline summary, retargeted to C5. The historical
 five-block fixture contains a tank, motor, chest, seat and guidance computer;
 chest slot 0 has 17 diamonds and slot 26 has 64 iron ingots, with no third item.
 Assembly/disassembly probe properties are
@@ -357,7 +357,7 @@ has no selected checkpoint or injected fault. The runner retains the release-
 test hook property for its bounded operator reports on recovery processes.
 Use the existing [transaction runner](../../../../scripts/run_v100_transaction_forced_stop.py)
 and [flight runner](../../../../scripts/run_v100_flight_forced_stop.py), not a
-graceful stop masquerading as a cut. Their C4-compatible baselines **needs package K02**.
+graceful stop masquerading as a cut. Their C5-compatible baselines **needs package K02**.
 
 **Command templates for the campaign, not commands run while preparing this
 file:** Bind `$sourceServer`, `$baselineSummary`, `$candidateJar`,
@@ -378,8 +378,8 @@ python -B scripts/run_v100_flight_forced_stop.py $sourceServer `
   --expected-version $candidateVersion --java $java17
 ```
 
-The flight source copy must already contain the hash-checked C4 JAR. Run only
-when Root schedules the isolated S2 slot; these templates do not take the C4
+The flight source copy must already contain the hash-checked C5 JAR. Run only
+when Root schedules the isolated S2 slot; these templates do not take the C5
 campaign's occupied heavy-JVM lock or authorize a run during W396 preparation.
 
 **Case expansion:** Run each transaction tuple once: assembly
@@ -391,11 +391,11 @@ through `RESTORING:5`, `RESTORED:5`, `COMMITTED:5`, `ROLLING_BACK:2`,
 rollback fault after mutation 2, and one failed undo for FAILED. Flight cases
 are `ASSEMBLED`, `FUELED`, `COUNTDOWN`, `ASCENT`, `TRANSIT_PREPARED`,
 `DESTINATION_SPAWNED`, `PASSENGERS_TRANSFERRED`, `SOURCE_REMOVED`, `DESCENT`,
-`LANDED` (10 cases). Record any C4 incompatibility; never suppress a case.
+`LANDED` (10 cases). Record any C5 incompatibility; never suppress a case.
 
 | Step | Action, for each case | Expected observation |
 |---|---|---|
-| 1 | [H] Launch the owned per-case server with that runner's recorded arguments. | C4 hash and intended case are logged. |
+| 1 | [H] Launch the owned per-case server with that runner's recorded arguments. | C5 hash and intended case are logged. |
 | 2 | [H] Wait for the exact persisted checkpoint marker. | Transaction marker is `ARCE_RELEASE_TRANSACTION_PAUSED`; on-disk phase/progress matches. Its 20-second pause limit is unchanged. |
 | 3 | [H] Force-stop only that owned JVM with the runner. | Live process dies nonzero, without a prior graceful stop. |
 | 4 | [H] Archive the staged journal and raw world state. | Evidence matches the selected cut before recovery starts. |
@@ -416,13 +416,13 @@ in the release matrix: 128 pending players, four attempts/tick, 200-tick wait.
 
 **Accepted preparation/action steps (W408):**
 
-(C3) Qualify both v1.0 forced-stop runners on C4 themselves; J22 is not a substitute. Any oracle change must be reviewed and state its new check. **Needs package K02**: retargeted baselines and deterministic adjacent-chunk arrival, current-seat selection and native-expiry controls. Record those as three separate observations; any control still unavailable is NOT_COVERED with that reason, not covered by durable cuts.
+(C3) Qualify both v1.0 forced-stop runners on C5 themselves; J22 is not a substitute. Any oracle change must be reviewed and state its new check. **Needs package K02**: retargeted baselines and deterministic adjacent-chunk arrival, current-seat selection and native-expiry controls. Record those as three separate observations; any control still unavailable is NOT_COVERED with that reason, not covered by durable cuts.
 
 **Evidence to keep:** `phase3-ds/A04/<case>/` command lines, PIDs, cut receipts,
 exit codes, staged journal, raw pre/post NBT, authority/resource comparisons and
 both restart logs; aggregate all 35 outcomes. These are explicitly flushed
 durable checkpoints, not disk-write power-loss, genuine storage-latency or
-2,048-block performance evidence. J22 remains the separate C4 restart campaign.
+2,048-block performance evidence. J22 remains the separate C5 restart campaign.
 
 Actual:
 Screenshot or video:
@@ -463,7 +463,7 @@ the second operator or authorized scripted input to a signed-in window.
 
 **Evidence to keep:** `phase4-v2/sitting-1/` both videos/logs, server phase and
 seat receipts, disconnect/rejoin UTC times and saved resource projections.
-Historical 618 fuel/118 buffered values are not generic C4 expectations; compute
+Historical 618 fuel/118 buffered values are not generic C5 expectations; compute
 this fixture's ledger from its actual quote. Controlled readiness instrumentation
 does not count as a genuine disk-arrival or expiry observation.
 
@@ -824,7 +824,7 @@ remote/visual rules section 13 and master test plan section 12.
 
 **Preconditions:** P3 profiles for **47.4.10/JEI absent**, **47.4.10/JEI
 15.56.0.205**, **47.4.23/JEI absent**, **47.4.23/JEI 15.56.0.205**, with
-matching server Forge and the same C4 hash. Preserve separate world copies.
+matching server Forge and the same C5 hash. Preserve separate world copies.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -893,7 +893,7 @@ trials per no-JEI lane plus every phase-4 A/B first join, as procedure parameter
 
 | Step | Action, separately for each Forge lane and connection trial | Expected observation |
 |---|---|---|
-| 1 | [H] Start a fresh recorded server/client trial. | Pin Forge, C4, account and first-join conditions. |
+| 1 | [H] Start a fresh recorded server/client trial. | Pin Forge, C5, account and first-join conditions. |
 | 2 | [H] Attempt the first connection on A. | Record success/timeout and latency without automatic retry hiding the first result. |
 | 3 | [H] Retry in the same process only if the first attempt timed out. | Record the retry separately and retain both complete logs. |
 | 4 | [H] Attempt B's first join in the phase-4 trial. | Independent first-attempt result; normal authentication. |
@@ -902,7 +902,7 @@ trials per no-JEI lane plus every phase-4 A/B first join, as procedure parameter
 
 Historical context only: the 47.4.22 harness run had one initial timeout in
 r01, a successful same-process retry, and four successful first joins in r02/r03.
-These are not C4/47.4.10/47.4.23 results or an approved tolerance. A timeout
+These are not C5/47.4.10/47.4.23 results or an approved tolerance. A timeout
 remains a finding until Root dispositions it; sources give no acceptable rate.
 
 **Accepted preparation/action steps (W408):**

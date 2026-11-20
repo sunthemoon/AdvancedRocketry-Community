@@ -6,7 +6,7 @@ These are unrun P4 lists for I01–I11 of [the campaign](FINAL-CAMPAIGN-PLAN.md)
 No Gate or version is approved.
 
 Accepted common procedures for **every I row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -15,7 +15,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 ## Shared preconditions, execution labels and evidence
 
 H marks a harness/operator action; P marks a person's action/judgement. Each arrow gives the expected observation.
-Use P1's C4 commit and hosted JAR SHA-256 on Java 17. Default is Forge 47.4.10 without JEI; compatibility is
+Use P1's C5 commit and hosted JAR SHA-256 on Java 17. Default is Forge 47.4.10 without JEI; compatibility is
 47.4.23. JEI-present means exactly 15.56.0.205. I04 explicitly covers all four cells; I09 covers both JEI states.
 V1 means a real GPU, with CPU/GPU/driver/resolution/window/GUI-scale recorded, not Xvfb/LLVMpipe.
 P2 supplies immutable source fixtures; use disposable copies only. Its names below are fixture descriptions,
@@ -31,7 +31,7 @@ Gated asset/status views, if separately needed, belong to J and retain their own
 Phase 5 REF/SOAK uses a non-root user on 4 vCPU/8 GiB/Debian 12, Java 17, server `Xmx4G` maximum,
 bound to loopback with SSH-tunnel client access on an exclusive node.
 
-Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`. Use
+Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`. Use
 `E/phase2-v1/<machine>/<round>/`, `E/phase3-ds/<row>/`, `E/phase4-v2/<sitting>/` and `E/phase5-ref/<run>/`.
 Retain `server.log`, native client logs, `results.jsonl`, `summary.json`, configuration, fixture and candidate
 identities, raw samples and per-step UTC times. Screenshots are `<row>-<step>-<client>-<language>-<scale>.png`;
@@ -57,12 +57,12 @@ for a full survival-played run and not authorization to omit the complete route.
    life support remain coherent; no creative/gated fill is passed off as technology-route completion.
 5. [H/P] Establish the station and complete an inter-system warp. → Costs/consent and station context agree with the server.
 6. [H/P] Build and operate the selected endgame device. → Its normal recipe, permission and operation complete the route.
-7. [P] Perform the owner-agreed subset by hand on C4 and review the full rehearsal video. → Exact covered steps,
+7. [P] Perform the owner-agreed subset by hand on C5 and review the full rehearsal video. → Exact covered steps,
    setup shortcuts, controls and judgement are recorded; build hash appears in the video index.
 
 **Accepted preparation/action steps (W408):**
 
-(C29) Use one continuous scripted C4 witness from first machine to the **railgun pair** endgame device (accepted choice), including recipes/counts/resources. **Needs package K16**: route scene and witness manifest. O4 still chooses/records the hand-played subset; rehearsal is not a full survival-played claim.
+(C29) Use one continuous scripted C5 witness from first machine to the **railgun pair** endgame device (accepted choice), including recipes/counts/resources. **Needs package K16**: route scene and witness manifest. O4 still chooses/records the hand-played subset; rehearsal is not a full survival-played claim.
 
 **Evidence to keep:** Continuous/referenced route video, witness route and resource ledger, per-stage screenshots,
 server/client logs and the owner-confirmed hand-played subset under phase 2.
@@ -100,7 +100,7 @@ scale factor, raw idle/active samples, queue/ticket counts and host record.
 immutable archive/hash. The complete archive/ID manifest **needs package K02**.
 
 1. [H] Hash the source archive and copy it without modifying the original. → Source remains recoverable and unchanged.
-2. [H] Start that copy on C4 and enumerate old blocks/items/roots. → All stable IDs remain; replacement art/behavior
+2. [H] Start that copy on C5 and enumerate old blocks/items/roots. → All stable IDs remain; replacement art/behavior
    does not silently delete placeholders or invent an ID migration.
 3. [P/H] Use representative upgraded machines and inventories. → State and player resources are usable, not merely loadable.
 4. [H] Stop and restart twice. → Compare the same IDs, contents and managed state after each start.
@@ -117,8 +117,8 @@ immutable archive/hash. The complete archive/ID manifest **needs package K02**.
 
 **Phase/level/machine/accounts:** 2/3 DS/V1, development PC, real-GPU client A.
 **Gate:** Ordinary P2 many-machine/recipe world. **Preconditions:** Four clean profiles: Forge 47.4.10 and
-47.4.23, each JEI absent or JEI 15.56.0.205 present, all with the same C4 JAR. Pin candidate-shipped category
-counts from its resources/runner; W188's historical counts are not automatically C4 counts.
+47.4.23, each JEI absent or JEI 15.56.0.205 present, all with the same C5 JAR. Pin candidate-shipped category
+counts from its resources/runner; W188's historical counts are not automatically C5 counts.
 
 1. [H] Start the packaged server and client in the first matrix cell. → Correct Forge/JAR/JEI identity, no sidedness error.
 2. [H] Join fresh. → For JEI-present cells, retain every category receipt in order: the last `status=registered`
@@ -137,7 +137,7 @@ counts from its resources/runner; W188's historical counts are not automatically
 
 **Accepted preparation/action steps (W408):**
 
-(C31; W400) Read category/recipe counts from C4 in each actual JEI-present named cell; W188 totals remain history. Show at least one recipe page and one usage query per category, capturing final synchronized receipts. The four manifest paths/hashes are in A. Runtime counts still **needs package K13**; recipe/machine scene **needs package K05**.
+(C31; W400) Read category/recipe counts from C5 in each actual JEI-present named cell; W188 totals remain history. Show at least one recipe page and one usage query per category, capturing final synchronized receipts. The four manifest paths/hashes are in A. Runtime counts still **needs package K13**; recipe/machine scene **needs package K05**.
 
 **Evidence to keep:** Phase 2 real-client pages/usages/screenshots and phase 3 per-cell command/profile manifests,
 ordered category receipts, counts, initial/restart client/server logs and state comparisons. D9 limits v1.8 support
@@ -169,7 +169,7 @@ spills and unresolved differences, alongside I10's continuous samples.
 **Preconditions:** Candidate asset inventory, sample selection and complete high-risk list, including all new
 screens/models/textures/sounds. Missing sample definition is a preparation gap, not permission to omit a class.
 
-1. [H] Map every new asset category and high-risk entry to a scene/screen. → Coverage is enumerated against C4.
+1. [H] Map every new asset category and high-risk entry to a scene/screen. → Coverage is enumerated against C5.
 2. [P/H] Display each selected screen/model/texture in its intended context. → No purple-black texture, absent
    mesh, clipped essential control or unreasonable model/collision placement.
 3. [P] Listen to every selected sound at its real producer. → Sound and subtitle match the server-visible state;
@@ -231,7 +231,7 @@ Use their final corrections: actual Capsule mesh, all-face `rocketpad_`, and fla
 
 **Accepted preparation/action steps (W408):**
 
-(C32) No captured 1.12 session exists; "compared with 1.12 screenshots" is NOT_COVERED for that reason. Compare instead to W241's audited renderer inventory at upstream `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, preserving W244/W261/W265 corrections and without importing unaudited art. W402 delivers `k13-missing-resource-pack.zip`, SHA-256 `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf`, under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K13/`; its seven source-derived overrides/fallback expectations are W402 section 7, not observed loads. **Needs package K14**: phase-4 paired break/repair/tracking scene and actual pack checks.
+(C32) No captured 1.12 session exists; "compared with 1.12 screenshots" is NOT_COVERED for that reason. Compare instead to W241's audited renderer inventory at upstream `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, preserving W244/W261/W265 corrections and without importing unaudited art. W402 delivers `k13-missing-resource-pack.zip`, SHA-256 `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf`, under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K13/`; its seven source-derived overrides/fallback expectations are W402 section 7, not observed loads. **Needs package K14**: phase-4 paired break/repair/tracking scene and actual pack checks.
 
 **Evidence to keep:** Phase 2 per-model/facing/context screenshots, owner judgement, resource-pack names/hashes,
 full client logs, reload observations and phase 4 paired formation views. Sources give no substitute automated
@@ -300,7 +300,7 @@ I04's complete four-cell rerun separately; D9 does not require four independent 
    non-start/save spikes not sustained >500 ms; RSS not sustained >5.5 GiB; watchdog/OOM/unexpected forced chunks 0;
    no monotonic memory growth. Interrupted runs remain failed/incomplete and are not added together.
 7. [H] Write the declared-cell and four-cell-coverage report. → Neither W188's short historical matrix nor a future
-   v1.9 modpack run substitutes for this C4 soak.
+   v1.9 modpack run substitutes for this C5 soak.
 
 **Accepted preparation/action steps (W408):**
 

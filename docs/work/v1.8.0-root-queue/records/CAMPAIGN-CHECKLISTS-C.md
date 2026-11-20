@@ -6,7 +6,7 @@ Status: planned, not executed. Covers C01-C08 of
 restart/evidence protocol, `[H]` harness and `[P]` human markers and result metadata.
 
 Accepted common procedures for **every C row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -14,7 +14,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 
 ## Shared fixture and environment
 
-C1 pins C4's full identity in checklist A. P2 supplies **the many-machine
+C1 pins C5's full identity in checklist A. P2 supplies **the many-machine
 layout** and **the reference workload world of docs/17 section 4**. The
 three representative machines are the Electrolyzer, Rolling Machine and
 Precision Assembler, as described by the
@@ -26,7 +26,7 @@ and [Precision pattern](../../../../src/main/resources/data/advancedrocketrycomm
 not an improvised shell. The layout **needs package K05** to record anchors, orientation, mirror, all chunks,
 resource stores/owners, and layout/pack hashes. Keep original fixtures unchanged.
 
-Every row uses Java 17, Minecraft 1.20.1 and matching C4 client/server on Forge
+Every row uses Java 17, Minecraft 1.20.1 and matching C5 client/server on Forge
 **47.4.10**, **JEI absent unless stated otherwise**. Additional compatibility
 cells use Forge 47.4.23 and JEI 15.56.0.205 and are separately identified.
 All are ordinary disposable worlds, **not O2's marked world**; keep switches
@@ -47,7 +47,7 @@ add slot/energy and stale-menu checks. All actual/result fields remain blank.
   consumes **2 iron ingots in input 0 and 2 redstone in input 1**,
   **20 ticks at 40 FE/t (800 FE)**, and produces **1 Advanced Circuit in
   output 0 and 2 redstone torches in output 1**.
-- Confirm those recipes are effective on C4 before using their numeric oracles.
+- Confirm those recipes are effective on C5 before using their numeric oracles.
   A pack override is a separately named fixture, not grounds to silently edit
   the expected numbers. The sources do not name every active-machine recipe.
 - Feed resources through normal slots/typed capabilities. Do not edit observed
@@ -236,7 +236,7 @@ Precision PREC-M-05.
 **Preconditions:** P2 three representative machines; baseline/JEI absent;
 English/Chinese, GUI scales **2/3/4**, windowed/fullscreen. Precision has seven
 numbered Item slots, FE gauge, progress/status and a missing-casing variant.
-C13 takes names/numbers at and one past each C4-declared limit;
+C13 takes names/numbers at and one past each C5-declared limit;
 extracted values and fixtures **needs package K05**. Fields without limits
 are recorded as such, not assigned fabricated extremes.
 
@@ -252,7 +252,7 @@ are recorded as such, not assigned fabricated extremes.
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C4's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **Needs package K05**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
+(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C5's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **Needs package K05**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
 
 **Evidence to keep:** Per-cell native screenshots and actual resolutions,
 recipe/diagnostic fixture bytes, server values and client/server logs in phase 2.
@@ -286,7 +286,7 @@ repeat English/Chinese scales 2/3/4 within the campaign V1 pass.
 
 **Evidence to keep:** JEI recipe/usage/catalyst/click-area screenshots,
 effective recipe hashes, batch ledger and logs in the phase-2 round. An old
-en_us/scale-2 scoped client result is not this full C4 result.
+en_us/scale-2 scoped client result is not this full C5 result.
 
 Actual:
 Screenshot or video:
@@ -331,7 +331,7 @@ Build hash (commit and JAR SHA-256):
 
 ## Open questions for Root
 
-- **Answered:** C11 fixes 100 idle and 144-controller/72-active scenes; C10/R535 fixes samples/review; C12 fixes per-mode conservation; C2 fixes effective pixels; C13 uses C4-declared limits only. C05 stays NOT_COVERED under O6/D9.
+- **Answered:** C11 fixes 100 idle and 144-controller/72-active scenes; C10/R535 fixes samples/review; C12 fixes per-mode conservation; C2 fixes effective pixels; C13 uses C5-declared limits only. C05 stays NOT_COVERED under O6/D9.
 - **C01-C04/C06-C08:** exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance **needs package K05**. O5 supplies C03 coordinated input.
 - **C01:** complete raw/live measurements **needs package K15**, with no new idle-cost/percentage threshold.
 - **C08/retained-menu negatives:** bounded ordinary-client tool, receipt/readback and named A1 fallbacks **needs package K18**. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.
