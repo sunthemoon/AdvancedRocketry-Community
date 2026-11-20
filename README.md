@@ -99,6 +99,8 @@ Development builds now include:
   the laser gun and jackhammer, the HUD and client settings, and 17 advancements.
 - **Satellites:** the satellite builder and terminal, five satellite kinds and the microwave receiver.
 
+The [machine guide](docs/MACHINE-GUIDE.md) explains how to build, power and use each machine.
+
 An automated check proves that every item can be obtained through the packaged recipes. Every legacy content unit
 has a recorded disposition, and imported legacy art must pass the vanilla-derivation and provenance checks.
 
