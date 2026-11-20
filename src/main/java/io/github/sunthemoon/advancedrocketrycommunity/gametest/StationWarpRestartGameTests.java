@@ -11,12 +11,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestBatch;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,18 +28,42 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /** F8: current core + station saves reinstalled as the live controller/service authority, not detached copies. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
+@Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class StationWarpRestartGameTests {
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_w416_warp_restart",
             java.util.Comparator.comparing(UUID::toString));
 
     private StationWarpRestartGameTests() { }
+
+    /** Opt-in ordering for the restart/isolation regression, after the ordinary batch filter. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void restartBatchesFirst(ServerAboutToStartEvent event) {
+        if (!Boolean.getBoolean("advancedrocketrycommunity.w418RestartFirst")
+                || !(event.getServer() instanceof GameTestServer server)) { return; }
+        List<GameTestBatch> batches = ObfuscationReflectionHelper.getPrivateValue(
+                GameTestServer.class, server, "f_177587_");
+        batches.sort(Comparator.comparingInt((GameTestBatch batch) -> restartOrder(batch.getName()))
+                .thenComparing(GameTestBatch::getName));
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_W418_RESTART_BATCH_ORDER batches={}", batches.stream().map(GameTestBatch::getName).toList());
+    }
+
+    private static int restartOrder(String name) {
+        if (name.startsWith("w416_f8_")) { return 0; }
+        return name.startsWith("w415_") || name.startsWith("w416_") || name.startsWith("w417_") ? 1 : 2;
+    }
 
     // F8: the final stop fold persists charging once; the stateless restored core cannot replay its old credit.
     @GameTest(template = "empty", batch = "w416_f8_charging_reload", timeoutTicks = 900)
@@ -63,34 +91,42 @@ public final class StationWarpRestartGameTests {
         StationRocketAuthority previous = f.warp.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
         List<BlockPos> placed = new ArrayList<>();
         ChunkPos chunk = new ChunkPos(f.pad);
-        RestartTestSupport.cleanup(helper, () -> {
-            f.warp.fold(f.server);
-            f.warp.clear();
-            f.warp.installRocketAuthority(previous);
-            f.online.forEach(f.server.getPlayerList()::remove);
-            f.online.clear();
-            f.cores.forEach(pos -> f.space.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
-            StationControlsGameTests.clear(f, placed);
-            // Delete only this station from the latest authority: never roll back unrelated first-warp metadata.
+        boolean[] cleaned = {false};
+        Runnable cleanup = () -> {
+            if (cleaned[0]) { return; }
+            cleaned[0] = true;
             var live = StationRegistrySavedData.get(f.server);
-            int balance = live.warpEnergy(f.id());
-            if (balance > 0) {
-                var station = live.find(f.id()).orElseThrow();
-                var target = station.orbitBody().equals(CelestialIds.EARTH_ID)
-                        ? CelestialIds.MOON_ID : CelestialIds.EARTH_ID;
-                // Teardown only: spend the remaining balance through the ordinary checked debit before deletion.
-                helper.assertTrue(live.checkedRelocation(f.server, station, target, balance)
-                                == StationRegistrySavedData.CheckedUpdate.COMMITTED,
-                        "Fixture cleanup did not commit its remaining warp-energy debit");
+            try {
+                f.warp.fold(f.server);
+                f.warp.clear();
+                f.warp.installRocketAuthority(previous);
+                f.online.forEach(f.server.getPlayerList()::remove);
+                f.online.clear();
+                f.cores.forEach(pos -> f.space.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
+                StationControlsGameTests.clear(f, placed);
+                // Delete only this station from the latest authority: never roll back unrelated first-warp metadata.
+                int balance = live.warpEnergy(f.id());
+                if (balance > 0) {
+                    var station = live.find(f.id()).orElseThrow();
+                    var target = station.orbitBody().equals(CelestialIds.EARTH_ID)
+                            ? CelestialIds.MOON_ID : CelestialIds.EARTH_ID;
+                    // Teardown only: spend the remaining balance through the ordinary checked debit before deletion.
+                    helper.assertTrue(live.checkedRelocation(f.server, station, target, balance)
+                                    == StationRegistrySavedData.CheckedUpdate.COMMITTED,
+                            "Fixture cleanup did not commit its remaining warp-energy debit");
+                }
+                helper.assertTrue(live.warpEnergy(f.id()) == 0, "Fixture deletion would drop warp energy");
+                live.delete(f.id());
+                io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData.get(f.server)
+                        .remove(f.id());
+                f.platforms.removeTemplate(f.space, f.created.cell());
+                live.flush(f.server);
+            } finally {
+                try { restoreOriginalRegistry(helper, f, live); }
+                finally { f.space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, f.id()); }
             }
-            helper.assertTrue(live.warpEnergy(f.id()) == 0, "Fixture deletion would drop warp energy");
-            live.delete(f.id());
-            io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData.get(f.server)
-                    .remove(f.id());
-            f.platforms.removeTemplate(f.space, f.created.cell());
-            live.flush(f.server);
-            f.space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, f.id());
-        });
+        };
+        RestartTestSupport.cleanup(helper, cleanup);
         f.space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, f.id());
         f.join(f.ownerId, "warpRestart");
         ServerPlayer player = f.server.getPlayerList().getPlayer(f.ownerId);
@@ -160,7 +196,36 @@ public final class StationWarpRestartGameTests {
             helper.assertTrue(disk.warpEnergy(f.id()) == 500_000
                     && disk.find(f.id()).orElseThrow().equals(f.created.withOrbitBody(CelestialIds.MOON_ID)),
                     "Durable warp was not exactly one orbit change and debit");
-        }).thenSucceed();
+        }).thenExecute(cleanup).thenSucceed();
+    }
+
+    private static void restoreOriginalRegistry(GameTestHelper helper, StationWarpGameTests.Fixture f,
+                                                StationRegistrySavedData live) {
+        if (live != f.data) {
+            // Startup-bound analyzer/environment/solar services retain f.data. Reinstalling its stale state
+            // would resurrect the fixture or roll back the clock/outbox. Copy the entire cleaned authority,
+            // including the registry model's station, reservation, region, energy and access indices.
+            try {
+                for (var field : StationRegistrySavedData.class.getDeclaredFields()) {
+                    if (!Modifier.isStatic(field.getModifiers())) {
+                        field.setAccessible(true);
+                        field.set(f.data, field.get(live));
+                    }
+                }
+                f.data.setDirty(live.isDirty());
+            } catch (ReflectiveOperationException failure) {
+                throw new IllegalStateException("Cannot restore the startup-bound station authority", failure);
+            }
+        }
+        f.server.overworld().getDataStorage().set(StationRegistrySavedData.DATA_NAME, f.data);
+        helper.assertTrue(StationRegistrySavedData.get(f.server) == f.data
+                        && f.data.save(new CompoundTag()).equals(live.save(new CompoundTag())),
+                "Startup-bound readers and the live station authority differ after cleanup");
+        helper.assertTrue(f.data.find(f.id()).isEmpty() && f.data.findAt(f.pad.getX(), f.pad.getZ()).isEmpty()
+                        && f.data.warpEnergy(f.id()) == 0
+                        && f.data.reservations().stream().noneMatch(r -> r.stationId().equals(f.id()))
+                        && f.data.nextAccessCandidate(f.ownerId, false, null).isEmpty(),
+                "Restart fixture retained a station, region claim, balance, reservation or owner access link");
     }
 
     private static StationControllerMenu menu(StationWarpGameTests.Fixture f, ServerPlayer player, BlockPos pos) {
