@@ -63,9 +63,10 @@ public final class ElevatorRestartGameTests {
             source(f, up).storage().input().setStackInSlot(0, payload.copy());
             source(f, up).launchForTest(f.owner);
             key[0] = new TransitKey(source(f, up).endpointId(), 1L);
+        }).thenWaitUntil(() -> {
+            // launchForTest queues the intent; the native endpoint tick creates the paid escrow.
             helper.assertTrue(source(f, up).source().outbox().size() == 1
                     && source(f, up).storage().energy().energy() == 180_000, "Cargo cut lacks the exact paid escrow");
-        }).thenWaitUntil(() -> {
             saved(f);
             helper.assertTrue(service().root().orElseThrow().transits().record(key[0]).isPresent(),
                     "Cargo was not registered before the restart");
@@ -86,6 +87,10 @@ public final class ElevatorRestartGameTests {
             // Reopen again with an already materialized receive buffer and its durable claim/receipt history.
             reopen(helper, f);
             inventory(helper, f, up, payload);
+        }).thenWaitUntil(() -> {
+            saved(f);
+            helper.assertTrue(source(f, up).source().outbox().isEmpty()
+                    && destination(f, up).destination().incoming().isEmpty(), "Restored cargo has not settled");
         }).thenExecuteAfter(ElevatorRules.CARGO_TRAVEL_TICKS + 45, () -> {
             saved(f);
             service().barrier(root -> null);
