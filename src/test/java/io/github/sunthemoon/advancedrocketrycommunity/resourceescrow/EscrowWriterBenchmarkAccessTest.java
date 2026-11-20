@@ -22,23 +22,34 @@ final class EscrowWriterBenchmarkAccessTest {
             assertEquals(Map.of("operations", 4, "floors", 2), subset(composition.get("escrow_ledger"), "operations", "floors"));
             assertEquals(Map.of("receipts", 16, "owners", 1), subset(composition.get("bay_receipts"), "receipts", "owners"));
             long tick = access.now() + 20;
-            for (int k = 0; k < 20 * 21; k++, tick++) {
+            int maxAttempts = 100;
+            int ledgerAttempts = 0, receiptAttempts = 0;
+            // Attempts can be skipped while IO is pending; publications, not runner speed, select the readback path.
+            for (int k = 0; k < 20 * maxAttempts
+                    && (access.ledgerPublicationTicks().size() < EscrowWriterBenchmarkAccess.READBACK_EVERY
+                    || access.receiptPublicationTicks().size() < EscrowWriterBenchmarkAccess.READBACK_EVERY); k++, tick++) {
                 access.tick(tick);
-                if (k % 20 == 0) { access.mutateLedger(); }
-                if (k % 20 == 10) { access.mutateReceipt(); }
+                if (k % 20 == 0) { access.mutateLedger(); ledgerAttempts++; }
+                if (k % 20 == 10) { access.mutateReceipt(); receiptAttempts++; }
                 Thread.sleep(2);
             }
+            assertTrue(access.ledgerPublicationTicks().size() >= EscrowWriterBenchmarkAccess.READBACK_EVERY
+                    && access.receiptPublicationTicks().size() >= EscrowWriterBenchmarkAccess.READBACK_EVERY,
+                    "Publication target not reached within " + maxAttempts + " attempts per root; ledger attempts="
+                            + ledgerAttempts + ", receipt attempts=" + receiptAttempts + ", counts=" + access.results());
             for (int k = 0; k < 2_000 && access.holdsWork(); k++, tick++) { Thread.sleep(2); access.tick(tick); }
             assertFalse(access.holdsWork());
             assertTrue(access.operational());
             var results = access.results();
             var ledger = (Map<?, ?>) results.get("escrow_ledger"); var receipts = (Map<?, ?>) results.get("bay_receipts");
-            assertEquals(21L, (long) ledger.get("mutations") + (long) ledger.get("skipped_while_unpublished"));
+            assertEquals((long) ledgerAttempts, (long) ledger.get("mutations") + (long) ledger.get("skipped_while_unpublished"));
             assertEquals((long) ledger.get("mutations"), (long) (int) ledger.get("published"));
-            assertEquals(21L, (long) receipts.get("mutations") + (long) receipts.get("skipped_while_unpublished"));
+            assertEquals((long) receiptAttempts, (long) receipts.get("mutations") + (long) receipts.get("skipped_while_unpublished"));
             assertEquals((long) receipts.get("mutations"), (long) (int) receipts.get("published"));
             assertEquals(0L, receipts.get("refused"));
             assertTrue((int) ledger.get("readback_paths_taken") >= 1 && (int) receipts.get("readback_paths_taken") >= 1);
+            assertEquals((int) ledger.get("published") / EscrowWriterBenchmarkAccess.READBACK_EVERY, ledger.get("readback_paths_taken"));
+            assertEquals((int) receipts.get("published") / EscrowWriterBenchmarkAccess.READBACK_EVERY, receipts.get("readback_paths_taken"));
             assertEquals(Map.of("COMMITTED", (int) (long) receipts.get("mutations")), receipts.get("outcomes"));
             // The files hold what RAM published.
             var disk = EscrowCodec.decode(CheckedSavedDataFile.readPayload(temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()),
