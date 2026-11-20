@@ -164,7 +164,8 @@ class SessionTests(Fixture):
         fake.summary = {"cleanup_errors": ["Owned process: TimeoutError"]}
         fake.execute.return_value = 1
         lock = self.root / "heavy-jvm"
-        with patch("scripts.campaign_client.session.shutil.disk_usage", return_value=Mock(free=100 * 1024**3)), \
+        with patch("scripts.campaign_client.session.require_windows"), \
+                patch("scripts.campaign_client.session.shutil.disk_usage", return_value=Mock(free=100 * 1024**3)), \
                 patch("scripts.campaign_client.windows.Windows", return_value=FakeWindows()), \
                 patch("scripts.campaign_client.session.Session", return_value=fake):
             self.assertEqual(1, run_session(self.dump_session(), lock))
@@ -182,7 +183,8 @@ class SessionTests(Fixture):
             pointer._obj.tid = 456
             return 1
         kernel.Thread32First.side_effect = first
-        with patch("scripts.campaign_client.processes.C.WinDLL", return_value=kernel):
+        # create=True: ctypes has no WinDLL off Windows, and the fake kernel replaces it everywhere.
+        with patch("scripts.campaign_client.processes.C.WinDLL", return_value=kernel, create=True):
             job = ProcessJob()
             job.assign_resume(Mock(pid=123, _handle=100))
             kernel.AssignProcessToJobObject.assert_called_once()
@@ -191,6 +193,16 @@ class SessionTests(Fixture):
             kernel.TerminateJobObject.assert_called_once_with(77, 1)
             kernel.QueryInformationJobObject.assert_called_once()
             self.assertIsNone(job.handle)
+
+    def test_live_sessions_refuse_other_systems(self):
+        from scripts.campaign_client import processes
+        with patch("scripts.campaign_client.processes.os.name", "posix"):
+            with self.assertRaisesRegex(ValueError, "require Windows"):
+                processes.require_windows()
+        with patch("scripts.campaign_client.processes.os.name", "nt"):
+            processes.require_windows()
+        self.assertEqual(0x4, processes.CREATE_SUSPENDED)
+        self.assertEqual(0x200, processes.CREATE_NEW_PROCESS_GROUP)
 
     def test_launch_commands_use_reviewed_helper_and_singleplayer(self):
         cell = load_cell(self.cell_path)
@@ -213,7 +225,8 @@ class SessionTests(Fixture):
         proc.stdin = io.StringIO()
         proc.poll.return_value = None
         proc.returncode = 0
-        with patch("scripts.campaign_client.processes.ProcessJob") as job, \
+        with patch("scripts.campaign_client.processes.require_windows"), \
+                patch("scripts.campaign_client.processes.ProcessJob") as job, \
                 patch("scripts.campaign_client.processes.subprocess.Popen", return_value=proc):
             captured = CapturedProcess(["fake-java"], self.root, self.root / "captured.log", console=True)
             captured.reader.join(2)

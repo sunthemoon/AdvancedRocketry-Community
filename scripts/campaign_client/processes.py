@@ -9,6 +9,16 @@ import time
 
 from .evidence import redact
 
+# Win32 process creation flags, spelled out so that the module also imports and tests on other systems.
+CREATE_SUSPENDED = 0x00000004
+CREATE_NEW_PROCESS_GROUP = 0x00000200
+
+
+def require_windows(message="Live campaign sessions require Windows"):
+    """The one platform guard for live sessions; tests replace it to exercise the Windows paths with fakes."""
+    if os.name != "nt":
+        raise ValueError(message)
+
 
 class THREADENTRY32(C.Structure):
     _fields_ = [("size", W.DWORD), ("usage", W.DWORD), ("tid", W.DWORD), ("pid", W.DWORD),
@@ -89,8 +99,7 @@ class ProcessJob:
 
 class CapturedProcess:
     def __init__(self, command, cwd, log, console=False):
-        if os.name != "nt":
-            raise ValueError("Live campaign sessions require Windows")
+        require_windows()
         self.lines, self.count, self.error = deque(maxlen=10000), 0, None
         self.lock = threading.Lock()
         self.job = ProcessJob()
@@ -103,7 +112,7 @@ class CapturedProcess:
             self.process = subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.PIPE if console else
                                             subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                             text=True, encoding="utf-8", errors="replace",
-                                            creationflags=0x4 | subprocess.CREATE_NEW_PROCESS_GROUP)
+                                            creationflags=CREATE_SUSPENDED | CREATE_NEW_PROCESS_GROUP)
             self.job.assign_resume(self.process)
         except BaseException:
             if self.process is not None:

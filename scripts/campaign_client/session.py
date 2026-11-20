@@ -10,7 +10,7 @@ from .cells import copy_tree, load_cell
 from .evidence import copy_log, dumps, now, write_json
 from .input import Input
 from .launch import prepare_client
-from .processes import CapturedProcess
+from .processes import CapturedProcess, require_windows
 from .protocol import INPUTS, load_session, read_request
 from .server import server_command, write_settings
 
@@ -304,8 +304,7 @@ def run_session(path, lock):
     spec = load_session(path)
     cell = load_cell(spec["cell"])
     # No platform probing, process access or JVM start until validation has succeeded.
-    if os.name != "nt":
-        raise ValueError("Live sessions require Windows")
+    require_windows("Live sessions require Windows")
     for drive in {Path.home().anchor, spec["run_dir"].anchor, os.environ.get("SystemDrive", "C:") + "/"}:
         if shutil.disk_usage(drive).free < 10 * 1024**3:
             raise ValueError("At least 10 GiB free is required on system and run drives")
