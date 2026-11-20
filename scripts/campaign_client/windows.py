@@ -1,0 +1,110 @@
+"""Minimal Win32 metadata and window input API. No WMI or command-line access."""
+import ctypes as C
+from ctypes import wintypes as W
+from pathlib import PureWindowsPath
+
+from .attach import ProcessIdentity, WindowIdentity
+
+
+class Windows:
+    def __init__(self):
+        self.k = C.WinDLL("kernel32", use_last_error=True)
+        self.u = C.WinDLL("user32", use_last_error=True)
+        self.callback_type = C.WINFUNCTYPE(W.BOOL, W.HWND, W.LPARAM)
+        definitions = [
+            (self.k, "OpenProcess", [W.DWORD, W.BOOL, W.DWORD], W.HANDLE),
+            (self.k, "CloseHandle", [W.HANDLE], W.BOOL),
+            (self.k, "QueryFullProcessImageNameW", [W.HANDLE, W.DWORD, W.LPWSTR, C.POINTER(W.DWORD)], W.BOOL),
+            (self.k, "GetProcessTimes", [W.HANDLE] + [C.POINTER(W.FILETIME)] * 4, W.BOOL),
+            (self.k, "GetExitCodeProcess", [W.HANDLE, C.POINTER(W.DWORD)], W.BOOL),
+            (self.u, "EnumWindows", [self.callback_type, W.LPARAM], W.BOOL),
+            (self.u, "GetWindowThreadProcessId", [W.HWND, C.POINTER(W.DWORD)], W.DWORD),
+            (self.u, "GetClassNameW", [W.HWND, W.LPWSTR, C.c_int], C.c_int),
+            (self.u, "GetWindowTextW", [W.HWND, W.LPWSTR, C.c_int], C.c_int),
+            (self.u, "IsWindowVisible", [W.HWND], W.BOOL),
+            (self.u, "GetForegroundWindow", [], W.HWND),
+            (self.u, "SetForegroundWindow", [W.HWND], W.BOOL),
+            (self.u, "GetClientRect", [W.HWND, C.POINTER(W.RECT)], W.BOOL),
+            (self.u, "GetWindowRect", [W.HWND, C.POINTER(W.RECT)], W.BOOL),
+            (self.u, "PostMessageW", [W.HWND, W.UINT, W.WPARAM, W.LPARAM], W.BOOL),
+            (self.u, "MapVirtualKeyW", [W.UINT, W.UINT], W.UINT),
+            (self.u, "ClientToScreen", [W.HWND, C.POINTER(W.POINT)], W.BOOL),
+            (self.u, "SetWindowPos", [W.HWND, W.HWND] + [C.c_int] * 4 + [W.UINT], W.BOOL),
+        ]
+        for dll, name, args, result in definitions:
+            fn = getattr(dll, name)
+            fn.argtypes, fn.restype = args, result
+        # Make pixel coordinates independent of desktop scaling.
+        self.u.SetProcessDPIAware()
+
+    @staticmethod
+    def require(result):
+        if not result:
+            raise C.WinError(C.get_last_error())
+        return result
+
+    def process(self, pid):
+        handle = self.require(self.k.OpenProcess(0x1000, False, pid))
+        try:
+            code = W.DWORD()
+            self.require(self.k.GetExitCodeProcess(handle, C.byref(code)))
+            if code.value != 259:
+                raise ValueError("Process has exited")
+            size, name = W.DWORD(32768), C.create_unicode_buffer(32768)
+            self.require(self.k.QueryFullProcessImageNameW(handle, 0, name, C.byref(size)))
+            times = [W.FILETIME() for _ in range(4)]
+            self.require(self.k.GetProcessTimes(handle, *(C.byref(t) for t in times)))
+            created = (times[0].dwHighDateTime << 32) | times[0].dwLowDateTime
+            return ProcessIdentity(pid, PureWindowsPath(name.value).name, created)
+        finally:
+            self.k.CloseHandle(handle)
+
+    def windows(self, pid):
+        found = []
+        @self.callback_type
+        def visit(handle, _):
+            owner = W.DWORD()
+            self.u.GetWindowThreadProcessId(handle, C.byref(owner))
+            if owner.value == pid:
+                cls, title = C.create_unicode_buffer(256), C.create_unicode_buffer(1024)
+                self.u.GetClassNameW(handle, cls, len(cls))
+                self.u.GetWindowTextW(handle, title, len(title))
+                found.append(WindowIdentity(handle, pid, bool(self.u.IsWindowVisible(handle)), cls.value, title.value))
+            return True
+        self.require(self.u.EnumWindows(visit, 0))
+        return found
+
+    def foreground(self):
+        return self.u.GetForegroundWindow()
+
+    def focus(self, handle):
+        self.require(self.u.SetForegroundWindow(handle))
+
+    def size(self, handle):
+        rect = W.RECT()
+        self.require(self.u.GetClientRect(handle, C.byref(rect)))
+        return rect.right, rect.bottom
+
+    def post(self, handle, message, word=0, value=0):
+        self.require(self.u.PostMessageW(handle, message, word, value))
+
+    def key(self, handle, code, down):
+        scan = self.u.MapVirtualKeyW(code, 0)
+        flags = 1 | scan << 16 | (0 if down else 3 << 30)
+        self.post(handle, 0x100 if down else 0x101, code, flags)
+
+    def point(self, handle, x, y, screen=False):
+        width, height = self.size(handle)
+        if not (0 <= x < width and 0 <= y < height):
+            raise ValueError("Pointer outside client area")
+        point = W.POINT(x, y)
+        if screen:
+            self.require(self.u.ClientToScreen(handle, C.byref(point)))
+        return (point.y & 0xFFFF) << 16 | (point.x & 0xFFFF)
+
+    def resize(self, handle, width, height):
+        client = self.size(handle)
+        outer = W.RECT()
+        self.require(self.u.GetWindowRect(handle, C.byref(outer)))
+        self.require(self.u.SetWindowPos(handle, None, 0, 0, width + outer.right - outer.left - client[0],
+                                         height + outer.bottom - outer.top - client[1], 0x16))
