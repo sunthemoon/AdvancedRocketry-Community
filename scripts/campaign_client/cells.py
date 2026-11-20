@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import tomllib
 import zipfile
 from pathlib import Path
 
@@ -55,16 +56,22 @@ def inventory(game):
 
 
 def is_jei(path):
-    # Also detect renamed JEI. Filename alone is not an adequate absence check.
+    # Dependency modId entries and filenames do not declare installed mods.
     with zipfile.ZipFile(path) as archive:
         try:
             info = archive.getinfo("META-INF/mods.toml")
         except KeyError:
-            return path.name.lower().startswith("jei")
+            return False
         if info.file_size > 1024 * 1024:
             raise ValueError("Oversized mod metadata")
-        metadata = archive.read(info).decode("utf-8")
-    return bool(re.search(r'''(?m)^\s*modId\s*=\s*["']jei["']''', metadata)) or path.name.lower().startswith("jei")
+        metadata = tomllib.loads(archive.read(info).decode("utf-8"))
+    mods = metadata.get("mods")
+    if not isinstance(mods, list) or not 1 <= len(mods) <= 256:
+        raise ValueError("Missing or oversized [[mods]] declarations")
+    if any(not isinstance(mod, dict) or not isinstance(mod.get("modId"), str)
+           or not mod["modId"] for mod in mods):
+        raise ValueError("Invalid [[mods]] modId")
+    return any(mod["modId"] == "jei" for mod in mods)
 
 
 def artifact(base, spec):
@@ -73,6 +80,50 @@ def artifact(base, spec):
     if not isinstance(spec["sha256"], str) or not re.fullmatch("[a-fA-F0-9]{64}", spec["sha256"]):
         raise ValueError("Invalid SHA-256")
     return {"path": path_at(base, spec["path"]), "sha256": spec["sha256"].lower()}
+
+
+def checked_cell_artifact(base, spec):
+    record = artifact(base, spec)
+    if not record["path"].is_relative_to(base) or not record["path"].is_file():
+        raise ValueError("Declared artifact must be a file inside the cell")
+    if sha256(record["path"]) != record["sha256"]:
+        raise ValueError("Declared artifact hash mismatch")
+    return record
+
+
+def validate_cell_files(base, cell):
+    """Validate extended manifest inventories before checking installed mod IDs."""
+    mods = cell["mods"]
+    if not isinstance(mods, dict) or set(mods) != {"server", "client"}:
+        raise ValueError("Cell mods must contain server and client lists")
+    for side, key in (("server", "server_dir"), ("client", "client_game_dir")):
+        game = cell[key]
+        if not game.is_relative_to(base) or not game.is_dir():
+            raise ValueError("Prepared game directory must be inside the cell")
+        entries = mods[side]
+        if not isinstance(entries, list) or not 1 <= len(entries) <= 256:
+            raise ValueError("Missing or oversized cell mod list")
+        records = [checked_cell_artifact(base, spec) for spec in entries]
+        directory = (game / "mods").resolve()
+        if not directory.is_dir() or not directory.is_relative_to(base):
+            raise ValueError("Mods directory must be inside the cell")
+        paths = {record["path"] for record in records}
+        if len(paths) != len(records) or any(p.parent != directory or p.suffix.lower() != ".jar"
+                                             for p in paths):
+            raise ValueError("Duplicate or misplaced cell mod artifact")
+        actual = [p.resolve() for p in directory.iterdir() if p.suffix.lower() == ".jar"]
+        if len(actual) != len(paths) or paths != set(actual):
+            raise ValueError("Declared mod list does not match installed JARs")
+        mods[side] = records
+    for key in (("candidate", "jei_jar") if cell["jei"] else ("candidate",)):
+        cell[key] = checked_cell_artifact(base, cell[key])
+        if cell[key]["path"] not in {record["path"] for record in mods["client"]}:
+            raise ValueError("Declared client artifact is missing from cell mods")
+    args = checked_cell_artifact(base, cell["server_forge_args"])
+    expected = cell["server_dir"] / f"libraries/net/minecraftforge/forge/1.20.1-{cell['forge']}/win_args.txt"
+    if args["path"] != expected.resolve():
+        raise ValueError("Declared Forge arguments do not match the selected server/Forge")
+    cell["server_forge_args"] = args
 
 
 def check_game(cell, game):
@@ -93,7 +144,8 @@ def load_cell(path):
     cell = read_object(path)
     required = {"schema_version", "forge", "jei", "runtime_root", "server_dir", "client_game_dir",
                 "version_id", "candidate", "jei_jar"}
-    if set(cell) != required or type(cell["schema_version"]) is not int or cell["schema_version"] != 1:
+    extended = required | {"mods", "server_forge_args"}
+    if set(cell) not in (required, extended) or type(cell["schema_version"]) is not int or cell["schema_version"] != 1:
         raise ValueError("Unsupported cell schema")
     if cell["forge"] not in ("47.4.10", "47.4.23") or type(cell["jei"]) is not bool:
         raise ValueError("Unsupported Forge/JEI cell")
@@ -101,13 +153,16 @@ def load_cell(path):
         raise ValueError("Cell version_id does not match Forge")
     for key in ("runtime_root", "server_dir", "client_game_dir"):
         cell[key] = path_at(path.parent, cell[key])
-    cell["candidate"] = artifact(path.parent, cell["candidate"])
-    cell["jei_jar"] = artifact(path.parent, cell["jei_jar"]) if cell["jei"] else cell["jei_jar"]
     if not cell["jei"] and cell["jei_jar"] is not None:
         raise ValueError("No-JEI cell must declare jei_jar null")
-    for spec in (cell["candidate"], cell["jei_jar"]):
-        if spec and sha256(spec["path"]) != spec["sha256"]:
-            raise ValueError("Declared artifact hash mismatch")
+    if "mods" in cell:
+        validate_cell_files(path.parent, cell)
+    else:
+        cell["candidate"] = artifact(path.parent, cell["candidate"])
+        cell["jei_jar"] = artifact(path.parent, cell["jei_jar"]) if cell["jei"] else None
+        for spec in (cell["candidate"], cell["jei_jar"]):
+            if spec and sha256(spec["path"]) != spec["sha256"]:
+                raise ValueError("Declared artifact hash mismatch")
     server_jars = inventory(cell["server_dir"])
     if sum(j["sha256"] == cell["candidate"]["sha256"] for j in server_jars) != 1:
         raise ValueError("Server candidate SHA-256 missing, wrong or duplicated")
