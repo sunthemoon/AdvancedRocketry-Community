@@ -6,12 +6,19 @@ Sources are [v1.5 sections 10–13](../../../versions/V1.5.0-ORBITAL-STATION-WAR
 [ADR-044](../../../decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md).
 No result or Gate is approved here.
 
+Accepted common procedures for **every F row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Shared setup and evidence
 
 - H means a harness/operator action; P means a human action or judgement. Every numbered action below has its
   expected observation after the arrow. Run scripted actions before asking for judgement.
 - Use the P2 representative v1.3–v1.7 world fixture, specifically its station/warp copy. P2 does not supply archive
-  names, station IDs, coordinates, owner UUIDs or a charging recipe. Root must freeze these in its fixture manifest
+  names, station IDs, coordinates, owner UUIDs or a charging recipe. These **needs package K08** in its fixture manifest
   before execution. `<station-A>`, `<station-B>`, `<target-A>` and `<target-B>` below mean those recorded values,
   not literal command arguments. Both targets must be known, orbitable, different from the starting orbit, and
   include the Earth/Tau Ceti e inter-system route. Never substitute the shared Space body as an orbit target.
@@ -28,7 +35,7 @@ No result or Gate is approved here.
   only the two authenticated accounts. Phase 5 REF uses 4 vCPU/8 GiB/Debian 12, a non-root user and Java 17,
   `Xmx4G` maximum, server bound to loopback with SSH-tunnel client access, and an exclusive node.
   No campaign bay gate or JVM test property is required; production switches stay unchanged.
-- Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/`. Put DS evidence in
+- Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`. Put DS evidence in
   `E/phase3-ds/<row>/`, V1 in `E/phase2-v1/<machine>/<round>/`, V2 in `E/phase4-v2/<sitting>/`, and REF in
   `E/phase5-ref/<run>/`. Keep server/client native logs, per-step UTC times, state projections, configuration,
   hardware and candidate identity. Screenshots are `<row>-<step>-<client>-<language>-<scale>.png`; videos are
@@ -59,6 +66,10 @@ owner, permissions, energy and docked rockets. Prepare separate 10- and 100-reco
 8. [H] Compare the REF windows to docs/17: mean ≤25 ms, P95 ≤50 ms, P99 ≤100 ms, RSS not persistently >5.5 GiB,
    no watchdog/OOM or unexpected forced chunks. → Record measured values, not the older development-host figures.
 
+**Accepted preparation/action steps (W408):**
+
+(C8/C10, R535) Each real account owns one ordinary-created station; load-only 10/100 records use permission-2 `/arce station admin create` with distinct owner UUIDs and an operator-created label. Run the standard two-minute discarded warm-up/ten-minute intervals and two matched baselines, spread prompting Root review only. **Needs package K08**: worlds, energy/region/owner manifest and 10/100 driver; **needs package K15**: live query/raw-tick observation.
+
 **Evidence to keep:** F01 record projections before/unloaded/reloaded/each restart, chunk/ticket counts, command
 transcript, 10/100 workload manifest, raw reference samples and logs in the phase 3 and phase 5 folders.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -81,6 +92,10 @@ record the loaded config rather than assuming defaults.
 6. [P] Compare sky/context and positions on both clients. → Station identity does not cross; logical relocation
    does not teleport either player or station blocks.
 
+**Accepted preparation/action steps (W408):**
+
+(C8/C10) Use ordinary A/B-owned stations, never bypass their per-owner limit; any comparison inherits A's matched windows/review rule. **Needs package K08**: exact commands, regions, targets, energy and due-commit controls.
+
 **Evidence to keep:** Both videos/logs, quotes, confirmations, due/commit tick transcript, per-station pre/post state,
 position and energy comparisons in the phase 4 sitting folder.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -102,6 +117,10 @@ positions, station orbit and energy before each run; do not reset player data to
 6. [H] Compare station and player projections for both runs. → Distinguish connection events from the warp commit;
    an unconfirmed quote is cleared on logout, unlike a confirmed countdown.
 
+**Accepted preparation/action steps (W408):**
+
+(C8/C10) Retain ordinary ownership and matched sampling where measured. **Needs package K08**: separate owner/passenger reconnect copies, balances and countdown commands.
+
 **Evidence to keep:** Both videos, connection/countdown/commit logs and pre/post player/station fields in phase 4.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
 
@@ -121,6 +140,10 @@ logical/entity identities, cargo, fuel, seats, station ID and coordinates.
 6. [H] Stop and restart the same world twice. → Rocket identity, seats, contents, fuel and current station context
    survive both; no stale captured `current_body` prevents later station-source admission.
 
+**Accepted preparation/action steps (W408):**
+
+(C8/C10) Keep eligible ordinary ownership and A's matched sampling where measured. **Needs package K08**: docked-rocket/station manifest, balances and commands.
+
 **Evidence to keep:** Phase 3 logs, normal-stop writer-drain lines, countdown and committed projections, restart
 comparisons, rocket screenshot and station quote.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -129,8 +152,8 @@ comparisons, rocket screenshot and station quote.
 
 **Phase/level/machine/accounts:** 3 DS, development PC, A; optional V1 feedback capture.
 **Gate:** Ordinary disposable fixture; no campaign gate.
-**Preconditions:** P2 station fixture plus a valid target-removal/reload data pack. Sources give no pack filename;
-Root must pin it. Record original catalog generation, orbit, balance and the quote's cost/class.
+**Preconditions:** K08 station scene plus W406's `station_baseline.zip` and exactly one
+`station_target_removal.zip` / `station_cost_change.zip` overlay, hashes and outcomes below. Record original catalog generation, orbit, balance and the quote's cost/class.
 
 1. [P/H] Request and confirm a warp to the fixture target. → A countdown exists, but no debit/relocation yet.
 2. [H] Activate the target-removal pack and run `/reload` before commit. → The new catalog lacks that target.
@@ -139,6 +162,24 @@ Root must pin it. Record original catalog generation, orbit, balance and the quo
 5. [H] Repeat with a catalog/config change that changes the quoted cost class. → Old consent is invalid; no warp
    or debit without a new quote and confirmation. Common-config changes require restart, not merely `/reload`.
 6. [H] Restart the world twice. → Aborted work remains aborted; station and rocket resources are unchanged.
+
+**Accepted preparation/action steps (W408):**
+
+(C8/C10) Keep ordinary owner limits and matched comparisons. **Needs package K08**: live overlay activation boundary before the due commit, folded energy and effective cost readback. Pack generation below is not a timing qualification.
+
+(W406) Keep baseline enabled below exactly one overlay; confirm Earth→`k06:warp_target`, then activate/reload overlay **before** due commit. Removal expects WARP_TARGET_UNAVAILABLE. Reparenting to Tau Ceti changes IN_SYSTEM→INTERSTELLAR with no Level; WARP_QUOTE_CHANGED is conditional on differing effective costs and folded balance sufficient for the larger cost (another guard can mask it). Read effective costs, do not assume defaults; `/reload` is not config reload. Verify no debit/relocation/resurrected consent, remove overlay/reload and perform two clean restarts. Activation/energy control still **needs package K08**; actual load **needs package K06**.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `station_baseline.zip` | `5f3f827703682697bcdf340b3aea74ca0b898e55a7f28cf4ca9c268844c6d271` | A; add orbitable, discovery-free `k06:warp_target`, parent Earth, no Level. |
+| `station_target_removal.zip` | `088e4873cfbf46d968838b10595caabd03459de3112bca85f07894b75e97bb02` | A above station baseline; filter only that body; due commit should return `WARP_TARGET_UNAVAILABLE`. |
+| `station_cost_change.zip` | `42b97ed2e5a88bfeff30723cf12f746ef60d315183a9c1f1798b280b0e599a29` | A above station baseline; parent changes to Tau Ceti, Level stays absent; class changes IN_SYSTEM → INTERSTELLAR. |
+
 
 **Evidence to keep:** Pack files/hashes, reload log, quote/abort screenshots, before/after orbit and energy and
 two restart comparisons in phase 3. Do not claim all catalog reloads must abort if the confirmed facts stay valid.
@@ -154,9 +195,13 @@ granted ownership by an operator during the test.
 1. [P] B requests `/arce station warp <target-A>` locally. → Refused; no quote that grants commit authority.
 2. [P] B tries `/arce station warp confirm <station-A>`. → Refused; no countdown, charge or relocation.
 3. [P] B attempts station deletion and permission changes through the ordinary station interface. → Refused;
-   membership and ownership remain unchanged. Exact command grammar is not supplied by the inventory sources.
+   membership and ownership remain unchanged. Exact command grammar still **needs package K08**.
 4. [P] A requests/confirms a valid warp. → Owner can operate the same fixture; a broken fixture is not a refusal pass.
 5. [H] Compare registry, energy and chunk counts around B's attempts. → No mutation or arbitrary chunk load.
+
+**Accepted preparation/action steps (W408):**
+
+(C8/C10) Keep ordinary ownership/member rules; comparisons use A's matched plan. **Needs package K08**: exact deletion/permission grammar, owner/member/non-OP actions and station IDs. Refusals use R546 receipt and unchanged state, logs only where emitted.
 
 **Evidence to keep:** Both clients' refusal/success views and logs, member-list and chunk-count comparisons in phase 4.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -182,15 +227,18 @@ warp, one deliberate valid refusal fixture. Record CPU/GPU/driver/resolution and
    outcome; a separate nearby station keeps its own context.
 8. [P] Review the sequence on the second real GPU category. → Preserve a separate hardware record and judgement.
 
+**Accepted preparation/action steps (W408):**
+
+(C8/C10; J21 finding 8-3) In separate warp runs at effective GUI scales 2/3, quote, confirm, then cancel after three seconds. Expect cancellation text, not a lingering "in 10 s", inside the panel. Non-ticking seconds remain accepted Low KI-V180-UI-01 (R542 N11), not a new fix requirement. **Needs package K08**: countdown/cancel scenes; direct context cache evidence **needs package K15**.
+
 **Evidence to keep:** Phase 2 screenshots/cache and log observations, warp gameplay video, scale/language index,
 phase 4 synchronized views and phase 2 second-GPU report. No numeric cache-release time is specified by the sources.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
 
 ## Open questions for Root
 
-- F01–F07: P2 supplies fixture descriptions, not archive paths, coordinates, station/account IDs, energy supply
-  steps or fixed sampling windows. Publish the hashed fixture manifest and driving commands before execution.
-- F01: The inventory sources do not name a current C4 10/100 benchmark entry point. Bind the accepted runner
-  and sampling method; do not substitute an old JAR's timing or an empty-server run.
-- F05: Supply the target-removal/cost-change data pack and its exact activation procedure.
-- F06: Supply the normal deletion/permission command syntax from the pinned candidate, not a guessed command.
+- **Answered:** C8 ordinary A/B ownership and distinct-owner operator load records; C10/R535 sampling/review; W406 baseline/overlay filenames, hashes and outcomes; finding 8-3 cancellation recheck and R542 Low non-ticking notice.
+- **F01-F07:** station worlds/regions/owners/energy, exact local warp/deletion/member commands and 10/100 driver **needs package K08**.
+- **F01/F07:** live query/tick/direct-cache observation **needs package K15**.
+- **F05:** actual loads **needs package K06**; before-commit overlay timing, differing effective costs and sufficient folded balance **needs package K08**. No filename is missing, but generation does not prove due-commit behavior.
+- O9 supplies second GPU/time arrangements; ordinary refusal steps use R546 receipt and unchanged-state proof.

@@ -6,16 +6,21 @@ No result or Gate is approved. The campaign plan remains the scheduling authorit
 
 ## Run conventions and prerequisites
 
-- P1 must supply the candidate commit, hosted-run identity, JAR filename and SHA-256.
-  TASK-W396 identifies C4 as `659bbcb6a`; the plan's older statement that C4 is not
-  built is not a reason to use C3. Verify P1 before running; never copy a historical
-  result or hardcode the old `1.0.0-dev` artifact into a C4 command.
+- (C1, R535) Pin C4 commit `659bbcb6a745885565c07d98f5d695d43beef3f2`,
+  hosted release `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, SHA-256
+  `c048743e61da4f939ce0492ca3ec73b7d69ef1634577bebc3279c91cf506cea1`.
+  Its location is `D:/GitHub/ARCE-Task-Evidence/root-queue/C4/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar`.
+  Hosted regression run `44630684725` attempt `1` and governance run
+  `44630684714` identify these inputs (not new verdicts). The manifest's section 2 supersedes the plan's old "not built" text. Sources/API
+  JARs and local Maven publication still **needs package K01** at that same commit,
+  with local-build labels/hashes; report any locally rebuilt release-hash difference
+  without replacing the hosted tested JAR. Do not silently repin to a later candidate.
 - P2 names the immutable fixtures: the **v0.9 Beta world archive**, **a v1.0 world**,
   **representative v1.3 to v1.7 worlds**, **the API fixture mod against C4**,
   **three rockets of 64, 512 and 2,048 blocks**, **the many-machine layout**, and
   **the reference workload world of docs/17 section 4**. A fresh-world row uses a
   new disposable world, not an upgraded fixture. Record the copy identity and
-  before/after hashes of every immutable source. P2's run manifest must supply
+  before/after hashes of every immutable source. The relevant K02-K21 run manifests below must supply
   actual paths, dimensions, coordinates, owners, recipes, resource ledgers and
   pack hashes; these names alone are not a placement script.
 - Unless a row says otherwise: Java 17; Minecraft 1.20.1; packaged C4 server and
@@ -45,7 +50,7 @@ No result or Gate is approved. The campaign plan remains the scheduling authorit
 
 ### Evidence convention for every row
 
-Use `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/` (outside Git).
+Use `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/` (outside Git).
 Archive these checklists as run in `checklists/`. V1 goes in
 `phase2-v1/<machine>/<round>/`; DS/S2 in `phase3-ds/<row>/`; V2 in
 `phase4-v2/<sitting>/`; REF/SOAK in `phase5-ref/<run>/`. Use screenshots
@@ -56,6 +61,158 @@ result the candidate commit and JAR hash, Forge/JEI versions, machine, tester
 reference and SHA-256, finding or non-coverage reason. Record it in
 `results/RESULTS.md` and `results/results.json`; findings go in `results/FINDINGS.md`.
 Finish the campaign's `SHA256SUMS.txt` only after collecting the files.
+
+### Accepted procedures and delivered tooling (applies to every A-J row)
+
+Sources: `CAMPAIGN-PREP-BREAKDOWN.md` (accepted C1-C44/R535),
+`W399.md`, `W400.md`, `W402.md` (R546 is in `../QUEUE.md` row W402),
+`W403.md` and `W406.md`. Row-specific additions below are
+preparation/action steps, not executed results. Remaining inputs explicitly name
+their package. Nothing in this pass removes an action or supplies a new limit.
+
+**Display cells (C2 as changed by R535).** Use windowed **1280 by 720 at
+effective scales 2 and 3**, both languages, and native-resolution fullscreen
+at scale 4 **only if offered** (1920 by 1080 offers it). Record effective scale
+and actual dimensions on every screenshot: requesting 4 at 1280 by 720 clamps
+to 3 and is not a scale-4 result. This mapping replaces generic "2/3/4 in both
+modes" wording throughout A-J. No supported minimum is declared; smaller
+windows are not tested. Inaccessible key controls in a tested cell are findings
+under docs/17 section 8. K16 regenerates controls; never replay old pixel positions.
+J14 retains its explicit 1-6 HUD investigation, recording unavailable scales.
+
+**Prepared runtime cells (W400).** Use independent copies, never the templates
+as writable servers. Each manifest pins runtime, server/client templates,
+candidate/JEI copies and hashes; JEI is client-only.
+
+| Cell | Manifest (outside Git) | Manifest SHA-256 |
+|---|---|---|
+| `47.4.10-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-nojei/cell.json` | `58facd694f3fb2f3ea703c79dfb540bf70624805d5ce16a0ca216221861f0aa3` |
+| `47.4.10-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.10-jei/cell.json` | `216e60f4482945697039cc5ad3d5a252e1ac496da3608f5fd7ed0d1e8f308ccb` |
+| `47.4.23-nojei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-nojei/cell.json` | `7b5e3e0da222a8517bbaabd141a3b3bbec2fe84cb9e7f9efc482bfa77b09858c` |
+| `47.4.23-jei` | `D:/GitHub/ARCE-Task-Evidence/root-queue/P3/cells/47.4.23-jei/cell.json` | `c8fe0f5743e8fd2febc3f0f2beac7a8daa98ec076bc83d5a0fc01e45f8d26f0f` |
+
+**Harness commands and session fields (W399).** Read the
+tracked guide `scripts/campaign_client/README.md`.
+Bind `$session`, `$run`, `$ops`, `$csv`, `$clientPid` and
+`$frameJson` to the row's K16/K11 session manifest under the evidence root;
+they are not invented fixture filenames. Then use:
+
+```powershell
+python -B scripts/run_campaign_client_session.py check $session
+python -B scripts/run_campaign_client_session.py session $session --jvm-lock D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm
+python -B scripts/run_campaign_client_session.py request $run "@$ops" --mode attach --players $playerName
+python -B scripts/run_campaign_client_session.py frames $csv --pid $clientPid --threshold-ms 50 --output $frameJson
+```
+
+The request example is for attach; match `--mode` to the actual session.
+Set `schema_version=1`, `mode=launch|attach`, `cell` to a manifest above,
+a fresh `run_dir`, Java 17 `java`, `singleplayer`, bounded
+`time_limit_seconds` and `input_interval_seconds>=0.05`. Each client has
+`player_name`, `language`, `gui_scale`, `window_size`; attach additionally
+has owner-declared `pid`, `account_label`, `game_dir`. Server fields are
+`online-mode`, `white-list`, `enforce-whitelist`, `server-ip`,
+`server-port`, `whitelist`, `ops`, `jvm_properties`, `max_heap`.
+Whitelist/ops entries contain `name` and canonical `uuid`. Phase 4 sets all
+three booleans true, restricts access, uses O10's two UUIDs and keeps RCON off.
+Default heap is 3G; REF never exceeds 4G. Properties are individual
+`jvm_properties` entries, not a shell string. Marker creation is still K11.
+Attach never signs in, steals focus or closes clients; the owner foregrounds one
+window per batch. Preserve `results.jsonl`, `summary.json`, `attach.json`
+where applicable, native F2 frames and redacted logs in `evidence/`; index
+them in the plan's row folders. `COMPLETE` alone proves no pass.
+A window appearing is not a join receipt; no automatic reconnect hides failures.
+Historical regex waits need conversion to literal substrings. Live launch,
+input, window sizing and cleanup still **needs package K16** qualification.
+
+**Delivered K13 inventories/resource packs (W402).** The directory is
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K13/`.
+Use its tables for C30/C38/I11, not older inventories. These hashes identify
+prepared inputs, not successful live resource loads. K13 still owes live JEI
+counts and the audio-enabled profile; scenes/batches are the row's K05/K14/K16
+inputs. The long-text pack lengthens translations while preserving placeholders;
+it is not a fabricated different font.
+
+| File | SHA-256 | Use |
+|---|---|---|
+| `classification.csv` | `a34f4246da91c11f0d2ef1325938cff19496ecec2f532b21a8811169b2048297` | I02/I06/I08 complete high-risk and sampled classes (C30). |
+| `screens.csv` | `b5824fe01660dd16c6fef94b8bbee163c13ffc7a7fe333d833164780bbcfcc90` | Every-screen/every-language navigation, including eleven unnamed elsewhere. |
+| `sound-producers.csv` | `84cafa56eaa18848e21dd7f87497b26a5a720e7d66aa164105834d2785ef48cf` | J12-J16 actual C4 producers and previews (C38). |
+| `access-matrix.csv` | `3888f04c844db2deeb2cec16770f2d2f417a7414de031126672ae481d111d882` | I11 holder/policy/receipt branches, not blanket ownership. |
+| `k13-long-text-pack.zip` | `ae33c19e54517030aa3ad51232effb4c2fb6b7baa4c4b4900c5e393f64ad5a30` | J16 long-text/reason/hover stress; actual load **needs package K16**. |
+| `k13-missing-resource-pack.zip` | `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf` | I07's seven missing/corrupt resource controls; actual load **needs package K14**. |
+
+**Refusals (C14 corrected by R546; every refusal step in A-J).** For each
+negative intent, retain the intent tool's own receipt with sender/menu/target,
+sequence and time/tick where available, and authoritative before/after state
+read back (resources, authority, rights, binding and loaded chunks as relevant).
+Use a server log only for branches whose code emits one; never demand or invent
+a log line for a silent branch. An input timestamp is not a server receipt.
+K18 must qualify that receipt/readback method; an unreachable or uninstrumented
+branch is NOT_COVERED with its reason and named A1 test, never proved by a
+disabled button, closed UI or unchanged screenshot alone. Normal interaction
+and command refusals retain their response plus state readback; when their
+receipt cannot be established, keep that gap explicit. No product logging is
+added. `suit_motion` targets only the sender's worn jetpack: no distance step
+applies (R546). Keep other applicable sender/permission/state/load/rate checks.
+
+**Matched samples (C5/C10 as changed by R535).** Back-to-back comparisons use
+the same complete world copy, cell, machine, settings, viewport and sampling
+plan, with the measured feature present/absent and two baseline runs. Discard
+a two-minute warm-up, retain ten minutes of short-run samples (procedure
+parameters, not budgets); long/specific windows in A08/H07 remain as specified.
+For C5 pair Vanilla and Forge empty scenes too. Use W399's frame definitions:
+average FPS is frame count / summed frame duration, 1% low is the reciprocal
+mean of the slowest ceiling-1% frames; retain first stall, longest frame,
+tool/version and raw CSV. The 50 ms argument is reporting only: no FPS floor,
+stall limit or percentage allowance exists. A difference beyond the two
+baselines' spread triggers Root review, **not** automatic failure or Medium
+severity; severity follows docs/17 section 3. REF's absolute budgets still apply.
+
+**Observers and evidence utilities (W403).** E is
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`; keep the plan's
+nine folders, row results, native media and hashes. Bind `$identity` to JSON
+with `git_commit`, `jar_sha256`, `forge`, `java`; bind `$phase` to
+the completed phase folder. K06/K13 already created fixture directories: the
+creator refuses an existing root, so use `--check` once the complete root and
+identity exist; never overwrite them. Root creation/identity reconciliation still
+**needs package K15** integration, with all existing fixtures preserved.
+
+```powershell
+python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 659bbcb6a --identity $identity --drive C:/
+python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign 659bbcb6a --identity $identity --drive C:/ --check
+python -B scripts/run_campaign_observer.py process $serverPid $rssCsv --duration 600 --interval 1
+python -B scripts/run_campaign_observer.py host $hostJson --provider $provider --plan $plan --disk $disk --run-json $runFields
+python -B scripts/run_campaign_observer.py jfr-file $recording $jfrJson --jfr $jdkJfr
+python -B scripts/run_campaign_observer.py seal $phase
+python -B scripts/run_campaign_observer.py verify $phase
+```
+
+Bind remaining variables to K15's measured run manifest, not arbitrary PIDs.
+Seal/verify only completed folders; never overwrite a seal. A correction is a new
+file/recorded reseal as the plan requires, not an edit of sealed evidence.
+For REF use `bash scripts/campaign_observe/ref_acceptance.sh <provider> <plan> <evidence-folder> <backups-folder> <new-host.json> <run-fields.json> <repo>`;
+manual acceptance items remain open even on exit 0 (owner O11).
+
+For a harness-owned server, K15 calls
+`sample_ticks(channel, csv_path, duration=600, threshold_ms=500)` with a
+bounded console channel; it issues `arce satellite release-test perf ticks`
+or read-only `arce endgame release-test refload status`. Those diagnostics
+need release-test hooks/permission 2 on a separately documented diagnostic run;
+ordinary no-hook controls stay no-hook. W403 exports **window statistics**,
+not ordered ticks: no whole-run p95/p99 or consecutive-spike claim from their
+averages. Required raw-tick integration still **needs package K15** (R544's W407
+follow-up), as do queue, all-Forge-ticket and packet/cache-internal observations.
+Vanilla `forceload query` alone cannot prove all tickets absent.
+
+Wrap only a harness-owned `Popen` in `CampaignJvm(popen, "server")`;
+allowlisted `GC.heap_info`, `GC.class_histogram -all`, `JFR.start` and
+`JFR.stop` provide heap/GC/JFR data. Use bounded server JFR (normally 600 s,
+128 MiB retention) and separate restart segments. For disposable owned clients
+only, measure heap/histogram before/after reload and dimension changes, outside
+frame windows. Histograms include unreachable objects and are growth proxies,
+not proof of cache release, cache keys or GPU allocations; unavailable direct
+cache/allocation readback is NOT_COVERED pending K15. Never attach diagnostics
+to owner-signed-in clients or inspect JVM arguments.
 
 ## A01 - Fresh packaged server lifecycle
 
@@ -95,7 +252,7 @@ one real GPU client/account A; ordinary world, switches off, no test properties.
 [visual scenes, section 13](../../../15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md).
 
 **Preconditions:** A new world, not the Beta copy; baseline Forge/JEI absent.
-P2 must inventory the craftable core materials, electrolyzer recipe, powered
+The core scene **needs package K16** to inventory craftable materials, electrolyzer recipe, powered
 oxygen room, suit, legal rocket, invalid variant, fuel, station materials,
 research/mission inputs and their placement. These sources do not specify their
 coordinates or all quantities; record those inputs before execution.
@@ -127,6 +284,10 @@ coordinates or all quantities; record those inputs before execution.
 | 23 | [H] Claim the completed mission. | One captured research reward and discovery result. |
 | 24 | [H] Repeat the claim. | No second reward or resource debit. |
 | 25 | [P] Review the flow's screens and world views. | Electrolyzer, oxygen, rocket, station and research feedback agree with the server. |
+
+**Accepted preparation/action steps (W408):**
+
+(C2) Run the effective display cells in A's common procedure. **Needs package K16**: C4 core scene, exact recipe/resource/position manifest and regenerated controls. Apply R546 to invalid-fuel/structure and replay refusals.
 
 **Evidence to keep:** V1 screenshots at steps 3, 5-8, 10, 14-15, 19-24; client
 and server logs, `results.jsonl`, `summary.json`, resource ledgers and identity
@@ -196,7 +357,7 @@ has no selected checkpoint or injected fault. The runner retains the release-
 test hook property for its bounded operator reports on recovery processes.
 Use the existing [transaction runner](../../../../scripts/run_v100_transaction_forced_stop.py)
 and [flight runner](../../../../scripts/run_v100_flight_forced_stop.py), not a
-graceful stop masquerading as a cut. P2 must provide their C4-compatible baseline.
+graceful stop masquerading as a cut. Their C4-compatible baselines **needs package K02**.
 
 **Command templates for the campaign, not commands run while preparing this
 file:** Bind `$sourceServer`, `$baselineSummary`, `$candidateJar`,
@@ -253,6 +414,10 @@ Keep ASSEMBLED/FUELED as settled states. Use the runner's exact current oracle,
 not the historical JAR's schema numbers. Preserve the reconnect bounds named
 in the release matrix: 128 pending players, four attempts/tick, 200-tick wait.
 
+**Accepted preparation/action steps (W408):**
+
+(C3) Qualify both v1.0 forced-stop runners on C4 themselves; J22 is not a substitute. Any oracle change must be reviewed and state its new check. **Needs package K02**: retargeted baselines and deterministic adjacent-chunk arrival, current-seat selection and native-expiry controls. Record those as three separate observations; any control still unavailable is NOT_COVERED with that reason, not covered by durable cuts.
+
 **Evidence to keep:** `phase3-ds/A04/<case>/` command lines, PIDs, cut receipts,
 exit codes, staged journal, raw pre/post NBT, authority/resource comparisons and
 both restart logs; aggregate all 35 outcomes. These are explicitly flushed
@@ -292,6 +457,10 @@ the second operator or authorized scripted input to a signed-in window.
 | 10 | [P] Board B again. | Current seat assignment restores once. |
 | 11 | [P] Launch the normally refueled return from A's console. | Both clients see the same Earth arrival; no duplicated inventory or stale seat. |
 
+**Accepted preparation/action steps (W408):**
+
+(C3) Keep the three native readiness/current-seat/expiry observations separate as A04 requires. **Needs package K02** for their genuine controls and **needs package K16** for the two-seat scene; owner O5 supplies coordinated real input.
+
 **Evidence to keep:** `phase4-v2/sitting-1/` both videos/logs, server phase and
 seat receipts, disconnect/rejoin UTC times and saved resource projections.
 Historical 618 fuel/118 buffered values are not generic C4 expectations; compute
@@ -316,7 +485,7 @@ fixture and bounded observer, record the subcase NOT_COVERED. Keep the documente
 
 Keep the corresponding raw readiness/queue/tick and real connection evidence
 with A05. The source gives no genuine latency-injection setup or exact adjacent
-fixture coordinates; Root must supply those inputs rather than converting the
+fixture coordinates; these inputs **needs package K02**, rather than converting the
 historical JDI false-return experiment into a claimed native observation.
 
 Actual:
@@ -347,6 +516,10 @@ do not specify an ownership-transfer command spelling.
 | 7 | [P] Attempt an owner-only action from B. | Non-owner denial with unchanged station/resources. |
 | 8 | [P] Transfer station ownership from A to B through the supported control. | Exactly one new owner; actual former-owner membership policy is recorded, not invented. |
 | 9 | [P] Attempt an owner-only action from A. | Authorization follows current ownership and documented membership, not old menu state. |
+
+**Accepted preparation/action steps (W408):**
+
+(C2) Use A's corrected effective viewports/scales. **Needs package K16**: station invitation/ownership-transfer controls and scene. Owner O10 supplies UUIDs; permission refusals use R546's common evidence rule.
 
 **Evidence to keep:** Both-client screenshots of invitation/decline/accept/transfer,
 server ownership/member projections, refusal receipts and logs in sitting 1.
@@ -413,6 +586,10 @@ assembly/disassembly, one dimension transfer, periodic saves and restarts.
 | 5 | [H] Capture the final resource projection. | No unexplained gain/loss; legitimate production/consumption reconciles. |
 | 6 | [H] Analyze the complete sample interval. | No OOM/watchdog, unexpected forced chunks or sustained monotonic memory growth; A09 budgets apply. |
 
+**Accepted preparation/action steps (W408):**
+
+(C4, R535) Read back shipped defaults of `atmosphere.maxVolumeCells` and `atmosphere.maxInspectionsPerLevelTick` from the generated config without changing them. Use 16 rooms with one recorded footprint at most 4,096 blocks. Retain vanilla autosave, a flushed save every 30 minutes and one orderly restart at two sampled hours; collect four sampled hours, excluding restart downtime, and compare memory across the restart. Footprint, save/restart intervals are procedure parameters, not new budgets. **Needs package K17**: combined world, room layout and schedule; **needs package K15**: live sampler/queue qualification. Owner O7 still supplies the two connections/equivalent decision.
+
 **Evidence to keep:** `phase5-ref/<run>/A08/` workload schedule, real elapsed
 interval, node/JVM record, all logs and raw samples, GC/RSS plots, restart events
 and exact accounting differences. An interrupted/failed soak is retained and
@@ -441,6 +618,10 @@ same measured load as A08. Record sampling tool/version and interval before run.
 | 3 | [H] Evaluate RSS and non-startup/save spikes. | RSS does not sustain above 5.5 GiB; single non-startup/save spikes must not persist over 500 ms. |
 | 4 | [H] Compare watchdog, OOM and forced-chunk observations. | Zero watchdog/OOM and zero unexpected forced chunks. |
 
+**Accepted preparation/action steps (W408):**
+
+(W403) Use the common observer commands and preserve raw-tick/ticket coverage gaps; window-percentile averages cannot supply this row's whole-run distribution. **Needs package K15** for raw-tick and all-ticket integration and **needs package K17** for the reference world.
+
 **Evidence to keep:** Raw tick/RSS/GC series, interval/event markers,
 percentile calculation and all budget comparisons in `phase5-ref/<run>/A09/`.
 Share A08 samples by hash/reference, not by relabeling a different workload.
@@ -468,6 +649,10 @@ five-block recovery fixture. No specific operation-duration limit is given here.
 | 3 | [H] Disassemble through the supported normal operation. | Exact structure/inventory restored once; record duration and max tick. |
 | 4 | [H] Compare both timings against the general reference budgets. | Report all numbers and failures; no invented separate duration threshold. |
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K04**: exact 2,048-block legal rocket/layout and operation receipts; **needs package K15**: raw tick/operation observation. Keep the original general reference budgets; no separate operation-duration limit exists.
+
 **Evidence to keep:** `phase5-ref/<run>/A10/` fixture count/layout hash,
 operation start/end receipts, raw tick samples, spike analysis and conservation.
 
@@ -485,7 +670,8 @@ ordinary copy, switches off, no properties. **Source:** [v1.0 section 13.3](../.
 **Preconditions:** P2 reference workload with 16 powered/supplied atmosphere
 devices and several sealed rooms; baseline/JEI absent. Manifest must state room
 volumes, footprints, hard scan limits and per-tick budgets. Source gives no
-exact number of rooms beyond several and no additional queue threshold.
+exact number of rooms beyond several; C4 selects 16 with the common footprint.
+No additional queue threshold exists.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -494,6 +680,10 @@ exact number of rooms beyond several and no additional queue threshold.
 | 3 | [H] Open the selected room boundaries. | Invalidated protection and bounded revalidation work. |
 | 4 | [H] Restore those boundaries. | Correct supplied-room recovery without queue growth across repeated invalidations. |
 | 5 | [H] Compare resource totals and tick samples. | Finite oxygen/energy debit, A09 budgets and no unexplained resource change. |
+
+**Accepted preparation/action steps (W408):**
+
+(C4, R535) Use the same 16 rooms, recorded at-most-4,096-block footprint and unchanged generated `atmosphere.maxVolumeCells`/`atmosphere.maxInspectionsPerLevelTick` defaults as A08. **Needs package K17**: room/boundary coordinates; **needs package K15**: queue and loaded-chunk readback. No additional queue threshold exists.
 
 **Evidence to keep:** `phase5-ref/<run>/A11/` device/room layout, queue and
 tick samples, loaded-chunk observations, before/after oxygen/energy accounting.
@@ -527,6 +717,10 @@ Record OS, CPU, GPU, driver, resolution, window mode, GUI scale, JVM and packs.
 | 8 | [H] Display the P2 multi-rocket scene. | Same correctness and frame-time/memory measurements with multiple rockets. |
 | 9 | [P] Review recordings and cache observations against the baselines. | No missing textures, obvious offsets, unstable passengers or continuous OpenGL errors; record unacceptable stalls without inventing an absolute FPS limit. |
 
+**Accepted preparation/action steps (W408):**
+
+(C5, R535; W399/W403) Follow A's paired Vanilla/Forge baselines, twice-run spread and frame-reader definitions; 50 ms is reporting only, with no FPS/stall limit. Keep docs/17 section 8's correctness list unchanged. Use owned-client heap/histogram proxies outside timed windows; direct cache-release/GPU-allocation proof still **needs package K15**, otherwise NOT_COVERED. **Needs package K04** for all three rockets/multiple-rocket scene; owner O8 confirms capture tool/version (PresentMon recommended), O9 the second GPU/subset.
+
 **Evidence to keep:** `phase2-v1/<machine>/<round>/` per-size media, raw
 `frametime/` samples, baseline/settings records, client memory/cache observations
 and logs. An F3 screenshot alone is not cache-release or 1% low evidence.
@@ -545,8 +739,8 @@ and remote/visual rules section 13.
 
 **Preconditions:** P2 core-flow scene from A02; baseline/JEI absent. Run the
 following for each of electrolyzer, oxygen/life-support, rocket, station and
-satellite/research interfaces, in English and Chinese, scales **2, 3 and 4**,
-both windowed and fullscreen. Sources do not define exact window pixel sizes.
+satellite/research interfaces in English and Chinese, using C2/R535's effective
+1280-by-720 scales 2/3 and offered native-fullscreen scale 4.
 
 | Step | Action, for each interface/language/scale/window cell | Expected observation |
 |---|---|---|
@@ -555,6 +749,10 @@ both windowed and fullscreen. Sources do not define exact window pixel sizes.
 | 3 | [H] Activate its recorded valid control. | Control is reachable; corresponding server-authoritative state changes once. |
 | 4 | [H] Trigger its recorded invalid-state feedback. | Reason is readable, not clipped or hidden by other controls. |
 | 5 | [P] Review native screenshots. | No inaccessible critical control or critical overlap in any tested cell. |
+
+**Accepted preparation/action steps (W408):**
+
+(C2, R535) Execute 1280 by 720 at effective scales 2/3 and native fullscreen at offered scale 4, both languages; record actual scale and unavailable combinations, not requested values. No supported minimum exists. **Needs package K16**: core scene/control manifest and regenerated pixel positions.
 
 **Evidence to keep:** Per-cell screenshots using the row-step-client-language-scale
 naming, actual window dimensions in the step table, server receipts and client log.
@@ -636,6 +834,10 @@ matching server Forge and the same C4 hash. Preserve separate world copies.
 | 4 | [H] Run that compatibility smoke with JEI present. | Key smoke usable with matching JEI. |
 | 5 | [P] Review each cell's screenshots and logs. | A failure is assigned to its lane; untested Forge versions do not redefine the baseline. |
 
+**Accepted preparation/action steps (W408):**
+
+(W400) Use exactly the four named cells/manifests in A's common procedure. **Needs package K16**: first live start/window/input qualification and per-cell core smoke; preparation alone is no join/visual result.
+
 **Evidence to keep:** One profile/install manifest and media/log set per
 Forge/JEI cell; actual test subset and linked A-row step results. I04 remains
 the full four-cell v1.8 recipe/usage matrix; this row does not replace it.
@@ -664,6 +866,10 @@ room, fueled/landed rocket, station, satellite and research state inventoried.
 | 5 | [H] Compare saved and live state. | Stable identities, no replayed rewards or unexplained resource difference; elapsed processing is reconciled. |
 | 6 | [H] Repeat steps 2 to 5 for the second restart. | Same conservation and continued-use outcome. |
 
+**Accepted preparation/action steps (W408):**
+
+(C2) Use the corrected effective display cells when recording re-entry. **Needs package K16** for populated core scene, projections and controls.
+
 **Evidence to keep:** `phase3-ds/A17/` all logs/exits, pre/post raw state and
 field differences, re-entry screenshots and resource accounting.
 
@@ -682,9 +888,8 @@ two real clients/accounts A/B; ordinary worlds, switches off, no properties.
 `D:/GitHub/ARCE-Task-Evidence/v18-client-20261010/REPORT.md` (external historical report).
 
 **Preconditions:** P3 baseline and compatibility profiles, initially JEI absent;
-record JEI state for each trial. Root must specify trial count and first-join
-reset procedure before execution; the sources give no required statistical
-sample size. V2 uses normal online authentication, not offline UUID substitutes.
+record JEI state for each trial. C6 supplies ten fresh-copy/process/game-directory
+trials per no-JEI lane plus every phase-4 A/B first join, as procedure parameters. V2 uses normal online authentication, not offline UUID substitutes.
 
 | Step | Action, separately for each Forge lane and connection trial | Expected observation |
 |---|---|---|
@@ -700,6 +905,10 @@ r01, a successful same-process retry, and four successful first joins in r02/r03
 These are not C4/47.4.10/47.4.23 results or an approved tolerance. A timeout
 remains a finding until Root dispositions it; sources give no acceptable rate.
 
+**Accepted preparation/action steps (W408):**
+
+(C6; R542 N1) Run ten first joins on each Forge lane with JEI absent, each on a fresh server copy, fresh client process and fresh game directory, plus every A/B first join in phase 4. Ten is a procedure parameter. W399 launch mode and W400's no-JEI cells supply the reset mechanism; no automatic retries. Report timeouts/trials separately per lane and retain each failed attempt even if a retry succeeds. No tolerated rate exists: each timeout remains a finding until Root dispositions it (KI-V180-CONNECT-01). Live harness qualification still **needs package K16**.
+
 **Evidence to keep:** `phase3-ds/A18/` and the paired V2 sitting's trial table,
 all first/failed/retry/restart logs, screenshots, UTC durations and per-lane counts.
 
@@ -711,22 +920,9 @@ Build hash (commit and JAR SHA-256):
 
 ## Open questions for Root
 
-- **A01-A18:** Publish P1's complete C4 identity and P2/P3 run manifests. The
-  task pins `659bbcb6a`, whereas the plan still describes an unbuilt C4. This
-  checklist does not invent the full commit, JAR hash or hosted-run identifier.
-- **A02/A06/A13/A17:** Sources do not specify a complete core scene layout,
-  recipe/placement quantities, ownership-transfer control or exact window sizes.
-  Bind the actions above to the current candidate's scene/control manifest before
-  the owner's session; do not replay historical pointer coordinates on new GUIs.
-- **A04:** Confirm the existing transaction/flight runner baselines are retargeted
-  to C4, including any accounting-sensitive oracle changes. Genuine adjacent-chunk
-  arrival/current-seat selection and native expiry remain additional recovery
-  observations in the source matrix, not proven by durable checkpoint runs.
-- **A08/A11:** Supply the periodic workload/save/restart schedule, room footprints,
-  queue-observation tool and configured scan budgets. O7's account/equivalent
-  arrangement still needs the owner's confirmation.
-- **A12:** O8 must identify a frame-time tool; P3 must provide a cache/resource
-  observation method. O9 must identify the second GPU machine and subset. F3
-  alone cannot establish 1% low, first stall or cache release.
-- **A18:** Set the trial count/reset procedure and review criteria. No source
-  supplies a tolerated timeout rate; retain the unresolved timeout obligation.
+- **Answered:** C1 identity, W400 cell paths/hashes, W399 session/reset/frame commands, C2/R535 viewports, C4 room/schedule parameters, C5/C10/R535 sampling/review and C6 first-join trials/reset. W403 observers/seals are delivered but not fully live-qualified.
+- **A01-A18:** sources/API JARs **needs package K01**; current core/world/control/batch and live harness qualification **needs package K16**; immutable Beta/historical/forced-stop baselines **needs package K02**.
+- **A04/A05:** genuine adjacent-chunk/current-seat/expiry controls each **needs package K02**, otherwise the separate observation is NOT_COVERED.
+- **A08-A11:** combined world/layout **needs package K17**; raw-tick/queue/all-ticket/live observer integration **needs package K15**. O7/O11 supply connections/equivalent decision and node acceptance.
+- **A12:** legal three-size/multi-rocket fixtures **needs package K04**; direct cache/allocation proof **needs package K15**, not a histogram inference. O8 confirms capture/version (PresentMon recommended); O9 the second GPU/subset.
+- **A18:** no trial-count decision remains: ten fresh no-JEI trials per lane plus every V2 A/B first join; live qualification **needs package K16**, O10 supplies UUIDs. No tolerated timeout rate exists.

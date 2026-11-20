@@ -5,6 +5,13 @@ Status: planned, not executed. Covers B01-B07 of
 maintenance document creates no additional campaign row and does not discharge
 these deferred tests.
 
+Accepted common procedures for **every B row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Shared execution requirements
 
 Use the candidate, authentication, driver markers, restart protocol, result
@@ -48,6 +55,10 @@ and resource projections before first C4 load. This is distinct from A03's Beta.
 | 9 | [H] Repeat steps 6 to 8 for the second restart. | Idempotent second reopen. |
 | 10 | [H] Rehash the original and backup. | Neither source was changed. |
 
+**Accepted preparation/action steps (W408):**
+
+(C7) **Needs package K02**: normal v1.0 and in-flight worlds made on the pinned historical JAR. Label each rebuild "reconstructed on JAR (hash), not historically played"; it proves format migration, not played-world history. H02 covers the legacy-passenger branch only. Where no retained played in-flight source exists, that claim is NOT_COVERED for that reason. Never edit earned balances, IDs or binding history.
+
 **Evidence to keep:** `phase3-ds/B01/` source/copy manifests, before/after
 target/schema projections, each open log and exit, flight/station/claim receipts,
 resource ledgers, client screenshots and original-hash comparison.
@@ -82,6 +93,10 @@ Do not assume that Space's Level ID alone determines either body's environment.
 | 8 | [H] Repeat steps 6 to 7 for the second restart. | No cross-station state after reload. |
 | 9 | [P] Review the two orbit displays against server records. | V1 visuals agree with the correct station's body; station climate is not a planet surface hazard. |
 
+**Accepted preparation/action steps (W408):**
+
+(C8) Each real account owns one station by ordinary creation. For 10/100-record loads use permission-2 `/arce station admin create`, with a distinct owner UUID per station and an operator-created label, never a per-owner bypass. **Needs package K08**: exact regions, UUID/energy manifest and commands.
+
 **Evidence to keep:** `phase3-ds/B02/` region/context/rights projections and
 restart logs; phase-2 screenshots of each body's label/sky and the permission
 response. This does not replace B05/A06's actual two-client results.
@@ -97,11 +112,9 @@ Build hash (commit and JAR SHA-256):
 **Header:** Phase 3; DS; development PC, one real client/account A and console
 operator; ordinary copy, switches off, no properties. **Source:** v1.1 section 10.3.
 
-**Preconditions:** P2 v1.0-world-derived copy; baseline/JEI absent; a known
-valid route pack and a separately hashed invalid candidate pack, plus originals.
-Manifest supplies pack paths, route IDs, expected cost/reachability changes and
-the deliberately invalid field. No exact pack name or numeric route change is
-specified by section 10.3. Do not fabricate one as an acceptance requirement.
+**Preconditions:** P2 v1.0-world-derived copy; baseline/JEI absent; W406's hashed baseline/valid/invalid packs listed below, plus originals.
+The direct Earth-Moon definition changes 50 to 75, while the shortest graph
+plan remains 50 via two orbit legs. Live quotes/readback **needs package K06**.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -115,6 +128,23 @@ specified by section 10.3. Do not fabricate one as an acceptance requirement.
 | 8 | [H] Restore the valid pack. | A valid on-disk pack is present before restart. |
 | 9 | [H] Issue `reload`. | Recovery to valid definitions without data loss. |
 | 10 | [H] Run two clean restarts of this same copy using checklist A's protocol. | Route state and persisted targets remain correct after each. |
+
+**Accepted preparation/action steps (W408):**
+
+(W406) Begin with the baseline, then replace it with the valid variant; test invalid-anchor and unknown-body packs separately only **after** a valid load, restoring valid files before restart. Capture `/arce celestial route advancedrocketrycommunity:earth_moon`, catalog generation, direct definition and selected plan legs plus quote. Direct distance changes 50→75, but two 25-unit orbit legs keep shortest distance 50: do not require a +25 fuel increase or infer cache freshness from price alone. This refines step 4 to the actual graph, not an invented quote. **Needs package K06**: live load, quotes/plan readback and two restarts; world source **needs package K02**.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `route_baseline.zip` | `5734f7f9256106b1d919551e2013b99c9c92e20be4ee65ecfa0c305cab2f77e5` | A; original bidirectional Earth–Moon surface route, distance 50; 11 bodies/12 routes. |
+| `route_valid.zip` | `af571df269d2ae39492c62b051ea2797986f9d585f7e3770e83b612d47b2a9b9` | A; direct route distance 75; alternate 25+25 path keeps the shortest distance at 50. |
+| `route_invalid_reference.zip` | `709509268fba3b398acbc77ac3609c11aaf6840c64e60caf62e781f7cb781705` | R; `Unknown route anchor type advancedrocketrycommunity:invalid_anchor`; retain valid pair. |
+| `route_unknown_body.zip` | `5891700045f94b37c6ac4e75b7ec9dae7135a4ca39cda53a8ab22c13d2d9123c` | R; route `advancedrocketrycommunity:earth_moon` references missing body `k06:unknown_body`. |
+
 
 **Evidence to keep:** `phase3-ds/B03/` pack bytes/hashes, catalog/quote
 projections, all reload diagnostics, client feedback and restart comparisons.
@@ -146,6 +176,10 @@ schema/protocol, not the historical flight=2/protocol=6 numbers as a C4 pin.
 | 7 | [H] Observe completion of the recovered flight. | Intended destination, not automatic Earth or another session's target; one debit. |
 | 8 | [H] Save/stop and restart the settled world once more. | Second restart preserves destination, assets and resources without replay. |
 
+**Accepted preparation/action steps (W408):**
+
+(C7) Keep the ordinary C4 restart separate from upgrading K02's historical in-flight copy; H02 is legacy-passenger-only. A rebuilt source is labelled reconstructed on its hashed JAR, not historically played; the retained-played-source claim is NOT_COVERED if unavailable. **Needs package K02** for that source and **needs package K16** for the current-flight timing/controls. Do not edit earned balances or identities.
+
 **Evidence to keep:** `phase3-ds/B04/` selected/active/recovered target
 projections, journal/fuel/seat comparisons, disconnect/rejoin logs and screenshots.
 An ordinary flight is not evidence for upgrading a historical in-flight fixture;
@@ -175,6 +209,10 @@ input to the two signed-in windows; no FakePlayer substitutes.
 | 4 | [P] Confirm A's launch. | A's plan contains A's target and costs. |
 | 5 | [P] Confirm B's launch. | B's plan contains B's target, unaffected by A. |
 | 6 | [H] Compare both plans and arrivals against the initial account map. | No target/session/fuel/seat crossover. |
+
+**Accepted preparation/action steps (W408):**
+
+(C9) Keep each intent's actual server receipt tick, not just W399 input/completion timestamps. Claim "same tick" only if both server receipts prove it; otherwise report the tick gap, check independent plans/one settlement with no gain or loss, and mark the same-tick V2 branch NOT_COVERED with its named A1 test. No overlap tolerance exists. W399 supplies session records; server-tick correlation still **needs package K18** if ordinary receipts are insufficient, and the scene **needs package K16**. Owner O5 supplies the second input operator.
 
 **Evidence to keep:** `phase4-v2/sitting-1/` both videos/logs, coordinated
 step table and server plan/arrival projections. Sources give no millisecond
@@ -208,6 +246,22 @@ windowed/fullscreen follow the campaign V1 environment.
 | 7 | [H] Complete the old Earth/Moon selection/launch flow. | No visible or functional regression. |
 | 8 | [P] Review all language/scale/window cells. | Names and refusal/test labels remain readable; no critical clipping. |
 
+**Accepted preparation/action steps (W408):**
+
+(W406) The unknown-body ZIP is a catalog **rejection**, never setup for a selectable unknown node. For an actually removed destination, hold `advancedrocketrycommunity:test_mars`, remove its valid pack and reload; capture actual menu/refusal behavior. The data-only fixture is not built-in Mars and creates no Level: accepted catalog data is not proof of surface travel. The locked pack uses built-in undiscovered Mars with an otherwise eligible flight; expect DISCOVERY_REQUIRED. **Needs package K06**: live loads/removed-selection recipe; **needs package K16**: bound menus/display controls.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `route_unknown_body.zip` | `5891700045f94b37c6ac4e75b7ec9dae7135a4ca39cda53a8ab22c13d2d9123c` | R; route `advancedrocketrycommunity:earth_moon` references missing body `k06:unknown_body`. |
+| `route_locked.zip` | `ddfc89cb8eb868e55c193977b403e2a9cf7db4d02a8a2fd0eb38a1bf577d0ac7` | A; built-in Mars requires discovery; otherwise eligible undiscovered flight returns `DISCOVERY_REQUIRED`. |
+| `data_only_test_mars.zip` | `743981cae448942dd226ff73d0fb0d85bd3662dacb7404df6bf9ef7378c9b323` | A; exact tracked body/route seeds in real loader directories; 12 bodies/13 routes; distance 225, bidirectional. No new Level. |
+
+
 **Evidence to keep:** Phase-2 screenshots of valid/unknown/locked/test
 destinations, pack diff/hash, reload logs and old-route server receipts.
 
@@ -225,8 +279,8 @@ workload accounts/equivalent under O7; ordinary world, switches off, no properti
 
 **Preconditions:** P2 **reference workload world of docs/17 section 4** and
 the two-station orbit scene from B02; baseline/JEI absent, heap <=4 GiB, RSS/tick
-sampling plus a cache/query profiling method. Root must identify the comparable
-baseline and meaning of significant regression; the version gives no percentage.
+sampling plus a cache/query profiling method. C10/R535 supplies the matched baseline and Root-review rule below;
+no percentage allowance exists.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -235,6 +289,10 @@ baseline and meaning of significant regression; the version gives no percentage.
 | 3 | [H] Apply the fixture's valid context/catalog invalidation. | Subsequent query reflects the new generation, not stale context. |
 | 4 | [H] Repeat the profile after invalidation. | Cache recovers without monotonic growth or unbounded scanning. |
 | 5 | [H] Compare the complete regression interval with the matched baseline. | Record absolute budgets and baseline deltas; mean <=25 ms, P95 <=50 ms, P99 <=100 ms, no sustained RSS above 5.5 GiB. |
+
+**Accepted preparation/action steps (W408):**
+
+(C10, R535) Use the common matched-copy/host/cell plan, two discarded warm-up minutes, ten sampled minutes and two baseline runs; baseline spread is a Root-review trigger, not a numerical allowance or preset severity. **Needs package K15**: direct cache invalidation/query observer and comparable baseline; **needs package K17**: reference world.
 
 **Evidence to keep:** `phase5-ref/<run>/B07/` workload/environment record,
 raw samples, cache invalidation/query traces, baseline identity and calculated
@@ -248,17 +306,9 @@ Build hash (commit and JAR SHA-256):
 
 ## Open questions for Root
 
-- **B01/B04:** P2 must name the v1.0 fixture and any historical in-flight
-  variant, with schema/target projections. Section 10 supplies no world path,
-  coordinates or flight-stop timing. Do not equate a new C4 flight with historical
-  in-flight migration coverage.
-- **B02:** Supply the two-station region/owner manifest and supported setup
-  method; a single account's ownership limit must not be bypassed silently.
-- **B03/B06:** Supply valid/invalid route packs, unknown/locked-route cases and
-  data-only `test_mars` pack against C4. The later built-in Mars does not prove
-  the original data-only extension requirement.
-- **B05:** Confirm O5's concurrency operator/input arrangement. The sources
-  supply no numerical overlap tolerance; keep precise observed receipt times.
-- **B07:** Name the cache observation method, invalidation fixture, matched
-  regression baseline and review rule for significant degradation. Absolute
-  reference budgets still apply even while that comparison is unresolved.
+- **Answered:** C7 reconstruction/H02 scope, C8 ownership setup, C9 server-tick reporting/no overlap tolerance, C10/R535 matched sampling/review, W406 pack bytes/hashes/source-derived outcomes.
+- **B01/B04:** historical normal/in-flight source/schema/boundary manifests **needs package K02**; current-flight controls **needs package K16**. No retained played in-flight source means that played-world claim is NOT_COVERED.
+- **B02:** regions/owners/energy and commands **needs package K08**, without owner-limit bypass.
+- **B03/B06:** live pack loads/quotes/graph legs/removed-menu and two-restart qualification **needs package K06**; scene/control binding **needs package K16**. No fuel-price increase is promised by the distance-75 definition; rejected unknown data is not setup.
+- **B05:** actual server receipt-tick correlation, if ordinary receipts lack it, **needs package K18**; scene **needs package K16**. O5 supplies coordinated input. Missing same-tick proof is NOT_COVERED with a named A1 test.
+- **B07:** direct cache/invalidation profiling **needs package K15** and reference world **needs package K17**; the comparison rule is answered.
