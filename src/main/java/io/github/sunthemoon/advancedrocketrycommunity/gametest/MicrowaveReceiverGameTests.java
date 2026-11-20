@@ -157,6 +157,82 @@ public final class MicrowaveReceiverGameTests {
         helper.succeed();
     }
 
+    /** Census F7: reopen the linked UUID/chip/buffer and registry; duplicate chips still deliver one bounded rate. */
+    @GameTest(template = "empty", batch = "w415_receiver_restart", timeoutTicks = 140)
+    public static void f7CurrentReceiverRestartPreservesLinkAndReceivesExactlyOncePerTick(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var original = place(helper, new BlockPos(1, 2, 1));
+        var identity = launch(server, player(helper).getUUID(), Optional.empty());
+        helper.assertTrue(original.menuInventory().insertItem(0, chip(identity), false).isEmpty(), "Chip insertion refused");
+        var driver = new GameTestTickDriver(helper);
+        driver.after(22, () -> {
+            var originalData = SatelliteMissionSavedData.get(server);
+            UUID receiverId = original.receiverId();
+            helper.assertTrue(receiverId != null && link(originalData, identity).equals(Optional.of(receiverId))
+                            && original.status(0) == SolarLinks.LinkStatus.HOLDING && original.output() == 4
+                            && original.energyStored() > 0, "Current receiver did not establish a funded link");
+            CompoundTag saved = original.saveWithFullMetadata();
+            helper.assertTrue(saved.getCompound(KEY).getInt("schema_version") == 1, "Receiver fixture is not current schema");
+            originalData.awaitForTests(server);
+            var loadedData = SatelliteMissionSavedData.load(originalData.save(new CompoundTag()));
+            helper.assertTrue(loadedData.operational() && loadedData != originalData, "Receiver registry did not reopen");
+            original.onChunkUnloaded(); helper.getLevel().removeBlockEntity(original.getBlockPos());
+            var restored = new MicrowaveReceiverBlockEntity(original.getBlockPos(), original.getBlockState());
+            restored.load(saved); helper.getLevel().setBlockEntity(restored); restored.onLoad();
+            server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, loadedData);
+            try {
+                helper.assertTrue(restored != original && receiverId.equals(restored.receiverId())
+                                && restored.saveWithoutMetadata().get(KEY).equals(saved.get(KEY))
+                                && link(loadedData, identity).equals(Optional.of(receiverId)) && restored.output() == 0,
+                        "Receiver identity, inventory, link or buffer changed on restart");
+                helper.assertTrue(restored.menuInventory().insertItem(1, chip(identity), false).isEmpty(),
+                        "Duplicate-chip fixture insertion refused");
+                int buffer = restored.energyStored();
+                long restartedAt = helper.getLevel().getGameTime();
+                int interval = MicrowaveReceiverBlockEntity.CHECK_INTERVAL_TICKS;
+                long firstCheck = interval - Math.floorMod(restartedAt + restored.getBlockPos().hashCode(), interval);
+                var poll = new Runnable() {
+                    @Override public void run() {
+                        try {
+                            long elapsed = helper.getLevel().getGameTime() - restartedAt;
+                            long receivingTicks = Math.max(0, elapsed - firstCheck + 1);
+                            int expected = (int) Math.min(MicrowaveReceiverBlockEntity.ENERGY_CAPACITY, buffer + 4 * receivingTicks);
+                            helper.assertTrue(elapsed > 0 && restored.energyStored() == expected
+                                            && restored.output() == (receivingTicks == 0 ? 0 : 4)
+                                            && restored.output() <= SolarLinks.MAX_OUTPUT_PER_TICK
+                                            && link(loadedData, identity).equals(Optional.of(receiverId)),
+                                    "Restored receiver duplicated/lost FE at tick " + elapsed + ": expected " + expected
+                                            + ", got " + restored.energyStored());
+                            if (elapsed < firstCheck + interval) { driver.after(1, this); return; }
+                            var energy = restored.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+                            helper.assertTrue(energy.receiveEnergy(1, false) == 0 && energy.extractEnergy(expected, true) == expected
+                                            && restored.energyStored() == expected && energy.extractEnergy(expected, false) == expected
+                                            && energy.extractEnergy(1, false) == 0 && restored.energyStored() == 0,
+                                    "Restored FE buffer was not delivered exactly once");
+                            cleanup(); helper.succeed();
+                        } catch (RuntimeException | Error failure) { cleanup(); throw failure; }
+                    }
+                    private void cleanup() {
+                        SatelliteRuntime.releaseReceiver(server, receiverId);
+                        loadedData.awaitForTests(server); loadedData.close();
+                        server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, originalData);
+                        originalData.setDirty();
+                        SatelliteRuntime.releaseReceiver(server, receiverId);
+                        helper.getLevel().removeBlockEntity(restored.getBlockPos());
+                    }
+                };
+                driver.after(1, poll);
+            } catch (RuntimeException | Error failure) {
+                loadedData.awaitForTests(server); loadedData.close();
+                server.overworld().getDataStorage().set(SatelliteMissionSavedData.DATA_NAME, originalData);
+                originalData.setDirty();
+                SatelliteRuntime.releaseReceiver(server, receiverId);
+                helper.getLevel().removeBlockEntity(restored.getBlockPos());
+                throw failure;
+            }
+        });
+    }
+
     private static Optional<UUID> link(SatelliteMissionSavedData data, SatelliteIdentity identity) {
         return data.satellite(identity.satelliteId())
                 .map(SatelliteState::kindState)

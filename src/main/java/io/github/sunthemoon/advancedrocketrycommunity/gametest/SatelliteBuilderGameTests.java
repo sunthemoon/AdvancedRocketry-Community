@@ -160,6 +160,69 @@ public final class SatelliteBuilderGameTests {
         helper.succeed();
     }
 
+    /** Census F6: reopen current inventory/FE/result, build once, then reopen the uncollected output. */
+    @GameTest(template = "empty", batch = "w415_builder_restart", timeoutTicks = 80)
+    public static void f6CurrentBuilderRestartConsumesExactInputsAndBuildsOnlyOneOutput(GameTestHelper helper) {
+        var original = place(helper);
+        var owner = player(helper, original);
+        var slots = original.menuInventory();
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_CHASSIS, ModItems.SATELLITE_CHASSIS.get());
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_PRIMARY, ModItems.SURVEY_SCANNER_MODULE.get());
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST, ModItems.SATELLITE_SOLAR_MODULE.get());
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST + 1, ModItems.DATA_STORAGE_UNIT.get());
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_MODULE_FIRST + 2, ModItems.SATELLITE_BATTERY.get());
+        insert(helper, slots, SatelliteBuilderBlockEntity.SLOT_CHIP, ModItems.SATELLITE_CONTROL_CHIP.get());
+        expect(helper, original, owner, SatelliteOperationCode.NO_POWER, "pending blueprint before restart");
+        helper.assertTrue(original.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow()
+                .receiveEnergy(10_000, false) == 10_000, "Could not fund pending blueprint");
+        CompoundTag saved = original.saveWithFullMetadata();
+        helper.assertTrue(saved.getCompound(KEY).getInt("schema_version") == 1
+                        && saved.getCompound(KEY).getInt("last_result") == SatelliteOperationCode.NO_POWER.ordinal(),
+                "Fixture is not a current pending-result root");
+        var restored = restartBuilder(helper, original, saved);
+        helper.assertTrue(restored != original && restored.saveWithoutMetadata().get(KEY).equals(saved.get(KEY)),
+                "Restart changed inventory, energy or pending result");
+        helper.assertTrue(restored.assemble(owner), "Restored pending blueprint did not assemble");
+        var builtSlots = restored.menuInventory();
+        var identity = SatelliteItemData.read(builtSlots.getStackInSlot(SatelliteBuilderBlockEntity.SLOT_CHIP)).identity().orElseThrow();
+        helper.assertTrue(identity.kind() == SatelliteKind.SURVEY && identity.ownerId().equals(owner.getUUID())
+                        && identity.components().equals(List.of(id(ModItems.SATELLITE_CHASSIS.get()),
+                        id(ModItems.SURVEY_SCANNER_MODULE.get()), id(ModItems.SATELLITE_SOLAR_MODULE.get()),
+                        id(ModItems.DATA_STORAGE_UNIT.get()), id(ModItems.SATELLITE_BATTERY.get()))),
+                "Restored builder produced the wrong blueprint");
+        for (int slot = SatelliteBuilderBlockEntity.SLOT_CHASSIS; slot <= SatelliteBuilderBlockEntity.SLOT_MODULE_LAST; slot++) {
+            helper.assertTrue(builtSlots.getStackInSlot(slot).isEmpty(), "Component not consumed in slot " + slot);
+        }
+        helper.assertTrue(restored.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored()
+                        == 10_000 - SatelliteBuilderBlockEntity.ASSEMBLY_ENERGY
+                        && builtSlots.getStackInSlot(SatelliteBuilderBlockEntity.SLOT_CHIP).getCount() == 1
+                        && builtSlots.getStackInSlot(SatelliteBuilderBlockEntity.SLOT_CHARGE).isEmpty(),
+                "Build changed FE or retained extra items");
+        CompoundTag built = restored.saveWithFullMetadata();
+        var collected = restartBuilder(helper, restored, built);
+        helper.assertTrue(collected.saveWithoutMetadata().get(KEY).equals(built.get(KEY)), "Uncollected result changed on restart");
+        expect(helper, collected, owner, SatelliteOperationCode.OUTPUT_BLOCKED, "uncollected restored package");
+        var automation = collected.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+        var output = automation.extractItem(SatelliteBuilderBlockEntity.SLOT_OUTPUT, 64, false);
+        helper.assertTrue(output.is(ModItems.SATELLITE_PACKAGE.get()) && output.getCount() == 1
+                        && SatelliteItemData.read(output).identity().orElseThrow().equals(identity)
+                        && automation.extractItem(SatelliteBuilderBlockEntity.SLOT_OUTPUT, 64, false).isEmpty(),
+                "Restored build did not deliver exactly one matching package");
+        expect(helper, collected, owner, SatelliteOperationCode.INVALID_COMPONENTS, "already consumed restored inputs");
+        helper.assertTrue(collected.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored()
+                        == 10_000 - SatelliteBuilderBlockEntity.ASSEMBLY_ENERGY,
+                "Replay charged for a second build");
+        helper.succeed();
+    }
+
+    private static SatelliteBuilderBlockEntity restartBuilder(GameTestHelper helper, SatelliteBuilderBlockEntity old,
+                                                               CompoundTag saved) {
+        old.onChunkUnloaded(); helper.getLevel().removeBlockEntity(old.getBlockPos());
+        var fresh = new SatelliteBuilderBlockEntity(old.getBlockPos(), old.getBlockState());
+        fresh.load(saved); helper.getLevel().setBlockEntity(fresh); fresh.onLoad();
+        return fresh;
+    }
+
     private static SatelliteBuilderBlockEntity place(GameTestHelper helper) {
         BlockPos position = new BlockPos(1, 2, 1);
         helper.setBlock(position, ModBlocks.SATELLITE_BUILDER.get().defaultBlockState()
