@@ -168,6 +168,17 @@ class PatternAndOutputTest(unittest.TestCase):
             self.assertEqual(blackhole["pos"], (1044, 128, 20))
             self.assertTrue(any("admin create" in value and k16.CYGNUS in value for value in commands))
 
+    def test_elevator_anchor_has_no_facing_property(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "fixture.jar"
+            self.fixture_jar(path)
+            with zipfile.ZipFile(path) as jar:
+                commands, _ = k16.pattern_commands(jar, "elevator_anchor", (60, 150, 76))
+            self.assertEqual(commands[-1], "execute in minecraft:overworld run setblock "
+                             "60 150 76 advancedrocketrycommunity:elevator_anchor")
+        source = (k16.ROOT / k16.JAVA_ROOT / "endgame/elevator/ElevatorEndpointBlock.java").read_text()
+        self.assertNotIn("FACING", source)
+
     def test_singleplayer_copy_changes_only_its_metadata(self):
         from scripts import loader_cut_nbt as nbt
         with tempfile.TemporaryDirectory() as temp:

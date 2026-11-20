@@ -206,7 +206,10 @@ def pattern_commands(jar, kind, pos, dimension=OW):
             block = NS + ":" + block
         commands.append(f"execute in {dimension} run setblock {' '.join(map(str, p))} {block}")
         cells.append(dict(pos=p, block=block))
-    commands.append(f"execute in {dimension} run setblock {' '.join(map(str, pos))} {NS}:{kind}[facing=north]")
+    # ElevatorEndpointBlock has no directional property. Its pattern's north
+    # rotation is implicit; a facing suffix would reject the whole placement.
+    state = "" if kind == "elevator_anchor" else "[facing=north]"
+    commands.append(f"execute in {dimension} run setblock {' '.join(map(str, pos))} {NS}:{kind}{state}")
     return commands, cells
 
 
@@ -755,7 +758,7 @@ def build(output, cell_path, java, lock_owner):
         for value in (output / "world-commands.txt").read_text(encoding="ascii").splitlines():
             receipt = send(value)
             if any(any(marker in line for marker in ("Unknown block", "Unknown item", "Incorrect argument",
-                       "Expected whitespace", "Station creation failed")) for line in receipt):
+                       "Expected whitespace", "does not have property", "Station creation failed")) for line in receipt):
                 raise ValueError("Console rejected fixture command: " + value)
         # Verify actual placement/readback before freezing the source world.
         manifest = json.loads((output / "manifest.json").read_text(encoding="ascii"))
