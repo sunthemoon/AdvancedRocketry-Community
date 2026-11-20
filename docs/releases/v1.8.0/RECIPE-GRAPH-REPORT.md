@@ -1,0 +1,2783 @@
+# Recipe and operational dependency graph
+
+## Source and reproduction
+
+Source commit: `20c954c6414d8cd53c4e5862a6deb16e0dfc8094`.
+The analyzer is committed at that SHA. Product code and packaged-resource inputs are
+unchanged from baseline `4beb885f46d0b2dd371b103e783ba63ffc6c087d`.
+
+Command that produced the raw report, from this worktree with Java 17:
+
+```powershell
+.\gradlew.bat --offline test --tests 'io.github.sunthemoon.advancedrocketrycommunity.recipegraph.OperationalTechGraphTest' --console=plain
+```
+
+The command passed all 8 tests with 0 failures, errors or skips. The raw UTF-8/LF
+output is `build/reports/w420-operational-graph.txt`; its entire content is embedded
+below, so this archive does not depend on that mutable build location.
+
+Raw report SHA-256: `e9995c3db698d02e319ef620c0b1e3bcffa1118037b62ef481b64280b8503790`
+
+The hash covers exactly the UTF-8 bytes between the final `text` fence and its
+closing fence, including the raw report's final LF, not the Markdown wrapper.
+The test checks deterministic regeneration, producer-order independence and the
+archive's embedded content/hash on subsequent runs.
+
+## Result and interpretation
+
+The combined graph contains 820 nodes, 811 producers and 219 inherited survival
+roots. It reaches 810 nodes, including all 196 required operational nodes.
+The only 10 unavailable nodes are the pre-existing optional compatibility dust
+items and tags; each has a blocking path below. No new exception was added.
+There are 224 structurally cyclic nodes, all reachable through a seed or
+alternative route. Every one has a closed cycle path below. The unavailable
+residual has no cyclic node and no required hard lock was found in this model.
+
+The [test-side model](../../../src/test/java/io/github/sunthemoon/advancedrocketrycommunity/recipegraph/OperationalTechGraph.java)
+adds ground survey, registry data units, typed asteroid outcomes, paid analysis and
+credit, four explicit research thresholds, all five satellite kinds' build/launch
+routes, resource missions, surface scans, microwave reception, 17 classic tree
+criteria, station dependencies, five endgame systems, solar generation and beacons.
+Ground and data-satellite research independently witness the lifetime thresholds.
+Selected satellite loadouts are checked against packaged component statistics and
+the code's stat/module limits, including the survey battery requirement.
+Every added producer cites its implementing Java class and line; pattern and
+definition inputs are named as well. Display parents are not gameplay locks.
+
+This is an existential **dependency analysis**, not evidence that acquiring a
+device makes it operable. Dynamic ownership, loaded geometry, weather, enabled
+configuration, durable saves, throughput, output space and other temporal or
+relational guards remain explicit in the seven unmodelled-precondition groups.
+Station access retains the inherited abstract rocket/orbit/warp model, rather
+than establishing live committed station placement. Earliest-round witnesses are
+minimal dependency depth, not shortest playtime or minimum resource cost.
+The graph does not prove all 52 devices' runtime operability, a complete survival
+playthrough, recovery, multiplayer liveness, or any release Gate.
+
+This source-bound successor addresses the operational analysis and durable report
+gaps described in [the machine census, section 7](MACHINE-CENSUS.md#7-recipe-graph-research-and-tech-tree-analysis).
+It is not a recovered C5 artifact and does not retroactively change the C5 evidence.
+No product code, existing test assertion, configuration, Gate or status file was
+changed. Version acceptance remains with the maintainer.
+
+## Raw deterministic witness
+
+```text
+W420 operational graph witness v1
+Semantics: existential AND slots / OR alternatives; dynamic guards below remain unproved.
+Counts: nodes=820 producers=811 roots=219 reachable=810 unavailable=10 required=196 required-unreachable=0 residual-cyclic=0 structural-cyclic=224
+
+NODES (ROOT, REQUIRED, or auxiliary)
+#advancedrocketrycommunity:boules/silicon auxiliary
+#advancedrocketrycommunity:circuits/advanced auxiliary
+#advancedrocketrycommunity:circuits/basic auxiliary
+#advancedrocketrycommunity:coils/copper auxiliary
+#advancedrocketrycommunity:coils/gold auxiliary
+#advancedrocketrycommunity:coils/iridium auxiliary
+#advancedrocketrycommunity:coils/titanium auxiliary
+#advancedrocketrycommunity:motors auxiliary
+#advancedrocketrycommunity:sheets/titanium_aluminide auxiliary
+#advancedrocketrycommunity:silicon_wafers auxiliary
+#forge:armors/boots auxiliary
+#forge:armors/chestplates auxiliary
+#forge:armors/helmets auxiliary
+#forge:armors/leggings auxiliary
+#forge:chests/wooden auxiliary
+#forge:dusts/aluminum auxiliary
+#forge:dusts/copper auxiliary
+#forge:dusts/dilithium auxiliary
+#forge:dusts/glowstone auxiliary
+#forge:dusts/gold auxiliary
+#forge:dusts/iridium auxiliary
+#forge:dusts/iron auxiliary
+#forge:dusts/redstone auxiliary
+#forge:dusts/silicon auxiliary
+#forge:dusts/steel auxiliary
+#forge:dusts/thermite auxiliary
+#forge:dusts/tin auxiliary
+#forge:dusts/titanium auxiliary
+#forge:dusts/titanium_aluminide auxiliary
+#forge:dusts/titanium_iridium auxiliary
+#forge:dyes/lime auxiliary
+#forge:ender_pearls auxiliary
+#forge:gems/diamond auxiliary
+#forge:gems/lapis auxiliary
+#forge:gems/quartz auxiliary
+#forge:glass auxiliary
+#forge:glass/colorless auxiliary
+#forge:glass/tinted auxiliary
+#forge:glass_panes auxiliary
+#forge:glass_panes/colorless auxiliary
+#forge:ingots/aluminum auxiliary
+#forge:ingots/copper auxiliary
+#forge:ingots/gold auxiliary
+#forge:ingots/iridium auxiliary
+#forge:ingots/iron auxiliary
+#forge:ingots/silicon auxiliary
+#forge:ingots/steel auxiliary
+#forge:ingots/tin auxiliary
+#forge:ingots/titanium auxiliary
+#forge:ingots/titanium_aluminide auxiliary
+#forge:ingots/titanium_iridium auxiliary
+#forge:nuggets/aluminum auxiliary
+#forge:nuggets/copper auxiliary
+#forge:nuggets/iridium auxiliary
+#forge:nuggets/silicon auxiliary
+#forge:nuggets/steel auxiliary
+#forge:nuggets/tin auxiliary
+#forge:nuggets/titanium auxiliary
+#forge:nuggets/titanium_aluminide auxiliary
+#forge:nuggets/titanium_iridium auxiliary
+#forge:ores/aluminum auxiliary
+#forge:ores/copper auxiliary
+#forge:ores/dilithium auxiliary
+#forge:ores/gold auxiliary
+#forge:ores/iridium auxiliary
+#forge:ores/iron auxiliary
+#forge:ores/rutile auxiliary
+#forge:ores/tin auxiliary
+#forge:plates/aluminum auxiliary
+#forge:plates/copper auxiliary
+#forge:plates/gold auxiliary
+#forge:plates/iridium auxiliary
+#forge:plates/iron auxiliary
+#forge:plates/steel auxiliary
+#forge:plates/tin auxiliary
+#forge:plates/titanium auxiliary
+#forge:plates/titanium_aluminide auxiliary
+#forge:plates/titanium_iridium auxiliary
+#forge:raw_materials/aluminum auxiliary
+#forge:raw_materials/iridium auxiliary
+#forge:raw_materials/rutile auxiliary
+#forge:raw_materials/tin auxiliary
+#forge:rods/iron auxiliary
+#forge:rods/steel auxiliary
+#forge:rods/titanium auxiliary
+#forge:rods/titanium_aluminide auxiliary
+#forge:rods/titanium_iridium auxiliary
+#forge:rods/wooden auxiliary
+#forge:stained_glass auxiliary
+#forge:stained_glass_panes auxiliary
+#forge:storage_blocks/aluminum auxiliary
+#forge:storage_blocks/copper auxiliary
+#forge:storage_blocks/gold auxiliary
+#forge:storage_blocks/iridium auxiliary
+#forge:storage_blocks/iron auxiliary
+#forge:storage_blocks/redstone auxiliary
+#forge:storage_blocks/steel auxiliary
+#forge:storage_blocks/tin auxiliary
+#forge:storage_blocks/titanium auxiliary
+#forge:storage_blocks/titanium_aluminide auxiliary
+#forge:storage_blocks/titanium_iridium auxiliary
+#minecraft:copper_ores auxiliary
+#minecraft:gold_ores auxiliary
+#minecraft:iron_ores auxiliary
+#minecraft:wooden_slabs auxiliary
+#minecraft:wool auxiliary
+access:mars auxiliary
+access:moon auxiliary
+access:overworld ROOT
+access:space auxiliary
+access:tau_ceti_f auxiliary
+access:tau_ceti_g auxiliary
+access:venus auxiliary
+advancedrocketrycommunity:advanced_bipropellant_rocket_motor auxiliary
+advancedrocketrycommunity:advanced_circuit auxiliary
+advancedrocketrycommunity:advanced_circuit_plate auxiliary
+advancedrocketrycommunity:advanced_motor auxiliary
+advancedrocketrycommunity:advanced_rocket_motor auxiliary
+advancedrocketrycommunity:advanced_solar_panel auxiliary
+advancedrocketrycommunity:airlock_door auxiliary
+advancedrocketrycommunity:aluminum_block auxiliary
+advancedrocketrycommunity:aluminum_coil auxiliary
+advancedrocketrycommunity:aluminum_dust auxiliary
+advancedrocketrycommunity:aluminum_ingot auxiliary
+advancedrocketrycommunity:aluminum_nugget auxiliary
+advancedrocketrycommunity:aluminum_ore auxiliary
+advancedrocketrycommunity:aluminum_plate auxiliary
+advancedrocketrycommunity:aluminum_sheet auxiliary
+advancedrocketrycommunity:anti_fog_visor auxiliary
+advancedrocketrycommunity:arc_furnace auxiliary
+advancedrocketrycommunity:asteroid_drill_module auxiliary
+advancedrocketrycommunity:astrobody_data_processor auxiliary
+advancedrocketrycommunity:atmosphere_analyzer auxiliary
+advancedrocketrycommunity:atmosphere_detector auxiliary
+advancedrocketrycommunity:basic_circuit auxiliary
+advancedrocketrycommunity:basic_circuit_plate auxiliary
+advancedrocketrycommunity:basic_laser_gun auxiliary
+advancedrocketrycommunity:beacon_finder auxiliary
+advancedrocketrycommunity:bionic_leg_upgrade auxiliary
+advancedrocketrycommunity:bipropellant_fuel_tank auxiliary
+advancedrocketrycommunity:bipropellant_rocket_motor auxiliary
+advancedrocketrycommunity:black_hole_generator auxiliary
+advancedrocketrycommunity:blast_brick auxiliary
+advancedrocketrycommunity:blue_crystal_block auxiliary
+advancedrocketrycommunity:carbon_brick auxiliary
+advancedrocketrycommunity:carbon_scrubber_cartridge auxiliary
+advancedrocketrycommunity:centrifuge auxiliary
+advancedrocketrycommunity:charcoal_log auxiliary
+advancedrocketrycommunity:chemical_reactor auxiliary
+advancedrocketrycommunity:co2_scrubber auxiliary
+advancedrocketrycommunity:combustion_generator auxiliary
+advancedrocketrycommunity:control_board auxiliary
+advancedrocketrycommunity:copper_coil auxiliary
+advancedrocketrycommunity:copper_dust auxiliary
+advancedrocketrycommunity:copper_nugget auxiliary
+advancedrocketrycommunity:copper_plate auxiliary
+advancedrocketrycommunity:copper_rod auxiliary
+advancedrocketrycommunity:copper_sheet auxiliary
+advancedrocketrycommunity:crystallizer auxiliary
+advancedrocketrycommunity:cutting_machine auxiliary
+advancedrocketrycommunity:dark_moon_turf auxiliary
+advancedrocketrycommunity:data_satellite_package auxiliary
+advancedrocketrycommunity:data_storage_unit auxiliary
+advancedrocketrycommunity:deepslate_aluminum_ore auxiliary
+advancedrocketrycommunity:deepslate_dilithium_ore auxiliary
+advancedrocketrycommunity:deepslate_rutile_ore auxiliary
+advancedrocketrycommunity:deepslate_tin_ore auxiliary
+advancedrocketrycommunity:dilithium_crystal auxiliary
+advancedrocketrycommunity:dilithium_dust auxiliary
+advancedrocketrycommunity:dilithium_ore auxiliary
+advancedrocketrycommunity:earthbright_visor auxiliary
+advancedrocketrycommunity:electric_mushroom auxiliary
+advancedrocketrycommunity:electrolyzer auxiliary
+advancedrocketrycommunity:elevator_anchor auxiliary
+advancedrocketrycommunity:elevator_terminal auxiliary
+advancedrocketrycommunity:elite_motor auxiliary
+advancedrocketrycommunity:empty_canister auxiliary
+advancedrocketrycommunity:endgame_casing auxiliary
+advancedrocketrycommunity:enhanced_motor auxiliary
+advancedrocketrycommunity:enriched_lava_bucket auxiliary
+advancedrocketrycommunity:ferric_sand auxiliary
+advancedrocketrycommunity:flight_speed_upgrade auxiliary
+advancedrocketrycommunity:fluid_fuel_loader auxiliary
+advancedrocketrycommunity:fluid_input_hatch auxiliary
+advancedrocketrycommunity:fluid_output_hatch auxiliary
+advancedrocketrycommunity:force_field_projector auxiliary
+advancedrocketrycommunity:fuel_loader auxiliary
+advancedrocketrycommunity:gas_charge_pad auxiliary
+advancedrocketrycommunity:gas_intake_module auxiliary
+advancedrocketrycommunity:geode_shell auxiliary
+advancedrocketrycommunity:gold_coil auxiliary
+advancedrocketrycommunity:gold_dust auxiliary
+advancedrocketrycommunity:gold_plate auxiliary
+advancedrocketrycommunity:gravity_field_controller auxiliary
+advancedrocketrycommunity:green_crystal_block auxiliary
+advancedrocketrycommunity:guidance_computer auxiliary
+advancedrocketrycommunity:high_pressure_tank auxiliary
+advancedrocketrycommunity:hover_upgrade auxiliary
+advancedrocketrycommunity:hydrogen_canister auxiliary
+advancedrocketrycommunity:iridium_block auxiliary
+advancedrocketrycommunity:iridium_coil auxiliary
+advancedrocketrycommunity:iridium_dust auxiliary
+advancedrocketrycommunity:iridium_ingot auxiliary
+advancedrocketrycommunity:iridium_nugget auxiliary
+advancedrocketrycommunity:iridium_ore auxiliary
+advancedrocketrycommunity:iridium_plate auxiliary
+advancedrocketrycommunity:iridium_rod auxiliary
+advancedrocketrycommunity:iron_dust auxiliary
+advancedrocketrycommunity:iron_plate auxiliary
+advancedrocketrycommunity:iron_rod auxiliary
+advancedrocketrycommunity:iron_saw_blade auxiliary
+advancedrocketrycommunity:iron_sheet auxiliary
+advancedrocketrycommunity:item_input_hatch auxiliary
+advancedrocketrycommunity:item_io_board auxiliary
+advancedrocketrycommunity:item_output_hatch auxiliary
+advancedrocketrycommunity:jackhammer auxiliary
+advancedrocketrycommunity:jetpack auxiliary
+advancedrocketrycommunity:landing_pad auxiliary
+advancedrocketrycommunity:large_satellite_battery auxiliary
+advancedrocketrycommunity:laser_lens auxiliary
+advancedrocketrycommunity:laser_target auxiliary
+advancedrocketrycommunity:lathe auxiliary
+advancedrocketrycommunity:lightwood_leaves auxiliary
+advancedrocketrycommunity:lightwood_log auxiliary
+advancedrocketrycommunity:lightwood_planks auxiliary
+advancedrocketrycommunity:lightwood_sapling auxiliary
+advancedrocketrycommunity:linker auxiliary
+advancedrocketrycommunity:liquid_io_board auxiliary
+advancedrocketrycommunity:low_pressure_tank auxiliary
+advancedrocketrycommunity:machine_casing auxiliary
+advancedrocketrycommunity:microwave_receiver auxiliary
+advancedrocketrycommunity:moon_turf auxiliary
+advancedrocketrycommunity:motor auxiliary
+advancedrocketrycommunity:nitrogen_canister auxiliary
+advancedrocketrycommunity:nuclear_core auxiliary
+advancedrocketrycommunity:nuclear_fuel_tank auxiliary
+advancedrocketrycommunity:nuclear_rocket_motor auxiliary
+advancedrocketrycommunity:observatory auxiliary
+advancedrocketrycommunity:orange_crystal_block auxiliary
+advancedrocketrycommunity:orbital_laser_drill auxiliary
+advancedrocketrycommunity:oxidizer_fuel_tank auxiliary
+advancedrocketrycommunity:oxygen_canister auxiliary
+advancedrocketrycommunity:oxygen_vent auxiliary
+advancedrocketrycommunity:padded_landing_boots auxiliary
+advancedrocketrycommunity:pipe_seal auxiliary
+advancedrocketrycommunity:planetary_beacon auxiliary
+advancedrocketrycommunity:power_input_plug auxiliary
+advancedrocketrycommunity:power_output_plug auxiliary
+advancedrocketrycommunity:precision_assembler auxiliary
+advancedrocketrycommunity:precision_assembler_energy_input_port auxiliary
+advancedrocketrycommunity:precision_assembler_item_input_port auxiliary
+advancedrocketrycommunity:precision_assembler_item_output_port auxiliary
+advancedrocketrycommunity:precision_laser_etcher auxiliary
+advancedrocketrycommunity:pressure_tank auxiliary
+advancedrocketrycommunity:pressurized_tank auxiliary
+advancedrocketrycommunity:pump auxiliary
+advancedrocketrycommunity:quartz_crucible auxiliary
+advancedrocketrycommunity:quartz_crucible_shell auxiliary
+advancedrocketrycommunity:railgun auxiliary
+advancedrocketrycommunity:raw_aluminum auxiliary
+advancedrocketrycommunity:raw_iridium auxiliary
+advancedrocketrycommunity:raw_rutile auxiliary
+advancedrocketrycommunity:raw_tin auxiliary
+advancedrocketrycommunity:red_crystal_block auxiliary
+advancedrocketrycommunity:rocket_assembler auxiliary
+advancedrocketrycommunity:rocket_fluid_loader auxiliary
+advancedrocketrycommunity:rocket_fluid_unloader auxiliary
+advancedrocketrycommunity:rocket_fuel_bucket auxiliary
+advancedrocketrycommunity:rocket_fuel_cell auxiliary
+advancedrocketrycommunity:rocket_fuel_tank auxiliary
+advancedrocketrycommunity:rocket_item_loader auxiliary
+advancedrocketrycommunity:rocket_item_unloader auxiliary
+advancedrocketrycommunity:rocket_monitoring_station auxiliary
+advancedrocketrycommunity:rocket_motor auxiliary
+advancedrocketrycommunity:rocket_satellite_bay auxiliary
+advancedrocketrycommunity:rocket_seat auxiliary
+advancedrocketrycommunity:rolling_machine auxiliary
+advancedrocketrycommunity:rolling_machine_energy_input_port auxiliary
+advancedrocketrycommunity:rolling_machine_fluid_input_port auxiliary
+advancedrocketrycommunity:rolling_machine_item_input_port auxiliary
+advancedrocketrycommunity:rolling_machine_item_output_port auxiliary
+advancedrocketrycommunity:rutile_ore auxiliary
+advancedrocketrycommunity:satellite_battery auxiliary
+advancedrocketrycommunity:satellite_builder auxiliary
+advancedrocketrycommunity:satellite_cargo_hold auxiliary
+advancedrocketrycommunity:satellite_chassis auxiliary
+advancedrocketrycommunity:satellite_control_chip auxiliary
+advancedrocketrycommunity:satellite_package auxiliary
+advancedrocketrycommunity:satellite_solar_module auxiliary
+advancedrocketrycommunity:satellite_terminal auxiliary
+advancedrocketrycommunity:saw_blade auxiliary
+advancedrocketrycommunity:seal_detector auxiliary
+advancedrocketrycommunity:silicon_boule auxiliary
+advancedrocketrycommunity:silicon_dust auxiliary
+advancedrocketrycommunity:silicon_ingot auxiliary
+advancedrocketrycommunity:silicon_nugget auxiliary
+advancedrocketrycommunity:silicon_plate auxiliary
+advancedrocketrycommunity:silicon_wafer auxiliary
+advancedrocketrycommunity:small_plate_press auxiliary
+advancedrocketrycommunity:solar_array auxiliary
+advancedrocketrycommunity:solar_array_panel auxiliary
+advancedrocketrycommunity:solar_generator auxiliary
+advancedrocketrycommunity:solar_panel auxiliary
+advancedrocketrycommunity:solar_transmitter_module auxiliary
+advancedrocketrycommunity:space_suit_boots auxiliary
+advancedrocketrycommunity:space_suit_chestplate auxiliary
+advancedrocketrycommunity:space_suit_helmet auxiliary
+advancedrocketrycommunity:space_suit_leggings auxiliary
+advancedrocketrycommunity:station_altitude_controller auxiliary
+advancedrocketrycommunity:station_deployment_kit auxiliary
+advancedrocketrycommunity:station_gravity_controller auxiliary
+advancedrocketrycommunity:station_light auxiliary
+advancedrocketrycommunity:station_orientation_controller auxiliary
+advancedrocketrycommunity:steel_block auxiliary
+advancedrocketrycommunity:steel_dust auxiliary
+advancedrocketrycommunity:steel_fan auxiliary
+advancedrocketrycommunity:steel_gear auxiliary
+advancedrocketrycommunity:steel_ingot auxiliary
+advancedrocketrycommunity:steel_nugget auxiliary
+advancedrocketrycommunity:steel_plate auxiliary
+advancedrocketrycommunity:steel_rod auxiliary
+advancedrocketrycommunity:steel_sheet auxiliary
+advancedrocketrycommunity:suit_workstation auxiliary
+advancedrocketrycommunity:super_high_pressure_tank auxiliary
+advancedrocketrycommunity:survey_scanner_module auxiliary
+advancedrocketrycommunity:thermite auxiliary
+advancedrocketrycommunity:thermite_torch auxiliary
+advancedrocketrycommunity:tin_block auxiliary
+advancedrocketrycommunity:tin_dust auxiliary
+advancedrocketrycommunity:tin_ingot auxiliary
+advancedrocketrycommunity:tin_nugget auxiliary
+advancedrocketrycommunity:tin_ore auxiliary
+advancedrocketrycommunity:tin_plate auxiliary
+advancedrocketrycommunity:titanium_aluminide_block auxiliary
+advancedrocketrycommunity:titanium_aluminide_dust auxiliary
+advancedrocketrycommunity:titanium_aluminide_gear auxiliary
+advancedrocketrycommunity:titanium_aluminide_ingot auxiliary
+advancedrocketrycommunity:titanium_aluminide_nugget auxiliary
+advancedrocketrycommunity:titanium_aluminide_plate auxiliary
+advancedrocketrycommunity:titanium_aluminide_rod auxiliary
+advancedrocketrycommunity:titanium_aluminide_sheet auxiliary
+advancedrocketrycommunity:titanium_block auxiliary
+advancedrocketrycommunity:titanium_coil auxiliary
+advancedrocketrycommunity:titanium_dust auxiliary
+advancedrocketrycommunity:titanium_gear auxiliary
+advancedrocketrycommunity:titanium_ingot auxiliary
+advancedrocketrycommunity:titanium_iridium_block auxiliary
+advancedrocketrycommunity:titanium_iridium_dust auxiliary
+advancedrocketrycommunity:titanium_iridium_gear auxiliary
+advancedrocketrycommunity:titanium_iridium_ingot auxiliary
+advancedrocketrycommunity:titanium_iridium_nugget auxiliary
+advancedrocketrycommunity:titanium_iridium_plate auxiliary
+advancedrocketrycommunity:titanium_iridium_rod auxiliary
+advancedrocketrycommunity:titanium_iridium_sheet auxiliary
+advancedrocketrycommunity:titanium_nugget auxiliary
+advancedrocketrycommunity:titanium_plate auxiliary
+advancedrocketrycommunity:titanium_rod auxiliary
+advancedrocketrycommunity:titanium_sheet auxiliary
+advancedrocketrycommunity:tracking_circuit auxiliary
+advancedrocketrycommunity:user_interface auxiliary
+advancedrocketrycommunity:violet_crystal_block auxiliary
+advancedrocketrycommunity:warp_controller auxiliary
+advancedrocketrycommunity:warp_core auxiliary
+advancedrocketrycommunity:yellow_crystal_block auxiliary
+block:advancedrocketrycommunity:lightwood_leaves auxiliary
+craft:advancedrocketrycommunity:gas_harvester auxiliary
+enchantment:advancedrocketrycommunity:space_breathing auxiliary
+energy:fe auxiliary
+fluid:advancedrocketrycommunity:enriched_lava auxiliary
+fluid:advancedrocketrycommunity:hydrogen auxiliary
+fluid:advancedrocketrycommunity:nitrogen auxiliary
+fluid:advancedrocketrycommunity:oxygen auxiliary
+fluid:advancedrocketrycommunity:rocket_fuel auxiliary
+fluid:minecraft:lava ROOT
+fluid:minecraft:water ROOT
+known:advancedrocketrycommunity:cygnus_x1 auxiliary
+known:advancedrocketrycommunity:earth auxiliary
+known:advancedrocketrycommunity:gas_giant auxiliary
+known:advancedrocketrycommunity:mars auxiliary
+known:advancedrocketrycommunity:moon auxiliary
+known:advancedrocketrycommunity:space auxiliary
+known:advancedrocketrycommunity:tau_ceti auxiliary
+known:advancedrocketrycommunity:tau_ceti_e auxiliary
+known:advancedrocketrycommunity:tau_ceti_f auxiliary
+known:advancedrocketrycommunity:tau_ceti_g auxiliary
+known:advancedrocketrycommunity:venus auxiliary
+machine:advancedrocketrycommunity:arc_furnace auxiliary
+machine:advancedrocketrycommunity:centrifuge auxiliary
+machine:advancedrocketrycommunity:chemical_reactor auxiliary
+machine:advancedrocketrycommunity:crystallizer auxiliary
+machine:advancedrocketrycommunity:cutting_machine auxiliary
+machine:advancedrocketrycommunity:lathe auxiliary
+machine:advancedrocketrycommunity:precision_assembler auxiliary
+machine:advancedrocketrycommunity:precision_laser_etcher auxiliary
+machine:advancedrocketrycommunity:rolling_machine auxiliary
+minecraft:acacia_log ROOT
+minecraft:acacia_planks ROOT
+minecraft:acacia_slab ROOT
+minecraft:andesite_slab ROOT
+minecraft:bamboo_mosaic_slab ROOT
+minecraft:bamboo_slab ROOT
+minecraft:birch_log ROOT
+minecraft:birch_planks ROOT
+minecraft:birch_slab ROOT
+minecraft:black_stained_glass ROOT
+minecraft:black_stained_glass_pane ROOT
+minecraft:black_wool ROOT
+minecraft:blackstone_slab ROOT
+minecraft:blaze_powder ROOT
+minecraft:blue_stained_glass ROOT
+minecraft:blue_stained_glass_pane ROOT
+minecraft:blue_wool ROOT
+minecraft:bone ROOT
+minecraft:bone_meal ROOT
+minecraft:bookshelf ROOT
+minecraft:brick_slab ROOT
+minecraft:bricks ROOT
+minecraft:brown_stained_glass ROOT
+minecraft:brown_stained_glass_pane ROOT
+minecraft:brown_wool ROOT
+minecraft:bucket ROOT
+minecraft:chainmail_boots ROOT
+minecraft:chainmail_chestplate ROOT
+minecraft:chainmail_helmet ROOT
+minecraft:chainmail_leggings ROOT
+minecraft:charcoal ROOT
+minecraft:cherry_log ROOT
+minecraft:cherry_planks ROOT
+minecraft:cherry_slab ROOT
+minecraft:chest ROOT
+minecraft:cobbled_deepslate_slab ROOT
+minecraft:cobblestone ROOT
+minecraft:cobblestone_slab ROOT
+minecraft:comparator ROOT
+minecraft:copper_block ROOT
+minecraft:copper_ingot ROOT
+minecraft:copper_ore ROOT
+minecraft:crafting_table ROOT
+minecraft:crimson_planks ROOT
+minecraft:crimson_slab ROOT
+minecraft:crimson_stem ROOT
+minecraft:crying_obsidian ROOT
+minecraft:cut_copper_slab ROOT
+minecraft:cut_red_sandstone_slab ROOT
+minecraft:cut_sandstone_slab ROOT
+minecraft:cyan_stained_glass ROOT
+minecraft:cyan_stained_glass_pane ROOT
+minecraft:cyan_wool ROOT
+minecraft:dark_oak_log ROOT
+minecraft:dark_oak_planks ROOT
+minecraft:dark_oak_slab ROOT
+minecraft:dark_prismarine_slab ROOT
+minecraft:daylight_detector ROOT
+minecraft:deepslate_brick_slab ROOT
+minecraft:deepslate_copper_ore ROOT
+minecraft:deepslate_gold_ore ROOT
+minecraft:deepslate_iron_ore ROOT
+minecraft:deepslate_tile_slab ROOT
+minecraft:diamond ROOT
+minecraft:diamond_boots ROOT
+minecraft:diamond_chestplate ROOT
+minecraft:diamond_helmet ROOT
+minecraft:diamond_leggings ROOT
+minecraft:diamond_pickaxe ROOT
+minecraft:diorite_slab ROOT
+minecraft:dirt ROOT
+minecraft:dropper ROOT
+minecraft:enchanting_table ROOT
+minecraft:end_stone_brick_slab ROOT
+minecraft:ender_eye ROOT
+minecraft:ender_pearl ROOT
+minecraft:exposed_cut_copper_slab ROOT
+minecraft:feather ROOT
+minecraft:furnace ROOT
+minecraft:glass ROOT
+minecraft:glass_bottle ROOT
+minecraft:glass_pane ROOT
+minecraft:glowstone ROOT
+minecraft:glowstone_dust ROOT
+minecraft:gold_block ROOT
+minecraft:gold_ingot ROOT
+minecraft:gold_nugget ROOT
+minecraft:gold_ore ROOT
+minecraft:golden_boots ROOT
+minecraft:golden_chestplate ROOT
+minecraft:golden_helmet ROOT
+minecraft:golden_leggings ROOT
+minecraft:granite_slab ROOT
+minecraft:gray_concrete ROOT
+minecraft:gray_stained_glass ROOT
+minecraft:gray_stained_glass_pane ROOT
+minecraft:gray_wool ROOT
+minecraft:green_stained_glass ROOT
+minecraft:green_stained_glass_pane ROOT
+minecraft:green_wool ROOT
+minecraft:hopper ROOT
+minecraft:iron_bars ROOT
+minecraft:iron_block ROOT
+minecraft:iron_boots ROOT
+minecraft:iron_chestplate ROOT
+minecraft:iron_helmet ROOT
+minecraft:iron_ingot ROOT
+minecraft:iron_leggings ROOT
+minecraft:iron_nugget ROOT
+minecraft:iron_ore ROOT
+minecraft:jungle_log ROOT
+minecraft:jungle_planks ROOT
+minecraft:jungle_slab ROOT
+minecraft:lapis_lazuli ROOT
+minecraft:leather_boots ROOT
+minecraft:leather_chestplate ROOT
+minecraft:leather_helmet ROOT
+minecraft:leather_leggings ROOT
+minecraft:lever ROOT
+minecraft:light_blue_stained_glass ROOT
+minecraft:light_blue_stained_glass_pane ROOT
+minecraft:light_blue_wool ROOT
+minecraft:light_gray_stained_glass ROOT
+minecraft:light_gray_stained_glass_pane ROOT
+minecraft:light_gray_wool ROOT
+minecraft:lightning_rod ROOT
+minecraft:lime_dye ROOT
+minecraft:lime_stained_glass ROOT
+minecraft:lime_stained_glass_pane ROOT
+minecraft:lime_wool ROOT
+minecraft:magenta_stained_glass ROOT
+minecraft:magenta_stained_glass_pane ROOT
+minecraft:magenta_wool ROOT
+minecraft:magma_cream ROOT
+minecraft:mangrove_log ROOT
+minecraft:mangrove_planks ROOT
+minecraft:mangrove_slab ROOT
+minecraft:mossy_cobblestone_slab ROOT
+minecraft:mossy_stone_brick_slab ROOT
+minecraft:mud_brick_slab ROOT
+minecraft:nether_brick_slab ROOT
+minecraft:nether_gold_ore ROOT
+minecraft:netherite_boots ROOT
+minecraft:netherite_chestplate ROOT
+minecraft:netherite_helmet ROOT
+minecraft:netherite_leggings ROOT
+minecraft:netherrack ROOT
+minecraft:oak_log ROOT
+minecraft:oak_planks ROOT
+minecraft:oak_slab ROOT
+minecraft:observer ROOT
+minecraft:obsidian ROOT
+minecraft:orange_stained_glass ROOT
+minecraft:orange_stained_glass_pane ROOT
+minecraft:orange_wool ROOT
+minecraft:oxidized_cut_copper_slab ROOT
+minecraft:pink_stained_glass ROOT
+minecraft:pink_stained_glass_pane ROOT
+minecraft:pink_wool ROOT
+minecraft:piston ROOT
+minecraft:polished_andesite_slab ROOT
+minecraft:polished_blackstone_brick_slab ROOT
+minecraft:polished_blackstone_slab ROOT
+minecraft:polished_deepslate_slab ROOT
+minecraft:polished_diorite_slab ROOT
+minecraft:polished_granite_slab ROOT
+minecraft:prismarine_brick_slab ROOT
+minecraft:prismarine_slab ROOT
+minecraft:purple_stained_glass ROOT
+minecraft:purple_stained_glass_pane ROOT
+minecraft:purple_wool ROOT
+minecraft:purpur_slab ROOT
+minecraft:quartz ROOT
+minecraft:quartz_slab ROOT
+minecraft:red_nether_brick_slab ROOT
+minecraft:red_sandstone_slab ROOT
+minecraft:red_stained_glass ROOT
+minecraft:red_stained_glass_pane ROOT
+minecraft:red_wool ROOT
+minecraft:redstone ROOT
+minecraft:redstone_block ROOT
+minecraft:redstone_torch ROOT
+minecraft:sand ROOT
+minecraft:sandstone_slab ROOT
+minecraft:shears ROOT
+minecraft:smithing_table ROOT
+minecraft:smooth_quartz_slab ROOT
+minecraft:smooth_red_sandstone_slab ROOT
+minecraft:smooth_sandstone_slab ROOT
+minecraft:smooth_stone_slab ROOT
+minecraft:spruce_log ROOT
+minecraft:spruce_planks ROOT
+minecraft:spruce_slab ROOT
+minecraft:spyglass ROOT
+minecraft:stick ROOT
+minecraft:stone ROOT
+minecraft:stone_brick_slab ROOT
+minecraft:stone_slab ROOT
+minecraft:tinted_glass ROOT
+minecraft:tnt ROOT
+minecraft:trapped_chest ROOT
+minecraft:turtle_helmet ROOT
+minecraft:warped_planks ROOT
+minecraft:warped_slab ROOT
+minecraft:warped_stem ROOT
+minecraft:waxed_cut_copper_slab ROOT
+minecraft:waxed_exposed_cut_copper_slab ROOT
+minecraft:waxed_oxidized_cut_copper_slab ROOT
+minecraft:waxed_weathered_cut_copper_slab ROOT
+minecraft:weathered_cut_copper_slab ROOT
+minecraft:white_stained_glass ROOT
+minecraft:white_stained_glass_pane ROOT
+minecraft:white_wool ROOT
+minecraft:yellow_stained_glass ROOT
+minecraft:yellow_stained_glass_pane ROOT
+minecraft:yellow_wool ROOT
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid REQUIRED
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:beacon:active REQUIRED
+op:black-hole:generate:advancedrocketrycommunity:cygnus_x1 REQUIRED
+op:built:advancedrocketrycommunity:asteroid_miner REQUIRED
+op:built:advancedrocketrycommunity:gas_harvester REQUIRED
+op:built:advancedrocketrycommunity:solar_satellite REQUIRED
+op:built:advancedrocketrycommunity:survey_satellite REQUIRED
+op:data:built REQUIRED
+op:data:claim:advancedrocketrycommunity:earth REQUIRED
+op:data:claim:advancedrocketrycommunity:gas_giant REQUIRED
+op:data:claim:advancedrocketrycommunity:mars REQUIRED
+op:data:claim:advancedrocketrycommunity:moon REQUIRED
+op:data:claim:advancedrocketrycommunity:space REQUIRED
+op:data:claim:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:data:claim:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:data:claim:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:data:claim:advancedrocketrycommunity:venus REQUIRED
+op:data:mission:advancedrocketrycommunity:earth REQUIRED
+op:data:mission:advancedrocketrycommunity:gas_giant REQUIRED
+op:data:mission:advancedrocketrycommunity:mars REQUIRED
+op:data:mission:advancedrocketrycommunity:moon REQUIRED
+op:data:mission:advancedrocketrycommunity:space REQUIRED
+op:data:mission:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:data:mission:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:data:mission:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:data:mission:advancedrocketrycommunity:venus REQUIRED
+op:elevator:bound REQUIRED
+op:elevator:cargo REQUIRED
+op:elevator:ride REQUIRED
+op:formed:astrobody_data_processor REQUIRED
+op:formed:black_hole_generator REQUIRED
+op:formed:observatory REQUIRED
+op:formed:orbital_laser_drill REQUIRED
+op:formed:planetary_beacon REQUIRED
+op:formed:railgun REQUIRED
+op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:hydrogen_canister REQUIRED
+op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:nitrogen_canister REQUIRED
+op:gravity:active REQUIRED
+op:ground:analysis:advancedrocketrycommunity:earth REQUIRED
+op:ground:analysis:advancedrocketrycommunity:mars REQUIRED
+op:ground:analysis:advancedrocketrycommunity:moon REQUIRED
+op:ground:analysis:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:ground:analysis:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:ground:analysis:advancedrocketrycommunity:venus REQUIRED
+op:ground:credit:advancedrocketrycommunity:earth REQUIRED
+op:ground:credit:advancedrocketrycommunity:mars REQUIRED
+op:ground:credit:advancedrocketrycommunity:moon REQUIRED
+op:ground:credit:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:ground:credit:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:ground:credit:advancedrocketrycommunity:venus REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:earth REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:mars REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:moon REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:ground:data-unit:advancedrocketrycommunity:venus REQUIRED
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid REQUIRED
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:ground:start:advancedrocketrycommunity:earth REQUIRED
+op:ground:start:advancedrocketrycommunity:mars REQUIRED
+op:ground:start:advancedrocketrycommunity:moon REQUIRED
+op:ground:start:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:ground:start:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:ground:start:advancedrocketrycommunity:venus REQUIRED
+op:laser:logical REQUIRED
+op:laser:physical REQUIRED
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth REQUIRED
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars REQUIRED
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon REQUIRED
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus REQUIRED
+op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant REQUIRED
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth REQUIRED
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars REQUIRED
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon REQUIRED
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus REQUIRED
+op:railgun:local REQUIRED
+op:railgun:orbital REQUIRED
+op:research:lifetime:0 REQUIRED
+op:research:lifetime:120 REQUIRED
+op:research:lifetime:240 REQUIRED
+op:research:lifetime:360 REQUIRED
+op:solar:array REQUIRED
+op:solar:receive:advancedrocketrycommunity:earth REQUIRED
+op:solar:receive:advancedrocketrycommunity:mars REQUIRED
+op:solar:receive:advancedrocketrycommunity:moon REQUIRED
+op:solar:receive:advancedrocketrycommunity:venus REQUIRED
+op:solar:single REQUIRED
+op:station:advancedrocketrycommunity:cygnus_x1 REQUIRED
+op:station:advancedrocketrycommunity:earth REQUIRED
+op:station:advancedrocketrycommunity:gas_giant REQUIRED
+op:station:advancedrocketrycommunity:mars REQUIRED
+op:station:advancedrocketrycommunity:moon REQUIRED
+op:station:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:station:advancedrocketrycommunity:tau_ceti_f REQUIRED
+op:station:advancedrocketrycommunity:tau_ceti_g REQUIRED
+op:station:advancedrocketrycommunity:venus REQUIRED
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid REQUIRED
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid REQUIRED
+op:survey:instances:advancedrocketrycommunity:earth REQUIRED
+op:survey:instances:advancedrocketrycommunity:gas_giant REQUIRED
+op:survey:instances:advancedrocketrycommunity:mars REQUIRED
+op:survey:instances:advancedrocketrycommunity:moon REQUIRED
+op:survey:instances:advancedrocketrycommunity:tau_ceti_e REQUIRED
+op:survey:instances:advancedrocketrycommunity:venus REQUIRED
+op:survey:scan:advancedrocketrycommunity:earth REQUIRED
+op:survey:scan:advancedrocketrycommunity:mars REQUIRED
+op:survey:scan:advancedrocketrycommunity:moon REQUIRED
+op:survey:scan:advancedrocketrycommunity:venus REQUIRED
+op:tree:arc_furnace REQUIRED
+op:tree:block_press REQUIRED
+op:tree:crystallizer REQUIRED
+op:tree:dilithium REQUIRED
+op:tree:electrolysis REQUIRED
+op:tree:first_station_warp REQUIRED
+op:tree:formed_multiblock REQUIRED
+op:tree:lathe REQUIRED
+op:tree:moon_landing REQUIRED
+op:tree:moon_surface_visit REQUIRED
+op:tree:one_small_step REQUIRED
+op:tree:rolling REQUIRED
+op:tree:root REQUIRED
+op:tree:seat-tnt REQUIRED
+op:tree:seat_on_tnt REQUIRED
+op:tree:station_warp REQUIRED
+op:tree:suited_up REQUIRED
+op:tree:warp_core REQUIRED
+orbit:advancedrocketrycommunity:cygnus_x1 auxiliary
+orbit:advancedrocketrycommunity:earth auxiliary
+orbit:advancedrocketrycommunity:gas_giant auxiliary
+orbit:advancedrocketrycommunity:mars auxiliary
+orbit:advancedrocketrycommunity:moon auxiliary
+orbit:advancedrocketrycommunity:tau_ceti_e auxiliary
+orbit:advancedrocketrycommunity:tau_ceti_f auxiliary
+orbit:advancedrocketrycommunity:tau_ceti_g auxiliary
+orbit:advancedrocketrycommunity:venus auxiliary
+research:lifetime auxiliary
+source:advancedrocketrycommunity:enriched_lava auxiliary
+tool:silk_touch auxiliary
+travel:rocket auxiliary
+
+EDGES (producer: AND [OR alternatives] -> outputs; source)
+code:bucket:enriched_lava: [[fluid:advancedrocketrycommunity:enriched_lava], [minecraft:bucket], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:enriched_lava_bucket]; fluid/ClassicFluids bucket registrations; machine/tank/TankContainerExchange.plan (Forge whole-bucket transfer)
+code:bucket:rocket_fuel: [[fluid:advancedrocketrycommunity:rocket_fuel], [minecraft:bucket], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:rocket_fuel_bucket]; fluid/ClassicFluids bucket registrations; machine/tank/TankContainerExchange.plan (Forge whole-bucket transfer)
+code:charred_tree:access:tau_ceti_g: [[access:tau_ceti_g], [minecraft:diamond_pickaxe], [tool:silk_touch]] -> [advancedrocketrycommunity:charcoal_log, minecraft:charcoal]; celestial/surface/worldgen/CharredTreeFeature.place; loot_tables/blocks/charcoal_log; packaged block loot (positive chance branches are existential)
+code:charred_tree:access:venus: [[access:venus], [minecraft:diamond_pickaxe], [tool:silk_touch]] -> [advancedrocketrycommunity:charcoal_log, minecraft:charcoal]; celestial/surface/worldgen/CharredTreeFeature.place; loot_tables/blocks/charcoal_log; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|blue: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:blue_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|green: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:green_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|orange: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:orange_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|red: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:red_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|violet: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:violet_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:crystal:access:tau_ceti_g|yellow: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:yellow_crystal_block]; celestial/exoplanet/worldgen/CrystalClusterFeature.place; ExoplanetShapes.crystalCluster (all six colours); ExoplanetBlocks.CRYSTALS; packaged block loot (positive chance branches are existential)
+code:data_satellite: [[advancedrocketrycommunity:satellite_terminal], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:satellite_solar_module], [advancedrocketrycommunity:data_storage_unit], [advancedrocketrycommunity:satellite_control_chip], [minecraft:redstone]] -> [advancedrocketrycommunity:data_satellite_package]; satellite/terminal/SatelliteTerminalBlockEntity.assemble/chargeFromRedstone
+code:discover:advancedrocketrycommunity:earth: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:earth]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:gas_giant: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:gas_giant]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:mars: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:mars]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:moon: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:moon]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:space: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:space]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:tau_ceti_e: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:tau_ceti_e]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:tau_ceti_f: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:tau_ceti_f]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:tau_ceti_g: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:tau_ceti_g]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:discover:advancedrocketrycommunity:venus: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [research:lifetime]] -> [known:advancedrocketrycommunity:venus]; satellite/service/SatelliteManager.claimCurrent/applyDiscovery; satellite/service/DiscoveryClaimRecovery.recover
+code:drain:hydrogen: [[advancedrocketrycommunity:hydrogen_canister], [advancedrocketrycommunity:pressurized_tank]] -> [fluid:advancedrocketrycommunity:hydrogen, advancedrocketrycommunity:empty_canister]; fluid/GasCanisterCatalog.registered; GasCanisterHandler.drain; machine/tank/TankContainerExchange.plan (detached count-one 1000 mB unit)
+code:drain:nitrogen: [[advancedrocketrycommunity:nitrogen_canister], [advancedrocketrycommunity:pressurized_tank]] -> [fluid:advancedrocketrycommunity:nitrogen, advancedrocketrycommunity:empty_canister]; fluid/GasCanisterCatalog.registered; GasCanisterHandler.drain; machine/tank/TankContainerExchange.plan (detached count-one 1000 mB unit)
+code:drain:oxygen: [[advancedrocketrycommunity:oxygen_canister], [advancedrocketrycommunity:pressurized_tank]] -> [fluid:advancedrocketrycommunity:oxygen, advancedrocketrycommunity:empty_canister]; fluid/GasCanisterCatalog.registered; GasCanisterHandler.drain; machine/tank/TankContainerExchange.plan (detached count-one 1000 mB unit)
+code:fill:hydrogen: [[fluid:advancedrocketrycommunity:hydrogen], [advancedrocketrycommunity:empty_canister], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:hydrogen_canister]; fluid/GasCanisterHandler.fill; machine/tank/TankContainerExchange.plan
+code:fill:nitrogen: [[fluid:advancedrocketrycommunity:nitrogen], [advancedrocketrycommunity:empty_canister], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:nitrogen_canister]; fluid/GasCanisterHandler.fill; machine/tank/TankContainerExchange.plan
+code:fill:oxygen: [[fluid:advancedrocketrycommunity:oxygen], [advancedrocketrycommunity:empty_canister], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:oxygen_canister]; fluid/GasCanisterHandler.fill; machine/tank/TankContainerExchange.plan
+code:flight:advancedrocketrycommunity:earth_gas_orbit: [[access:overworld], [travel:rocket], [known:advancedrocketrycommunity:gas_giant]] -> [orbit:advancedrocketrycommunity:gas_giant]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_gas_orbit
+code:flight:advancedrocketrycommunity:earth_gas_orbit:reverse: [[orbit:advancedrocketrycommunity:gas_giant], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [access:overworld]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_gas_orbit:reverse
+code:flight:advancedrocketrycommunity:earth_mars: [[access:overworld], [travel:rocket], [known:advancedrocketrycommunity:mars]] -> [access:mars]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_mars
+code:flight:advancedrocketrycommunity:earth_mars:reverse: [[access:mars], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [access:overworld]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_mars:reverse
+code:flight:advancedrocketrycommunity:earth_moon: [[access:overworld], [travel:rocket], [known:advancedrocketrycommunity:moon]] -> [access:moon]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_moon
+code:flight:advancedrocketrycommunity:earth_moon:reverse: [[access:moon], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [access:overworld]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_moon:reverse
+code:flight:advancedrocketrycommunity:earth_surface_orbit: [[access:overworld], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [orbit:advancedrocketrycommunity:earth]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_surface_orbit
+code:flight:advancedrocketrycommunity:earth_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:earth], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [access:overworld]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_surface_orbit:reverse
+code:flight:advancedrocketrycommunity:earth_venus: [[access:overworld], [travel:rocket], [known:advancedrocketrycommunity:venus]] -> [access:venus]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_venus
+code:flight:advancedrocketrycommunity:earth_venus:reverse: [[access:venus], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [access:overworld]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:earth_venus:reverse
+code:flight:advancedrocketrycommunity:mars_surface_orbit: [[access:mars], [travel:rocket], [known:advancedrocketrycommunity:mars]] -> [orbit:advancedrocketrycommunity:mars]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:mars_surface_orbit
+code:flight:advancedrocketrycommunity:mars_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:mars], [travel:rocket], [known:advancedrocketrycommunity:mars]] -> [access:mars]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:mars_surface_orbit:reverse
+code:flight:advancedrocketrycommunity:moon_earth_orbit: [[access:moon], [travel:rocket], [known:advancedrocketrycommunity:earth]] -> [orbit:advancedrocketrycommunity:earth]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:moon_earth_orbit
+code:flight:advancedrocketrycommunity:moon_earth_orbit:reverse: [[orbit:advancedrocketrycommunity:earth], [travel:rocket], [known:advancedrocketrycommunity:moon]] -> [access:moon]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:moon_earth_orbit:reverse
+code:flight:advancedrocketrycommunity:moon_surface_orbit: [[access:moon], [travel:rocket], [known:advancedrocketrycommunity:moon]] -> [orbit:advancedrocketrycommunity:moon]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:moon_surface_orbit
+code:flight:advancedrocketrycommunity:moon_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:moon], [travel:rocket], [known:advancedrocketrycommunity:moon]] -> [access:moon]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:moon_surface_orbit:reverse
+code:flight:advancedrocketrycommunity:tau_ceti_f_g: [[access:tau_ceti_f], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_g]] -> [access:tau_ceti_g]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_f_g
+code:flight:advancedrocketrycommunity:tau_ceti_f_g:reverse: [[access:tau_ceti_g], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_f]] -> [access:tau_ceti_f]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_f_g:reverse
+code:flight:advancedrocketrycommunity:tau_ceti_f_surface_orbit: [[access:tau_ceti_f], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_f]] -> [orbit:advancedrocketrycommunity:tau_ceti_f]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_f_surface_orbit
+code:flight:advancedrocketrycommunity:tau_ceti_f_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:tau_ceti_f], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_f]] -> [access:tau_ceti_f]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_f_surface_orbit:reverse
+code:flight:advancedrocketrycommunity:tau_ceti_g_surface_orbit: [[access:tau_ceti_g], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_g]] -> [orbit:advancedrocketrycommunity:tau_ceti_g]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_g_surface_orbit
+code:flight:advancedrocketrycommunity:tau_ceti_g_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:tau_ceti_g], [travel:rocket], [known:advancedrocketrycommunity:tau_ceti_g]] -> [access:tau_ceti_g]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:tau_ceti_g_surface_orbit:reverse
+code:flight:advancedrocketrycommunity:venus_surface_orbit: [[access:venus], [travel:rocket], [known:advancedrocketrycommunity:venus]] -> [orbit:advancedrocketrycommunity:venus]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:venus_surface_orbit
+code:flight:advancedrocketrycommunity:venus_surface_orbit:reverse: [[orbit:advancedrocketrycommunity:venus], [travel:rocket], [known:advancedrocketrycommunity:venus]] -> [access:venus]; rocket/flight/RocketTargetFlightPlanner.plan/resolve; travel/route/service/RouteCatalog.plan; travel_routes/advancedrocketrycommunity:venus_surface_orbit:reverse
+code:gas_harvest:gas_giant.json: [[craft:advancedrocketrycommunity:gas_harvester], [known:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:satellite_terminal]] -> [advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:nitrogen_canister]; satellite/service/SatelliteKindLifecycle.launchIdle; ResourceMissionService.startGas/claimResource; satellite/resource/ResourceAlgorithms.gas; gas_harvest/gas_giant.json
+code:gas_harvester: [[advancedrocketrycommunity:satellite_builder], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:gas_intake_module], [advancedrocketrycommunity:satellite_solar_module], [advancedrocketrycommunity:satellite_cargo_hold], [advancedrocketrycommunity:satellite_control_chip], [minecraft:redstone], [research:lifetime]] -> [craft:advancedrocketrycommunity:gas_harvester, advancedrocketrycommunity:satellite_package]; satellite/builder/SatelliteBuilderBlockEntity.assemble/evaluate; satellite/component/SatelliteBlueprints.evaluate (power and cargo required)
+code:geode:access:venus: [[access:venus], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:geode_shell]; celestial/surface/worldgen/GeodeStructure.findGenerationPoint; GeodePiece.postProcess; packaged block loot (positive chance branches are existential)
+code:known:advancedrocketrycommunity:cygnus_x1: [[access:overworld]] -> [known:advancedrocketrycommunity:cygnus_x1]; celestial/service/PlanetaryDiscoveryPolicy.allows
+code:known:advancedrocketrycommunity:earth: [[access:overworld]] -> [known:advancedrocketrycommunity:earth]; celestial/service/PlanetaryDiscoveryPolicy.allows
+code:known:advancedrocketrycommunity:moon: [[access:overworld]] -> [known:advancedrocketrycommunity:moon]; celestial/service/PlanetaryDiscoveryPolicy.allows
+code:known:advancedrocketrycommunity:space: [[access:overworld]] -> [known:advancedrocketrycommunity:space]; celestial/service/PlanetaryDiscoveryPolicy.allows
+code:known:advancedrocketrycommunity:tau_ceti: [[access:overworld]] -> [known:advancedrocketrycommunity:tau_ceti]; celestial/service/PlanetaryDiscoveryPolicy.allows
+code:lightwood:access:tau_ceti_f: [[access:tau_ceti_f]] -> [advancedrocketrycommunity:lightwood_log, block:advancedrocketrycommunity:lightwood_leaves]; celestial/exoplanet/worldgen/LightwoodTreeFeature.place; worldgen/biome/advancedrocketrycommunity:alien_forest; loot_tables/blocks/lightwood_log
+code:lightwood_leaves: [[block:advancedrocketrycommunity:lightwood_leaves], [minecraft:shears]] -> [advancedrocketrycommunity:lightwood_leaves]; loot_tables/blocks/lightwood_leaves: shears or Silk Touch; celestial/exoplanet/worldgen/LightwoodTreeFeature.place
+code:lightwood_sapling: [[block:advancedrocketrycommunity:lightwood_leaves]] -> [advancedrocketrycommunity:lightwood_sapling]; loot_tables/blocks/lightwood_leaves: positive random_chance without shears/Silk Touch (existential, not guaranteed per leaf)
+code:patch:access:tau_ceti_g|advancedrocketrycommunity:electric_mushrooms|advancedrocketrycommunity:electric_mushroom: [[access:tau_ceti_g], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:electric_mushroom]; datagen/V180ExoplanetWorldgen: random_patch/simple_block; celestial/exoplanet/ElectricMushroomBlock; loot_tables/blocks/advancedrocketrycommunity:electric_mushroom; packaged block loot (positive chance branches are existential)
+code:pump:enriched_lava: [[source:advancedrocketrycommunity:enriched_lava], [advancedrocketrycommunity:pump], [energy:fe]] -> [fluid:advancedrocketrycommunity:enriched_lava]; machine/pump/PumpSources.fluid; PumpBlockEntity.serverTick (loaded source, protection and 100 FE checks)
+code:research: [[advancedrocketrycommunity:data_satellite_package], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [research:lifetime]; satellite/service/SatelliteManager.launch/startMission/claimCurrent; progression/ResearchAccount
+code:silk_touch: [[minecraft:enchanting_table], [minecraft:bookshelf], [minecraft:lapis_lazuli], [minecraft:diamond_pickaxe]] -> [tool:silk_touch]; Minecraft EnchantmentMenu.getEnchantmentList: repeatable vanilla Silk Touch enchanting; vanilla tools/XP/enchanting are survival assumptions, not guaranteed rolls
+code:terrain:access:mars|advancedrocketrycommunity:ferric_sand: [[access:mars], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:ferric_sand]; celestial/surface data: packaged dimension noise_settings/surface_rule; Minecraft NoiseBasedChunkGenerator.buildSurface; loot_tables/blocks/advancedrocketrycommunity:ferric_sand; packaged block loot (positive chance branches are existential)
+code:terrain:access:moon|advancedrocketrycommunity:dark_moon_turf: [[access:moon], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:dark_moon_turf]; celestial/surface data: packaged dimension noise_settings/surface_rule; Minecraft NoiseBasedChunkGenerator.buildSurface; loot_tables/blocks/advancedrocketrycommunity:dark_moon_turf; packaged block loot (positive chance branches are existential)
+code:terrain:access:moon|advancedrocketrycommunity:moon_turf: [[access:moon], [minecraft:diamond_pickaxe]] -> [advancedrocketrycommunity:moon_turf]; celestial/surface data: packaged dimension noise_settings/surface_rule; Minecraft NoiseBasedChunkGenerator.buildSurface; loot_tables/blocks/advancedrocketrycommunity:moon_turf; packaged block loot (positive chance branches are existential)
+code:volcano: [[access:venus]] -> [source:advancedrocketrycommunity:enriched_lava]; celestial/surface/worldgen/VolcanoStructure.findGenerationPoint; VolcanoPiece.postProcess (new Venus core/crater pools)
+code:warp:advancedrocketrycommunity:cygnus_x1: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:cygnus_x1]] -> [orbit:advancedrocketrycommunity:cygnus_x1]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:earth: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:earth]] -> [orbit:advancedrocketrycommunity:earth]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:gas_giant: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:gas_giant]] -> [orbit:advancedrocketrycommunity:gas_giant]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:mars: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:mars]] -> [orbit:advancedrocketrycommunity:mars]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:moon: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:moon]] -> [orbit:advancedrocketrycommunity:moon]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:tau_ceti_e: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:tau_ceti_e]] -> [orbit:advancedrocketrycommunity:tau_ceti_e]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:tau_ceti_f: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:tau_ceti_f]] -> [orbit:advancedrocketrycommunity:tau_ceti_f]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:tau_ceti_g: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:tau_ceti_g]] -> [orbit:advancedrocketrycommunity:tau_ceti_g]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+code:warp:advancedrocketrycommunity:venus: [[access:space], [advancedrocketrycommunity:station_deployment_kit], [advancedrocketrycommunity:warp_core], [advancedrocketrycommunity:warp_controller], [energy:fe], [known:advancedrocketrycommunity:venus]] -> [orbit:advancedrocketrycommunity:venus]; station/warp/StationWarpService.quote/confirm; celestial/service/StarSystemKnowledge.bodyKnown; station/controller/WarpControllerMenu
+energy:197: [[advancedrocketrycommunity:combustion_generator, advancedrocketrycommunity:solar_generator]] -> [energy:fe]; PackagedRecipeGraph; packaged energy:197
+flight:199: [[travel:rocket]] -> [access:moon, access:space]; PackagedRecipeGraph; packaged flight:199
+machine:arc_furnace: [[advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:blast_brick], [advancedrocketrycommunity:aluminum_coil, advancedrocketrycommunity:copper_coil, advancedrocketrycommunity:gold_coil, advancedrocketrycommunity:iridium_coil, advancedrocketrycommunity:titanium_coil], [advancedrocketrycommunity:blast_brick, advancedrocketrycommunity:fluid_input_hatch, advancedrocketrycommunity:fluid_output_hatch, advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:item_output_hatch, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:arc_furnace]] -> [machine:advancedrocketrycommunity:arc_furnace]; PackagedRecipeGraph; packaged machine:arc_furnace
+machine:centrifuge: [[advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:fluid_output_hatch], [advancedrocketrycommunity:endgame_casing], [advancedrocketrycommunity:centrifuge], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:fluid_input_hatch], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor], [advancedrocketrycommunity:item_output_hatch]] -> [machine:advancedrocketrycommunity:centrifuge]; PackagedRecipeGraph; packaged machine:centrifuge
+machine:chemical_reactor: [[advancedrocketrycommunity:chemical_reactor], [advancedrocketrycommunity:fluid_input_hatch], [advancedrocketrycommunity:item_input_hatch], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor], [advancedrocketrycommunity:fluid_output_hatch], [advancedrocketrycommunity:item_output_hatch]] -> [machine:advancedrocketrycommunity:chemical_reactor]; PackagedRecipeGraph; packaged machine:chemical_reactor
+machine:crystallizer: [[advancedrocketrycommunity:quartz_crucible], [advancedrocketrycommunity:item_output_hatch], [advancedrocketrycommunity:crystallizer], [advancedrocketrycommunity:item_input_hatch], [advancedrocketrycommunity:fluid_output_hatch], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:fluid_input_hatch]] -> [machine:advancedrocketrycommunity:crystallizer]; PackagedRecipeGraph; packaged machine:crystallizer
+machine:cutting_machine: [[advancedrocketrycommunity:item_input_hatch], [advancedrocketrycommunity:cutting_machine], [advancedrocketrycommunity:item_output_hatch], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor], [advancedrocketrycommunity:saw_blade], [advancedrocketrycommunity:power_input_plug]] -> [machine:advancedrocketrycommunity:cutting_machine]; PackagedRecipeGraph; packaged machine:cutting_machine
+machine:lathe: [[advancedrocketrycommunity:lathe], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor], [advancedrocketrycommunity:item_input_hatch], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:item_output_hatch]] -> [machine:advancedrocketrycommunity:lathe]; PackagedRecipeGraph; packaged machine:lathe
+machine:precision_assembler: [[advancedrocketrycommunity:precision_assembler_item_input_port], [advancedrocketrycommunity:precision_assembler], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:precision_assembler_item_output_port], [advancedrocketrycommunity:precision_assembler_energy_input_port]] -> [machine:advancedrocketrycommunity:precision_assembler]; PackagedRecipeGraph; packaged machine:precision_assembler
+machine:precision_laser_etcher: [[minecraft:acacia_slab, minecraft:andesite_slab, minecraft:bamboo_mosaic_slab, minecraft:bamboo_slab, minecraft:birch_slab, minecraft:blackstone_slab, minecraft:brick_slab, minecraft:cherry_slab, minecraft:cobbled_deepslate_slab, minecraft:cobblestone_slab, minecraft:crimson_slab, minecraft:cut_copper_slab, minecraft:cut_red_sandstone_slab, minecraft:cut_sandstone_slab, minecraft:dark_oak_slab, minecraft:dark_prismarine_slab, minecraft:deepslate_brick_slab, minecraft:deepslate_tile_slab, minecraft:diorite_slab, minecraft:end_stone_brick_slab, minecraft:exposed_cut_copper_slab, minecraft:granite_slab, minecraft:jungle_slab, minecraft:mangrove_slab, minecraft:mossy_cobblestone_slab, minecraft:mossy_stone_brick_slab, minecraft:mud_brick_slab, minecraft:nether_brick_slab, minecraft:oak_slab, minecraft:oxidized_cut_copper_slab, minecraft:polished_andesite_slab, minecraft:polished_blackstone_brick_slab, minecraft:polished_blackstone_slab, minecraft:polished_deepslate_slab, minecraft:polished_diorite_slab, minecraft:polished_granite_slab, minecraft:prismarine_brick_slab, minecraft:prismarine_slab, minecraft:purpur_slab, minecraft:quartz_slab, minecraft:red_nether_brick_slab, minecraft:red_sandstone_slab, minecraft:sandstone_slab, minecraft:smooth_quartz_slab, minecraft:smooth_red_sandstone_slab, minecraft:smooth_sandstone_slab, minecraft:smooth_stone_slab, minecraft:spruce_slab, minecraft:stone_brick_slab, minecraft:stone_slab, minecraft:warped_slab, minecraft:waxed_cut_copper_slab, minecraft:waxed_exposed_cut_copper_slab, minecraft:waxed_oxidized_cut_copper_slab, minecraft:waxed_weathered_cut_copper_slab, minecraft:weathered_cut_copper_slab], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:endgame_casing], [advancedrocketrycommunity:precision_laser_etcher], [advancedrocketrycommunity:item_input_hatch], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor], [advancedrocketrycommunity:item_output_hatch]] -> [machine:advancedrocketrycommunity:precision_laser_etcher]; PackagedRecipeGraph; packaged machine:precision_laser_etcher
+machine:rolling_machine: [[advancedrocketrycommunity:rolling_machine_item_input_port], [advancedrocketrycommunity:rolling_machine_fluid_input_port], [advancedrocketrycommunity:rolling_machine], [advancedrocketrycommunity:rolling_machine_energy_input_port], [advancedrocketrycommunity:rolling_machine_item_output_port], [advancedrocketrycommunity:machine_casing]] -> [machine:advancedrocketrycommunity:rolling_machine]; PackagedRecipeGraph; packaged machine:rolling_machine
+operational:ground-research:120: [[op:ground:credit:advancedrocketrycommunity:earth]] -> [op:research:lifetime:120]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:31; repeat fresh paid ground jobs 1 times at 120 credit; each job pays 1000 survey + 200 analysis ticks at 20 FE/tick
+operational:ground-research:240: [[op:ground:credit:advancedrocketrycommunity:earth]] -> [op:research:lifetime:240]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:31; repeat fresh paid ground jobs 2 times at 120 credit; each job pays 1000 survey + 200 analysis ticks at 20 FE/tick
+operational:ground-research:360: [[op:ground:credit:advancedrocketrycommunity:earth]] -> [op:research:lifetime:360]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:31; repeat fresh paid ground jobs 3 times at 120 credit; each job pays 1000 survey + 200 analysis ticks at 20 FE/tick
+operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e], [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e], [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e], [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e], [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid: [[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus], [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid, op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid, op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid], [advancedrocketrycommunity:satellite_terminal]] -> [op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:128; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:beacon:active: [[op:formed:planetary_beacon], [access:overworld]] -> [op:beacon:active]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/beacon/PlanetaryBeaconBlockEntity.java:207
+operational:op:black-hole:generate:advancedrocketrycommunity:cygnus_x1: [[op:formed:black_hole_generator], [op:station:advancedrocketrycommunity:cygnus_x1], [minecraft:stone, minecraft:cobblestone, minecraft:dirt, minecraft:netherrack]] -> [op:black-hole:generate:advancedrocketrycommunity:cygnus_x1]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/blackhole/BlackHoleGeneratorBlockEntity.java:287
+operational:op:built:advancedrocketrycommunity:asteroid_miner: [[advancedrocketrycommunity:satellite_builder], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:asteroid_drill_module], [advancedrocketrycommunity:satellite_control_chip], [advancedrocketrycommunity:satellite_solar_module], [minecraft:redstone], [op:research:lifetime:240], [advancedrocketrycommunity:satellite_cargo_hold]] -> [op:built:advancedrocketrycommunity:asteroid_miner]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:156; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprints.java:78; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:224; packaged:data/advancedrocketrycommunity/satellite_definitions/asteroid_miner.json
+operational:op:built:advancedrocketrycommunity:gas_harvester: [[advancedrocketrycommunity:satellite_builder], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:gas_intake_module], [advancedrocketrycommunity:satellite_control_chip], [advancedrocketrycommunity:satellite_solar_module], [minecraft:redstone], [op:research:lifetime:360], [advancedrocketrycommunity:satellite_cargo_hold]] -> [op:built:advancedrocketrycommunity:gas_harvester]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:156; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprints.java:78; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:224; packaged:data/advancedrocketrycommunity/satellite_definitions/gas_harvester.json
+operational:op:built:advancedrocketrycommunity:solar_satellite: [[advancedrocketrycommunity:satellite_builder], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:solar_transmitter_module], [advancedrocketrycommunity:satellite_control_chip], [advancedrocketrycommunity:satellite_solar_module], [minecraft:redstone], [op:research:lifetime:120]] -> [op:built:advancedrocketrycommunity:solar_satellite]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:156; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprints.java:78; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:224; packaged:data/advancedrocketrycommunity/satellite_definitions/solar_satellite.json
+operational:op:built:advancedrocketrycommunity:survey_satellite: [[advancedrocketrycommunity:satellite_builder], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:survey_scanner_module], [advancedrocketrycommunity:satellite_control_chip], [advancedrocketrycommunity:satellite_solar_module], [minecraft:redstone], [op:research:lifetime:0], [advancedrocketrycommunity:data_storage_unit], [advancedrocketrycommunity:satellite_battery]] -> [op:built:advancedrocketrycommunity:survey_satellite]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:156; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteBlueprints.java:78; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:224; packaged:data/advancedrocketrycommunity/satellite_definitions/survey_satellite.json
+operational:op:data:built: [[advancedrocketrycommunity:satellite_terminal], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:satellite_solar_module], [advancedrocketrycommunity:data_storage_unit], [advancedrocketrycommunity:satellite_control_chip], [minecraft:redstone]] -> [op:data:built]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/terminal/SatelliteTerminalBlockEntity.java:240
+operational:op:data:claim:advancedrocketrycommunity:earth: [[op:data:mission:advancedrocketrycommunity:earth]] -> [op:data:claim:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:gas_giant: [[op:data:mission:advancedrocketrycommunity:gas_giant]] -> [op:data:claim:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:mars: [[op:data:mission:advancedrocketrycommunity:mars]] -> [op:data:claim:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:moon: [[op:data:mission:advancedrocketrycommunity:moon]] -> [op:data:claim:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:space: [[op:data:mission:advancedrocketrycommunity:space]] -> [op:data:claim:advancedrocketrycommunity:space]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:tau_ceti_e: [[op:data:mission:advancedrocketrycommunity:tau_ceti_e]] -> [op:data:claim:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:tau_ceti_f: [[op:data:mission:advancedrocketrycommunity:tau_ceti_f]] -> [op:data:claim:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:tau_ceti_g: [[op:data:mission:advancedrocketrycommunity:tau_ceti_g]] -> [op:data:claim:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:claim:advancedrocketrycommunity:venus: [[op:data:mission:advancedrocketrycommunity:venus]] -> [op:data:claim:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713
+operational:op:data:mission:advancedrocketrycommunity:earth: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:gas_giant: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:mars: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:moon: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:space: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:space]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:tau_ceti_e: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:tau_ceti_f: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:tau_ceti_g: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:data:mission:advancedrocketrycommunity:venus: [[op:data:built], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:data:mission:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:239
+operational:op:elevator:bound: [[op:station:advancedrocketrycommunity:earth], [advancedrocketrycommunity:elevator_anchor], [advancedrocketrycommunity:elevator_terminal], [access:overworld]] -> [op:elevator:bound]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorRules.java:82
+operational:op:elevator:cargo: [[op:elevator:bound], [energy:fe], [minecraft:cobblestone]] -> [op:elevator:cargo]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorCargo.java:38
+operational:op:elevator:ride: [[op:elevator:bound], [energy:fe]] -> [op:elevator:ride]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/elevator/ElevatorRules.java:163
+operational:op:formed:astrobody_data_processor: [[advancedrocketrycommunity:astrobody_data_processor], [minecraft:stone_slab], [advancedrocketrycommunity:power_input_plug], [advancedrocketrycommunity:machine_casing]] -> [op:formed:astrobody_data_processor]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/astrobody_data_processor.json
+operational:op:formed:black_hole_generator: [[advancedrocketrycommunity:black_hole_generator], [advancedrocketrycommunity:endgame_casing], [minecraft:obsidian], [minecraft:crying_obsidian]] -> [op:formed:black_hole_generator]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/black_hole_generator.json
+operational:op:formed:observatory: [[advancedrocketrycommunity:observatory], [advancedrocketrycommunity:machine_casing], [minecraft:glass], [advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:power_input_plug, minecraft:iron_block], [advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:elite_motor, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:motor]] -> [op:formed:observatory]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/observatory.json
+operational:op:formed:orbital_laser_drill: [[advancedrocketrycommunity:orbital_laser_drill], [advancedrocketrycommunity:endgame_casing]] -> [op:formed:orbital_laser_drill]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/orbital_laser_drill.json
+operational:op:formed:planetary_beacon: [[advancedrocketrycommunity:planetary_beacon], [minecraft:redstone_block], [advancedrocketrycommunity:machine_casing]] -> [op:formed:planetary_beacon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/planetary_beacon.json
+operational:op:formed:railgun: [[advancedrocketrycommunity:railgun], [advancedrocketrycommunity:endgame_casing], [minecraft:iron_block]] -> [op:formed:railgun]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternJsonCodec.java:44; packaged:data/advancedrocketrycommunity/machine_patterns/railgun.json
+operational:op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:hydrogen_canister: [[op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:satellite_terminal]] -> [op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:hydrogen_canister]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:160; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:nitrogen_canister: [[op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:satellite_terminal]] -> [op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:nitrogen_canister]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:160; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:212
+operational:op:gravity:active: [[advancedrocketrycommunity:gravity_field_controller], [energy:fe], [access:overworld]] -> [op:gravity:active]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/gravity/GravityFieldBlockEntity.java:187
+operational:op:ground:analysis:advancedrocketrycommunity:earth: [[op:ground:data-unit:advancedrocketrycommunity:earth], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:analysis:advancedrocketrycommunity:mars: [[op:ground:data-unit:advancedrocketrycommunity:mars], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:analysis:advancedrocketrycommunity:moon: [[op:ground:data-unit:advancedrocketrycommunity:moon], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:analysis:advancedrocketrycommunity:tau_ceti_f: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:analysis:advancedrocketrycommunity:tau_ceti_g: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:analysis:advancedrocketrycommunity:venus: [[op:ground:data-unit:advancedrocketrycommunity:venus], [op:formed:astrobody_data_processor], [energy:fe]] -> [op:ground:analysis:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:205; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:credit:advancedrocketrycommunity:earth: [[op:ground:analysis:advancedrocketrycommunity:earth]] -> [op:ground:credit:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:credit:advancedrocketrycommunity:mars: [[op:ground:analysis:advancedrocketrycommunity:mars]] -> [op:ground:credit:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:credit:advancedrocketrycommunity:moon: [[op:ground:analysis:advancedrocketrycommunity:moon]] -> [op:ground:credit:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:credit:advancedrocketrycommunity:tau_ceti_f: [[op:ground:analysis:advancedrocketrycommunity:tau_ceti_f]] -> [op:ground:credit:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:credit:advancedrocketrycommunity:tau_ceti_g: [[op:ground:analysis:advancedrocketrycommunity:tau_ceti_g]] -> [op:ground:credit:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:credit:advancedrocketrycommunity:venus: [[op:ground:analysis:advancedrocketrycommunity:venus]] -> [op:ground:credit:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/GroundSurveys.java:240
+operational:op:ground:data-unit:advancedrocketrycommunity:earth: [[op:ground:start:advancedrocketrycommunity:earth], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:data-unit:advancedrocketrycommunity:mars: [[op:ground:start:advancedrocketrycommunity:mars], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:data-unit:advancedrocketrycommunity:moon: [[op:ground:start:advancedrocketrycommunity:moon], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f: [[op:ground:start:advancedrocketrycommunity:tau_ceti_f], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g: [[op:ground:start:advancedrocketrycommunity:tau_ceti_g], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:data-unit:advancedrocketrycommunity:venus: [[op:ground:start:advancedrocketrycommunity:venus], [energy:fe]] -> [op:ground:data-unit:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:181
+operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:earth]] -> [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:earth]] -> [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:earth]] -> [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:earth]] -> [op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:mars]] -> [op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:mars]] -> [op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:mars]] -> [op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:mars]] -> [op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:moon]] -> [op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:moon]] -> [op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:moon]] -> [op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:moon]] -> [op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]] -> [op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:venus]] -> [op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:venus]] -> [op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:venus]] -> [op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid: [[op:ground:data-unit:advancedrocketrycommunity:venus]] -> [op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one job
+operational:op:ground:start:advancedrocketrycommunity:earth: [[op:formed:observatory], [access:overworld]] -> [op:ground:start:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:ground:start:advancedrocketrycommunity:mars: [[op:formed:observatory], [access:mars]] -> [op:ground:start:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:ground:start:advancedrocketrycommunity:moon: [[op:formed:observatory], [access:moon]] -> [op:ground:start:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:ground:start:advancedrocketrycommunity:tau_ceti_f: [[op:formed:observatory], [access:tau_ceti_f]] -> [op:ground:start:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:ground:start:advancedrocketrycommunity:tau_ceti_g: [[op:formed:observatory], [access:tau_ceti_g]] -> [op:ground:start:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:ground:start:advancedrocketrycommunity:venus: [[op:formed:observatory], [access:venus]] -> [op:ground:start:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:233; packaged:data/advancedrocketrycommunity/asteroid_types
+operational:op:laser:logical: [[op:formed:orbital_laser_drill], [op:station:advancedrocketrycommunity:earth], [advancedrocketrycommunity:laser_lens], [energy:fe]] -> [op:laser:logical]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/LaserDrillOperation.java:20
+operational:op:laser:physical: [[op:formed:orbital_laser_drill], [op:station:advancedrocketrycommunity:earth], [advancedrocketrycommunity:laser_lens], [energy:fe], [advancedrocketrycommunity:laser_target], [access:overworld]] -> [op:laser:physical]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/laser/OrbitalLaserDrillBlockEntity.java:257
+operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth: [[op:built:advancedrocketrycommunity:asteroid_miner], [op:research:lifetime:240], [known:advancedrocketrycommunity:earth], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars: [[op:built:advancedrocketrycommunity:asteroid_miner], [op:research:lifetime:240], [known:advancedrocketrycommunity:mars], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon: [[op:built:advancedrocketrycommunity:asteroid_miner], [op:research:lifetime:240], [known:advancedrocketrycommunity:moon], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e: [[op:built:advancedrocketrycommunity:asteroid_miner], [op:research:lifetime:240], [known:advancedrocketrycommunity:tau_ceti_e], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus: [[op:built:advancedrocketrycommunity:asteroid_miner], [op:research:lifetime:240], [known:advancedrocketrycommunity:venus], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant: [[op:built:advancedrocketrycommunity:gas_harvester], [op:research:lifetime:360], [known:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth: [[op:built:advancedrocketrycommunity:solar_satellite], [op:research:lifetime:120], [known:advancedrocketrycommunity:earth], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars: [[op:built:advancedrocketrycommunity:solar_satellite], [op:research:lifetime:120], [known:advancedrocketrycommunity:mars], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon: [[op:built:advancedrocketrycommunity:solar_satellite], [op:research:lifetime:120], [known:advancedrocketrycommunity:moon], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus: [[op:built:advancedrocketrycommunity:solar_satellite], [op:research:lifetime:120], [known:advancedrocketrycommunity:venus], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:earth], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:mars], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:moon], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:tau_ceti_e], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus: [[op:built:advancedrocketrycommunity:survey_satellite], [op:research:lifetime:0], [known:advancedrocketrycommunity:venus], [advancedrocketrycommunity:satellite_terminal], [minecraft:redstone]] -> [op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60
+operational:op:railgun:local: [[op:formed:railgun], [energy:fe], [minecraft:cobblestone], [access:overworld]] -> [op:railgun:local]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunLaunch.java:69
+operational:op:railgun:orbital: [[op:formed:railgun], [energy:fe], [minecraft:cobblestone], [access:overworld], [op:station:advancedrocketrycommunity:earth]] -> [op:railgun:orbital]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunRoute.java:113
+operational:op:research:lifetime:0: [[access:overworld]] -> [op:research:lifetime:0]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/builder/SatelliteBuilderBlockEntity.java:156
+operational:op:research:lifetime:120: [[op:data:claim:advancedrocketrycommunity:earth]] -> [op:research:lifetime:120]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713; repeat Earth claim 1 times at 120 credit; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/ResearchAccount.java:39
+operational:op:research:lifetime:240: [[op:data:claim:advancedrocketrycommunity:earth]] -> [op:research:lifetime:240]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713; repeat Earth claim 2 times at 120 credit; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/ResearchAccount.java:39
+operational:op:research:lifetime:360: [[op:data:claim:advancedrocketrycommunity:earth]] -> [op:research:lifetime:360]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713; repeat Earth claim 3 times at 120 credit; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/ResearchAccount.java:39
+operational:op:solar:array: [[advancedrocketrycommunity:solar_array], [advancedrocketrycommunity:solar_array_panel], [advancedrocketrycommunity:power_output_plug], [access:overworld]] -> [op:solar:array]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/solar/SolarArrayLayout.java:63
+operational:op:solar:receive:advancedrocketrycommunity:earth: [[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth], [advancedrocketrycommunity:microwave_receiver]] -> [op:solar:receive:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SolarLinks.java:51
+operational:op:solar:receive:advancedrocketrycommunity:mars: [[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars], [advancedrocketrycommunity:microwave_receiver]] -> [op:solar:receive:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SolarLinks.java:51
+operational:op:solar:receive:advancedrocketrycommunity:moon: [[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon], [advancedrocketrycommunity:microwave_receiver]] -> [op:solar:receive:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SolarLinks.java:51
+operational:op:solar:receive:advancedrocketrycommunity:venus: [[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus], [advancedrocketrycommunity:microwave_receiver]] -> [op:solar:receive:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SolarLinks.java:51
+operational:op:solar:single: [[advancedrocketrycommunity:solar_generator], [access:overworld]] -> [op:solar:single]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/solar/SolarGeneration.java:38
+operational:op:station:advancedrocketrycommunity:cygnus_x1: [[orbit:advancedrocketrycommunity:cygnus_x1], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:cygnus_x1]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:earth: [[orbit:advancedrocketrycommunity:earth], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:gas_giant: [[orbit:advancedrocketrycommunity:gas_giant], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:mars: [[orbit:advancedrocketrycommunity:mars], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:moon: [[orbit:advancedrocketrycommunity:moon], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:tau_ceti_e: [[orbit:advancedrocketrycommunity:tau_ceti_e], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:tau_ceti_f: [[orbit:advancedrocketrycommunity:tau_ceti_f], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:tau_ceti_f]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:tau_ceti_g: [[orbit:advancedrocketrycommunity:tau_ceti_g], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:tau_ceti_g]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:station:advancedrocketrycommunity:venus: [[orbit:advancedrocketrycommunity:venus], [advancedrocketrycommunity:station_deployment_kit]] -> [op:station:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/warp/StationWarpService.java:582
+operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:earth]] -> [op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:earth]] -> [op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:earth]] -> [op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:earth]] -> [op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:gas_giant]] -> [op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:gas_giant]] -> [op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:gas_giant]] -> [op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:gas_giant]] -> [op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:mars]] -> [op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:mars]] -> [op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:mars]] -> [op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:mars]] -> [op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:moon]] -> [op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:moon]] -> [op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:moon]] -> [op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:moon]] -> [op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]] -> [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]] -> [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]] -> [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]] -> [op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid: [[op:survey:instances:advancedrocketrycommunity:venus]] -> [op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid: [[op:survey:instances:advancedrocketrycommunity:venus]] -> [op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid: [[op:survey:instances:advancedrocketrycommunity:venus]] -> [op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid: [[op:survey:instances:advancedrocketrycommunity:venus]] -> [op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceAlgorithms.java:59; positive-weight possible outcome, not every outcome in one mission
+operational:op:survey:instances:advancedrocketrycommunity:earth: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth]] -> [op:survey:instances:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:instances:advancedrocketrycommunity:gas_giant: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant]] -> [op:survey:instances:advancedrocketrycommunity:gas_giant]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:instances:advancedrocketrycommunity:mars: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars]] -> [op:survey:instances:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:instances:advancedrocketrycommunity:moon: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon]] -> [op:survey:instances:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:instances:advancedrocketrycommunity:tau_ceti_e: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e]] -> [op:survey:instances:advancedrocketrycommunity:tau_ceti_e]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:instances:advancedrocketrycommunity:venus: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus]] -> [op:survey:instances:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:84; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/ResourceMissionService.java:198
+operational:op:survey:scan:advancedrocketrycommunity:earth: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth], [access:overworld]] -> [op:survey:scan:advancedrocketrycommunity:earth]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanService.java:62
+operational:op:survey:scan:advancedrocketrycommunity:mars: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars], [access:mars]] -> [op:survey:scan:advancedrocketrycommunity:mars]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanService.java:62
+operational:op:survey:scan:advancedrocketrycommunity:moon: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon], [access:moon]] -> [op:survey:scan:advancedrocketrycommunity:moon]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanService.java:62
+operational:op:survey:scan:advancedrocketrycommunity:venus: [[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus], [access:venus]] -> [op:survey:scan:advancedrocketrycommunity:venus]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/scan/SurveyScanService.java:62
+operational:op:tree:arc_furnace: [[advancedrocketrycommunity:arc_furnace]] -> [op:tree:arc_furnace]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:block_press: [[advancedrocketrycommunity:small_plate_press]] -> [op:tree:block_press]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+operational:op:tree:crystallizer: [[advancedrocketrycommunity:crystallizer]] -> [op:tree:crystallizer]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:dilithium: [[advancedrocketrycommunity:dilithium_crystal]] -> [op:tree:dilithium]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:electrolysis: [[advancedrocketrycommunity:electrolyzer]] -> [op:tree:electrolysis]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+operational:op:tree:first_station_warp: [[op:station:advancedrocketrycommunity:moon]] -> [op:tree:first_station_warp]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:formed_multiblock: [[machine:advancedrocketrycommunity:rolling_machine]] -> [op:tree:formed_multiblock]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:lathe: [[advancedrocketrycommunity:lathe]] -> [op:tree:lathe]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:moon_landing: [[access:moon]] -> [op:tree:moon_landing]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:moon_surface_visit: [[access:moon]] -> [op:tree:moon_surface_visit]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:one_small_step: [[access:moon]] -> [op:tree:one_small_step]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:rolling: [[advancedrocketrycommunity:rolling_machine]] -> [op:tree:rolling]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+operational:op:tree:root: [[minecraft:crafting_table]] -> [op:tree:root]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+operational:op:tree:seat-tnt: [[advancedrocketrycommunity:rocket_seat], [minecraft:tnt]] -> [op:tree:seat-tnt]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:53
+operational:op:tree:seat_on_tnt: [[op:tree:seat-tnt]] -> [op:tree:seat_on_tnt]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:station_warp: [[op:station:advancedrocketrycommunity:moon]] -> [op:tree:station_warp]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:41
+operational:op:tree:suited_up: [[advancedrocketrycommunity:space_suit_helmet], [advancedrocketrycommunity:space_suit_chestplate], [advancedrocketrycommunity:space_suit_leggings], [advancedrocketrycommunity:space_suit_boots]] -> [op:tree:suited_up]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+operational:op:tree:warp_core: [[advancedrocketrycommunity:warp_core]] -> [op:tree:warp_core]; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicInventoryAdvancements.java:18
+ore:access:mars|advancedrocketrycommunity:aluminum_ore: [[access:mars]] -> [advancedrocketrycommunity:aluminum_ore, advancedrocketrycommunity:raw_aluminum]; PackagedRecipeGraph; packaged ore:access:mars|advancedrocketrycommunity:aluminum_ore
+ore:access:mars|advancedrocketrycommunity:dilithium_ore: [[access:mars]] -> [advancedrocketrycommunity:dilithium_ore]; PackagedRecipeGraph; packaged ore:access:mars|advancedrocketrycommunity:dilithium_ore
+ore:access:mars|advancedrocketrycommunity:iridium_ore: [[access:mars]] -> [advancedrocketrycommunity:iridium_ore, advancedrocketrycommunity:raw_iridium]; PackagedRecipeGraph; packaged ore:access:mars|advancedrocketrycommunity:iridium_ore
+ore:access:mars|advancedrocketrycommunity:rutile_ore: [[access:mars]] -> [advancedrocketrycommunity:raw_rutile, advancedrocketrycommunity:rutile_ore]; PackagedRecipeGraph; packaged ore:access:mars|advancedrocketrycommunity:rutile_ore
+ore:access:mars|advancedrocketrycommunity:tin_ore: [[access:mars]] -> [advancedrocketrycommunity:raw_tin, advancedrocketrycommunity:tin_ore]; PackagedRecipeGraph; packaged ore:access:mars|advancedrocketrycommunity:tin_ore
+ore:access:moon|advancedrocketrycommunity:aluminum_ore: [[access:moon]] -> [advancedrocketrycommunity:aluminum_ore, advancedrocketrycommunity:raw_aluminum]; PackagedRecipeGraph; packaged ore:access:moon|advancedrocketrycommunity:aluminum_ore
+ore:access:moon|advancedrocketrycommunity:dilithium_ore: [[access:moon]] -> [advancedrocketrycommunity:dilithium_ore]; PackagedRecipeGraph; packaged ore:access:moon|advancedrocketrycommunity:dilithium_ore
+ore:access:moon|advancedrocketrycommunity:iridium_ore: [[access:moon]] -> [advancedrocketrycommunity:iridium_ore, advancedrocketrycommunity:raw_iridium]; PackagedRecipeGraph; packaged ore:access:moon|advancedrocketrycommunity:iridium_ore
+ore:access:moon|advancedrocketrycommunity:rutile_ore: [[access:moon]] -> [advancedrocketrycommunity:raw_rutile, advancedrocketrycommunity:rutile_ore]; PackagedRecipeGraph; packaged ore:access:moon|advancedrocketrycommunity:rutile_ore
+ore:access:moon|advancedrocketrycommunity:tin_ore: [[access:moon]] -> [advancedrocketrycommunity:raw_tin, advancedrocketrycommunity:tin_ore]; PackagedRecipeGraph; packaged ore:access:moon|advancedrocketrycommunity:tin_ore
+ore:access:overworld|advancedrocketrycommunity:aluminum_ore: [[access:overworld]] -> [advancedrocketrycommunity:aluminum_ore, advancedrocketrycommunity:raw_aluminum]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:aluminum_ore
+ore:access:overworld|advancedrocketrycommunity:deepslate_aluminum_ore: [[access:overworld]] -> [advancedrocketrycommunity:deepslate_aluminum_ore, advancedrocketrycommunity:raw_aluminum]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:deepslate_aluminum_ore
+ore:access:overworld|advancedrocketrycommunity:deepslate_dilithium_ore: [[access:overworld]] -> [advancedrocketrycommunity:deepslate_dilithium_ore]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:deepslate_dilithium_ore
+ore:access:overworld|advancedrocketrycommunity:deepslate_rutile_ore: [[access:overworld]] -> [advancedrocketrycommunity:deepslate_rutile_ore, advancedrocketrycommunity:raw_rutile]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:deepslate_rutile_ore
+ore:access:overworld|advancedrocketrycommunity:deepslate_tin_ore: [[access:overworld]] -> [advancedrocketrycommunity:deepslate_tin_ore, advancedrocketrycommunity:raw_tin]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:deepslate_tin_ore
+ore:access:overworld|advancedrocketrycommunity:dilithium_ore: [[access:overworld]] -> [advancedrocketrycommunity:dilithium_ore]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:dilithium_ore
+ore:access:overworld|advancedrocketrycommunity:rutile_ore: [[access:overworld]] -> [advancedrocketrycommunity:raw_rutile, advancedrocketrycommunity:rutile_ore]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:rutile_ore
+ore:access:overworld|advancedrocketrycommunity:tin_ore: [[access:overworld]] -> [advancedrocketrycommunity:raw_tin, advancedrocketrycommunity:tin_ore]; PackagedRecipeGraph; packaged ore:access:overworld|advancedrocketrycommunity:tin_ore
+recipe:advancedrocketrycommunity:advanced_bipropellant_rocket_motor: [[advancedrocketrycommunity:bipropellant_rocket_motor], [advancedrocketrycommunity:titanium_aluminide_plate], [advancedrocketrycommunity:elite_motor], [minecraft:blaze_powder], [minecraft:redstone]] -> [advancedrocketrycommunity:advanced_bipropellant_rocket_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:advanced_bipropellant_rocket_motor
+recipe:advancedrocketrycommunity:advanced_circuit: [[#advancedrocketrycommunity:circuits/basic], [#forge:ingots/gold], [#forge:gems/diamond]] -> [advancedrocketrycommunity:advanced_circuit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:advanced_circuit
+recipe:advancedrocketrycommunity:advanced_motor: [[advancedrocketrycommunity:motor], [#advancedrocketrycommunity:coils/gold], [#forge:plates/gold]] -> [advancedrocketrycommunity:advanced_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:advanced_motor
+recipe:advancedrocketrycommunity:advanced_rocket_motor: [[advancedrocketrycommunity:rocket_motor], [advancedrocketrycommunity:titanium_aluminide_plate], [advancedrocketrycommunity:enhanced_motor], [advancedrocketrycommunity:iridium_plate], [minecraft:redstone]] -> [advancedrocketrycommunity:advanced_rocket_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:advanced_rocket_motor
+recipe:advancedrocketrycommunity:advanced_solar_panel: [[advancedrocketrycommunity:satellite_solar_module], [#forge:ingots/gold], [advancedrocketrycommunity:advanced_circuit], [minecraft:redstone_block]] -> [advancedrocketrycommunity:advanced_solar_panel]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:advanced_solar_panel
+recipe:advancedrocketrycommunity:airlock_door: [[minecraft:iron_ingot]] -> [advancedrocketrycommunity:airlock_door]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:airlock_door
+recipe:advancedrocketrycommunity:aluminum_block: [[#forge:ingots/aluminum]] -> [advancedrocketrycommunity:aluminum_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_block
+recipe:advancedrocketrycommunity:aluminum_coil: [[#forge:ingots/aluminum]] -> [advancedrocketrycommunity:aluminum_coil]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_coil
+recipe:advancedrocketrycommunity:aluminum_ingot_from_aluminum_block: [[#forge:storage_blocks/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_aluminum_block
+recipe:advancedrocketrycommunity:aluminum_ingot_from_dust_blasting: [[#forge:dusts/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:aluminum_ingot_from_dust_smelting: [[#forge:dusts/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:aluminum_ingot_from_nuggets: [[#forge:nuggets/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_nuggets
+recipe:advancedrocketrycommunity:aluminum_ingot_from_ore_blasting: [[#forge:ores/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_ore_blasting
+recipe:advancedrocketrycommunity:aluminum_ingot_from_ore_smelting: [[#forge:ores/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_ore_smelting
+recipe:advancedrocketrycommunity:aluminum_ingot_from_raw_blasting: [[#forge:raw_materials/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_raw_blasting
+recipe:advancedrocketrycommunity:aluminum_ingot_from_raw_smelting: [[#forge:raw_materials/aluminum]] -> [advancedrocketrycommunity:aluminum_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_ingot_from_raw_smelting
+recipe:advancedrocketrycommunity:aluminum_nugget: [[#forge:ingots/aluminum]] -> [advancedrocketrycommunity:aluminum_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:aluminum_nugget
+recipe:advancedrocketrycommunity:anti_fog_visor: [[#forge:plates/aluminum], [#forge:ingots/iron], [minecraft:glass]] -> [advancedrocketrycommunity:anti_fog_visor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:anti_fog_visor
+recipe:advancedrocketrycommunity:arc_furnace: [[advancedrocketrycommunity:blast_brick], [minecraft:redstone], [#forge:plates/iron], [advancedrocketrycommunity:machine_casing], [#forge:ingots/copper]] -> [advancedrocketrycommunity:arc_furnace]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace
+recipe:advancedrocketrycommunity:arc_furnace_silicon: [[machine:advancedrocketrycommunity:arc_furnace], [energy:fe], [minecraft:sand]] -> [advancedrocketrycommunity:silicon_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace_silicon
+recipe:advancedrocketrycommunity:arc_furnace_steel: [[machine:advancedrocketrycommunity:arc_furnace], [energy:fe], [#forge:ingots/iron], [minecraft:charcoal]] -> [advancedrocketrycommunity:steel_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace_steel
+recipe:advancedrocketrycommunity:arc_furnace_titanium: [[machine:advancedrocketrycommunity:arc_furnace], [energy:fe], [#forge:ores/rutile, #forge:raw_materials/rutile]] -> [advancedrocketrycommunity:titanium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace_titanium
+recipe:advancedrocketrycommunity:arc_furnace_titanium_aluminide: [[machine:advancedrocketrycommunity:arc_furnace], [energy:fe], [#forge:ingots/aluminum], [#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_aluminide_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace_titanium_aluminide
+recipe:advancedrocketrycommunity:arc_furnace_titanium_iridium: [[machine:advancedrocketrycommunity:arc_furnace], [energy:fe], [#forge:ingots/iridium], [#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:arc_furnace_titanium_iridium
+recipe:advancedrocketrycommunity:asteroid_drill_module: [[#forge:ingots/gold], [minecraft:diamond_pickaxe], [advancedrocketrycommunity:advanced_circuit], [minecraft:piston], [minecraft:redstone]] -> [advancedrocketrycommunity:asteroid_drill_module]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:asteroid_drill_module
+recipe:advancedrocketrycommunity:astrobody_data_processor: [[#forge:plates/steel], [advancedrocketrycommunity:laser_lens], [advancedrocketrycommunity:control_board], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:motor]] -> [advancedrocketrycommunity:astrobody_data_processor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:astrobody_data_processor
+recipe:advancedrocketrycommunity:atmosphere_analyzer: [[advancedrocketrycommunity:basic_circuit], [minecraft:glass_pane], [minecraft:iron_ingot]] -> [advancedrocketrycommunity:atmosphere_analyzer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:atmosphere_analyzer
+recipe:advancedrocketrycommunity:atmosphere_detector: [[#forge:plates/aluminum], [#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:atmosphere_detector]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:atmosphere_detector
+recipe:advancedrocketrycommunity:basic_circuit: [[#advancedrocketrycommunity:silicon_wafers], [#forge:ingots/copper], [minecraft:redstone]] -> [advancedrocketrycommunity:basic_circuit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:basic_circuit
+recipe:advancedrocketrycommunity:basic_laser_gun: [[#forge:plates/steel], [#forge:gems/diamond], [#forge:rods/iron], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:basic_laser_gun]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:basic_laser_gun
+recipe:advancedrocketrycommunity:beacon_finder: [[#forge:plates/aluminum], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:beacon_finder]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:beacon_finder
+recipe:advancedrocketrycommunity:bionic_leg_upgrade: [[#forge:plates/steel], [#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:bionic_leg_upgrade]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:bionic_leg_upgrade
+recipe:advancedrocketrycommunity:bipropellant_fuel_tank: [[advancedrocketrycommunity:rocket_fuel_tank], [advancedrocketrycommunity:steel_plate], [minecraft:redstone]] -> [advancedrocketrycommunity:bipropellant_fuel_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:bipropellant_fuel_tank
+recipe:advancedrocketrycommunity:bipropellant_rocket_motor: [[advancedrocketrycommunity:rocket_motor], [advancedrocketrycommunity:steel_plate], [advancedrocketrycommunity:advanced_motor], [minecraft:redstone]] -> [advancedrocketrycommunity:bipropellant_rocket_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:bipropellant_rocket_motor
+recipe:advancedrocketrycommunity:black_hole_generator: [[minecraft:obsidian], [minecraft:ender_eye], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:endgame_casing]] -> [advancedrocketrycommunity:black_hole_generator]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:black_hole_generator
+recipe:advancedrocketrycommunity:blast_brick: [[minecraft:bricks], [minecraft:magma_cream]] -> [advancedrocketrycommunity:blast_brick]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:blast_brick
+recipe:advancedrocketrycommunity:carbon_brick: [[minecraft:charcoal]] -> [advancedrocketrycommunity:carbon_brick]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:carbon_brick
+recipe:advancedrocketrycommunity:carbon_scrubber_cartridge: [[#forge:plates/iron], [advancedrocketrycommunity:carbon_brick]] -> [advancedrocketrycommunity:carbon_scrubber_cartridge]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:carbon_scrubber_cartridge
+recipe:advancedrocketrycommunity:centrifuge: [[#forge:plates/steel], [minecraft:redstone], [advancedrocketrycommunity:motor], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:centrifuge]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:centrifuge
+recipe:advancedrocketrycommunity:centrifuging_enriched_lava: [[machine:advancedrocketrycommunity:centrifuge], [energy:fe], [fluid:advancedrocketrycommunity:enriched_lava]] -> [fluid:minecraft:lava, advancedrocketrycommunity:copper_nugget, minecraft:iron_nugget, advancedrocketrycommunity:tin_nugget, minecraft:gold_nugget, advancedrocketrycommunity:iridium_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:centrifuging_enriched_lava
+recipe:advancedrocketrycommunity:chemical_reacting_bone_meal: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [minecraft:bone], [fluid:advancedrocketrycommunity:nitrogen]] -> [minecraft:bone_meal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_bone_meal
+recipe:advancedrocketrycommunity:chemical_reacting_carbon_cartridge_refresh: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [advancedrocketrycommunity:carbon_scrubber_cartridge]] -> [minecraft:charcoal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_carbon_cartridge_refresh
+recipe:advancedrocketrycommunity:chemical_reacting_rocket_fuel: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [fluid:advancedrocketrycommunity:oxygen], [fluid:advancedrocketrycommunity:hydrogen]] -> [fluid:advancedrocketrycommunity:rocket_fuel]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_rocket_fuel
+recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_boots: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [#forge:armors/boots], [advancedrocketrycommunity:pipe_seal], [#advancedrocketrycommunity:sheets/titanium_aluminide]] -> [enchantment:advancedrocketrycommunity:space_breathing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_boots
+recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_chestplate: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [#forge:armors/chestplates], [advancedrocketrycommunity:pipe_seal], [#advancedrocketrycommunity:sheets/titanium_aluminide], [advancedrocketrycommunity:super_high_pressure_tank]] -> [enchantment:advancedrocketrycommunity:space_breathing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_chestplate
+recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_helmet: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [#forge:armors/helmets], [advancedrocketrycommunity:pipe_seal], [#advancedrocketrycommunity:sheets/titanium_aluminide]] -> [enchantment:advancedrocketrycommunity:space_breathing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_helmet
+recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_leggings: [[machine:advancedrocketrycommunity:chemical_reactor], [energy:fe], [#forge:armors/leggings], [advancedrocketrycommunity:pipe_seal], [#advancedrocketrycommunity:sheets/titanium_aluminide]] -> [enchantment:advancedrocketrycommunity:space_breathing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_leggings
+recipe:advancedrocketrycommunity:chemical_reactor: [[#forge:plates/steel], [minecraft:redstone], [advancedrocketrycommunity:motor], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:chemical_reactor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:chemical_reactor
+recipe:advancedrocketrycommunity:co2_scrubber: [[#forge:plates/steel], [#forge:ingots/iron], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:co2_scrubber]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:co2_scrubber
+recipe:advancedrocketrycommunity:combustion_generator: [[#forge:ingots/iron], [advancedrocketrycommunity:copper_coil], [minecraft:furnace], [minecraft:redstone]] -> [advancedrocketrycommunity:combustion_generator]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:combustion_generator
+recipe:advancedrocketrycommunity:control_board: [[#forge:dusts/redstone], [#forge:gems/quartz], [#forge:dusts/copper], [#minecraft:wooden_slabs], [#forge:plates/iron]] -> [advancedrocketrycommunity:control_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:control_board
+recipe:advancedrocketrycommunity:copper_coil: [[#forge:ingots/copper]] -> [advancedrocketrycommunity:copper_coil]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_coil
+recipe:advancedrocketrycommunity:copper_ingot_from_dust_blasting: [[#forge:dusts/copper]] -> [minecraft:copper_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:copper_ingot_from_dust_smelting: [[#forge:dusts/copper]] -> [minecraft:copper_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:copper_ingot_from_nuggets: [[#forge:nuggets/copper]] -> [minecraft:copper_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_ingot_from_nuggets
+recipe:advancedrocketrycommunity:copper_nugget: [[#forge:ingots/copper]] -> [advancedrocketrycommunity:copper_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_nugget
+recipe:advancedrocketrycommunity:copper_rod: [[#forge:ingots/copper]] -> [advancedrocketrycommunity:copper_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:copper_rod
+recipe:advancedrocketrycommunity:crystallizer: [[#forge:plates/steel], [minecraft:redstone], [advancedrocketrycommunity:quartz_crucible_shell], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:motor]] -> [advancedrocketrycommunity:crystallizer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:crystallizer
+recipe:advancedrocketrycommunity:crystallizing_dilithium: [[machine:advancedrocketrycommunity:crystallizer], [energy:fe], [#forge:dusts/dilithium]] -> [advancedrocketrycommunity:dilithium_crystal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:crystallizing_dilithium
+recipe:advancedrocketrycommunity:crystallizing_silicon_boule: [[machine:advancedrocketrycommunity:crystallizer], [energy:fe], [#forge:ingots/silicon], [#forge:nuggets/silicon]] -> [advancedrocketrycommunity:silicon_boule]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:crystallizing_silicon_boule
+recipe:advancedrocketrycommunity:cutting_acacia_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:acacia_log]] -> [minecraft:acacia_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_acacia_log
+recipe:advancedrocketrycommunity:cutting_advanced_circuit: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [advancedrocketrycommunity:advanced_circuit_plate]] -> [advancedrocketrycommunity:advanced_circuit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_advanced_circuit
+recipe:advancedrocketrycommunity:cutting_basic_circuit: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:basic_circuit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_basic_circuit
+recipe:advancedrocketrycommunity:cutting_birch_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:birch_log]] -> [minecraft:birch_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_birch_log
+recipe:advancedrocketrycommunity:cutting_cherry_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:cherry_log]] -> [minecraft:cherry_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_cherry_log
+recipe:advancedrocketrycommunity:cutting_crimson_stem: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:crimson_stem]] -> [minecraft:crimson_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_crimson_stem
+recipe:advancedrocketrycommunity:cutting_dark_oak_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:dark_oak_log]] -> [minecraft:dark_oak_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_dark_oak_log
+recipe:advancedrocketrycommunity:cutting_jungle_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:jungle_log]] -> [minecraft:jungle_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_jungle_log
+recipe:advancedrocketrycommunity:cutting_lightwood_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [advancedrocketrycommunity:lightwood_log]] -> [advancedrocketrycommunity:lightwood_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_lightwood_log
+recipe:advancedrocketrycommunity:cutting_machine: [[#forge:plates/steel], [minecraft:redstone], [advancedrocketrycommunity:motor], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:iron_saw_blade]] -> [advancedrocketrycommunity:cutting_machine]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_machine
+recipe:advancedrocketrycommunity:cutting_mangrove_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:mangrove_log]] -> [minecraft:mangrove_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_mangrove_log
+recipe:advancedrocketrycommunity:cutting_oak_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:oak_log]] -> [minecraft:oak_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_oak_log
+recipe:advancedrocketrycommunity:cutting_silicon_wafer: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [#advancedrocketrycommunity:boules/silicon]] -> [advancedrocketrycommunity:silicon_wafer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_silicon_wafer
+recipe:advancedrocketrycommunity:cutting_spruce_log: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:spruce_log]] -> [minecraft:spruce_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_spruce_log
+recipe:advancedrocketrycommunity:cutting_warped_stem: [[machine:advancedrocketrycommunity:cutting_machine], [energy:fe], [minecraft:warped_stem]] -> [minecraft:warped_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:cutting_warped_stem
+recipe:advancedrocketrycommunity:data_storage_unit: [[#advancedrocketrycommunity:circuits/advanced], [minecraft:comparator], [minecraft:redstone]] -> [advancedrocketrycommunity:data_storage_unit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:data_storage_unit
+recipe:advancedrocketrycommunity:dilithium_dust_from_ore_blasting: [[#forge:ores/dilithium]] -> [advancedrocketrycommunity:dilithium_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:dilithium_dust_from_ore_blasting
+recipe:advancedrocketrycommunity:dilithium_dust_from_ore_smelting: [[#forge:ores/dilithium]] -> [advancedrocketrycommunity:dilithium_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:dilithium_dust_from_ore_smelting
+recipe:advancedrocketrycommunity:earthbright_visor: [[#forge:plates/titanium], [#forge:ingots/iron], [minecraft:glowstone]] -> [advancedrocketrycommunity:earthbright_visor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:earthbright_visor
+recipe:advancedrocketrycommunity:electrolyzer: [[#forge:ingots/iron], [#forge:glass], [advancedrocketrycommunity:basic_circuit], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:electrolyzer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:electrolyzer
+recipe:advancedrocketrycommunity:electrolyzer_water: [[advancedrocketrycommunity:electrolyzer], [energy:fe], [fluid:minecraft:water], [advancedrocketrycommunity:empty_canister]] -> [advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:oxygen_canister]; machine/electrolyzer/ElectrolyzerBlockEntity.serverTick; ElectrolyzerRecipeResolver; ElectrolyzerRecipe (canister outputs and water/FE inputs)
+recipe:advancedrocketrycommunity:elevator_anchor: [[#forge:storage_blocks/iron], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:endgame_casing]] -> [advancedrocketrycommunity:elevator_anchor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:elevator_anchor
+recipe:advancedrocketrycommunity:elevator_terminal: [[#forge:ender_pearls], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:elevator_terminal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:elevator_terminal
+recipe:advancedrocketrycommunity:elite_motor: [[advancedrocketrycommunity:enhanced_motor], [#advancedrocketrycommunity:coils/iridium], [#forge:plates/iridium]] -> [advancedrocketrycommunity:elite_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:elite_motor
+recipe:advancedrocketrycommunity:empty_canister: [[#forge:glass]] -> [advancedrocketrycommunity:empty_canister]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:empty_canister
+recipe:advancedrocketrycommunity:endgame_casing: [[#forge:ingots/iron], [minecraft:obsidian], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:endgame_casing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:endgame_casing
+recipe:advancedrocketrycommunity:enhanced_motor: [[advancedrocketrycommunity:advanced_motor], [#advancedrocketrycommunity:coils/titanium], [#forge:plates/titanium]] -> [advancedrocketrycommunity:enhanced_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:enhanced_motor
+recipe:advancedrocketrycommunity:flight_speed_upgrade: [[#forge:plates/aluminum], [#forge:ingots/iron], [minecraft:redstone]] -> [advancedrocketrycommunity:flight_speed_upgrade]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:flight_speed_upgrade
+recipe:advancedrocketrycommunity:fluid_fuel_loader: [[advancedrocketrycommunity:pressurized_tank], [advancedrocketrycommunity:liquid_io_board], [advancedrocketrycommunity:control_board], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:fluid_fuel_loader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:fluid_fuel_loader
+recipe:advancedrocketrycommunity:fluid_input_hatch: [[#forge:plates/iron], [minecraft:bucket], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:fluid_input_hatch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:fluid_input_hatch
+recipe:advancedrocketrycommunity:fluid_output_hatch: [[#forge:plates/iron], [minecraft:bucket], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:fluid_output_hatch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:fluid_output_hatch
+recipe:advancedrocketrycommunity:force_field_projector: [[#forge:plates/titanium], [minecraft:glass], [advancedrocketrycommunity:control_board], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:force_field_projector]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:force_field_projector
+recipe:advancedrocketrycommunity:fuel_loader: [[#forge:ingots/iron], [minecraft:hopper], [advancedrocketrycommunity:basic_circuit], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:fuel_loader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:fuel_loader
+recipe:advancedrocketrycommunity:gas_charge_pad: [[#forge:plates/steel], [advancedrocketrycommunity:empty_canister], [advancedrocketrycommunity:user_interface]] -> [advancedrocketrycommunity:gas_charge_pad]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gas_charge_pad
+recipe:advancedrocketrycommunity:gas_intake_module: [[#forge:ingots/gold], [minecraft:hopper], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:empty_canister], [minecraft:redstone]] -> [advancedrocketrycommunity:gas_intake_module]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gas_intake_module
+recipe:advancedrocketrycommunity:gold_coil: [[#forge:ingots/gold]] -> [advancedrocketrycommunity:gold_coil]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gold_coil
+recipe:advancedrocketrycommunity:gold_ingot_from_dust_blasting: [[#forge:dusts/gold]] -> [minecraft:gold_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gold_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:gold_ingot_from_dust_smelting: [[#forge:dusts/gold]] -> [minecraft:gold_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gold_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:gravity_field_controller: [[#forge:ender_pearls], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:gravity_field_controller]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:gravity_field_controller
+recipe:advancedrocketrycommunity:guidance_computer: [[#forge:glass], [advancedrocketrycommunity:advanced_circuit], [minecraft:redstone], [advancedrocketrycommunity:machine_casing], [#forge:ingots/iron]] -> [advancedrocketrycommunity:guidance_computer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:guidance_computer
+recipe:advancedrocketrycommunity:high_pressure_tank: [[#forge:plates/steel], [minecraft:glass_bottle]] -> [advancedrocketrycommunity:high_pressure_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:high_pressure_tank
+recipe:advancedrocketrycommunity:hover_upgrade: [[#forge:plates/aluminum], [#forge:ingots/iron], [minecraft:feather]] -> [advancedrocketrycommunity:hover_upgrade]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:hover_upgrade
+recipe:advancedrocketrycommunity:iridium_block: [[#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_block
+recipe:advancedrocketrycommunity:iridium_coil: [[#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_coil]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_coil
+recipe:advancedrocketrycommunity:iridium_ingot_from_dust_blasting: [[#forge:dusts/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:iridium_ingot_from_dust_smelting: [[#forge:dusts/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:iridium_ingot_from_iridium_block: [[#forge:storage_blocks/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_iridium_block
+recipe:advancedrocketrycommunity:iridium_ingot_from_nuggets: [[#forge:nuggets/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_nuggets
+recipe:advancedrocketrycommunity:iridium_ingot_from_ore_blasting: [[#forge:ores/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_ore_blasting
+recipe:advancedrocketrycommunity:iridium_ingot_from_ore_smelting: [[#forge:ores/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_ore_smelting
+recipe:advancedrocketrycommunity:iridium_ingot_from_raw_blasting: [[#forge:raw_materials/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_raw_blasting
+recipe:advancedrocketrycommunity:iridium_ingot_from_raw_smelting: [[#forge:raw_materials/iridium]] -> [advancedrocketrycommunity:iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_ingot_from_raw_smelting
+recipe:advancedrocketrycommunity:iridium_nugget: [[#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_nugget
+recipe:advancedrocketrycommunity:iridium_rod: [[#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iridium_rod
+recipe:advancedrocketrycommunity:iron_ingot_from_dust_blasting: [[#forge:dusts/iron]] -> [minecraft:iron_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iron_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:iron_ingot_from_dust_smelting: [[#forge:dusts/iron]] -> [minecraft:iron_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iron_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:iron_rod: [[#forge:ingots/iron]] -> [advancedrocketrycommunity:iron_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iron_rod
+recipe:advancedrocketrycommunity:iron_saw_blade: [[#forge:rods/iron], [#forge:plates/iron]] -> [advancedrocketrycommunity:iron_saw_blade]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:iron_saw_blade
+recipe:advancedrocketrycommunity:item_input_hatch: [[#forge:plates/iron], [minecraft:hopper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:item_input_hatch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:item_input_hatch
+recipe:advancedrocketrycommunity:item_io_board: [[#forge:dusts/redstone], [#forge:gems/quartz], [#forge:dusts/gold], [#minecraft:wooden_slabs], [#forge:plates/iron]] -> [advancedrocketrycommunity:item_io_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:item_io_board
+recipe:advancedrocketrycommunity:item_output_hatch: [[#forge:plates/iron], [minecraft:hopper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:item_output_hatch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:item_output_hatch
+recipe:advancedrocketrycommunity:jackhammer: [[#forge:plates/aluminum], [#forge:rods/titanium], [#forge:rods/iron], [#advancedrocketrycommunity:motors], [#forge:gems/diamond]] -> [advancedrocketrycommunity:jackhammer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:jackhammer
+recipe:advancedrocketrycommunity:jetpack: [[#forge:plates/steel], [#forge:rods/titanium], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:jetpack]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:jetpack
+recipe:advancedrocketrycommunity:landing_pad: [[minecraft:iron_ingot], [minecraft:gray_concrete], [minecraft:redstone]] -> [advancedrocketrycommunity:landing_pad]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:landing_pad
+recipe:advancedrocketrycommunity:large_satellite_battery: [[advancedrocketrycommunity:satellite_battery], [minecraft:redstone_block], [advancedrocketrycommunity:advanced_circuit]] -> [advancedrocketrycommunity:large_satellite_battery]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:large_satellite_battery
+recipe:advancedrocketrycommunity:laser_etching_advanced_circuit_plate: [[machine:advancedrocketrycommunity:precision_laser_etcher], [energy:fe], [#forge:plates/gold], [minecraft:redstone_block], [advancedrocketrycommunity:silicon_wafer], [advancedrocketrycommunity:laser_lens]] -> [advancedrocketrycommunity:advanced_circuit_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:laser_etching_advanced_circuit_plate
+recipe:advancedrocketrycommunity:laser_etching_basic_circuit_plate: [[machine:advancedrocketrycommunity:precision_laser_etcher], [energy:fe], [#forge:plates/gold], [#forge:dusts/redstone], [advancedrocketrycommunity:silicon_wafer], [advancedrocketrycommunity:laser_lens]] -> [advancedrocketrycommunity:basic_circuit_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:laser_etching_basic_circuit_plate
+recipe:advancedrocketrycommunity:laser_lens: [[#forge:glass], [#forge:gems/diamond], [advancedrocketrycommunity:silicon_wafer]] -> [advancedrocketrycommunity:laser_lens]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:laser_lens
+recipe:advancedrocketrycommunity:laser_target: [[#forge:ingots/iron], [#forge:glass], [#forge:dusts/redstone], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:laser_target]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:laser_target
+recipe:advancedrocketrycommunity:lathe: [[#forge:plates/iron], [advancedrocketrycommunity:motor], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:lathe]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe
+recipe:advancedrocketrycommunity:lathe_copper_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/copper]] -> [advancedrocketrycommunity:copper_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_copper_rod
+recipe:advancedrocketrycommunity:lathe_iridium_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_iridium_rod
+recipe:advancedrocketrycommunity:lathe_iron_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/iron]] -> [advancedrocketrycommunity:iron_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_iron_rod
+recipe:advancedrocketrycommunity:lathe_steel_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_steel_rod
+recipe:advancedrocketrycommunity:lathe_titanium_aluminide_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_titanium_aluminide_rod
+recipe:advancedrocketrycommunity:lathe_titanium_iridium_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_titanium_iridium_rod
+recipe:advancedrocketrycommunity:lathe_titanium_rod: [[machine:advancedrocketrycommunity:lathe], [energy:fe], [#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lathe_titanium_rod
+recipe:advancedrocketrycommunity:lightwood_planks: [[advancedrocketrycommunity:lightwood_log]] -> [advancedrocketrycommunity:lightwood_planks]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:lightwood_planks
+recipe:advancedrocketrycommunity:linker: [[advancedrocketrycommunity:tracking_circuit], [minecraft:iron_ingot], [minecraft:redstone]] -> [advancedrocketrycommunity:linker]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:linker
+recipe:advancedrocketrycommunity:liquid_io_board: [[#forge:dusts/redstone], [#forge:gems/quartz], [#forge:gems/lapis], [#minecraft:wooden_slabs], [#forge:plates/iron]] -> [advancedrocketrycommunity:liquid_io_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:liquid_io_board
+recipe:advancedrocketrycommunity:low_pressure_tank: [[#forge:plates/tin], [minecraft:glass_bottle]] -> [advancedrocketrycommunity:low_pressure_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:low_pressure_tank
+recipe:advancedrocketrycommunity:machine_casing: [[#forge:ingots/iron], [#advancedrocketrycommunity:circuits/basic]] -> [advancedrocketrycommunity:machine_casing]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:machine_casing
+recipe:advancedrocketrycommunity:microwave_receiver: [[advancedrocketrycommunity:machine_casing], [minecraft:lightning_rod], [advancedrocketrycommunity:advanced_circuit], [minecraft:daylight_detector], [minecraft:redstone_block]] -> [advancedrocketrycommunity:microwave_receiver]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:microwave_receiver
+recipe:advancedrocketrycommunity:motor: [[#advancedrocketrycommunity:coils/copper], [#forge:plates/steel], [#forge:rods/iron], [#forge:ingots/steel]] -> [advancedrocketrycommunity:motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:motor
+recipe:advancedrocketrycommunity:nuclear_core: [[advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:iridium_ingot], [advancedrocketrycommunity:elite_motor], [minecraft:blaze_powder], [minecraft:redstone]] -> [advancedrocketrycommunity:nuclear_core]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:nuclear_core
+recipe:advancedrocketrycommunity:nuclear_fuel_tank: [[advancedrocketrycommunity:rocket_fuel_tank], [advancedrocketrycommunity:titanium_plate], [advancedrocketrycommunity:iridium_plate], [minecraft:redstone]] -> [advancedrocketrycommunity:nuclear_fuel_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:nuclear_fuel_tank
+recipe:advancedrocketrycommunity:nuclear_rocket_motor: [[advancedrocketrycommunity:rocket_motor], [advancedrocketrycommunity:iridium_plate], [advancedrocketrycommunity:enhanced_motor], [minecraft:redstone]] -> [advancedrocketrycommunity:nuclear_rocket_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:nuclear_rocket_motor
+recipe:advancedrocketrycommunity:observatory: [[#forge:plates/steel], [advancedrocketrycommunity:laser_lens], [minecraft:glass], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:motor]] -> [advancedrocketrycommunity:observatory]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:observatory
+recipe:advancedrocketrycommunity:orbital_laser_drill: [[advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:laser_lens], [advancedrocketrycommunity:endgame_casing], [#forge:storage_blocks/redstone]] -> [advancedrocketrycommunity:orbital_laser_drill]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:orbital_laser_drill
+recipe:advancedrocketrycommunity:oxidizer_fuel_tank: [[advancedrocketrycommunity:rocket_fuel_tank], [advancedrocketrycommunity:aluminum_plate], [minecraft:lapis_lazuli], [minecraft:redstone]] -> [advancedrocketrycommunity:oxidizer_fuel_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:oxidizer_fuel_tank
+recipe:advancedrocketrycommunity:oxygen_vent: [[#forge:ingots/iron], [minecraft:redstone], [advancedrocketrycommunity:basic_circuit], [advancedrocketrycommunity:machine_casing], [#forge:glass]] -> [advancedrocketrycommunity:oxygen_vent]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:oxygen_vent
+recipe:advancedrocketrycommunity:padded_landing_boots: [[#forge:plates/tin], [#forge:ingots/iron], [minecraft:white_wool]] -> [advancedrocketrycommunity:padded_landing_boots]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:padded_landing_boots
+recipe:advancedrocketrycommunity:pipe_seal: [[#forge:plates/steel], [minecraft:glass]] -> [advancedrocketrycommunity:pipe_seal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pipe_seal
+recipe:advancedrocketrycommunity:planetary_beacon: [[#forge:plates/steel], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:planetary_beacon]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:planetary_beacon
+recipe:advancedrocketrycommunity:power_input_plug: [[#forge:plates/iron], [minecraft:redstone], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:power_input_plug]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:power_input_plug
+recipe:advancedrocketrycommunity:power_output_plug: [[#forge:plates/iron], [#forge:ingots/copper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:power_output_plug]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:power_output_plug
+recipe:advancedrocketrycommunity:precision_advanced_circuit_plate: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:ingots/gold], [minecraft:redstone_block], [advancedrocketrycommunity:silicon_wafer]] -> [advancedrocketrycommunity:advanced_circuit_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_advanced_circuit_plate
+recipe:advancedrocketrycommunity:precision_assembler: [[#forge:ingots/iron], [advancedrocketrycommunity:advanced_circuit], [minecraft:piston], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:precision_assembler]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_assembler
+recipe:advancedrocketrycommunity:precision_assembler_energy_input_port: [[#forge:ingots/iron], [minecraft:redstone_block], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:precision_assembler_energy_input_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_assembler_energy_input_port
+recipe:advancedrocketrycommunity:precision_assembler_item_input_port: [[#forge:ingots/iron], [minecraft:hopper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:precision_assembler_item_input_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_assembler_item_input_port
+recipe:advancedrocketrycommunity:precision_assembler_item_output_port: [[#forge:ingots/iron], [minecraft:dropper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:precision_assembler_item_output_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_assembler_item_output_port
+recipe:advancedrocketrycommunity:precision_basic_circuit_plate: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:ingots/gold], [#forge:dusts/redstone], [advancedrocketrycommunity:silicon_wafer]] -> [advancedrocketrycommunity:basic_circuit_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_basic_circuit_plate
+recipe:advancedrocketrycommunity:precision_control_board: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:dusts/redstone], [#forge:plates/copper], [#forge:plates/steel]] -> [advancedrocketrycommunity:control_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_control_board
+recipe:advancedrocketrycommunity:precision_control_circuit: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:ingots/iron], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:advanced_circuit, minecraft:redstone_torch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_control_circuit
+recipe:advancedrocketrycommunity:precision_guidance_module: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:ingots/iron], [advancedrocketrycommunity:control_board], [advancedrocketrycommunity:tracking_circuit], [#forge:gems/quartz], [#forge:ingots/copper]] -> [minecraft:comparator]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_guidance_module
+recipe:advancedrocketrycommunity:precision_item_io_board: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:dusts/redstone], [#forge:plates/gold], [#forge:plates/steel]] -> [advancedrocketrycommunity:item_io_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_item_io_board
+recipe:advancedrocketrycommunity:precision_laser_etcher: [[#forge:plates/steel], [minecraft:redstone], [advancedrocketrycommunity:laser_lens], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:motor]] -> [advancedrocketrycommunity:precision_laser_etcher]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_laser_etcher
+recipe:advancedrocketrycommunity:precision_liquid_io_board: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:dusts/redstone], [#forge:gems/lapis], [#forge:plates/steel]] -> [advancedrocketrycommunity:liquid_io_board]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_liquid_io_board
+recipe:advancedrocketrycommunity:precision_tracking_circuit: [[machine:advancedrocketrycommunity:precision_assembler], [energy:fe], [#forge:dusts/redstone], [minecraft:ender_eye], [advancedrocketrycommunity:basic_circuit_plate]] -> [advancedrocketrycommunity:tracking_circuit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:precision_tracking_circuit
+recipe:advancedrocketrycommunity:pressing_aluminum_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/aluminum]] -> [advancedrocketrycommunity:aluminum_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_aluminum_dust
+recipe:advancedrocketrycommunity:pressing_aluminum_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/aluminum]] -> [advancedrocketrycommunity:aluminum_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_aluminum_plate
+recipe:advancedrocketrycommunity:pressing_copper_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/copper]] -> [advancedrocketrycommunity:copper_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_copper_dust
+recipe:advancedrocketrycommunity:pressing_copper_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/copper]] -> [advancedrocketrycommunity:copper_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_copper_plate
+recipe:advancedrocketrycommunity:pressing_dilithium_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/dilithium]] -> [advancedrocketrycommunity:dilithium_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_dilithium_dust
+recipe:advancedrocketrycommunity:pressing_gold_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/gold]] -> [advancedrocketrycommunity:gold_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_gold_dust
+recipe:advancedrocketrycommunity:pressing_gold_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/gold]] -> [advancedrocketrycommunity:gold_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_gold_plate
+recipe:advancedrocketrycommunity:pressing_iridium_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/iridium]] -> [advancedrocketrycommunity:iridium_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_iridium_dust
+recipe:advancedrocketrycommunity:pressing_iridium_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/iridium]] -> [advancedrocketrycommunity:iridium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_iridium_plate
+recipe:advancedrocketrycommunity:pressing_iron_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/iron]] -> [advancedrocketrycommunity:iron_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_iron_dust
+recipe:advancedrocketrycommunity:pressing_iron_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/iron]] -> [advancedrocketrycommunity:iron_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_iron_plate
+recipe:advancedrocketrycommunity:pressing_steel_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/steel]] -> [advancedrocketrycommunity:steel_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_steel_plate
+recipe:advancedrocketrycommunity:pressing_tin_dust: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:ores/tin]] -> [advancedrocketrycommunity:tin_dust]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_tin_dust
+recipe:advancedrocketrycommunity:pressing_tin_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/tin]] -> [advancedrocketrycommunity:tin_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_tin_plate
+recipe:advancedrocketrycommunity:pressing_titanium_aluminide_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_titanium_aluminide_plate
+recipe:advancedrocketrycommunity:pressing_titanium_iridium_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_titanium_iridium_plate
+recipe:advancedrocketrycommunity:pressing_titanium_plate: [[advancedrocketrycommunity:small_plate_press], [minecraft:obsidian], [minecraft:lever, minecraft:redstone_block, minecraft:redstone_torch], [#forge:storage_blocks/titanium]] -> [advancedrocketrycommunity:titanium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressing_titanium_plate
+recipe:advancedrocketrycommunity:pressure_tank: [[#forge:plates/aluminum], [minecraft:glass_bottle]] -> [advancedrocketrycommunity:pressure_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressure_tank
+recipe:advancedrocketrycommunity:pressurized_tank: [[#forge:plates/steel], [minecraft:bucket]] -> [advancedrocketrycommunity:pressurized_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pressurized_tank
+recipe:advancedrocketrycommunity:pump: [[advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:motor], [minecraft:bucket], [#forge:plates/steel], [#forge:rods/iron], [minecraft:redstone]] -> [advancedrocketrycommunity:pump]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:pump
+recipe:advancedrocketrycommunity:quartz_crucible: [[advancedrocketrycommunity:quartz_crucible_shell]] -> [advancedrocketrycommunity:quartz_crucible]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:quartz_crucible
+recipe:advancedrocketrycommunity:quartz_crucible_shell: [[minecraft:quartz]] -> [advancedrocketrycommunity:quartz_crucible_shell]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:quartz_crucible_shell
+recipe:advancedrocketrycommunity:railgun: [[#forge:storage_blocks/iron], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:rocket_motor], [advancedrocketrycommunity:endgame_casing]] -> [advancedrocketrycommunity:railgun]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:railgun
+recipe:advancedrocketrycommunity:rocket_assembler: [[#forge:ingots/iron], [minecraft:piston], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:rocket_assembler]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_assembler
+recipe:advancedrocketrycommunity:rocket_fluid_loader: [[minecraft:hopper], [advancedrocketrycommunity:liquid_io_board], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:pressurized_tank]] -> [advancedrocketrycommunity:rocket_fluid_loader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_fluid_loader
+recipe:advancedrocketrycommunity:rocket_fluid_unloader: [[advancedrocketrycommunity:liquid_io_board], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:pressurized_tank], [minecraft:hopper]] -> [advancedrocketrycommunity:rocket_fluid_unloader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_fluid_unloader
+recipe:advancedrocketrycommunity:rocket_fuel_cell: [[advancedrocketrycommunity:hydrogen_canister], [minecraft:blaze_powder], [minecraft:redstone]] -> [advancedrocketrycommunity:rocket_fuel_cell]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_fuel_cell
+recipe:advancedrocketrycommunity:rocket_fuel_tank: [[#forge:ingots/iron], [#forge:glass]] -> [advancedrocketrycommunity:rocket_fuel_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_fuel_tank
+recipe:advancedrocketrycommunity:rocket_item_loader: [[minecraft:hopper], [advancedrocketrycommunity:item_io_board], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:rocket_item_loader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_item_loader
+recipe:advancedrocketrycommunity:rocket_item_unloader: [[advancedrocketrycommunity:item_io_board], [advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:control_board], [minecraft:hopper]] -> [advancedrocketrycommunity:rocket_item_unloader]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_item_unloader
+recipe:advancedrocketrycommunity:rocket_monitoring_station: [[advancedrocketrycommunity:tracking_circuit], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:control_board], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:rocket_monitoring_station]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_monitoring_station
+recipe:advancedrocketrycommunity:rocket_motor: [[#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit], [minecraft:redstone]] -> [advancedrocketrycommunity:rocket_motor]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_motor
+recipe:advancedrocketrycommunity:rocket_satellite_bay: [[#forge:plates/aluminum], [minecraft:chest], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:rocket_satellite_bay]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_satellite_bay
+recipe:advancedrocketrycommunity:rocket_seat: [[#minecraft:wool], [#forge:ingots/iron]] -> [advancedrocketrycommunity:rocket_seat]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rocket_seat
+recipe:advancedrocketrycommunity:rolling_aluminum_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/aluminum]] -> [advancedrocketrycommunity:aluminum_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_aluminum_plate
+recipe:advancedrocketrycommunity:rolling_aluminum_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/aluminum]] -> [advancedrocketrycommunity:aluminum_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_aluminum_sheet
+recipe:advancedrocketrycommunity:rolling_copper_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/copper]] -> [advancedrocketrycommunity:copper_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_copper_plate
+recipe:advancedrocketrycommunity:rolling_copper_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/copper]] -> [advancedrocketrycommunity:copper_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_copper_sheet
+recipe:advancedrocketrycommunity:rolling_gold_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/gold]] -> [advancedrocketrycommunity:gold_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_gold_plate
+recipe:advancedrocketrycommunity:rolling_iridium_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/iridium]] -> [advancedrocketrycommunity:iridium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_iridium_plate
+recipe:advancedrocketrycommunity:rolling_iron_bars: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/iron]] -> [minecraft:iron_bars]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_iron_bars
+recipe:advancedrocketrycommunity:rolling_iron_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/iron]] -> [advancedrocketrycommunity:iron_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_iron_sheet
+recipe:advancedrocketrycommunity:rolling_machine: [[#forge:ingots/iron], [minecraft:piston], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:machine_casing], [minecraft:redstone]] -> [advancedrocketrycommunity:rolling_machine]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_machine
+recipe:advancedrocketrycommunity:rolling_machine_energy_input_port: [[minecraft:redstone_block], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:rolling_machine_energy_input_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_machine_energy_input_port
+recipe:advancedrocketrycommunity:rolling_machine_fluid_input_port: [[minecraft:bucket], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:rolling_machine_fluid_input_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_machine_fluid_input_port
+recipe:advancedrocketrycommunity:rolling_machine_item_input_port: [[minecraft:hopper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:rolling_machine_item_input_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_machine_item_input_port
+recipe:advancedrocketrycommunity:rolling_machine_item_output_port: [[minecraft:dropper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:rolling_machine_item_output_port]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_machine_item_output_port
+recipe:advancedrocketrycommunity:rolling_silicon_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/silicon]] -> [advancedrocketrycommunity:silicon_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_silicon_plate
+recipe:advancedrocketrycommunity:rolling_steel_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_steel_plate
+recipe:advancedrocketrycommunity:rolling_steel_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/steel]] -> [advancedrocketrycommunity:steel_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_steel_sheet
+recipe:advancedrocketrycommunity:rolling_tin_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/tin]] -> [advancedrocketrycommunity:tin_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_tin_plate
+recipe:advancedrocketrycommunity:rolling_titanium_aluminide_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_aluminide_plate
+recipe:advancedrocketrycommunity:rolling_titanium_aluminide_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_aluminide_sheet
+recipe:advancedrocketrycommunity:rolling_titanium_iridium_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_iridium_plate
+recipe:advancedrocketrycommunity:rolling_titanium_iridium_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_iridium_sheet
+recipe:advancedrocketrycommunity:rolling_titanium_plate: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_plate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_plate
+recipe:advancedrocketrycommunity:rolling_titanium_sheet: [[machine:advancedrocketrycommunity:rolling_machine], [energy:fe], [fluid:minecraft:water], [#forge:plates/titanium]] -> [advancedrocketrycommunity:titanium_sheet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:rolling_titanium_sheet
+recipe:advancedrocketrycommunity:satellite_battery: [[#forge:ingots/iron], [minecraft:redstone], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:satellite_battery]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_battery
+recipe:advancedrocketrycommunity:satellite_builder: [[advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:satellite_chassis], [advancedrocketrycommunity:machine_casing], [minecraft:smithing_table], [#forge:ingots/iron], [minecraft:redstone_block]] -> [advancedrocketrycommunity:satellite_builder]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_builder
+recipe:advancedrocketrycommunity:satellite_cargo_hold: [[#forge:ingots/iron], [#forge:chests/wooden], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:satellite_cargo_hold]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_cargo_hold
+recipe:advancedrocketrycommunity:satellite_chassis: [[#forge:ingots/iron], [#forge:ingots/copper], [advancedrocketrycommunity:machine_casing]] -> [advancedrocketrycommunity:satellite_chassis]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_chassis
+recipe:advancedrocketrycommunity:satellite_control_chip: [[#forge:ingots/gold], [minecraft:redstone], [advancedrocketrycommunity:advanced_circuit]] -> [advancedrocketrycommunity:satellite_control_chip]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_control_chip
+recipe:advancedrocketrycommunity:satellite_solar_module: [[#forge:glass_panes], [#forge:ingots/copper], [minecraft:daylight_detector], [minecraft:redstone]] -> [advancedrocketrycommunity:satellite_solar_module]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_solar_module
+recipe:advancedrocketrycommunity:satellite_terminal: [[advancedrocketrycommunity:data_storage_unit], [advancedrocketrycommunity:advanced_circuit], [#forge:ingots/copper], [advancedrocketrycommunity:machine_casing], [#forge:ingots/iron], [minecraft:redstone_block]] -> [advancedrocketrycommunity:satellite_terminal]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:satellite_terminal
+recipe:advancedrocketrycommunity:saw_blade: [[#forge:rods/iron], [#forge:plates/iron], [advancedrocketrycommunity:iron_saw_blade]] -> [advancedrocketrycommunity:saw_blade]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:saw_blade
+recipe:advancedrocketrycommunity:seal_detector: [[minecraft:iron_ingot], [minecraft:redstone], [minecraft:glass_pane]] -> [advancedrocketrycommunity:seal_detector]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:seal_detector
+recipe:advancedrocketrycommunity:silicon_ingot_from_dust_blasting: [[#forge:dusts/silicon]] -> [advancedrocketrycommunity:silicon_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:silicon_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:silicon_ingot_from_dust_smelting: [[#forge:dusts/silicon]] -> [advancedrocketrycommunity:silicon_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:silicon_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:silicon_ingot_from_nuggets: [[#forge:nuggets/silicon]] -> [advancedrocketrycommunity:silicon_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:silicon_ingot_from_nuggets
+recipe:advancedrocketrycommunity:silicon_nugget: [[#forge:ingots/silicon]] -> [advancedrocketrycommunity:silicon_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:silicon_nugget
+recipe:advancedrocketrycommunity:silicon_wafer: [[#forge:gems/quartz], [minecraft:redstone]] -> [advancedrocketrycommunity:silicon_wafer]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:silicon_wafer
+recipe:advancedrocketrycommunity:small_plate_press: [[minecraft:piston], [#forge:ingots/iron]] -> [advancedrocketrycommunity:small_plate_press]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:small_plate_press
+recipe:advancedrocketrycommunity:solar_array: [[advancedrocketrycommunity:solar_array_panel], [#forge:glass], [#forge:ingots/copper], [advancedrocketrycommunity:machine_casing], [#forge:plates/iron]] -> [advancedrocketrycommunity:solar_array]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:solar_array
+recipe:advancedrocketrycommunity:solar_array_panel: [[#forge:glass], [advancedrocketrycommunity:silicon_wafer], [#forge:ingots/copper]] -> [advancedrocketrycommunity:solar_array_panel]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:solar_array_panel
+recipe:advancedrocketrycommunity:solar_generator: [[advancedrocketrycommunity:solar_panel], [#forge:ingots/copper], [#forge:glass]] -> [advancedrocketrycommunity:solar_generator]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:solar_generator
+recipe:advancedrocketrycommunity:solar_panel: [[#forge:glass], [advancedrocketrycommunity:silicon_wafer], [#forge:ingots/copper]] -> [advancedrocketrycommunity:solar_panel]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:solar_panel
+recipe:advancedrocketrycommunity:solar_transmitter_module: [[#forge:ingots/gold], [minecraft:lightning_rod], [advancedrocketrycommunity:advanced_circuit], [minecraft:daylight_detector], [minecraft:redstone]] -> [advancedrocketrycommunity:solar_transmitter_module]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:solar_transmitter_module
+recipe:advancedrocketrycommunity:space_suit_boots: [[#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:space_suit_boots]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:space_suit_boots
+recipe:advancedrocketrycommunity:space_suit_chestplate: [[#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:space_suit_chestplate]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:space_suit_chestplate
+recipe:advancedrocketrycommunity:space_suit_helmet: [[#forge:ingots/iron], [#forge:glass], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:space_suit_helmet]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:space_suit_helmet
+recipe:advancedrocketrycommunity:space_suit_leggings: [[#forge:ingots/iron], [advancedrocketrycommunity:basic_circuit]] -> [advancedrocketrycommunity:space_suit_leggings]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:space_suit_leggings
+recipe:advancedrocketrycommunity:station_altitude_controller: [[#forge:plates/steel], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:basic_circuit_plate], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:station_altitude_controller]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:station_altitude_controller
+recipe:advancedrocketrycommunity:station_deployment_kit: [[minecraft:ender_eye], [advancedrocketrycommunity:guidance_computer], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:machine_casing], [#forge:ingots/iron]] -> [advancedrocketrycommunity:station_deployment_kit]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:station_deployment_kit
+recipe:advancedrocketrycommunity:station_gravity_controller: [[#forge:plates/steel], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:basic_circuit], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:station_gravity_controller]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:station_gravity_controller
+recipe:advancedrocketrycommunity:station_light: [[minecraft:iron_ingot], [minecraft:glass], [minecraft:glowstone]] -> [advancedrocketrycommunity:station_light]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:station_light
+recipe:advancedrocketrycommunity:station_orientation_controller: [[#forge:plates/steel], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:advanced_circuit_plate], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:station_orientation_controller]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:station_orientation_controller
+recipe:advancedrocketrycommunity:steel_block: [[#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_block
+recipe:advancedrocketrycommunity:steel_fan: [[#forge:plates/steel], [#forge:rods/steel]] -> [advancedrocketrycommunity:steel_fan]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_fan
+recipe:advancedrocketrycommunity:steel_gear: [[#forge:rods/steel], [#forge:plates/steel], [#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_gear]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_gear
+recipe:advancedrocketrycommunity:steel_ingot_from_dust_blasting: [[#forge:dusts/steel]] -> [advancedrocketrycommunity:steel_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:steel_ingot_from_dust_smelting: [[#forge:dusts/steel]] -> [advancedrocketrycommunity:steel_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:steel_ingot_from_nuggets: [[#forge:nuggets/steel]] -> [advancedrocketrycommunity:steel_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_ingot_from_nuggets
+recipe:advancedrocketrycommunity:steel_ingot_from_steel_block: [[#forge:storage_blocks/steel]] -> [advancedrocketrycommunity:steel_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_ingot_from_steel_block
+recipe:advancedrocketrycommunity:steel_nugget: [[#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_nugget
+recipe:advancedrocketrycommunity:steel_rod: [[#forge:ingots/steel]] -> [advancedrocketrycommunity:steel_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:steel_rod
+recipe:advancedrocketrycommunity:suit_workstation: [[#forge:plates/steel], [#forge:ingots/iron], [advancedrocketrycommunity:user_interface]] -> [advancedrocketrycommunity:suit_workstation]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:suit_workstation
+recipe:advancedrocketrycommunity:super_high_pressure_tank: [[#forge:plates/titanium], [minecraft:glass_bottle]] -> [advancedrocketrycommunity:super_high_pressure_tank]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:super_high_pressure_tank
+recipe:advancedrocketrycommunity:survey_scanner_module: [[#forge:ingots/gold], [minecraft:spyglass], [advancedrocketrycommunity:advanced_circuit], [minecraft:observer], [minecraft:redstone]] -> [advancedrocketrycommunity:survey_scanner_module]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:survey_scanner_module
+recipe:advancedrocketrycommunity:thermite: [[#forge:dusts/aluminum], [#forge:dusts/iron]] -> [advancedrocketrycommunity:thermite]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:thermite
+recipe:advancedrocketrycommunity:thermite_torch: [[#forge:rods/wooden], [#forge:dusts/thermite]] -> [advancedrocketrycommunity:thermite_torch]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:thermite_torch
+recipe:advancedrocketrycommunity:tin_block: [[#forge:ingots/tin]] -> [advancedrocketrycommunity:tin_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_block
+recipe:advancedrocketrycommunity:tin_ingot_from_dust_blasting: [[#forge:dusts/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:tin_ingot_from_dust_smelting: [[#forge:dusts/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:tin_ingot_from_nuggets: [[#forge:nuggets/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_nuggets
+recipe:advancedrocketrycommunity:tin_ingot_from_ore_blasting: [[#forge:ores/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_ore_blasting
+recipe:advancedrocketrycommunity:tin_ingot_from_ore_smelting: [[#forge:ores/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_ore_smelting
+recipe:advancedrocketrycommunity:tin_ingot_from_raw_blasting: [[#forge:raw_materials/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_raw_blasting
+recipe:advancedrocketrycommunity:tin_ingot_from_raw_smelting: [[#forge:raw_materials/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_raw_smelting
+recipe:advancedrocketrycommunity:tin_ingot_from_tin_block: [[#forge:storage_blocks/tin]] -> [advancedrocketrycommunity:tin_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_ingot_from_tin_block
+recipe:advancedrocketrycommunity:tin_nugget: [[#forge:ingots/tin]] -> [advancedrocketrycommunity:tin_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:tin_nugget
+recipe:advancedrocketrycommunity:titanium_aluminide_block: [[#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_block
+recipe:advancedrocketrycommunity:titanium_aluminide_gear: [[#forge:rods/titanium_aluminide], [#forge:plates/titanium_aluminide], [#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_gear]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_gear
+recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_dust_blasting: [[#forge:dusts/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_dust_smelting: [[#forge:dusts/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_nuggets: [[#forge:nuggets/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_nuggets
+recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_titanium_aluminide_block: [[#forge:storage_blocks/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_ingot_from_titanium_aluminide_block
+recipe:advancedrocketrycommunity:titanium_aluminide_nugget: [[#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_nugget
+recipe:advancedrocketrycommunity:titanium_aluminide_rod: [[#forge:ingots/titanium_aluminide]] -> [advancedrocketrycommunity:titanium_aluminide_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_aluminide_rod
+recipe:advancedrocketrycommunity:titanium_block: [[#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_block
+recipe:advancedrocketrycommunity:titanium_coil: [[#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_coil]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_coil
+recipe:advancedrocketrycommunity:titanium_gear: [[#forge:rods/titanium], [#forge:plates/titanium], [#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_gear]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_gear
+recipe:advancedrocketrycommunity:titanium_ingot_from_dust_blasting: [[#forge:dusts/titanium]] -> [advancedrocketrycommunity:titanium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:titanium_ingot_from_dust_smelting: [[#forge:dusts/titanium]] -> [advancedrocketrycommunity:titanium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:titanium_ingot_from_nuggets: [[#forge:nuggets/titanium]] -> [advancedrocketrycommunity:titanium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_ingot_from_nuggets
+recipe:advancedrocketrycommunity:titanium_ingot_from_titanium_block: [[#forge:storage_blocks/titanium]] -> [advancedrocketrycommunity:titanium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_ingot_from_titanium_block
+recipe:advancedrocketrycommunity:titanium_iridium_block: [[#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_block]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_block
+recipe:advancedrocketrycommunity:titanium_iridium_gear: [[#forge:rods/titanium_iridium], [#forge:plates/titanium_iridium], [#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_gear]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_gear
+recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_dust_blasting: [[#forge:dusts/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_dust_blasting
+recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_dust_smelting: [[#forge:dusts/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_dust_smelting
+recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_nuggets: [[#forge:nuggets/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_nuggets
+recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_titanium_iridium_block: [[#forge:storage_blocks/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_ingot]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_ingot_from_titanium_iridium_block
+recipe:advancedrocketrycommunity:titanium_iridium_nugget: [[#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_nugget
+recipe:advancedrocketrycommunity:titanium_iridium_rod: [[#forge:ingots/titanium_iridium]] -> [advancedrocketrycommunity:titanium_iridium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_iridium_rod
+recipe:advancedrocketrycommunity:titanium_nugget: [[#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_nugget]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_nugget
+recipe:advancedrocketrycommunity:titanium_rod: [[#forge:ingots/titanium]] -> [advancedrocketrycommunity:titanium_rod]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:titanium_rod
+recipe:advancedrocketrycommunity:user_interface: [[#forge:dyes/lime], [#forge:dusts/redstone], [#forge:dusts/glowstone], [minecraft:glass_pane]] -> [advancedrocketrycommunity:user_interface]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:user_interface
+recipe:advancedrocketrycommunity:warp_controller: [[#forge:plates/steel], [advancedrocketrycommunity:user_interface], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:control_board]] -> [advancedrocketrycommunity:warp_controller]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:warp_controller
+recipe:advancedrocketrycommunity:warp_core: [[advancedrocketrycommunity:machine_casing], [advancedrocketrycommunity:advanced_circuit], [advancedrocketrycommunity:data_storage_unit]] -> [advancedrocketrycommunity:warp_core]; PackagedRecipeGraph; packaged recipe:advancedrocketrycommunity:warp_core
+rocket:198: [[advancedrocketrycommunity:rocket_assembler], [advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:bipropellant_rocket_motor, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:nuclear_rocket_motor], [advancedrocketrycommunity:rocket_fuel_tank, advancedrocketrycommunity:bipropellant_fuel_tank, advancedrocketrycommunity:nuclear_fuel_tank], [advancedrocketrycommunity:rocket_seat], [advancedrocketrycommunity:guidance_computer], [advancedrocketrycommunity:fuel_loader], [advancedrocketrycommunity:rocket_fuel_cell]] -> [travel:rocket]; PackagedRecipeGraph; packaged rocket:198
+tag:0: [[advancedrocketrycommunity:basic_circuit]] -> [#advancedrocketrycommunity:circuits/basic]; PackagedRecipeGraph; packaged tag:0
+tag:1: [[minecraft:gold_ingot]] -> [#forge:ingots/gold]; PackagedRecipeGraph; packaged tag:1
+tag:10: [[advancedrocketrycommunity:deepslate_aluminum_ore]] -> [#forge:ores/aluminum]; PackagedRecipeGraph; packaged tag:10
+tag:100: [[advancedrocketrycommunity:iridium_dust]] -> [#forge:dusts/iridium]; PackagedRecipeGraph; packaged tag:100
+tag:101: [[advancedrocketrycommunity:iridium_block]] -> [#forge:storage_blocks/iridium]; PackagedRecipeGraph; packaged tag:101
+tag:102: [[advancedrocketrycommunity:iridium_nugget]] -> [#forge:nuggets/iridium]; PackagedRecipeGraph; packaged tag:102
+tag:103: [[advancedrocketrycommunity:iridium_ore]] -> [#forge:ores/iridium]; PackagedRecipeGraph; packaged tag:103
+tag:104: [[advancedrocketrycommunity:raw_iridium]] -> [#forge:raw_materials/iridium]; PackagedRecipeGraph; packaged tag:104
+tag:105: [[advancedrocketrycommunity:iron_dust]] -> [#forge:dusts/iron]; PackagedRecipeGraph; packaged tag:105
+tag:106: [[advancedrocketrycommunity:titanium_rod]] -> [#forge:rods/titanium]; PackagedRecipeGraph; packaged tag:106
+tag:107: [[advancedrocketrycommunity:advanced_motor]] -> [#advancedrocketrycommunity:motors]; PackagedRecipeGraph; packaged tag:107
+tag:108: [[advancedrocketrycommunity:elite_motor]] -> [#advancedrocketrycommunity:motors]; PackagedRecipeGraph; packaged tag:108
+tag:109: [[advancedrocketrycommunity:enhanced_motor]] -> [#advancedrocketrycommunity:motors]; PackagedRecipeGraph; packaged tag:109
+tag:11: [[advancedrocketrycommunity:raw_aluminum]] -> [#forge:raw_materials/aluminum]; PackagedRecipeGraph; packaged tag:11
+tag:110: [[advancedrocketrycommunity:motor]] -> [#advancedrocketrycommunity:motors]; PackagedRecipeGraph; packaged tag:110
+tag:111: [[advancedrocketrycommunity:steel_ingot]] -> [#forge:ingots/steel]; PackagedRecipeGraph; packaged tag:111
+tag:112: [[advancedrocketrycommunity:titanium_aluminide_ingot]] -> [#forge:ingots/titanium_aluminide]; PackagedRecipeGraph; packaged tag:112
+tag:113: [[advancedrocketrycommunity:titanium_iridium_ingot]] -> [#forge:ingots/titanium_iridium]; PackagedRecipeGraph; packaged tag:113
+tag:114: [[minecraft:lapis_lazuli]] -> [#forge:gems/lapis]; PackagedRecipeGraph; packaged tag:114
+tag:115: [[advancedrocketrycommunity:tin_plate]] -> [#forge:plates/tin]; PackagedRecipeGraph; packaged tag:115
+tag:116: [[advancedrocketrycommunity:copper_coil]] -> [#advancedrocketrycommunity:coils/copper]; PackagedRecipeGraph; packaged tag:116
+tag:117: [[minecraft:redstone_block]] -> [#forge:storage_blocks/redstone]; PackagedRecipeGraph; packaged tag:117
+tag:118: [[advancedrocketrycommunity:copper_plate]] -> [#forge:plates/copper]; PackagedRecipeGraph; packaged tag:118
+tag:119: [[#minecraft:copper_ores]] -> [#forge:ores/copper]; PackagedRecipeGraph; packaged tag:119
+tag:12: [[advancedrocketrycommunity:aluminum_plate]] -> [#forge:plates/aluminum]; PackagedRecipeGraph; packaged tag:12
+tag:120: [[minecraft:copper_ore]] -> [#minecraft:copper_ores]; PackagedRecipeGraph; packaged tag:120
+tag:121: [[minecraft:deepslate_copper_ore]] -> [#minecraft:copper_ores]; PackagedRecipeGraph; packaged tag:121
+tag:122: [[minecraft:copper_block]] -> [#forge:storage_blocks/copper]; PackagedRecipeGraph; packaged tag:122
+tag:123: [[#minecraft:gold_ores]] -> [#forge:ores/gold]; PackagedRecipeGraph; packaged tag:123
+tag:124: [[minecraft:deepslate_gold_ore]] -> [#minecraft:gold_ores]; PackagedRecipeGraph; packaged tag:124
+tag:125: [[minecraft:gold_ore]] -> [#minecraft:gold_ores]; PackagedRecipeGraph; packaged tag:125
+tag:126: [[minecraft:nether_gold_ore]] -> [#minecraft:gold_ores]; PackagedRecipeGraph; packaged tag:126
+tag:127: [[minecraft:gold_block]] -> [#forge:storage_blocks/gold]; PackagedRecipeGraph; packaged tag:127
+tag:128: [[#minecraft:iron_ores]] -> [#forge:ores/iron]; PackagedRecipeGraph; packaged tag:128
+tag:129: [[minecraft:deepslate_iron_ore]] -> [#minecraft:iron_ores]; PackagedRecipeGraph; packaged tag:129
+tag:13: [[minecraft:iron_ingot]] -> [#forge:ingots/iron]; PackagedRecipeGraph; packaged tag:13
+tag:130: [[minecraft:iron_ore]] -> [#minecraft:iron_ores]; PackagedRecipeGraph; packaged tag:130
+tag:131: [[advancedrocketrycommunity:steel_block]] -> [#forge:storage_blocks/steel]; PackagedRecipeGraph; packaged tag:131
+tag:132: [[advancedrocketrycommunity:deepslate_tin_ore]] -> [#forge:ores/tin]; PackagedRecipeGraph; packaged tag:132
+tag:133: [[advancedrocketrycommunity:tin_ore]] -> [#forge:ores/tin]; PackagedRecipeGraph; packaged tag:133
+tag:134: [[advancedrocketrycommunity:tin_block]] -> [#forge:storage_blocks/tin]; PackagedRecipeGraph; packaged tag:134
+tag:135: [[advancedrocketrycommunity:titanium_aluminide_block]] -> [#forge:storage_blocks/titanium_aluminide]; PackagedRecipeGraph; packaged tag:135
+tag:136: [[advancedrocketrycommunity:titanium_iridium_block]] -> [#forge:storage_blocks/titanium_iridium]; PackagedRecipeGraph; packaged tag:136
+tag:137: [[advancedrocketrycommunity:titanium_block]] -> [#forge:storage_blocks/titanium]; PackagedRecipeGraph; packaged tag:137
+tag:138: [[minecraft:black_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:138
+tag:139: [[minecraft:blue_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:139
+tag:14: [[advancedrocketrycommunity:iron_plate]] -> [#forge:plates/iron]; PackagedRecipeGraph; packaged tag:14
+tag:140: [[minecraft:brown_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:140
+tag:141: [[minecraft:cyan_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:141
+tag:142: [[minecraft:gray_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:142
+tag:143: [[minecraft:green_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:143
+tag:144: [[minecraft:light_blue_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:144
+tag:145: [[minecraft:light_gray_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:145
+tag:146: [[minecraft:lime_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:146
+tag:147: [[minecraft:magenta_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:147
+tag:148: [[minecraft:orange_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:148
+tag:149: [[minecraft:pink_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:149
+tag:15: [[minecraft:copper_ingot]] -> [#forge:ingots/copper]; PackagedRecipeGraph; packaged tag:15
+tag:150: [[minecraft:purple_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:150
+tag:151: [[minecraft:red_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:151
+tag:152: [[minecraft:white_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:152
+tag:153: [[minecraft:yellow_wool]] -> [#minecraft:wool]; PackagedRecipeGraph; packaged tag:153
+tag:154: [[advancedrocketrycommunity:tin_ingot]] -> [#forge:ingots/tin]; PackagedRecipeGraph; packaged tag:154
+tag:155: [[advancedrocketrycommunity:titanium_aluminide_plate]] -> [#forge:plates/titanium_aluminide]; PackagedRecipeGraph; packaged tag:155
+tag:156: [[advancedrocketrycommunity:titanium_iridium_plate]] -> [#forge:plates/titanium_iridium]; PackagedRecipeGraph; packaged tag:156
+tag:157: [[minecraft:chest]] -> [#forge:chests/wooden]; PackagedRecipeGraph; packaged tag:157
+tag:158: [[minecraft:trapped_chest]] -> [#forge:chests/wooden]; PackagedRecipeGraph; packaged tag:158
+tag:159: [[#forge:glass_panes/colorless]] -> [#forge:glass_panes]; PackagedRecipeGraph; packaged tag:159
+tag:16: [[advancedrocketrycommunity:deepslate_rutile_ore]] -> [#forge:ores/rutile]; PackagedRecipeGraph; packaged tag:16
+tag:160: [[minecraft:glass_pane]] -> [#forge:glass_panes/colorless]; PackagedRecipeGraph; packaged tag:160
+tag:161: [[#forge:stained_glass_panes]] -> [#forge:glass_panes]; PackagedRecipeGraph; packaged tag:161
+tag:162: [[minecraft:black_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:162
+tag:163: [[minecraft:blue_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:163
+tag:164: [[minecraft:brown_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:164
+tag:165: [[minecraft:cyan_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:165
+tag:166: [[minecraft:gray_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:166
+tag:167: [[minecraft:green_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:167
+tag:168: [[minecraft:light_blue_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:168
+tag:169: [[minecraft:light_gray_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:169
+tag:17: [[advancedrocketrycommunity:rutile_ore]] -> [#forge:ores/rutile]; PackagedRecipeGraph; packaged tag:17
+tag:170: [[minecraft:lime_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:170
+tag:171: [[minecraft:magenta_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:171
+tag:172: [[minecraft:orange_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:172
+tag:173: [[minecraft:pink_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:173
+tag:174: [[minecraft:purple_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:174
+tag:175: [[minecraft:red_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:175
+tag:176: [[minecraft:white_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:176
+tag:177: [[minecraft:yellow_stained_glass_pane]] -> [#forge:stained_glass_panes]; PackagedRecipeGraph; packaged tag:177
+tag:178: [[advancedrocketrycommunity:silicon_dust]] -> [#forge:dusts/silicon]; PackagedRecipeGraph; packaged tag:178
+tag:179: [[advancedrocketrycommunity:steel_rod]] -> [#forge:rods/steel]; PackagedRecipeGraph; packaged tag:179
+tag:18: [[advancedrocketrycommunity:raw_rutile]] -> [#forge:raw_materials/rutile]; PackagedRecipeGraph; packaged tag:18
+tag:180: [[advancedrocketrycommunity:steel_dust]] -> [#forge:dusts/steel]; PackagedRecipeGraph; packaged tag:180
+tag:181: [[advancedrocketrycommunity:steel_nugget]] -> [#forge:nuggets/steel]; PackagedRecipeGraph; packaged tag:181
+tag:182: [[minecraft:stick]] -> [#forge:rods/wooden]; PackagedRecipeGraph; packaged tag:182
+tag:183: [[advancedrocketrycommunity:thermite]] -> [#forge:dusts/thermite]; PackagedRecipeGraph; packaged tag:183
+tag:184: [[advancedrocketrycommunity:tin_dust]] -> [#forge:dusts/tin]; PackagedRecipeGraph; packaged tag:184
+tag:185: [[advancedrocketrycommunity:tin_nugget]] -> [#forge:nuggets/tin]; PackagedRecipeGraph; packaged tag:185
+tag:186: [[advancedrocketrycommunity:raw_tin]] -> [#forge:raw_materials/tin]; PackagedRecipeGraph; packaged tag:186
+tag:187: [[advancedrocketrycommunity:titanium_aluminide_rod]] -> [#forge:rods/titanium_aluminide]; PackagedRecipeGraph; packaged tag:187
+tag:188: [[advancedrocketrycommunity:titanium_aluminide_dust]] -> [#forge:dusts/titanium_aluminide]; PackagedRecipeGraph; packaged tag:188
+tag:189: [[advancedrocketrycommunity:titanium_aluminide_nugget]] -> [#forge:nuggets/titanium_aluminide]; PackagedRecipeGraph; packaged tag:189
+tag:19: [[advancedrocketrycommunity:titanium_ingot]] -> [#forge:ingots/titanium]; PackagedRecipeGraph; packaged tag:19
+tag:190: [[advancedrocketrycommunity:titanium_dust]] -> [#forge:dusts/titanium]; PackagedRecipeGraph; packaged tag:190
+tag:191: [[advancedrocketrycommunity:titanium_nugget]] -> [#forge:nuggets/titanium]; PackagedRecipeGraph; packaged tag:191
+tag:192: [[advancedrocketrycommunity:titanium_iridium_rod]] -> [#forge:rods/titanium_iridium]; PackagedRecipeGraph; packaged tag:192
+tag:193: [[advancedrocketrycommunity:titanium_iridium_dust]] -> [#forge:dusts/titanium_iridium]; PackagedRecipeGraph; packaged tag:193
+tag:194: [[advancedrocketrycommunity:titanium_iridium_nugget]] -> [#forge:nuggets/titanium_iridium]; PackagedRecipeGraph; packaged tag:194
+tag:195: [[minecraft:lime_dye]] -> [#forge:dyes/lime]; PackagedRecipeGraph; packaged tag:195
+tag:196: [[minecraft:glowstone_dust]] -> [#forge:dusts/glowstone]; PackagedRecipeGraph; packaged tag:196
+tag:2: [[minecraft:diamond]] -> [#forge:gems/diamond]; PackagedRecipeGraph; packaged tag:2
+tag:20: [[advancedrocketrycommunity:iridium_ingot]] -> [#forge:ingots/iridium]; PackagedRecipeGraph; packaged tag:20
+tag:21: [[advancedrocketrycommunity:steel_plate]] -> [#forge:plates/steel]; PackagedRecipeGraph; packaged tag:21
+tag:22: [[advancedrocketrycommunity:silicon_wafer]] -> [#advancedrocketrycommunity:silicon_wafers]; PackagedRecipeGraph; packaged tag:22
+tag:23: [[advancedrocketrycommunity:iron_rod]] -> [#forge:rods/iron]; PackagedRecipeGraph; packaged tag:23
+tag:24: [[minecraft:chainmail_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:24
+tag:25: [[minecraft:diamond_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:25
+tag:26: [[minecraft:golden_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:26
+tag:27: [[minecraft:iron_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:27
+tag:28: [[minecraft:leather_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:28
+tag:29: [[minecraft:netherite_boots]] -> [#forge:armors/boots]; PackagedRecipeGraph; packaged tag:29
+tag:3: [[advancedrocketrycommunity:gold_coil]] -> [#advancedrocketrycommunity:coils/gold]; PackagedRecipeGraph; packaged tag:3
+tag:30: [[advancedrocketrycommunity:titanium_aluminide_sheet]] -> [#advancedrocketrycommunity:sheets/titanium_aluminide]; PackagedRecipeGraph; packaged tag:30
+tag:31: [[minecraft:chainmail_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:31
+tag:32: [[minecraft:diamond_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:32
+tag:33: [[minecraft:golden_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:33
+tag:34: [[minecraft:iron_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:34
+tag:35: [[minecraft:leather_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:35
+tag:36: [[minecraft:netherite_chestplate]] -> [#forge:armors/chestplates]; PackagedRecipeGraph; packaged tag:36
+tag:37: [[minecraft:chainmail_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:37
+tag:38: [[minecraft:diamond_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:38
+tag:39: [[minecraft:golden_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:39
+tag:4: [[advancedrocketrycommunity:gold_plate]] -> [#forge:plates/gold]; PackagedRecipeGraph; packaged tag:4
+tag:40: [[minecraft:iron_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:40
+tag:41: [[minecraft:leather_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:41
+tag:42: [[minecraft:netherite_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:42
+tag:43: [[minecraft:turtle_helmet]] -> [#forge:armors/helmets]; PackagedRecipeGraph; packaged tag:43
+tag:44: [[minecraft:chainmail_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:44
+tag:45: [[minecraft:diamond_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:45
+tag:46: [[minecraft:golden_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:46
+tag:47: [[minecraft:iron_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:47
+tag:48: [[minecraft:leather_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:48
+tag:49: [[minecraft:netherite_leggings]] -> [#forge:armors/leggings]; PackagedRecipeGraph; packaged tag:49
+tag:5: [[advancedrocketrycommunity:aluminum_ingot]] -> [#forge:ingots/aluminum]; PackagedRecipeGraph; packaged tag:5
+tag:50: [[minecraft:redstone]] -> [#forge:dusts/redstone]; PackagedRecipeGraph; packaged tag:50
+tag:51: [[minecraft:quartz]] -> [#forge:gems/quartz]; PackagedRecipeGraph; packaged tag:51
+tag:52: [[advancedrocketrycommunity:copper_dust]] -> [#forge:dusts/copper]; PackagedRecipeGraph; packaged tag:52
+tag:53: [[minecraft:acacia_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:53
+tag:54: [[minecraft:bamboo_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:54
+tag:55: [[minecraft:birch_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:55
+tag:56: [[minecraft:cherry_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:56
+tag:57: [[minecraft:crimson_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:57
+tag:58: [[minecraft:dark_oak_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:58
+tag:59: [[minecraft:jungle_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:59
+tag:6: [[advancedrocketrycommunity:aluminum_block]] -> [#forge:storage_blocks/aluminum]; PackagedRecipeGraph; packaged tag:6
+tag:60: [[minecraft:mangrove_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:60
+tag:61: [[minecraft:oak_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:61
+tag:62: [[minecraft:spruce_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:62
+tag:63: [[minecraft:warped_slab]] -> [#minecraft:wooden_slabs]; PackagedRecipeGraph; packaged tag:63
+tag:64: [[advancedrocketrycommunity:copper_nugget]] -> [#forge:nuggets/copper]; PackagedRecipeGraph; packaged tag:64
+tag:65: [[advancedrocketrycommunity:dilithium_dust]] -> [#forge:dusts/dilithium]; PackagedRecipeGraph; packaged tag:65
+tag:66: [[advancedrocketrycommunity:silicon_ingot]] -> [#forge:ingots/silicon]; PackagedRecipeGraph; packaged tag:66
+tag:67: [[advancedrocketrycommunity:silicon_nugget]] -> [#forge:nuggets/silicon]; PackagedRecipeGraph; packaged tag:67
+tag:68: [[advancedrocketrycommunity:silicon_boule]] -> [#advancedrocketrycommunity:boules/silicon]; PackagedRecipeGraph; packaged tag:68
+tag:69: [[advancedrocketrycommunity:advanced_circuit]] -> [#advancedrocketrycommunity:circuits/advanced]; PackagedRecipeGraph; packaged tag:69
+tag:7: [[advancedrocketrycommunity:aluminum_dust]] -> [#forge:dusts/aluminum]; PackagedRecipeGraph; packaged tag:7
+tag:70: [[advancedrocketrycommunity:deepslate_dilithium_ore]] -> [#forge:ores/dilithium]; PackagedRecipeGraph; packaged tag:70
+tag:71: [[advancedrocketrycommunity:dilithium_ore]] -> [#forge:ores/dilithium]; PackagedRecipeGraph; packaged tag:71
+tag:72: [[advancedrocketrycommunity:titanium_plate]] -> [#forge:plates/titanium]; PackagedRecipeGraph; packaged tag:72
+tag:73: [[#forge:glass/colorless]] -> [#forge:glass]; PackagedRecipeGraph; packaged tag:73
+tag:74: [[minecraft:glass]] -> [#forge:glass/colorless]; PackagedRecipeGraph; packaged tag:74
+tag:75: [[#forge:glass/tinted]] -> [#forge:glass]; PackagedRecipeGraph; packaged tag:75
+tag:76: [[minecraft:tinted_glass]] -> [#forge:glass/tinted]; PackagedRecipeGraph; packaged tag:76
+tag:77: [[#forge:stained_glass]] -> [#forge:glass]; PackagedRecipeGraph; packaged tag:77
+tag:78: [[minecraft:black_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:78
+tag:79: [[minecraft:blue_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:79
+tag:8: [[advancedrocketrycommunity:aluminum_nugget]] -> [#forge:nuggets/aluminum]; PackagedRecipeGraph; packaged tag:8
+tag:80: [[minecraft:brown_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:80
+tag:81: [[minecraft:cyan_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:81
+tag:82: [[minecraft:gray_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:82
+tag:83: [[minecraft:green_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:83
+tag:84: [[minecraft:light_blue_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:84
+tag:85: [[minecraft:light_gray_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:85
+tag:86: [[minecraft:lime_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:86
+tag:87: [[minecraft:magenta_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:87
+tag:88: [[minecraft:orange_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:88
+tag:89: [[minecraft:pink_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:89
+tag:9: [[advancedrocketrycommunity:aluminum_ore]] -> [#forge:ores/aluminum]; PackagedRecipeGraph; packaged tag:9
+tag:90: [[minecraft:purple_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:90
+tag:91: [[minecraft:red_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:91
+tag:92: [[minecraft:white_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:92
+tag:93: [[minecraft:yellow_stained_glass]] -> [#forge:stained_glass]; PackagedRecipeGraph; packaged tag:93
+tag:94: [[minecraft:iron_block]] -> [#forge:storage_blocks/iron]; PackagedRecipeGraph; packaged tag:94
+tag:95: [[minecraft:ender_pearl]] -> [#forge:ender_pearls]; PackagedRecipeGraph; packaged tag:95
+tag:96: [[advancedrocketrycommunity:iridium_coil]] -> [#advancedrocketrycommunity:coils/iridium]; PackagedRecipeGraph; packaged tag:96
+tag:97: [[advancedrocketrycommunity:iridium_plate]] -> [#forge:plates/iridium]; PackagedRecipeGraph; packaged tag:97
+tag:98: [[advancedrocketrycommunity:titanium_coil]] -> [#advancedrocketrycommunity:coils/titanium]; PackagedRecipeGraph; packaged tag:98
+tag:99: [[advancedrocketrycommunity:gold_dust]] -> [#forge:dusts/gold]; PackagedRecipeGraph; packaged tag:99
+
+REACHABLE SET / EARLIEST WITNESSES (each member recursively has a lower round)
+#advancedrocketrycommunity:boules/silicon round=17 via=tag:68 prerequisites=[advancedrocketrycommunity:silicon_boule]
+#advancedrocketrycommunity:circuits/advanced round=7 via=tag:69 prerequisites=[advancedrocketrycommunity:advanced_circuit]
+#advancedrocketrycommunity:circuits/basic round=5 via=tag:0 prerequisites=[advancedrocketrycommunity:basic_circuit]
+#advancedrocketrycommunity:coils/copper round=3 via=tag:116 prerequisites=[advancedrocketrycommunity:copper_coil]
+#advancedrocketrycommunity:coils/gold round=3 via=tag:3 prerequisites=[advancedrocketrycommunity:gold_coil]
+#advancedrocketrycommunity:coils/iridium round=17 via=tag:96 prerequisites=[advancedrocketrycommunity:iridium_coil]
+#advancedrocketrycommunity:coils/titanium round=12 via=tag:98 prerequisites=[advancedrocketrycommunity:titanium_coil]
+#advancedrocketrycommunity:motors round=14 via=tag:110 prerequisites=[advancedrocketrycommunity:motor]
+#advancedrocketrycommunity:sheets/titanium_aluminide round=16 via=tag:30 prerequisites=[advancedrocketrycommunity:titanium_aluminide_sheet]
+#advancedrocketrycommunity:silicon_wafers round=3 via=tag:22 prerequisites=[advancedrocketrycommunity:silicon_wafer]
+#forge:armors/boots round=1 via=tag:24 prerequisites=[minecraft:chainmail_boots]
+#forge:armors/chestplates round=1 via=tag:31 prerequisites=[minecraft:chainmail_chestplate]
+#forge:armors/helmets round=1 via=tag:37 prerequisites=[minecraft:chainmail_helmet]
+#forge:armors/leggings round=1 via=tag:44 prerequisites=[minecraft:chainmail_leggings]
+#forge:chests/wooden round=1 via=tag:157 prerequisites=[minecraft:chest]
+#forge:dusts/aluminum round=4 via=tag:7 prerequisites=[advancedrocketrycommunity:aluminum_dust]
+#forge:dusts/copper round=4 via=tag:52 prerequisites=[advancedrocketrycommunity:copper_dust]
+#forge:dusts/dilithium round=4 via=tag:65 prerequisites=[advancedrocketrycommunity:dilithium_dust]
+#forge:dusts/glowstone round=1 via=tag:196 prerequisites=[minecraft:glowstone_dust]
+#forge:dusts/gold round=4 via=tag:99 prerequisites=[advancedrocketrycommunity:gold_dust]
+#forge:dusts/iridium round=15 via=tag:100 prerequisites=[advancedrocketrycommunity:iridium_dust]
+#forge:dusts/iron round=4 via=tag:105 prerequisites=[advancedrocketrycommunity:iron_dust]
+#forge:dusts/redstone round=1 via=tag:50 prerequisites=[minecraft:redstone]
+#forge:dusts/thermite round=6 via=tag:183 prerequisites=[advancedrocketrycommunity:thermite]
+#forge:dusts/tin round=4 via=tag:184 prerequisites=[advancedrocketrycommunity:tin_dust]
+#forge:dyes/lime round=1 via=tag:195 prerequisites=[minecraft:lime_dye]
+#forge:ender_pearls round=1 via=tag:95 prerequisites=[minecraft:ender_pearl]
+#forge:gems/diamond round=1 via=tag:2 prerequisites=[minecraft:diamond]
+#forge:gems/lapis round=1 via=tag:114 prerequisites=[minecraft:lapis_lazuli]
+#forge:gems/quartz round=1 via=tag:51 prerequisites=[minecraft:quartz]
+#forge:glass round=2 via=tag:73 prerequisites=[#forge:glass/colorless]
+#forge:glass/colorless round=1 via=tag:74 prerequisites=[minecraft:glass]
+#forge:glass/tinted round=1 via=tag:76 prerequisites=[minecraft:tinted_glass]
+#forge:glass_panes round=2 via=tag:159 prerequisites=[#forge:glass_panes/colorless]
+#forge:glass_panes/colorless round=1 via=tag:160 prerequisites=[minecraft:glass_pane]
+#forge:ingots/aluminum round=4 via=tag:5 prerequisites=[advancedrocketrycommunity:aluminum_ingot]
+#forge:ingots/copper round=1 via=tag:15 prerequisites=[minecraft:copper_ingot]
+#forge:ingots/gold round=1 via=tag:1 prerequisites=[minecraft:gold_ingot]
+#forge:ingots/iridium round=15 via=tag:20 prerequisites=[advancedrocketrycommunity:iridium_ingot]
+#forge:ingots/iron round=1 via=tag:13 prerequisites=[minecraft:iron_ingot]
+#forge:ingots/silicon round=10 via=tag:66 prerequisites=[advancedrocketrycommunity:silicon_ingot]
+#forge:ingots/steel round=10 via=tag:111 prerequisites=[advancedrocketrycommunity:steel_ingot]
+#forge:ingots/tin round=4 via=tag:154 prerequisites=[advancedrocketrycommunity:tin_ingot]
+#forge:ingots/titanium round=10 via=tag:19 prerequisites=[advancedrocketrycommunity:titanium_ingot]
+#forge:ingots/titanium_aluminide round=12 via=tag:112 prerequisites=[advancedrocketrycommunity:titanium_aluminide_ingot]
+#forge:ingots/titanium_iridium round=17 via=tag:113 prerequisites=[advancedrocketrycommunity:titanium_iridium_ingot]
+#forge:nuggets/aluminum round=6 via=tag:8 prerequisites=[advancedrocketrycommunity:aluminum_nugget]
+#forge:nuggets/copper round=3 via=tag:64 prerequisites=[advancedrocketrycommunity:copper_nugget]
+#forge:nuggets/iridium round=17 via=tag:102 prerequisites=[advancedrocketrycommunity:iridium_nugget]
+#forge:nuggets/silicon round=12 via=tag:67 prerequisites=[advancedrocketrycommunity:silicon_nugget]
+#forge:nuggets/steel round=12 via=tag:181 prerequisites=[advancedrocketrycommunity:steel_nugget]
+#forge:nuggets/tin round=6 via=tag:185 prerequisites=[advancedrocketrycommunity:tin_nugget]
+#forge:nuggets/titanium round=12 via=tag:191 prerequisites=[advancedrocketrycommunity:titanium_nugget]
+#forge:nuggets/titanium_aluminide round=14 via=tag:189 prerequisites=[advancedrocketrycommunity:titanium_aluminide_nugget]
+#forge:nuggets/titanium_iridium round=19 via=tag:194 prerequisites=[advancedrocketrycommunity:titanium_iridium_nugget]
+#forge:ores/aluminum round=2 via=tag:10 prerequisites=[advancedrocketrycommunity:deepslate_aluminum_ore]
+#forge:ores/copper round=2 via=tag:119 prerequisites=[#minecraft:copper_ores]
+#forge:ores/dilithium round=2 via=tag:70 prerequisites=[advancedrocketrycommunity:deepslate_dilithium_ore]
+#forge:ores/gold round=2 via=tag:123 prerequisites=[#minecraft:gold_ores]
+#forge:ores/iridium round=13 via=tag:103 prerequisites=[advancedrocketrycommunity:iridium_ore]
+#forge:ores/iron round=2 via=tag:128 prerequisites=[#minecraft:iron_ores]
+#forge:ores/rutile round=2 via=tag:16 prerequisites=[advancedrocketrycommunity:deepslate_rutile_ore]
+#forge:ores/tin round=2 via=tag:132 prerequisites=[advancedrocketrycommunity:deepslate_tin_ore]
+#forge:plates/aluminum round=8 via=tag:12 prerequisites=[advancedrocketrycommunity:aluminum_plate]
+#forge:plates/copper round=4 via=tag:118 prerequisites=[advancedrocketrycommunity:copper_plate]
+#forge:plates/gold round=4 via=tag:4 prerequisites=[advancedrocketrycommunity:gold_plate]
+#forge:plates/iridium round=17 via=tag:97 prerequisites=[advancedrocketrycommunity:iridium_plate]
+#forge:plates/iron round=4 via=tag:14 prerequisites=[advancedrocketrycommunity:iron_plate]
+#forge:plates/steel round=12 via=tag:21 prerequisites=[advancedrocketrycommunity:steel_plate]
+#forge:plates/tin round=8 via=tag:115 prerequisites=[advancedrocketrycommunity:tin_plate]
+#forge:plates/titanium round=12 via=tag:72 prerequisites=[advancedrocketrycommunity:titanium_plate]
+#forge:plates/titanium_aluminide round=14 via=tag:155 prerequisites=[advancedrocketrycommunity:titanium_aluminide_plate]
+#forge:plates/titanium_iridium round=19 via=tag:156 prerequisites=[advancedrocketrycommunity:titanium_iridium_plate]
+#forge:raw_materials/aluminum round=2 via=tag:11 prerequisites=[advancedrocketrycommunity:raw_aluminum]
+#forge:raw_materials/iridium round=13 via=tag:104 prerequisites=[advancedrocketrycommunity:raw_iridium]
+#forge:raw_materials/rutile round=2 via=tag:18 prerequisites=[advancedrocketrycommunity:raw_rutile]
+#forge:raw_materials/tin round=2 via=tag:186 prerequisites=[advancedrocketrycommunity:raw_tin]
+#forge:rods/iron round=3 via=tag:23 prerequisites=[advancedrocketrycommunity:iron_rod]
+#forge:rods/steel round=12 via=tag:179 prerequisites=[advancedrocketrycommunity:steel_rod]
+#forge:rods/titanium round=12 via=tag:106 prerequisites=[advancedrocketrycommunity:titanium_rod]
+#forge:rods/titanium_aluminide round=14 via=tag:187 prerequisites=[advancedrocketrycommunity:titanium_aluminide_rod]
+#forge:rods/titanium_iridium round=19 via=tag:192 prerequisites=[advancedrocketrycommunity:titanium_iridium_rod]
+#forge:rods/wooden round=1 via=tag:182 prerequisites=[minecraft:stick]
+#forge:stained_glass round=1 via=tag:78 prerequisites=[minecraft:black_stained_glass]
+#forge:stained_glass_panes round=1 via=tag:162 prerequisites=[minecraft:black_stained_glass_pane]
+#forge:storage_blocks/aluminum round=6 via=tag:6 prerequisites=[advancedrocketrycommunity:aluminum_block]
+#forge:storage_blocks/copper round=1 via=tag:122 prerequisites=[minecraft:copper_block]
+#forge:storage_blocks/gold round=1 via=tag:127 prerequisites=[minecraft:gold_block]
+#forge:storage_blocks/iridium round=17 via=tag:101 prerequisites=[advancedrocketrycommunity:iridium_block]
+#forge:storage_blocks/iron round=1 via=tag:94 prerequisites=[minecraft:iron_block]
+#forge:storage_blocks/redstone round=1 via=tag:117 prerequisites=[minecraft:redstone_block]
+#forge:storage_blocks/steel round=12 via=tag:131 prerequisites=[advancedrocketrycommunity:steel_block]
+#forge:storage_blocks/tin round=6 via=tag:134 prerequisites=[advancedrocketrycommunity:tin_block]
+#forge:storage_blocks/titanium round=12 via=tag:137 prerequisites=[advancedrocketrycommunity:titanium_block]
+#forge:storage_blocks/titanium_aluminide round=14 via=tag:135 prerequisites=[advancedrocketrycommunity:titanium_aluminide_block]
+#forge:storage_blocks/titanium_iridium round=19 via=tag:136 prerequisites=[advancedrocketrycommunity:titanium_iridium_block]
+#minecraft:copper_ores round=1 via=tag:120 prerequisites=[minecraft:copper_ore]
+#minecraft:gold_ores round=1 via=tag:124 prerequisites=[minecraft:deepslate_gold_ore]
+#minecraft:iron_ores round=1 via=tag:129 prerequisites=[minecraft:deepslate_iron_ore]
+#minecraft:wooden_slabs round=1 via=tag:53 prerequisites=[minecraft:acacia_slab]
+#minecraft:wool round=1 via=tag:138 prerequisites=[minecraft:black_wool]
+access:mars round=13 via=code:flight:advancedrocketrycommunity:earth_mars prerequisites=[access:overworld, travel:rocket, known:advancedrocketrycommunity:mars]
+access:moon round=11 via=code:flight:advancedrocketrycommunity:earth_moon prerequisites=[access:overworld, travel:rocket, known:advancedrocketrycommunity:moon]
+access:overworld round=0 via=null prerequisites=[]
+access:space round=11 via=flight:199 prerequisites=[travel:rocket]
+access:tau_ceti_f round=15 via=code:flight:advancedrocketrycommunity:tau_ceti_f_surface_orbit:reverse prerequisites=[orbit:advancedrocketrycommunity:tau_ceti_f, travel:rocket, known:advancedrocketrycommunity:tau_ceti_f]
+access:tau_ceti_g round=15 via=code:flight:advancedrocketrycommunity:tau_ceti_g_surface_orbit:reverse prerequisites=[orbit:advancedrocketrycommunity:tau_ceti_g, travel:rocket, known:advancedrocketrycommunity:tau_ceti_g]
+access:venus round=13 via=code:flight:advancedrocketrycommunity:earth_venus prerequisites=[access:overworld, travel:rocket, known:advancedrocketrycommunity:venus]
+advancedrocketrycommunity:advanced_bipropellant_rocket_motor round=19 via=recipe:advancedrocketrycommunity:advanced_bipropellant_rocket_motor prerequisites=[advancedrocketrycommunity:bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, advancedrocketrycommunity:elite_motor, minecraft:blaze_powder, minecraft:redstone]
+advancedrocketrycommunity:advanced_circuit round=6 via=recipe:advancedrocketrycommunity:advanced_circuit prerequisites=[#advancedrocketrycommunity:circuits/basic, #forge:ingots/gold, #forge:gems/diamond]
+advancedrocketrycommunity:advanced_circuit_plate round=9 via=recipe:advancedrocketrycommunity:precision_advanced_circuit_plate prerequisites=[machine:advancedrocketrycommunity:precision_assembler, energy:fe, #forge:ingots/gold, minecraft:redstone_block, advancedrocketrycommunity:silicon_wafer]
+advancedrocketrycommunity:advanced_motor round=14 via=recipe:advancedrocketrycommunity:advanced_motor prerequisites=[advancedrocketrycommunity:motor, #advancedrocketrycommunity:coils/gold, #forge:plates/gold]
+advancedrocketrycommunity:advanced_rocket_motor round=17 via=recipe:advancedrocketrycommunity:advanced_rocket_motor prerequisites=[advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:iridium_plate, minecraft:redstone]
+advancedrocketrycommunity:advanced_solar_panel round=7 via=recipe:advancedrocketrycommunity:advanced_solar_panel prerequisites=[advancedrocketrycommunity:satellite_solar_module, #forge:ingots/gold, advancedrocketrycommunity:advanced_circuit, minecraft:redstone_block]
+advancedrocketrycommunity:airlock_door round=1 via=recipe:advancedrocketrycommunity:airlock_door prerequisites=[minecraft:iron_ingot]
+advancedrocketrycommunity:aluminum_block round=5 via=recipe:advancedrocketrycommunity:aluminum_block prerequisites=[#forge:ingots/aluminum]
+advancedrocketrycommunity:aluminum_coil round=5 via=recipe:advancedrocketrycommunity:aluminum_coil prerequisites=[#forge:ingots/aluminum]
+advancedrocketrycommunity:aluminum_dust round=3 via=recipe:advancedrocketrycommunity:pressing_aluminum_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/aluminum]
+advancedrocketrycommunity:aluminum_ingot round=3 via=recipe:advancedrocketrycommunity:aluminum_ingot_from_ore_blasting prerequisites=[#forge:ores/aluminum]
+advancedrocketrycommunity:aluminum_nugget round=5 via=recipe:advancedrocketrycommunity:aluminum_nugget prerequisites=[#forge:ingots/aluminum]
+advancedrocketrycommunity:aluminum_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:aluminum_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:aluminum_plate round=7 via=recipe:advancedrocketrycommunity:pressing_aluminum_plate prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:storage_blocks/aluminum]
+advancedrocketrycommunity:aluminum_sheet round=9 via=recipe:advancedrocketrycommunity:rolling_aluminum_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/aluminum]
+advancedrocketrycommunity:anti_fog_visor round=9 via=recipe:advancedrocketrycommunity:anti_fog_visor prerequisites=[#forge:plates/aluminum, #forge:ingots/iron, minecraft:glass]
+advancedrocketrycommunity:arc_furnace round=7 via=recipe:advancedrocketrycommunity:arc_furnace prerequisites=[advancedrocketrycommunity:blast_brick, minecraft:redstone, #forge:plates/iron, advancedrocketrycommunity:machine_casing, #forge:ingots/copper]
+advancedrocketrycommunity:asteroid_drill_module round=7 via=recipe:advancedrocketrycommunity:asteroid_drill_module prerequisites=[#forge:ingots/gold, minecraft:diamond_pickaxe, advancedrocketrycommunity:advanced_circuit, minecraft:piston, minecraft:redstone]
+advancedrocketrycommunity:astrobody_data_processor round=14 via=recipe:advancedrocketrycommunity:astrobody_data_processor prerequisites=[#forge:plates/steel, advancedrocketrycommunity:laser_lens, advancedrocketrycommunity:control_board, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:motor]
+advancedrocketrycommunity:atmosphere_analyzer round=5 via=recipe:advancedrocketrycommunity:atmosphere_analyzer prerequisites=[advancedrocketrycommunity:basic_circuit, minecraft:glass_pane, minecraft:iron_ingot]
+advancedrocketrycommunity:atmosphere_detector round=10 via=recipe:advancedrocketrycommunity:atmosphere_detector prerequisites=[#forge:plates/aluminum, #forge:ingots/iron, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:basic_circuit round=4 via=recipe:advancedrocketrycommunity:basic_circuit prerequisites=[#advancedrocketrycommunity:silicon_wafers, #forge:ingots/copper, minecraft:redstone]
+advancedrocketrycommunity:basic_circuit_plate round=9 via=recipe:advancedrocketrycommunity:precision_basic_circuit_plate prerequisites=[machine:advancedrocketrycommunity:precision_assembler, energy:fe, #forge:ingots/gold, #forge:dusts/redstone, advancedrocketrycommunity:silicon_wafer]
+advancedrocketrycommunity:basic_laser_gun round=13 via=recipe:advancedrocketrycommunity:basic_laser_gun prerequisites=[#forge:plates/steel, #forge:gems/diamond, #forge:rods/iron, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:beacon_finder round=9 via=recipe:advancedrocketrycommunity:beacon_finder prerequisites=[#forge:plates/aluminum, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:bionic_leg_upgrade round=13 via=recipe:advancedrocketrycommunity:bionic_leg_upgrade prerequisites=[#forge:plates/steel, #forge:ingots/iron, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:bipropellant_fuel_tank round=12 via=recipe:advancedrocketrycommunity:bipropellant_fuel_tank prerequisites=[advancedrocketrycommunity:rocket_fuel_tank, advancedrocketrycommunity:steel_plate, minecraft:redstone]
+advancedrocketrycommunity:bipropellant_rocket_motor round=15 via=recipe:advancedrocketrycommunity:bipropellant_rocket_motor prerequisites=[advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:steel_plate, advancedrocketrycommunity:advanced_motor, minecraft:redstone]
+advancedrocketrycommunity:black_hole_generator round=8 via=recipe:advancedrocketrycommunity:black_hole_generator prerequisites=[minecraft:obsidian, minecraft:ender_eye, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:endgame_casing]
+advancedrocketrycommunity:blast_brick round=1 via=recipe:advancedrocketrycommunity:blast_brick prerequisites=[minecraft:bricks, minecraft:magma_cream]
+advancedrocketrycommunity:blue_crystal_block round=16 via=code:crystal:access:tau_ceti_g|blue prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:carbon_brick round=1 via=recipe:advancedrocketrycommunity:carbon_brick prerequisites=[minecraft:charcoal]
+advancedrocketrycommunity:carbon_scrubber_cartridge round=5 via=recipe:advancedrocketrycommunity:carbon_scrubber_cartridge prerequisites=[#forge:plates/iron, advancedrocketrycommunity:carbon_brick]
+advancedrocketrycommunity:centrifuge round=14 via=recipe:advancedrocketrycommunity:centrifuge prerequisites=[#forge:plates/steel, minecraft:redstone, advancedrocketrycommunity:motor, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:charcoal_log round=14 via=code:charred_tree:access:venus prerequisites=[access:venus, minecraft:diamond_pickaxe, tool:silk_touch]
+advancedrocketrycommunity:chemical_reactor round=14 via=recipe:advancedrocketrycommunity:chemical_reactor prerequisites=[#forge:plates/steel, minecraft:redstone, advancedrocketrycommunity:motor, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:co2_scrubber round=13 via=recipe:advancedrocketrycommunity:co2_scrubber prerequisites=[#forge:plates/steel, #forge:ingots/iron, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:combustion_generator round=3 via=recipe:advancedrocketrycommunity:combustion_generator prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:copper_coil, minecraft:furnace, minecraft:redstone]
+advancedrocketrycommunity:control_board round=5 via=recipe:advancedrocketrycommunity:control_board prerequisites=[#forge:dusts/redstone, #forge:gems/quartz, #forge:dusts/copper, #minecraft:wooden_slabs, #forge:plates/iron]
+advancedrocketrycommunity:copper_coil round=2 via=recipe:advancedrocketrycommunity:copper_coil prerequisites=[#forge:ingots/copper]
+advancedrocketrycommunity:copper_dust round=3 via=recipe:advancedrocketrycommunity:pressing_copper_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/copper]
+advancedrocketrycommunity:copper_nugget round=2 via=recipe:advancedrocketrycommunity:copper_nugget prerequisites=[#forge:ingots/copper]
+advancedrocketrycommunity:copper_plate round=3 via=recipe:advancedrocketrycommunity:pressing_copper_plate prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:storage_blocks/copper]
+advancedrocketrycommunity:copper_rod round=2 via=recipe:advancedrocketrycommunity:copper_rod prerequisites=[#forge:ingots/copper]
+advancedrocketrycommunity:copper_sheet round=9 via=recipe:advancedrocketrycommunity:rolling_copper_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/copper]
+advancedrocketrycommunity:crystallizer round=14 via=recipe:advancedrocketrycommunity:crystallizer prerequisites=[#forge:plates/steel, minecraft:redstone, advancedrocketrycommunity:quartz_crucible_shell, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:motor]
+advancedrocketrycommunity:cutting_machine round=14 via=recipe:advancedrocketrycommunity:cutting_machine prerequisites=[#forge:plates/steel, minecraft:redstone, advancedrocketrycommunity:motor, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:iron_saw_blade]
+advancedrocketrycommunity:dark_moon_turf round=12 via=code:terrain:access:moon|advancedrocketrycommunity:dark_moon_turf prerequisites=[access:moon, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:data_satellite_package round=10 via=code:data_satellite prerequisites=[advancedrocketrycommunity:satellite_terminal, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:satellite_solar_module, advancedrocketrycommunity:data_storage_unit, advancedrocketrycommunity:satellite_control_chip, minecraft:redstone]
+advancedrocketrycommunity:data_storage_unit round=8 via=recipe:advancedrocketrycommunity:data_storage_unit prerequisites=[#advancedrocketrycommunity:circuits/advanced, minecraft:comparator, minecraft:redstone]
+advancedrocketrycommunity:deepslate_aluminum_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_aluminum_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:deepslate_dilithium_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_dilithium_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:deepslate_rutile_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_rutile_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:deepslate_tin_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_tin_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:dilithium_crystal round=16 via=recipe:advancedrocketrycommunity:crystallizing_dilithium prerequisites=[machine:advancedrocketrycommunity:crystallizer, energy:fe, #forge:dusts/dilithium]
+advancedrocketrycommunity:dilithium_dust round=3 via=recipe:advancedrocketrycommunity:dilithium_dust_from_ore_blasting prerequisites=[#forge:ores/dilithium]
+advancedrocketrycommunity:dilithium_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:dilithium_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:earthbright_visor round=13 via=recipe:advancedrocketrycommunity:earthbright_visor prerequisites=[#forge:plates/titanium, #forge:ingots/iron, minecraft:glowstone]
+advancedrocketrycommunity:electric_mushroom round=16 via=code:patch:access:tau_ceti_g|advancedrocketrycommunity:electric_mushrooms|advancedrocketrycommunity:electric_mushroom prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:electrolyzer round=7 via=recipe:advancedrocketrycommunity:electrolyzer prerequisites=[#forge:ingots/iron, #forge:glass, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:elevator_anchor round=8 via=recipe:advancedrocketrycommunity:elevator_anchor prerequisites=[#forge:storage_blocks/iron, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:endgame_casing]
+advancedrocketrycommunity:elevator_terminal round=7 via=recipe:advancedrocketrycommunity:elevator_terminal prerequisites=[#forge:ender_pearls, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:elite_motor round=18 via=recipe:advancedrocketrycommunity:elite_motor prerequisites=[advancedrocketrycommunity:enhanced_motor, #advancedrocketrycommunity:coils/iridium, #forge:plates/iridium]
+advancedrocketrycommunity:empty_canister round=3 via=recipe:advancedrocketrycommunity:empty_canister prerequisites=[#forge:glass]
+advancedrocketrycommunity:endgame_casing round=7 via=recipe:advancedrocketrycommunity:endgame_casing prerequisites=[#forge:ingots/iron, minecraft:obsidian, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:enhanced_motor round=15 via=recipe:advancedrocketrycommunity:enhanced_motor prerequisites=[advancedrocketrycommunity:advanced_motor, #advancedrocketrycommunity:coils/titanium, #forge:plates/titanium]
+advancedrocketrycommunity:enriched_lava_bucket round=16 via=code:bucket:enriched_lava prerequisites=[fluid:advancedrocketrycommunity:enriched_lava, minecraft:bucket, advancedrocketrycommunity:pressurized_tank]
+advancedrocketrycommunity:ferric_sand round=14 via=code:terrain:access:mars|advancedrocketrycommunity:ferric_sand prerequisites=[access:mars, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:flight_speed_upgrade round=9 via=recipe:advancedrocketrycommunity:flight_speed_upgrade prerequisites=[#forge:plates/aluminum, #forge:ingots/iron, minecraft:redstone]
+advancedrocketrycommunity:fluid_fuel_loader round=14 via=recipe:advancedrocketrycommunity:fluid_fuel_loader prerequisites=[advancedrocketrycommunity:pressurized_tank, advancedrocketrycommunity:liquid_io_board, advancedrocketrycommunity:control_board, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:fluid_input_hatch round=7 via=recipe:advancedrocketrycommunity:fluid_input_hatch prerequisites=[#forge:plates/iron, minecraft:bucket, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:fluid_output_hatch round=7 via=recipe:advancedrocketrycommunity:fluid_output_hatch prerequisites=[#forge:plates/iron, minecraft:bucket, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:force_field_projector round=13 via=recipe:advancedrocketrycommunity:force_field_projector prerequisites=[#forge:plates/titanium, minecraft:glass, advancedrocketrycommunity:control_board, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:fuel_loader round=7 via=recipe:advancedrocketrycommunity:fuel_loader prerequisites=[#forge:ingots/iron, minecraft:hopper, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:gas_charge_pad round=13 via=recipe:advancedrocketrycommunity:gas_charge_pad prerequisites=[#forge:plates/steel, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:user_interface]
+advancedrocketrycommunity:gas_intake_module round=7 via=recipe:advancedrocketrycommunity:gas_intake_module prerequisites=[#forge:ingots/gold, minecraft:hopper, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:empty_canister, minecraft:redstone]
+advancedrocketrycommunity:geode_shell round=14 via=code:geode:access:venus prerequisites=[access:venus, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:gold_coil round=2 via=recipe:advancedrocketrycommunity:gold_coil prerequisites=[#forge:ingots/gold]
+advancedrocketrycommunity:gold_dust round=3 via=recipe:advancedrocketrycommunity:pressing_gold_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/gold]
+advancedrocketrycommunity:gold_plate round=3 via=recipe:advancedrocketrycommunity:pressing_gold_plate prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:storage_blocks/gold]
+advancedrocketrycommunity:gravity_field_controller round=7 via=recipe:advancedrocketrycommunity:gravity_field_controller prerequisites=[#forge:ender_pearls, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:green_crystal_block round=16 via=code:crystal:access:tau_ceti_g|green prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:guidance_computer round=7 via=recipe:advancedrocketrycommunity:guidance_computer prerequisites=[#forge:glass, advancedrocketrycommunity:advanced_circuit, minecraft:redstone, advancedrocketrycommunity:machine_casing, #forge:ingots/iron]
+advancedrocketrycommunity:high_pressure_tank round=13 via=recipe:advancedrocketrycommunity:high_pressure_tank prerequisites=[#forge:plates/steel, minecraft:glass_bottle]
+advancedrocketrycommunity:hover_upgrade round=9 via=recipe:advancedrocketrycommunity:hover_upgrade prerequisites=[#forge:plates/aluminum, #forge:ingots/iron, minecraft:feather]
+advancedrocketrycommunity:hydrogen_canister round=8 via=recipe:advancedrocketrycommunity:electrolyzer_water prerequisites=[advancedrocketrycommunity:electrolyzer, energy:fe, fluid:minecraft:water, advancedrocketrycommunity:empty_canister]
+advancedrocketrycommunity:iridium_block round=16 via=recipe:advancedrocketrycommunity:iridium_block prerequisites=[#forge:ingots/iridium]
+advancedrocketrycommunity:iridium_coil round=16 via=recipe:advancedrocketrycommunity:iridium_coil prerequisites=[#forge:ingots/iridium]
+advancedrocketrycommunity:iridium_dust round=14 via=recipe:advancedrocketrycommunity:pressing_iridium_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/iridium]
+advancedrocketrycommunity:iridium_ingot round=14 via=recipe:advancedrocketrycommunity:iridium_ingot_from_ore_blasting prerequisites=[#forge:ores/iridium]
+advancedrocketrycommunity:iridium_nugget round=16 via=recipe:advancedrocketrycommunity:centrifuging_enriched_lava prerequisites=[machine:advancedrocketrycommunity:centrifuge, energy:fe, fluid:advancedrocketrycommunity:enriched_lava]
+advancedrocketrycommunity:iridium_ore round=12 via=ore:access:moon|advancedrocketrycommunity:iridium_ore prerequisites=[access:moon]
+advancedrocketrycommunity:iridium_plate round=16 via=recipe:advancedrocketrycommunity:rolling_iridium_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/iridium]
+advancedrocketrycommunity:iridium_rod round=16 via=recipe:advancedrocketrycommunity:iridium_rod prerequisites=[#forge:ingots/iridium]
+advancedrocketrycommunity:iron_dust round=3 via=recipe:advancedrocketrycommunity:pressing_iron_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/iron]
+advancedrocketrycommunity:iron_plate round=3 via=recipe:advancedrocketrycommunity:pressing_iron_plate prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:storage_blocks/iron]
+advancedrocketrycommunity:iron_rod round=2 via=recipe:advancedrocketrycommunity:iron_rod prerequisites=[#forge:ingots/iron]
+advancedrocketrycommunity:iron_saw_blade round=5 via=recipe:advancedrocketrycommunity:iron_saw_blade prerequisites=[#forge:rods/iron, #forge:plates/iron]
+advancedrocketrycommunity:iron_sheet round=9 via=recipe:advancedrocketrycommunity:rolling_iron_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/iron]
+advancedrocketrycommunity:item_input_hatch round=7 via=recipe:advancedrocketrycommunity:item_input_hatch prerequisites=[#forge:plates/iron, minecraft:hopper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:item_io_board round=5 via=recipe:advancedrocketrycommunity:item_io_board prerequisites=[#forge:dusts/redstone, #forge:gems/quartz, #forge:dusts/gold, #minecraft:wooden_slabs, #forge:plates/iron]
+advancedrocketrycommunity:item_output_hatch round=7 via=recipe:advancedrocketrycommunity:item_output_hatch prerequisites=[#forge:plates/iron, minecraft:hopper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:jackhammer round=15 via=recipe:advancedrocketrycommunity:jackhammer prerequisites=[#forge:plates/aluminum, #forge:rods/titanium, #forge:rods/iron, #advancedrocketrycommunity:motors, #forge:gems/diamond]
+advancedrocketrycommunity:jetpack round=13 via=recipe:advancedrocketrycommunity:jetpack prerequisites=[#forge:plates/steel, #forge:rods/titanium, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:landing_pad round=1 via=recipe:advancedrocketrycommunity:landing_pad prerequisites=[minecraft:iron_ingot, minecraft:gray_concrete, minecraft:redstone]
+advancedrocketrycommunity:large_satellite_battery round=7 via=recipe:advancedrocketrycommunity:large_satellite_battery prerequisites=[advancedrocketrycommunity:satellite_battery, minecraft:redstone_block, advancedrocketrycommunity:advanced_circuit]
+advancedrocketrycommunity:laser_lens round=3 via=recipe:advancedrocketrycommunity:laser_lens prerequisites=[#forge:glass, #forge:gems/diamond, advancedrocketrycommunity:silicon_wafer]
+advancedrocketrycommunity:laser_target round=5 via=recipe:advancedrocketrycommunity:laser_target prerequisites=[#forge:ingots/iron, #forge:glass, #forge:dusts/redstone, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:lathe round=14 via=recipe:advancedrocketrycommunity:lathe prerequisites=[#forge:plates/iron, advancedrocketrycommunity:motor, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:lightwood_leaves round=17 via=code:lightwood_leaves prerequisites=[block:advancedrocketrycommunity:lightwood_leaves, minecraft:shears]
+advancedrocketrycommunity:lightwood_log round=16 via=code:lightwood:access:tau_ceti_f prerequisites=[access:tau_ceti_f]
+advancedrocketrycommunity:lightwood_planks round=17 via=recipe:advancedrocketrycommunity:cutting_lightwood_log prerequisites=[machine:advancedrocketrycommunity:cutting_machine, energy:fe, advancedrocketrycommunity:lightwood_log]
+advancedrocketrycommunity:lightwood_sapling round=17 via=code:lightwood_sapling prerequisites=[block:advancedrocketrycommunity:lightwood_leaves]
+advancedrocketrycommunity:linker round=11 via=recipe:advancedrocketrycommunity:linker prerequisites=[advancedrocketrycommunity:tracking_circuit, minecraft:iron_ingot, minecraft:redstone]
+advancedrocketrycommunity:liquid_io_board round=5 via=recipe:advancedrocketrycommunity:liquid_io_board prerequisites=[#forge:dusts/redstone, #forge:gems/quartz, #forge:gems/lapis, #minecraft:wooden_slabs, #forge:plates/iron]
+advancedrocketrycommunity:low_pressure_tank round=9 via=recipe:advancedrocketrycommunity:low_pressure_tank prerequisites=[#forge:plates/tin, minecraft:glass_bottle]
+advancedrocketrycommunity:machine_casing round=6 via=recipe:advancedrocketrycommunity:machine_casing prerequisites=[#forge:ingots/iron, #advancedrocketrycommunity:circuits/basic]
+advancedrocketrycommunity:microwave_receiver round=7 via=recipe:advancedrocketrycommunity:microwave_receiver prerequisites=[advancedrocketrycommunity:machine_casing, minecraft:lightning_rod, advancedrocketrycommunity:advanced_circuit, minecraft:daylight_detector, minecraft:redstone_block]
+advancedrocketrycommunity:moon_turf round=12 via=code:terrain:access:moon|advancedrocketrycommunity:moon_turf prerequisites=[access:moon, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:motor round=13 via=recipe:advancedrocketrycommunity:motor prerequisites=[#advancedrocketrycommunity:coils/copper, #forge:plates/steel, #forge:rods/iron, #forge:ingots/steel]
+advancedrocketrycommunity:nitrogen_canister round=13 via=code:gas_harvest:gas_giant.json prerequisites=[craft:advancedrocketrycommunity:gas_harvester, known:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal]
+advancedrocketrycommunity:nuclear_core round=19 via=recipe:advancedrocketrycommunity:nuclear_core prerequisites=[advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:iridium_ingot, advancedrocketrycommunity:elite_motor, minecraft:blaze_powder, minecraft:redstone]
+advancedrocketrycommunity:nuclear_fuel_tank round=17 via=recipe:advancedrocketrycommunity:nuclear_fuel_tank prerequisites=[advancedrocketrycommunity:rocket_fuel_tank, advancedrocketrycommunity:titanium_plate, advancedrocketrycommunity:iridium_plate, minecraft:redstone]
+advancedrocketrycommunity:nuclear_rocket_motor round=17 via=recipe:advancedrocketrycommunity:nuclear_rocket_motor prerequisites=[advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:iridium_plate, advancedrocketrycommunity:enhanced_motor, minecraft:redstone]
+advancedrocketrycommunity:observatory round=14 via=recipe:advancedrocketrycommunity:observatory prerequisites=[#forge:plates/steel, advancedrocketrycommunity:laser_lens, minecraft:glass, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:motor]
+advancedrocketrycommunity:orange_crystal_block round=16 via=code:crystal:access:tau_ceti_g|orange prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:orbital_laser_drill round=8 via=recipe:advancedrocketrycommunity:orbital_laser_drill prerequisites=[advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:laser_lens, advancedrocketrycommunity:endgame_casing, #forge:storage_blocks/redstone]
+advancedrocketrycommunity:oxidizer_fuel_tank round=8 via=recipe:advancedrocketrycommunity:oxidizer_fuel_tank prerequisites=[advancedrocketrycommunity:rocket_fuel_tank, advancedrocketrycommunity:aluminum_plate, minecraft:lapis_lazuli, minecraft:redstone]
+advancedrocketrycommunity:oxygen_canister round=8 via=recipe:advancedrocketrycommunity:electrolyzer_water prerequisites=[advancedrocketrycommunity:electrolyzer, energy:fe, fluid:minecraft:water, advancedrocketrycommunity:empty_canister]
+advancedrocketrycommunity:oxygen_vent round=7 via=recipe:advancedrocketrycommunity:oxygen_vent prerequisites=[#forge:ingots/iron, minecraft:redstone, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:machine_casing, #forge:glass]
+advancedrocketrycommunity:padded_landing_boots round=9 via=recipe:advancedrocketrycommunity:padded_landing_boots prerequisites=[#forge:plates/tin, #forge:ingots/iron, minecraft:white_wool]
+advancedrocketrycommunity:pipe_seal round=13 via=recipe:advancedrocketrycommunity:pipe_seal prerequisites=[#forge:plates/steel, minecraft:glass]
+advancedrocketrycommunity:planetary_beacon round=13 via=recipe:advancedrocketrycommunity:planetary_beacon prerequisites=[#forge:plates/steel, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:power_input_plug round=7 via=recipe:advancedrocketrycommunity:power_input_plug prerequisites=[#forge:plates/iron, minecraft:redstone, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:power_output_plug round=7 via=recipe:advancedrocketrycommunity:power_output_plug prerequisites=[#forge:plates/iron, #forge:ingots/copper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:precision_assembler round=7 via=recipe:advancedrocketrycommunity:precision_assembler prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:advanced_circuit, minecraft:piston, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:precision_assembler_energy_input_port round=7 via=recipe:advancedrocketrycommunity:precision_assembler_energy_input_port prerequisites=[#forge:ingots/iron, minecraft:redstone_block, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:precision_assembler_item_input_port round=7 via=recipe:advancedrocketrycommunity:precision_assembler_item_input_port prerequisites=[#forge:ingots/iron, minecraft:hopper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:precision_assembler_item_output_port round=7 via=recipe:advancedrocketrycommunity:precision_assembler_item_output_port prerequisites=[#forge:ingots/iron, minecraft:dropper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:precision_laser_etcher round=14 via=recipe:advancedrocketrycommunity:precision_laser_etcher prerequisites=[#forge:plates/steel, minecraft:redstone, advancedrocketrycommunity:laser_lens, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:motor]
+advancedrocketrycommunity:pressure_tank round=9 via=recipe:advancedrocketrycommunity:pressure_tank prerequisites=[#forge:plates/aluminum, minecraft:glass_bottle]
+advancedrocketrycommunity:pressurized_tank round=13 via=recipe:advancedrocketrycommunity:pressurized_tank prerequisites=[#forge:plates/steel, minecraft:bucket]
+advancedrocketrycommunity:pump round=14 via=recipe:advancedrocketrycommunity:pump prerequisites=[advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:motor, minecraft:bucket, #forge:plates/steel, #forge:rods/iron, minecraft:redstone]
+advancedrocketrycommunity:quartz_crucible round=2 via=recipe:advancedrocketrycommunity:quartz_crucible prerequisites=[advancedrocketrycommunity:quartz_crucible_shell]
+advancedrocketrycommunity:quartz_crucible_shell round=1 via=recipe:advancedrocketrycommunity:quartz_crucible_shell prerequisites=[minecraft:quartz]
+advancedrocketrycommunity:railgun round=8 via=recipe:advancedrocketrycommunity:railgun prerequisites=[#forge:storage_blocks/iron, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:endgame_casing]
+advancedrocketrycommunity:raw_aluminum round=1 via=ore:access:overworld|advancedrocketrycommunity:aluminum_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:raw_iridium round=12 via=ore:access:moon|advancedrocketrycommunity:iridium_ore prerequisites=[access:moon]
+advancedrocketrycommunity:raw_rutile round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_rutile_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:raw_tin round=1 via=ore:access:overworld|advancedrocketrycommunity:deepslate_tin_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:red_crystal_block round=16 via=code:crystal:access:tau_ceti_g|red prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:rocket_assembler round=7 via=recipe:advancedrocketrycommunity:rocket_assembler prerequisites=[#forge:ingots/iron, minecraft:piston, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:rocket_fluid_loader round=14 via=recipe:advancedrocketrycommunity:rocket_fluid_loader prerequisites=[minecraft:hopper, advancedrocketrycommunity:liquid_io_board, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:pressurized_tank]
+advancedrocketrycommunity:rocket_fluid_unloader round=14 via=recipe:advancedrocketrycommunity:rocket_fluid_unloader prerequisites=[advancedrocketrycommunity:liquid_io_board, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:pressurized_tank, minecraft:hopper]
+advancedrocketrycommunity:rocket_fuel_bucket round=17 via=code:bucket:rocket_fuel prerequisites=[fluid:advancedrocketrycommunity:rocket_fuel, minecraft:bucket, advancedrocketrycommunity:pressurized_tank]
+advancedrocketrycommunity:rocket_fuel_cell round=9 via=recipe:advancedrocketrycommunity:rocket_fuel_cell prerequisites=[advancedrocketrycommunity:hydrogen_canister, minecraft:blaze_powder, minecraft:redstone]
+advancedrocketrycommunity:rocket_fuel_tank round=3 via=recipe:advancedrocketrycommunity:rocket_fuel_tank prerequisites=[#forge:ingots/iron, #forge:glass]
+advancedrocketrycommunity:rocket_item_loader round=7 via=recipe:advancedrocketrycommunity:rocket_item_loader prerequisites=[minecraft:hopper, advancedrocketrycommunity:item_io_board, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:rocket_item_unloader round=7 via=recipe:advancedrocketrycommunity:rocket_item_unloader prerequisites=[advancedrocketrycommunity:item_io_board, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:control_board, minecraft:hopper]
+advancedrocketrycommunity:rocket_monitoring_station round=11 via=recipe:advancedrocketrycommunity:rocket_monitoring_station prerequisites=[advancedrocketrycommunity:tracking_circuit, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:control_board, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:rocket_motor round=5 via=recipe:advancedrocketrycommunity:rocket_motor prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:basic_circuit, minecraft:redstone]
+advancedrocketrycommunity:rocket_satellite_bay round=9 via=recipe:advancedrocketrycommunity:rocket_satellite_bay prerequisites=[#forge:plates/aluminum, minecraft:chest, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:rocket_seat round=2 via=recipe:advancedrocketrycommunity:rocket_seat prerequisites=[#minecraft:wool, #forge:ingots/iron]
+advancedrocketrycommunity:rolling_machine round=7 via=recipe:advancedrocketrycommunity:rolling_machine prerequisites=[#forge:ingots/iron, minecraft:piston, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:machine_casing, minecraft:redstone]
+advancedrocketrycommunity:rolling_machine_energy_input_port round=7 via=recipe:advancedrocketrycommunity:rolling_machine_energy_input_port prerequisites=[minecraft:redstone_block, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:rolling_machine_fluid_input_port round=7 via=recipe:advancedrocketrycommunity:rolling_machine_fluid_input_port prerequisites=[minecraft:bucket, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:rolling_machine_item_input_port round=7 via=recipe:advancedrocketrycommunity:rolling_machine_item_input_port prerequisites=[minecraft:hopper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:rolling_machine_item_output_port round=7 via=recipe:advancedrocketrycommunity:rolling_machine_item_output_port prerequisites=[minecraft:dropper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:rutile_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:rutile_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:satellite_battery round=5 via=recipe:advancedrocketrycommunity:satellite_battery prerequisites=[#forge:ingots/iron, minecraft:redstone, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:satellite_builder round=8 via=recipe:advancedrocketrycommunity:satellite_builder prerequisites=[advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:machine_casing, minecraft:smithing_table, #forge:ingots/iron, minecraft:redstone_block]
+advancedrocketrycommunity:satellite_cargo_hold round=7 via=recipe:advancedrocketrycommunity:satellite_cargo_hold prerequisites=[#forge:ingots/iron, #forge:chests/wooden, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:satellite_chassis round=7 via=recipe:advancedrocketrycommunity:satellite_chassis prerequisites=[#forge:ingots/iron, #forge:ingots/copper, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:satellite_control_chip round=7 via=recipe:advancedrocketrycommunity:satellite_control_chip prerequisites=[#forge:ingots/gold, minecraft:redstone, advancedrocketrycommunity:advanced_circuit]
+advancedrocketrycommunity:satellite_package round=12 via=code:gas_harvester prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:gas_intake_module, advancedrocketrycommunity:satellite_solar_module, advancedrocketrycommunity:satellite_cargo_hold, advancedrocketrycommunity:satellite_control_chip, minecraft:redstone, research:lifetime]
+advancedrocketrycommunity:satellite_solar_module round=3 via=recipe:advancedrocketrycommunity:satellite_solar_module prerequisites=[#forge:glass_panes, #forge:ingots/copper, minecraft:daylight_detector, minecraft:redstone]
+advancedrocketrycommunity:satellite_terminal round=9 via=recipe:advancedrocketrycommunity:satellite_terminal prerequisites=[advancedrocketrycommunity:data_storage_unit, advancedrocketrycommunity:advanced_circuit, #forge:ingots/copper, advancedrocketrycommunity:machine_casing, #forge:ingots/iron, minecraft:redstone_block]
+advancedrocketrycommunity:saw_blade round=6 via=recipe:advancedrocketrycommunity:saw_blade prerequisites=[#forge:rods/iron, #forge:plates/iron, advancedrocketrycommunity:iron_saw_blade]
+advancedrocketrycommunity:seal_detector round=1 via=recipe:advancedrocketrycommunity:seal_detector prerequisites=[minecraft:iron_ingot, minecraft:redstone, minecraft:glass_pane]
+advancedrocketrycommunity:silicon_boule round=16 via=recipe:advancedrocketrycommunity:crystallizing_silicon_boule prerequisites=[machine:advancedrocketrycommunity:crystallizer, energy:fe, #forge:ingots/silicon, #forge:nuggets/silicon]
+advancedrocketrycommunity:silicon_ingot round=9 via=recipe:advancedrocketrycommunity:arc_furnace_silicon prerequisites=[machine:advancedrocketrycommunity:arc_furnace, energy:fe, minecraft:sand]
+advancedrocketrycommunity:silicon_nugget round=11 via=recipe:advancedrocketrycommunity:silicon_nugget prerequisites=[#forge:ingots/silicon]
+advancedrocketrycommunity:silicon_plate round=11 via=recipe:advancedrocketrycommunity:rolling_silicon_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/silicon]
+advancedrocketrycommunity:silicon_wafer round=2 via=recipe:advancedrocketrycommunity:silicon_wafer prerequisites=[#forge:gems/quartz, minecraft:redstone]
+advancedrocketrycommunity:small_plate_press round=2 via=recipe:advancedrocketrycommunity:small_plate_press prerequisites=[minecraft:piston, #forge:ingots/iron]
+advancedrocketrycommunity:solar_array round=7 via=recipe:advancedrocketrycommunity:solar_array prerequisites=[advancedrocketrycommunity:solar_array_panel, #forge:glass, #forge:ingots/copper, advancedrocketrycommunity:machine_casing, #forge:plates/iron]
+advancedrocketrycommunity:solar_array_panel round=3 via=recipe:advancedrocketrycommunity:solar_array_panel prerequisites=[#forge:glass, advancedrocketrycommunity:silicon_wafer, #forge:ingots/copper]
+advancedrocketrycommunity:solar_generator round=4 via=recipe:advancedrocketrycommunity:solar_generator prerequisites=[advancedrocketrycommunity:solar_panel, #forge:ingots/copper, #forge:glass]
+advancedrocketrycommunity:solar_panel round=3 via=recipe:advancedrocketrycommunity:solar_panel prerequisites=[#forge:glass, advancedrocketrycommunity:silicon_wafer, #forge:ingots/copper]
+advancedrocketrycommunity:solar_transmitter_module round=7 via=recipe:advancedrocketrycommunity:solar_transmitter_module prerequisites=[#forge:ingots/gold, minecraft:lightning_rod, advancedrocketrycommunity:advanced_circuit, minecraft:daylight_detector, minecraft:redstone]
+advancedrocketrycommunity:space_suit_boots round=5 via=recipe:advancedrocketrycommunity:space_suit_boots prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:space_suit_chestplate round=5 via=recipe:advancedrocketrycommunity:space_suit_chestplate prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:space_suit_helmet round=5 via=recipe:advancedrocketrycommunity:space_suit_helmet prerequisites=[#forge:ingots/iron, #forge:glass, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:space_suit_leggings round=5 via=recipe:advancedrocketrycommunity:space_suit_leggings prerequisites=[#forge:ingots/iron, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:station_altitude_controller round=13 via=recipe:advancedrocketrycommunity:station_altitude_controller prerequisites=[#forge:plates/steel, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:basic_circuit_plate, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:station_deployment_kit round=8 via=recipe:advancedrocketrycommunity:station_deployment_kit prerequisites=[minecraft:ender_eye, advancedrocketrycommunity:guidance_computer, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:machine_casing, #forge:ingots/iron]
+advancedrocketrycommunity:station_gravity_controller round=13 via=recipe:advancedrocketrycommunity:station_gravity_controller prerequisites=[#forge:plates/steel, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:station_light round=1 via=recipe:advancedrocketrycommunity:station_light prerequisites=[minecraft:iron_ingot, minecraft:glass, minecraft:glowstone]
+advancedrocketrycommunity:station_orientation_controller round=13 via=recipe:advancedrocketrycommunity:station_orientation_controller prerequisites=[#forge:plates/steel, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:advanced_circuit_plate, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:steel_block round=11 via=recipe:advancedrocketrycommunity:steel_block prerequisites=[#forge:ingots/steel]
+advancedrocketrycommunity:steel_fan round=13 via=recipe:advancedrocketrycommunity:steel_fan prerequisites=[#forge:plates/steel, #forge:rods/steel]
+advancedrocketrycommunity:steel_gear round=13 via=recipe:advancedrocketrycommunity:steel_gear prerequisites=[#forge:rods/steel, #forge:plates/steel, #forge:ingots/steel]
+advancedrocketrycommunity:steel_ingot round=9 via=recipe:advancedrocketrycommunity:arc_furnace_steel prerequisites=[machine:advancedrocketrycommunity:arc_furnace, energy:fe, #forge:ingots/iron, minecraft:charcoal]
+advancedrocketrycommunity:steel_nugget round=11 via=recipe:advancedrocketrycommunity:steel_nugget prerequisites=[#forge:ingots/steel]
+advancedrocketrycommunity:steel_plate round=11 via=recipe:advancedrocketrycommunity:rolling_steel_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/steel]
+advancedrocketrycommunity:steel_rod round=11 via=recipe:advancedrocketrycommunity:steel_rod prerequisites=[#forge:ingots/steel]
+advancedrocketrycommunity:steel_sheet round=13 via=recipe:advancedrocketrycommunity:rolling_steel_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/steel]
+advancedrocketrycommunity:suit_workstation round=13 via=recipe:advancedrocketrycommunity:suit_workstation prerequisites=[#forge:plates/steel, #forge:ingots/iron, advancedrocketrycommunity:user_interface]
+advancedrocketrycommunity:super_high_pressure_tank round=13 via=recipe:advancedrocketrycommunity:super_high_pressure_tank prerequisites=[#forge:plates/titanium, minecraft:glass_bottle]
+advancedrocketrycommunity:survey_scanner_module round=7 via=recipe:advancedrocketrycommunity:survey_scanner_module prerequisites=[#forge:ingots/gold, minecraft:spyglass, advancedrocketrycommunity:advanced_circuit, minecraft:observer, minecraft:redstone]
+advancedrocketrycommunity:thermite round=5 via=recipe:advancedrocketrycommunity:thermite prerequisites=[#forge:dusts/aluminum, #forge:dusts/iron]
+advancedrocketrycommunity:thermite_torch round=7 via=recipe:advancedrocketrycommunity:thermite_torch prerequisites=[#forge:rods/wooden, #forge:dusts/thermite]
+advancedrocketrycommunity:tin_block round=5 via=recipe:advancedrocketrycommunity:tin_block prerequisites=[#forge:ingots/tin]
+advancedrocketrycommunity:tin_dust round=3 via=recipe:advancedrocketrycommunity:pressing_tin_dust prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:ores/tin]
+advancedrocketrycommunity:tin_ingot round=3 via=recipe:advancedrocketrycommunity:tin_ingot_from_ore_blasting prerequisites=[#forge:ores/tin]
+advancedrocketrycommunity:tin_nugget round=5 via=recipe:advancedrocketrycommunity:tin_nugget prerequisites=[#forge:ingots/tin]
+advancedrocketrycommunity:tin_ore round=1 via=ore:access:overworld|advancedrocketrycommunity:tin_ore prerequisites=[access:overworld]
+advancedrocketrycommunity:tin_plate round=7 via=recipe:advancedrocketrycommunity:pressing_tin_plate prerequisites=[advancedrocketrycommunity:small_plate_press, minecraft:obsidian, minecraft:lever, #forge:storage_blocks/tin]
+advancedrocketrycommunity:titanium_aluminide_block round=13 via=recipe:advancedrocketrycommunity:titanium_aluminide_block prerequisites=[#forge:ingots/titanium_aluminide]
+advancedrocketrycommunity:titanium_aluminide_gear round=15 via=recipe:advancedrocketrycommunity:titanium_aluminide_gear prerequisites=[#forge:rods/titanium_aluminide, #forge:plates/titanium_aluminide, #forge:ingots/titanium_aluminide]
+advancedrocketrycommunity:titanium_aluminide_ingot round=11 via=recipe:advancedrocketrycommunity:arc_furnace_titanium_aluminide prerequisites=[machine:advancedrocketrycommunity:arc_furnace, energy:fe, #forge:ingots/aluminum, #forge:ingots/titanium]
+advancedrocketrycommunity:titanium_aluminide_nugget round=13 via=recipe:advancedrocketrycommunity:titanium_aluminide_nugget prerequisites=[#forge:ingots/titanium_aluminide]
+advancedrocketrycommunity:titanium_aluminide_plate round=13 via=recipe:advancedrocketrycommunity:rolling_titanium_aluminide_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/titanium_aluminide]
+advancedrocketrycommunity:titanium_aluminide_rod round=13 via=recipe:advancedrocketrycommunity:titanium_aluminide_rod prerequisites=[#forge:ingots/titanium_aluminide]
+advancedrocketrycommunity:titanium_aluminide_sheet round=15 via=recipe:advancedrocketrycommunity:rolling_titanium_aluminide_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/titanium_aluminide]
+advancedrocketrycommunity:titanium_block round=11 via=recipe:advancedrocketrycommunity:titanium_block prerequisites=[#forge:ingots/titanium]
+advancedrocketrycommunity:titanium_coil round=11 via=recipe:advancedrocketrycommunity:titanium_coil prerequisites=[#forge:ingots/titanium]
+advancedrocketrycommunity:titanium_gear round=13 via=recipe:advancedrocketrycommunity:titanium_gear prerequisites=[#forge:rods/titanium, #forge:plates/titanium, #forge:ingots/titanium]
+advancedrocketrycommunity:titanium_ingot round=9 via=recipe:advancedrocketrycommunity:arc_furnace_titanium prerequisites=[machine:advancedrocketrycommunity:arc_furnace, energy:fe, #forge:ores/rutile]
+advancedrocketrycommunity:titanium_iridium_block round=18 via=recipe:advancedrocketrycommunity:titanium_iridium_block prerequisites=[#forge:ingots/titanium_iridium]
+advancedrocketrycommunity:titanium_iridium_gear round=20 via=recipe:advancedrocketrycommunity:titanium_iridium_gear prerequisites=[#forge:rods/titanium_iridium, #forge:plates/titanium_iridium, #forge:ingots/titanium_iridium]
+advancedrocketrycommunity:titanium_iridium_ingot round=16 via=recipe:advancedrocketrycommunity:arc_furnace_titanium_iridium prerequisites=[machine:advancedrocketrycommunity:arc_furnace, energy:fe, #forge:ingots/iridium, #forge:ingots/titanium]
+advancedrocketrycommunity:titanium_iridium_nugget round=18 via=recipe:advancedrocketrycommunity:titanium_iridium_nugget prerequisites=[#forge:ingots/titanium_iridium]
+advancedrocketrycommunity:titanium_iridium_plate round=18 via=recipe:advancedrocketrycommunity:rolling_titanium_iridium_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/titanium_iridium]
+advancedrocketrycommunity:titanium_iridium_rod round=18 via=recipe:advancedrocketrycommunity:lathe_titanium_iridium_rod prerequisites=[machine:advancedrocketrycommunity:lathe, energy:fe, #forge:ingots/titanium_iridium]
+advancedrocketrycommunity:titanium_iridium_sheet round=20 via=recipe:advancedrocketrycommunity:rolling_titanium_iridium_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/titanium_iridium]
+advancedrocketrycommunity:titanium_nugget round=11 via=recipe:advancedrocketrycommunity:titanium_nugget prerequisites=[#forge:ingots/titanium]
+advancedrocketrycommunity:titanium_plate round=11 via=recipe:advancedrocketrycommunity:rolling_titanium_plate prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:ingots/titanium]
+advancedrocketrycommunity:titanium_rod round=11 via=recipe:advancedrocketrycommunity:titanium_rod prerequisites=[#forge:ingots/titanium]
+advancedrocketrycommunity:titanium_sheet round=13 via=recipe:advancedrocketrycommunity:rolling_titanium_sheet prerequisites=[machine:advancedrocketrycommunity:rolling_machine, energy:fe, fluid:minecraft:water, #forge:plates/titanium]
+advancedrocketrycommunity:tracking_circuit round=10 via=recipe:advancedrocketrycommunity:precision_tracking_circuit prerequisites=[machine:advancedrocketrycommunity:precision_assembler, energy:fe, #forge:dusts/redstone, minecraft:ender_eye, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:user_interface round=2 via=recipe:advancedrocketrycommunity:user_interface prerequisites=[#forge:dyes/lime, #forge:dusts/redstone, #forge:dusts/glowstone, minecraft:glass_pane]
+advancedrocketrycommunity:violet_crystal_block round=16 via=code:crystal:access:tau_ceti_g|violet prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+advancedrocketrycommunity:warp_controller round=13 via=recipe:advancedrocketrycommunity:warp_controller prerequisites=[#forge:plates/steel, advancedrocketrycommunity:user_interface, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:warp_core round=9 via=recipe:advancedrocketrycommunity:warp_core prerequisites=[advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:data_storage_unit]
+advancedrocketrycommunity:yellow_crystal_block round=16 via=code:crystal:access:tau_ceti_g|yellow prerequisites=[access:tau_ceti_g, minecraft:diamond_pickaxe]
+block:advancedrocketrycommunity:lightwood_leaves round=16 via=code:lightwood:access:tau_ceti_f prerequisites=[access:tau_ceti_f]
+craft:advancedrocketrycommunity:gas_harvester round=12 via=code:gas_harvester prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:gas_intake_module, advancedrocketrycommunity:satellite_solar_module, advancedrocketrycommunity:satellite_cargo_hold, advancedrocketrycommunity:satellite_control_chip, minecraft:redstone, research:lifetime]
+enchantment:advancedrocketrycommunity:space_breathing round=17 via=recipe:advancedrocketrycommunity:chemical_reacting_space_breathing_boots prerequisites=[machine:advancedrocketrycommunity:chemical_reactor, energy:fe, #forge:armors/boots, advancedrocketrycommunity:pipe_seal, #advancedrocketrycommunity:sheets/titanium_aluminide]
+energy:fe round=4 via=energy:197 prerequisites=[advancedrocketrycommunity:combustion_generator]
+fluid:advancedrocketrycommunity:enriched_lava round=15 via=code:pump:enriched_lava prerequisites=[source:advancedrocketrycommunity:enriched_lava, advancedrocketrycommunity:pump, energy:fe]
+fluid:advancedrocketrycommunity:hydrogen round=14 via=code:drain:hydrogen prerequisites=[advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:pressurized_tank]
+fluid:advancedrocketrycommunity:nitrogen round=14 via=code:drain:nitrogen prerequisites=[advancedrocketrycommunity:nitrogen_canister, advancedrocketrycommunity:pressurized_tank]
+fluid:advancedrocketrycommunity:oxygen round=14 via=code:drain:oxygen prerequisites=[advancedrocketrycommunity:oxygen_canister, advancedrocketrycommunity:pressurized_tank]
+fluid:advancedrocketrycommunity:rocket_fuel round=16 via=recipe:advancedrocketrycommunity:chemical_reacting_rocket_fuel prerequisites=[machine:advancedrocketrycommunity:chemical_reactor, energy:fe, fluid:advancedrocketrycommunity:oxygen, fluid:advancedrocketrycommunity:hydrogen]
+fluid:minecraft:lava round=0 via=null prerequisites=[]
+fluid:minecraft:water round=0 via=null prerequisites=[]
+known:advancedrocketrycommunity:cygnus_x1 round=1 via=code:known:advancedrocketrycommunity:cygnus_x1 prerequisites=[access:overworld]
+known:advancedrocketrycommunity:earth round=1 via=code:known:advancedrocketrycommunity:earth prerequisites=[access:overworld]
+known:advancedrocketrycommunity:gas_giant round=12 via=code:discover:advancedrocketrycommunity:gas_giant prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+known:advancedrocketrycommunity:mars round=12 via=code:discover:advancedrocketrycommunity:mars prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+known:advancedrocketrycommunity:moon round=1 via=code:known:advancedrocketrycommunity:moon prerequisites=[access:overworld]
+known:advancedrocketrycommunity:space round=1 via=code:known:advancedrocketrycommunity:space prerequisites=[access:overworld]
+known:advancedrocketrycommunity:tau_ceti round=1 via=code:known:advancedrocketrycommunity:tau_ceti prerequisites=[access:overworld]
+known:advancedrocketrycommunity:tau_ceti_e round=12 via=code:discover:advancedrocketrycommunity:tau_ceti_e prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+known:advancedrocketrycommunity:tau_ceti_f round=12 via=code:discover:advancedrocketrycommunity:tau_ceti_f prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+known:advancedrocketrycommunity:tau_ceti_g round=12 via=code:discover:advancedrocketrycommunity:tau_ceti_g prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+known:advancedrocketrycommunity:venus round=12 via=code:discover:advancedrocketrycommunity:venus prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, research:lifetime]
+machine:advancedrocketrycommunity:arc_furnace round=8 via=machine:arc_furnace prerequisites=[advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:blast_brick, advancedrocketrycommunity:copper_coil, advancedrocketrycommunity:blast_brick, advancedrocketrycommunity:arc_furnace]
+machine:advancedrocketrycommunity:centrifuge round=15 via=machine:centrifuge prerequisites=[advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:fluid_output_hatch, advancedrocketrycommunity:endgame_casing, advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:fluid_input_hatch, advancedrocketrycommunity:motor, advancedrocketrycommunity:item_output_hatch]
+machine:advancedrocketrycommunity:chemical_reactor round=15 via=machine:chemical_reactor prerequisites=[advancedrocketrycommunity:chemical_reactor, advancedrocketrycommunity:fluid_input_hatch, advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:motor, advancedrocketrycommunity:fluid_output_hatch, advancedrocketrycommunity:item_output_hatch]
+machine:advancedrocketrycommunity:crystallizer round=15 via=machine:crystallizer prerequisites=[advancedrocketrycommunity:quartz_crucible, advancedrocketrycommunity:item_output_hatch, advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:fluid_output_hatch, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:fluid_input_hatch]
+machine:advancedrocketrycommunity:cutting_machine round=15 via=machine:cutting_machine prerequisites=[advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:item_output_hatch, advancedrocketrycommunity:motor, advancedrocketrycommunity:saw_blade, advancedrocketrycommunity:power_input_plug]
+machine:advancedrocketrycommunity:lathe round=15 via=machine:lathe prerequisites=[advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor, advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:item_output_hatch]
+machine:advancedrocketrycommunity:precision_assembler round=8 via=machine:precision_assembler prerequisites=[advancedrocketrycommunity:precision_assembler_item_input_port, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:precision_assembler_item_output_port, advancedrocketrycommunity:precision_assembler_energy_input_port]
+machine:advancedrocketrycommunity:precision_laser_etcher round=15 via=machine:precision_laser_etcher prerequisites=[minecraft:acacia_slab, advancedrocketrycommunity:machine_casing, advancedrocketrycommunity:endgame_casing, advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:motor, advancedrocketrycommunity:item_output_hatch]
+machine:advancedrocketrycommunity:rolling_machine round=8 via=machine:rolling_machine prerequisites=[advancedrocketrycommunity:rolling_machine_item_input_port, advancedrocketrycommunity:rolling_machine_fluid_input_port, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine_energy_input_port, advancedrocketrycommunity:rolling_machine_item_output_port, advancedrocketrycommunity:machine_casing]
+minecraft:acacia_log round=0 via=null prerequisites=[]
+minecraft:acacia_planks round=0 via=null prerequisites=[]
+minecraft:acacia_slab round=0 via=null prerequisites=[]
+minecraft:andesite_slab round=0 via=null prerequisites=[]
+minecraft:bamboo_mosaic_slab round=0 via=null prerequisites=[]
+minecraft:bamboo_slab round=0 via=null prerequisites=[]
+minecraft:birch_log round=0 via=null prerequisites=[]
+minecraft:birch_planks round=0 via=null prerequisites=[]
+minecraft:birch_slab round=0 via=null prerequisites=[]
+minecraft:black_stained_glass round=0 via=null prerequisites=[]
+minecraft:black_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:black_wool round=0 via=null prerequisites=[]
+minecraft:blackstone_slab round=0 via=null prerequisites=[]
+minecraft:blaze_powder round=0 via=null prerequisites=[]
+minecraft:blue_stained_glass round=0 via=null prerequisites=[]
+minecraft:blue_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:blue_wool round=0 via=null prerequisites=[]
+minecraft:bone round=0 via=null prerequisites=[]
+minecraft:bone_meal round=0 via=null prerequisites=[]
+minecraft:bookshelf round=0 via=null prerequisites=[]
+minecraft:brick_slab round=0 via=null prerequisites=[]
+minecraft:bricks round=0 via=null prerequisites=[]
+minecraft:brown_stained_glass round=0 via=null prerequisites=[]
+minecraft:brown_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:brown_wool round=0 via=null prerequisites=[]
+minecraft:bucket round=0 via=null prerequisites=[]
+minecraft:chainmail_boots round=0 via=null prerequisites=[]
+minecraft:chainmail_chestplate round=0 via=null prerequisites=[]
+minecraft:chainmail_helmet round=0 via=null prerequisites=[]
+minecraft:chainmail_leggings round=0 via=null prerequisites=[]
+minecraft:charcoal round=0 via=null prerequisites=[]
+minecraft:cherry_log round=0 via=null prerequisites=[]
+minecraft:cherry_planks round=0 via=null prerequisites=[]
+minecraft:cherry_slab round=0 via=null prerequisites=[]
+minecraft:chest round=0 via=null prerequisites=[]
+minecraft:cobbled_deepslate_slab round=0 via=null prerequisites=[]
+minecraft:cobblestone round=0 via=null prerequisites=[]
+minecraft:cobblestone_slab round=0 via=null prerequisites=[]
+minecraft:comparator round=0 via=null prerequisites=[]
+minecraft:copper_block round=0 via=null prerequisites=[]
+minecraft:copper_ingot round=0 via=null prerequisites=[]
+minecraft:copper_ore round=0 via=null prerequisites=[]
+minecraft:crafting_table round=0 via=null prerequisites=[]
+minecraft:crimson_planks round=0 via=null prerequisites=[]
+minecraft:crimson_slab round=0 via=null prerequisites=[]
+minecraft:crimson_stem round=0 via=null prerequisites=[]
+minecraft:crying_obsidian round=0 via=null prerequisites=[]
+minecraft:cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:cut_red_sandstone_slab round=0 via=null prerequisites=[]
+minecraft:cut_sandstone_slab round=0 via=null prerequisites=[]
+minecraft:cyan_stained_glass round=0 via=null prerequisites=[]
+minecraft:cyan_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:cyan_wool round=0 via=null prerequisites=[]
+minecraft:dark_oak_log round=0 via=null prerequisites=[]
+minecraft:dark_oak_planks round=0 via=null prerequisites=[]
+minecraft:dark_oak_slab round=0 via=null prerequisites=[]
+minecraft:dark_prismarine_slab round=0 via=null prerequisites=[]
+minecraft:daylight_detector round=0 via=null prerequisites=[]
+minecraft:deepslate_brick_slab round=0 via=null prerequisites=[]
+minecraft:deepslate_copper_ore round=0 via=null prerequisites=[]
+minecraft:deepslate_gold_ore round=0 via=null prerequisites=[]
+minecraft:deepslate_iron_ore round=0 via=null prerequisites=[]
+minecraft:deepslate_tile_slab round=0 via=null prerequisites=[]
+minecraft:diamond round=0 via=null prerequisites=[]
+minecraft:diamond_boots round=0 via=null prerequisites=[]
+minecraft:diamond_chestplate round=0 via=null prerequisites=[]
+minecraft:diamond_helmet round=0 via=null prerequisites=[]
+minecraft:diamond_leggings round=0 via=null prerequisites=[]
+minecraft:diamond_pickaxe round=0 via=null prerequisites=[]
+minecraft:diorite_slab round=0 via=null prerequisites=[]
+minecraft:dirt round=0 via=null prerequisites=[]
+minecraft:dropper round=0 via=null prerequisites=[]
+minecraft:enchanting_table round=0 via=null prerequisites=[]
+minecraft:end_stone_brick_slab round=0 via=null prerequisites=[]
+minecraft:ender_eye round=0 via=null prerequisites=[]
+minecraft:ender_pearl round=0 via=null prerequisites=[]
+minecraft:exposed_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:feather round=0 via=null prerequisites=[]
+minecraft:furnace round=0 via=null prerequisites=[]
+minecraft:glass round=0 via=null prerequisites=[]
+minecraft:glass_bottle round=0 via=null prerequisites=[]
+minecraft:glass_pane round=0 via=null prerequisites=[]
+minecraft:glowstone round=0 via=null prerequisites=[]
+minecraft:glowstone_dust round=0 via=null prerequisites=[]
+minecraft:gold_block round=0 via=null prerequisites=[]
+minecraft:gold_ingot round=0 via=null prerequisites=[]
+minecraft:gold_nugget round=0 via=null prerequisites=[]
+minecraft:gold_ore round=0 via=null prerequisites=[]
+minecraft:golden_boots round=0 via=null prerequisites=[]
+minecraft:golden_chestplate round=0 via=null prerequisites=[]
+minecraft:golden_helmet round=0 via=null prerequisites=[]
+minecraft:golden_leggings round=0 via=null prerequisites=[]
+minecraft:granite_slab round=0 via=null prerequisites=[]
+minecraft:gray_concrete round=0 via=null prerequisites=[]
+minecraft:gray_stained_glass round=0 via=null prerequisites=[]
+minecraft:gray_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:gray_wool round=0 via=null prerequisites=[]
+minecraft:green_stained_glass round=0 via=null prerequisites=[]
+minecraft:green_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:green_wool round=0 via=null prerequisites=[]
+minecraft:hopper round=0 via=null prerequisites=[]
+minecraft:iron_bars round=0 via=null prerequisites=[]
+minecraft:iron_block round=0 via=null prerequisites=[]
+minecraft:iron_boots round=0 via=null prerequisites=[]
+minecraft:iron_chestplate round=0 via=null prerequisites=[]
+minecraft:iron_helmet round=0 via=null prerequisites=[]
+minecraft:iron_ingot round=0 via=null prerequisites=[]
+minecraft:iron_leggings round=0 via=null prerequisites=[]
+minecraft:iron_nugget round=0 via=null prerequisites=[]
+minecraft:iron_ore round=0 via=null prerequisites=[]
+minecraft:jungle_log round=0 via=null prerequisites=[]
+minecraft:jungle_planks round=0 via=null prerequisites=[]
+minecraft:jungle_slab round=0 via=null prerequisites=[]
+minecraft:lapis_lazuli round=0 via=null prerequisites=[]
+minecraft:leather_boots round=0 via=null prerequisites=[]
+minecraft:leather_chestplate round=0 via=null prerequisites=[]
+minecraft:leather_helmet round=0 via=null prerequisites=[]
+minecraft:leather_leggings round=0 via=null prerequisites=[]
+minecraft:lever round=0 via=null prerequisites=[]
+minecraft:light_blue_stained_glass round=0 via=null prerequisites=[]
+minecraft:light_blue_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:light_blue_wool round=0 via=null prerequisites=[]
+minecraft:light_gray_stained_glass round=0 via=null prerequisites=[]
+minecraft:light_gray_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:light_gray_wool round=0 via=null prerequisites=[]
+minecraft:lightning_rod round=0 via=null prerequisites=[]
+minecraft:lime_dye round=0 via=null prerequisites=[]
+minecraft:lime_stained_glass round=0 via=null prerequisites=[]
+minecraft:lime_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:lime_wool round=0 via=null prerequisites=[]
+minecraft:magenta_stained_glass round=0 via=null prerequisites=[]
+minecraft:magenta_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:magenta_wool round=0 via=null prerequisites=[]
+minecraft:magma_cream round=0 via=null prerequisites=[]
+minecraft:mangrove_log round=0 via=null prerequisites=[]
+minecraft:mangrove_planks round=0 via=null prerequisites=[]
+minecraft:mangrove_slab round=0 via=null prerequisites=[]
+minecraft:mossy_cobblestone_slab round=0 via=null prerequisites=[]
+minecraft:mossy_stone_brick_slab round=0 via=null prerequisites=[]
+minecraft:mud_brick_slab round=0 via=null prerequisites=[]
+minecraft:nether_brick_slab round=0 via=null prerequisites=[]
+minecraft:nether_gold_ore round=0 via=null prerequisites=[]
+minecraft:netherite_boots round=0 via=null prerequisites=[]
+minecraft:netherite_chestplate round=0 via=null prerequisites=[]
+minecraft:netherite_helmet round=0 via=null prerequisites=[]
+minecraft:netherite_leggings round=0 via=null prerequisites=[]
+minecraft:netherrack round=0 via=null prerequisites=[]
+minecraft:oak_log round=0 via=null prerequisites=[]
+minecraft:oak_planks round=0 via=null prerequisites=[]
+minecraft:oak_slab round=0 via=null prerequisites=[]
+minecraft:observer round=0 via=null prerequisites=[]
+minecraft:obsidian round=0 via=null prerequisites=[]
+minecraft:orange_stained_glass round=0 via=null prerequisites=[]
+minecraft:orange_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:orange_wool round=0 via=null prerequisites=[]
+minecraft:oxidized_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:pink_stained_glass round=0 via=null prerequisites=[]
+minecraft:pink_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:pink_wool round=0 via=null prerequisites=[]
+minecraft:piston round=0 via=null prerequisites=[]
+minecraft:polished_andesite_slab round=0 via=null prerequisites=[]
+minecraft:polished_blackstone_brick_slab round=0 via=null prerequisites=[]
+minecraft:polished_blackstone_slab round=0 via=null prerequisites=[]
+minecraft:polished_deepslate_slab round=0 via=null prerequisites=[]
+minecraft:polished_diorite_slab round=0 via=null prerequisites=[]
+minecraft:polished_granite_slab round=0 via=null prerequisites=[]
+minecraft:prismarine_brick_slab round=0 via=null prerequisites=[]
+minecraft:prismarine_slab round=0 via=null prerequisites=[]
+minecraft:purple_stained_glass round=0 via=null prerequisites=[]
+minecraft:purple_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:purple_wool round=0 via=null prerequisites=[]
+minecraft:purpur_slab round=0 via=null prerequisites=[]
+minecraft:quartz round=0 via=null prerequisites=[]
+minecraft:quartz_slab round=0 via=null prerequisites=[]
+minecraft:red_nether_brick_slab round=0 via=null prerequisites=[]
+minecraft:red_sandstone_slab round=0 via=null prerequisites=[]
+minecraft:red_stained_glass round=0 via=null prerequisites=[]
+minecraft:red_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:red_wool round=0 via=null prerequisites=[]
+minecraft:redstone round=0 via=null prerequisites=[]
+minecraft:redstone_block round=0 via=null prerequisites=[]
+minecraft:redstone_torch round=0 via=null prerequisites=[]
+minecraft:sand round=0 via=null prerequisites=[]
+minecraft:sandstone_slab round=0 via=null prerequisites=[]
+minecraft:shears round=0 via=null prerequisites=[]
+minecraft:smithing_table round=0 via=null prerequisites=[]
+minecraft:smooth_quartz_slab round=0 via=null prerequisites=[]
+minecraft:smooth_red_sandstone_slab round=0 via=null prerequisites=[]
+minecraft:smooth_sandstone_slab round=0 via=null prerequisites=[]
+minecraft:smooth_stone_slab round=0 via=null prerequisites=[]
+minecraft:spruce_log round=0 via=null prerequisites=[]
+minecraft:spruce_planks round=0 via=null prerequisites=[]
+minecraft:spruce_slab round=0 via=null prerequisites=[]
+minecraft:spyglass round=0 via=null prerequisites=[]
+minecraft:stick round=0 via=null prerequisites=[]
+minecraft:stone round=0 via=null prerequisites=[]
+minecraft:stone_brick_slab round=0 via=null prerequisites=[]
+minecraft:stone_slab round=0 via=null prerequisites=[]
+minecraft:tinted_glass round=0 via=null prerequisites=[]
+minecraft:tnt round=0 via=null prerequisites=[]
+minecraft:trapped_chest round=0 via=null prerequisites=[]
+minecraft:turtle_helmet round=0 via=null prerequisites=[]
+minecraft:warped_planks round=0 via=null prerequisites=[]
+minecraft:warped_slab round=0 via=null prerequisites=[]
+minecraft:warped_stem round=0 via=null prerequisites=[]
+minecraft:waxed_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:waxed_exposed_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:waxed_oxidized_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:waxed_weathered_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:weathered_cut_copper_slab round=0 via=null prerequisites=[]
+minecraft:white_stained_glass round=0 via=null prerequisites=[]
+minecraft:white_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:white_wool round=0 via=null prerequisites=[]
+minecraft:yellow_stained_glass round=0 via=null prerequisites=[]
+minecraft:yellow_stained_glass_pane round=0 via=null prerequisites=[]
+minecraft:yellow_wool round=0 via=null prerequisites=[]
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e, op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e, op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e, op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e, op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid round=16 via=operational:op:asteroid:claim:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid prerequisites=[op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus, op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid, advancedrocketrycommunity:satellite_terminal]
+op:beacon:active round=15 via=operational:op:beacon:active prerequisites=[op:formed:planetary_beacon, access:overworld]
+op:black-hole:generate:advancedrocketrycommunity:cygnus_x1 round=16 via=operational:op:black-hole:generate:advancedrocketrycommunity:cygnus_x1 prerequisites=[op:formed:black_hole_generator, op:station:advancedrocketrycommunity:cygnus_x1, minecraft:cobblestone]
+op:built:advancedrocketrycommunity:asteroid_miner round=14 via=operational:op:built:advancedrocketrycommunity:asteroid_miner prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:asteroid_drill_module, advancedrocketrycommunity:satellite_control_chip, advancedrocketrycommunity:satellite_solar_module, minecraft:redstone, op:research:lifetime:240, advancedrocketrycommunity:satellite_cargo_hold]
+op:built:advancedrocketrycommunity:gas_harvester round=14 via=operational:op:built:advancedrocketrycommunity:gas_harvester prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:gas_intake_module, advancedrocketrycommunity:satellite_control_chip, advancedrocketrycommunity:satellite_solar_module, minecraft:redstone, op:research:lifetime:360, advancedrocketrycommunity:satellite_cargo_hold]
+op:built:advancedrocketrycommunity:solar_satellite round=14 via=operational:op:built:advancedrocketrycommunity:solar_satellite prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:solar_transmitter_module, advancedrocketrycommunity:satellite_control_chip, advancedrocketrycommunity:satellite_solar_module, minecraft:redstone, op:research:lifetime:120]
+op:built:advancedrocketrycommunity:survey_satellite round=9 via=operational:op:built:advancedrocketrycommunity:survey_satellite prerequisites=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:survey_scanner_module, advancedrocketrycommunity:satellite_control_chip, advancedrocketrycommunity:satellite_solar_module, minecraft:redstone, op:research:lifetime:0, advancedrocketrycommunity:data_storage_unit, advancedrocketrycommunity:satellite_battery]
+op:data:built round=10 via=operational:op:data:built prerequisites=[advancedrocketrycommunity:satellite_terminal, advancedrocketrycommunity:satellite_chassis, advancedrocketrycommunity:satellite_solar_module, advancedrocketrycommunity:data_storage_unit, advancedrocketrycommunity:satellite_control_chip, minecraft:redstone]
+op:data:claim:advancedrocketrycommunity:earth round=12 via=operational:op:data:claim:advancedrocketrycommunity:earth prerequisites=[op:data:mission:advancedrocketrycommunity:earth]
+op:data:claim:advancedrocketrycommunity:gas_giant round=12 via=operational:op:data:claim:advancedrocketrycommunity:gas_giant prerequisites=[op:data:mission:advancedrocketrycommunity:gas_giant]
+op:data:claim:advancedrocketrycommunity:mars round=12 via=operational:op:data:claim:advancedrocketrycommunity:mars prerequisites=[op:data:mission:advancedrocketrycommunity:mars]
+op:data:claim:advancedrocketrycommunity:moon round=12 via=operational:op:data:claim:advancedrocketrycommunity:moon prerequisites=[op:data:mission:advancedrocketrycommunity:moon]
+op:data:claim:advancedrocketrycommunity:space round=12 via=operational:op:data:claim:advancedrocketrycommunity:space prerequisites=[op:data:mission:advancedrocketrycommunity:space]
+op:data:claim:advancedrocketrycommunity:tau_ceti_e round=12 via=operational:op:data:claim:advancedrocketrycommunity:tau_ceti_e prerequisites=[op:data:mission:advancedrocketrycommunity:tau_ceti_e]
+op:data:claim:advancedrocketrycommunity:tau_ceti_f round=12 via=operational:op:data:claim:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:data:mission:advancedrocketrycommunity:tau_ceti_f]
+op:data:claim:advancedrocketrycommunity:tau_ceti_g round=12 via=operational:op:data:claim:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:data:mission:advancedrocketrycommunity:tau_ceti_g]
+op:data:claim:advancedrocketrycommunity:venus round=12 via=operational:op:data:claim:advancedrocketrycommunity:venus prerequisites=[op:data:mission:advancedrocketrycommunity:venus]
+op:data:mission:advancedrocketrycommunity:earth round=11 via=operational:op:data:mission:advancedrocketrycommunity:earth prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:gas_giant round=11 via=operational:op:data:mission:advancedrocketrycommunity:gas_giant prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:mars round=11 via=operational:op:data:mission:advancedrocketrycommunity:mars prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:moon round=11 via=operational:op:data:mission:advancedrocketrycommunity:moon prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:space round=11 via=operational:op:data:mission:advancedrocketrycommunity:space prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:tau_ceti_e round=11 via=operational:op:data:mission:advancedrocketrycommunity:tau_ceti_e prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:tau_ceti_f round=11 via=operational:op:data:mission:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:tau_ceti_g round=11 via=operational:op:data:mission:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:data:mission:advancedrocketrycommunity:venus round=11 via=operational:op:data:mission:advancedrocketrycommunity:venus prerequisites=[op:data:built, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:elevator:bound round=13 via=operational:op:elevator:bound prerequisites=[op:station:advancedrocketrycommunity:earth, advancedrocketrycommunity:elevator_anchor, advancedrocketrycommunity:elevator_terminal, access:overworld]
+op:elevator:cargo round=14 via=operational:op:elevator:cargo prerequisites=[op:elevator:bound, energy:fe, minecraft:cobblestone]
+op:elevator:ride round=14 via=operational:op:elevator:ride prerequisites=[op:elevator:bound, energy:fe]
+op:formed:astrobody_data_processor round=15 via=operational:op:formed:astrobody_data_processor prerequisites=[advancedrocketrycommunity:astrobody_data_processor, minecraft:stone_slab, advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:machine_casing]
+op:formed:black_hole_generator round=9 via=operational:op:formed:black_hole_generator prerequisites=[advancedrocketrycommunity:black_hole_generator, advancedrocketrycommunity:endgame_casing, minecraft:obsidian, minecraft:crying_obsidian]
+op:formed:observatory round=15 via=operational:op:formed:observatory prerequisites=[advancedrocketrycommunity:observatory, advancedrocketrycommunity:machine_casing, minecraft:glass, minecraft:iron_block, advancedrocketrycommunity:motor]
+op:formed:orbital_laser_drill round=9 via=operational:op:formed:orbital_laser_drill prerequisites=[advancedrocketrycommunity:orbital_laser_drill, advancedrocketrycommunity:endgame_casing]
+op:formed:planetary_beacon round=14 via=operational:op:formed:planetary_beacon prerequisites=[advancedrocketrycommunity:planetary_beacon, minecraft:redstone_block, advancedrocketrycommunity:machine_casing]
+op:formed:railgun round=9 via=operational:op:formed:railgun prerequisites=[advancedrocketrycommunity:railgun, advancedrocketrycommunity:endgame_casing, minecraft:iron_block]
+op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:hydrogen_canister round=16 via=operational:op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:hydrogen_canister prerequisites=[op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal]
+op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:nitrogen_canister round=16 via=operational:op:gas:claim:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:nitrogen_canister prerequisites=[op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal]
+op:gravity:active round=8 via=operational:op:gravity:active prerequisites=[advancedrocketrycommunity:gravity_field_controller, energy:fe, access:overworld]
+op:ground:analysis:advancedrocketrycommunity:earth round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:earth prerequisites=[op:ground:data-unit:advancedrocketrycommunity:earth, op:formed:astrobody_data_processor, energy:fe]
+op:ground:analysis:advancedrocketrycommunity:mars round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:mars prerequisites=[op:ground:data-unit:advancedrocketrycommunity:mars, op:formed:astrobody_data_processor, energy:fe]
+op:ground:analysis:advancedrocketrycommunity:moon round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:moon prerequisites=[op:ground:data-unit:advancedrocketrycommunity:moon, op:formed:astrobody_data_processor, energy:fe]
+op:ground:analysis:advancedrocketrycommunity:tau_ceti_f round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f, op:formed:astrobody_data_processor, energy:fe]
+op:ground:analysis:advancedrocketrycommunity:tau_ceti_g round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g, op:formed:astrobody_data_processor, energy:fe]
+op:ground:analysis:advancedrocketrycommunity:venus round=18 via=operational:op:ground:analysis:advancedrocketrycommunity:venus prerequisites=[op:ground:data-unit:advancedrocketrycommunity:venus, op:formed:astrobody_data_processor, energy:fe]
+op:ground:credit:advancedrocketrycommunity:earth round=19 via=operational:op:ground:credit:advancedrocketrycommunity:earth prerequisites=[op:ground:analysis:advancedrocketrycommunity:earth]
+op:ground:credit:advancedrocketrycommunity:mars round=19 via=operational:op:ground:credit:advancedrocketrycommunity:mars prerequisites=[op:ground:analysis:advancedrocketrycommunity:mars]
+op:ground:credit:advancedrocketrycommunity:moon round=19 via=operational:op:ground:credit:advancedrocketrycommunity:moon prerequisites=[op:ground:analysis:advancedrocketrycommunity:moon]
+op:ground:credit:advancedrocketrycommunity:tau_ceti_f round=19 via=operational:op:ground:credit:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:ground:analysis:advancedrocketrycommunity:tau_ceti_f]
+op:ground:credit:advancedrocketrycommunity:tau_ceti_g round=19 via=operational:op:ground:credit:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:ground:analysis:advancedrocketrycommunity:tau_ceti_g]
+op:ground:credit:advancedrocketrycommunity:venus round=19 via=operational:op:ground:credit:advancedrocketrycommunity:venus prerequisites=[op:ground:analysis:advancedrocketrycommunity:venus]
+op:ground:data-unit:advancedrocketrycommunity:earth round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:earth prerequisites=[op:ground:start:advancedrocketrycommunity:earth, energy:fe]
+op:ground:data-unit:advancedrocketrycommunity:mars round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:mars prerequisites=[op:ground:start:advancedrocketrycommunity:mars, energy:fe]
+op:ground:data-unit:advancedrocketrycommunity:moon round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:moon prerequisites=[op:ground:start:advancedrocketrycommunity:moon, energy:fe]
+op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:ground:start:advancedrocketrycommunity:tau_ceti_f, energy:fe]
+op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:ground:start:advancedrocketrycommunity:tau_ceti_g, energy:fe]
+op:ground:data-unit:advancedrocketrycommunity:venus round=17 via=operational:op:ground:data-unit:advancedrocketrycommunity:venus prerequisites=[op:ground:start:advancedrocketrycommunity:venus, energy:fe]
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:earth]
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:earth]
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:earth]
+op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:earth]
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:mars]
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:mars]
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:mars]
+op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:mars]
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:moon]
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:moon]
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:moon]
+op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:moon]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_f:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_f]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]
+op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:tau_ceti_g:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:tau_ceti_g]
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:venus]
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:venus]
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:venus]
+op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid round=18 via=operational:op:ground:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid prerequisites=[op:ground:data-unit:advancedrocketrycommunity:venus]
+op:ground:start:advancedrocketrycommunity:earth round=16 via=operational:op:ground:start:advancedrocketrycommunity:earth prerequisites=[op:formed:observatory, access:overworld]
+op:ground:start:advancedrocketrycommunity:mars round=16 via=operational:op:ground:start:advancedrocketrycommunity:mars prerequisites=[op:formed:observatory, access:mars]
+op:ground:start:advancedrocketrycommunity:moon round=16 via=operational:op:ground:start:advancedrocketrycommunity:moon prerequisites=[op:formed:observatory, access:moon]
+op:ground:start:advancedrocketrycommunity:tau_ceti_f round=16 via=operational:op:ground:start:advancedrocketrycommunity:tau_ceti_f prerequisites=[op:formed:observatory, access:tau_ceti_f]
+op:ground:start:advancedrocketrycommunity:tau_ceti_g round=16 via=operational:op:ground:start:advancedrocketrycommunity:tau_ceti_g prerequisites=[op:formed:observatory, access:tau_ceti_g]
+op:ground:start:advancedrocketrycommunity:venus round=16 via=operational:op:ground:start:advancedrocketrycommunity:venus prerequisites=[op:formed:observatory, access:venus]
+op:laser:logical round=13 via=operational:op:laser:logical prerequisites=[op:formed:orbital_laser_drill, op:station:advancedrocketrycommunity:earth, advancedrocketrycommunity:laser_lens, energy:fe]
+op:laser:physical round=13 via=operational:op:laser:physical prerequisites=[op:formed:orbital_laser_drill, op:station:advancedrocketrycommunity:earth, advancedrocketrycommunity:laser_lens, energy:fe, advancedrocketrycommunity:laser_target, access:overworld]
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth round=15 via=operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:earth prerequisites=[op:built:advancedrocketrycommunity:asteroid_miner, op:research:lifetime:240, known:advancedrocketrycommunity:earth, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars round=15 via=operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:mars prerequisites=[op:built:advancedrocketrycommunity:asteroid_miner, op:research:lifetime:240, known:advancedrocketrycommunity:mars, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon round=15 via=operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:moon prerequisites=[op:built:advancedrocketrycommunity:asteroid_miner, op:research:lifetime:240, known:advancedrocketrycommunity:moon, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e round=15 via=operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:tau_ceti_e prerequisites=[op:built:advancedrocketrycommunity:asteroid_miner, op:research:lifetime:240, known:advancedrocketrycommunity:tau_ceti_e, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus round=15 via=operational:op:launched:advancedrocketrycommunity:asteroid_miner:advancedrocketrycommunity:venus prerequisites=[op:built:advancedrocketrycommunity:asteroid_miner, op:research:lifetime:240, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant round=15 via=operational:op:launched:advancedrocketrycommunity:gas_harvester:advancedrocketrycommunity:gas_giant prerequisites=[op:built:advancedrocketrycommunity:gas_harvester, op:research:lifetime:360, known:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth round=15 via=operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth prerequisites=[op:built:advancedrocketrycommunity:solar_satellite, op:research:lifetime:120, known:advancedrocketrycommunity:earth, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars round=15 via=operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars prerequisites=[op:built:advancedrocketrycommunity:solar_satellite, op:research:lifetime:120, known:advancedrocketrycommunity:mars, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon round=15 via=operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon prerequisites=[op:built:advancedrocketrycommunity:solar_satellite, op:research:lifetime:120, known:advancedrocketrycommunity:moon, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus round=15 via=operational:op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus prerequisites=[op:built:advancedrocketrycommunity:solar_satellite, op:research:lifetime:120, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth round=10 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:earth, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant round=13 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars round=13 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:mars, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon round=10 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:moon, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e round=13 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:tau_ceti_e, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus round=13 via=operational:op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus prerequisites=[op:built:advancedrocketrycommunity:survey_satellite, op:research:lifetime:0, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+op:railgun:local round=10 via=operational:op:railgun:local prerequisites=[op:formed:railgun, energy:fe, minecraft:cobblestone, access:overworld]
+op:railgun:orbital round=13 via=operational:op:railgun:orbital prerequisites=[op:formed:railgun, energy:fe, minecraft:cobblestone, access:overworld, op:station:advancedrocketrycommunity:earth]
+op:research:lifetime:0 round=1 via=operational:op:research:lifetime:0 prerequisites=[access:overworld]
+op:research:lifetime:120 round=13 via=operational:op:research:lifetime:120 prerequisites=[op:data:claim:advancedrocketrycommunity:earth]
+op:research:lifetime:240 round=13 via=operational:op:research:lifetime:240 prerequisites=[op:data:claim:advancedrocketrycommunity:earth]
+op:research:lifetime:360 round=13 via=operational:op:research:lifetime:360 prerequisites=[op:data:claim:advancedrocketrycommunity:earth]
+op:solar:array round=8 via=operational:op:solar:array prerequisites=[advancedrocketrycommunity:solar_array, advancedrocketrycommunity:solar_array_panel, advancedrocketrycommunity:power_output_plug, access:overworld]
+op:solar:receive:advancedrocketrycommunity:earth round=16 via=operational:op:solar:receive:advancedrocketrycommunity:earth prerequisites=[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:earth, advancedrocketrycommunity:microwave_receiver]
+op:solar:receive:advancedrocketrycommunity:mars round=16 via=operational:op:solar:receive:advancedrocketrycommunity:mars prerequisites=[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:mars, advancedrocketrycommunity:microwave_receiver]
+op:solar:receive:advancedrocketrycommunity:moon round=16 via=operational:op:solar:receive:advancedrocketrycommunity:moon prerequisites=[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:moon, advancedrocketrycommunity:microwave_receiver]
+op:solar:receive:advancedrocketrycommunity:venus round=16 via=operational:op:solar:receive:advancedrocketrycommunity:venus prerequisites=[op:launched:advancedrocketrycommunity:solar_satellite:advancedrocketrycommunity:venus, advancedrocketrycommunity:microwave_receiver]
+op:solar:single round=5 via=operational:op:solar:single prerequisites=[advancedrocketrycommunity:solar_generator, access:overworld]
+op:station:advancedrocketrycommunity:cygnus_x1 round=15 via=operational:op:station:advancedrocketrycommunity:cygnus_x1 prerequisites=[orbit:advancedrocketrycommunity:cygnus_x1, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:earth round=12 via=operational:op:station:advancedrocketrycommunity:earth prerequisites=[orbit:advancedrocketrycommunity:earth, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:gas_giant round=14 via=operational:op:station:advancedrocketrycommunity:gas_giant prerequisites=[orbit:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:mars round=15 via=operational:op:station:advancedrocketrycommunity:mars prerequisites=[orbit:advancedrocketrycommunity:mars, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:moon round=13 via=operational:op:station:advancedrocketrycommunity:moon prerequisites=[orbit:advancedrocketrycommunity:moon, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:tau_ceti_e round=15 via=operational:op:station:advancedrocketrycommunity:tau_ceti_e prerequisites=[orbit:advancedrocketrycommunity:tau_ceti_e, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:tau_ceti_f round=15 via=operational:op:station:advancedrocketrycommunity:tau_ceti_f prerequisites=[orbit:advancedrocketrycommunity:tau_ceti_f, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:tau_ceti_g round=15 via=operational:op:station:advancedrocketrycommunity:tau_ceti_g prerequisites=[orbit:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:station_deployment_kit]
+op:station:advancedrocketrycommunity:venus round=15 via=operational:op:station:advancedrocketrycommunity:venus prerequisites=[orbit:advancedrocketrycommunity:venus, advancedrocketrycommunity:station_deployment_kit]
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:earth]
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:earth]
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:earth]
+op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:earth:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:earth]
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:gas_giant]
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:gas_giant]
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:gas_giant]
+op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:gas_giant:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:gas_giant]
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:mars]
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:mars]
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:mars]
+op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:mars:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:mars]
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:moon]
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:moon]
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:moon]
+op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid round=12 via=operational:op:survey:instance:advancedrocketrycommunity:moon:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:moon]
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]
+op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:tau_ceti_e:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:tau_ceti_e]
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:light_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:venus]
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:rich_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:venus]
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:small_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:venus]
+op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid round=15 via=operational:op:survey:instance:advancedrocketrycommunity:venus:advancedrocketrycommunity:strange_asteroid prerequisites=[op:survey:instances:advancedrocketrycommunity:venus]
+op:survey:instances:advancedrocketrycommunity:earth round=11 via=operational:op:survey:instances:advancedrocketrycommunity:earth prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth]
+op:survey:instances:advancedrocketrycommunity:gas_giant round=14 via=operational:op:survey:instances:advancedrocketrycommunity:gas_giant prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:gas_giant]
+op:survey:instances:advancedrocketrycommunity:mars round=14 via=operational:op:survey:instances:advancedrocketrycommunity:mars prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars]
+op:survey:instances:advancedrocketrycommunity:moon round=11 via=operational:op:survey:instances:advancedrocketrycommunity:moon prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon]
+op:survey:instances:advancedrocketrycommunity:tau_ceti_e round=14 via=operational:op:survey:instances:advancedrocketrycommunity:tau_ceti_e prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:tau_ceti_e]
+op:survey:instances:advancedrocketrycommunity:venus round=14 via=operational:op:survey:instances:advancedrocketrycommunity:venus prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus]
+op:survey:scan:advancedrocketrycommunity:earth round=11 via=operational:op:survey:scan:advancedrocketrycommunity:earth prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:earth, access:overworld]
+op:survey:scan:advancedrocketrycommunity:mars round=14 via=operational:op:survey:scan:advancedrocketrycommunity:mars prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:mars, access:mars]
+op:survey:scan:advancedrocketrycommunity:moon round=12 via=operational:op:survey:scan:advancedrocketrycommunity:moon prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:moon, access:moon]
+op:survey:scan:advancedrocketrycommunity:venus round=14 via=operational:op:survey:scan:advancedrocketrycommunity:venus prerequisites=[op:launched:advancedrocketrycommunity:survey_satellite:advancedrocketrycommunity:venus, access:venus]
+op:tree:arc_furnace round=8 via=operational:op:tree:arc_furnace prerequisites=[advancedrocketrycommunity:arc_furnace]
+op:tree:block_press round=3 via=operational:op:tree:block_press prerequisites=[advancedrocketrycommunity:small_plate_press]
+op:tree:crystallizer round=15 via=operational:op:tree:crystallizer prerequisites=[advancedrocketrycommunity:crystallizer]
+op:tree:dilithium round=17 via=operational:op:tree:dilithium prerequisites=[advancedrocketrycommunity:dilithium_crystal]
+op:tree:electrolysis round=8 via=operational:op:tree:electrolysis prerequisites=[advancedrocketrycommunity:electrolyzer]
+op:tree:first_station_warp round=14 via=operational:op:tree:first_station_warp prerequisites=[op:station:advancedrocketrycommunity:moon]
+op:tree:formed_multiblock round=9 via=operational:op:tree:formed_multiblock prerequisites=[machine:advancedrocketrycommunity:rolling_machine]
+op:tree:lathe round=15 via=operational:op:tree:lathe prerequisites=[advancedrocketrycommunity:lathe]
+op:tree:moon_landing round=12 via=operational:op:tree:moon_landing prerequisites=[access:moon]
+op:tree:moon_surface_visit round=12 via=operational:op:tree:moon_surface_visit prerequisites=[access:moon]
+op:tree:one_small_step round=12 via=operational:op:tree:one_small_step prerequisites=[access:moon]
+op:tree:rolling round=8 via=operational:op:tree:rolling prerequisites=[advancedrocketrycommunity:rolling_machine]
+op:tree:root round=1 via=operational:op:tree:root prerequisites=[minecraft:crafting_table]
+op:tree:seat-tnt round=3 via=operational:op:tree:seat-tnt prerequisites=[advancedrocketrycommunity:rocket_seat, minecraft:tnt]
+op:tree:seat_on_tnt round=4 via=operational:op:tree:seat_on_tnt prerequisites=[op:tree:seat-tnt]
+op:tree:station_warp round=14 via=operational:op:tree:station_warp prerequisites=[op:station:advancedrocketrycommunity:moon]
+op:tree:suited_up round=6 via=operational:op:tree:suited_up prerequisites=[advancedrocketrycommunity:space_suit_helmet, advancedrocketrycommunity:space_suit_chestplate, advancedrocketrycommunity:space_suit_leggings, advancedrocketrycommunity:space_suit_boots]
+op:tree:warp_core round=10 via=operational:op:tree:warp_core prerequisites=[advancedrocketrycommunity:warp_core]
+orbit:advancedrocketrycommunity:cygnus_x1 round=14 via=code:warp:advancedrocketrycommunity:cygnus_x1 prerequisites=[access:space, advancedrocketrycommunity:station_deployment_kit, advancedrocketrycommunity:warp_core, advancedrocketrycommunity:warp_controller, energy:fe, known:advancedrocketrycommunity:cygnus_x1]
+orbit:advancedrocketrycommunity:earth round=11 via=code:flight:advancedrocketrycommunity:earth_surface_orbit prerequisites=[access:overworld, travel:rocket, known:advancedrocketrycommunity:earth]
+orbit:advancedrocketrycommunity:gas_giant round=13 via=code:flight:advancedrocketrycommunity:earth_gas_orbit prerequisites=[access:overworld, travel:rocket, known:advancedrocketrycommunity:gas_giant]
+orbit:advancedrocketrycommunity:mars round=14 via=code:flight:advancedrocketrycommunity:mars_surface_orbit prerequisites=[access:mars, travel:rocket, known:advancedrocketrycommunity:mars]
+orbit:advancedrocketrycommunity:moon round=12 via=code:flight:advancedrocketrycommunity:moon_surface_orbit prerequisites=[access:moon, travel:rocket, known:advancedrocketrycommunity:moon]
+orbit:advancedrocketrycommunity:tau_ceti_e round=14 via=code:warp:advancedrocketrycommunity:tau_ceti_e prerequisites=[access:space, advancedrocketrycommunity:station_deployment_kit, advancedrocketrycommunity:warp_core, advancedrocketrycommunity:warp_controller, energy:fe, known:advancedrocketrycommunity:tau_ceti_e]
+orbit:advancedrocketrycommunity:tau_ceti_f round=14 via=code:warp:advancedrocketrycommunity:tau_ceti_f prerequisites=[access:space, advancedrocketrycommunity:station_deployment_kit, advancedrocketrycommunity:warp_core, advancedrocketrycommunity:warp_controller, energy:fe, known:advancedrocketrycommunity:tau_ceti_f]
+orbit:advancedrocketrycommunity:tau_ceti_g round=14 via=code:warp:advancedrocketrycommunity:tau_ceti_g prerequisites=[access:space, advancedrocketrycommunity:station_deployment_kit, advancedrocketrycommunity:warp_core, advancedrocketrycommunity:warp_controller, energy:fe, known:advancedrocketrycommunity:tau_ceti_g]
+orbit:advancedrocketrycommunity:venus round=14 via=code:flight:advancedrocketrycommunity:venus_surface_orbit prerequisites=[access:venus, travel:rocket, known:advancedrocketrycommunity:venus]
+research:lifetime round=11 via=code:research prerequisites=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_terminal, minecraft:redstone]
+source:advancedrocketrycommunity:enriched_lava round=14 via=code:volcano prerequisites=[access:venus]
+tool:silk_touch round=1 via=code:silk_touch prerequisites=[minecraft:enchanting_table, minecraft:bookshelf, minecraft:lapis_lazuli, minecraft:diamond_pickaxe]
+travel:rocket round=10 via=rocket:198 prerequisites=[advancedrocketrycommunity:rocket_assembler, advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:rocket_fuel_tank, advancedrocketrycommunity:rocket_seat, advancedrocketrycommunity:guidance_computer, advancedrocketrycommunity:fuel_loader, advancedrocketrycommunity:rocket_fuel_cell]
+
+UNREACHABLE / BLOCKING PATHS (full alternatives are in EDGES)
+#forge:dusts/silicon optional compatibility input path=[#forge:dusts/silicon, advancedrocketrycommunity:silicon_dust]
+#forge:dusts/steel optional compatibility input path=[#forge:dusts/steel, advancedrocketrycommunity:steel_dust]
+#forge:dusts/titanium optional compatibility input path=[#forge:dusts/titanium, advancedrocketrycommunity:titanium_dust]
+#forge:dusts/titanium_aluminide optional compatibility input path=[#forge:dusts/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_dust]
+#forge:dusts/titanium_iridium optional compatibility input path=[#forge:dusts/titanium_iridium, advancedrocketrycommunity:titanium_iridium_dust]
+advancedrocketrycommunity:silicon_dust optional compatibility input path=[advancedrocketrycommunity:silicon_dust]
+advancedrocketrycommunity:steel_dust optional compatibility input path=[advancedrocketrycommunity:steel_dust]
+advancedrocketrycommunity:titanium_aluminide_dust optional compatibility input path=[advancedrocketrycommunity:titanium_aluminide_dust]
+advancedrocketrycommunity:titanium_dust optional compatibility input path=[advancedrocketrycommunity:titanium_dust]
+advancedrocketrycommunity:titanium_iridium_dust optional compatibility input path=[advancedrocketrycommunity:titanium_iridium_dust]
+
+RESIDUAL CYCLIC NODES (union-of-blockers cycles; not an SCC-based claim of exclusive causation)
+
+ALL STRUCTURALLY CYCLIC NODES (union of alternatives, not necessarily a hard lock)
+#advancedrocketrycommunity:boules/silicon reachable cycle=[#advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule, energy:fe, advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon]
+#advancedrocketrycommunity:circuits/advanced reachable cycle=[#advancedrocketrycommunity:circuits/advanced, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, known:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:data_storage_unit, #advancedrocketrycommunity:circuits/advanced]
+#advancedrocketrycommunity:circuits/basic reachable cycle=[#advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic]
+#advancedrocketrycommunity:coils/copper reachable cycle=[#advancedrocketrycommunity:coils/copper, advancedrocketrycommunity:copper_coil, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, machine:advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:motor, #advancedrocketrycommunity:coils/copper]
+#advancedrocketrycommunity:coils/gold reachable cycle=[#advancedrocketrycommunity:coils/gold, advancedrocketrycommunity:gold_coil, #forge:ingots/gold, minecraft:gold_ingot, #forge:dusts/gold, advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:advanced_motor, #advancedrocketrycommunity:coils/gold]
+#advancedrocketrycommunity:coils/iridium reachable cycle=[#advancedrocketrycommunity:coils/iridium, advancedrocketrycommunity:iridium_coil, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, machine:advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:elite_motor, #advancedrocketrycommunity:coils/iridium]
+#advancedrocketrycommunity:coils/titanium reachable cycle=[#advancedrocketrycommunity:coils/titanium, advancedrocketrycommunity:titanium_coil, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:ores/rutile, advancedrocketrycommunity:deepslate_rutile_ore, access:overworld, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:enhanced_motor, #advancedrocketrycommunity:coils/titanium]
+#advancedrocketrycommunity:silicon_wafers reachable cycle=[#advancedrocketrycommunity:silicon_wafers, advancedrocketrycommunity:silicon_wafer, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #advancedrocketrycommunity:silicon_wafers]
+#forge:dusts/aluminum reachable cycle=[#forge:dusts/aluminum, advancedrocketrycommunity:aluminum_dust, #forge:ores/aluminum, advancedrocketrycommunity:aluminum_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:dusts/aluminum]
+#forge:dusts/copper reachable cycle=[#forge:dusts/copper, advancedrocketrycommunity:copper_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:dusts/copper]
+#forge:dusts/gold reachable cycle=[#forge:dusts/gold, advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, #forge:ingots/gold, minecraft:gold_ingot, #forge:dusts/gold]
+#forge:dusts/iridium reachable cycle=[#forge:dusts/iridium, advancedrocketrycommunity:iridium_dust, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:dusts/iridium]
+#forge:dusts/iron reachable cycle=[#forge:dusts/iron, advancedrocketrycommunity:iron_dust, advancedrocketrycommunity:small_plate_press, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron]
+#forge:ingots/aluminum reachable cycle=[#forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:nuggets/aluminum, advancedrocketrycommunity:aluminum_nugget, #forge:ingots/aluminum]
+#forge:ingots/copper reachable cycle=[#forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, #forge:ingots/copper]
+#forge:ingots/gold reachable cycle=[#forge:ingots/gold, minecraft:gold_ingot, #forge:dusts/gold, advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, #forge:ingots/gold]
+#forge:ingots/iridium reachable cycle=[#forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, #forge:ingots/iridium]
+#forge:ingots/iron reachable cycle=[#forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, advancedrocketrycommunity:small_plate_press, #forge:ingots/iron]
+#forge:ingots/silicon reachable cycle=[#forge:ingots/silicon, advancedrocketrycommunity:silicon_ingot, #forge:nuggets/silicon, advancedrocketrycommunity:silicon_nugget, #forge:ingots/silicon]
+#forge:ingots/steel reachable cycle=[#forge:ingots/steel, advancedrocketrycommunity:steel_ingot, #forge:nuggets/steel, advancedrocketrycommunity:steel_nugget, #forge:ingots/steel]
+#forge:ingots/tin reachable cycle=[#forge:ingots/tin, advancedrocketrycommunity:tin_ingot, #forge:nuggets/tin, advancedrocketrycommunity:tin_nugget, #forge:ingots/tin]
+#forge:ingots/titanium reachable cycle=[#forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:nuggets/titanium, advancedrocketrycommunity:titanium_nugget, #forge:ingots/titanium]
+#forge:ingots/titanium_aluminide reachable cycle=[#forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:nuggets/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_nugget, #forge:ingots/titanium_aluminide]
+#forge:ingots/titanium_iridium reachable cycle=[#forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot, #forge:nuggets/titanium_iridium, advancedrocketrycommunity:titanium_iridium_nugget, #forge:ingots/titanium_iridium]
+#forge:nuggets/aluminum reachable cycle=[#forge:nuggets/aluminum, advancedrocketrycommunity:aluminum_nugget, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:nuggets/aluminum]
+#forge:nuggets/copper reachable cycle=[#forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper]
+#forge:nuggets/iridium reachable cycle=[#forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium]
+#forge:nuggets/silicon reachable cycle=[#forge:nuggets/silicon, advancedrocketrycommunity:silicon_nugget, #forge:ingots/silicon, advancedrocketrycommunity:silicon_ingot, #forge:nuggets/silicon]
+#forge:nuggets/steel reachable cycle=[#forge:nuggets/steel, advancedrocketrycommunity:steel_nugget, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, #forge:nuggets/steel]
+#forge:nuggets/tin reachable cycle=[#forge:nuggets/tin, advancedrocketrycommunity:tin_nugget, #forge:ingots/tin, advancedrocketrycommunity:tin_ingot, #forge:nuggets/tin]
+#forge:nuggets/titanium reachable cycle=[#forge:nuggets/titanium, advancedrocketrycommunity:titanium_nugget, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:nuggets/titanium]
+#forge:nuggets/titanium_aluminide reachable cycle=[#forge:nuggets/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_nugget, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:nuggets/titanium_aluminide]
+#forge:nuggets/titanium_iridium reachable cycle=[#forge:nuggets/titanium_iridium, advancedrocketrycommunity:titanium_iridium_nugget, #forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot, #forge:nuggets/titanium_iridium]
+#forge:ores/aluminum reachable cycle=[#forge:ores/aluminum, advancedrocketrycommunity:aluminum_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:ores/aluminum]
+#forge:ores/iridium reachable cycle=[#forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:ores/iridium]
+#forge:ores/rutile reachable cycle=[#forge:ores/rutile, advancedrocketrycommunity:deepslate_rutile_ore, access:overworld, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:titanium_plate, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:ores/rutile]
+#forge:plates/copper reachable cycle=[#forge:plates/copper, advancedrocketrycommunity:copper_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/copper]
+#forge:plates/gold reachable cycle=[#forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:advanced_circuit_plate, #forge:plates/gold]
+#forge:plates/iridium reachable cycle=[#forge:plates/iridium, advancedrocketrycommunity:iridium_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:elite_motor, #forge:plates/iridium]
+#forge:plates/iron reachable cycle=[#forge:plates/iron, advancedrocketrycommunity:iron_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/iron]
+#forge:plates/steel reachable cycle=[#forge:plates/steel, advancedrocketrycommunity:steel_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel]
+#forge:plates/titanium reachable cycle=[#forge:plates/titanium, advancedrocketrycommunity:titanium_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:enhanced_motor, #forge:plates/titanium]
+#forge:raw_materials/aluminum reachable cycle=[#forge:raw_materials/aluminum, advancedrocketrycommunity:raw_aluminum, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:raw_materials/aluminum]
+#forge:raw_materials/iridium reachable cycle=[#forge:raw_materials/iridium, advancedrocketrycommunity:raw_iridium, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:raw_materials/iridium]
+#forge:raw_materials/rutile reachable cycle=[#forge:raw_materials/rutile, advancedrocketrycommunity:raw_rutile, access:mars, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:titanium_plate, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:raw_materials/rutile]
+#forge:rods/iron reachable cycle=[#forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor, #forge:rods/iron]
+#forge:storage_blocks/aluminum reachable cycle=[#forge:storage_blocks/aluminum, advancedrocketrycommunity:aluminum_block, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:storage_blocks/aluminum]
+#forge:storage_blocks/iridium reachable cycle=[#forge:storage_blocks/iridium, advancedrocketrycommunity:iridium_block, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:storage_blocks/iridium]
+#forge:storage_blocks/steel reachable cycle=[#forge:storage_blocks/steel, advancedrocketrycommunity:steel_block, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, #forge:storage_blocks/steel]
+#forge:storage_blocks/tin reachable cycle=[#forge:storage_blocks/tin, advancedrocketrycommunity:tin_block, #forge:ingots/tin, advancedrocketrycommunity:tin_ingot, #forge:storage_blocks/tin]
+#forge:storage_blocks/titanium reachable cycle=[#forge:storage_blocks/titanium, advancedrocketrycommunity:titanium_block, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:storage_blocks/titanium]
+#forge:storage_blocks/titanium_aluminide reachable cycle=[#forge:storage_blocks/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_block, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:storage_blocks/titanium_aluminide]
+#forge:storage_blocks/titanium_iridium reachable cycle=[#forge:storage_blocks/titanium_iridium, advancedrocketrycommunity:titanium_iridium_block, #forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot, #forge:storage_blocks/titanium_iridium]
+access:mars reachable cycle=[access:mars, access:overworld, access:mars]
+access:moon reachable cycle=[access:moon, access:overworld, access:moon]
+access:overworld reachable cycle=[access:overworld, access:mars, access:overworld]
+access:space reachable cycle=[access:space, travel:rocket, advancedrocketrycommunity:bipropellant_fuel_tank, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, orbit:advancedrocketrycommunity:tau_ceti_g, access:space]
+access:tau_ceti_f reachable cycle=[access:tau_ceti_f, access:tau_ceti_g, access:tau_ceti_f]
+access:tau_ceti_g reachable cycle=[access:tau_ceti_g, access:tau_ceti_f, access:tau_ceti_g]
+access:venus reachable cycle=[access:venus, access:overworld, access:venus]
+advancedrocketrycommunity:advanced_bipropellant_rocket_motor reachable cycle=[advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:bipropellant_rocket_motor, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor]
+advancedrocketrycommunity:advanced_circuit reachable cycle=[advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit]
+advancedrocketrycommunity:advanced_circuit_plate reachable cycle=[advancedrocketrycommunity:advanced_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:advanced_circuit_plate]
+advancedrocketrycommunity:advanced_motor reachable cycle=[advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:advanced_motor]
+advancedrocketrycommunity:advanced_rocket_motor reachable cycle=[advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor]
+advancedrocketrycommunity:aluminum_block reachable cycle=[advancedrocketrycommunity:aluminum_block, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:storage_blocks/aluminum, advancedrocketrycommunity:aluminum_block]
+advancedrocketrycommunity:aluminum_coil reachable cycle=[advancedrocketrycommunity:aluminum_coil, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:dusts/aluminum, advancedrocketrycommunity:aluminum_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, machine:advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:aluminum_coil]
+advancedrocketrycommunity:aluminum_dust reachable cycle=[advancedrocketrycommunity:aluminum_dust, #forge:ores/aluminum, advancedrocketrycommunity:aluminum_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:dusts/aluminum, advancedrocketrycommunity:aluminum_dust]
+advancedrocketrycommunity:aluminum_ingot reachable cycle=[advancedrocketrycommunity:aluminum_ingot, #forge:nuggets/aluminum, advancedrocketrycommunity:aluminum_nugget, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot]
+advancedrocketrycommunity:aluminum_nugget reachable cycle=[advancedrocketrycommunity:aluminum_nugget, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:nuggets/aluminum, advancedrocketrycommunity:aluminum_nugget]
+advancedrocketrycommunity:aluminum_ore reachable cycle=[advancedrocketrycommunity:aluminum_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:ores/aluminum, advancedrocketrycommunity:aluminum_ore]
+advancedrocketrycommunity:arc_furnace reachable cycle=[advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, machine:advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:arc_furnace]
+advancedrocketrycommunity:basic_circuit reachable cycle=[advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit]
+advancedrocketrycommunity:basic_circuit_plate reachable cycle=[advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate]
+advancedrocketrycommunity:bipropellant_fuel_tank reachable cycle=[advancedrocketrycommunity:bipropellant_fuel_tank, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:bipropellant_fuel_tank]
+advancedrocketrycommunity:bipropellant_rocket_motor reachable cycle=[advancedrocketrycommunity:bipropellant_rocket_motor, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:bipropellant_rocket_motor]
+advancedrocketrycommunity:carbon_brick reachable cycle=[advancedrocketrycommunity:carbon_brick, minecraft:charcoal, advancedrocketrycommunity:carbon_scrubber_cartridge, advancedrocketrycommunity:carbon_brick]
+advancedrocketrycommunity:carbon_scrubber_cartridge reachable cycle=[advancedrocketrycommunity:carbon_scrubber_cartridge, advancedrocketrycommunity:carbon_brick, minecraft:charcoal, advancedrocketrycommunity:carbon_scrubber_cartridge]
+advancedrocketrycommunity:centrifuge reachable cycle=[advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, machine:advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:centrifuge]
+advancedrocketrycommunity:chemical_reactor reachable cycle=[advancedrocketrycommunity:chemical_reactor, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, machine:advancedrocketrycommunity:chemical_reactor, advancedrocketrycommunity:chemical_reactor]
+advancedrocketrycommunity:combustion_generator reachable cycle=[advancedrocketrycommunity:combustion_generator, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, minecraft:redstone_torch, energy:fe, advancedrocketrycommunity:combustion_generator]
+advancedrocketrycommunity:control_board reachable cycle=[advancedrocketrycommunity:control_board, #forge:dusts/copper, advancedrocketrycommunity:copper_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board]
+advancedrocketrycommunity:copper_coil reachable cycle=[advancedrocketrycommunity:copper_coil, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, energy:fe, advancedrocketrycommunity:combustion_generator, advancedrocketrycommunity:copper_coil]
+advancedrocketrycommunity:copper_dust reachable cycle=[advancedrocketrycommunity:copper_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:dusts/copper, advancedrocketrycommunity:copper_dust]
+advancedrocketrycommunity:copper_nugget reachable cycle=[advancedrocketrycommunity:copper_nugget, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget]
+advancedrocketrycommunity:copper_plate reachable cycle=[advancedrocketrycommunity:copper_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/copper, advancedrocketrycommunity:copper_plate]
+advancedrocketrycommunity:crystallizer reachable cycle=[advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #advancedrocketrycommunity:silicon_wafers, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule, machine:advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:crystallizer]
+advancedrocketrycommunity:cutting_machine reachable cycle=[advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:cutting_machine]
+advancedrocketrycommunity:data_satellite_package reachable cycle=[advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_chassis, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:data_satellite_package]
+advancedrocketrycommunity:data_storage_unit reachable cycle=[advancedrocketrycommunity:data_storage_unit, #advancedrocketrycommunity:circuits/advanced, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, known:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:data_storage_unit]
+advancedrocketrycommunity:deepslate_aluminum_ore reachable cycle=[advancedrocketrycommunity:deepslate_aluminum_ore, access:overworld, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:ores/aluminum, advancedrocketrycommunity:deepslate_aluminum_ore]
+advancedrocketrycommunity:deepslate_rutile_ore reachable cycle=[advancedrocketrycommunity:deepslate_rutile_ore, access:overworld, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:titanium_plate, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:ores/rutile, advancedrocketrycommunity:deepslate_rutile_ore]
+advancedrocketrycommunity:electrolyzer reachable cycle=[advancedrocketrycommunity:electrolyzer, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_cell, advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:electrolyzer]
+advancedrocketrycommunity:elite_motor reachable cycle=[advancedrocketrycommunity:elite_motor, #forge:plates/iridium, advancedrocketrycommunity:iridium_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:elite_motor]
+advancedrocketrycommunity:empty_canister reachable cycle=[advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:empty_canister]
+advancedrocketrycommunity:endgame_casing reachable cycle=[advancedrocketrycommunity:endgame_casing, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:endgame_casing]
+advancedrocketrycommunity:enhanced_motor reachable cycle=[advancedrocketrycommunity:enhanced_motor, advancedrocketrycommunity:advanced_motor, advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:enhanced_motor]
+advancedrocketrycommunity:fluid_input_hatch reachable cycle=[advancedrocketrycommunity:fluid_input_hatch, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #advancedrocketrycommunity:silicon_wafers, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule, machine:advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:fluid_input_hatch]
+advancedrocketrycommunity:fluid_output_hatch reachable cycle=[advancedrocketrycommunity:fluid_output_hatch, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #advancedrocketrycommunity:silicon_wafers, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule, machine:advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:fluid_output_hatch]
+advancedrocketrycommunity:fuel_loader reachable cycle=[advancedrocketrycommunity:fuel_loader, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:fuel_loader]
+advancedrocketrycommunity:gas_intake_module reachable cycle=[advancedrocketrycommunity:gas_intake_module, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:hydrogen_canister, craft:advancedrocketrycommunity:gas_harvester, advancedrocketrycommunity:gas_intake_module]
+advancedrocketrycommunity:gold_coil reachable cycle=[advancedrocketrycommunity:gold_coil, #forge:ingots/gold, minecraft:gold_ingot, #forge:dusts/gold, advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, machine:advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:gold_coil]
+advancedrocketrycommunity:gold_dust reachable cycle=[advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, #forge:ingots/gold, minecraft:gold_ingot, #forge:dusts/gold, advancedrocketrycommunity:gold_dust]
+advancedrocketrycommunity:gold_plate reachable cycle=[advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:advanced_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate]
+advancedrocketrycommunity:guidance_computer reachable cycle=[advancedrocketrycommunity:guidance_computer, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:guidance_computer]
+advancedrocketrycommunity:hydrogen_canister reachable cycle=[advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:hydrogen_canister]
+advancedrocketrycommunity:iridium_block reachable cycle=[advancedrocketrycommunity:iridium_block, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:storage_blocks/iridium, advancedrocketrycommunity:iridium_block]
+advancedrocketrycommunity:iridium_coil reachable cycle=[advancedrocketrycommunity:iridium_coil, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, machine:advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:elite_motor, #advancedrocketrycommunity:coils/iridium, advancedrocketrycommunity:iridium_coil]
+advancedrocketrycommunity:iridium_dust reachable cycle=[advancedrocketrycommunity:iridium_dust, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:dusts/iridium, advancedrocketrycommunity:iridium_dust]
+advancedrocketrycommunity:iridium_ingot reachable cycle=[advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot]
+advancedrocketrycommunity:iridium_nugget reachable cycle=[advancedrocketrycommunity:iridium_nugget, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget]
+advancedrocketrycommunity:iridium_ore reachable cycle=[advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore]
+advancedrocketrycommunity:iridium_plate reachable cycle=[advancedrocketrycommunity:iridium_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:elite_motor, #forge:plates/iridium, advancedrocketrycommunity:iridium_plate]
+advancedrocketrycommunity:iron_dust reachable cycle=[advancedrocketrycommunity:iron_dust, advancedrocketrycommunity:small_plate_press, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust]
+advancedrocketrycommunity:iron_plate reachable cycle=[advancedrocketrycommunity:iron_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/iron, advancedrocketrycommunity:iron_plate]
+advancedrocketrycommunity:iron_rod reachable cycle=[advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod]
+advancedrocketrycommunity:iron_saw_blade reachable cycle=[advancedrocketrycommunity:iron_saw_blade, #forge:plates/iron, advancedrocketrycommunity:iron_plate, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:iron_saw_blade]
+advancedrocketrycommunity:item_input_hatch reachable cycle=[advancedrocketrycommunity:item_input_hatch, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:item_input_hatch]
+advancedrocketrycommunity:item_output_hatch reachable cycle=[advancedrocketrycommunity:item_output_hatch, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:item_output_hatch]
+advancedrocketrycommunity:laser_lens reachable cycle=[advancedrocketrycommunity:laser_lens, advancedrocketrycommunity:silicon_wafer, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, advancedrocketrycommunity:laser_lens]
+advancedrocketrycommunity:lathe reachable cycle=[advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:lathe]
+advancedrocketrycommunity:machine_casing reachable cycle=[advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:machine_casing]
+advancedrocketrycommunity:motor reachable cycle=[advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor]
+advancedrocketrycommunity:nitrogen_canister reachable cycle=[advancedrocketrycommunity:nitrogen_canister, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:nitrogen_canister]
+advancedrocketrycommunity:nuclear_fuel_tank reachable cycle=[advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank]
+advancedrocketrycommunity:nuclear_rocket_motor reachable cycle=[advancedrocketrycommunity:nuclear_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:ores/iridium, advancedrocketrycommunity:iridium_ore, access:mars, travel:rocket, advancedrocketrycommunity:nuclear_rocket_motor]
+advancedrocketrycommunity:oxygen_canister reachable cycle=[advancedrocketrycommunity:oxygen_canister, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:oxygen_canister]
+advancedrocketrycommunity:power_input_plug reachable cycle=[advancedrocketrycommunity:power_input_plug, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:power_input_plug]
+advancedrocketrycommunity:precision_assembler reachable cycle=[advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler]
+advancedrocketrycommunity:precision_assembler_energy_input_port reachable cycle=[advancedrocketrycommunity:precision_assembler_energy_input_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler_energy_input_port]
+advancedrocketrycommunity:precision_assembler_item_input_port reachable cycle=[advancedrocketrycommunity:precision_assembler_item_input_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler_item_input_port]
+advancedrocketrycommunity:precision_assembler_item_output_port reachable cycle=[advancedrocketrycommunity:precision_assembler_item_output_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler_item_output_port]
+advancedrocketrycommunity:precision_laser_etcher reachable cycle=[advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:precision_laser_etcher]
+advancedrocketrycommunity:pressurized_tank reachable cycle=[advancedrocketrycommunity:pressurized_tank, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_cell, advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:pressurized_tank]
+advancedrocketrycommunity:pump reachable cycle=[advancedrocketrycommunity:pump, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, advancedrocketrycommunity:pump]
+advancedrocketrycommunity:raw_aluminum reachable cycle=[advancedrocketrycommunity:raw_aluminum, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:raw_materials/aluminum, advancedrocketrycommunity:raw_aluminum]
+advancedrocketrycommunity:raw_iridium reachable cycle=[advancedrocketrycommunity:raw_iridium, access:mars, travel:rocket, advancedrocketrycommunity:advanced_rocket_motor, advancedrocketrycommunity:iridium_plate, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:raw_materials/iridium, advancedrocketrycommunity:raw_iridium]
+advancedrocketrycommunity:raw_rutile reachable cycle=[advancedrocketrycommunity:raw_rutile, access:mars, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:titanium_plate, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:raw_materials/rutile, advancedrocketrycommunity:raw_rutile]
+advancedrocketrycommunity:rocket_assembler reachable cycle=[advancedrocketrycommunity:rocket_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_assembler]
+advancedrocketrycommunity:rocket_fuel_cell reachable cycle=[advancedrocketrycommunity:rocket_fuel_cell, advancedrocketrycommunity:hydrogen_canister, advancedrocketrycommunity:pressurized_tank, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_cell]
+advancedrocketrycommunity:rocket_fuel_tank reachable cycle=[advancedrocketrycommunity:rocket_fuel_tank, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_tank]
+advancedrocketrycommunity:rocket_motor reachable cycle=[advancedrocketrycommunity:rocket_motor, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_motor]
+advancedrocketrycommunity:rocket_seat reachable cycle=[advancedrocketrycommunity:rocket_seat, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_seat]
+advancedrocketrycommunity:rolling_machine reachable cycle=[advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:advanced_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine]
+advancedrocketrycommunity:rolling_machine_energy_input_port reachable cycle=[advancedrocketrycommunity:rolling_machine_energy_input_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine_energy_input_port]
+advancedrocketrycommunity:rolling_machine_fluid_input_port reachable cycle=[advancedrocketrycommunity:rolling_machine_fluid_input_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine_fluid_input_port]
+advancedrocketrycommunity:rolling_machine_item_input_port reachable cycle=[advancedrocketrycommunity:rolling_machine_item_input_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine_item_input_port]
+advancedrocketrycommunity:rolling_machine_item_output_port reachable cycle=[advancedrocketrycommunity:rolling_machine_item_output_port, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine_item_output_port]
+advancedrocketrycommunity:rutile_ore reachable cycle=[advancedrocketrycommunity:rutile_ore, access:mars, travel:rocket, advancedrocketrycommunity:nuclear_fuel_tank, advancedrocketrycommunity:titanium_plate, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:ores/rutile, advancedrocketrycommunity:rutile_ore]
+advancedrocketrycommunity:satellite_builder reachable cycle=[advancedrocketrycommunity:satellite_builder, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_cell, advancedrocketrycommunity:hydrogen_canister, craft:advancedrocketrycommunity:gas_harvester, advancedrocketrycommunity:satellite_builder]
+advancedrocketrycommunity:satellite_cargo_hold reachable cycle=[advancedrocketrycommunity:satellite_cargo_hold, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket, advancedrocketrycommunity:rocket_fuel_cell, advancedrocketrycommunity:hydrogen_canister, craft:advancedrocketrycommunity:gas_harvester, advancedrocketrycommunity:satellite_cargo_hold]
+advancedrocketrycommunity:satellite_chassis reachable cycle=[advancedrocketrycommunity:satellite_chassis, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_chassis]
+advancedrocketrycommunity:satellite_control_chip reachable cycle=[advancedrocketrycommunity:satellite_control_chip, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, known:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_control_chip]
+advancedrocketrycommunity:satellite_solar_module reachable cycle=[advancedrocketrycommunity:satellite_solar_module, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:satellite_solar_module]
+advancedrocketrycommunity:satellite_terminal reachable cycle=[advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal]
+advancedrocketrycommunity:saw_blade reachable cycle=[advancedrocketrycommunity:saw_blade, #forge:plates/iron, advancedrocketrycommunity:iron_plate, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:saw_blade]
+advancedrocketrycommunity:silicon_boule reachable cycle=[advancedrocketrycommunity:silicon_boule, energy:fe, advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule]
+advancedrocketrycommunity:silicon_ingot reachable cycle=[advancedrocketrycommunity:silicon_ingot, #forge:nuggets/silicon, advancedrocketrycommunity:silicon_nugget, #forge:ingots/silicon, advancedrocketrycommunity:silicon_ingot]
+advancedrocketrycommunity:silicon_nugget reachable cycle=[advancedrocketrycommunity:silicon_nugget, #forge:ingots/silicon, advancedrocketrycommunity:silicon_ingot, #forge:nuggets/silicon, advancedrocketrycommunity:silicon_nugget]
+advancedrocketrycommunity:silicon_wafer reachable cycle=[advancedrocketrycommunity:silicon_wafer, energy:fe, advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer]
+advancedrocketrycommunity:small_plate_press reachable cycle=[advancedrocketrycommunity:small_plate_press, #forge:ingots/iron, minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, advancedrocketrycommunity:small_plate_press]
+advancedrocketrycommunity:solar_generator reachable cycle=[advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer, energy:fe, advancedrocketrycommunity:solar_generator]
+advancedrocketrycommunity:solar_panel reachable cycle=[advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer, energy:fe, advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel]
+advancedrocketrycommunity:station_deployment_kit reachable cycle=[advancedrocketrycommunity:station_deployment_kit, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, orbit:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:station_deployment_kit]
+advancedrocketrycommunity:steel_block reachable cycle=[advancedrocketrycommunity:steel_block, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, #forge:storage_blocks/steel, advancedrocketrycommunity:steel_block]
+advancedrocketrycommunity:steel_ingot reachable cycle=[advancedrocketrycommunity:steel_ingot, #forge:nuggets/steel, advancedrocketrycommunity:steel_nugget, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot]
+advancedrocketrycommunity:steel_nugget reachable cycle=[advancedrocketrycommunity:steel_nugget, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, #forge:nuggets/steel, advancedrocketrycommunity:steel_nugget]
+advancedrocketrycommunity:steel_plate reachable cycle=[advancedrocketrycommunity:steel_plate, minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:plates/steel, advancedrocketrycommunity:steel_plate]
+advancedrocketrycommunity:tin_block reachable cycle=[advancedrocketrycommunity:tin_block, #forge:ingots/tin, advancedrocketrycommunity:tin_ingot, #forge:storage_blocks/tin, advancedrocketrycommunity:tin_block]
+advancedrocketrycommunity:tin_ingot reachable cycle=[advancedrocketrycommunity:tin_ingot, #forge:nuggets/tin, advancedrocketrycommunity:tin_nugget, #forge:ingots/tin, advancedrocketrycommunity:tin_ingot]
+advancedrocketrycommunity:tin_nugget reachable cycle=[advancedrocketrycommunity:tin_nugget, #forge:ingots/tin, advancedrocketrycommunity:tin_ingot, #forge:nuggets/tin, advancedrocketrycommunity:tin_nugget]
+advancedrocketrycommunity:titanium_aluminide_block reachable cycle=[advancedrocketrycommunity:titanium_aluminide_block, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:storage_blocks/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_block]
+advancedrocketrycommunity:titanium_aluminide_ingot reachable cycle=[advancedrocketrycommunity:titanium_aluminide_ingot, #forge:nuggets/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_nugget, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot]
+advancedrocketrycommunity:titanium_aluminide_nugget reachable cycle=[advancedrocketrycommunity:titanium_aluminide_nugget, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:nuggets/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_nugget]
+advancedrocketrycommunity:titanium_aluminide_plate reachable cycle=[advancedrocketrycommunity:titanium_aluminide_plate, #forge:ingots/titanium_aluminide, advancedrocketrycommunity:titanium_aluminide_ingot, #forge:ingots/aluminum, advancedrocketrycommunity:aluminum_ingot, #forge:ores/aluminum, advancedrocketrycommunity:aluminum_ore, access:mars, travel:rocket, advancedrocketrycommunity:advanced_bipropellant_rocket_motor, advancedrocketrycommunity:titanium_aluminide_plate]
+advancedrocketrycommunity:titanium_block reachable cycle=[advancedrocketrycommunity:titanium_block, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:storage_blocks/titanium, advancedrocketrycommunity:titanium_block]
+advancedrocketrycommunity:titanium_coil reachable cycle=[advancedrocketrycommunity:titanium_coil, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, machine:advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:titanium_coil]
+advancedrocketrycommunity:titanium_ingot reachable cycle=[advancedrocketrycommunity:titanium_ingot, #forge:nuggets/titanium, advancedrocketrycommunity:titanium_nugget, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot]
+advancedrocketrycommunity:titanium_iridium_block reachable cycle=[advancedrocketrycommunity:titanium_iridium_block, #forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot, #forge:storage_blocks/titanium_iridium, advancedrocketrycommunity:titanium_iridium_block]
+advancedrocketrycommunity:titanium_iridium_ingot reachable cycle=[advancedrocketrycommunity:titanium_iridium_ingot, #forge:nuggets/titanium_iridium, advancedrocketrycommunity:titanium_iridium_nugget, #forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot]
+advancedrocketrycommunity:titanium_iridium_nugget reachable cycle=[advancedrocketrycommunity:titanium_iridium_nugget, #forge:ingots/titanium_iridium, advancedrocketrycommunity:titanium_iridium_ingot, #forge:nuggets/titanium_iridium, advancedrocketrycommunity:titanium_iridium_nugget]
+advancedrocketrycommunity:titanium_nugget reachable cycle=[advancedrocketrycommunity:titanium_nugget, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, #forge:nuggets/titanium, advancedrocketrycommunity:titanium_nugget]
+advancedrocketrycommunity:titanium_plate reachable cycle=[advancedrocketrycommunity:titanium_plate, machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:enhanced_motor, #forge:plates/titanium, advancedrocketrycommunity:titanium_plate]
+advancedrocketrycommunity:tracking_circuit reachable cycle=[advancedrocketrycommunity:tracking_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, known:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:data_storage_unit, minecraft:comparator, advancedrocketrycommunity:tracking_circuit]
+advancedrocketrycommunity:warp_controller reachable cycle=[advancedrocketrycommunity:warp_controller, #forge:plates/steel, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, orbit:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:warp_controller]
+advancedrocketrycommunity:warp_core reachable cycle=[advancedrocketrycommunity:warp_core, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, orbit:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:warp_core]
+craft:advancedrocketrycommunity:gas_harvester reachable cycle=[craft:advancedrocketrycommunity:gas_harvester, advancedrocketrycommunity:gas_intake_module, advancedrocketrycommunity:empty_canister, advancedrocketrycommunity:hydrogen_canister, craft:advancedrocketrycommunity:gas_harvester]
+energy:fe reachable cycle=[energy:fe, advancedrocketrycommunity:solar_generator, advancedrocketrycommunity:solar_panel, advancedrocketrycommunity:silicon_wafer, energy:fe]
+fluid:advancedrocketrycommunity:enriched_lava reachable cycle=[fluid:advancedrocketrycommunity:enriched_lava, energy:fe, advancedrocketrycommunity:solar_generator, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava]
+fluid:advancedrocketrycommunity:hydrogen reachable cycle=[fluid:advancedrocketrycommunity:hydrogen, advancedrocketrycommunity:hydrogen_canister, fluid:advancedrocketrycommunity:hydrogen]
+fluid:advancedrocketrycommunity:nitrogen reachable cycle=[fluid:advancedrocketrycommunity:nitrogen, advancedrocketrycommunity:nitrogen_canister, fluid:advancedrocketrycommunity:nitrogen]
+fluid:advancedrocketrycommunity:oxygen reachable cycle=[fluid:advancedrocketrycommunity:oxygen, advancedrocketrycommunity:oxygen_canister, fluid:advancedrocketrycommunity:oxygen]
+known:advancedrocketrycommunity:earth reachable cycle=[known:advancedrocketrycommunity:earth, access:overworld, known:advancedrocketrycommunity:earth]
+known:advancedrocketrycommunity:gas_giant reachable cycle=[known:advancedrocketrycommunity:gas_giant, advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, access:overworld, orbit:advancedrocketrycommunity:gas_giant, known:advancedrocketrycommunity:gas_giant]
+known:advancedrocketrycommunity:mars reachable cycle=[known:advancedrocketrycommunity:mars, advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, access:overworld, access:mars, known:advancedrocketrycommunity:mars]
+known:advancedrocketrycommunity:moon reachable cycle=[known:advancedrocketrycommunity:moon, access:overworld, access:moon, known:advancedrocketrycommunity:moon]
+known:advancedrocketrycommunity:tau_ceti_f reachable cycle=[known:advancedrocketrycommunity:tau_ceti_f, advancedrocketrycommunity:satellite_terminal, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, access:tau_ceti_f, known:advancedrocketrycommunity:tau_ceti_f]
+known:advancedrocketrycommunity:tau_ceti_g reachable cycle=[known:advancedrocketrycommunity:tau_ceti_g, advancedrocketrycommunity:satellite_terminal, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, known:advancedrocketrycommunity:tau_ceti_g]
+known:advancedrocketrycommunity:venus reachable cycle=[known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus]
+machine:advancedrocketrycommunity:arc_furnace reachable cycle=[machine:advancedrocketrycommunity:arc_furnace, advancedrocketrycommunity:titanium_coil, #forge:ingots/titanium, advancedrocketrycommunity:titanium_ingot, machine:advancedrocketrycommunity:arc_furnace]
+machine:advancedrocketrycommunity:centrifuge reachable cycle=[machine:advancedrocketrycommunity:centrifuge, advancedrocketrycommunity:elite_motor, #advancedrocketrycommunity:coils/iridium, advancedrocketrycommunity:iridium_coil, #forge:ingots/iridium, advancedrocketrycommunity:iridium_ingot, #forge:nuggets/iridium, advancedrocketrycommunity:iridium_nugget, machine:advancedrocketrycommunity:centrifuge]
+machine:advancedrocketrycommunity:chemical_reactor reachable cycle=[machine:advancedrocketrycommunity:chemical_reactor, advancedrocketrycommunity:motor, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, machine:advancedrocketrycommunity:chemical_reactor]
+machine:advancedrocketrycommunity:crystallizer reachable cycle=[machine:advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:crystallizer, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, #advancedrocketrycommunity:silicon_wafers, advancedrocketrycommunity:silicon_wafer, #advancedrocketrycommunity:boules/silicon, advancedrocketrycommunity:silicon_boule, machine:advancedrocketrycommunity:crystallizer]
+machine:advancedrocketrycommunity:cutting_machine reachable cycle=[machine:advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:cutting_machine, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, machine:advancedrocketrycommunity:cutting_machine]
+machine:advancedrocketrycommunity:lathe reachable cycle=[machine:advancedrocketrycommunity:lathe, advancedrocketrycommunity:motor, #forge:rods/iron, advancedrocketrycommunity:iron_rod, machine:advancedrocketrycommunity:lathe]
+machine:advancedrocketrycommunity:precision_assembler reachable cycle=[machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, machine:advancedrocketrycommunity:precision_assembler]
+machine:advancedrocketrycommunity:precision_laser_etcher reachable cycle=[machine:advancedrocketrycommunity:precision_laser_etcher, advancedrocketrycommunity:machine_casing, #advancedrocketrycommunity:circuits/basic, advancedrocketrycommunity:basic_circuit, advancedrocketrycommunity:basic_circuit_plate, machine:advancedrocketrycommunity:precision_laser_etcher]
+machine:advancedrocketrycommunity:rolling_machine reachable cycle=[machine:advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:rolling_machine, advancedrocketrycommunity:advanced_circuit, advancedrocketrycommunity:advanced_circuit_plate, #forge:plates/gold, advancedrocketrycommunity:gold_plate, machine:advancedrocketrycommunity:rolling_machine]
+minecraft:charcoal reachable cycle=[minecraft:charcoal, advancedrocketrycommunity:carbon_scrubber_cartridge, advancedrocketrycommunity:carbon_brick, minecraft:charcoal]
+minecraft:comparator reachable cycle=[minecraft:comparator, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:data_satellite_package, advancedrocketrycommunity:data_storage_unit, minecraft:comparator]
+minecraft:copper_ingot reachable cycle=[minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, #forge:ingots/copper, minecraft:copper_ingot]
+minecraft:gold_ingot reachable cycle=[minecraft:gold_ingot, #forge:dusts/gold, advancedrocketrycommunity:gold_dust, minecraft:redstone_torch, machine:advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:precision_assembler, advancedrocketrycommunity:advanced_circuit, #forge:ingots/gold, minecraft:gold_ingot]
+minecraft:iron_ingot reachable cycle=[minecraft:iron_ingot, #forge:dusts/iron, advancedrocketrycommunity:iron_dust, advancedrocketrycommunity:small_plate_press, #forge:ingots/iron, minecraft:iron_ingot]
+minecraft:redstone_torch reachable cycle=[minecraft:redstone_torch, advancedrocketrycommunity:control_board, #forge:dusts/copper, advancedrocketrycommunity:copper_dust, minecraft:redstone_torch]
+orbit:advancedrocketrycommunity:earth reachable cycle=[orbit:advancedrocketrycommunity:earth, access:moon, orbit:advancedrocketrycommunity:earth]
+orbit:advancedrocketrycommunity:gas_giant reachable cycle=[orbit:advancedrocketrycommunity:gas_giant, access:overworld, orbit:advancedrocketrycommunity:gas_giant]
+orbit:advancedrocketrycommunity:mars reachable cycle=[orbit:advancedrocketrycommunity:mars, access:mars, orbit:advancedrocketrycommunity:mars]
+orbit:advancedrocketrycommunity:moon reachable cycle=[orbit:advancedrocketrycommunity:moon, access:moon, orbit:advancedrocketrycommunity:moon]
+orbit:advancedrocketrycommunity:tau_ceti_f reachable cycle=[orbit:advancedrocketrycommunity:tau_ceti_f, access:tau_ceti_f, orbit:advancedrocketrycommunity:tau_ceti_f]
+orbit:advancedrocketrycommunity:tau_ceti_g reachable cycle=[orbit:advancedrocketrycommunity:tau_ceti_g, access:tau_ceti_g, orbit:advancedrocketrycommunity:tau_ceti_g]
+orbit:advancedrocketrycommunity:venus reachable cycle=[orbit:advancedrocketrycommunity:venus, access:venus, orbit:advancedrocketrycommunity:venus]
+research:lifetime reachable cycle=[research:lifetime, advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, research:lifetime]
+source:advancedrocketrycommunity:enriched_lava reachable cycle=[source:advancedrocketrycommunity:enriched_lava, access:venus, known:advancedrocketrycommunity:venus, advancedrocketrycommunity:satellite_terminal, #forge:ingots/copper, minecraft:copper_ingot, #forge:nuggets/copper, advancedrocketrycommunity:copper_nugget, fluid:advancedrocketrycommunity:enriched_lava, source:advancedrocketrycommunity:enriched_lava]
+travel:rocket reachable cycle=[travel:rocket, advancedrocketrycommunity:bipropellant_fuel_tank, advancedrocketrycommunity:steel_plate, #forge:ingots/steel, advancedrocketrycommunity:steel_ingot, minecraft:charcoal, access:tau_ceti_g, travel:rocket]
+
+DISPLAY PARENTS (not gameplay prerequisite edges)
+advancedrocketrycommunity:classic/arc_furnace -> advancedrocketrycommunity:classic/block_press
+advancedrocketrycommunity:classic/block_press -> advancedrocketrycommunity:classic/root
+advancedrocketrycommunity:classic/crystallizer -> advancedrocketrycommunity:classic/arc_furnace
+advancedrocketrycommunity:classic/dilithium -> advancedrocketrycommunity:classic/crystallizer
+advancedrocketrycommunity:classic/electrolysis -> advancedrocketrycommunity:classic/rolling
+advancedrocketrycommunity:classic/first_station_warp -> advancedrocketrycommunity:classic/station_warp
+advancedrocketrycommunity:classic/formed_multiblock -> advancedrocketrycommunity:classic/rolling
+advancedrocketrycommunity:classic/lathe -> advancedrocketrycommunity:classic/block_press
+advancedrocketrycommunity:classic/moon_landing -> advancedrocketrycommunity:classic/moon_surface_visit
+advancedrocketrycommunity:classic/moon_surface_visit -> advancedrocketrycommunity:classic/suited_up
+advancedrocketrycommunity:classic/one_small_step -> advancedrocketrycommunity:classic/moon_landing
+advancedrocketrycommunity:classic/rolling -> advancedrocketrycommunity:classic/block_press
+advancedrocketrycommunity:classic/seat_on_tnt -> advancedrocketrycommunity:classic/root
+advancedrocketrycommunity:classic/station_warp -> advancedrocketrycommunity:classic/warp_core
+advancedrocketrycommunity:classic/suited_up -> advancedrocketrycommunity:classic/root
+advancedrocketrycommunity:classic/warp_core -> advancedrocketrycommunity:classic/electrolysis
+
+UNMODELLED PRECONDITIONS / LIMITS
+base-model: PackagedRecipeGraph/CodeAcquisitionGraph inherited roots: vanilla survival inputs, water/lava, default enabled worldgen, repeatable FE and abstract rocket/orbit/discovery access. Quantities, chance, time, gravity, finite world resource depletion and arbitrary datapacks/config combinations are not simulated. Required reachability is a static necessary dependency check, conditional on these and the per-operation guards. Exactly the existing ten compatibility dust/tag nodes are optional; no new unavailable node is exempted.
+elevator: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/elevator/ElevatorEndpointValidator.java:73; landable matching loaded Level, station pad column/world border, active unbound endpoints, no warp, tether/platform clearance, durable registration, access, passenger state/cooldown and arrival admission are dynamic. Paired items alone are not a valid elevator.
+endgame: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/device/EndgameDeviceBlockEntity.java:254; system enablement, running/redstone state, owner/station OPERATE authority, loaded exact pattern, active admission, positive table entry/rate, FE throughput and output space. Station nodes inherit the existing existential orbit/warp abstraction, not a demonstrated committed station deployment. Laser physical additionally needs an owned linked marker, confirmation, eligible unprotected shaft/target. Railgun needs two distinct owned ACTIVE durable endpoints, selected same-system route and free outbox/escrow. These relational/spatial/temporal predicates are not item facts.
+ground: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/runtime/ResearchService.java:167; clear lens sky, skyDarken >= 4, no precipitation (surface); station VISIT and matching system (orbit); loaded/ticking footprint, paid FE each tick, durable save epochs, unique owned devices, free job/account capacity. These are temporal/spatial guards, not monotone inventory facts. Ground surface routes above cover each eligible body; the optional station bypass of weather is not needed to seed research.
+research-tree: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/progression/classic/ClassicMilestoneAdvancements.java:12; the code has research accounts, per-kind lifetime thresholds and 17 classic advancement criteria, not an additional unlock DAG. Display parents are reported separately and never imposed as gameplay locks. World-first awards require durable receipts/participation; inventory witnesses do not establish those events.
+satellites: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteLaunchService.java:60; src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteManager.java:713; chip/package identity equality, terminal range/owner, registry health, output vacancy, FE charge, durable claim/discovery barriers, deadline passage, free instance/storage capacity, scan battery recharge and loaded scan columns, matching receiver link. Reachability does not prove simultaneous or repeatable runtime liveness.
+solar/beacon: src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/solar/SolarGeneration.java:38; direct sky exposure, daylight and positive intensity, buffer space; array exact 66-cell layout/outputs, enabled valid body context; beacon owner, unique index registration, loaded pattern and finder visibility. Static availability is conditional; no all-52-device operability claim is made.
+```
