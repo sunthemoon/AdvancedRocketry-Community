@@ -152,7 +152,7 @@ What is still open:
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
   and the rows merge, the next hosted build is candidate C4, on which every family runs again. Candidate C4 is
   `659bbcb6a` (R529: hosted run 44630684725 passed on its first attempt, JAR SHA-256 `c048743e…f506cea1`); its
-  78 campaign families, X01 S3 and X02 S5 started natively on 2026-11-20 at 07:18. W327's
+  78 campaign families, X01 S3 and X02 S5 started natively on 2026-11-20 at 07:18. Its family `cargo-C-S4` failed at 10:53 on a gated test probe's over-strict fluid check, not a product defect (R539); the fix changes `src/main`, so a candidate C5 follows once C4's other results are in, and W404 fixes the probe. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
