@@ -7,6 +7,7 @@ not a substitute for rerunning the complete matrix after a production change.
 G2-REUSE additionally requires --old-jar and --old-source-commit.
 W336 downgrade separately requires --downgrade-old-jar and its --downgrade-old-jar-sha256.
 W373B's accounting format families require --root2-jar and --root2-jar-sha256 (candidate C3's JAR).
+--yield-seconds adds an explicit pause between families without changing the lock's existing cooldown.
 """
 from __future__ import annotations
 
@@ -174,6 +175,9 @@ def command_for(row, plan):
 
 
 def make_plan(args):
+    yield_seconds = getattr(args, "yield_seconds", 0)
+    if not isinstance(yield_seconds, int) or not 0 <= yield_seconds <= 600:
+        raise ValueError("--yield-seconds must be an integer from 0 to 600")
     if not re.fullmatch(r"[0-9a-fA-F]{64}", args.jar_sha256):
         raise ValueError("--jar-sha256 must be 64 hexadecimal characters")
     if args.downgrade_old_jar_sha256 is not None and not re.fullmatch(r"[0-9a-fA-F]{64}", args.downgrade_old_jar_sha256):
@@ -194,6 +198,7 @@ def make_plan(args):
                 source_commit=source, candidate_commit=resolve_commit(args.candidate_commit),
                 jar=str(args.jar.resolve()), jar_sha256=args.jar_sha256.lower(), template=str(args.template.resolve()),
                 evidence_root=str(root), java=args.java, suffix=args.suffix, partial=bool(only),
+                yield_seconds=yield_seconds,
                 old_jar=str(args.old_jar.resolve()) if args.old_jar else None,
                 old_source_commit=resolve_commit(args.old_source_commit) if args.old_source_commit else None,
                 downgrade_old_jar=str(args.downgrade_old_jar.resolve()) if args.downgrade_old_jar else None,
@@ -290,23 +295,39 @@ class HeavyLock:
         self.path = path
         self.released_at = None
 
-    def acquire(self, owner):
+    def acquire(self, owner, wait=None):
         if self.released_at is not None:
             remaining = COOLDOWN - (time.monotonic() - self.released_at)
             if remaining > 0:
                 time.sleep(remaining)
-        deadline = time.monotonic() + LOCK_LIMIT
-        while True:
-            if time.monotonic() >= deadline:
-                raise ValueError("Heavy-JVM lock wait exceeded three hours; not removed")
-            if self.path.exists():
-                if is_link(self.path) or time.time() - self.path.stat().st_mtime >= LOCK_LIMIT:
-                    raise ValueError("Heavy-JVM lock is linked or over three hours old; not removed")
-            if atomic_mkdir(self.path):
-                with (self.path / "owner.txt").open("x", encoding="utf-8") as stream:
-                    stream.write(owner + "\n")
-                return
-            time.sleep(min(60, max(0, deadline - time.monotonic())))
+        started = time.monotonic()
+        deadline = started + LOCK_LIMIT
+        wait = {} if wait is None else wait
+        wait.update(started=utc_now(), ended=None, seconds=0, owners=[])
+        try:
+            while True:
+                if time.monotonic() >= deadline:
+                    raise ValueError("Heavy-JVM lock wait exceeded three hours; not removed")
+                if self.path.exists():
+                    if is_link(self.path) or time.time() - self.path.stat().st_mtime >= LOCK_LIMIT:
+                        raise ValueError("Heavy-JVM lock is linked or over three hours old; not removed")
+                if atomic_mkdir(self.path):
+                    with (self.path / "owner.txt").open("x", encoding="utf-8") as stream:
+                        stream.write(owner + "\n")
+                    return
+                marker = self.path / "owner.txt"
+                try:
+                    if not is_link(marker):
+                        with marker.open(encoding="utf-8-sig", errors="replace") as stream:
+                            observed_owner = stream.readline(4096).rstrip("\r\n")
+                        if observed_owner and observed_owner not in wait["owners"]:
+                            wait["owners"].append(observed_owner)
+                except OSError:
+                    # A competing owner may still be writing its marker, or may have released it.
+                    pass
+                time.sleep(min(60, max(0, deadline - time.monotonic())))
+        finally:
+            wait.update(ended=utc_now(), seconds=time.monotonic() - started)
 
     def release(self, owner):
         # No recursive delete: foreign files, junctions and changed owners remain intact.
@@ -356,17 +377,18 @@ def run_campaign(args):
     summary_path = root / ("campaign-" + args.suffix + ".json")
     summary = dict(schema_version=1, status="DRY_RUN" if args.dry_run else "IN_PROGRESS",
                    source_commit=plan["source_commit"], candidate_commit=plan["candidate_commit"],
-                   jar_sha256=plan["jar_sha256"], partial=plan["partial"], families=[])
+                   jar_sha256=plan["jar_sha256"], partial=plan["partial"],
+                   yield_seconds=plan["yield_seconds"], families=[])
     write_json(summary_path, summary)
     lock = None if args.dry_run else HeavyLock()
     blocked = {}
-    for family in plan["families"]:
+    for index, family in enumerate(plan["families"]):
         output = Path(family["output"])
         output.mkdir()
         row = dict(name=family["name"], runner=family["runner"], command=family["command"],
                    source_commit=plan["source_commit"], candidate_commit=plan["candidate_commit"],
                    jar_sha256=plan["jar_sha256"], production_diff_exit=None, lock_owner=family["lock_owner"],
-                   lock_acquired=False, status="PLANNED", started=utc_now())
+                   lock_acquired=False, yield_seconds=plan["yield_seconds"], status="PLANNED", started=utc_now())
         invocation = output / "invocation.json"
         write_json(invocation, row)
         if args.dry_run:
@@ -378,7 +400,8 @@ def run_campaign(args):
             try:
                 row["before_lock"] = preflight(plan)
                 row["production_diff_exit"] = row["before_lock"]["production_diff_exit"]
-                lock.acquire(row["lock_owner"])
+                row["lock_wait"] = {}
+                lock.acquire(row["lock_owner"], wait=row["lock_wait"])
                 taken = True
                 row["lock_acquired"] = True
                 # Recheck after a possibly three-hour wait, before starting the child.
@@ -416,6 +439,17 @@ def run_campaign(args):
         write_json(invocation, row)
         summary["families"].append(row)
         write_json(summary_path, summary)
+        if row.get("lock_released") and plan["yield_seconds"] and index + 1 < len(plan["families"]):
+            started = time.monotonic()
+            row["yield"] = dict(started=utc_now(), requested_seconds=plan["yield_seconds"])
+            write_json(invocation, row)
+            write_json(summary_path, summary)
+            try:
+                time.sleep(plan["yield_seconds"])
+            finally:
+                row["yield"].update(ended=utc_now(), seconds=time.monotonic() - started)
+                write_json(invocation, row)
+                write_json(summary_path, summary)
     if not args.dry_run:
         summary["status"] = ("PASS_SELECTED" if plan["partial"] else "PASS") if all(
             row["status"] == "PASS" for row in summary["families"]) else "FAILED"
@@ -490,6 +524,8 @@ def main(argv=None):
     parser.add_argument("--only", action="append", nargs="+", help="Family names (space or comma separated); partial evidence")
     parser.add_argument("--suffix", default="attempt1")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--yield-seconds", type=int, default=0,
+                        help="Pause 0 to 600 seconds after releasing each family lock, except the last (default: 0)")
     parser.add_argument("--java", default=str(Path(os.environ.get("JAVA_HOME", "C:/Program Files/Java/jdk-17.0.7")) / "bin/java.exe"))
     parser.add_argument("--old-jar", type=Path, help="Explicit historical G2 JAR; never guessed")
     parser.add_argument("--old-source-commit", help="Historical G2 JAR's source commit")
