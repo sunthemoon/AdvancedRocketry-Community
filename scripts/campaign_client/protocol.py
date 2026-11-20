@@ -106,11 +106,18 @@ def read_request(path, mode, players):
     return validate_request(read_object(path), mode, players)
 
 
+def heap_mebibytes(value):
+    string(value, r"[1-9][0-9]{0,3}[MG]", "server.max_heap (positive integer M or G)")
+    size = int(value[:-1]) * (1024 if value[-1] == "G" else 1)
+    return number(size, 1, 8192, "server.max_heap (at most 8G)", True)
+
+
 def validate_server(spec):
     fields = {"online-mode", "white-list", "enforce-whitelist", "server-ip", "server-port",
               "whitelist", "ops", "jvm_properties"}
-    if not isinstance(spec, dict) or set(spec) != fields:
+    if not isinstance(spec, dict) or set(spec) - {"max_heap"} != fields:
         raise ValueError("Server settings must explicitly declare all settings")
+    heap_mebibytes(spec.get("max_heap", "3G"))
     for key in ("online-mode", "white-list", "enforce-whitelist"):
         if type(spec[key]) is not bool:
             raise ValueError("Invalid server boolean")
@@ -136,7 +143,7 @@ def validate_server(spec):
     for key, value in props.items():
         string(key, r"[A-Za-z0-9_.-]{1,128}", "JVM property name")
         one_line(value, 4096, "JVM property value")
-    return spec
+    return dict(spec, max_heap=spec.get("max_heap", "3G"))
 
 
 def load_session(path):
@@ -180,7 +187,7 @@ def load_session(path):
                 raise ValueError("Attach clients must have separate PIDs and game directories")
             pids.add(client["pid"])
             games.add(client["game_dir"])
-    validate_server(spec["server"])
+    spec["server"] = validate_server(spec["server"])
     if spec["mode"] == "launch" and (spec["server"]["online-mode"] or spec["server"]["server-ip"] != "127.0.0.1"):
         raise ValueError("Disposable clients require offline loopback")
     for key in ("cell", "run_dir", "java"):

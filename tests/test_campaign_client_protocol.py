@@ -90,6 +90,19 @@ class ProtocolTests(Fixture):
             with self.assertRaises(ValueError):
                 validate_server(self.settings)
 
+    def test_session_maximum_heap_default_and_explicit_value(self):
+        self.assertEqual("3G", load_session(self.dump_session())["server"]["max_heap"])
+        self.settings["max_heap"] = "4096M"
+        self.assertEqual("4096M", load_session(self.dump_session())["server"]["max_heap"])
+
+    def test_invalid_or_oversized_server_heap_refused(self):
+        for heap in ("9G", "8193M", "0G", "0M", "-1G", "1.5G", "3", "3T", "3g", "03G", " 3G",
+                     "3G ", "3G\n", "3G -Dextra=true", "3G\0", 3, True, None, "9" * 10000 + "G"):
+            with self.subTest(heap=heap if not isinstance(heap, str) or len(heap) < 30 else "oversized string"):
+                self.settings["max_heap"] = heap
+                with self.assertRaises(ValueError):
+                    load_session(self.dump_session())
+
 
 if __name__ == "__main__":
     unittest.main()

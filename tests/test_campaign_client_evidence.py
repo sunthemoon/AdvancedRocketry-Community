@@ -18,6 +18,41 @@ class EvidenceTests(Fixture):
                 self.assertIn(MASK, redact(value))
         self.assertEqual("normal player log", redact("normal player log"))
 
+    def test_argument_list_redaction(self):
+        for flag in ("accessToken", "clientId", "xuid"):
+            for separator in (",", ", ", " , "):
+                with self.subTest(flag=flag, separator=separator):
+                    prefix = f"ModLauncher running: args [--username, Bob, --{flag}{separator}"
+                    suffix = ", --userType, msa]"
+                    self.assertEqual(prefix + MASK + suffix, redact(prefix + "abc123secret" + suffix))
+
+    def test_argument_list_last_element_redaction(self):
+        for flag in ("accessToken", "clientId", "xuid"):
+            with self.subTest(flag=flag):
+                prefix = f"ModLauncher running: args [--{flag}, "
+                self.assertEqual(prefix + MASK + "]", redact(prefix + "abc123secret]"))
+
+    def test_argument_list_snowflake_mask_redaction(self):
+        for flag in ("accessToken", "clientId", "xuid"):
+            with self.subTest(flag=flag):
+                prefix = f"ModLauncher running: args [--{flag}, "
+                self.assertEqual(prefix + MASK + "]", redact(prefix + "\u2744" * 12 + "]"))
+
+    def test_argument_list_fixed_mask_stays_stable(self):
+        line = "ModLauncher running: args [--accessToken, " + MASK + ", --xuid, " + MASK + "]"
+        self.assertEqual(line, redact(line))
+
+    def test_flag_space_and_equals_separators_preserved(self):
+        for flag in ("accessToken", "clientId", "xuid"):
+            for separator in (" ", "=", " = "):
+                with self.subTest(flag=flag, separator=separator):
+                    line = f"--{flag}{separator}abc123secret --userType msa"
+                    masked = redact(line)
+                    self.assertNotIn("abc123secret", masked)
+                    self.assertIn(MASK, masked)
+                    self.assertTrue(masked.endswith(" --userType msa"))
+                    self.assertEqual(masked, redact(masked))
+
     def test_json_output_never_contains_secret_values(self):
         value = {"clientId": "secret", "nested": [{"accessToken": "secret"}],
                  "line": "xuid=secret", "path": self.root}
@@ -29,7 +64,9 @@ class EvidenceTests(Fixture):
 
     def test_copied_logs_are_redacted(self):
         source, target = self.root / "source.log", self.root / "target.log"
-        source.write_text('debug --accessToken secret\n{"clientId":"secret", "xuid":"secret"}\n', encoding="utf-8")
+        source.write_text('debug --accessToken secret\n{"clientId":"secret", "xuid":"secret"}\n'
+                          'ModLauncher running: args [--accessToken, secret, --clientId, secret, --xuid, secret]\n',
+                          encoding="utf-8")
         copy_log(source, target)
         self.assertNotIn("secret", target.read_text(encoding="utf-8"))
         self.assertIn("secret", source.read_text(encoding="utf-8"))
@@ -86,6 +123,15 @@ class EvidenceTests(Fixture):
         self.assertIn("-Darce.extra=value with spaces & chars", command)
         self.assertEqual("nogui", command[-1])
         self.assertEqual("@" + str(args), command[-2])
+
+    def test_server_maximum_heap_defaults_and_configuration(self):
+        self.assertIn("-Xmx3G", server_command("java.exe", self.server, "47.4.10", self.settings))
+        for heap in ("3G", "4096M", "8G", "8192M", "512M"):
+            with self.subTest(heap=heap):
+                self.settings["max_heap"] = heap
+                command = server_command("java.exe", self.server, "47.4.10", self.settings)
+                self.assertEqual(["-Xmx" + heap], [arg for arg in command if arg.startswith("-Xmx")])
+                self.assertIn("-Xms512M" if heap == "512M" else "-Xms1G", command)
 
 
 if __name__ == "__main__":

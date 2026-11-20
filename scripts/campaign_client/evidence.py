@@ -7,9 +7,9 @@ from pathlib import Path
 
 MASK = "[REDACTED]"
 SECRETS = {"accesstoken", "clientid", "xuid"}
-VALUE = r'''(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;}\]]+)'''
+VALUE = r'''(?:\[REDACTED\]|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;}\]]+)'''
 FIELDS = re.compile(r'''(?i)((?:["']?(?:accessToken|clientId|xuid)["']?)\s*[:=]\s*)''' + VALUE)
-TOKEN = re.compile(r"(?i)(--(?:accessToken|clientId|xuid)(?:\s*=\s*|\s+))" + VALUE)
+TOKEN = re.compile(r"(?i)(--(?:accessToken|clientId|xuid)(?:\s*[,=]\s*|\s+))" + VALUE)
 
 
 def now():

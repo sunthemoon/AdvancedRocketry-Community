@@ -1,6 +1,6 @@
 """Configure only the disposable server copy, with no RCON credentials."""
 from .evidence import write_json
-from .protocol import validate_server
+from .protocol import heap_mebibytes, validate_server
 
 
 def write_settings(directory, spec):
@@ -34,9 +34,11 @@ def write_settings(directory, spec):
 
 
 def server_command(java, directory, forge, spec):
-    validate_server(spec)
+    spec = validate_server(spec)
     argument = directory / f"libraries/net/minecraftforge/forge/1.20.1-{forge}/win_args.txt"
     if not argument.is_file():
         raise ValueError("Prepared server arguments missing")
-    return [str(java), "-Xms1G", "-Xmx3G", *[f"-D{k}={v}" for k, v in spec["jvm_properties"].items()],
+    maximum = spec["max_heap"]
+    initial = "1G" if heap_mebibytes(maximum) >= 1024 else maximum
+    return [str(java), "-Xms" + initial, "-Xmx" + maximum, *[f"-D{k}={v}" for k, v in spec["jvm_properties"].items()],
             "@" + str(argument), "nogui"]

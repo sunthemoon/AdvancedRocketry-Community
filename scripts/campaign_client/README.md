@@ -30,7 +30,7 @@ Example disposable single-client dedicated-server session:
   "server": {
     "online-mode": false, "white-list": false, "enforce-whitelist": false,
     "server-ip": "127.0.0.1", "server-port": 25565,
-    "whitelist": [], "ops": [], "jvm_properties": {}
+    "whitelist": [], "ops": [], "jvm_properties": {}, "max_heap": "3G"
   }
 }
 ```
@@ -68,6 +68,12 @@ Ops get level 4, without player-limit bypass. RCON is always disabled, its old
 password is removed, and no RCON connection is made. JVM properties are explicit
 string entries in `jvm_properties`. No marker files or test-switch defaults are
 invented. Network firewalling remains the operator's responsibility.
+
+The optional `server.max_heap` sets the dedicated server's `-Xmx`, defaulting to
+`3G`. Use a positive whole number with an uppercase `M` (MiB) or `G` (GiB) suffix,
+such as `4096M`. Values above `8G` / `8192M` are refused. The initial heap stays
+`1G` unless the maximum is smaller, in which case both use that smaller value.
+Heap configuration is not a change to the campaign's reference-node budgets.
 
 ## Commands
 
