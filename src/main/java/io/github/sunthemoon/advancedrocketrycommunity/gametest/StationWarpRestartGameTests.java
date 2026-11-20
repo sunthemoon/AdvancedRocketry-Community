@@ -13,12 +13,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -28,6 +32,9 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class StationWarpRestartGameTests {
+    private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_w416_warp_restart",
+            java.util.Comparator.comparing(UUID::toString));
+
     private StationWarpRestartGameTests() { }
 
     // F8: the final stop fold persists charging once; the stateless restored core cannot replay its old credit.
@@ -55,15 +62,26 @@ public final class StationWarpRestartGameTests {
                 CelestialIds.EARTH_ID, cut == Cut.CHARGING ? 2_400_000 : 2_500_000);
         StationRocketAuthority previous = f.warp.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
         List<BlockPos> placed = new ArrayList<>();
+        ChunkPos chunk = new ChunkPos(f.pad);
         RestartTestSupport.cleanup(helper, () -> {
             f.warp.clear();
             f.warp.installRocketAuthority(previous);
-            // The fixture's original authority is restored only for its own ordinary deletion/cleanup.
-            f.server.overworld().getDataStorage().set(StationRegistrySavedData.DATA_NAME, f.data);
+            f.online.forEach(f.server.getPlayerList()::remove);
+            f.online.clear();
+            f.cores.forEach(pos -> f.space.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState()));
             StationControlsGameTests.clear(f, placed);
-            f.close();
+            // Delete only this station from the latest authority: never roll back unrelated first-warp metadata.
+            var live = StationRegistrySavedData.get(f.server);
+            live.delete(f.id());
+            io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData.get(f.server)
+                    .remove(f.id());
+            f.platforms.removeTemplate(f.space, f.created.cell());
+            live.flush(f.server);
+            f.space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, f.id());
         });
-        ServerPlayer player = StationControlsGameTests.owner(f, "warpRestart");
+        f.space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, f.id());
+        f.join(f.ownerId, "warpRestart");
+        ServerPlayer player = f.server.getPlayerList().getPlayer(f.ownerId);
         BlockPos core = f.pad.east(2);
         f.core(core);
         BlockPos controller = StationControlsGameTests.place(f, placed, StationControllerKind.WARP,
