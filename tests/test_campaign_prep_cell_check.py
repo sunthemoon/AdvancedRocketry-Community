@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import zipfile
 
 from scripts.campaign_prep import cell_check as check
@@ -172,6 +172,48 @@ class CellCheckTests(unittest.TestCase):
         data["WorldGenSettings"].value["seed"] = nbt.Tag(nbt.LONG, 426)
         nbt.write_gzip(target, b"", root)
         self.assertNotEqual(first["identity"], check.world_identity(target)["identity"])
+
+    def run_failed_process(self, cleanup_error=False):
+        manifest, digest = self.make_cell()
+        java = self.root / "java.exe"
+        java.write_bytes(b"not an executable")
+        output = self.root / "evidence"
+        process = Mock()
+        process.process.pid = 425
+        process.wait_for.side_effect = TimeoutError("synthetic readiness failure")
+        if cleanup_error:
+            process.close.side_effect = RuntimeError("synthetic cleanup failure")
+
+        def capture(command, cwd, log, console):
+            self.assertTrue(console)
+            self.assertIn("-Dadvancedrocketrycommunity.releaseTestHooks=true", command)
+            self.assertNotEqual(manifest.parent / "server", cwd)
+            (cwd / "logs").mkdir()
+            (cwd / "logs/latest.log").write_text("synthetic server log\n")
+            log.write_text("synthetic console log\n")
+            return process
+
+        with patch.object(check, "check_lock"), patch.object(check, "disk_check", return_value={}), \
+                patch.object(check, "CapturedProcess", side_effect=capture):
+            result = check.run_cell(manifest, output, java, digest, "synthetic", 25585)
+        self.assertFalse(result["passed"])
+        self.assertEqual(1, len(result["processes"]))  # No restart after failure.
+        self.assertEqual("PASS", result["checks"]["source_unchanged"])
+        return result, output
+
+    def test_failed_start_closes_owned_job_and_removes_only_copy(self):
+        result, output = self.run_failed_process()
+        self.assertTrue(result["copy_removed"])
+        self.assertTrue(result["cleanup_confirmed"])
+        self.assertIn("synthetic readiness failure", result["findings"][0])
+        self.assertTrue((output / "first-console.log").is_file())
+
+    def test_unconfirmed_cleanup_retains_copy_and_marks_lock_for_caller(self):
+        result, output = self.run_failed_process(cleanup_error=True)
+        self.assertFalse(result["copy_removed"])
+        self.assertFalse(result["cleanup_confirmed"])
+        self.assertTrue((output / "CLEANUP-UNCONFIRMED.txt").is_file())
+        self.assertTrue((output / "server-copy").is_dir())
 
 
 if __name__ == "__main__":
