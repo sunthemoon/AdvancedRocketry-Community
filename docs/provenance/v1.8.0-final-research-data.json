@@ -1,0 +1,125 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-research-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/astrobody_data_processor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "236c50f7a3841204c9eefb1a0ef9a62446d0db06c155a89a3506aa0fc42b91aa",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/astrobody_data_processor.json",
+      "audit_asset": "A0010",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/observatory.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "a5655d03e73e46012332ff71acb6c960ec517997b08c7212d04d51ce735bc307",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/observatory.json",
+      "audit_asset": "A0071",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/astrobody_data_processor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "806aaa5492660138b4dce9e17200fad9bca221f6fe678be25e825bbb5e0e01f4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/astrobody_data_processor.json",
+      "audit_asset": "A0324",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/observatory.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchData.java",
+      "source_sha256": "bc2ce9115ce03210e8338511cfc6e06f23a509e9275f1f8f1df39f71497dafb5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "ccbc073f56e982998e0943a66df32f1a45d265ffa3f9ac6c3baf2f07f19f35f6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/observatory.json",
+      "audit_asset": "A0430",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ResearchData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/research/ResearchPatterns.java",
+      "source_sha256": "3a977240172cecf38f01bbe46351f8bd2a971b136dab40f4321030d24a315c29",
+      "authoring_commit": "4d9496ab205ae242614afd6309fc173797c68575",
+      "base_commit": "2e74bfbc380e642d9855574f1860620d9d3cf0a3"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "f88628c9c4a279170c8a5190673d1e54e446cc0f08e614c584947f53ac383135",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

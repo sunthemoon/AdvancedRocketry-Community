@@ -1,0 +1,144 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-unlit-torch-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/unlit_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180UnlitTorchData.java",
+      "source_sha256": "d990c24842d917edfd93741585bf1cc8d98ee7ba3fa79c92f1ab68d37b9cf2ee",
+      "authoring_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "base_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "target_sha256": "33122d984a55f6ad080deaa025b3ffe6501524a9620ef0cf5d65b4947e973d26",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/unlit_torch.json",
+      "audit_asset": "A0130",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180UnlitTorchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/unlit_wall_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180UnlitTorchData.java",
+      "source_sha256": "d990c24842d917edfd93741585bf1cc8d98ee7ba3fa79c92f1ab68d37b9cf2ee",
+      "authoring_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "base_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "target_sha256": "bc63b303f549a69a3e46e80078072c3c60144580477b69c65ab3b618013df327",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/unlit_wall_torch.json",
+      "audit_asset": "A0131",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180UnlitTorchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/unlit_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180UnlitTorchData.java",
+      "source_sha256": "d990c24842d917edfd93741585bf1cc8d98ee7ba3fa79c92f1ab68d37b9cf2ee",
+      "authoring_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "base_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "target_sha256": "5bf53f76b00a67927887f361366c6d6285fba4002d4c3a357a8ead8dfd95f209",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/unlit_torch.json",
+      "audit_asset": "A0292",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180UnlitTorchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/unlit_wall_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180UnlitTorchData.java",
+      "source_sha256": "d990c24842d917edfd93741585bf1cc8d98ee7ba3fa79c92f1ab68d37b9cf2ee",
+      "authoring_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "base_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "target_sha256": "1816e0949931ac47a1a70afa3e2fc2c789c3c528fdfa746603661c44c88f91ec",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/unlit_wall_torch.json",
+      "audit_asset": "A0293",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180UnlitTorchData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/unlit_torch.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180UnlitTorchData.java",
+      "source_sha256": "d990c24842d917edfd93741585bf1cc8d98ee7ba3fa79c92f1ab68d37b9cf2ee",
+      "authoring_commit": "eba41fdbbf547be5d3601c46b338be47d1a087f7",
+      "base_commit": "21ad5457e1155fb05e5e7546fb06b4521a71050d",
+      "target_sha256": "bebbb27ee37212ac9d31ecdbfbb65e27199b4520de143f171e78b1a377f9174f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/unlit_torch.png",
+      "audit_asset": "A0775",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180UnlitTorchData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c18a-unlit-torch-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "03d5cf5aaabd6272ceb8fcd24d7ac5e22c32e7be470a534be0c8b9cc743248e1",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

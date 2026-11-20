@@ -1,0 +1,168 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-satellite-bay-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/rocket_satellite_bay.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "16c477818b75768828970f283653a14f93bdaea3e6dd59799736b94de0694b27",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rocket_satellite_bay.json",
+      "audit_asset": "A0099",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_satellite_bay.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "820cbdafdd3c05e8e195e5a6c1051fd0e066ebac024dfb3ef2eae527c27b1a41",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/rocket_satellite_bay.json",
+      "audit_asset": "A0269",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/rocket_satellite_bay.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "39782e70325aa2b75c0f2e65057baa2468d68aa7a498e880fdeaf2fc4970f6c2",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rocket_satellite_bay.json",
+      "audit_asset": "A0467",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "68cb5e725713ab2e5a913d4b4ea72a4b6bc480ca57d33cb43d125aa364c97c84",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_bottom.png",
+      "audit_asset": "A0737",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "edcb979e896075376938768bdcd00e97bf97d13e85f4e274fdd7cabf094b6a43",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_side.png",
+      "audit_asset": "A0738",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SatelliteBayData.java",
+      "source_sha256": "8dc6bdb37c3143dbaebbbf2cf6cc0a271b4dd2748f0518b8617ebdb6a8a1d5d6",
+      "authoring_commit": "bb0ad799b97ce8f0fa332b1ff15bbc7cb098346c",
+      "base_commit": "27325173ab8c087730bc4fb33475189f64dd323e",
+      "target_sha256": "c94a642bd39dcd991d3c2c60df1d9cc6d58f05dfbead01079e877e53b51dd18a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/rocket_satellite_bay_top.png",
+      "audit_asset": "A0739",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SatelliteBayData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/bay/SatelliteBayStatus.java",
+      "source_sha256": "e89cd2134751265f148716dcbbc8eff65668f835b384471a2d3ea1c02ec811dc",
+      "authoring_commit": "1fd100e91e98884ee634500819f831048c350233",
+      "base_commit": "362ce414506fecb5a0fe5e72ed61c0c27099c705"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "905672e79a4bedf4d22ce71efb579e5b23b761c8c9a68c1bdfede4e78700caf0",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

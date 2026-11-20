@@ -1,0 +1,219 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-beacon-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/planetary_beacon.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "8110f2054f8653a7291b9d3fbcf40da73fc2b729cecb9be01e7f50263e4b5868",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/planetary_beacon.json",
+      "audit_asset": "A0077",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/planetary_beacon.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "4a2b35144a92b7743b9cf9ad36ae8d628d4e8d1572e9678b9c1e3c67bba1fe00",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/planetary_beacon.json",
+      "audit_asset": "A0247",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/beacon_finder.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "1970b7dc0a456399e0b03cb6c34d03355112ee85058fca978b69169b961a9cd6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/beacon_finder.json",
+      "audit_asset": "A0330",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/planetary_beacon.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "caa72cbc97c8a87e5440ed70592bd66d62c63b2b798c461a78412145effd071a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/planetary_beacon.json",
+      "audit_asset": "A0438",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/planetary_beacon_front.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "85ce837f19cf542dfd107bd0cf943bb5033d4fcefa45ba0cc056225e21485508",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/planetary_beacon_front.png",
+      "audit_asset": "A0714",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/planetary_beacon_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "a266d0aa7520b52a502d05ac6aa95636d7491218a084ddcaa14e25d23e9e0086",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/planetary_beacon_side.png",
+      "audit_asset": "A0715",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/planetary_beacon_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "778fd34aa018669d961aa58601e42e21ec39f125e2f156385209fd9c2db56647",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/planetary_beacon_top.png",
+      "audit_asset": "A0716",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/beacon_finder.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BeaconData.java",
+      "source_sha256": "5f50fb1a891c3a78cfa9eb6bffda0652bf87a0373cbb0924846bfc730deca9dc",
+      "authoring_commit": "a23e91e07229948d65066106120b0fa20405d09d",
+      "base_commit": "07c4b379065569994d0863f84f75eb05b3ba8030",
+      "target_sha256": "18206ed8059f7b17ac47870b46dd53344feff295532a0fa3ede8d2caf1781065",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/beacon_finder.png",
+      "audit_asset": "A0790",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BeaconData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/beacon/BeaconStatus.java",
+      "source_sha256": "97a3a47496fbc2b07808f8bfda85b0907535a0a8ba4f27712a15d99c98d80f4c",
+      "authoring_commit": "9dc1947c386b022d88975866b90c4c0fa2c06f3a",
+      "base_commit": "211cd3bea0b052a3dfa11496a771650b81343a85"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ArcCuttingData.java",
+      "source_sha256": "1af4b7ef01c6d62cce6105b51cde29a0e6f189ce68dc798439c77ec1eae02733",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c17c-beacon-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "663c2ea945aceaafbadb1f8516041257c67c77a6ef762dc8783b204b3d6ebed2",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

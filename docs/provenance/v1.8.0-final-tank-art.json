@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-tank-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/pressurized_tank_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180TankArt.java",
+      "source_sha256": "a79ddd4f41d88e1990faed52ddb0b0bd1b7eccf0fdbf7e1ea3ef87d4468e21bd",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "4a20a486a93ae68152f47b84a3f5c243d1a798bd48d3024212a7998ba968c2c7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/pressurized_tank_bottom.png",
+      "audit_asset": "A0721",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180TankArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/pressurized_tank_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180TankArt.java",
+      "source_sha256": "a79ddd4f41d88e1990faed52ddb0b0bd1b7eccf0fdbf7e1ea3ef87d4468e21bd",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "d1cef58c1709dff6d435eea6c944e31832478884457274c48a270e249f2c1449",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/pressurized_tank_side.png",
+      "audit_asset": "A0722",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180TankArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/pressurized_tank_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180TankArt.java",
+      "source_sha256": "a79ddd4f41d88e1990faed52ddb0b0bd1b7eccf0fdbf7e1ea3ef87d4468e21bd",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "f3ad20addf093a0395e3b9996425cb3a4198d31b46f376665d74c4febe77b43c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/pressurized_tank_top.png",
+      "audit_asset": "A0723",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180TankArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c16a-tank-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "671a41a1d16b42decf6ecba968b47f380c1272b7e983b7cbe2129e655612ced0",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}

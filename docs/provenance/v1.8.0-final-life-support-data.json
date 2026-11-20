@@ -1,0 +1,330 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-life-support-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/atmosphere_detector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "8dc26aeb429e564919aaffdf934e2e71e74475e0f3928e7fc67d0cf0e95e59f2",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/atmosphere_detector.json",
+      "audit_asset": "A0011",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/co2_scrubber.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "04aa9748087a9cc4bee65c88682523ac0cdc686459268404301b468e8d98eb1c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/co2_scrubber.json",
+      "audit_asset": "A0020",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/pipe_seal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "09ff094cc0305fb7e8cb8b1803a629ae277115d28fa3530039011c0e31cd1171",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/pipe_seal.json",
+      "audit_asset": "A0076",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/atmosphere_detector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "b7015ac61e82d4ad6f7fb105dc0fbd31e57e8ca79514537e7d3e306c9ea07eb4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/atmosphere_detector.json",
+      "audit_asset": "A0163",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/co2_scrubber.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "5b488502c695f3f41968e37a600b97342f55e1d978c1c746c537aaf4c6835141",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/co2_scrubber.json",
+      "audit_asset": "A0173",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/pipe_seal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "08800cae786b4b2d74023da163089ac487def2d9e8cc1c8054644933660f44ed",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/pipe_seal.json",
+      "audit_asset": "A0246",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/atmosphere_detector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "36edb2afbff4c2db0722d28ae92bec2f205633bac0167cf433db4f6bbdcb9ccf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/atmosphere_detector.json",
+      "audit_asset": "A0326",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/carbon_scrubber_cartridge.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "ac47fcfda0ede793288c4099dbe5a1ce15c0e431f0e995ede14ff259ebc17210",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/carbon_scrubber_cartridge.json",
+      "audit_asset": "A0338",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/co2_scrubber.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "4a55a2db505d35f0a07d55d925eb2729e899e4d80d1f53edde93220bad65c76e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/co2_scrubber.json",
+      "audit_asset": "A0342",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/pipe_seal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "b75a205516fc1195fc5889fdba0e3e25faa140c0473b651b27d904a52913300a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/pipe_seal.json",
+      "audit_asset": "A0437",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/atmosphere_detector.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "7d5b5b967eb0d048452867b2312d1ec95645685fa8b346b472384a0512cfcae2",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/atmosphere_detector.png",
+      "audit_asset": "A0602",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/co2_scrubber.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "5bc748fdc065f648c022f958ae01ca4607abd7b0c32cef5356a39cca2d3055fa",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/co2_scrubber.png",
+      "audit_asset": "A0619",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/pipe_seal.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "4668ea8d53ff2e73f03c5ccf50577b43cd9e3ceb97d5c43eaa192753556f1835",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/pipe_seal.png",
+      "audit_asset": "A0713",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbon_scrubber_cartridge.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LifeSupportData.java",
+      "source_sha256": "02dd277f30001174a8d0d44cc6225873d9071f06cd94dc127e419d8246555722",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "008cddc50c44df338db05a011e95b2a2c1341e8c78cc6294ae672eddd8115cd3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/carbon_scrubber_cartridge.png",
+      "audit_asset": "A0793",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LifeSupportData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "38cde34c3e5ae0e1e08f21e13c19ce78d3ff64f525508ebad2eca7c45176afaa",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

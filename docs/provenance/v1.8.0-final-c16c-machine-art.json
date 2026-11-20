@@ -1,0 +1,167 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-c16c-machine-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/centrifuge.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "f057cc440c7c5713fbde6b688db674bf3bbcede7a50b573d5a00dd827182147e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/centrifuge.png",
+      "audit_asset": "A0615",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/chemical_reactor.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "09035ab05207c8b8a038ba7d238ed06685231aa6ff5690d29b09ad637dd50be4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/chemical_reactor.png",
+      "audit_asset": "A0618",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/crystallizer.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "17944cf15de39b463de7a20d438aa4dff57372a2df08720403d2b6547a9f6724",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/crystallizer.png",
+      "audit_asset": "A0626",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/precision_laser_etcher.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "ffc6252f08b9c566d35efc2b119f435fcd9b9a74b7f30ccba9889e5bd8dcb8f0",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/precision_laser_etcher.png",
+      "audit_asset": "A0720",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/quartz_crucible.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "0fef630557d60a738b6ee28d24611e71b6addb8a2de24642acc6dbc4d6c3ed93",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/quartz_crucible.png",
+      "audit_asset": "A0728",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/quartz_crucible_shell.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineArt.java",
+      "source_sha256": "af6a1b086c2cef61c9fc2d3585091dc1b55409da83cafbd072de9e09ae75fc48",
+      "authoring_commit": "3e42caaf615584b96eb60d0abd3646a6a455e104",
+      "base_commit": "b16423f3ce06f72b868ff702831629768b0476de",
+      "target_sha256": "6de56a662708577cc7cb3866bf33d17e042e5b5f1b559ba331e8ddbd236df62b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/quartz_crucible_shell.png",
+      "audit_asset": "A0836",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "04777bbee460c4836212248905bbcbe6b6c6dc6f5339a2744488d9b534e02493",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}

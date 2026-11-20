@@ -1,0 +1,389 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-v170-endgame-providers",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/black_hole_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "9f8ee19360de000c35d6227a04df972be51f3da96a10fa64630c079385b8e0ef",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/black_hole_generator.json",
+      "audit_asset": "A0014",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/elevator_anchor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "4d228e055a15d33d4767e01f4afca9b5d7b9db4284be0a7e122e376e509c05ee",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/elevator_anchor.json",
+      "audit_asset": "A0033",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/elevator_terminal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "2431910fa7e4ddfa4d5db9be00505d3b8816f31dad79427a7d2e3e73ceffde57",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/elevator_terminal.json",
+      "audit_asset": "A0034",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/endgame_casing.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "8bc8b6a3d0ecdd902059b08731d57f42b88ba5a70a2aaf321e974985b10b1974",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/endgame_casing.json",
+      "audit_asset": "A0036",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/gravity_field_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "f34b9ac2e127ebb5aedec43cfe489a74a2aff77fa347873ee65f63ffba464b9e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/gravity_field_controller.json",
+      "audit_asset": "A0049",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/laser_target.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "cbd6b9e23e04dc086359b05df34203e55b3525c0bc7d6ceb947845e3c1125e9d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/laser_target.json",
+      "audit_asset": "A0058",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/orbital_laser_drill.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "81ecf31cf6ac6f058106129d2c43f935a37961d9804116ad04068e9b273c7c34",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/orbital_laser_drill.json",
+      "audit_asset": "A0073",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/blockstates/railgun.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "128e73fb92afa4bfad33379044c811bfb264dc40d641487b8a503a0c345255ec",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/railgun.json",
+      "audit_asset": "A0088",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/black_hole_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "7b725aec9e7e233c0155568cb78c22afcb3459de8e9941c4151babb941b9d46f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/black_hole_generator.json",
+      "audit_asset": "A0334",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/elevator_anchor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "05211d96250c5d995c4a103065326304a7e848558ec4e9f229caaf2efc979046",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/elevator_anchor.json",
+      "audit_asset": "A0366",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/elevator_terminal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "1dd6e0623c342f8665d6a9762d6a38f72b4c322b2d8a96d1162851bf7e305018",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/elevator_terminal.json",
+      "audit_asset": "A0367",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/endgame_casing.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "dd9c2c6debc67ab83b7d1f3497c0a92ad2638c890de497ab9c3d91bf14128239",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/endgame_casing.json",
+      "audit_asset": "A0370",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/gravity_field_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "5887d0e504711d67e9f45205057dbd910f2a137582c1f76b3995fe65eb040ea6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/gravity_field_controller.json",
+      "audit_asset": "A0386",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/laser_target.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "854c37caf6f0006d5c37c603c7815d186f01748d915114d9f91fffa166cebac9",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/laser_target.json",
+      "audit_asset": "A0413",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/orbital_laser_drill.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "a6eeac33d1fbb9b8f117499e406014565fbcffd51d8428967ac931ac4f284987",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/orbital_laser_drill.json",
+      "audit_asset": "A0432",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/item/railgun.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170EndgameProviders.java",
+      "source_sha256": "c9992e6ce9b2fc9b746a470ffdaebbb16364b05c167bc5372d65b8ee56c3af78",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "2bc1dd9ebe1b7d9bfc80314d69a22f6c29c69ab2d44de59cc8a5926e1b41e801",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/railgun.json",
+      "audit_asset": "A0451",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170EndgameProviders"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "source_sha256": "94b0a1a44858c807e8312587c919f47fef8ea7da366e0b13eb901033823a7e7e",
+      "authoring_commit": "5bb077d12f5dd1a89561062cc8c349cdd6508185",
+      "base_commit": "af6f8125a59cb390bc39f58dacccd9f11d1664ff"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockTags.java",
+      "source_sha256": "d1491e9fe3ae0bc7df0eb6b996a103832f74f6be3e3b6bd6316709a0c40b065d",
+      "authoring_commit": "fe2c04f2a7bd77916c842c94dbba16328dfa483a",
+      "base_commit": "fdf2fb5021a66509614c53c1637831f4f60d75cb"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "source_sha256": "fe680e12930ac58e8015d51734258db6a5cb8eab6a9b88ab2867b1dc7b8e0d87",
+      "authoring_commit": "91e4f27e08bff86dbfb9bdfa5075b78564d4465a",
+      "base_commit": "d49e4e68cbabbc76b8035388303233a5bfa906ab"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "source_sha256": "403a1d45edcb04d5cce431c918b7638549330a91a4c0de253cce973f47dd5e35",
+      "authoring_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+      "base_commit": "7bf27913c81626f687ca49ea3023f7b5c3a71b9e"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "64c73a56845a40f4189fa4bfd80522490d17101e17a0597d6642ad490f8cde63",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

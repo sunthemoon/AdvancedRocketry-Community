@@ -1,0 +1,164 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-thermite-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/thermite_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "0aaa2c75ca01d8a4488242f72a762ad303af56e5a2e33442f0f2fdf61c17c358",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/thermite_torch.json",
+      "audit_asset": "A0122",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/thermite_wall_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "cc245a044967a62b18cfe27bc1015594b36e94e6b1b0ad9f62c52cd500b5961d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/thermite_wall_torch.json",
+      "audit_asset": "A0123",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/thermite_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "66f937891ca62d2c38e0d65659a065ef1a0128502f8da578a9e18112d31f5ab8",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/thermite_torch.json",
+      "audit_asset": "A0290",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/thermite_wall_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "e5237de731f8185fd4c701bc8add011b4a00563cad4696edaf5ddc5678059b81",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/thermite_wall_torch.json",
+      "audit_asset": "A0291",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/thermite.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "83b2489fbec4143b839670db40400a6560deaedf86454930e2d43bfd06d49842",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/thermite.json",
+      "audit_asset": "A0518",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/thermite_torch.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ThermiteData.java",
+      "source_sha256": "b5c2f8af085f62c7c88a8b5de67cc0f39ff964dd5afdea51a4dd674e7b77e54b",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "fcb25af4246438f478586581f780509d1abaeebcb52c2e5d7f196c005f54e681",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/thermite_torch.json",
+      "audit_asset": "A0519",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ThermiteData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c18a-thermite-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "35936e25bce97dbe8a081a7e60aa84b4be2287900dbb7f7049d4be502e4b6d7e",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

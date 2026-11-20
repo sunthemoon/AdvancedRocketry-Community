@@ -1,0 +1,764 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-exoplanet-models",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/blue_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "9900a484c4efcfc0225d7ee9203a153bc0d382bf2adffb9f50a7b08a62876963",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/blue_crystal_block.json",
+      "audit_asset": "A0016",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/electric_mushroom.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "d49f1a312e4496044d850b5e975729c3099622d8051a004f8d85148ad298d16c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/electric_mushroom.json",
+      "audit_asset": "A0031",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/green_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "b57de2b6a816da15d0599ab52c3f76f1ec6ba974de6f23d9aab657bee8ca36a1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/green_crystal_block.json",
+      "audit_asset": "A0050",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_leaves.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "d29c0f6e76418d18dd3be75cef524d3446d0e4df3888ac87ffcc72c96d2c3620",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/lightwood_leaves.json",
+      "audit_asset": "A0060",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "19810e932adfa5f1e1bd7410eddcc04ff81719fd2ff9837857b7e1d1955aeae0",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/lightwood_log.json",
+      "audit_asset": "A0061",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_planks.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "7a7c855554421651cda63184710bca1c19bb6c229abaa46ba2c1a13bd93e6709",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/lightwood_planks.json",
+      "audit_asset": "A0062",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/lightwood_sapling.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "9af593e8f9689e7ee3ecca5d958e9131c50d8564f7a042375a948268f9517349",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/lightwood_sapling.json",
+      "audit_asset": "A0063",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/orange_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "883808496a783fbbe7bee9aa19a2266fe864b18ebc55e7999aeb9debd3a20fe4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/orange_crystal_block.json",
+      "audit_asset": "A0072",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/red_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "d4f37f6c7e0a79401237e20eb1c06e44d36de1d41a63b7a117270e38420f6ac1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/red_crystal_block.json",
+      "audit_asset": "A0089",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/violet_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "10444d9535b79614ab4bdebdf2de3254f72d72d7f9968047b7fe34dfb5cdd626",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/violet_crystal_block.json",
+      "audit_asset": "A0132",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/yellow_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "435d02895a819ab4c98f65e33e6ccf3ac1cd8852443da990db0ab53a7c578dc4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/yellow_crystal_block.json",
+      "audit_asset": "A0135",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/blue_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/blue_crystal_block.json",
+      "audit_asset": "A0168",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electric_mushroom.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "5e143738df2af32b3c89a12e6646e610a32046974793510a779727e684b9365b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/electric_mushroom.json",
+      "audit_asset": "A0179",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/green_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/green_crystal_block.json",
+      "audit_asset": "A0198",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_leaves.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "1d7a73e9eb0f1ac23ef7b3d2d651104e3c6c9fee94cc6279ad616564532fc894",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/lightwood_leaves.json",
+      "audit_asset": "A0205",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "9c356486a9f7854da93daa860213ff8b727940a53d8bb18d32f019095fe20a63",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/lightwood_log.json",
+      "audit_asset": "A0206",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_log_horizontal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "46e460333968f0a0b65063d49151c6a77c05d080d05c5dd45dcdd9b53f78255e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/lightwood_log_horizontal.json",
+      "audit_asset": "A0207",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_planks.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "0938b33d94723927bf298409d29ea5bee571f931f5f03fc5bd3ee633e41af6e3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/lightwood_planks.json",
+      "audit_asset": "A0208",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/lightwood_sapling.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "fd03d6b66e9fcaa719358dc79531b0aaafc31e26874c0ff4773c435ccd06ce1c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/lightwood_sapling.json",
+      "audit_asset": "A0209",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orange_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/orange_crystal_block.json",
+      "audit_asset": "A0241",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/red_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/red_crystal_block.json",
+      "audit_asset": "A0259",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/violet_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/violet_crystal_block.json",
+      "audit_asset": "A0294",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/yellow_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "43325df0d810a18711a30d78860802261e136f30065b93472287c1569b19e22a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/yellow_crystal_block.json",
+      "audit_asset": "A0297",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/blue_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "ac263b2c35a282545784e7fde5137a18481be079ddd7efe4bedf032cb04489ce",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/blue_crystal_block.json",
+      "audit_asset": "A0336",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/electric_mushroom.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "b3c87fcd055668da6e826bd25fe44b97cda9916f7c2fc8c7ff53915c0a79d5ce",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/electric_mushroom.json",
+      "audit_asset": "A0364",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/green_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "9c73ef5497c3baddc9c3453fc56cedc5cf89e850b17f3eba5a5c4395a1c8a525",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/green_crystal_block.json",
+      "audit_asset": "A0387",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_leaves.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "03d966c98dce90a15f283b60d73440d61ac2784d4c658f2214e7635992bb0c50",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/lightwood_leaves.json",
+      "audit_asset": "A0415",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "88509d942fbd59259dc68aa3695ea166dc8b3c4c35eefb2d425552a5aa89644b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/lightwood_log.json",
+      "audit_asset": "A0416",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_planks.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "242396db6849270fefcce90dbdd5c987c814be850341dba99da354ef871a9a27",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/lightwood_planks.json",
+      "audit_asset": "A0417",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/lightwood_sapling.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "2f90e2e341d8edb8e15f59e733b49f19ca61cd874caeed0207adf4ab65bd6e9f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/lightwood_sapling.json",
+      "audit_asset": "A0418",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/orange_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "ccbfc72e67e6f14f3e412d042b32fab6f74160a7fda85e7ae8369f1ccb178f29",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/orange_crystal_block.json",
+      "audit_asset": "A0431",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/red_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "d69e07312145ae5723b66174db6cc6ea2c525f6af7b927a70b285b58e8eb9010",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/red_crystal_block.json",
+      "audit_asset": "A0456",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/violet_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "17dc6782f466cf9d750133c636fef1b9e51f2ad597bd686f8486e1b7746ed9c0",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/violet_crystal_block.json",
+      "audit_asset": "A0553",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/yellow_crystal_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetModels.java",
+      "source_sha256": "3175642552343b68c56de135d40d96a668a0ad35d3d027372d95911b9ce046d0",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6",
+      "target_sha256": "77089a58886969fff792e8c47d261dae452fe9ecfa29b3e0c6293eacf89d9eab",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/yellow_crystal_block.json",
+      "audit_asset": "A0556",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetModels"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ExoplanetBlocks.java",
+      "source_sha256": "10b198f86498d512630199e82966c1f9d552222433b3a5349c6951378daa46f5",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetArt.java",
+      "source_sha256": "07f66cd9604c6142994d5db5bf540707b1a355c9d9f5a60433faf80409d76af1",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialModels.java",
+      "source_sha256": "690d989a31127cc0dc2db69bf34f9390c64ab4be78317ad450f438affc9ddfdd",
+      "authoring_commit": "28d24b8193731c8f68764b8bf76990361df60a74",
+      "base_commit": "fae751b7117e0ea7c6075b72c75305bb1d3e59e6"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "36c4bd38a830729762ddb2b09c6a3bcbf0da2d7d14bd9865672ef4cc5ea83ad0",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

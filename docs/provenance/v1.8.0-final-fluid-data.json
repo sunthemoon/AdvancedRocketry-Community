@@ -1,0 +1,170 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-fluid-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/enriched_lava.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "7b1c7956d13421ed035e1d87ab94b327d2ae63ef14aec84c6a703781be6e6235",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/enriched_lava.json",
+      "audit_asset": "A0038",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/rocket_fuel.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "e9a4810f55a8a038e62a7d6dd66dedc32e3dd61bc610673b0937a6c3b9c1b6c3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rocket_fuel.json",
+      "audit_asset": "A0093",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/enriched_lava.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "f6cd63ae415dddd9428b1e8645d864162d1d44419f8fedff472e8a337963a013",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/enriched_lava.json",
+      "audit_asset": "A0187",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_fuel.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "ddb74a4531a3d40f8508fcd30bba5650a79618d5270b9d324c16540cbf64861b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/rocket_fuel.json",
+      "audit_asset": "A0263",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/enriched_lava_bucket.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "85e2df322407714ebb0f3958244834be7c06aa8980435ea53799e2b1ba5d1aa6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/enriched_lava_bucket.json",
+      "audit_asset": "A0372",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/rocket_fuel_bucket.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java",
+      "source_sha256": "b39fc382c0d28404095c9068f64037630e213a4670edffc3fc1ad890618596c5",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "5f34da2fd2e8ba326a039b66482cc4ab758a2a47a3e5ffe1f786e7803c250010",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rocket_fuel_bucket.json",
+      "audit_asset": "A0460",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/resource/ResourceTableCodec.java",
+      "source_sha256": "de70d8ac98f740ee3b53daa01a224df6e29bc36ad13e1efa18f1cdea76685e19",
+      "authoring_commit": "629512bc599f7a5763144127de30aa861c5c7b2b",
+      "base_commit": "4c99db68867b6fe187b8fda563de901b7cc88da1"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "74b6424e84d7555176786e6e88e3a4b6bab3786b37e30a95a04e39e24771d8b5",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

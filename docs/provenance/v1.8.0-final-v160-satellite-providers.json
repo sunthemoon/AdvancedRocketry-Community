@@ -1,0 +1,284 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-v160-satellite-providers",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/blockstates/microwave_receiver.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "3193ba9b87049f278b790cfbb663d98fc58ed3900db45e489279c593ebe5faf3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/microwave_receiver.json",
+      "audit_asset": "A0065",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/blockstates/satellite_builder.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "d18cc9b0d1a43c16b6cee86e7a443ede3219e9dcf144edd301436132616ba6ab",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/satellite_builder.json",
+      "audit_asset": "A0107",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/asteroid_drill_module.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "69d31332cdd3a0d8b99f27367735f1811cb0553ed1e8a28537de5593223a85af",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/asteroid_drill_module.json",
+      "audit_asset": "A0323",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/gas_intake_module.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "8dea0af8e5419ecbffcf520de55ea3e13c6dd29950826784569ce2816edd735a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/gas_intake_module.json",
+      "audit_asset": "A0381",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/large_satellite_battery.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "d99f498b656308ac807ccfbc3670396b0e775bee132e09375ebabd1f6569d7cf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/large_satellite_battery.json",
+      "audit_asset": "A0411",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/microwave_receiver.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "36fd46e434f8b2f649096394285659128589b969b50b3019f5708d34196b5685",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/microwave_receiver.json",
+      "audit_asset": "A0423",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_battery.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "5019c93bfe11ad13b1f444261d21d06b1174c7a4779497a4642971cb39ff6cc0",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/satellite_battery.json",
+      "audit_asset": "A0475",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_builder.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "73c2f9078c412867f0fd06ae70009643445b11992abbb3ecb42f3a199f80aa6e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/satellite_builder.json",
+      "audit_asset": "A0476",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    },
+    {
+      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/satellite_cargo_hold.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V160SatelliteProviders.java",
+      "source_sha256": "db07d96e2257e97c0f6e26ee1b64ae414fca0df3070885c91213634b93ee69ae",
+      "authoring_commit": "bbc0f53a18655b66b64f2fa3a9d61979ba082574",
+      "base_commit": "7e736b5b8e5c345f65de8990f9308d32a5fd146f",
+      "target_sha256": "05c6df038f6526e549f417e199213ed8f43518c1d172590fbc4c9a523a0aee89",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/satellite_cargo_hold.json",
+      "audit_asset": "A0477",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V160SatelliteProviders"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "source_sha256": "94b0a1a44858c807e8312587c919f47fef8ea7da366e0b13eb901033823a7e7e",
+      "authoring_commit": "5bb077d12f5dd1a89561062cc8c349cdd6508185",
+      "base_commit": "af6f8125a59cb390bc39f58dacccd9f11d1664ff"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/CelestialIds.java",
+      "source_sha256": "e0d829e05804de818c65c3ab6e8e79ede9775f86fa1d334b29bd4eef8e5212ea",
+      "authoring_commit": "0ec91523e24f7956c53241aa5ad04ce5c2d619bc",
+      "base_commit": "4ce6675756d7f6bc70069adbd4dc579bfa96cb4d"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "source_sha256": "fe680e12930ac58e8015d51734258db6a5cb8eab6a9b88ab2867b1dc7b8e0d87",
+      "authoring_commit": "91e4f27e08bff86dbfb9bdfa5075b78564d4465a",
+      "base_commit": "d49e4e68cbabbc76b8035388303233a5bfa906ab"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "source_sha256": "403a1d45edcb04d5cce431c918b7638549330a91a4c0de253cce973f47dd5e35",
+      "authoring_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+      "base_commit": "7bf27913c81626f687ca49ea3023f7b5c3a71b9e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentDefinition.java",
+      "source_sha256": "d9e25dcbd10cb2dff4927e211bcc73067769ae96fd104e6cea65fe3a96342656",
+      "authoring_commit": "afa0c8fda69b7cf1f76e4a1e04c5c1e58ad37636",
+      "base_commit": "09b2fb614a589faa26cbc39ae3c9eec0c4406300"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/component/SatelliteComponentRole.java",
+      "source_sha256": "16d1d168c1e6d1104734eaf308c3ce31c85d547d700b1ec7ba719e0b93c32bb9",
+      "authoring_commit": "4b744c85e697ae44fda882b801f0086b21f62256",
+      "base_commit": "2752776516752c45cd10a3766b5d2a19e51c5c8a"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKind.java",
+      "source_sha256": "d929d6f784e7ac4198df2d73cc3604a31664449549abd47a374f4b099cd796dd",
+      "authoring_commit": "4b744c85e697ae44fda882b801f0086b21f62256",
+      "base_commit": "2752776516752c45cd10a3766b5d2a19e51c5c8a"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteKindDefinition.java",
+      "source_sha256": "35d1b8064d415562aff2592cbc0331539e4821ee156a67663da16a37264c4a36",
+      "authoring_commit": "afa0c8fda69b7cf1f76e4a1e04c5c1e58ad37636",
+      "base_commit": "09b2fb614a589faa26cbc39ae3c9eec0c4406300"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteComponentReloadListener.java",
+      "source_sha256": "893a43acf7830cf3423d242002bdc0512cb24d97d43943b5ab21a01c7147801e",
+      "authoring_commit": "4b744c85e697ae44fda882b801f0086b21f62256",
+      "base_commit": "2752776516752c45cd10a3766b5d2a19e51c5c8a"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/SatelliteDefinitionReloadListener.java",
+      "source_sha256": "d79db69a9fe4af0a903efde2528035c219c3f6630ffe4c9b674b019f029ace4e",
+      "authoring_commit": "4b744c85e697ae44fda882b801f0086b21f62256",
+      "base_commit": "2752776516752c45cd10a3766b5d2a19e51c5c8a"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "41941d0e4babfd58f8f71efcf8973256f7774afc55f77e7e523d99215f251421",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

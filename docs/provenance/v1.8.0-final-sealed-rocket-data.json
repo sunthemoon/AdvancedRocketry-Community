@@ -1,0 +1,102 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-sealed-rocket-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/sealed_rocket_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "acb9f4dd5b9e6f01a68b68b8826b1348a21a425b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SealedRocketData.java",
+      "source_sha256": "cb02cd9b8b1b9c9f4e73669ca3582686cc0c9551d5ebd74c58b1f2a0a451762c",
+      "authoring_commit": "acb9f4dd5b9e6f01a68b68b8826b1348a21a425b",
+      "base_commit": "f5b9b42d4e3bba1f331c4391678cc22f777abf27",
+      "target_sha256": "f94cede4ab719dbd4f2b25e88dfd175bd66503cee808fedbf87bd4163b15dcdf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/sealed_rocket_block.json",
+      "audit_asset": "A0110",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SealedRocketData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/sealed_rocket_block.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "acb9f4dd5b9e6f01a68b68b8826b1348a21a425b",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SealedRocketData.java",
+      "source_sha256": "cb02cd9b8b1b9c9f4e73669ca3582686cc0c9551d5ebd74c58b1f2a0a451762c",
+      "authoring_commit": "acb9f4dd5b9e6f01a68b68b8826b1348a21a425b",
+      "base_commit": "f5b9b42d4e3bba1f331c4391678cc22f777abf27",
+      "target_sha256": "94c3ab14c03320cf12c2dbccc7a4caa17398a874dc833a1be7196d079cf834be",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/sealed_rocket_block.json",
+      "audit_asset": "A0279",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SealedRocketData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/sealed_rocket_block.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "f5b9b42d4e3bba1f331c4391678cc22f777abf27",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SealedRocketData.java",
+      "source_sha256": "cb02cd9b8b1b9c9f4e73669ca3582686cc0c9551d5ebd74c58b1f2a0a451762c",
+      "authoring_commit": "acb9f4dd5b9e6f01a68b68b8826b1348a21a425b",
+      "base_commit": "f5b9b42d4e3bba1f331c4391678cc22f777abf27",
+      "target_sha256": "a3700013dbb296f2992c0acd380a344233cbea5c5f8c87a383aa7b0af07753a5",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/sealed_rocket_block.png",
+      "audit_asset": "A0748",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SealedRocketData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureArt.java",
+      "source_sha256": "c91c13e94239e4f0010be6b4132b3592128ffb00619afdcc017da1ea4260434c",
+      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "base_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-sealed-rocket-preauthoring.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "c662ed9fa8990fad1e96b0e81c5295d3f33eb93b4f7ad2915387063a0414f347",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

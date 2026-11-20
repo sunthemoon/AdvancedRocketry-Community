@@ -1,0 +1,419 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-v120-machine-block-state-provider",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/precision_assembler.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "f11471160ed05927405780945ed5126ef21f5ee110ca6d64c3a1cc90c751e16a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/precision_assembler.json",
+      "audit_asset": "A0080",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/precision_assembler_energy_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "562340e4be39e65315fce4038c13af2aa2c53a5365c0be084a7a39803f1576ef",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/precision_assembler_energy_input_port.json",
+      "audit_asset": "A0081",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/precision_assembler_item_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "46c32ddd97ef9109d6aa5934c17f070d4f7c8c43b3edd5fa4449853a67aeddbe",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/precision_assembler_item_input_port.json",
+      "audit_asset": "A0082",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/precision_assembler_item_output_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "f47380d92afd3d689b3b5665534449680954cadf1c5d5f6b5d5c84ccd19dcd3c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/precision_assembler_item_output_port.json",
+      "audit_asset": "A0083",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/rolling_machine.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "1540b44c08f903943d6f843b89a79b49690218d047143df6b00d63a4018a8ffe",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rolling_machine.json",
+      "audit_asset": "A0101",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/rolling_machine_energy_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "2f7d51d03655919ab64b0bca2621b0f9a27cfecb36ea1261ecde7d093beb6e15",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rolling_machine_energy_input_port.json",
+      "audit_asset": "A0102",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/rolling_machine_fluid_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "24c60345617b03be3ef553af980197d59df17563a4422f023483d9bcb3e8b7a7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rolling_machine_fluid_input_port.json",
+      "audit_asset": "A0103",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/rolling_machine_item_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "4a37714af26949d20f151a365fcb76754498d67054fbc96f177a168e09771c62",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rolling_machine_item_input_port.json",
+      "audit_asset": "A0104",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/blockstates/rolling_machine_item_output_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "943498142c49ec80d64d8fd33219a2fc792d68d96b41330003da836ae5f46390",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/rolling_machine_item_output_port.json",
+      "audit_asset": "A0105",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/precision_assembler.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "93fc2eea2d502b023ba15164ca2fce01cf6e3c0aa2b9fb799ef18039720efad7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/precision_assembler.json",
+      "audit_asset": "A0441",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/precision_assembler_energy_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "213cfeba745b783e35169312d0caefb283d69fea85eca7c2ed21532b0459063d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/precision_assembler_energy_input_port.json",
+      "audit_asset": "A0442",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/precision_assembler_item_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "598ca91436e3c488159ce5bb52ddbf8d959557c2bea98a6c6448147bbe9ed523",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/precision_assembler_item_input_port.json",
+      "audit_asset": "A0443",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/precision_assembler_item_output_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "c6af30c0044b42f07ebc1f5c2af9d74a84e47e3d43b3624509b5624f6d208e70",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/precision_assembler_item_output_port.json",
+      "audit_asset": "A0444",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/rolling_machine.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "2515575c9de30b2733ad2dd3a16083a84d661e845cf991073b0e00df7bf423b4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rolling_machine.json",
+      "audit_asset": "A0469",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/rolling_machine_energy_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "6371599b9caf02da6336f71f2bee00bbff132225f6bf350f21e3e17fbeba78ff",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rolling_machine_energy_input_port.json",
+      "audit_asset": "A0470",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/rolling_machine_fluid_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "27e69926d03338c6faf49e7c6a8a6e9790f5397186d5277c06d39aeb83127870",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rolling_machine_fluid_input_port.json",
+      "audit_asset": "A0471",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/rolling_machine_item_input_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "82bdf7353d85b5f3b284dc53cb8973405dbeb1852c381ee55e88b19e205f9608",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rolling_machine_item_input_port.json",
+      "audit_asset": "A0472",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    },
+    {
+      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/item/rolling_machine_item_output_port.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V120MachineBlockStateProvider.java",
+      "source_sha256": "e2b0dd5e3f04f32c79ca20e2dc757c01979305979d29d3fe26cd42f535762076",
+      "authoring_commit": "a415e5dade276513298d80a20cd5bf4248529af3",
+      "base_commit": "916c45f341f5328a8a92a6cdc1720b26f123b725",
+      "target_sha256": "bb7f396a2810342235b82f7281888a66fbb4e99365ad6b522edc0746c38d2f6b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/rolling_machine_item_output_port.json",
+      "audit_asset": "A0473",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V120MachineBlockStateProvider"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "source_sha256": "94b0a1a44858c807e8312587c919f47fef8ea7da366e0b13eb901033823a7e7e",
+      "authoring_commit": "5bb077d12f5dd1a89561062cc8c349cdd6508185",
+      "base_commit": "af6f8125a59cb390bc39f58dacccd9f11d1664ff"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "source_sha256": "fe680e12930ac58e8015d51734258db6a5cb8eab6a9b88ab2867b1dc7b8e0d87",
+      "authoring_commit": "91e4f27e08bff86dbfb9bdfa5075b78564d4465a",
+      "base_commit": "d49e4e68cbabbc76b8035388303233a5bfa906ab"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "8e942494e99aae03b000eaf9c78613425ce3ec1dba753dbd9ea2c679e1372c11",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

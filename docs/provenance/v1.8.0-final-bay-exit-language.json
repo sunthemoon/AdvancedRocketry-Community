@@ -1,0 +1,77 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-bay-exit-language",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180_bay_exit/lang/en_us.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "5993116b596261b6533a910d62556c63b4bbbd21",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BayExitLanguage.java",
+      "source_sha256": "edcc33457d92559ce7f6b42ba6c5ec6b329cd3d6a68cf55032c2b6dabd163729",
+      "authoring_commit": "5993116b596261b6533a910d62556c63b4bbbd21",
+      "base_commit": "daf45a8444f089e279b35c3175862e297bd4ce19",
+      "target_sha256": "f1c05888c17df4626fec8a792181f7873fbd8f3cfcb828f150f061d428d1b25f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity_v180_bay_exit/lang/en_us.json",
+      "audit_asset": "A0907",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BayExitLanguage"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180_bay_exit/lang/zh_cn.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "5993116b596261b6533a910d62556c63b4bbbd21",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180BayExitLanguage.java",
+      "source_sha256": "edcc33457d92559ce7f6b42ba6c5ec6b329cd3d6a68cf55032c2b6dabd163729",
+      "authoring_commit": "5993116b596261b6533a910d62556c63b4bbbd21",
+      "base_commit": "daf45a8444f089e279b35c3175862e297bd4ce19",
+      "target_sha256": "db3d85185541068679174d0a9c7af43d801c2990def9c90d616fa0c3ae7a834b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity_v180_bay_exit/lang/zh_cn.json",
+      "audit_asset": "A0908",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180BayExitLanguage"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "84cbe26f583e624e1378ff7d5b9c52cee8dcc6948093eb3513443d0e7a5162e6",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

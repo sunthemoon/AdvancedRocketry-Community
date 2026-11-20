@@ -1,0 +1,140 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-combustion-models",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/combustion_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionModels.java",
+      "source_sha256": "8a7e466373ea30590514450574df0e549431d6b48bc39724d853c135de45e3bc",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "26cb9dc404c0dbfd0baf8c5b22217981c51df333ae6105ef85bd559bc0f82ef3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/combustion_generator.json",
+      "audit_asset": "A0021",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180CombustionModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/combustion_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionModels.java",
+      "source_sha256": "8a7e466373ea30590514450574df0e549431d6b48bc39724d853c135de45e3bc",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "deb43ef4a166d587f816bb02c6f5fccc61720b3fbd9cfbd18791f243726fb050",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/combustion_generator.json",
+      "audit_asset": "A0174",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180CombustionModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/combustion_generator_lit.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionModels.java",
+      "source_sha256": "8a7e466373ea30590514450574df0e549431d6b48bc39724d853c135de45e3bc",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "1183ba49600b551be701f5dc8d37191d1c89946515e84c747b8f54163493de8f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/combustion_generator_lit.json",
+      "audit_asset": "A0175",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180CombustionModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/combustion_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionModels.java",
+      "source_sha256": "8a7e466373ea30590514450574df0e549431d6b48bc39724d853c135de45e3bc",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "61bb968f893f081f36e7efadd063e791c2efe35e5c6d4f9bef3b973e0b375625",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/combustion_generator.json",
+      "audit_asset": "A0343",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180CombustionModels"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "source_sha256": "94b0a1a44858c807e8312587c919f47fef8ea7da366e0b13eb901033823a7e7e",
+      "authoring_commit": "5bb077d12f5dd1a89561062cc8c349cdd6508185",
+      "base_commit": "af6f8125a59cb390bc39f58dacccd9f11d1664ff"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionArt.java",
+      "source_sha256": "6b7af8e637009f10e35e10f4c234333a01574ad45e6d736346ec6e9eeb52491d",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlock.java",
+      "source_sha256": "2b7f9b0655bd7b3a5fca9080db4d6de13bbf5e3c4d7772df7fb75a2cde72a3af",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "source_sha256": "fe680e12930ac58e8015d51734258db6a5cb8eab6a9b88ab2867b1dc7b8e0d87",
+      "authoring_commit": "91e4f27e08bff86dbfb9bdfa5075b78564d4465a",
+      "base_commit": "d49e4e68cbabbc76b8035388303233a5bfa906ab"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "cd36b52a78e495ccb178164b9556eef46248314bcaab65c8f33c835272a20102",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

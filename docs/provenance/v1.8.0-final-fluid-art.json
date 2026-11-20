@@ -1,0 +1,317 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-fluid-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_flow.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "1c17a84ec7fd2baa1e85b145e2a3e579f90c19835282f0adfddcf693a06c47ed",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_flow.png",
+      "audit_asset": "A0643",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_still.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "6378c069a934a9e43f1f2e05702ec09603dc9b263b6d64461a417c01c98a7593",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_still.png",
+      "audit_asset": "A0644",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_flow.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_flow.png",
+      "audit_asset": "A0645",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_still.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_still.png",
+      "audit_asset": "A0646",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_flow.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_flow.png",
+      "audit_asset": "A0647",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_still.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_still.png",
+      "audit_asset": "A0648",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/oxygen_flow.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_flow.png",
+      "audit_asset": "A0649",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/oxygen_still.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_still.png",
+      "audit_asset": "A0650",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_flow.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_flow.png",
+      "audit_asset": "A0651",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_still.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_still.png",
+      "audit_asset": "A0652",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/enriched_lava_bucket.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "6f5f77258b5abdfcb66eb006cc1a7ca0e01ea73b254fc235d19eca1bdf83d626",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/enriched_lava_bucket.png",
+      "audit_asset": "A0800",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/nitrogen_canister.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "c8de70dd28b373c0d6f24846f67270ae720cb3f867843ccbd853e4ff5b0141e3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/nitrogen_canister.png",
+      "audit_asset": "A0830",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/rocket_fuel_bucket.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java",
+      "source_sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "142a054a0514d88156b7273cb327b08c4b1ab964b35bc51dd5ecfe7eee5a82f5",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/rocket_fuel_bucket.png",
+      "audit_asset": "A0837",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluidDefinition.java",
+      "source_sha256": "12d397902f45cae769a9ef0ad81e6f322fd35afac8db6c97fbb6def7a25d947f",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "6d98f50d14f23cf29cc8f135fe2f15d00f066f6338184d9f6f43a7d9c93438be",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}
