@@ -162,8 +162,8 @@ public final class ElevatorRestartGameTests {
         devices().elevatorRides().clear(f.server); // Actual stop semantics: there is deliberately no ride NBT.
         f.level.removeBlockEntity(f.anchorPos);
         f.space.removeBlockEntity(f.terminalPos);
-        service().clear();
         devices().clear();
+        service().clear();
         EndgameSavedData restored = EndgameSavedData.load(registry);
         helper.assertTrue(restored.operational(), "Endgame registry did not reopen");
         f.server.overworld().getDataStorage().set(EndgameSavedData.DATA_NAME, restored);
