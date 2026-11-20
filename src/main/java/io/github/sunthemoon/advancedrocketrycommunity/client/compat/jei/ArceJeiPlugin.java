@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlateP
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -26,8 +27,10 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -77,11 +80,7 @@ public final class ArceJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        registration.addIngredientInfo(List.of(new net.minecraft.world.item.ItemStack(ModItems.SOLAR_ARRAY.get()),
-                        new net.minecraft.world.item.ItemStack(ModItems.SOLAR_ARRAY_PANEL.get()),
-                        new net.minecraft.world.item.ItemStack(ModItems.POWER_OUTPUT_PLUG.get())),
-                mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
-                net.minecraft.network.chat.Component.translatable("jei.advancedrocketrycommunity.solar_array"));
+        registerInformation(registration, BuiltInRegistries.ITEM::get);
         ClientLevel level = Minecraft.getInstance().level;
         register(registration, level, ModRecipes.ELECTROLYZING_TYPE.get(), ElectrolyzerJeiCategory.TYPE,
                 ElectrolyzerRecipe::hasTagIngredients, recipe -> true);
@@ -98,6 +97,11 @@ public final class ArceJeiPlugin implements IModPlugin {
         registerClassic(registration, level, ModRecipes.CHEMICAL_REACTOR_TYPE.get(), ClassicMachineJeiCategory.CHEMICAL_REACTOR);
         registerClassic(registration, level, ModRecipes.PRECISION_LASER_ETCHER_TYPE.get(), ClassicMachineJeiCategory.PRECISION_LASER_ETCHER);
         registerClassic(registration, level, ModRecipes.CENTRIFUGE_TYPE.get(), ClassicMachineJeiCategory.CENTRIFUGE);
+    }
+
+    static void registerInformation(IRecipeRegistration registration, Function<ResourceLocation, Item> items) {
+        OperationInformation.register(items, (stacks, text) -> registration.addIngredientInfo(stacks,
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK, text));
     }
 
     @Override
