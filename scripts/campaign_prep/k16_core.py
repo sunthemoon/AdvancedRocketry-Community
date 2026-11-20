@@ -588,7 +588,7 @@ def generate(output, jar_path=JAR, root=ROOT):
 def tree_hashes(directory):
     result = {}
     for path in sorted(directory.rglob("*")):
-        if path.is_symlink() or path.is_junction():
+        if path.is_symlink() or getattr(path, "is_junction", lambda: False)():
             raise ValueError(f"Linked fixture member: {path}")
         if path.is_file():
             result[path.relative_to(directory).as_posix()] = file_hash(path)
@@ -667,6 +667,22 @@ def seal(output):
     target.write_text("".join(f"{value}  {name}\n" for name, value in members.items()), encoding="ascii", newline="\n")
 
 
+def abort_owned(process, output):
+    """Retain the caller's lock if its directly owned Java cannot be confirmed dead."""
+    try:
+        if process.process.poll() is None:
+            subprocess.run(["taskkill", "/PID", str(process.process.pid), "/T", "/F"],
+                           check=True, capture_output=True, timeout=30)
+        process.abort()
+        if process.process.poll() is None:
+            raise RuntimeError("Owned Java is still running")
+    except BaseException:
+        (output / "retain-heavy-jvm-lock.txt").write_text(
+            f"W427 cleanup was not confirmed for owned Java pid={process.process.pid}. "
+            "Do not release the lock or delete its copied server.\n", encoding="ascii")
+        raise
+
+
 def build(output, cell_path, java, lock_owner):
     """Console-only builder. Caller owns the machine lock until this returns."""
     from scripts import run_dedicated_server_smoke as smoke
@@ -687,7 +703,8 @@ def build(output, cell_path, java, lock_owner):
         raise ValueError("Refusing occupied build targets")
     process = None
     copied = False
-    report = dict(status="FAILED", source=str(source), source_before=source_hashes, client_started=False)
+    report = dict(status="FAILED", source=str(source), source_before=source_hashes, client_started=False,
+                  builder_source_sha256=file_hash(Path(__file__)))
     try:
         shutil.copytree(source, copy, ignore=shutil.ignore_patterns("world", "logs", "crash-reports"))
         copied = True
@@ -765,11 +782,7 @@ def build(output, cell_path, java, lock_owner):
                       world_hashes=tree_hashes(output / "world"))
     finally:
         if process is not None:
-            # Directly owned Java only; never terminate another worker's process.
-            if process.process.poll() is None:
-                subprocess.run(["taskkill", "/PID", str(process.process.pid), "/T", "/F"],
-                               check=True, capture_output=True, timeout=30)
-            process.abort()
+            abort_owned(process, output)
         report["source_after"] = tree_hashes(source)
         report["source_unchanged"] = report["source_after"] == source_hashes
         (output / "world-build.json").write_bytes(json_bytes(report))

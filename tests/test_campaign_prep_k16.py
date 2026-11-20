@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import zipfile
 
 from scripts.campaign_client.protocol import validate_request
@@ -232,6 +232,26 @@ class PatternAndOutputTest(unittest.TestCase):
         raw[6] = (raw[6] & 15) | 48
         raw[8] = (raw[8] & 63) | 128
         self.assertEqual(str(k16.UUID(bytes=bytes(raw))), k16.OWNER)
+
+    def test_failed_owned_process_cleanup_retains_lock_instruction(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            process = Mock()
+            process.process.pid = 12345
+            process.process.poll.return_value = None
+            with patch.object(k16.subprocess, "run", side_effect=OSError("injected stop failure")):
+                with self.assertRaisesRegex(OSError, "injected stop failure"):
+                    k16.abort_owned(process, output)
+            self.assertIn("pid=12345", (output / "retain-heavy-jvm-lock.txt").read_text())
+
+    def test_dead_owned_process_does_not_get_killed_again(self):
+        with tempfile.TemporaryDirectory() as temp:
+            process = Mock()
+            process.process.poll.return_value = 0
+            with patch.object(k16.subprocess, "run") as run:
+                k16.abort_owned(process, Path(temp))
+            run.assert_not_called()
+            process.abort.assert_called_once()
 
 
 if __name__ == "__main__":
