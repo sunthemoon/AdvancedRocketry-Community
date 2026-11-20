@@ -2,7 +2,7 @@
 
 | Item | Value |
 |---|---|
-| Status | **DRAFT plan, not started.** No final campaign row has run or passed, and no Gate, version or release is approved here. Root scheduled phases 1 to 3 after C4's restart campaign under R456; the account, time and equipment arrangements still need the owner's confirmation in [OWNER-FINAL-PACKET-DRAFT](OWNER-FINAL-PACKET-DRAFT.md), section 6. |
+| Status | **DRAFT plan, not started.** No final campaign row has run or passed, and no Gate, version or release is approved here. Root scheduled phases 1 to 3 after C5's restart campaign under R456; the account, time and equipment arrangements still need the owner's confirmation in [OWNER-FINAL-PACKET-DRAFT](OWNER-FINAL-PACKET-DRAFT.md), section 6. |
 | Written by | W359, a read-only headless Claude session, on 2026-11-13, for [TASK-W359](../TASK-W359-FINAL-CAMPAIGN-PLAN.md) under Root decision R437 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). |
 | Base | W359 wrote the original plan on branch `codex/v1.8.0-w359` at `8e734616c`. W395 refreshed it on `codex/v1.8.0-w395` from `b2b984eb5` on 2026-11-20 under [TASK-W395](../TASK-W395-CAMPAIGN-PLAN-REFRESH.md), R526. Section 10 records the refresh. |
 | Owner's instruction | "最终实机战役先准备计划，联机和性能仍放最后" (2026-11-13). Earlier: the campaign is suspended and multiplayer and performance come last (2026-11-04, [OWNER-DECISIONS-20261104](OWNER-DECISIONS-20261104.md)); the owner confirms later when the full campaign starts (2026-11-09). |
@@ -11,11 +11,11 @@
 ## 1. Names used in this plan
 
 - **Candidate** means the one hosted build whose JAR all final evidence uses (Root decision R386). **C3**, commit
-  `9a15e1f42`, is historical. **C4** is the coming accounting-enabled candidate, not built at this refresh. It follows
-  W391's merge; the accounting activation, W358, W360 and W363 are already merged. [QUEUE](../QUEUE.md), rows W372E,
-  W358, W360, W363F, W373, W373C and W391, and section 7.1 give the state on 2026-11-20. All planned rows below
-  target C4. If a later candidate replaces it, Root records both identities and applies decision O3; earlier results
-  are not relabelled as C4 evidence.
+  `9a15e1f42`, and **C4**, commit `659bbcb6a745885565c07d98f5d695d43beef3f2`, are historical.
+  **C5** is the accounting-enabled candidate at `9172113ad4ecfb9047432f02b97d240fc06130b6`, named by R555
+  on 2026-11-20. Its hosted JAR and runs are pinned in [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md), section 2.1;
+  its campaign results remain PENDING. All planned rows below target C5. If a later candidate replaces it, Root records both identities and applies decision O3; earlier results
+  are not relabelled as C5 evidence.
 - **Levels.** They follow section 2 of the [quality budgets](../../../17-V1PLUS-QUALITY-BUDGETS.md):
   - **V1**: one real client on a real GPU.
   - **V2**: two real clients.
@@ -76,7 +76,7 @@ of it.
 | It has no JEI client profile. | V1.8 §10 requires the four Forge × JEI cells with a real client. | P3 |
 | It records FPS only through F3 screenshots. | docs/17 §8 asks for average FPS, 1% low and the first stall. | P3, decision O8 |
 | It runs on the development PC only. | The second GPU category and the reference node are other machines. | P6, P7 |
-| Its fixture world and batches are from older JARs. | Evidence must come from C4. | P2, P4 |
+| Its fixture world and batches are from older JARs. | Evidence must come from C5. | P2, P4 |
 
 ## 4. Inventory of deferred items
 
@@ -87,7 +87,7 @@ W359 searched them for these words and read the passages that name a concrete ch
 with its source records, not one row per sentence. Preparation step P4 expands every row into numbered steps and
 re-reads the row's sources in full; a check found there that this table lacks is added, not dropped.
 
-No row below has passed. "Earlier scoped evidence" in a source never counts for C4.
+No row below has passed. "Earlier scoped evidence" in a source never counts for C5.
 
 ### 4.1 v1.0.0, Stable Core MVP
 
@@ -96,7 +96,7 @@ No row below has passed. "Earlier scoped evidence" in a source never counts for 
 | A01 | V1.0 §10.1; REL-1.0 M01 | A fresh packaged dedicated server starts, stops and starts again; the right version shows; no side-loading failure. | DS | Scripted |
 | A02 | V1.0 §10.2; REL-1.0 M02 to M06, M08, M09; docs/15 §13 scenes | The core flow in a new world: electrolyzer, life support and a sealed room that is opened and restored, a legal rocket with an invalid one refused, the Moon and back, a station, research and a satellite mission. | DS, V1 | Scripted |
 | A03 | V1.0 §10.3; REL-1.0 M11 and `MIGRATION-REPORT.md` procedure | The v0.9 Beta world upgrades on a copy, reopens twice and play continues; originals and backups are intact. | DS | Scripted |
-| A04 | V1.0 §10.4; REL-1.0 `RECOVERY-MATRIX.md` | A forced stop at each transaction phase of assembly, disassembly and transfer, then recovery, on C4. | S2 | Scripted |
+| A04 | V1.0 §10.4; REL-1.0 `RECOVERY-MATRIX.md` | A forced stop at each transaction phase of assembly, disassembly and transfer, then recovery, on C5. | S2 | Scripted |
 | A05 | V1.0 §10.5; REL-1.0 M05, M07 and `MULTIPLAYER-REPORT.md` | Owner and passenger on two real clients; the passenger disconnects in flight and reconnects; seats and rocket agree on both clients. | V2 | Owner |
 | A06 | V1.0 §10.6; REL-1.0 M08 | A player without operator rights; station invitation, rejection and ownership transfer; requests without permission. | V2 | Both |
 | A07 | V1.0 §10.7; REL-1.0 `MANUAL-TEST.md` closing note | Online mode, the whitelist and normal authentication, recorded without any credential. | V2 | Owner |
@@ -110,7 +110,7 @@ No row below has passed. "Earlier scoped evidence" in a source never counts for 
 | A15 | V1.0 §11.6; REL-1.0 M12 | Two real clients watch the same rocket and passengers and see the same state. | V2 | Both |
 | A16 | V1.0 §11.7; docs/15 §13; test plan section 12 | The full visual flow on Forge 47.4.10; a key smoke on 47.4.23; JEI present and absent once each. | V1 | Scripted |
 | A17 | REL-1.0 M10; docs/15 §13 | The server restarts and the client enters again; identities and resource totals are compared. | DS | Scripted |
-| A18 | REL-1.0 `MULTIPLAYER-REPORT.md`; GATE_STATUS "retained handshake-timeout review"; harness `REPORT.md` section 2 | The first-connection timeout: how often it happens on C4, on each Forge lane. | DS, V2 | Scripted |
+| A18 | REL-1.0 `MULTIPLAYER-REPORT.md`; GATE_STATUS "retained handshake-timeout review"; harness `REPORT.md` section 2 | The first-connection timeout: how often it happens on C5, on each Forge lane. | DS, V2 | Scripted |
 
 ### 4.2 v1.1.0 and v1.1.1, expansion kernel
 
@@ -142,7 +142,7 @@ below cover them.
 
 ### 4.4 v1.3.0, public API and compatibility
 
-These rows need the API fixture mod built against C4 (P2).
+These rows need the API fixture mod built against C5 (P2).
 
 | ID | Source | What is checked | Level | Driver |
 |---|---|---|---|---|
@@ -194,7 +194,7 @@ These rows need the API fixture mod built against C4 (P2).
 | G01 | V1.6 §10.1, §13.3; GATE-1.6 G7 | More than 100 active missions across a restart; 500 missions within the budget and 1,000 as the extended load; the flush cost of ADR-050 section 2 on reference hardware. | DS, REF | Scripted |
 | G02 | V1.6 §10.2 | A player offline for hours gets a bounded catch-up. | DS | Scripted |
 | G03 | V1.6 §10.3 | Two players settle in the same tick. | V2 | Both |
-| G04 | V1.6 §10.4 | A forced stop before and after the reward write, on C4. | S2 | Scripted |
+| G04 | V1.6 §10.4 | A forced stop before and after the reward write, on C5. | S2 | Scripted |
 | G05 | V1.6 §10.5, §10.6 | Mission instance chunks unload and are reclaimed; no chunk ticket is left. | DS | Scripted |
 | G06 | V1.6 §11.1 to §11.4; GATE-1.6 G8 | The satellite assembly and mission screens and their progress; the star-map target matches the body; the asteroid and gas-giant visuals; failure, cancel and expiry feedback; a mission gameplay video. | V1 | Both |
 | G07 | V1.6 §11.5 | Mission state on two clients. | V2 | Both |
@@ -205,7 +205,7 @@ These rows need the API fixture mod built against C4 (P2).
 |---|---|---|---|---|
 | H01 | V1.7 §10.1 | Several players contend for the same target. | V2 | Both |
 | H02 | V1.7 §10.2 | A non-owner and a player without operator rights are refused. | V2 | Both |
-| H03 | V1.7 §10.3 | The server is stopped inside a block-processing batch, on C4. | S2 | Scripted |
+| H03 | V1.7 §10.3 | The server is stopped inside a block-processing batch, on C5. | S2 | Scripted |
 | H04 | V1.7 §10.5; GATE-1.7 G4 | Protection mods: an adapter test or the matrix with real mods. This needs third-party mods; see decision O6. | DS | Scripted |
 | H05 | V1.7 §10.6, §13.5 | A long device run leaves no ticket or cache; no watchdog on the reference node. | SOAK | Scripted |
 | H06 | V1.7 §11.1 to §11.5; GATE-1.7 G8 | Target selection, the danger confirmation, progress and failure; the laser, black-hole, gravity and elevator visuals do not hide key feedback; several devices visible at once; GUI scales and readability. | V1 | Both |
@@ -219,7 +219,7 @@ These rows need the API fixture mod built against C4 (P2).
 |---|---|---|---|---|
 | I01 | V1.8 §10.1, §11.5; W62 item 10.1; [OWNER-FINAL-PACKET-DRAFT](OWNER-FINAL-PACKET-DRAFT.md) section 6, O4 | One technology route from vanilla resources to the combustion generator, the classic machines, a Moon flight, a station warp and one endgame device, on a dedicated server, recorded on video with the build hash. Root recommends the scripted rehearsal plus a recorded hand-played subset; the owner confirms O4 in the packet. | DS, V1 | Both (decision O4); the full survival-played route is the superseded recommendation |
 | I02 | V1.8 §10.2, §13.1; W62 items 10.2, 13.1 | Many v1.8 machines of every kind in one world, with chunk unloading; then the same layout scaled up on the reference node, idle and active. | DS, REF | Scripted |
-| I03 | V1.8 §10.3; W62 item 10.3 | A v1.7 world that holds every placeholder and old ID loads unchanged on C4, with two restarts. | DS | Scripted |
+| I03 | V1.8 §10.3; W62 item 10.3 | A v1.7 world that holds every placeholder and old ID loads unchanged on C5, with two restarts. | DS | Scripted |
 | I04 | V1.8 §10.4, §10.5 as revised by D9; [W188](W188.md) | The four cells of Forge 47.4.10 and 47.4.23, each with and without JEI 15.56.0.205: a packaged start, the recipe counts per category, a restart, and on a real client the recipe display and the usage lookup. | DS, V1 | Scripted |
 | I05 | V1.8 §10.6; W62 item 10.6 | Long automated production: the item and fluid totals are conserved over a multi-hour run. | SOAK | Scripted |
 | I06 | V1.8 §11.1, §11.4; W62 item 9.2 | Every new screen, model, texture and sound sampled, and the high-risk assets all checked; no missing texture or model, on screen or in the client log. | V1 | Both |
@@ -233,28 +233,28 @@ These rows need the API fixture mod built against C4 (P2).
 
 | ID | Source | What is checked | Level | Driver |
 |---|---|---|---|---|
-| J01 | [C4-SWITCH-REPORT](C4-SWITCH-REPORT.md) section 3.4 | The satellite bay's menu statuses and the OWNER_PENDING_FULL text. | V1 | Scripted |
+| J01 | [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md) section 3.4 | The satellite bay's menu statuses and the OWNER_PENDING_FULL text. | V1 | Scripted |
 | J02 | [W254-V2-CHECKLIST](W254-V2-CHECKLIST.md) sections 1 to 4 and 6; R298; Q1 of [OWNER-DECISIONS-20261101](OWNER-DECISIONS-20261101.md) | The bay's safe exit with two real clients on the packaged dedicated server: both roles, a witness, competing exits, the fallback and its single fall safeguard, disconnect, death and portal, authority and chunk-load checks. | V2 | Owner, on the campaign gate of [W269](W269.md) |
 | J03 | W254-V2-CHECKLIST section 5 | The same exit on a LAN world, each client hosting once. The LAN fixture route is a prerequisite that the checklist leaves to Root. | V2 on LAN | Owner |
-| J04 | C4-SWITCH-REPORT section 3.4; [W325-MATRIX](W325-MATRIX.md) | The bay's online-passenger cases and S3 with real clients. | V2 | Owner |
-| J05 | C4-SWITCH-REPORT sections 3.4 and 9.2; R-043 | On the reference node: the cost of D6 and the barrier, of D3 and the registry writer, and the real waiting times of the 23 rows of section 9.2, with more than 3 slots and 2 claims. | REF | Scripted |
-| J06 | [W11CD-DESIGN](W11CD-DESIGN.md) leaf C-V; C4-SWITCH-REPORT section 4.4 | Cargo devices on a real GPU: labels, the fluid, status and cursor display, GUI scales, a reload, the visual refresh after cargo changes. | V1 | Scripted, on the gated world (decision O2) |
-| J07 | W11CD-DESIGN leaf C-V; C4-SWITCH-REPORT section 4.4 | Cargo with two real clients: ownership, competing devices, the preparation and pending state on both clients, passengers, a disconnect. | V2 | Both, on the gated world (decision O2) |
-| J08 | W11CD-DESIGN leaf C-B; C4-SWITCH-REPORT section 4.4 | The cargo benchmark: the budgets, the native reference load apart from microbenchmarks, each device's cycle time. | REF | Scripted |
-| J09 | R-043; C4-SWITCH-REPORT section 9.2 rows 6 and 14; R438 | The shared cargo work budget and the capture quota under concurrent bay and cargo load. | REF | Scripted |
-| J10 | R-035; C4-SWITCH-REPORT section 4.4; [W206](W206.md), [W207](W207.md); R438 | W90's cold-destination cost and readiness time, and the first-use checkpoint cases that exceeded 100 ms on the development host ([CURRENT_VERSION](../../../status/CURRENT_VERSION.md)). | REF | Scripted |
+| J04 | C5-SWITCH-REPORT section 3.4; [W325-MATRIX](W325-MATRIX.md) | The bay's online-passenger cases and S3 with real clients. | V2 | Owner |
+| J05 | C5-SWITCH-REPORT sections 3.4 and 9.2; R-043 | On the reference node: the cost of D6 and the barrier, of D3 and the registry writer, and the real waiting times of the 23 rows of section 9.2, with more than 3 slots and 2 claims. | REF | Scripted |
+| J06 | [W11CD-DESIGN](W11CD-DESIGN.md) leaf C-V; C5-SWITCH-REPORT section 4.4 | Cargo devices on a real GPU: labels, the fluid, status and cursor display, GUI scales, a reload, the visual refresh after cargo changes. | V1 | Scripted, on the gated world (decision O2) |
+| J07 | W11CD-DESIGN leaf C-V; C5-SWITCH-REPORT section 4.4 | Cargo with two real clients: ownership, competing devices, the preparation and pending state on both clients, passengers, a disconnect. | V2 | Both, on the gated world (decision O2) |
+| J08 | W11CD-DESIGN leaf C-B; C5-SWITCH-REPORT section 4.4 | The cargo benchmark: the budgets, the native reference load apart from microbenchmarks, each device's cycle time. | REF | Scripted |
+| J09 | R-043; C5-SWITCH-REPORT section 9.2 rows 6 and 14; R438 | The shared cargo work budget and the capture quota under concurrent bay and cargo load. | REF | Scripted |
+| J10 | R-035; C5-SWITCH-REPORT section 4.4; [W206](W206.md), [W207](W207.md); R438 | W90's cold-destination cost and readiness time, and the first-use checkpoint cases that exceeded 100 ms on the development host ([CURRENT_VERSION](../../../status/CURRENT_VERSION.md)). | REF | Scripted |
 | J11 | R245 in OWNER-DECISIONS-20261101; KI-V180-SAVE-01 in `docs/releases/v1.8.0/KNOWN-ISSUES.md` | The first-event progression flush (139.8 ms on the development host) measured on the reference node. If it exceeds the budget there, an asynchronous flush becomes a designed task before release. | REF | Scripted |
 | J12 | D4 of OWNER-DECISIONS-20261031; [W43](W43.md) | The code-drawn sky, the black hole and the Earth disc on a real GPU: the owner confirms the look; colours, sizes and mote density may need tuning. | V1 | Owner |
 | J13 | D12 of OWNER-DECISIONS-20261031; KI-V180-MOON-01 | The fixed-midnight Moon as published, confirmed on a real client. | V1 | Owner |
 | J14 | [W16](W16.md), "Visual and listening evidence still required" | The HUD panels in both languages, every gauge extreme, GUI scales 1 to 6, anchors and offsets, live configuration and resource reload; the worn jetpack, tank and visor mounts. With two clients: another player's mounts and independent HUD layouts. | V1, V2 | Both |
-| J15 | W16; OWNER-DECISIONS-20261104 (D5) | A listen on C4: loop seams, the 30- and 32-block start and stop, the 32-loop cap, reload, pause and logout. The owner passed the ten sounds themselves on 2026-11-04; that listen was on an earlier JAR. | V1 | Owner |
+| J15 | W16; OWNER-DECISIONS-20261104 (D5) | A listen on C5: loop seams, the 30- and 32-block start and stop, the 32-loop cap, reload, pause and logout. The owner passed the ten sounds themselves on 2026-11-04; that listen was on an earlier JAR. | V1 | Owner |
 | J16 | [W87](W87.md) | The drill bodies, the refusal and progress banner, and the jackhammer's feedback when the server disables it. With two clients: a non-owner sees the refusal in the open screen, and railgun effects reach observers. | V1, V2 | Both |
 | J17 | [W44I](W44I.md) "Not done"; [W44-DESIGN](W44-DESIGN.md) rows FM10a to FM10d and the FX rows | The 14 real-client variants of the world-first advancements, with a participant and a non-participant. | DS, V2 | Both |
 | J18 | [W37B](W37B.md), "D1 evidence achieved and left for the final campaign" | Sleeping and saved points off-world: packaged restarts of rows V02, V04 to V07 and V13; the compass and clock presentation (V11); two real clients for V13; the multi-player quorum, time, weather and portal rows V03, V08 to V10 and V12. | DS, V1, V2 | Both |
 | J19 | [W21A-DESIGN](W21A-DESIGN.md) section 7 | The observatory, the data processor and survey jobs on a real GPU and with two clients. | V1, V2 | Both |
 | J20 | [W189](W189.md); [W311](W311.md) | Rocket tracking and trail alignment with real player movement; Moon slow falling; the flight console used from a high seat, and the named-pad refusal on the console. | V1 | Both |
-| J21 | CURRENT_VERSION, "V1 and V2"; harness `REPORT.md` section 4; `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md` | Every finding of the earlier real-client rounds checked again on C4: findings 1 to 5 of 2026-10-10 and the single-player rounds' findings queued as W280 to W282, W284 to W296 and W301. | DS, V1 | Scripted |
-| J22 | CURRENT_VERSION, "S1"; [OWNER-BRIEF-20261103](OWNER-BRIEF-20261103.md) item 5; R386, R438 | The full restart campaign on C4: all families of `scripts/run_v180_integrated_campaign.py` and the report refilled from C4. | DS, S2 | Scripted |
+| J21 | CURRENT_VERSION, "V1 and V2"; harness `REPORT.md` section 4; `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md` | Every finding of the earlier real-client rounds checked again on C5: findings 1 to 5 of 2026-10-10 and the single-player rounds' findings queued as W280 to W282, W284 to W296 and W301. | DS, V1 | Scripted |
+| J22 | CURRENT_VERSION, "S1"; [OWNER-BRIEF-20261103](OWNER-BRIEF-20261103.md) item 5; R386, R438 | The full restart campaign on C5: all families of `scripts/run_v180_integrated_campaign.py` and the report refilled from C5. | DS, S2 | Scripted |
 | J23 | [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md) F18; [W11B3-DESIGN](W11B3-DESIGN.md) B3-V | The fuel loader and linker labels are readable in English and Chinese. The fuel switch stays off unless the owner says yes to packet P9; while off, inspect the ordinary disabled screen and the same labels on the gated fuel world defined below. Evidence: labelled screenshots and the client/server logs. | V1; one owner-signed-in account on a real GPU | Scripted, with owner review |
 | J24 | FUEL-ADMISSION-REPORT F18; W11B3-DESIGN sections 3 to 5, B3-V | The displayed Fluid, amount and status match the server through READY, PREPARING, TRANSFERRING, pending and refusal; tentative credit is never shown as complete. The fuel switch stays off unless the owner says yes to packet P9; while off, capture ADMISSION_DISABLED without hooks, then drive transfers and holds only on the gated fuel world. Evidence: before/during/after screenshots, client/server logs and endpoint totals. | V1; one owner-signed-in account on a real GPU | Scripted, with owner review |
 | J25 | FUEL-ADMISSION-REPORT F18; W11B3-DESIGN section 3 and B3-V | The linker selection, successful binding, stale binding and range/unloaded refusals give the right feedback without loading a client-named chunk. The fuel switch stays off unless the owner says yes to packet P9; while off, perform ordinary binding checks with admission disabled, and any fill-dependent follow-up on the gated fuel world only. Evidence: selection/binding screenshots, client/server logs, binding identity and unchanged totals for refusals. | V1; one owner-signed-in account on a real GPU | Both |
@@ -305,21 +305,21 @@ No test, assertion, timeout or budget is removed or relaxed to obtain a result (
 | Aspect | Content |
 |---|---|
 | Environment | The development PC (RTX 3070 Laptop GPU, Ryzen 5 5500, 32 GB, per the harness report), the evidence disk D:, hosted CI. The second-GPU machine and the reference node are checked, not yet used. |
-| Entry | Section 7.1's technical prerequisites are met: C4 exists and its restart campaign ran. Root has taken O1, O2, O3 and O6 under R456. The owner confirms O4, O5, O7, O8 and O9 in packet section 6 before the steps needing those resources; no undecided switch is enabled. |
-| Exit | P1 to P9 below are done; a dry run of one scripted round passes on C4 on Forge 47.4.10; the owner has the checklists. |
+| Entry | Section 7.1's technical prerequisites are met: C5 exists and its restart campaign ran. Root has taken O1, O2, O3 and O6 under R456. The owner confirms O4, O5, O7, O8 and O9 in packet section 6 before the steps needing those resources; no undecided switch is enabled. |
+| Exit | P1 to P9 below are done; a dry run of one scripted round passes on C5 on Forge 47.4.10; the owner has the checklists. |
 | Failure | A preparation step that fails blocks only the phases that need it. A defect found by the dry run follows the common table. |
 
 Steps for Root or a worker session (scripted or written work):
 
-- **P1. Pin the candidate.** Record C4's commit, hosted run, JAR name, size and SHA-256, and the SHA-256 of the
+- **P1. Pin the candidate.** Record C5's commit, hosted run, JAR name, size and SHA-256, and the SHA-256 of the
   sources and API JARs. Every machine receives the JAR by copy and its hash is checked before each run.
 - **P2. Build the fixtures.** The v0.9 Beta world archive (REL-1.0 `MIGRATION-REPORT.md` gives its hash), a v1.0
   world, representative v1.3 to v1.7 worlds, the v1.7 world with every placeholder ID (W62 item 10.3), the many-machine
-  layout (W62 item 10.2), the API fixture mod against C4, three rockets of 64, 512 and 2,048 blocks, and the reference
+  layout (W62 item 10.2), the API fixture mod against C5, three rockets of 64, 512 and 2,048 blocks, and the reference
   workload world of docs/17 section 4. Every source world is kept unchanged; runs use copies.
 - **P3. Retarget the harness.** Server templates and client profiles for Forge 47.4.10 and 47.4.23, each with and
   without JEI 15.56.0.205; a mode that attaches to client windows the owner started; a frame-time capture (decision
-  O8); batches regenerated for C4.
+  O8); batches regenerated for C5.
 - **P4. Write the checklists.** One numbered step list per inventory row, in the form of the test plan's section 11
   (ID, preconditions, steps, expected, actual, screenshot or video, tester, date, build hash). The row's sources are
   read in full here. Root reviews the lists against the inventory.
@@ -330,11 +330,11 @@ Steps for Root or a worker session (scripted or written work):
   Prepare the LAN fixture route for J03.
 - **P6. Bring up the reference node.** The acceptance list of docs/15 section 18, under a normal user, never root.
   Record the provider, plan, OS, vCPU, memory, swap, free disk and CPU steal (docs/15 section 15).
-- **P7. Prepare the second-GPU machine.** A client install for Forge 47.4.10 with C4, and a way to copy screenshots
+- **P7. Prepare the second-GPU machine.** A client install for Forge 47.4.10 with C5, and a way to copy screenshots
   back with their hashes.
 - **P8. Create the evidence root** of section 6 and check free space: at least 10 GB on C: and D: (AGENTS.md
   section 9).
-- **P9. Dry run.** One scripted round of phase 2 on C4. It is a rehearsal and not evidence.
+- **P9. Dry run.** One scripted round of phase 2 on C5. It is a rehearsal and not evidence.
 
 Steps for the owner:
 
@@ -345,7 +345,7 @@ Steps for the owner:
 - Say when the second-GPU machine and a second player, if any, are available.
 
 Time (estimates): the owner 2 to 3 hours. Root and workers 5 to 8 working days. Machine time about 6 hours, apart
-from C4's restart campaign, which took 12 hours 31 minutes on C3 (C3-SWITCH-REPORT section 2.1).
+from C5's restart campaign, which took 12 hours 31 minutes on C3 (C3-SWITCH-REPORT section 2.1).
 
 ### Phase 2: single-player V1 on the real GPU
 
@@ -389,14 +389,14 @@ second machine. B3-V's shared 2 to 3 session hours across phases 2 and 4 need al
 |---|---|
 | Environment | The packaged dedicated server on the development PC with one real client; the four Forge × JEI cells; copies of the upgrade worlds. Offline loopback is enough here; online mode belongs to phase 4. |
 | Rows | A01 to A04, A17, A18, B01 to B04, C02, C04, C05, D02, D04, D06 to D08, D10, D11, E01, E08 to E10, F01 (the native part), F04, F05, G01 (the restart part), G02, G04, G05, H03, H04, I02 (the world part), I03, I04, J17 and J18 (their single-client and restart parts), J22. Prepare J29's restart comparison here; its execution and result belong to phase 4. |
-| Entry | Phase 2 has no open Critical or High finding on C4. Phase 3's scripted rows may start while the owner's phase 2 judgement is still open. |
+| Entry | Phase 2 has no open Critical or High finding on C5. Phase 3's scripted rows may start while the owner's phase 2 judgement is still open. |
 | Exit | Every row has a result; every restart row has at least two restarts of the same world with the compared state; every upgrade ran on a copy with the original's hashes unchanged; the server logs have no ERROR from the mod and no unexplained repeated WARN (test plan section 6). |
 | Failure | The common table. A failed upgrade or recovery keeps the failed copy and never touches the original fixture. The three historical-JAR downgrade checks are expected to fail under R-044 and stay failed (R428, R429); they are not new findings. |
 
 Steps for Root or the harness:
 
 - Run each row's server start, scripted client actions, save, stop, restart and comparison.
-- Run the forced-stop rows A04, G04 and H03 with the existing native runners on C4. No client is needed for them.
+- Run the forced-stop rows A04, G04 and H03 with the existing native runners on C5. No client is needed for them.
 - Run the four-cell matrix I04 with the real client's recipe and usage screens.
 - Compare state before and after each restart with the existing field-level projections, and list every difference.
 - Prepare J29's loader/bank, binding and assigned-seat restart projections for phase 4. If its disconnect case
@@ -416,7 +416,7 @@ Time (estimates): the owner 1 to 2 hours. Machine time 14 to 20 hours, apart fro
 |---|---|
 | Environment | The packaged dedicated server with `online-mode=true`, `white-list=true`, `enforce-whitelist=true` and `enable-rcon=false`, reachable only from the two clients (loopback, a LAN address, or the SSH tunnel of docs/15 section 11). Two real clients signed in by the owner with the two accounts, on one or two machines. For J02 to J04, J07 and J27 to J29, the disposable marked world of W254-V2-CHECKLIST section 0.1. A LAN world for J03. Clocks on all machines set to UTC and synchronized. |
 | Rows | A05 to A07, A15, B05, C03, C08, D01, D09, E02, E03, F02, F03, F06, F07 (the second client), G03, G07, H01, H02, I11, J02 to J04, J07, J14 and J16 (their two-client parts), J17 to J19 (their two-client parts), J27 to J29. |
-| Entry | Phases 2 and 3 have no open Critical or High finding on C4; the owner's hand-played rows of phase 2 are done; the packet's switch decisions are recorded, with unapproved switches kept off and enabled switches requiring a new candidate; both accounts connect to the whitelisted server in a five-minute check. |
+| Entry | Phases 2 and 3 have no open Critical or High finding on C5; the owner's hand-played rows of phase 2 are done; the packet's switch decisions are recorded, with unapproved switches kept off and enabled switches requiring a new candidate; both accounts connect to the whitelisted server in a five-minute check. |
 | Exit | Every row has a result with both clients' logs and the server log; the campaign record holds what W254-V2-CHECKLIST section 7 lists; a V2 result for the bay exit has both the dedicated server and the LAN world. |
 | Failure | The common table. A step that needs two people at the same instant and had only one is NOT_COVERED, not failed. A third client connecting to the campaign world closes the gate; that session is void and repeats. |
 
@@ -454,7 +454,7 @@ about 2 hours of setup; section 8 states the unestimated fuel preparation and ov
 |---|---|
 | Environment | The owner's Debian 12 node with 4 vCPU and 8 GiB, a normal user, Java 17, `Xmx4G` at most, the server bound to loopback and reached through an SSH tunnel. The two clients of phase 4 connect for the reference workload (docs/17 section 4), or an equivalent the owner accepts (decision O7). Host sampling by the commands of docs/15 section 15. |
 | Rows | A08 to A11, B07, C01, D12, E11 (the reference part), F01 (the benchmark), G01 (the load), H05, H07, I02 (the scaled layout), I05, I10, J05, J08 to J11. |
-| Entry | Phase 4 has no open Critical or High finding on C4; the node passed P6; no X01 or X02 run uses the node at the same time (section 7.2). |
+| Entry | Phase 4 has no open Critical or High finding on C5; the node passed P6; no X01 or X02 run uses the node at the same time (section 7.2). |
 | Exit | Every budget of docs/17 section 4 has a measured value with its workload; the soak ran at least four hours without OOM, watchdog, unexpected forced chunks or monotonic memory growth, or its failure is recorded; R-043's waits have measured figures; the performance report states hardware, JVM, commit, JAR hash, configuration, workload, sampling time and every failure. |
 | Failure | The common table, with its budget row. A soak that fails or is interrupted is kept and a full new run of at least four hours is needed; partial runs are not added together. |
 
@@ -482,7 +482,7 @@ and 5 to 6 hours for the soak with its build-up.
 
 ## 6. Evidence layout
 
-**Outside Git**, the working root is `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/`:
+**Outside Git**, the working root is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`:
 
 ```text
 candidate/            JAR, sources and API JARs, identity files, artifacts.sha256
@@ -531,11 +531,11 @@ lists name only files inside the evidence root or committed files.
 
 | Prerequisite | State on 2026-11-20 | Source |
 |---|---|---|
-| Per-fluid signed accounting: W357's design note, a read-only review by a different engine, then the implementation | The reviewed design and Slices A to D and E part 1 are merged. Activation is on at `5951d6df2`. W373's existing-family preflight and W373B/W373C's accounting cuts are merged development evidence, not C4 acceptance. W391's remaining loader variants are dispatched and still pending; the details below distinguish these states. | [QUEUE](../QUEUE.md), W357/R/F, W361/R, W362/R/F/G/H, W364 to W366/R, W372/E, W373/B/C and W391; [W357-DESIGN](W357-DESIGN.md), [W372](W372.md), [W373](W373.md), [W373B](W373B.md) section 9; [TASK-W391](../TASK-W391-LOADER-ACCOUNTING-VARIANTS.md). |
-| The uncovered bay rows built natively (B6.8, B10.6, B11.8, B11.9, CAP.3, and B11.7's UNKNOWN part and B17.3 if a deterministic control exists) | W358 merged as `2af39a672`: B10.6, B11.8, B11.9 in both directions, B11.7 UNKNOWN and CAP.3 passed the native smokes. W363/W363F merged as `c0d2f0728`: governed B6.8 and both deterministic B17.3 tranches passed after the restart-group starvation fix. R451 keeps B6.8's reason session-local; the never-passing W358 B6-BOUND selection was removed, with its failed attempts retained. C4 must rerun the selected rows. | [QUEUE](../QUEUE.md), W358/R446, W363 and W363F/R451/R455; [W358](W358.md), [W363](W363.md), R451 follow-up. |
-| The other uncovered rows (item before-write and store-veto cuts, R-031's ledger root, the vanilla-dismount row, a presence-unknown seam, an item-device hold GameTest) | W360 merged as `efcbcdd75`. Fourteen item before-write/store-veto cuts passed with both restarts; future/invalid ledger roots refused before READY; gated bay/ledger presence-unknown cases and item-device hold GameTests passed. The vanilla-dismount setup is unreachable under supported production rules, not an executable PASS. R450 corrected inventory totals without weakening checks. C4 must rerun the executable rows. | [QUEUE](../QUEUE.md), W360/R448/R450; [W360](W360.md), results and the dismount argument. |
-| Candidate C4: the hosted build after the prerequisites merge, every campaign family run again on it, and the per-switch report refilled | Not built. It follows W391's merge, not merely the already-merged accounting activation, W358 and W360. Its commit, JAR/hash, hosted run, complete native selection and results remain pending. Refill the C4 switch report and the separate fuel report from that one candidate; do not copy development passes. | [QUEUE](../QUEUE.md), W391/R520 and W395/R526; [TASK-W391](../TASK-W391-LOADER-ACCOUNTING-VARIANTS.md); [C4-SWITCH-REPORT](C4-SWITCH-REPORT.md) section 2.1; [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md) F22/F23; R386/R438. |
-| The fixes for the single-player rounds' findings (W280 to W282, W284 to W296, W301) merged, or each listed as a known issue | All named tasks are merged, including W287's reviewed fixes and W301F's fixture correction. W295 documents stop/edit/restart rather than promising live config reload; W296 documents the expected experimental-world warnings instead of suppressing them. W294 retains the behaviors that match the design. This closes the implementation prerequisite, not J21: the final real-client recheck still runs on C4. | [QUEUE](../QUEUE.md), W280 to W282, W284 to W296, W287F/FR and W301/F; records [W280](W280.md), [W281](W281.md), [W282](W282.md), [W284](W284.md), [W285](W285.md), [W286](W286.md), [W287](W287.md), [W288](W288.md), [W289](W289.md), [W290](W290.md), [W291](W291.md), [W292](W292.md), [W293](W293.md), [W294](W294.md), [W295](W295.md), [W296](W296.md) and [W301](W301.md). |
+| Per-fluid signed accounting: W357's design note, a read-only review by a different engine, then the implementation | The reviewed design and Slices A to D and E part 1 are merged. Activation is on at `5951d6df2`. W373's existing-family preflight and W373B/W373C's accounting cuts are merged development evidence, not C5 acceptance. W391's remaining loader variants are dispatched and still pending; the details below distinguish these states. | [QUEUE](../QUEUE.md), W357/R/F, W361/R, W362/R/F/G/H, W364 to W366/R, W372/E, W373/B/C and W391; [W357-DESIGN](W357-DESIGN.md), [W372](W372.md), [W373](W373.md), [W373B](W373B.md) section 9; [TASK-W391](../TASK-W391-LOADER-ACCOUNTING-VARIANTS.md). |
+| The uncovered bay rows built natively (B6.8, B10.6, B11.8, B11.9, CAP.3, and B11.7's UNKNOWN part and B17.3 if a deterministic control exists) | W358 merged as `2af39a672`: B10.6, B11.8, B11.9 in both directions, B11.7 UNKNOWN and CAP.3 passed the native smokes. W363/W363F merged as `c0d2f0728`: governed B6.8 and both deterministic B17.3 tranches passed after the restart-group starvation fix. R451 keeps B6.8's reason session-local; the never-passing W358 B6-BOUND selection was removed, with its failed attempts retained. C5 must rerun the selected rows. | [QUEUE](../QUEUE.md), W358/R446, W363 and W363F/R451/R455; [W358](W358.md), [W363](W363.md), R451 follow-up. |
+| The other uncovered rows (item before-write and store-veto cuts, R-031's ledger root, the vanilla-dismount row, a presence-unknown seam, an item-device hold GameTest) | W360 merged as `efcbcdd75`. Fourteen item before-write/store-veto cuts passed with both restarts; future/invalid ledger roots refused before READY; gated bay/ledger presence-unknown cases and item-device hold GameTests passed. The vanilla-dismount setup is unreachable under supported production rules, not an executable PASS. R450 corrected inventory totals without weakening checks. C5 must rerun the executable rows. | [QUEUE](../QUEUE.md), W360/R448/R450; [W360](W360.md), results and the dismount argument. |
+| Candidate C5: the hosted build after the prerequisites merge, every campaign family run again on it, and the per-switch report refilled | Built at `9172113ad4ecfb9047432f02b97d240fc06130b6`; hosted regression 44681973284 attempt 1 and governance 44681973374 attempt 1. JAR `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, 15,946,403 bytes, SHA-256 `e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`. C5's pre-run, all 78 families, X01 S3 and X02 S5 were launched at 14:13 on 2026-11-20; results PENDING. C4's stopped run is superseded development evidence, including its probe-defect failure, not C5 evidence. Refill both reports only from C5. | R555/R556; [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md) section 2.1; [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md) F22/F23; R386/R438. |
+| The fixes for the single-player rounds' findings (W280 to W282, W284 to W296, W301) merged, or each listed as a known issue | All named tasks are merged, including W287's reviewed fixes and W301F's fixture correction. W295 documents stop/edit/restart rather than promising live config reload; W296 documents the expected experimental-world warnings instead of suppressing them. W294 retains the behaviors that match the design. This closes the implementation prerequisite, not J21: the final real-client recheck still runs on C5. | [QUEUE](../QUEUE.md), W280 to W282, W284 to W296, W287F/FR and W301/F; records [W280](W280.md), [W281](W281.md), [W282](W282.md), [W284](W284.md), [W285](W285.md), [W286](W286.md), [W287](W287.md), [W288](W288.md), [W289](W289.md), [W290](W290.md), [W291](W291.md), [W292](W292.md), [W293](W293.md), [W294](W294.md), [W295](W295.md), [W296](W296.md) and [W301](W301.md). |
 | The V1.0 §2 prerequisite: a release owner, an independent reviewer and an installer who did not take part | Still open. Root's planning delegation does not appoint these release roles or replace the uninvolved installation and independent review. | [V1.0.0](../../../versions/V1.0.0-COMMUNITY-MVP.md) section 2; [OWNER-FINAL-PACKET-DRAFT](OWNER-FINAL-PACKET-DRAFT.md) P11; section 2 of this plan. |
 
 **Accounting chronology and remaining coverage.** These are committed development results, not final candidate
@@ -567,7 +567,7 @@ results. The current [QUEUE](../QUEUE.md) decisions take precedence over earlier
 - **W391 remains pending.** [QUEUE](../QUEUE.md), W391/R520, and [TASK-W391](../TASK-W391-LOADER-ACCOUNTING-VARIANTS.md)
   cover loader fluid substitution, rocket-bank loss/gain, split pruning saves in both directions, and the
   post-migration-replacement/pre-start-completion stop. No delivered W391 record exists in this checkout, so its
-  planned record is not linked. Stable differing disk readback belongs to X02 S5 on C4, not W391. C4 follows this
+  planned record is not linked. Stable differing disk readback belongs to X02 S5 on C5, not W391. C5 follows this
   merge and repeats the full campaign; the development evidence above cannot substitute for it.
 
 ### 7.2 Owner decisions already asked, which change the candidate or the campaign
@@ -576,7 +576,7 @@ results. The current [QUEUE](../QUEUE.md) decisions take precedence over earlier
 |---|---|---|
 | Each of the five switches (the bay and the four cargo kinds): enable or keep off | Enabling a switch changes production code or constants, so it makes a new candidate. With the switches off, J01 to J09 run only on the gated campaign world, and they show the gated path, not production admission. If a switch is enabled after the campaign, its rows repeat on the new candidate. The safest order is to decide the switches before phase 4. | OWNER-DECISIONS-20261109; OWNER-DECISIONS-20261113 |
 | R-044's downgrade limit: sign [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md) or not | The campaign does not depend on the signature. With or without it, the historical-JAR downgrade checks stay failed in the campaign's results. If the owner signs, the upgrade instructions that the installer follows must state the complete-backup rule. | R433 |
-| X01 to X03: which isolated tests run, and the confirmation before each destructive step | They remain a separate plan, [X01-X03-ISOLATION-PLAN](X01-X03-ISOLATION-PLAN.md), not part of this campaign. Root chose non-destructive application-level option E4 under R457. The earlier E2 option would use the reference node with loop devices; any separately authorized node test must not overlap phase 5 because it would disturb the measurements. Their results on C4 may come before or after the campaign. A destructive step still needs the owner's word. | R436; [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md), R457. |
+| X01 to X03: which isolated tests run, and the confirmation before each destructive step | They remain a separate plan, [X01-X03-ISOLATION-PLAN](X01-X03-ISOLATION-PLAN.md), not part of this campaign. Root chose non-destructive application-level option E4 under R457. The earlier E2 option would use the reference node with loop devices; any separately authorized node test must not overlap phase 5 because it would disturb the measurements. Their results on C5 may come before or after the campaign. A destructive step still needs the owner's word. | R436; [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md), R457. |
 | The escrow fuel loader's admission | It stays off unless the owner says yes to P9 in the final packet. J23 to J29 run the explicitly gated test path while it is off, not a production-admission test. An approved enabling change makes a new candidate and needs the affected rows and no-hook smoke again. | [OWNER-FINAL-PACKET-DRAFT](OWNER-FINAL-PACKET-DRAFT.md) P9; [FUEL-ADMISSION-REPORT](FUEL-ADMISSION-REPORT.md) F18/F26; section 4.10. |
 
 ### 7.3 Decisions the campaign itself needs from the owner
@@ -588,8 +588,8 @@ None of these choices signs a switch's risk or approves a Gate.
 
 | ID | Decision | Root's choice and remaining owner confirmation |
 |---|---|---|
-| O1 | The start of the campaign, and whether phases 2 and 3 may start before the switch decisions. | **Taken by Root under R456, as W359 recommended.** Start phases 1 to 3 on C4 as soon as its restart campaign has run; decide the switches before phase 4. Account/time arrangements are still packet P10, section 6. |
-| O2 | Whether the bay and cargo real-client rows (J01 to J09) run on the gated campaign world while the switches are off. C4-SWITCH-REPORT section 3.4 identifies the real-client cases. | **Taken by Root under R456, as W359 recommended.** Yes, on the disposable marked world of R298. The switches stay off; these are gated-path results, not production admission. J23 to J29 use the same marked-world method with the additional fuel-only test property; packet P9 separately controls fuel admission. |
+| O1 | The start of the campaign, and whether phases 2 and 3 may start before the switch decisions. | **Taken by Root under R456, as W359 recommended.** Start phases 1 to 3 on C5 as soon as its restart campaign has run; decide the switches before phase 4. Account/time arrangements are still packet P10, section 6. |
+| O2 | Whether the bay and cargo real-client rows (J01 to J09) run on the gated campaign world while the switches are off. C5-SWITCH-REPORT section 3.4 identifies the real-client cases. | **Taken by Root under R456, as W359 recommended.** Yes, on the disposable marked world of R298. The switches stay off; these are gated-path results, not production admission. J23 to J29 use the same marked-world method with the additional fuel-only test property; packet P9 separately controls fuel admission. |
 | O3 | After a fix makes a new candidate, whether the owner's hand-played rows repeat in full, or only the rows whose systems the production diff touches, with both JAR hashes recorded. | **Taken by Root under R456, as W359 recommended.** Use the narrower rule: Root lists touched systems from the diff and both JAR hashes, with the owner confirming the hand-played account/time arrangement. Scripted rows always repeat in full. |
 | O4 | Whether the recorded technology route I01 is played in survival from raw resources, or the scripted rehearsal with a recorded hand-played subset is enough. | **Root changed the recommendation; owner confirmation remains in packet section 6, O4.** Use the scripted rehearsal plus a recorded hand-played subset. V1.8 §10 asks for a representative base-to-endgame route and §11 for its candidate video, not a whole route manually played from raw materials. The former full-survival recommendation is superseded; section 8 removes its 6 to 10 extra hours but does not invent a duration for the subset. |
 | O5 | Who operates the second client in phase 4: the owner alone with two accounts, or a second person. Some steps need both players in the same second (W254-V2-CHECKLIST step 2.2). | **Owner confirmation remains in packet section 6, O5.** Root recommends a second person for sitting 3 at least; otherwise scripted input to the second signed-in window, stated in the record. |
@@ -606,7 +606,7 @@ confirmation in packet section 6.
 
 | Phase | Owner's hours | Machine hours | Root and worker days |
 |---|---|---|---|
-| 1. Preparation | 2 to 3 | about 6, plus about 12.5 for C4's restart campaign (C3's measured time) | 5 to 8 |
+| 1. Preparation | 2 to 3 | about 6, plus about 12.5 for C5's restart campaign (C3's measured time) | 5 to 8 |
 | 2. V1 on the real GPU | 5 to 7, plus the recorded hand-played subset, not separately estimated | 12 to 16 | 3 to 4 |
 | 3. Dedicated server and restarts | 1 to 2 | 14 to 20 | 3 to 4 |
 | 4. V2 with two clients | 10 to 14 | 12 to 16 | 3 to 4 |
