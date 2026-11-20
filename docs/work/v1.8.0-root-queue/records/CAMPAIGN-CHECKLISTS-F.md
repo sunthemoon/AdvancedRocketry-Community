@@ -7,7 +7,7 @@ Sources are [v1.5 sections 10–13](../../../versions/V1.5.0-ORBITAL-STATION-WAR
 No result or Gate is approved here.
 
 Accepted common procedures for **every F row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -25,7 +25,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 - Command warp requests require the connected player's own command source, their loaded committed region,
   and a server ray pick looking at its warp core within 5 blocks. Record the player/core coordinates and view
   before a request; console-origin commands are not a substitute for player authority.
-- Pin the P1 C5 commit, hosted artifact, JAR SHA-256 and Java 17. Default lane is Forge 47.4.10 without JEI;
+- Pin the P1 C6 commit, hosted artifact, JAR SHA-256 and Java 17. Default lane is Forge 47.4.10 without JEI;
   repeat the compatibility smoke on 47.4.23. JEI 15.56.0.205 is not needed for these commands. Record actual JEI
   presence. V1 uses a real GPU; G8 also requires the second GPU category. V2 uses two independently authenticated
   premium accounts A/B, not fake players.
@@ -35,7 +35,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
   only the two authenticated accounts. Phase 5 REF uses 4 vCPU/8 GiB/Debian 12, a non-root user and Java 17,
   `Xmx4G` maximum, server bound to loopback with SSH-tunnel client access, and an exclusive node.
   No campaign bay gate or JVM test property is required; production switches stay unchanged.
-- Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`. Put DS evidence in
+- Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. Put DS evidence in
   `E/phase3-ds/<row>/`, V1 in `E/phase2-v1/<machine>/<round>/`, V2 in `E/phase4-v2/<sitting>/`, and REF in
   `E/phase5-ref/<run>/`. Keep server/client native logs, per-step UTC times, state projections, configuration,
   hardware and candidate identity. Screenshots are `<row>-<step>-<client>-<language>-<scale>.png`; videos are
@@ -170,7 +170,7 @@ comparisons, rocket screenshot and station quote.
 (W406) Keep baseline enabled below exactly one overlay; confirm Earth→`k06:warp_target`, then activate/reload overlay **before** due commit. Removal expects WARP_TARGET_UNAVAILABLE. Reparenting to Tau Ceti changes IN_SYSTEM→INTERSTELLAR with no Level; WARP_QUOTE_CHANGED is conditional on differing effective costs and folded balance sufficient for the larger cost (another guard can mask it). Read effective costs, do not assume defaults; `/reload` is not config reload. Verify no debit/relocation/resurrected consent, remove overlay/reload and perform two clean restarts. Activation/energy control still **needs package K08**; actual load **needs package K06**.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -215,7 +215,7 @@ warp, one deliberate valid refusal fixture. Record CPU/GPU/driver/resolution and
 
 1. [H] View each station before warping. → Orbit body, star, sun and gravity hints match that station's server context.
 2. [P/H] Request and confirm a warp from the controller and capture the command quote too. → Target, cost,
-   countdown, state and routeless-target warning agree with the server; current C5 includes the newer controller UI.
+   countdown, state and routeless-target warning agree with the server; current C6 includes the newer controller UI.
 3. [H] Capture 10/5/3/2/1-second countdown and commit. → Readable feedback; position stays fixed, new sky/context
    appears only for the correct station.
 4. [H] Exercise the F05 refusal. → Readable failure, not a falsely successful state or unexplained frozen countdown.

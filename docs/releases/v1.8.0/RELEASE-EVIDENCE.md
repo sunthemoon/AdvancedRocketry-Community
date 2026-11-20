@@ -1,4 +1,4 @@
-# v1.8.0 release evidence — candidate C5 draft
+# v1.8.0 release evidence — candidate C6 draft
 
 **DRAFT / IN_PROGRESS. This file is incomplete; do not tag or publish a release.**
 This is an unofficial Advanced Rocketry community rewrite, not an official
@@ -15,28 +15,28 @@ is accepted in this report.
 
 ## Candidate and receipt identities
 
-| Field | C5 identity / state |
+| Field | C6 identity / state |
 |---|---|
-| Candidate commit | `9172113ad4ecfb9047432f02b97d240fc06130b6` (R555) |
-| Host JAR | `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, 15,946,403 bytes |
-| Host JAR SHA-256 | `e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8` |
+| Candidate commit | `c8fa16e16be87554f26c402546733df6555d15e6` (R581) |
+| Host JAR | `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, 16,026,312 bytes |
+| Host JAR SHA-256 | `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4` |
 | Platform | Minecraft 1.20.1, Java 17, Forge 47.4.10 baseline / 47.4.23 compatibility |
 | Declared optional client support | JEI absent or JEI 15.56.0.205; all four Forge × JEI cells must run |
-| Hosted regression | 44681973284 attempt 1; clean build, 6,751 JUnit tests, 1,867 GameTests in four shards; evidence results only |
-| Governance | 44681973374 attempt 1; succeeded, not release approval |
-| Native selection | Eight-family pre-run, then all 78 families, separate X01 S3 and X02 S5: PENDING results |
+| Hosted regression | 44770334930 attempt 1; clean build, 6,766 JUnit tests, 1,886 GameTests in four shards; evidence results only |
+| Governance | 44770334865 attempt 1; succeeded, not release approval |
+| Native selection | All 78 families with `--yield-seconds 120`, then separate X01 S3 and X02 S5, launched 2026-11-21 at 00:48: PENDING results. C5's eight-family pre-run passed; its full campaign and X01/X02 did not run (R566) |
 | Final client/reference campaign | 117 A–J rows, PENDING; results cannot be copied from earlier candidates |
 | Save/schema inventory | Accounting activated, ledger root 3; complete per-store schema/DataVersion census PENDING |
 | Network/API inventory | Exact per-channel pins and API/classifier identity PENDING final manifest; no guessed single global protocol |
 | Reviewer / installer / owner approval / release tag | PENDING / PENDING / PENDING / not created |
 
-Identity sources: [C5-SWITCH-REPORT §2.1](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md),
-[W410](../../work/v1.8.0-root-queue/records/W410.md), and
-[QUEUE R555](../../work/v1.8.0-root-queue/QUEUE.md). `TEST-REPORT.md` records
-the independently inspected build/union archive hashes, unit counts and shards.
+Identity sources: [C6-SWITCH-REPORT §2.1](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md),
+[W423](../../work/v1.8.0-root-queue/records/W423.md), and
+[QUEUE R581](../../work/v1.8.0-root-queue/QUEUE.md). `TEST-REPORT.md` records
+C6's inspected build archive, unit counts and supplied hosted metadata, plus the unchanged historical C5 build/union receipts.
 The document snapshot base is `45065aa8dd678b71d4eb7de4254d8a586ee4bcc0`;
 it is not the tested candidate commit. Later documentation/tool commits and
-historical C1–C4 results must not replace C5's tested identity.
+historical C1–C5 results must not replace C6's tested identity.
 
 ## Document index
 
@@ -48,15 +48,15 @@ records. This avoids links to uncommitted, external or imagined evidence.
 |---|---|---|
 | `REQUIREMENT-MAP.md` | Every version checklist item, Required Gate and prose delivery obligation → named evidence/decision/document | Planning coverage, not acceptance; candidate-wide audits still pending |
 | `GATE-STATUS.md` | G0–G9 blockers, awaited evidence and owner dependencies | All IN_PROGRESS or BLOCKED; no passed Gate |
-| `TEST-REPORT.md` | C5 hosted build/units/shards/governance; 78 native families and 117 campaign-row boundary | Native/campaign actuals pending |
+| `TEST-REPORT.md` | C6 hosted build/units/shards/governance; 78 native families and 117 campaign-row boundary | Native/campaign actuals pending |
 | `MANUAL-TEST.md` | All 117 A–J rows, procedures and per-result metadata | All actuals, testers, dates and media pending |
 | `MIGRATION-REPORT.md` | Source/candidate/schema/ID census, copy-only upgrade/refusal/repeat procedures | Complete source fixtures, output manifests and candidate outcomes pending |
 | `RECOVERY-MATRIX.md` | Stop/restart, resource invariants, storage holds and repair boundaries | Native/X01/X02/X03/V2 outcomes pending |
 | `PERFORMANCE.md` | Unchanged docs/17 budgets, load, reference/real-GPU measurements and four-hour soak | Every measurement pending |
-| `SECURITY-REVIEW.md` | W402 access policy, R546 decisions, abuse matrix and independent review scope | Independent C5 policy/threat/result audit pending |
+| `SECURITY-REVIEW.md` | W402 access policy, R546 decisions, abuse matrix and independent review scope | Independent C6 policy/threat/result audit pending |
 | `VISUAL-VALIDATION-REPORT.md` | Real-GPU environment, complete/high-risk inventory and visual/audio checks | V1, second-GPU subset and linked V2 pending |
 | `MULTIPLAYER-REPORT.md` | Authenticated two-client actions, permissions, contention, passengers and reconnect | Every V2 result pending |
-| `videos-or-links.md` | Hashed progression/visual/V2/measurement media catalogue | No C5 media receipt yet |
+| `videos-or-links.md` | Hashed progression/visual/V2/measurement media catalogue | No C6 media receipt yet |
 | [KNOWN-ISSUES.md](KNOWN-ISSUES.md) | Public support boundary and disclosed limitations | Existing file retained; final candidate reconciliation needed |
 | `checksums.txt` | Final committed report and artifact integrity manifest | Absent at this snapshot; Root must create at completion |
 | `development-artifacts.json` | Distinct identities for development and tested candidate artifacts | Absent at this snapshot; Root must create without relabelling history |
@@ -75,7 +75,7 @@ content/asset/graph staging procedure, not final acceptance by itself.
    v1.2/v1.3/v1.7 prerequisites remain unchecked. Appoint independent candidate
    reviewer, release owner and an installer uninvolved in development. Archive
    their actual review and installation evidence.
-2. **Candidate identity and reproduction.** Retain C5 hosted artifacts, run attempts,
+2. **Candidate identity and reproduction.** Retain C6 hosted artifacts, run attempts,
    Java/Gradle/Forge versions, exact commands/exit codes, source/API classifiers,
    schema/protocol/configuration manifest and independent clean reproduction.
    Differences in locally rebuilt bytes must be explained, not substituted for
@@ -83,14 +83,14 @@ content/asset/graph staging procedure, not final acceptance by itself.
    credential/package scans, including the requested visible identity evidence.
 3. **Content closure.** Reconcile PORTING_MATRIX with the complete ledger and
    accepted dispositions; no UNKNOWN or in-scope MISSING, every deferred/rejected
-   item has ADR and player impact. C5 ordinary ledger validation still reports
+   item has ADR and player impact. C6 ordinary ledger validation still reports
    five PLANNED rows; inspect scope before closure, never call that a strict
    closure success. Archive per-machine happy/failure/restart and kernel/exception
    census, graph/reachability/progression reports, asset references and approved
    provenance/manifests on this candidate. Existing D7/art approvals are retained.
 4. **Native recovery/security.** Complete J22's 78-family run and separate X01 S3/
    X02 S5, plus loader cuts not selected by wrappers where required. Fill every
-   row and non-coverage reason from C5. Retain failed attempts, ordinary F9 and
+   row and non-coverage reason from C6. Retain failed attempts, ordinary F9 and
    unreachable bay-shape exclusions, historical downgrade failures, the actual
    metadata changes, and root-3 migration/refusal/recovery observations. No E4
    result is real OS/power-loss proof. X03 requires both origins and controls.
@@ -136,7 +136,7 @@ content/asset/graph staging procedure, not final acceptance by itself.
 
 The [owner final packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md),
 [fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md),
-[C5 switch report](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md) and
+[C6 switch report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) and
 [campaign plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md)
 define the pending decisions, technical work and repetition boundaries. No
 remaining v1.8 Gate is satisfied merely by adding this document set.

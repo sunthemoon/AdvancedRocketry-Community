@@ -1,8 +1,8 @@
-# v1.8.0 media catalogue — C5 draft
+# v1.8.0 media catalogue — C6 draft
 
-**DRAFT; all C5 media/results/hashes PENDING.** Candidate commit
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+**DRAFT; all C6 media/results/hashes PENDING.** Candidate commit
+`c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 Earlier screenshots/listening rounds are historical, not release-candidate media.
 This index contains no claim that an unrecorded flow was executed.
 
@@ -21,7 +21,7 @@ This index contains no claim that an unrecorded flow was executed.
 
 Follow the [campaign evidence layout](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md)
 §6. External root is
-`D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/` (not itself a sealed
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/` (not itself a sealed
 artifact). V1 media goes under `phase2-v1/<machine>/<round>/`, V2 under
 `phase4-v2/<sitting>/`, reference samples under `phase5-ref/<run>/`.
 Name screenshots `<row>-<step>-<client>-<language>-<scale>.png` and videos

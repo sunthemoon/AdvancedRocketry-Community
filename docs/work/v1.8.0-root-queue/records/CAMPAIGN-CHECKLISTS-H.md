@@ -7,7 +7,7 @@ Unrun P4 instructions for H01–H07 of [the plan](FINAL-CAMPAIGN-PLAN.md), from
 [the reference method](../../../releases/v1.7.0/PERFORMANCE.md).
 
 Accepted common procedures for **every H row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -19,7 +19,7 @@ H means harness/operator and P means human; an arrow states the expected observa
 Use P2's representative v1.3–v1.7 world, specifically its endgame copy. The scene **needs package K10** to freeze device/target coordinates,
 endpoint/station IDs, account UUIDs, inventories and fixture archives/hashes first; these are absent from the version
 checklist. Include the laser drill, railgun, black-hole generator, gravity field and elevator, not only one device.
-Use P1's C5 JAR/hash and Java 17 on Forge 47.4.10 without JEI by default; record actual JEI state, and use only
+Use P1's C6 JAR/hash and Java 17 on Forge 47.4.10 without JEI by default; record actual JEI state, and use only
 JEI 15.56.0.205 if installed. Repeat the 47.4.23 compatibility smoke. Pin difficulty, view-distance and
 simulation-distance; sources do not assign mandatory values (the historical performance run used distances 2).
 
@@ -29,7 +29,7 @@ configuration, not a silent production change. After a config edit, restart and 
 `/reload` does not reload the common config. Phase 4 V2 has two real authenticated accounts A/B on a packaged DS,
 `online-mode=true`, `white-list=true`, `enforce-whitelist=true`, `enable-rcon=false` and restricted access.
 
-Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`. Keep V1 under
+Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. Keep V1 under
 `E/phase2-v1/<machine>/<round>/`, DS/S2 under `E/phase3-ds/<row>/`, V2 under `E/phase4-v2/<sitting>/` and REF/SOAK
 under `E/phase5-ref/<run>/`. Capture native server/client logs, candidate/JAR identity, fixture/config hashes,
 hardware/JVM, UTC step times and before/after resource, ticket and endpoint projections. Screenshots are
@@ -84,7 +84,7 @@ resource/chunk projections in phase 4. Pair this with I11's v1.8 owner-bound dev
 ## H03 — Forced stop inside a block-processing batch
 
 **Phase/level/machine/accounts:** 3 S2, packaged DS on development PC; no client required.
-**Gate:** Disposable native test fixture only. **Preconditions:** P2 endgame world and current C5 forced-stop runner
+**Gate:** Disposable native test fixture only. **Preconditions:** P2 endgame world and current C6 forced-stop runner
 mapped to [the recovery matrix](../../../releases/v1.7.0/RECOVERY-MATRIX.md); physical-mining setting pinned if used.
 
 1. [H] Snapshot target blocks, device input/output/energy and pending work before the batch. → Baseline is complete.
@@ -97,7 +97,7 @@ mapped to [the recovery matrix](../../../releases/v1.7.0/RECOVERY-MATRIX.md); ph
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K10**: matched C5 batch-cut seam, owned-process external-stop invocation and large-range variant. No old boundary is guessed.
+**Needs package K10**: matched C6 batch-cut seam, owned-process external-stop invocation and large-range variant. No old boundary is guessed.
 
 **Evidence to keep:** Runner command/version, cut receipt, stopped-file projections, both restart logs and block,
 inventory/energy/ledger comparisons in phase 3. Exact batch/cut command is a Root prerequisite, not provided by §10.
@@ -212,6 +212,6 @@ including ramp, JFR/host samples, ticket audit and exact budget table with actua
 
 - **Answered:** C27 real-mod H04 NOT_COVERED in v1.8, D9/O6, adapter supplementary and real-mod scope v1.9; C28 actor classification and unchanged achieved-versus-required load. H06 explicitly rechecks two-sided disc and long endgame reasons.
 - **H01-H07:** device/target/owner/resource scene, menu/native/refload controls, actors and throughput method **needs package K10**.
-- **H03:** C5 cut seam/large-range variant **needs package K10**.
+- **H03:** C6 cut seam/large-range variant **needs package K10**.
 - **H05/H07:** raw-tick/JFR/all-ticket/cache integration **needs package K15**, combined world **needs package K17**. O7/O11 supply connections/node access; Windows history is not REF evidence.
 - **H06:** regenerated two-sided-disc/long-text batches **needs package K16** plus K10's scene; O9 supplies second GPU.

@@ -1,5 +1,7 @@
 # Candidate C5: risks and evidence per switch for the satellite bay and the four cargo kinds
 
+Superseded by [C6-SWITCH-REPORT](C6-SWITCH-REPORT.md) under R581 (2026-11-21); kept as history.
+
 | Item | Value |
 |---|---|
 | Status | **DRAFT; all C5 results are PENDING.** Historical evidence, including the failed `cargo-G2-REUSE` and `w336-downgrade` checks, is not C5 evidence. Nothing here accepts a risk, enables production admission or passes a Gate, version or release. |

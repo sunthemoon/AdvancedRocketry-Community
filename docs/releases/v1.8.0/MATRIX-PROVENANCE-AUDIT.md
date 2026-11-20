@@ -1,4 +1,15 @@
-# C5 matrix, disposition and provenance audit
+# C6 matrix, disposition and provenance audit — retarget draft
+
+Current candidate: `c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`, regression 44770334930 attempt 1 and governance
+44770334865 attempt 1 (R581). See the
+[C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md).
+**C6 audit/census reconciliation: PENDING.** W423 retargets the candidate, not
+the source-bound findings, counts, hashes or test results below. Those remain
+the historical C5 audit; C6 includes W415–W421 changes and requires its own
+reconciliation. No C5 receipt is claimed as C6 evidence.
+
+## Historical C5 matrix, disposition and provenance audit
 
 Date: 2026-11-20. Author: W412 (Codex implementer), under [TASK W412](../../work/v1.8.0-root-queue/TASK-W412-MATRIX-PROVENANCE-AUDIT.md). This is an evidence report, not a Gate, requirement, version, originality or visual approval. No source, manifest, ADR, matrix or status file was changed.
 

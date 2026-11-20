@@ -6,7 +6,7 @@ maintenance document creates no additional campaign row and does not discharge
 these deferred tests.
 
 Accepted common procedures for **every B row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -16,8 +16,8 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 
 Use the candidate, authentication, driver markers, restart protocol, result
 metadata and section-6 evidence naming specified in
-`CAMPAIGN-CHECKLISTS-A.md`. P1 pins C5 (R555 names
-`9172113ad`), not a historical v1.1 artifact. All rows use ordinary disposable
+`CAMPAIGN-CHECKLISTS-A.md`. P1 pins C6 (R581 names
+`c8fa16e16`), not a historical v1.1 artifact. All rows use ordinary disposable
 worlds, **not O2's marked world**; production switches stay off. No JVM test
 properties are required. Default combination: Java 17, Minecraft 1.20.1,
 Forge **47.4.10**, **JEI absent**. Record any additional 47.4.23 or JEI
@@ -40,11 +40,11 @@ world, switches off, no properties. **Source:** v1.1 section 10.1.
 **Preconditions:** Copy P2 **a v1.0 world**, including a fueled Earth/Moon
 rocket, station and satellite/research state; baseline Forge/JEI absent.
 Capture the source's target IDs, flight journal, station orbit/rights, mission
-and resource projections before first C5 load. This is distinct from A03's Beta.
+and resource projections before first C6 load. This is distinct from A03's Beta.
 
 | Step | Action | Expected observation |
 |---|---|---|
-| 1 | [H] Start the copied world on C5. | Supported upgrade; stable identities and retained original data. |
+| 1 | [H] Start the copied world on C6. | Supported upgrade; stable identities and retained original data. |
 | 2 | [H] Travel Earth to Moon through the production rocket console. | Correct named target and one authoritative fuel debit; no default-Earth fallback. |
 | 3 | [H] Return through the same production flow. | Earth/Moon behavior remains usable with intact cargo/seats. |
 | 4 | [H] Travel to the existing authorized station. | Same station UUID, membership and orbit identity. |
@@ -134,7 +134,7 @@ plan remains 50 via two orbit legs. Live quotes/readback **needs package K06**.
 (W406) Begin with the baseline, then replace it with the valid variant; test invalid-anchor and unknown-body packs separately only **after** a valid load, restoring valid files before restart. Capture `/arce celestial route advancedrocketrycommunity:earth_moon`, catalog generation, direct definition and selected plan legs plus quote. Direct distance changes 50→75, but two 25-unit orbit legs keep shortest distance 50: do not require a +25 fuel increase or infer cache freshness from price alone. This refines step 4 to the actual graph, not an invented quote. **Needs package K06**: live load, quotes/plan readback and two restarts; world source **needs package K02**.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -162,8 +162,8 @@ copy, switches off, no properties. **Source:** v1.1 section 10.4; section 8
 also requires old in-flight transactions to finish under their original semantics.
 
 **Preconditions:** P2 v1.0-world-derived copy, legal fueled rocket owned by A,
-recorded stable target ID and route; baseline/JEI absent. Use the current C5
-schema/protocol, not the historical flight=2/protocol=6 numbers as a C5 pin.
+recorded stable target ID and route; baseline/JEI absent. Use the current C6
+schema/protocol, not the historical flight=2/protocol=6 numbers as a C6 pin.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -178,7 +178,7 @@ schema/protocol, not the historical flight=2/protocol=6 numbers as a C5 pin.
 
 **Accepted preparation/action steps (W408):**
 
-(C7) Keep the ordinary C5 restart separate from upgrading K02's historical in-flight copy; H02 is legacy-passenger-only. A rebuilt source is labelled reconstructed on its hashed JAR, not historically played; the retained-played-source claim is NOT_COVERED if unavailable. **Needs package K02** for that source and **needs package K16** for the current-flight timing/controls. Do not edit earned balances or identities.
+(C7) Keep the ordinary C6 restart separate from upgrading K02's historical in-flight copy; H02 is legacy-passenger-only. A rebuilt source is labelled reconstructed on its hashed JAR, not historically played; the retained-played-source claim is NOT_COVERED if unavailable. **Needs package K02** for that source and **needs package K16** for the current-flight timing/controls. Do not edit earned balances or identities.
 
 **Evidence to keep:** `phase3-ds/B04/` selected/active/recovered target
 projections, journal/fuel/seat comparisons, disconnect/rejoin logs and screenshots.
@@ -251,7 +251,7 @@ windowed/fullscreen follow the campaign V1 environment.
 (W406) The unknown-body ZIP is a catalog **rejection**, never setup for a selectable unknown node. For an actually removed destination, hold `advancedrocketrycommunity:test_mars`, remove its valid pack and reload; capture actual menu/refusal behavior. The data-only fixture is not built-in Mars and creates no Level: accepted catalog data is not proof of surface travel. The locked pack uses built-in undiscovered Mars with an otherwise eligible flight; expect DISCOVERY_REQUIRED. **Needs package K06**: live loads/removed-selection recipe; **needs package K16**: bound menus/display controls.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 

@@ -7,7 +7,7 @@ identity, `[H]` harness/`[P]` human markers, the two-restart DS protocol,
 authentication and section-6 evidence names/metadata.
 
 Accepted common procedures for **every D row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -15,8 +15,8 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 
 ## Common setup and sources
 
-Use P1's C5 identity (R555 names `9172113ad`) and P2 **the API fixture
-mod against C5**, independently built from the API classifier, plus P2 world
+Use P1's C6 identity (R581 names `c8fa16e16`) and P2 **the API fixture
+mod against C6**, independently built from the API classifier, plus P2 world
 copies. The fixture is disposable test content, not a gameplay dependency.
 Record its JAR SHA-256, API publication hash, compiler/boundary report and
 effective provider/pack variants. Never install the API-classifier JAR as a mod.
@@ -35,7 +35,7 @@ Read sources: [v1.3 version](../../../versions/V1.3.0-PUBLIC-API-COMPATIBILITY.m
 [fixture README](../../../../compat-test-mod/README.md), and
 [migration/removal limits](../../../releases/v1.3.0/MIGRATION-REPORT.md).
 Historical protocol 6/7/8 and API-minor numbers in these sources identify their
-own builds, not the C5 wire pin. Match current client/server artifacts.
+own builds, not the C6 wire pin. Match current client/server artifacts.
 
 The scene **needs package K21** to publish paths, owners, positions, slot/metadata ledgers, known
 unsupported container and rejected-provider controls. The manual tables do not
@@ -93,7 +93,7 @@ five-block origin is Earth **(264,101,264)** with assembler **(264,100,264)**;
 tank **(263,101,264)** and external container **(265,101,264)**. Use the full
 runner/P2 layout, not those two blocks alone. Its unchanged default-route
 fixture has mass 210, capacity 1,000 and per-leg quote **372**; verify those
-effective values before applying numeric expectations on C5.
+effective values before applying numeric expectations on C6.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -109,7 +109,7 @@ effective values before applying numeric expectations on C5.
 | 10 | [H] Compare the restored native container against step 1. | Every slot/metadata equal; one block inventory authority, no competing rocket or dropped duplicates. |
 
 The source runner exercises `discard-fuel <amount>` consent; never substitute
-the historical amount if C5's effective quote differs. Fuel deliberately disposed
+the historical amount if C6's effective quote differs. Fuel deliberately disposed
 with consent is not claimed as recovered fuel or unexplained loss.
 
 **Evidence to keep:** `phase3-ds/D02/` complete cargo SNBT, snapshots,
@@ -192,7 +192,7 @@ startup-compilation failure, not the normal visible-room case.
 (C17; W406) Use only the atmosphere runner's own exact tag override, not an invented replacement tag. Enabled is additive with `arce_adapter_test:state_boundary`; disabled has empty additive values and removes only that pack's contribution. Capture actual tag membership/diagnostics and vent/boundary authority; do not promise a merge outcome without the installed fixture. **Needs package K21**: Moon room coordinates/supplies; **needs package K01**: binary; **needs package K06**: live load qualification.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -361,7 +361,7 @@ charges 11. Use W406's hashed `satellite_payload.zip` then
 (C14; W406) Start/capture the real mission at 400/137/11 (fee conditional on discovery) **before** applying changed pack 20/211/11 while its menu is open; the task keeps captured values and claims once. Use tool receipt/unchanged state, not an assumed server log, for stale/replay cases. **Needs package K18**: bounded stale/permission/range probes and A1 fallback names; **needs package K21**: real terminal/chip/equipment scene; **needs package K06**: live generation/load checks.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -408,7 +408,7 @@ window input alone may not send an invalid intent after a menu closes.
 (C14 corrected by R546; W406) The two payload packs supply registration/reload context only, not hostile packet probes. Use their real open-menu generations for stale cases, record the tool's receipt and authoritative resources/chunks read back; use a log only if that handler writes it. **Needs package K18**: ordinary-client bounded stale/range/permission probes; unreachable cases are NOT_COVERED with reason and named A1 test. **Needs package K21**: A-owned payload/cargo/terminal scene and **needs package K06**: live pack loads.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -458,7 +458,7 @@ ordinary player worlds and historical evidence are never removed or repaired.
 
 **Accepted preparation/action steps (W408):**
 
-(C18) Use two fresh independent removal copies under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/`, never the source. Take complete file inventories/hashes before removing the copied mod. **Needs package K21**: concrete copy paths and captured-payload inventories.
+(C18) Use two fresh independent removal copies under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/`, never the source. Take complete file inventories/hashes before removing the copied mod. **Needs package K21**: concrete copy paths and captured-payload inventories.
 
 **Evidence to keep:** `phase3-ds/D10/<variant>/` copied-mod manifests,
 property lists, all logs/exits, raw retained/restored payloads and field
@@ -478,7 +478,7 @@ Build hash (commit and JAR SHA-256):
 copies, switches off, no properties. **Sources:** v1.3 section 11.4, M130-11;
 campaign P3 and D9/O6 support scope.
 
-**Preconditions:** P2 API fixture; matching mandatory C5/fixture installed
+**Preconditions:** P2 API fixture; matching mandatory C6/fixture installed
 on both sides. P3 cells: Forge **47.4.10** and **47.4.23**, client JEI
 **absent** and **15.56.0.205**. Dedicated server needs no optional client
 integration. Do not remove the mandatory fixture JAR and call it optional.

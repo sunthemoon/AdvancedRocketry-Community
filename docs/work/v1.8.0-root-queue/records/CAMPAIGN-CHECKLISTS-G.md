@@ -9,7 +9,7 @@ checklist's physical-instance wording: these are logical registry records withou
 The fields below are deliberately blank: these are instructions, not acceptance evidence.
 
 Accepted common procedures for **every G row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -24,7 +24,7 @@ reward snapshots and the ordinary start/claim/cancel controls before running. Th
 give these values; do not invent them. Include data, survey, asteroid and gas missions and at least three satellite
 types, not just one timed mission.
 
-Use C5 from P1 with Java 17, Forge 47.4.10 and no JEI by default; record the actual versions and use the 47.4.23
+Use C6 from P1 with Java 17, Forge 47.4.10 and no JEI by default; record the actual versions and use the 47.4.23
 compatibility profile for its smoke. If JEI is present it is 15.56.0.205. Phase 3 DS uses the packaged server on the
 development PC; phase 2 V1 uses a real GPU and includes the second GPU category required by G8. Phase 4 V2 uses
 two real authenticated accounts, `online-mode=true`, `white-list=true`, `enforce-whitelist=true`,
@@ -32,7 +32,7 @@ two real authenticated accounts, `online-mode=true`, `white-list=true`, `enforce
 is needed for ordinary mission play; all unrelated production switches remain unchanged. Pin difficulty, view and
 simulation distances in the run manifest; the cited sources supply no fixed numbers.
 
-Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/`. DS/S2 goes under
+Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. DS/S2 goes under
 `E/phase3-ds/<row>/`; V1 under `E/phase2-v1/<machine>/<round>/`; V2 under `E/phase4-v2/<sitting>/`; REF under
 `E/phase5-ref/<run>/`. Retain native logs, exact controls/commands, UTC step times, configuration, state projections,
 candidate/JAR SHA-256 and fixture hashes. Name screenshots `<row>-<step>-<client>-<language>-<scale>.png` and
@@ -47,7 +47,7 @@ Java 17 and `Xmx4G` maximum, loopback server/SSH-tunnel access on an exclusive n
 **Preconditions:** P2 mission world with more than 100 active missions; separate 500-, 1,000- and synthetic
 worst-case-root fixtures. Capture scheduler clock, statuses, deadlines, registry epoch, rewards and terminal receipts.
 
-1. [H] Start the >100-active-mission world on C5. → Registry restores without dropped missions or duplicate rewards.
+1. [H] Start the >100-active-mission world on C6. → Registry restores without dropped missions or duplicate rewards.
 2. [H] Allow a scheduler pass and capture all due/status changes. → At most 32 completions and 64 inspections
    per 20-tick pass under ADR-050; no unbounded full completion. Record the candidate's effective configured limits.
 3. [H] Stop normally and restart the same copy twice. → Compare mission IDs, snapshots, reward accounts and receipts
@@ -63,7 +63,7 @@ worst-case-root fixtures. Capture scheduler clock, statuses, deadlines, registry
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C24, R535) Read C5's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. **Needs package K09**: >100/500/1,000 scenes, per-kind deadlines/default readback and driver; **needs package K15**: raw sampling.
+(C10/C24, R535) Read C6's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. **Needs package K09**: >100/500/1,000 scenes, per-kind deadlines/default readback and driver; **needs package K15**: raw sampling.
 
 **Evidence to keep:** Phase 3 restart projections and writer-drain logs; phase 5 500/1,000/worst-root manifests,
 raw timing/GC/RSS/flush samples, backlog and reward comparisons, and reference hardware record.
@@ -117,7 +117,7 @@ and terminal projections in phase 4. If same-tick delivery cannot be established
 
 **Phase/level/machine/accounts:** 3 S2, packaged DS on development PC; no client required for the native cuts.
 **Gate:** Only the native runner's documented release-test setup on a disposable copy, never production enablement.
-**Preconditions:** P2 mission/reward fixture, current C5 runner and named pre-write/post-write cuts from
+**Preconditions:** P2 mission/reward fixture, current C6 runner and named pre-write/post-write cuts from
 [the v1.6 recovery matrix](../../../releases/v1.6.0/RECOVERY-MATRIX.md). Pin runner revision and candidate arguments.
 Freeze one cut per complete copied world; A/B/D/C below are the matrix's historical cut names, not guessed commands.
 
@@ -144,7 +144,7 @@ Freeze one cut per complete copied world; A/B/D/C below are the matrix's histori
 
 **Accepted preparation/action steps (W408):**
 
-(C25) The exact matching C5 saved-boundary/epoch map **needs package K09** before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write.
+(C25) The exact matching C6 saved-boundary/epoch map **needs package K09** before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write.
 
 **Evidence to keep:** Runner command/version, candidate installed-copy hash, cut logs, stopped-disk projections,
 both restart logs and exact reward conservation comparison in phase 3.
@@ -234,4 +234,4 @@ both client logs and server log in phase 4.
 - **G01-G07:** immutable mission IDs/owners/packages/rewards, controls, effective defaults, deadlines and driver **needs package K09**.
 - **G01/G02/G05:** raw scheduler/tick/all-ticket observations **needs package K15** alongside K09's workload. Downtime is not progress.
 - **G03:** actual receipt-tick observation **needs package K09**; extra intent support if required **needs package K18**. O5 coordinates inputs. Unproved identical ticks means same-tick V2 NOT_COVERED with named A1 test.
-- **G04:** each historical cut's C5 epoch/save-boundary mapping **needs package K09**; no match means NOT_COVERED with reason.
+- **G04:** each historical cut's C6 epoch/save-boundary mapping **needs package K09**; no match means NOT_COVERED with reason.

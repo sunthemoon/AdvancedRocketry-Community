@@ -1,9 +1,9 @@
-# v1.8.0 recovery matrix — C5 draft
+# v1.8.0 recovery matrix — C6 draft
 
-**DRAFT; every C5 native/recovery result PENDING.** Candidate commit
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, host JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
-The [C5 switch report](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md)
+**DRAFT; every C6 native/recovery result PENDING.** Candidate commit
+`c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
+The [C6 switch report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md)
 keeps the exact bay B/CAP/EXIT rows, cargo N/Q/X rows, shared-store rows and
 accounting scenarios. This matrix indexes them; it does not replace their
 assertions or relabel earlier candidate/smoke results.
@@ -19,7 +19,7 @@ Before/after conservation counts world blocks, containers, typed fluids, energy
 where applicable, snapshots, passengers, entities and journals; only explicit
 recipe/fuel consumption may change the total. Unknown quantities never mean zero.
 
-| Boundary / failure | Required recovery rule | Planned C5 evidence | Result / state / hashes |
+| Boundary / failure | Required recovery rule | Planned C6 evidence | Result / state / hashes |
 |---|---|---|---|
 | Assembly/disassembly/transfer cuts | Transaction state chooses one authoritative outcome; no duplicate blocks, inventory, rocket or passenger | A04; inherited ASSEMBLED/FUELED/COUNTDOWN/ASCENT/TRANSIT_PREPARED/DESTINATION_SPAWNED/DESCENT/LANDED comparisons | PENDING |
 | Ordinary/governed resource return and retirement | Keep exact proof/claim until durable acknowledgement; no source recreation over restored terrain | `cargo-B3-S6-REUSE`, J22 and fuel inventory's additional cut reconciliation | PENDING |
@@ -40,7 +40,7 @@ recipe/fuel consumption may change the total. Unknown quantities never mean zero
 | X01 acknowledged/staged bytes rolled back in simulation | Run unchanged recovery/conservation oracles on each retained state, two starts; classify undetected loss | X01 S3 rows X01-01–X01-12 | PENDING |
 | X02 writer/read/cleanup/corruption faults | CAUGHT/NOT_CAUGHT/NEEDS_REVIEW classification with exact writer/fault; preserve unobservable outcomes | X02 S5 rows F1–F10, four selected writers, real offline group first | PENDING |
 | X03 FF_REBUILD_SOURCE whole-world repair | Only a proved record on a checked stopped complete copy; no invented refunds or general reconstruction | `cargo-X03-REPAIR`, both fresh and migrated root-3 origins and controls; packet P3 | PENDING |
-| Inherited mission/endgame crash states | Credit/effect once, exact destination/source and ticket release across stops | G04/H03 plus C5 automated recovery classes | PENDING campaign |
+| Inherited mission/endgame crash states | Credit/effect once, exact destination/source and ticket release across stops | G04/H03 plus C6 automated recovery classes | PENDING campaign |
 | Real player logout/passenger/seat/rejoin | Compare both clients and authoritative state; playerdata/offline residuals remain explicit | A05/A15/J02–J04/J07/J27–J29 | PENDING V2 |
 
 ## Non-coverage, scope and operator safety
@@ -48,7 +48,7 @@ recipe/fuel consumption may change the total. Unknown quantities never mean zero
 - B11.2's native launch shape and B17.5's triple-phase bay group are reasoned
   unreachable. Ordinary loader `LF_S6_F9_RESPAWN` is excluded; the 96 selected S6
   cases and governed analogue are not proof of that ordinary shape. Retain the
-  precise NOT_COVERED explanations in the C5 report.
+  precise NOT_COVERED explanations in the C6 report.
 - Process-kill S2 and E4 replay/fault injection do **not** cover real power cuts,
   OS cache/writeback, filesystem/controller/firmware, torn region/entity writes
   or arbitrary file rollback. A destructive test still needs owner authorization.
@@ -61,7 +61,7 @@ recipe/fuel consumption may change the total. Unknown quantities never mean zero
   can exit 0; inspect `ARCE-BETA-2001`. The complete backup rule applies to both
   journal and ledger downgrade boundaries.
 - [X03-D guidance](../../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md)
-  is not yet a release-supported general repair. Packet P3 depends on C5 proof
+  is not yet a release-supported general repair. Packet P3 depends on C6 proof
   for both origins and owner acceptance. It does not authorize single-file rollback.
 - [Fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md)
   preserves the narrow 2026-10-26 conditional fuel acceptance. It does not accept

@@ -5,7 +5,7 @@ Status: planned, not executed. Covers E01-E11 of
 procedures does not run the campaign, approve a Gate or enable a switch.
 
 Accepted common procedures for **every E row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
-pins C5 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+pins C6 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
 fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
 rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
 and checksum commands. Apply them before the row's actions; old generic display
@@ -13,8 +13,8 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 
 ## Shared setup and source interpretation
 
-Use the run conventions in `CAMPAIGN-CHECKLISTS-A.md`: P1's C5 identity
-(R555 names `9172113ad`), `[H]` harness versus `[P]` human action,
+Use the run conventions in `CAMPAIGN-CHECKLISTS-A.md`: P1's C6 identity
+(R581 names `c8fa16e16`), `[H]` harness versus `[P]` human action,
 authenticated V2 settings, two-restart DS protocol, and the campaign section-6
 evidence root/filenames/result metadata. Use Java 17, Minecraft 1.20.1,
 Forge **47.4.10**, **JEI absent** unless a separately identified 47.4.23 /
@@ -42,7 +42,7 @@ Read sources: [v1.4 version](../../../versions/V1.4.0-PLANETARY-EXPANSION.md),
 [sky guide](../../../PLANETARY-SKY-GUIDE.md) and
 [migration limits](../../../releases/v1.4.0/MIGRATION-REPORT.md).
 The navigation cases' old flight-protocol-7 precondition conflicts with later
-discovery's protocol 8; both identify historical builds. Use matching C5
+discovery's protocol 8; both identify historical builds. Use matching C6
 client/server and P1's actual protocol inventory, not mixed old artifacts.
 
 The namespace below is `advancedrocketrycommunity`. Earth is the Overworld;
@@ -73,7 +73,7 @@ started undiscovered; later-started missions to discovered bodies net **120**.
 | 4 | [H] Repeat steps 1 to 3 for Venus with its own valid package/chip. | Venus research/discovery recorded without resetting Mars or private balances. |
 | 5 | [H] Open the rocket console's Star map and select Mars with Use surface. | Readable ready quote; selection alone does not launch. |
 | 6 | [H] Confirm Launch in the console. | Server-authorized Mars arrival with one fuel debit and intact inventory/seats. |
-| 7 | [H] Capture Mars terrain and environment. | Correct body, terrain, server environment and client HUD; C5 terrain follows current generation, not obsolete v1.4 art. |
+| 7 | [H] Capture Mars terrain and environment. | Correct body, terrain, server environment and client HUD; C6 terrain follows current generation, not obsolete v1.4 art. |
 | 8 | [H] Return Mars to Earth, then launch Earth to Venus (C19; record both quotes/debits). | Correct target/fuel quote, safe landing or explicit refusal; no silent alternate destination. |
 | 9 | [H] Capture Venus terrain and environment. | Correct distinct body/terrain and intact assets. |
 | 10 | [H] Save/stop the landed world. | Clean exit; stopped-state resource baseline. |
@@ -87,10 +87,10 @@ leg and never change the graph to force direct Mars-to-Venus travel.
 
 **Accepted preparation/action steps (W408):**
 
-(C1/C19) Flight wire protocol is C5's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. **Needs package K06**: actual per-leg server quotes/load qualification; **needs package K07**: run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset.
+(C1/C19) Flight wire protocol is C6's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. **Needs package K06**: actual per-leg server quotes/load qualification; **needs package K07**: run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -141,7 +141,7 @@ values **200 ticks / 120 reward / 100 captured undiscovered fee**.
 (C7) **Needs package K07**: fresh undiscovered and private-station copies, preserving earned balances/IDs/history; zero-start numeric totals are conditional, never obtained by resetting an account. Owner O5 still supplies coordinated real inputs. Use the packs below for held-menu rule changes, not a grant of research.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -247,7 +247,7 @@ hazard. Station orbit never imports its planet's surface heat/pressure.
 
 **Accepted preparation/action steps (W408):**
 
-(C20) Leave damage modifiers, difficulty and game rules at C5/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. **Needs package K07**: isolated/combined sites, equipment, exact coordinates and observation intervals.
+(C20) Leave damage modifiers, difficulty and game rules at C6/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. **Needs package K07**: isolated/combined sites, equipment, exact coordinates and observation intervals.
 
 **Evidence to keep:** Per-hazard step screenshots/video, effective pack/tag
 values, damage-attempt/health/oxygen/resource timeline, vent supply and logs.
@@ -270,7 +270,7 @@ and **128-body** catalogs, valid/invalid reload variants and missing/rejected
 client-cache method; baseline/JEI absent. Run English/Chinese, GUI scales
 **2/3/4**, smallest supported and large windows, windowed/fullscreen.
 C2/R535 supplies tested pixels/effective scales; no supported minimum is declared.
-W406 reads C5's 100-tick cooldown; live retry/presentation **needs package K06**.
+W406 reads C6's 100-tick cooldown; live retry/presentation **needs package K06**.
 
 | Step | Action, for each display/catalog cell | Expected observation |
 |---|---|---|
@@ -295,10 +295,10 @@ W406 reads C5's 100-tick cooldown; live retry/presentation **needs package K06**
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C5 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. **Needs package K06**: live loads/retry observations; **needs package K08**: station; **needs package K18**: missing/rejected/late client control; **needs package K15**: cache readback.
+(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C6 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. **Needs package K06**: live loads/retry observations; **needs package K08**: station; **needs package K18**: missing/rejected/late client control; **needs package K15**: cache readback.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
-below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K06/`.
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
 A means source-derived acceptance conditional on setup, R refusal-only, O an
 observed tag-merge outcome still required; none is a campaign result.
 
@@ -526,13 +526,13 @@ MT140-09, migration report and SKY-V1-08.
 **Preconditions:** P2 **representative v1.3 to v1.7 worlds**, individually
 inventoried before C4, plus a pre-sky world variant for the specific sky
 upgrade check. Baseline/JEI absent; matching provider/pack hashes. Never create
-new state on C5 and label it an untouched historical upgrade fixture.
+new state on C6 and label it an untouched historical upgrade fixture.
 
 | Step | Action, for each source-world variant | Expected observation |
 |---|---|---|
 | 1 | [H] Hash the complete stopped original and its backup. | Source identity/file inventory recorded before copying. |
 | 2 | [H] Copy it into a new run directory. | Original remains read-only and recoverable. |
-| 3 | [H] Open the copy with C5 and matching dependencies. | Supported migration or explicitly retained refusal; no silent unknown-data loss. |
+| 3 | [H] Open the copy with C6 and matching dependencies. | Supported migration or explicitly retained refusal; no silent unknown-data loss. |
 | 4 | [H] Capture stable body/Level/binding IDs, station orbits/rights, rockets/cargo/fuel, research/discovery and provider payloads. | Field-level conservation with legitimate elapsed progress reconciled. |
 | 5 | [H] Capture Moon/Space positions, terrain/time/light settings and inventories in the pre-sky variant. | Same identities/settings/contents as the historical fixture; renderer changes do not migrate gameplay state. |
 | 6 | [H] Save/stop and reopen the same copy. | No repeated migration/debit/reward. |
@@ -624,7 +624,7 @@ to retain and unresolved inputs. Additional source-manual checks are included
 under the relevant existing row IDs rather than changing the campaign plan.
 
 Design choices: reuse P2's fixture names, require concrete run manifests before
-execution, use matching C5 artifacts instead of historical protocol pins, keep
+execution, use matching C6 artifacts instead of historical protocol pins, keep
 C05's O6 disposition distinct from a pass, and keep missing tooling/values
 explicit. No ADR decision, performance limit, production switch or Gate changes.
 
@@ -663,7 +663,7 @@ No sealed evidence packet or additional worker record is created.
 Known risks: P1/P2/P3 still need concrete run manifests and some packaged
 fixture/intent/cache controls; O5/O7/O8/O9 require the owner's account, time or
 equipment arrangements. Historical protocol/artifact references cannot substitute
-for matching C5 identities. These are execution prerequisites/open questions,
+for matching C6 identities. These are execution prerequisites/open questions,
 not passed observations. No current version's complete Required Gate set is
 satisfied by these written procedures.
 Remaining work is Root's review of P4/open questions, P1-P3/P5-P9 preparation and

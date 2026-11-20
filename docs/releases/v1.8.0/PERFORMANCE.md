@@ -1,9 +1,9 @@
-# v1.8.0 performance report — C5 draft
+# v1.8.0 performance report — C6 draft
 
 **DRAFT; every candidate performance measurement is PENDING.** Hosted test
 durations and development-host microbenchmarks do not satisfy reference-node
-or real-GPU budgets. Candidate: `9172113ad4ecfb9047432f02b97d240fc06130b6`,
-JAR SHA-256 `e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+or real-GPU budgets. Candidate: `c8fa16e16be87554f26c402546733df6555d15e6`,
+JAR SHA-256 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 
 ## Environment and workload to record
 
@@ -26,7 +26,7 @@ PENDING, not inferred from a builder script.
 
 ## Reference server result table
 
-| Metric | Required budget | C5 observed / raw sample hash / verdict |
+| Metric | Required budget | C6 observed / raw sample hash / verdict |
 |---|---|---|
 | Server Java heap | Xmx ≤4 GiB | PENDING |
 | Steady RSS | Not sustained above 5.5 GiB | PENDING |
@@ -49,7 +49,7 @@ with its pinned script commit; tool availability is not a measurement.
 
 ## Per-system and client measurements
 
-| Campaign rows | Measurement / unchanged acceptance boundary | C5 result |
+| Campaign rows | Measurement / unchanged acceptance boundary | C6 result |
 |---|---|---|
 | A09/A10/A11 | Overall reference metrics; 2,048-block assembly/disassembly time/spike; 16-device atmosphere queue bounds | PENDING |
 | C01/I02 | 100 idle machines, defined active layout and scaled v1.8 kinds; unload/reload; no unbounded per-tick work | PENDING |

@@ -1,8 +1,8 @@
-# v1.8.0 security review — C5 draft
+# v1.8.0 security review — C6 draft
 
-**DRAFT inventory, not a completed security audit.** Candidate C5 is
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+**DRAFT inventory, not a completed security audit.** Candidate C6 is
+`c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 Automated hosted results exist; native, V2 and final independent audit verdicts
 remain PENDING. Test counts cannot establish zero Critical/High.
 
@@ -17,7 +17,16 @@ records C5 regeneration under
 `D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/fixtures/K13/`;
 `SHA256SUMS.txt` SHA-256
 `0cc5c63da827e88b99b6dd55aa307b8f6e6ef4ddba63d31eab130df187a11c39`.
-Before final review, verify the C5 access CSV itself against that manifest and
+
+For the current C6 inputs, [W423](../../work/v1.8.0-root-queue/records/W423.md)
+verifies `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K13/`.
+Its `SHA256SUMS.txt` SHA-256 is
+`6553bcb6a17fdea8f79f4d7569912f9c626e3e5b36cd21855ed5824ed46c6628`;
+`access-matrix.csv` remains
+`3888f04c844db2deeb2cec16770f2d2f417a7414de031126672ae481d111d882`.
+This is input integrity, not a new policy or live-refusal verdict.
+
+Before final review, verify the C6 access CSV itself against that manifest and
 the source, then record its hash and review commit here: **PENDING**.
 
 ## Server-authority policy to verify
@@ -53,25 +62,25 @@ and loaded-chunk projections, not merely a message shown on the client.
 |---|---|---|
 | Most refusals are silent in server logs | No new v1.8 product logging. K18 receipts plus unchanged server-state readback prove delivery/refusal; logs only where emitted | I11 per-channel/holder/negative-case receipts PENDING; invalid-menu and rate branches cannot use a nonexistent log as oracle |
 | suit_motion has no distance check | Self-only worn-jetpack action; no distance step needed | Codec/authority/rate checks and self-only state observations PENDING final review |
-| J15 preview used obsolete namespace | W408 corrected it to `advancedrocketrycommunity:<id>` | C5 listen J15 PENDING; eleven events, including ui_select; machine_large preview-only |
+| J15 preview used obsolete namespace | W408 corrected it to `advancedrocketrycommunity:<id>` | C6 listen J15 PENDING; eleven events, including ui_select; machine_large preview-only |
 | Projector use by non-operator is silent | Low KI-V180-UI-01, no permission bypass inferred | I11 unchanged state check PENDING |
 | Eleven screens lacked a dedicated named row | C30 every-screen pass, both languages | I06/I08 coverage PENDING; no silent omission |
 | 48 unreferenced textures | Low cleanup for v1.9, outside campaign | Record exclusion, not a successful visual check |
 
 ## Abuse and recovery evidence still required
 
-| Threat / invariant | Planned exact evidence | C5 verdict |
+| Threat / invariant | Planned exact evidence | C6 verdict |
 |---|---|---|
-| Foreign/stale/remote/spectator/unloaded/rate intents | I11/K18 plus C08/D09/H02; holder-specific C5 GameTests | PENDING live/independent review |
+| Foreign/stale/remote/spectator/unloaded/rate intents | I11/K18 plus C08/D09/H02; holder-specific C6 GameTests | PENDING live/independent review |
 | Concurrent automation, replayed credit and inventory duplication | I05/I10, cargo C/D families, loader B3 reuse and accounting outcomes | PENDING native/campaign |
 | Endgame owner/operator/member boundaries | H02/I11 and per-system authority tests | PENDING V2 |
 | Oversize/invalid recipes and reload logging | DataPackOverLimitReloadGameTests, serializer bounds; review ADR-076 precise platform exception/expiry | PENDING final audit; hosted tests are partial automated evidence |
-| Unreviewed/excluded asset in JAR | C5 provenance/JAR audit, approved ledger/manifest reconciliation | PENDING final G0 audit |
+| Unreviewed/excluded asset in JAR | C6 provenance/JAR audit, approved ledger/manifest reconciliation | PENDING final G0 audit |
 | Malformed/future stores, unknown file presence, shared capacity | `r042-*`, W336 saturation and accounting-root families; no unsafe reads/admission while NOT_LOADED | PENDING native |
 | Real player exit, disconnect, retained seats and observer consistency | J02–J04/J07/J27–J29 | PENDING V2; fake players do not qualify |
 | Unobservable storage, file rollback, corruption and power loss | X01 S3/X02 S5 E4 classification and residual review | PENDING; not real power-loss proof |
 
-See [C5 report](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md) §§8–13
+See [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §§8–13
 and [fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md)
 F22–F29. Save-denial risks include device/chunk protection, the shared
 256-coordinate per-Level pool and Level-wide terrain-save refusal after its
@@ -80,8 +89,8 @@ ledger startup refusal. Quiet successful tests do not bound continuous-traffic
 holds or repair their residual loss cases. No routine exception-based save
 control is approved anew here.
 
-**Remaining review step:** an independent session must reconcile every C5 K13
-matrix policy with actual source/negative-case receipts, reconcile every C5
+**Remaining review step:** an independent session must reconcile every C6 K13
+matrix policy with actual source/negative-case receipts, reconcile every C6
 native and V2 result with the threat model, and issue a candidate-wide findings
 report including severity, affected data scope, reproduction and closure.
 Reviewer, review commit/date, commands, receipts, findings and zero-Critical/High

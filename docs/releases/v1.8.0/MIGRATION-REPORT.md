@@ -1,15 +1,15 @@
-# v1.8.0 migration report — C5 draft
+# v1.8.0 migration report — C6 draft
 
-**DRAFT; all candidate migration results PENDING.** Test identity is C5,
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, host JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+**DRAFT; all candidate migration results PENDING.** Test identity is C6,
+`c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 This is the procedure and evidence table, not an assertion that a world is safe
 to upgrade. [PROJECT-CONFIG](../../../PROJECT-CONFIG.md) requires 1.x migration;
 direct 1.12.2 world loading is not promised.
 
 ## Identity and input census
 
-| Field | Required recording | C5 completion |
+| Field | Required recording | C6 completion |
 |---|---|---|
 | Source world | Previous stable and beta/RC build/commit/JAR; archive SHA-256; played or reconstructed provenance | PENDING; A03/B01/E10/I03 fixtures |
 | Target runtime | Candidate above; exact Java, Forge, mods, data packs and configuration hashes | PENDING |
@@ -53,10 +53,10 @@ release; label its origin accurately.
 
 | Case | Planned evidence | Result / actual / receipts |
 |---|---|---|
-| Previous stable → C5 | Source stable fixture identity plus A03/B01/E10 as applicable; preserve distinction between stable and development fixtures | PENDING |
-| Previous beta/RC → C5 | A03 Beta copy and appropriate retained candidate fixture; original hashes unchanged | PENDING |
-| v1.7 all old IDs/placeholders → C5 | I03: all IDs/roots/items and representative use, two restarts | PENDING |
-| Current C5 save → reopen twice | A17/I03, J22 and native per-family restarts | PENDING |
+| Previous stable → C6 | Source stable fixture identity plus A03/B01/E10 as applicable; preserve distinction between stable and development fixtures | PENDING |
+| Previous beta/RC → C6 | A03 Beta copy and appropriate retained candidate fixture; original hashes unchanged | PENDING |
+| v1.7 all old IDs/placeholders → C6 | I03: all IDs/roots/items and representative use, two restarts | PENDING |
+| Current C6 save → reopen twice | A17/I03, J22 and native per-family restarts | PENDING |
 | Interrupted transaction → recover | A04/G04/H03/J22; exact forced-stop boundary, full before/after census | PENDING |
 | Ledger root 2 → accounting root 3 | `accounting-root2-upgrade`, four selected cases including stop after replacement; preserve accounting/proof fields | PENDING |
 | Repeated upgrade/load | Same copied world, duplicate credits/migration counts checked | PENDING |
@@ -66,7 +66,7 @@ release; label its origin accurately.
 
 ## Refusal, backups and downgrade boundaries
 
-Per [C5 report](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md) §12,
+Per [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §12,
 the activated accounting format uses ledger root 3; an older root migrates under
 checked writes. The complete inventory of other schemas remains to be archived;
 root 3 is not a world-wide schema number.
@@ -90,7 +90,7 @@ P1's [R-044 sign-off draft](../../work/v1.8.0-root-queue/records/R044-SIGNOFF-DR
 loading—operators must inspect `ARCE-BETA-2001`. Signing a limitation neither
 passes the failed checks nor enables admission. After an accidental downgrade,
 restore the entire stopped-world backup, never selected data/region/player files.
-The accounting root-3 boundary must be repeated on C5. There is no general
+The accounting root-3 boundary must be repeated on C6. There is no general
 single-file rollback or power-loss guarantee.
 
 Tester, UTC dates, exact commands/exit codes, fixture and output hashes,

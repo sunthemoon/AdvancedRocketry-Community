@@ -1,8 +1,8 @@
-# v1.8.0 multiplayer report — C5 draft
+# v1.8.0 multiplayer report — C6 draft
 
-**DRAFT; every C5 V2 result PENDING.** Test candidate
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, host JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+**DRAFT; every C6 V2 result PENDING.** Test candidate
+`c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 Two fake players or two offline profiles are not V2. Server-only GameTests and
 historical local multiplayer observations are not candidate acceptance.
 
@@ -22,7 +22,7 @@ historical local multiplayer observations are not candidate acceptance.
 - V2 is phase 4, after relevant V1/DS failures are resolved; performance phase 5
   follows it. P4–P9 switch decisions precede V2, with unapproved admissions off.
   A separately approved enabling commit changes the candidate and requires
-  requalification; it cannot silently keep the C5 identity.
+  requalification; it cannot silently keep the C6 identity.
 - Bay/cargo/fuel scenarios use R298's disposable marked world, with the
   [W254 checklist](../../work/v1.8.0-root-queue/records/W254-V2-CHECKLIST.md)
   and [W269 gate](../../work/v1.8.0-root-queue/records/W269.md): two permitted

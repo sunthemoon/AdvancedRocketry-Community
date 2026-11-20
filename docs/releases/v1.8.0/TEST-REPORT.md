@@ -1,4 +1,39 @@
-# v1.8.0 test report — C5 draft
+# v1.8.0 test report — C6 draft
+
+Snapshot: 2026-11-21. Candidate C6 is commit
+`c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
+[C6 identity record](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1
+pins regression **44770334930, attempt 1**, and governance **44770334865,
+attempt 1** under R581. No Gate, requirement, native row or release is approved.
+
+## Current C6 hosted receipts
+
+| Check | C6 observed identity/result | Receipt and boundary |
+|---|---|---|
+| Hosted build and units | Build 14.7 minutes; 6,766 JUnit tests in 1,193 XML suites, 0 failures, 0 errors, 0 skipped | C6 build ZIP below; XML totals read without a JVM |
+| DataGen | First/repeat generated diffs empty; both status logs explicitly PASS clean, including untracked files | `datagen-diff.log`, `datagen-status.log` and repeated counterparts; status logs are not empty |
+| Artifact/package | Host JAR 16,026,312 bytes, 7,013 entries; artifact hash matches the candidate | `artifact-sha256.txt`, `artifact-audit.log`; metadata/notices/path/credential scan passed |
+| Client/provenance/ledger/planning | Source/bytecode/provenance audits passed; ordinary ledger 653 units, five PLANNED rows; planning passed | Existing C6 build receipts inspected read-only; ordinary validation is not strict closure |
+| Hosted GameTests | 1,886 tests across four shards; shard durations 15.3 / 21.6 / 22.2 / 16.1 minutes | R581 metadata, not a W423 rerun or an independently inspected C6 union archive |
+| Shard overloads | 4 / 4 / 4 / 2, each within the unchanged maximum 8 | R581; no limit or log expectation changed |
+| Governance | Run 44770334865 attempt 1 | R581; not release approval |
+
+The build ZIP is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`,
+SHA-256 `d189bea1278f5b4672708fcd6fab20767703803c51da5d655916230d1b0b50e8`.
+Its `tested-commit.txt` equals C6, and `artifact-sha256.txt` pins the JAR above.
+The hosted JAR archive SHA-256 is
+`7479d237518d8397a5eaab9d6d87d46c085c1d692fc3a0a15ac9a9c44f5f61b7`.
+C6 union-archive retention and detailed per-shard receipt reconciliation remain
+PENDING; none of C5's shard counts, runtime hashes or archive hashes below are
+relabelled C6. Native, X01/X02, client and reference results are PENDING.
+
+## Retained historical C5 receipts
+
+The following snapshot and its observations are retained as C5 history, not
+current-candidate results. C5's eight-family pre-run later passed (2026-11-20,
+14:13–21:21, R566); its full campaign and X01/X02 did not run on C5.
 
 Snapshot: 2026-11-20. Automated results below belong only to C5, commit
 `9172113ad4ecfb9047432f02b97d240fc06130b6`, host JAR SHA-256
@@ -58,17 +93,17 @@ location is proposed as durable evidence. The host JAR archive has SHA-256
 `4283a9ac371604985dc5e69c5d62f1c2c32eef32dfffe2130f1110ff8552c491`.
 These inspections verify existing receipts; they are not a local rerun.
 
-## C5 native families — every result PENDING
+## C6 native families — every result PENDING
 
 Names and selected case counts below are read from the tracked
 [campaign driver](../../../scripts/run_v180_integrated_campaign.py) `family_specs()`.
 A wrapper case can execute many cuts/starts; counts are not pass counts. The
-full selection is 78 families. The eight-family pre-run is partial evidence,
-not a substitute for the full run. See [C5 report](../../work/v1.8.0-root-queue/records/C5-SWITCH-REPORT.md)
+full selection is 78 families. C5's eight-family pre-run is historical partial evidence,
+not a substitute for C6's full run. See [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md)
 §§3–13 and [fuel inventory](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md)
 §3.2 for exact matrix rows, cases, exclusions and risks.
 
-| Family | Selected cases | C5 result |
+| Family | Selected cases | C6 result |
 |---|---:|---|
 | forced-A | 14 | PENDING |
 | forced-A-retry | 4 | PENDING |
