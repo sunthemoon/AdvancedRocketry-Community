@@ -214,8 +214,10 @@ class K06PackTests(unittest.TestCase):
     def test_manifest_hashes_citations_and_full_output_determinism(self):
         with tempfile.TemporaryDirectory(prefix="arce-k06-output-") as temporary:
             one, two = Path(temporary) / "one", Path(temporary) / "two"
-            manifest = k06.generate(one, self.baseline)
-            k06.generate(two, dict(reversed(list(self.baseline.items()))))
+            candidate_sha256 = k06.digest(b"offline unit-test input, not a candidate JAR")
+            manifest = k06.generate(one, self.baseline, candidate_sha256=candidate_sha256)
+            k06.generate(two, dict(reversed(list(self.baseline.items()))), candidate_sha256=candidate_sha256)
+            self.assertEqual(manifest["candidate_jar_sha256"], candidate_sha256)
             self.assertEqual({p.name: p.read_bytes() for p in one.iterdir()}, {p.name: p.read_bytes() for p in two.iterdir()})
             self.assertEqual(len(manifest["packs"]), len(self.packs))
             self.assertFalse(manifest["candidate_loads_run"])
@@ -259,18 +261,57 @@ class K06PackTests(unittest.TestCase):
             sentinel = root / "owned.txt"
             sentinel.write_bytes(b"do not overwrite")
             with self.assertRaises(FileExistsError):
-                k06.generate(root, self.baseline)
+                k06.generate(root, self.baseline, candidate_sha256=k06.digest(b"offline unit input"))
             self.assertEqual(list(root.iterdir()), [sentinel])
             fake = root / "wrong.jar"
             fake.write_bytes(b"not C4")
-            with self.assertRaisesRegex(ValueError, "pinned C4"):
-                k06.load_candidate(fake)
+            with self.assertRaisesRegex(ValueError, "does not match --expect-sha256"):
+                k06.load_candidate(fake, "0" * 64)
             with zipfile.ZipFile(fake, "w") as archive:
                 for name, value in self.baseline.items():
                     archive.writestr(name, k06.json_bytes(value))
                 archive.writestr("assets/ignored.json", "{}")
-            with patch.object(k06, "CANDIDATE_SHA256", k06.digest(fake.read_bytes())):
-                self.assertEqual(k06.load_candidate(fake), self.baseline)
+            expected = k06.digest(fake.read_bytes())
+            self.assertEqual(k06.load_candidate(fake, expected), self.baseline)
+            with self.assertRaisesRegex(ValueError, "does not match --expect-sha256"):
+                k06.load_candidate(fake, "0" * 64)
+            for invalid in ("", "0" * 63, "g" * 64):
+                with self.subTest(expected=invalid), self.assertRaisesRegex(ValueError, "64 lowercase"):
+                    k06.load_candidate(fake, invalid)
+
+    def test_cli_requires_expected_hash_before_loading_or_writing(self):
+        with patch("sys.argv", ["k06_packs"]), patch.object(k06, "load_candidate") as load:
+            with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit) as error:
+                k06.main()
+            self.assertEqual(error.exception.code, 2)
+            load.assert_not_called()
+
+    def test_cli_mismatch_refuses_before_output_creation(self):
+        with tempfile.TemporaryDirectory(prefix="arce-k06-mismatch-") as temporary:
+            output = Path(temporary) / "new"
+            jar = Path(temporary) / "candidate.jar"
+            with zipfile.ZipFile(jar, "w") as archive:
+                archive.writestr("assets/ignored.json", "{}")
+            argv = ["k06_packs", "--candidate-jar", str(jar), "--expect-sha256", "0" * 64,
+                    "--output", str(output)]
+            with patch("sys.argv", argv), self.assertRaisesRegex(ValueError, "does not match --expect-sha256"):
+                k06.main()
+            self.assertFalse(output.exists())
+
+    def test_cli_records_selected_hash_and_baseline(self):
+        expected = k06.digest(b"offline CLI input")
+        with tempfile.TemporaryDirectory(prefix="arce-k06-cli-") as temporary:
+            output = Path(temporary) / "new"
+            jar = Path(temporary) / "candidate.jar"
+            argv = ["k06_packs", "--candidate-jar", str(jar), "--expect-sha256", expected,
+                    "--output", str(output)]
+            with patch("sys.argv", argv), patch.object(k06, "load_candidate", return_value=self.baseline) as load:
+                with patch("sys.stdout", new_callable=io.StringIO):
+                    self.assertEqual(k06.main(), 0)
+            load.assert_called_once_with(jar, expected)
+            manifest = json.loads((output / "manifest.json").read_bytes())
+            self.assertEqual(manifest["candidate_commit"], k06.CANDIDATE)
+            self.assertEqual(manifest["candidate_jar_sha256"], expected)
 
 
 if __name__ == "__main__":

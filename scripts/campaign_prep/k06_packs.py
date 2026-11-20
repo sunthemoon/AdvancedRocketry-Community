@@ -18,11 +18,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 JAVA = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/"
 HOST = "advancedrocketrycommunity"
-CANDIDATE = "659bbcb6a745885565c07d98f5d695d43beef3f2"
-CANDIDATE_SHA256 = "c048743e61da4f939ce0492ca3ec73b7d69ef1634577bebc3279c91cf506cea1"
+CANDIDATE = "9172113ad4ecfb9047432f02b97d240fc06130b6"
 EVIDENCE = Path("D:/GitHub/ARCE-Task-Evidence")
-DEFAULT_JAR = EVIDENCE / "root-queue/C4/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar"
-DEFAULT_OUTPUT = EVIDENCE / "final-campaign/659bbcb6a/fixtures/K06"
+DEFAULT_JAR = EVIDENCE / "root-queue/C5/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar"
+DEFAULT_OUTPUT = EVIDENCE / "final-campaign/9172113ad/fixtures/K06"
 FIXED_TIME = (1980, 1, 1, 0, 0, 0)
 ID_LIMIT, BODY_LIMIT, NAME_LIMIT, REFRESH_TICKS = 128, 128, 48, 100
 STATION_NAME = "K06 station " + "n" * 36
@@ -110,10 +109,12 @@ def code_references(root: Path = ROOT) -> dict:
     return result
 
 
-def load_candidate(path: Path) -> dict[str, dict]:
+def load_candidate(path: Path, expect_sha256: str) -> dict[str, dict]:
+    if re.fullmatch(r"[0-9a-f]{64}", expect_sha256) is None:
+        raise ValueError("Expected SHA-256 must be 64 lowercase hexadecimal characters")
     raw = path.read_bytes()
-    if digest(raw) != CANDIDATE_SHA256:
-        raise ValueError("Not the pinned C4 release JAR")
+    if digest(raw) != expect_sha256:
+        raise ValueError("Candidate JAR SHA-256 does not match --expect-sha256")
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
         return {name: json.loads(archive.read(name)) for name in sorted(archive.namelist())
                 if name.startswith(f"data/{HOST}/") and name.endswith(".json")
@@ -364,7 +365,7 @@ def resource_counts(baseline: dict, item: Pack) -> dict:
             for directory in ("celestial_bodies", "travel_routes", "satellite_definitions")}
 
 
-def generate(output: Path, baseline: dict, root: Path = ROOT) -> dict:
+def generate(output: Path, baseline: dict, root: Path = ROOT, *, candidate_sha256: str) -> dict:
     citations = code_references(root)
     packs = route_packs(baseline, root) + catalog_packs(baseline) + station_packs() + api_packs() + sky_packs()
     blobs = {}
@@ -382,7 +383,7 @@ def generate(output: Path, baseline: dict, root: Path = ROOT) -> dict:
                         "members": [{"path": path, "sha256": digest(json_bytes(value))}
                                     for path, value in sorted(item.files.items())]})
     manifest = {"schema_version": 1, "package": "K06", "candidate_commit": CANDIDATE,
-                "candidate_jar_sha256": CANDIDATE_SHA256, "candidate_loads_run": False,
+                "candidate_jar_sha256": candidate_sha256, "candidate_loads_run": False,
                 "installation": "Use separate complete baseline copies for catalog variants: removed IDs retain lifetime bindings (max 128). Use one variant at a time; station overlays additionally need station_baseline below them. Never use refusal packs as setup or restart with an invalid initial catalog.",
                 "zip_format": {"compression": "stored", "timestamp": list(FIXED_TIME), "sorted_members": True},
                 "campaign_values": campaign_values(baseline), "code_references": citations, "packs": entries}
@@ -398,9 +399,11 @@ def generate(output: Path, baseline: dict, root: Path = ROOT) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-jar", type=Path, default=DEFAULT_JAR)
+    parser.add_argument("--expect-sha256", required=True, help="SHA-256 of the selected candidate JAR")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    manifest = generate(args.output, load_candidate(args.candidate_jar))
+    manifest = generate(args.output, load_candidate(args.candidate_jar, args.expect_sha256),
+                        candidate_sha256=args.expect_sha256)
     print(f"Generated {len(manifest['packs'])} deterministic K06 packs: {args.output}")
     print("Candidate load checks remain to be observed under the heavy-JVM lock.")
     return 0
