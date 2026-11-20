@@ -635,9 +635,14 @@ def prepare_singleplayer(output, cell_path):
     nbt.write_gzip(level, name, root)
     # Harness runtime validates the candidate independently in each mods directory.
     candidate = template.resolve() / "mods" / Path(cell["candidate"]["path"]).name
+    # W400's inventory cell has extra audit fields, whereas the tracked client
+    # harness requires its exact nine-field input schema. Project, never change
+    # either the original cell or the harness's strict validation.
+    keys = ("schema_version", "forge", "jei", "runtime_root", "server_dir", "client_game_dir",
+            "version_id", "candidate", "jei_jar")
+    cell = {key: cell[key] for key in keys}
     cell["client_game_dir"] = str(template.resolve())
     cell["candidate"] = dict(path=str(candidate), sha256=JAR_HASH)
-    cell["mods"]["client"] = [dict(path=str(candidate), sha256=JAR_HASH)]
     (output / "p9-cell.json").write_bytes(json_bytes(cell))
     sessions = []
     for language in ("en_us", "zh_cn"):

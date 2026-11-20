@@ -192,13 +192,18 @@ class PatternAndOutputTest(unittest.TestCase):
             (world / "unrelated.dat").write_bytes(b"untouched")
             client = output / "source-client"
             (client / "mods").mkdir(parents=True)
-            (client / "mods/candidate.jar").write_bytes(b"candidate")
+            jar = client / "mods/candidate.jar"
+            self.fixture_jar(jar)
             (client / "options.txt").write_text("lang:en_us\nsoundCategory_master:0.0\n")
             cell = output / "cell.json"
-            cell.write_bytes(k16.json_bytes(dict(client_game_dir=str(client),
-                candidate=dict(path=str(client / "mods/candidate.jar")), mods=dict(client=[]))))
+            cell.write_bytes(k16.json_bytes(dict(schema_version=1, forge="47.4.10", jei=False,
+                jei_jar=None, runtime_root=str(output / "runtime"), server_dir=str(client),
+                version_id="1.20.1-forge-47.4.10", client_game_dir=str(client),
+                candidate=dict(path=str(jar), sha256=k16.file_hash(jar)), mods=dict(client=[]),
+                server_forge_args=dict(path="audit-only", sha256="0" * 64))))
             before = k16.tree_hashes(world)
-            report = k16.prepare_singleplayer(output, cell)
+            with patch.object(k16, "JAR_HASH", k16.file_hash(jar)):
+                report = k16.prepare_singleplayer(output, cell)
             self.assertEqual(before, k16.tree_hashes(world))
             self.assertTrue(report["client_source_unchanged"])
             self.assertFalse(report["launched"])
@@ -210,6 +215,11 @@ class PatternAndOutputTest(unittest.TestCase):
             self.assertEqual((save / "unrelated.dat").read_bytes(), b"untouched")
             self.assertIn("soundCategory_master:1.0", (output / "p9-client/options.txt").read_text())
             self.assertEqual(len(report["sessions"]), 6)
+            from scripts.campaign_client.cells import load_cell
+            prepared = json.loads((output / "p9-cell.json").read_text())
+            self.assertNotIn("mods", prepared)
+            self.assertNotIn("server_forge_args", prepared)
+            self.assertEqual(load_cell(output / "p9-cell.json")["candidate"]["sha256"], k16.file_hash(jar))
             with self.assertRaisesRegex(ValueError, "occupied P9"):
                 k16.prepare_singleplayer(output, cell)
 
