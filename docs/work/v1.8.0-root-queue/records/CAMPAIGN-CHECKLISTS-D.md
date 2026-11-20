@@ -6,6 +6,13 @@ Gate is approved. See `CAMPAIGN-CHECKLISTS-A.md` for candidate
 identity, `[H]` harness/`[P]` human markers, the two-restart DS protocol,
 authentication and section-6 evidence names/metadata.
 
+Accepted common procedures for **every D row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Common setup and sources
 
 Use P1's C4 identity (TASK-W396 names `659bbcb6a`) and P2 **the API fixture
@@ -30,7 +37,7 @@ Read sources: [v1.3 version](../../../versions/V1.3.0-PUBLIC-API-COMPATIBILITY.m
 Historical protocol 6/7/8 and API-minor numbers in these sources identify their
 own builds, not the C4 wire pin. Match current client/server artifacts.
 
-P2 must publish source paths, owners, positions, slot/metadata ledgers, known
+The scene **needs package K21** to publish paths, owners, positions, slot/metadata ledgers, known
 unsupported container and rejected-provider controls. The manual tables do not
 give all those inputs; unresolved controls are listed at the end.
 
@@ -58,6 +65,10 @@ not proof of two unrelated mod authors' interoperability.
 | 7 | [P] Connect B. | Independent real account joins and sees the same integration-backed world. |
 | 8 | [P] Reconnect B using the same signed-in client. | Shared state remains correct without duplicated inventories/entities. |
 | 9 | [H] Compare server and both clients' diagnostics/state. | Correct identities, API compatibility and no client-only server class load. |
+
+**Accepted preparation/action steps (W408):**
+
+(C1/C15) **Needs package K01**: API/source JARs and independently built `arce-adapter-compat-test-1.0.0.jar`, hashes and boundary reports. **Needs package K21**: actual installed/omitted-client connections. Quote metadata's required-both-sides/no-display-test-exemption policy as expectation, but report measured connections separately; an omitted mandatory mod that connects is a finding. No client policy is inferred from metadata alone.
 
 **Evidence to keep:** `phase3-ds/D01/` startup/restart logs, registration
 receipts and JAR manifest; `phase4-v2/sitting-1/` both client logs/screenshots,
@@ -122,7 +133,7 @@ switches off; no properties unless P2 defines an approved fixture control.
 unsupported container and an intentionally rejected provider, plus a healthy
 supported variant. Each has recorded source blocks and complete inventory.
 Fault callbacks exposed only inside GameTests are not ordinary player controls;
-P2 must supply an actually runnable packaged fixture for that branch.
+C16 records that callback branch NOT_COVERED at V1, because no packaged control exists.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -132,6 +143,10 @@ P2 must supply an actually runnable packaged fixture for that branch.
 | 4 | [H] Compare that source with its baseline. | Source resources and metadata untouched. |
 | 5 | [H] Retry the healthy supported variant. | Normal assembly succeeds without residual failure state. |
 | 6 | [P] Review the diagnostics in English/Chinese at scales 2/3/4. | Reason visible, useful and not clipped or an unbounded payload dump. |
+
+**Accepted preparation/action steps (W408):**
+
+(C16) Rejected-provider callbacks are NOT_COVERED at V1 (and slow callbacks at REF/D12): fault controls exist only in GameTests. Cite their A1 result as A1, not client/REF evidence. A finite extra control still **needs package K18** and Root scope approval. The healthy/unsupported packaged scene **needs package K21**.
 
 **Evidence to keep:** Per-variant phase-2 assembler screenshots, fixture
 control/identity, exact before/after source projections, refusal and healthy-retry
@@ -152,7 +167,8 @@ fixture README's boundary contract.
 **Preconditions:** P2 API fixture Moon room with supplied vent and
 `arce_adapter_test:state_boundary` in its wall; baseline/JEI absent. Its open
 state retains a full collision cube, but the API rule makes it permeable.
-Manifest provides the boundary/vent positions and valid tag-reload variants.
+Boundary/vent positions **needs package K21**; W406 supplies the exact
+runner tag variants and hashes below (C17).
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -170,6 +186,21 @@ For a separately recorded missing-rule variant,
 `-Darce_adapter_test.skipAtmosphereBoundary=true` omits the rule but keeps the
 block. `-Darce_adapter_test.failAtmosphereBoundary=true` is a deliberate
 startup-compilation failure, not the normal visible-room case.
+
+**Accepted preparation/action steps (W408):**
+
+(C17; W406) Use only the atmosphere runner's own exact tag override, not an invented replacement tag. Enabled is additive with `arce_adapter_test:state_boundary`; disabled has empty additive values and removes only that pack's contribution. Capture actual tag membership/diagnostics and vent/boundary authority; do not promise a merge outcome without the installed fixture. **Needs package K21**: Moon room coordinates/supplies; **needs package K01**: binary; **needs package K06**: live load qualification.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `atmosphere_tag_enabled.zip` | `c6ecc70d5f57927bfddfa136efa1f27318bcbc48dfc422ebd264a3f88d10eb1a` | O; exact runner metadata and additive sealing tag containing `arce_adapter_test:state_boundary`. |
+| `atmosphere_tag_disabled.zip` | `a95ef0dd725b39dd92e626126255a4005bd17d754bc952e41e9925932fd28081` | O; exact runner metadata and empty additive values; removes only this pack's contribution. |
+
 
 **Evidence to keep:** Phase-2 HUD/boundary images; `phase3-ds/D04/` state/tag
 packs, vent oxygen/energy ledger, invalidation/restart logs and raw room data.
@@ -201,6 +232,10 @@ M130-05 does not specify them. No suitSmoke FakePlayer substitutes for A.
 | 5 | [H] Reconnect A with the same account. | Real equipment/oxygen/HUD retained, no refill replay. |
 | 6 | [P] Compare visible equipment/HUD with server state. | Same protection feedback quality as native equipment; no missing model or critical clipping. |
 
+**Accepted preparation/action steps (W408):**
+
+(C17) Measure the real player's consumption/refill over a recorded interval with raw suit and canister ledgers. Actor figures 999, 998 and 1,997 are not expectations. **Needs package K21**: actual equipment/oxygen/refill amounts, interval, HUD and reconnect controls.
+
 **Evidence to keep:** Phase-2 equipment/HUD/refill/rejoin screenshots, real
 player ItemStack before/after data, canister ledger and all logs. The fixture's
 twenty-manually-dispatched-tick actor test is supporting A1/S1, not this V1 case.
@@ -219,7 +254,7 @@ v1.3 section 11.1, M130-06, fixture README and
 [fixture fuel definitions](../../../../src/adapterTest/java/io/github/sunthemoon/arceadaptertest/FixtureRocketFuels.java).
 
 **Preconditions:** Baseline/JEI absent; P2 API fixture's legal **1,500-unit**
-tank, partly filled to measured amount F (source gives no required F), ordinary
+tank, partly filled to **F=750** (C17 procedure parameter), ordinary
 item Fuel Loader and one **blaze powder** registered as
 `arce_adapter_test:large_fuel`: **1,573 units**, remainder **one stick**.
 Record F before insertion. This tests the ordinary item-fuel path, not the
@@ -241,6 +276,10 @@ A separate definition-change variant may restart with
 blaze-powder batch); an existing captured batch must remain 1,573/stick. Do not
 replace its captured values with the new definition or assume the old 73-unit
 empty-start native fixture proves every partial starting amount.
+
+**Accepted preparation/action steps (W408):**
+
+(C17) Begin at F=750 of 1,500 capacity (half capacity, a procedure parameter), through the ordinary item loader: the first fill moves 750 and retains 823 units of the captured 1,573 batch; one stick is issued only at completion. Keep this component/item-loader case separate from FI29 escrow fuel. **Needs package K21**: eligible completion target and ordinary-loader scene.
 
 **Evidence to keep:** Phase-2 fuel/name/icon images; `phase3-ds/D06/` F,
 input/buffer/rocket/remainder ledger, schema/batch envelope, startup variants,
@@ -300,7 +339,8 @@ solar module, unbound chip and **untagged amethyst shard** for
 `arce_adapter_test:research_payload`. Baseline/JEI absent. Registered mission:
 **400 ticks**, reward **137**, first-discovery fee **11**, targets Earth/Moon.
 Capture actual target discovery and start-time fee; do not assume every target
-charges 11. Have a valid changed-definition pack for the open-menu reload.
+charges 11. Use W406's hashed `satellite_payload.zip` then
+`satellite_payload_changed.zip` below for the open-menu reload.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -315,6 +355,21 @@ charges 11. Have a valid changed-definition pack for the open-menu reload.
 | 9 | [H] Save/stop and restart the copy. | Claim receipt and balance persist. |
 | 10 | [H] Repeat step 9 for the second restart. | No replayed award on either reopen. |
 | 11 | [P] Review target, stale-menu and claim feedback. | Real-client UI agrees with server state. |
+
+**Accepted preparation/action steps (W408):**
+
+(C14; W406) Start/capture the real mission at 400/137/11 (fee conditional on discovery) **before** applying changed pack 20/211/11 while its menu is open; the task keeps captured values and claims once. Use tool receipt/unchanged state, not an assumed server log, for stale/replay cases. **Needs package K18**: bounded stale/permission/range probes and A1 fallback names; **needs package K21**: real terminal/chip/equipment scene; **needs package K06**: live generation/load checks.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `satellite_payload.zip` | `feac2b6a20d1fc241eaea4100525851829a8ffea2606ca5204b5627cfa30b37b` | A; registered `arce_adapter_test:research_payload` values: 400 ticks, reward 137, fee 11, targets Earth/Moon. |
+| `satellite_payload_changed.zip` | `b6cafb4e45e3b97c53513c217137e3de8b8af9507fbff73f4dab10fb8f55570a` | A; exact runner override: 20 ticks, reward 211, fee 11, same targets. |
+
 
 **Evidence to keep:** Phase-2 real-player terminal images; `phase3-ds/D08/`
 definition bytes/hashes, chip/mission snapshots, generation/claim receipts,
@@ -347,6 +402,21 @@ window input alone may not send an invalid intent after a menu closes.
 | 5 | [H] Submit the bounded out-of-range intent. | Refusal without forced loading of arbitrary coordinates. |
 | 6 | [H] Compare resources and loaded chunks against the baseline. | No unauthorized delta or log flood. |
 | 7 | [P] Perform a valid A action as the positive control. | Normal owner operation still works once. |
+
+**Accepted preparation/action steps (W408):**
+
+(C14 corrected by R546; W406) The two payload packs supply registration/reload context only, not hostile packet probes. Use their real open-menu generations for stale cases, record the tool's receipt and authoritative resources/chunks read back; use a log only if that handler writes it. **Needs package K18**: ordinary-client bounded stale/range/permission probes; unreachable cases are NOT_COVERED with reason and named A1 test. **Needs package K21**: A-owned payload/cargo/terminal scene and **needs package K06**: live pack loads.
+
+**Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
+below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K06/`.
+A means source-derived acceptance conditional on setup, R refusal-only, O an
+observed tag-merge outcome still required; none is a campaign result.
+
+| ZIP | SHA-256 | Expected load/outcome |
+|---|---|---|
+| `satellite_payload.zip` | `feac2b6a20d1fc241eaea4100525851829a8ffea2606ca5204b5627cfa30b37b` | A; registered `arce_adapter_test:research_payload` values: 400 ticks, reward 137, fee 11, targets Earth/Moon. |
+| `satellite_payload_changed.zip` | `b6cafb4e45e3b97c53513c217137e3de8b8af9507fbff73f4dab10fb8f55570a` | A; exact runner override: 20 ticks, reward 211, fee 11, same targets. |
+
 
 **Evidence to keep:** Sitting-1 both-client media/logs, sender/menu/target
 identities, bounded intent specification, exact resource/loaded-chunk comparisons
@@ -386,6 +456,10 @@ ordinary player worlds and historical evidence are never removed or repaired.
 | 12 | [H] Save/stop and restart recovered copies again. | At least two restarts per tested copy; exact recovered contents persist. |
 | 13 | [H] Rehash original worlds/artifacts. | Originals remain unchanged. |
 
+**Accepted preparation/action steps (W408):**
+
+(C18) Use two fresh independent removal copies under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/`, never the source. Take complete file inventories/hashes before removing the copied mod. **Needs package K21**: concrete copy paths and captured-payload inventories.
+
 **Evidence to keep:** `phase3-ds/D10/<variant>/` copied-mod manifests,
 property lists, all logs/exits, raw retained/restored payloads and field
 comparisons. Known missing-registry diagnostics stay identified as such, not
@@ -418,6 +492,10 @@ No unselected rendering/pipe/other mod is part of the declared support matrix.
 | 4 | [H] Save/stop and restart the same copy. | Correct state and no side-only dependency failure. |
 | 5 | [H] Reconnect A and compare state. | Client optional state does not corrupt mandatory data. |
 | 6 | [H] Repeat steps 4 to 5 for the second restart. | Same result after reopen two. |
+
+**Accepted preparation/action steps (W408):**
+
+(W400) The four named cells in A are the entire declared optional matrix; this input is answered, not a request to appoint another mod. **Needs package K01**: matching mandatory fixture binary; **needs package K21**: per-cell installed/omitted-client observations and restarts.
 
 **Evidence to keep:** `phase3-ds/D11/<forge>-<jei>/` mod manifests,
 server/client logs, startup/restart exits and real-client screenshots. If an
@@ -458,6 +536,10 @@ BlockEntity NBT**. The suggested regular-packet <64 KiB guideline is not a
 replacement for stricter channel limits. Record actual packet/cache bounds;
 do not infer them from a successful connection.
 
+**Accepted preparation/action steps (W408):**
+
+(C10/C16, R535) Use A's matched baseline/feature intervals and review-only spread trigger; no integration-specific percentage allowance exists. Slow/rejected callbacks remain NOT_COVERED at REF because controls are A1-only, unless Root adds finite K18 controls. **Needs package K15**: CPU/network/cache and raw-tick integration; **needs package K21**: comparable integration workload.
+
 **Evidence to keep:** `phase5-ref/<run>/D12/` node/workload/JVM manifests,
 raw CPU/tick/RSS/GC/network/cache traces, callback timing/diagnostics and
 baseline/budget comparisons. A GameTest's finite 20 ms callback delay is not
@@ -471,23 +553,11 @@ Build hash (commit and JAR SHA-256):
 
 ## Open questions for Root
 
-- **D01-D12:** Publish P2's API fixture rebuilt against C4 and its actual
-  mandatory-client policy. Historical consumer defaults still name a v1.3
-  artifact; do not use that publication or protocol pin for C4 evidence.
-- **D03/D12:** Supply packaged rejected/slow-provider controls if available.
-  The README scopes callback fault controls to GameTests; it does not provide
-  a normal real-player action that enables them. Do not present A1 as V1/REF.
-- **D04:** Supply room coordinates and exact supported tag overrides.
-- **D05:** Supply real-player oxygen payload/refill values and observation
-  interval. The actor-only suit smoke is not a HUD/reconnect procedure.
-- **D06:** Supply initial partial fuel F, eligible completion-target layout
-  and normal item-loader setup. Keep the existing frozen batch separate from
-  the production-disabled escrow fuel admission and its J23-J29 tests.
-- **D08/D09:** Supply valid definition packs and bounded real-client stale/
-  out-of-range intent tooling. Missing tooling is a coverage gap, not a pass.
-- **D10:** Confirm removal-copy paths and preserved-data inventory before the
-  fixture-mod removal; never apply the procedure to a source world.
-- **D11:** Confirm whether the Forge x JEI cells exhaust declared optional
-  support; no cited manual names an additional optional integration/version.
-- **D12:** Select comparable profiling intervals and review integration overhead;
-  no source supplies a separate numerical CPU/network/cache regression threshold.
+- **Answered:** C1 identity/classifier provenance; C15 measured installed/omitted-client policy; C16 callback NOT_COVERED above A1; C17 exact runner tag scope, measured player oxygen and F=750; C18 safe removal copies; W400 four-cell support; W406 tag/payload hashes and conditional outcomes.
+- **D01-D12:** independently built matching API/fixture binary/reports **needs package K01**; concrete API scenes/coordinates and installed/omitted-client connections **needs package K21**.
+- **D03/D12:** rejected/slow callbacks stay NOT_COVERED at V1/REF, because controls are GameTest-only. Added finite controls **needs package K18** and Root scope approval.
+- **D04/D08/D09:** actual tag/definition acceptance and restart checks **needs package K06**; room/payload/equipment/loader scene **needs package K21**. Delivered ZIP bytes are not live loads.
+- **D05/D06:** actual oxygen/refill interval and eligible completion target/loader layout **needs package K21**; actor numbers are not real-player expectations, and F is already answered.
+- **D08/D09:** bounded stale/range/permission probes, receipt/readback and A1 references **needs package K18**.
+- **D10:** concrete two-copy paths and full pre-removal file/payload inventories **needs package K21**; never remove from a source world.
+- **D12:** complete network/cache/raw-tick and matched profiling integration **needs package K15**. No separate numerical percentage allowance exists.

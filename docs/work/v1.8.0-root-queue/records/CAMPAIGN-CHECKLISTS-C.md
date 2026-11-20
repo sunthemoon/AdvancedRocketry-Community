@@ -5,9 +5,16 @@ Status: planned, not executed. Covers C01-C08 of
 `CAMPAIGN-CHECKLISTS-A.md` for candidate identity,
 restart/evidence protocol, `[H]` harness and `[P]` human markers and result metadata.
 
+Accepted common procedures for **every C row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Shared fixture and environment
 
-P1 must pin C4 (task identity `659bbcb6a`). P2 supplies **the many-machine
+C1 pins C4's full identity in checklist A. P2 supplies **the many-machine
 layout** and **the reference workload world of docs/17 section 4**. The
 three representative machines are the Electrolyzer, Rolling Machine and
 Precision Assembler, as described by the
@@ -16,7 +23,7 @@ orientations and no mirroring; Precision is 3x3x4, four orientations and
 mirroring, five input/two output Item ports and one Energy input. Use the
 tracked [Rolling pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/rolling_machine.json)
 and [Precision pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/precision_assembler.json),
-not an improvised shell. P2 must record anchors, orientation, mirror, all chunks,
+not an improvised shell. The layout **needs package K05** to record anchors, orientation, mirror, all chunks,
 resource stores/owners, and layout/pack hashes. Keep original fixtures unchanged.
 
 Every row uses Java 17, Minecraft 1.20.1 and matching C4 client/server on Forge
@@ -52,20 +59,23 @@ add slot/energy and stale-menu checks. All actual/result fields remain blank.
 two workload accounts/equivalent under O7; ordinary world, switches off,
 no properties. **Sources:** v1.2 sections 10.1, 13.1 and 13.5.
 
-**Preconditions:** P2 many-machine layout with **100 idle machines plus the
-defined active-machine count**; baseline Forge/JEI absent; heap <=4 GiB.
-Root must define the active count, machine mix and recipes before the run;
-the cited version says defined quantity but supplies no number. Use the
+**Preconditions:** K05 many-machine layout: **100 idle**, then a separate **144-controller**
+scene (16 of nine kinds), first idle then **72 active** (C11); baseline
+Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **needs package K05**. Use the
 [quality budgets](../../../17-V1PLUS-QUALITY-BUDGETS.md), section 4.
 
 | Step | Action | Expected observation |
 |---|---|---|
-| 1 | [H] Capture the initial layout/resource projection. | Exactly 100 idle machines and the declared active set are identifiable. |
+| 1 | [H] Capture the initial layout/resource projection. | Exactly 100 idle in scene 1, and 144 controllers/72-active variant in scene 2 are identifiable (C11). |
 | 2 | [H] Start tick/RSS/CPU/GC and structure-work sampling. | Raw timestamped samples under the stated full load. |
 | 3 | [H] Observe the 100-machine idle interval. | Low idle cost; no per-tick unnecessary world scans. No separate numeric idle-cost threshold is stated. |
 | 4 | [H] Start the declared active recipes. | Correct bounded processing and exact recipe resource accounting. |
 | 5 | [H] Observe the declared active interval. | Mean <=25 ms, P95 <=50 ms, P99 <=100 ms MSPT; sustained RSS <=5.5 GiB; no OOM/watchdog or unexpected forced chunks. |
 | 6 | [H] Compare final resources and structure-work samples. | No duplicated output, unbounded revalidation or unexplained loss; record spikes against the general 500 ms rule. |
+
+**Accepted preparation/action steps (W408):**
+
+(C11; C10/R535) Run two distinct scenes: 100 idle machines; then 144 controllers, 16 of each of nine kinds, idle and half active (72), using the scale test's recipes. The second population/mix is an accepted procedure choice, not a new budget or an extra unspecified active population on the first scene. Apply A's matched two-minute warm-up/ten-minute sample and twice-run baseline rules. **Needs package K05**: layout, recipes and exact ledgers; **needs package K15**: qualified measurements.
 
 **Evidence to keep:** `phase5-ref/<run>/C01/` layout and active-count manifest,
 recipe hashes, all raw samples/intervals, CPU/cache/scan observations and ledgers.
@@ -101,6 +111,10 @@ fixture tickets. Set no production chunk-loading bypass for the case.
 | 9 | [H] Compare live/saved state and completion. | No reimported legacy shadow resources or replayed output. |
 | 10 | [H] Repeat steps 7 to 9 for the second restart. | Same conservation on reopen two. |
 
+**Accepted preparation/action steps (W408):**
+
+(C12) For each unload/reload or damage mode, capture the per-machine ledger before and after plus drops: before equals after plus drops, with legitimate processing conversions reconciled. Record refusal versus teardown per mode as an observation; neither is failure by itself. **Needs package K05**: coordinates, chunk-boundary/unload controls, ledgers and damage variants.
+
 **Evidence to keep:** `phase3-ds/C02/` chunk/ticket observations, initial,
 unloaded, reloaded and restarted state, logs/exits and exact batch ledgers.
 Unknown/unloaded state must preserve inventory; a mere startup is insufficient.
@@ -134,6 +148,10 @@ Item slots. O5 supplies actual concurrent input, not a single-client claim.
 | 8 | [P] Attempt an operation from the retained old menu. | Old menu closes/refuses without changing the rebuilt machine. |
 | 9 | [P] Reopen both menus. | Both see the actual rebuilt inventory and state. |
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K05**: the two-player permission/controller scene and resource ledger. Owner O5 supplies coordinated inputs; retained-menu refusals use the common R546 proof method, with missing intent reach **needs package K18**.
+
 **Evidence to keep:** Sitting-1 both-client video/logs, simultaneous input
 times, menu IDs/generations, server inventory projections and batch accounting.
 
@@ -166,10 +184,14 @@ limits rather than assuming explosions guarantee arbitrary item recovery.
 | 6 | [H] Process one exact recorded batch. | Usable restored machine, resources conserved according to the documented damage boundary. |
 | 7 | [P] Review before/after model and collision video. | No invisible blocking part or falsely formed model. |
 
+**Accepted preparation/action steps (W408):**
+
+(C12) The oracle for every mode is per-machine conservation: before ledger equals after ledger plus drops, accounting for recipe conversions. Record protected refusal or teardown separately; neither outcome fails solely for not being the other. An actual-break branch not reached remains NOT_COVERED with its reason. **Needs package K05**: safe damage/unload recipes, coordinates and ledgers.
+
 **Evidence to keep:** Per-mode phase-2 video/screenshots; `phase3-ds/C04/`
 damage commands/input receipts, collision observations, resource/drop projections
 and any refusal. A protection that prevents a damage mode leaves the requested
-actual-break variant NOT_COVERED until Root supplies a supported fixture.
+actual-break variant NOT_COVERED; a supported fixture **needs package K05**.
 
 Actual:
 Screenshot or video:
@@ -214,8 +236,9 @@ Precision PREC-M-05.
 **Preconditions:** P2 three representative machines; baseline/JEI absent;
 English/Chinese, GUI scales **2/3/4**, windowed/fullscreen. Precision has seven
 numbered Item slots, FE gauge, progress/status and a missing-casing variant.
-Pack fixtures must define long recipe names and out-of-range-number cases;
-source supplies no exact long string or invalid numeric value.
+C13 takes names/numbers at and one past each C4-declared limit;
+extracted values and fixtures **needs package K05**. Fields without limits
+are recorded as such, not assigned fabricated extremes.
 
 | Step | Action, for every machine/language/scale/window cell | Expected observation |
 |---|---|---|
@@ -226,6 +249,10 @@ source supplies no exact long string or invalid numeric value.
 | 5 | [H] Open the corresponding failure interface. | Diagnostic remains readable and actionable, not clipped. |
 | 6 | [H] Load the declared long-name/extreme-number fixture. | Valid long text remains usable; invalid data is rejected clearly or valid extremes render without overflow. |
 | 7 | [P] Review all native cell screenshots. | No critical control/text inaccessible; no stale formed state. |
+
+**Accepted preparation/action steps (W408):**
+
+(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C4's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **Needs package K05**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
 
 **Evidence to keep:** Per-cell native screenshots and actual resolutions,
 recipe/diagnostic fixture bytes, server values and client/server logs in phase 2.
@@ -274,7 +301,7 @@ ordinary copy, switches off, no properties. **Source:** v1.2 section 12.2.
 
 **Preconditions:** P2 protected machine/port fixture, A authorized and B not;
 baseline/JEI absent. Manifest supplies actual permission boundary and normal
-menu distance. Root must provide a bounded retained-menu/intent method where
+menu distance. The bounded retained-menu/intent method **needs package K18** where
 normal UI closure prevents the requested operation; no fabricated packets or
 unspecified coordinates are assumed to exist in the harness.
 
@@ -286,6 +313,10 @@ unspecified coordinates are assumed to exist in the harness.
 | 4 | [H] Submit the bounded old-menu operation through the approved harness method. | Refusal; no remote resource change or arbitrary chunk load. |
 | 5 | [H] Compare machine/port state and loaded chunks. | No privilege, progress or resource bypass. |
 | 6 | [P] Reopen in range as A. | Valid interaction still works after the rejected attempts. |
+
+**Accepted preparation/action steps (W408):**
+
+(C14 corrected by R546) **Needs package K18**: separately built never-shipped fixture mod, bounded ordinary-client stale/range/permission/late intents against the eight-channel pin's applicable C2S channels; no invented packet. **Needs package K05**: actual protected boundary and measured distance. Record tool receipt and unchanged authoritative state; logs only where emitted. If K18 is absent at the phase or cannot reach a branch, that branch is NOT_COVERED with reason and its named A1 test. Closed/disabled UI alone is no refusal proof.
 
 **Evidence to keep:** Sitting-1 both-client media/logs, positions/distances,
 permission/menu identities, bounded intent description and before/after resources
@@ -300,16 +331,7 @@ Build hash (commit and JAR SHA-256):
 
 ## Open questions for Root
 
-- **C01:** Define the active-machine count, mix, recipes, measurement interval
-  and many-machine layout before sampling; the version provides only 100 idle.
-- **C02/C04:** Supply coordinates, chunk/unload verification, safe damage
-  fixtures and documented resource-protection expectations. Distinguish a
-  protected refusal from actual structural teardown for each damage mode.
-- **C03:** Confirm O5's coordinated input and the normal permission fixture.
-- **C05:** O6 is already decided: retain NOT_COVERED unless the owner names
-  mods. No agent needs to choose a pipe mod or call this result passed.
-- **C06:** Supply long-name and extreme-number fixture values and supported
-  minimum window dimensions. No cited source gives those exact values.
-- **C08:** Name the permission boundary, actual allowed distance and bounded
-  stale/out-of-range intent tool. UI closure alone does not exercise rejection
-  of an intent that actually reaches the server.
+- **Answered:** C11 fixes 100 idle and 144-controller/72-active scenes; C10/R535 fixes samples/review; C12 fixes per-mode conservation; C2 fixes effective pixels; C13 uses C4-declared limits only. C05 stays NOT_COVERED under O6/D9.
+- **C01-C04/C06-C08:** exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance **needs package K05**. O5 supplies C03 coordinated input.
+- **C01:** complete raw/live measurements **needs package K15**, with no new idle-cost/percentage threshold.
+- **C08/retained-menu negatives:** bounded ordinary-client tool, receipt/readback and named A1 fallbacks **needs package K18**. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.

@@ -5,6 +5,13 @@ These are unrun P4 lists for I01–I11 of [the campaign](FINAL-CAMPAIGN-PLAN.md)
 [W188](W188.md) and the current, not superseded, model decisions named under I07.
 No Gate or version is approved.
 
+Accepted common procedures for **every I row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Shared preconditions, execution labels and evidence
 
 H marks a harness/operator action; P marks a person's action/judgement. Each arrow gives the expected observation.
@@ -12,7 +19,8 @@ Use P1's C4 commit and hosted JAR SHA-256 on Java 17. Default is Forge 47.4.10 w
 47.4.23. JEI-present means exactly 15.56.0.205. I04 explicitly covers all four cells; I09 covers both JEI states.
 V1 means a real GPU, with CPU/GPU/driver/resolution/window/GUI-scale recorded, not Xvfb/LLVMpipe.
 P2 supplies immutable source fixtures; use disposable copies only. Its names below are fixture descriptions,
-not already delivered archive filenames. Root must supply archive hashes, coordinates, IDs and setup commands.
+not already delivered archive filenames. These **needs package K02** (historical), **needs package K05** (machine) or
+**needs package K16** (live control) archive hashes, coordinates, IDs and setup commands, as the rows specify.
 Pin server difficulty, view/simulation distance, config and loaded switches before each run.
 
 Phase 3 DS uses the packaged server on the development PC with one real client A. Phase 4 V2 uses two real
@@ -23,7 +31,7 @@ Gated asset/status views, if separately needed, belong to J and retain their own
 Phase 5 REF/SOAK uses a non-root user on 4 vCPU/8 GiB/Debian 12, Java 17, server `Xmx4G` maximum,
 bound to loopback with SSH-tunnel client access on an exclusive node.
 
-Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/`. Use
+Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`. Use
 `E/phase2-v1/<machine>/<round>/`, `E/phase3-ds/<row>/`, `E/phase4-v2/<sitting>/` and `E/phase5-ref/<run>/`.
 Retain `server.log`, native client logs, `results.jsonl`, `summary.json`, configuration, fixture and candidate
 identities, raw samples and per-step UTC times. Screenshots are `<row>-<step>-<client>-<language>-<scale>.png`;
@@ -52,6 +60,10 @@ for a full survival-played run and not authorization to omit the complete route.
 7. [P] Perform the owner-agreed subset by hand on C4 and review the full rehearsal video. → Exact covered steps,
    setup shortcuts, controls and judgement are recorded; build hash appears in the video index.
 
+**Accepted preparation/action steps (W408):**
+
+(C29) Use one continuous scripted C4 witness from first machine to the **railgun pair** endgame device (accepted choice), including recipes/counts/resources. **Needs package K16**: route scene and witness manifest. O4 still chooses/records the hand-played subset; rehearsal is not a full survival-played claim.
+
 **Evidence to keep:** Continuous/referenced route video, witness route and resource ledger, per-stage screenshots,
 server/client logs and the owner-confirmed hand-played subset under phase 2.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -61,7 +73,7 @@ server/client logs and the owner-confirmed hand-played subset under phase 2.
 **Phase/level/machine/accounts:** 3 DS on development PC with A; 5 REF on the reference node.
 **Gate:** Ordinary P2 many-machine layout.
 **Preconditions:** The P2 many-machine fixture (W62's S6 layout), enumerating every delivered v1.8 machine kind,
-idle/active states, coordinates, recipes, buffers, energy, fluids and progress. Counts/scaling factors are not given by §10.2.
+idle/active states, coordinates, recipes, buffers, energy, fluids and progress. C30 selects 144 controllers without another scaling factor.
 
 1. [H] Capture the complete layout's initial state. → Every machine kind is present, not just the old v1.2 idle fixture.
 2. [H] Run the selected machines together. → Processes progress with exact resource conservation and bounded queues.
@@ -73,6 +85,10 @@ idle/active states, coordinates, recipes, buffers, energy, fluids and progress. 
 6. [H] Activate the scaled layout and sample CPU/MSPT/RSS/GC/network. → Mean ≤25 ms, P95 ≤50 ms, P99 ≤100 ms,
    RSS not persistently >5.5 GiB, no watchdog/OOM/unexpected forced chunks; state the exact active population.
 
+**Accepted preparation/action steps (W408):**
+
+(C30) Use FI10's 144 controllers, 16 of nine kinds, with no further scaling factor. **Needs package K05**: concrete many-machine layout/recipes/ledgers and per-machine restart sequence. Classification/inventory comes from W402/K13; no extra scaling is invented.
+
 **Evidence to keep:** Phase 3 machine-by-machine inventory/progress/unload/restart comparisons and phase 5 layout,
 scale factor, raw idle/active samples, queue/ticket counts and host record.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -81,7 +97,7 @@ scale factor, raw idle/active samples, queue/ticket counts and host record.
 
 **Phase/level/machine/accounts:** 3 DS, development PC and A. **Gate:** Ordinary upgrade copy.
 **Preconditions:** P2 v1.7 world with every placeholder and old registry ID, its pre-upgrade ID/state manifest and
-immutable archive/hash. Sources do not name an existing complete archive; Root must provide it.
+immutable archive/hash. The complete archive/ID manifest **needs package K02**.
 
 1. [H] Hash the source archive and copy it without modifying the original. → Source remains recoverable and unchanged.
 2. [H] Start that copy on C4 and enumerate old blocks/items/roots. → All stable IDs remain; replacement art/behavior
@@ -89,6 +105,10 @@ immutable archive/hash. Sources do not name an existing complete archive; Root m
 3. [P/H] Use representative upgraded machines and inventories. → State and player resources are usable, not merely loadable.
 4. [H] Stop and restart twice. → Compare the same IDs, contents and managed state after each start.
 5. [H] Re-hash the original archive and backup. → Both unchanged; preserve failed copies separately if upgrade fails.
+
+**Accepted preparation/action steps (W408):**
+
+(C30) **Needs package K02**: immutable all-old-ID v1.7 source and manifest. Use K13's delivered inventory to enumerate new art; reconstruction remains labelled as such and is not a played-source claim.
 
 **Evidence to keep:** Phase 3 archive identity, pre/post ID/state inventory, two restart comparisons and full logs.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -114,6 +134,10 @@ counts from its resources/runner; W188's historical counts are not automatically
 6. [H] Stop and restart the same world twice and reconnect. → Tag gate resets per connection; correct final counts
    and screens return. Without JEI, ordinary machines and server work without optional client classes.
 7. [H] Repeat steps 1–6 in each of the other three cells. → Preserve four separate results, not one combined receipt.
+
+**Accepted preparation/action steps (W408):**
+
+(C31; W400) Read category/recipe counts from C4 in each actual JEI-present named cell; W188 totals remain history. Show at least one recipe page and one usage query per category, capturing final synchronized receipts. The four manifest paths/hashes are in A. Runtime counts still **needs package K13**; recipe/machine scene **needs package K05**.
 
 **Evidence to keep:** Phase 2 real-client pages/usages/screenshots and phase 3 per-cell command/profile manifests,
 ordered category receipts, counts, initial/restart client/server logs and state comparisons. D9 limits v1.8 support
@@ -154,6 +178,10 @@ screens/models/textures/sounds. Missing sample definition is a preparation gap, 
    → Zero missing model/texture acceptance; retain all matched lines and findings, not just a count.
 5. [P] Review the contact sheets and free-look scenes. → Owner judgement is separate from harness capture.
 
+**Accepted preparation/action steps (W408):**
+
+(C30; W402/R546) Use K13's `classification.csv`/`model-families.csv`: inspect all high-risk OBJ/multiblock/armour and W244/W261/W265-corrected assets, plus one pick per other model family. Open **every screen once per language**, including the eleven no other row names (W402 section 4). The 48 unreferenced textures are v1.9 Low cleanup, outside this campaign (R546), not silently a passed sample. **Needs package K05**: scene placement; screen navigation/recheck controls **needs package K16**.
+
 **Evidence to keep:** Phase 2 coverage inventory, high-risk complete checklist, contact sheets, screenshots/video,
 sound index, logs and matching-line list. I07/J15 provide deeper checks but do not replace the broad inventory.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -182,8 +210,8 @@ Use their final corrections: actual Capsule mesh, all-face `rocketpad_`, and fla
    pending endpoint, doorway NORTH, no Door mesh; cage clears on terminal paths. Inspect inside/outside, countdown
    tint, rider visibility and the documented floor 0.25 blocks above rider feet/platform-corner protrusion.
 8. [H] View both mono and both bipropellant motors placed, adjacent to tanks/pad surfaces and assembled on rockets.
-   → Open nozzle does not hide neighboring faces, rim/seams remain inspectable; inspect UV orientation against an
-   audited 1.12 reference, flat/smooth lighting, particles and all eight item display contexts/both hands.
+   → Open nozzle does not hide neighboring faces, rim/seams remain inspectable; inspect UV orientation against W241's
+   audited renderer inventory (C32, not unavailable 1.12 screenshots), flat/smooth lighting, particles and all eight item display contexts/both hands.
 9. [H] Repeat motor inspection for the nuclear nozzle in all six facings. → Visual rotation follows each state;
    only the downward nozzle is flight-legal. No test assumes sideways legality.
 10. [H] Inspect the static saw block and formed cutting machine in four machine facings. → Saw axle remains east–west;
@@ -201,9 +229,13 @@ Use their final corrections: actual Capsule mesh, all-face `rocketpad_`, and fla
     project fallbacks; missing/corrupt Capsule resource gives the existing line cage; ordinary baked motor/tank/saw
     models have no promised runtime fallback. Capture failures rather than pretending every model has one.
 
+**Accepted preparation/action steps (W408):**
+
+(C32) No captured 1.12 session exists; "compared with 1.12 screenshots" is NOT_COVERED for that reason. Compare instead to W241's audited renderer inventory at upstream `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, preserving W244/W261/W265 corrections and without importing unaudited art. W402 delivers `k13-missing-resource-pack.zip`, SHA-256 `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf`, under `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/fixtures/K13/`; its seven source-derived overrides/fallback expectations are W402 section 7, not observed loads. **Needs package K14**: phase-4 paired break/repair/tracking scene and actual pack checks.
+
 **Evidence to keep:** Phase 2 per-model/facing/context screenshots, owner judgement, resource-pack names/hashes,
 full client logs, reload observations and phase 4 paired formation views. Sources give no substitute automated
-visual verdict; 1.12 UV premise remains unverified until the reference comparison is supplied.
+visual verdict; the 1.12-screenshot comparison remains NOT_COVERED under C32; use W241's audited inventory instead.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
 
 ## I08 — Language, GUI scale and resource reload
@@ -216,6 +248,10 @@ visual verdict; 1.12 UV premise remains unverified until the reference compariso
 3. [H] Resize the window and repeat fullscreen. → Layout remains within the viewport; include long recipe/status names.
 4. [H] Press F3+T with each representative screen open. → Textures/fonts restore; current server state is not reset or misreported.
 5. [P] Review both-language contact sheets. → Actual readability is judged, not just pixel bounds. J14 separately covers HUD scales 1–6.
+
+**Accepted preparation/action steps (W408):**
+
+(C30) Open every delivered screen once in each language; K13's 32-row `screens.csv` includes overlays/non-menu screens and the eleven not named by another row. Use C2 effective viewports, never clamped scale 4 as a separate result. **Needs package K16**: navigation/long-state controls; **needs package K05**: machine placement. W402 supplies screen/asset classifications.
 
 **Evidence to keep:** Phase 2 screen × language × scale × mode index, screenshots, tooltips/reload timings and logs.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -236,6 +272,10 @@ JEI 15.56.0.205. Freeze sampling interval, frame collector and heap measurement 
 5. [H] Repeat steps 3–4 for three reloads without JEI, then three with JEI. → Retain every value, not only the best run.
 6. [P/H] With JEI present, open each classic category. → Record time to first drawn frame and actual page usability.
 7. [P/H] Search and perform usage lookup. → Record response time and correct results with the full recipe set.
+
+**Accepted preparation/action steps (W408):**
+
+(C5, R535; W399/W403) Follow A's two same-cell Vanilla/Forge baseline runs, average/slowest-1%/first-stall/longest-frame definitions, reporting-only 50 ms and review-only spread trigger; no FPS/stall cutoff exists. Owned-client heap/histogram proxies are measured outside timed frames, never asserted as GPU/cache release. **Needs package K04**: three rockets; **needs package K15**: direct heap/cache qualification and comparison plan; O8 approves capture/version.
 
 **Evidence to keep:** Phase 2 `frametime/` raw data, baselines/settings/hardware, scene manifests, first-stall video,
 three reloads per JEI state with heap/cache readings and per-category/search timing table. Sources set no numeric
@@ -262,6 +302,10 @@ I04's complete four-cell rerun separately; D9 does not require four independent 
 7. [H] Write the declared-cell and four-cell-coverage report. → Neither W188's short historical matrix nor a future
    v1.9 modpack run substitutes for this C4 soak.
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K17**: complete combined load, four sampled hours, 30-minute flushed saves and two-hour restart schedule (C4/R535 procedure parameters). **Needs package K15**: complete raw-tick/all-ticket observation; O7/O11 supply real connections and REF acceptance. Keep each Forge/JEI result distinct.
+
 **Evidence to keep:** Phase 5 raw full-duration samples, workload/actions/connection manifest, configuration,
 restart/resource comparisons and exact actual budget table; link I04's four-cell evidence by row ID.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -282,20 +326,21 @@ force-field projector and pump as well as endgame devices. Record permissions an
 5. [H] Compare both clients' views and the server's resource/chunk/audit projections. → Authoritative refusal/status
    synchronization and unchanged protected resources. W62's menu-specific tests are not a V2 substitute.
 
+**Accepted preparation/action steps (W408):**
+
+(C14 corrected by R546; W402 section 6) Use delivered K13 holder/policy matrix, with bounded tool receipt and unchanged server-state readback for every negative case; logs only where code emits one. `suit_motion` affects only the sender's own worn jetpack and needs **no distance step**. Beacon, pad, projector and pump are block-use devices, not invented menus/packets. The projector's silent non-operator use is accepted Low KI-V180-UI-01, still check unchanged state. **Needs package K18**: safe per-channel probes and named A1 references for unreachable/late cases; the live fixture **needs package K16**.
+
 **Evidence to keep:** Phase 4 menu/holder/variant table, paired screenshots/video, both client logs, server policy
 receipts, unchanged-resource/chunk comparisons and successful owner controls.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
 
 ## Open questions for Root
 
-- I01: Owner O4 must name the hand-played subset. Pin the exact candidate witness route, recipes/counts and selected
-  endgame device; existing static reachability reports alone cannot supply a continuous recorded gameplay result.
-- I02/I03/I06/I08: P2 still needs archive filenames/hashes, coordinates, complete machine/old-ID/screen/asset
-  inventories, high-risk classification, sample selection and the many-machine scaling factor.
-- I04: Pin the candidate-shipped counts and category/usage representatives. W188's historical counts alone are insufficient.
-- I07: Supply the audited 1.12 visual reference and missing-resource packs; preserve the final W244/W261/W265
-  corrections above. W241 also asks for paired real-client break/repair and tracking; schedule those in phase 4.
-- I09: Confirm O8 and the fixed frame-time/heap/window method. Numeric acceptance thresholds beyond docs/17's
-  correctness rules are absent from these sources, so the report must say so rather than fabricate them.
-- I11: Freeze the current holder/policy matrix and safe intent-driving procedure. Missing malicious/stale-action
-  instrumentation is NOT_COVERED; ordinary clicking cannot prove every network boundary.
+- **Answered:** C29 railgun-pair continuous witness; C30 high-risk/every-screen/family sample/144-controller scale; C31 page/usage query method; C32 audited W241 inventory with unavailable 1.12 screenshot comparison NOT_COVERED. W402 delivers classifications/screens/policies/resource packs; R546 covers unnamed screens, silent projector Low and no jetpack distance step.
+- **I01:** complete witness/recipe/count/control manifest **needs package K16**; O4 chooses the hand-played subset.
+- **I02/I03/I06/I08:** live machine scene **needs package K05**, all-old-ID historical source **needs package K02**, navigation/recheck batches **needs package K16**. Inventories/classifications are delivered, not new open choices.
+- **I04:** runtime per-cell JEI counts **needs package K13**, recipe scene **needs package K05**. W400 names/manifest paths are answered.
+- **I07:** actual missing-pack load and paired break/repair/tracking scene **needs package K14**. No captured 1.12 session is invented.
+- **I09:** three rocket scenes **needs package K04**, direct heap/cache observation **needs package K15**; O8 approves capture/version. No FPS/reload/response cutoff exists.
+- **I05/I10:** combined workload **needs package K17**, production recipe layout **needs package K05**, complete observers **needs package K15**. O7/O11 supply connections/node access.
+- **I11:** live fixture **needs package K16**, bounded receipt/readback/probes and A1 references **needs package K18**. Follow the actual holder matrix, not blanket owner-only policy.

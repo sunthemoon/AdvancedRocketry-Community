@@ -2,8 +2,16 @@
 
 These are unrun P4 lists for J01–J29 of [the campaign](FINAL-CAMPAIGN-PLAN.md).
 They are procedures, not C4 results, switch approval or Required Gate approval. The task identifies C4 as
-`659bbcb6a`; P1 must still provide its full commit, hosted artifacts and SHA-256 identities before execution.
+`659bbcb6a`; the full commit, hosted release hash and artifact path are pinned by C1 in checklist A.
+Sources/API artifacts still **needs package K01**.
 Historical results in the sources are not copied into the blank result fields.
+
+Accepted common procedures for **every J row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
 
 ## Shared preconditions, execution labels and evidence
 
@@ -79,7 +87,7 @@ pending; an enabling change creates a new candidate and requires affected rows a
 
 ### Evidence common to every row
 
-E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/`. Keep as-run lists under `E/checklists/`,
+E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`. Keep as-run lists under `E/checklists/`,
 candidate identities under `E/candidate/` and immutable source-fixture hashes under `E/fixtures/`.
 Use `phase2-v1/<machine>/<round>/`, `phase3-ds/<row>/`, `phase4-v2/<sitting>/` and `phase5-ref/<run>/`.
 Keep native `server.log`, client logs, `results.jsonl`, `summary.json`, commands, UTC step/boundary times,
@@ -101,13 +109,17 @@ Sources: [C4 switch report section 3.4 and 9.1](C4-SWITCH-REPORT.md), [owner cap
 1. [H] Open the bay's ordinary no-hook menu. → Disabled admission is represented honestly; inspecting it does not deploy.
 2. [H] On the gated copy, open the bay in each status prepared by the fixture. → Visible reason matches the server;
    package, slot and progress text do not overlap. The report does not enumerate a complete GUI-status sequence;
-   Root must pin it before claiming complete coverage.
+   That sequence **needs package K11** before claiming complete coverage.
 3. [H] Establish 16 unique pending union entries for owner A using the pinned cap fixture. → The union includes fuel,
    cargo and bay, with no OP exemption; do not count one captured/UNKNOWN successor more than once.
 4. [H] Request another A bay deployment. → Menu shows `OWNER_PENDING_FULL`; no package consumption or new claim.
 5. [P] Inspect the full reason and slots in en_us and zh_cn at scales 2, 3 and 4. → Text is readable and agrees with
-   the log, including the refusal suffix; record the actual localized wording rather than inventing it.
+   receipt/server readback (log only where emitted, R546), including the refusal suffix; record the actual localized wording rather than inventing it.
 6. [H] Repeat the cap view after a save/restart on the same copy. → Durable held charges remain; restart is not a release.
+
+**Accepted preparation/action steps (W408):**
+
+(C1/C33) Pin the common C4 identity, not a historical candidate. Claim cap coverage only for the owner actually used by the fixture; a different owner's admission is tested only as B owning B's ordinary bay. **Needs package K11**: current menu/status/cap recipes and marked world; owner O10 supplies the two real UUIDs.
 
 **Evidence to keep:** Phase-2 disabled/status/cap screens, pending-union identities and totals, server/client logs,
 config/marker/properties, plus phase-3 restart comparison if step 6 uses that sitting.
@@ -172,6 +184,10 @@ separate two-player runs; never add a third real client to keep a witness aboard
     repeat with the passenger online and offline as separate runs. Later flight passenger phases may move/remount
     an online assigned B; that is distinct from the forbidden remount while the hold is active.
 
+**Accepted preparation/action steps (W408):**
+
+(C1/C34) Record W254 step 3.4 exactly as "not run; covered natively by X5": the real fall lands before expiry and the other controls end the offer. No V2 expiry pass is inferred. **Needs package K11**: marked held-bay scene, pads/seat coordinates and controls; owner O10 supplies A/B UUIDs.
+
 **Evidence to keep:** Both continuous client videos and logs, all exact exit/offer/capture/expiry markers, health
 and coordinates at each boundary, pre/post payload/seat/chunk comparisons, both roles and all cancellation runs
 under phase 4. W254's near-floor residual (last sample within 0.01 of floor, or two movement packets in one tick
@@ -186,8 +202,9 @@ combining over four blocks of fall) is recorded with packet/tick evidence, not h
 
 **Phase/level/machine/accounts:** 4 V2 LAN, two real clients/GPU machines A/B; owner plays each host role.
 **Gate:** Production switches off; W269 dedicated selection is not a LAN gate.
-**Preconditions:** [W254 section 5](W254-V2-CHECKLIST.md). Root must first deliver an approved LAN held-bay
-fixture route; the dedicated properties above do not supply it. Use two disposable copies of the P2 bay fixture.
+**Preconditions:** [W254 section 5](W254-V2-CHECKLIST.md). C34 records this row NOT_COVERED
+while switches are off and no LAN gate exists. The following steps remain conditional,
+not instructions to create a gate; any owner-enabled future scene **needs package K11**.
 
 1. [P-A] Host the first LAN fixture using Root's approved route. → Both real clients see the held rocket and gate state is recorded.
 2. [P] Repeat J02 safe-exit steps 1–5 on this host. → Both owner/crew roles exit safely with a seated witness as applicable.
@@ -198,6 +215,10 @@ fixture route; the dedicated properties above do not supply it. Use two disposab
 6. [H] In a separate disposable run, stop only the owned host process without a save. → An older saved position is
    possible; record the actual state and retained seat rather than requiring crash durability.
 7. [P-B] Host the second LAN copy and repeat steps 2–6 with A as guest. → Both host assignments have independent evidence.
+
+**Accepted preparation/action steps (W408):**
+
+(C34) This row is NOT_COVERED while production bay switches remain off: integrated/LAN ignores the dedicated campaign property and no approved LAN gate exists. Do not execute the conditional steps through an invented bypass. Only an owner-enabled bay candidate under packet P4 permits production-admission execution; that is a new candidate, not authority granted here. Any then-permitted held scene **needs package K11**.
 
 **Evidence to keep:** Approved LAN route/config, both host-role logs/videos, safe/fallback/expiry markers and orderly
 versus unsaved-stop player/seat comparisons under phase 4. If the LAN route is missing, retain NOT_COVERED.
@@ -212,7 +233,8 @@ versus unsaved-stop player/seat comparisons under phase 4. If the LAN route is m
 **Phase/level/machine/accounts:** 4 V2 with DS/S3 cuts, two real clients A/B; owner plus harness.
 **Gate:** Marked dedicated campaign copy; production admission off.
 **Preconditions:** [C4 sections 3.2–3.4](C4-SWITCH-REPORT.md), [W325 matrix](W325-MATRIX.md).
-Root must pin real-client-compatible cut controls and checkpoints; facility-player native passes are not V2.
+Real-client cut controls/checkpoints **needs package K11**; facility-player native passes are not V2.
+The B4 native case names below come from `W331.md` section 3, not W325's older missing-fixture rows.
 Use P2 bay copies with a real seated passenger and record source present/absent, X live/absent and save boundaries.
 
 1. [H] Build the real-client case map for B3.8–B3.11, B4.6–B4.9, B8.5–B8.6 and EXIT.0–EXIT.10 below. → Ten
@@ -228,19 +250,33 @@ Use P2 bay copies with a real seated passenger and record source present/absent,
 7. [H] Repeat steps 2–6 for every mapped reachable variant. → Each has an independent boundary marker and
    real-client witness; unavailable/synthetic-only cases retain NOT_COVERED and a native-evidence reference.
 
-   | S3 matrix row / native case | Boundary to map to the real-client fixture |
-   |---|---|
-   | EXIT.0 / X0_CONTROL | Held passenger, no exit: recovery control. |
-   | EXIT.1 / X1_OFFER | Sneak exit, live fall offer. |
-   | EXIT.2 / X2_DESCENT | Detached descent, playerdata flushed. |
-   | EXIT.3 / X3_CORRECTION | Correction window before tracker acknowledgement. |
-   | EXIT.4 / X4_LANDING | Real-client-timed landing, one protected FALL, exit flushed. |
-   | EXIT.5 / X5_EXPIRY | 200-tick no-movement expiry: W254 says unreachable by real clients; native only, not V2 PASS. |
-   | EXIT.6 / X6_TRUSTED | Trusted movement revokes the slot without remount. |
-   | EXIT.7 / X7_REVOKED | Same-Level teleport revokes protection; later landing unprotected. |
-   | EXIT.8 / X8_SAFE_MENU | Held-menu SAFE exit onto loaded pad, exit flushed. |
-   | EXIT.9 / X9_FIRST_TICK | Same-tick protected landing: mapped-observer native smoke; real timing must be proven or left uncovered. |
-   | EXIT.10 / X10_FIRST_TICK_REVOKED | Same-tick teleport-revoked landing: same limitation, no fabricated client packet timing. |
+   | Variant | Native case / boundary | C35 disposition for this pass |
+   |---|---|---|
+   | B3.8 | `W325_B3_STAGED_ONLINE`: REGISTERED staged-only, source present | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B3.9 | `W325_B3_STAGED_ONLINE_ABSENT`: REGISTERED staged-only, source absent | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B3.10 | `W325_B3_MOVED_ONLINE`: REGISTERED replaced, source present | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B3.11 | `W325_B3_MOVED_ONLINE_ABSENT`: REGISTERED replaced, source absent | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B4.6 | `W331_B4_GONE_X_S_PRESENT_ONLINE`: X absent, source present | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B4.7 | `W331_B4_GONE_X_S_ABSENT_ONLINE`: X absent, source absent | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B4.8 | `W331_B4_LIVE_X_S_PRESENT_ONLINE`: X live, source present | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B4.9 | `W331_B4_LIVE_X_S_ABSENT_ONLINE`: X live, source absent | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B8.5 | `W325_B8_STAGED_ONLINE`: Retirement staged-only | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | B8.6 | `W325_B8_MOVED_ONLINE`: Retirement replaced before callback | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.0 | `X0_CONTROL`: Held passenger, no exit: recovery control. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.1 | `X1_OFFER`: Sneak exit, live fall offer. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.2 | `X2_DESCENT`: Detached descent, playerdata flushed. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.3 | `X3_CORRECTION`: Correction window before tracker acknowledgement. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.4 | `X4_LANDING`: Real-client-timed landing, one protected FALL, exit flushed. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.5 | `X5_EXPIRY`: 200-tick no-movement expiry: W254 says unreachable by real clients; native only, not V2 PASS. | Synthetic-only; real-client expiry unreachable as W254/X5 explains. No V2 pass. |
+   | EXIT.6 | `X6_TRUSTED`: Trusted movement revokes the slot without remount. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.7 | `X7_REVOKED`: Same-Level teleport revokes protection; later landing unprotected. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.8 | `X8_SAFE_MENU`: Held-menu SAFE exit onto loaded pad, exit flushed. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.9 | `X9_FIRST_TICK`: Same-tick protected landing: mapped-observer native smoke; real timing must be proven or left uncovered. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+   | EXIT.10 | `X10_FIRST_TICK_REVOKED`: Same-tick teleport-revoked landing: same limitation, no fabricated client packet timing. | Synthetic-only; no real-client recipe yet; **needs package K11** to qualify it. No V2 pass. |
+
+**Accepted preparation/action steps (W408):**
+
+(C35) Each planned real-client variant below still **needs package K11**: a marked-world external-stop recipe and live qualification. Until supplied, that variant is NOT_COVERED at V2; its named native case is supplementary, never a facility-only V2 pass. EXIT.5 is synthetic-only for the documented real-fall expiry reason. No headless halt seam is invoked with a real connection.
 
 **Evidence to keep:** Per-variant real-client case map, cut/receipt/journal/registry and source-copy hashes, two restart
 comparisons, both videos/logs and seat states under phase 4 with phase-3 state references. Unavailable controls are NOT_COVERED.
@@ -296,6 +332,10 @@ three census slots and more than two queued claims**, not just W336's developmen
 5. [H] Compare whole-tick cohorts and memory against docs/17. → Budget failures stay failures; no idle dilution or
    subtraction of probes, GC, checkpoint or cold-use work. Keep unbounded waits distinct from budgeted execution cost.
 
+**Accepted preparation/action steps (W408):**
+
+(C10/C36, R535) Use matched worlds/cells/host, two-minute discarded warm-up and ten-minute standard sample, with two baselines; spread triggers Root review only. No maximum latency exists for unbounded waits: retain raw waits, unfinished cases and reasons. Wait 23 runs on a world with no other ticket owner; a contaminated sweep is not compared to 400 ticks. **Needs package K12**: larger queues/isolated ticket world and raw boundary driver; **needs package K15**: REF observer integration. Owner O11 supplies node access.
+
 **Evidence to keep:** All 23 raw boundary intervals, queue/slot/claim identities, D6/barrier and D3/writer samples,
 reference-host configuration, tick/RSS/GC/JFR data and restart states under phase 5, with per-wait coverage verdicts.
 **Actual:**
@@ -326,6 +366,10 @@ Pin a 64,000 mB cargo tank and a supported vanilla chest/barrel payload, four-sl
 7. [P] Press F3+T with each screen open. → Resources reload without missing models, broken labels or lost authoritative binding.
 8. [P] Observe the rocket immediately after each cargo operation. → Cargo-sensitive content hash and visual publication
    refresh match the new payload, with propulsion/geometry/logical identity unchanged; no stale visual after reopen.
+
+**Accepted preparation/action steps (W408):**
+
+**Needs package K12**: four-device/cursor/partial-stack scenes and gated hold/readback recipes. W399 session fields and gate settings are in the shared procedure; K11 supplies the marked/no-hook kit. Apply R546 to every refused cargo action.
 
 **Evidence to keep:** Each device/direction's labeled screens and content-hash/typed-cursor/resource comparisons,
 reload timing, client/server logs and video of visual refresh under phase 2; gate/no-hook configuration separately.
@@ -358,6 +402,10 @@ reload timing, client/server logs and video of visual refresh under phase 2; gat
 10. [H] Repeat the sequence for each of the four devices and reversed ownership. → No direction or typed adapter is
     silently covered by another device's result.
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K12**: four-kind L1/L2, competitor and seat probes; **needs package K11**: marked gate/owner roles. The common R546 receipt and authoritative readback rule applies to all refusals; a forced-open private menu is never a synchronized observer view.
+
 **Evidence to keep:** Both videos/client logs, server boundary/owner/seat/binding records and exact item/NBT or Fluid
 totals, competitor refusals and per-kind case map under phase 4; phase-3 recovery references if used.
 **Actual:**
@@ -386,6 +434,10 @@ totals, competitor refusals and per-kind case map under phase 4; phase-3 recover
 6. [H] Compare raw reference tick/memory/GC/forced-load results with the shared budgets. → No microbenchmark-only pass;
    failure requires a new designed cadence/preparation change, not a larger budget.
 
+**Accepted preparation/action steps (W408):**
+
+(C10/C36) Standard comparisons use matched ten-minute samples after two warm-up minutes and two baselines; keep longer/special cost cohorts intact. No unbounded-wait maximum is invented; budget findings come only from REF. **Needs package K12**: largest-admitted/oversize/mixed/native device scenes and raw cycle driver; **needs package K15**: REF observation. O11 supplies node access.
+
 **Evidence to keep:** Boundary encodings/admission/refusal totals, synthetic versus native sample files, per-device
 cycle table, capture/apply/hash/publication samples and host/tick/RSS/GC records under phase 5; shared soak I10 separate.
 **Actual:**
@@ -409,6 +461,10 @@ Pin real concurrent bay D4/D5, four-kind cargo preparation, F1, W98 and sealed-d
    enlarged or duplicated per consumer; D6's total queue delay and grants are recorded separately.
 5. [H] Compare before/during/after fairness and waits. → Cargo can delay D4/D5 and bay can delay cargo by whole ticks;
    report starvation/unbounded holds honestly and keep complete tick budgets unchanged.
+
+**Accepted preparation/action steps (W408):**
+
+(C10/C36) Run each baseline twice back to back under the same world/cell/host and sample plan (two discarded warm-up minutes, ten measured minutes). Baseline-spread differences trigger Root review only. Raw waits have no invented latency ceiling; REF alone supplies budget findings. **Needs package K12**: competing workload/queue driver; **needs package K15**: grant/raw-tick observation; owner O11 supplies node access.
 
 **Evidence to keep:** Shared per-tick grant/work/visit trace, consumer IDs, D4/D5/D6/cargo wait timelines, baseline
 comparisons and whole-tick/reference host samples under phase 5, cross-referenced by J05 waits 6/14.
@@ -447,6 +503,10 @@ generated-but-cold controls are distinct; generated controls are saved by a sepa
     cold generation, first-use/relaunch and callbacks; no observer subtraction. W207's 118.937–164.162 ms checkpoint
     P99 and 131.482 ms restart relaunch are historical failures, not C4/reference results or exemptions.
 
+**Accepted preparation/action steps (W408):**
+
+(C10/C36) Keep matched-copy/cell/host comparisons and twice-run baselines; the short-window plan is two discarded warm-up minutes/ten measured minutes without dropping cold/first-use cohorts. No maximum for unbounded waits exists. **Needs package K12**: Debian cold/queue/lifecycle driver; **needs package K15**: complete raw-tick/REF observations. Owner O11 supplies node access; Windows figures remain history.
+
 **Evidence to keep:** Cold qualification, geometry/column/ticket manifests, full native events/ticks, request/READY/F2/F8
 times, checkpoint cohorts/JFR/RSS/GC and two restart observations under phase 5; reference timing is separate from old Windows runs.
 **Actual:**
@@ -472,6 +532,10 @@ The real `advancedrocketrycommunity_classic_progression.dat` checked receipt bar
    a designed, independently reviewed asynchronous progression-saving task before release under R245; otherwise
    record the measured result and the v1.9 follow-up disposition. Do not remove the receipt barrier.
 5. [H] Reopen the saved world twice. → Same event/receipt/award is stable and no second first-event debit or grant is manufactured.
+
+**Accepted preparation/action steps (W408):**
+
+(C37) Measure a fresh first-event tick on REF; over-budget evidence requires Root's separately designed and independently reviewed persistence task under R245 before release. Disclosing a Windows limitation does not replace this run or waive its budget. **Needs package K12**: actual-event workload/driver; **needs package K15**: force/flush/raw-tick observation; O11 supplies access.
 
 **Evidence to keep:** Reference host/storage identity, raw first-event and flush/force timestamps, native tick/GC samples,
 pre/post progression/event files and restart comparisons under phase 5, linked to the R245 disposition.
@@ -500,6 +564,10 @@ SINGULARITY station contexts. Pin matching client celestial snapshots and statio
 6. [P] Record the owner's judgement on colours, sizes and mote density. → Keep/change is specific to C4/GPU/view;
    tuning requests are findings and a changed JAR requires a new candidate, not silent screenshot replacement.
 
+**Accepted preparation/action steps (W408):**
+
+(C38) Enumerate sound-producing sky contexts from C4's delivered K13 producer map, not W16's older list; use an audio-enabled profile. **Needs package K13**: that live profile, **needs package K16**: orbit/control scene. Owners O9/O12 arrange second GPU and sitting time; audio is not proved by screenshots.
+
 **Evidence to keep:** Labeled sky/black-hole/Earth-disc videos and screens, context/switch/reload records, both GPU
 identities and owner judgement under phase 2; E06 supplies its full independent two-GPU sky matrix.
 **Actual:**
@@ -522,6 +590,10 @@ Moon dimension-type `fixed_time=18000`; record game time, local day time and sky
    exact times instead of reporting fixed midnight as the older “Moon daytime” defect.
 4. [P] Leave and re-enter the Moon. → Same published appearance and no stale prior-Level sky.
 5. [P] Confirm the appearance against D12. → Owner judgement is recorded without reopening sleep/respawn or heightmap landing rules.
+
+**Accepted preparation/action steps (W408):**
+
+(C38) Keep C4's producer map and audio-enabled profile, not old W16 paths; fixed-midnight D12 remains unchanged. **Needs package K13**: live audio profile; **needs package K16**: actual Moon/time scene. O9/O12 supply hardware/time.
 
 **Evidence to keep:** Time-stamped before/after/re-entry Moon screens/video, runtime type/time observations, candidate/GPU
 identity and owner's C4 confirmation under phase 2.
@@ -554,6 +626,10 @@ oxygen, hydrogen, suit and ridden-rocket panels; worn jetpack/tank/visor modules
 9. [P-B] Observe A wearing the same modules. → B sees tracked-player components, not A's private client HUD layout.
 10. [P] Set different HUD layouts on A and B. → Each local layout stays independent across equipment changes/reload.
 
+**Accepted preparation/action steps (W408):**
+
+(C38; J21 A-F10a) On the Moon wearing a full suit, open F3: life-support HUD hides while debug is open and returns afterward. Retain the explicit 1-6 investigation with effective-scale readback, not unavailable scale claims. **Needs package K13**: current producer/profile inventory qualification; **needs package K16**: HUD extremes and worn-module scene; O9/O12 supply hardware/time.
+
 **Evidence to keep:** Complete status/extreme/scale/anchor index, live-config/reload logs, all-side component screens,
 ridden readout video and both-client independent-layout views under phases 2/4.
 **Actual:**
@@ -573,7 +649,7 @@ is not C4 playback evidence. Pin source coordinates, audio settings and actual p
 
 1. [P] Listen to each of the ten candidate sounds through its actual trigger where available. → Keep the D5 sound
    design; disclose preview-only/unbound sources (notably historical machine_large), rather than claiming a producer.
-   W16's explicit preview namespace is `/playsound advancedrocketrycommunity_v180:<id> master <A>`.
+   C4's preview command is `/playsound advancedrocketrycommunity:<id> master <A>` (W402 section 5, R546).
 2. [P] Listen through several complete cycles of each loop. → No unintended seam/click/stutter on this audio device.
 3. [P] Approach an inactive loop source from beyond 32 to within 30 blocks. → Loop begins within the 30-block start range.
 4. [P] Walk away past 32 blocks. → The loop stops beyond 32; the 30–32 band is hysteresis, not repeated start/stop.
@@ -585,6 +661,10 @@ is not C4 playback evidence. Pin source coordinates, audio settings and actual p
 8. [P] Pause and resume the appropriate client session. → Audio lifecycle is recorded for integrated versus
    dedicated behavior; do not claim a dedicated server paused with its client.
 9. [P] Log out and reconnect. → Old sources stop and no orphan loop survives; new valid sources can play.
+
+**Accepted preparation/action steps (W408):**
+
+(C38; W402 section 5, R546) Use the C4 sound-events/producer tables: eleven events, including `ui_select` from machine casing. `lathe` has lathe/precision-laser-etcher producers, `rolling_machine` has rolling-machine/chemical-reactor producers, and the laser gun has its item; `machine_large` alone remains preview-only. Preview in namespace `advancedrocketrycommunity`, never `_v180`. **Needs package K13**: actual audio-enabled profile/producer placements; **needs package K16**: integrated pause/control round. O9/O12 supply hardware/time.
 
 **Evidence to keep:** Audio-bearing recording, per-sound trigger/preview table, range coordinates and distances,
 cap/lifecycle logs, C4 JAR and audio hardware/settings under phase 2. Owner records any C4 regression separately from D5 approval.
@@ -612,8 +692,12 @@ Server disables classic equipment; client keeps its default, so client configura
    A's authoritative device status/resources do not change to B's local refusal.
 6. [P-A] Launch the railgun while B watches. → Accepted launch/arrival effects reach observers; unknown effect IDs
    do not create arbitrary effects. Compare advanced visuals on/off without hiding essential feedback.
-7. [P] Repeat screen/reason views at scales 2/3 and with the pinned long-font resource pack. → Long reason suffix and
+7. [P] Repeat screen/reason views at scales 2/3 and with W402's hashed K13 long-text resource pack (A's delivered-input table). → Long reason suffix and
    full hover text are retained; pack identity is recorded rather than silently substituting a default font.
+
+**Accepted preparation/action steps (W408):**
+
+(C38; J21 A-F5/A-F7/B-2) At scale 3 in both languages, open railgun, black-hole generator, drill and target with longest reason lines: fit with full hover. Have a non-owner legitimately click railgun Launch with screen open: visible `UNAUTHORIZED` inside; on elevator Ride, keep the screen open and read "Ride starting". With server `equipment.classicEnabled=false`/client default, mine obsidian for 2.5 seconds: disabled notice at START, at most once/20 ticks, no progress/drop/durability debit. C4 producer inventory/audio-enabled profile **needs package K13** live qualification; regenerated scene/actions **needs package K16**. R546 refusal proof applies; N4's client-tooltip mismatch is accepted design, not a demanded sync change.
 
 **Evidence to keep:** Drill translations, banner appearance/expiry/clear video, disabled START timing and resource/tool
 comparison, both-client refusal/railgun video and logs under phases 2/4.
@@ -628,7 +712,7 @@ comparison, both-client refusal/railgun video and logs under phases 2/4.
 **Phase/level/machine/accounts:** 3 DS restart setup; 4 V2, eligible participant A and nonparticipant B; both.
 **Gate:** Production admission off. **No `arce.releaseTest.firstEventCut` property or headless halt seam** in real-client runs.
 **Preconditions:** [W44I “Not done”](W44I.md), [W44 design sections 3 and 6](W44-DESIGN.md).
-Root must pin debugger breakpoints, owned PIDs and exact source lines on C4. Use controlled external stop X,
+Debugger breakpoints, owned PIDs and exact C4 source lines **needs package K12**. Use controlled external stop X,
 not headless H: gate relaxation is forbidden. Actual criterion oracle is vanilla `AdvancementProgress` plus
 saved player advancement JSON for `classic/one_small_step` or `classic/first_station_warp`; a receipt alone is insufficient.
 Moon C-M means A aboard the unique completing rocket/B watching without a seat. Station C-W means A eligible
@@ -668,6 +752,10 @@ these two clients). Observe eligibility/readiness first; no claim of that latenc
 | FX-Sw | Same for station event. | Same eligibility transition and stable second start. |
 | FX-Dm | W baseline held through stale-criterion A login then disconnect; stop before release. | Queue entry removed/no offline award/file mutation; restart 1 reconnect+baseline confirms award, restart 2 stable. |
 | FX-Dw | S after spectator A disconnect and removal of its deferred entry, before eligibility change. | No offline grant; restart 1 survival reconnect grants, restart 2 stable. |
+
+**Accepted preparation/action steps (W408):**
+
+(C39) First-event H cuts remain forbidden with connected real players; the bay connected-player exception does not apply. X uses external process stops only. **Needs package K12**: fourteen pinned debugger/save/deferral recipes, owned process IDs and actual award probes. No receipt alone or headless result proves a player criterion.
 
 **Evidence to keep:** Debugger plan/transcripts, exact pause/stop/PID and save-return boundaries, two client logs/videos,
 actual progress/JSON before and after both starts, E/R(E) and participant/nonparticipant checks under phases 3/4.
@@ -719,6 +807,10 @@ station VISIT, prior native-home tuple and absence, forced/off-world points, pen
 14. [H] Compare disk/player/world state after both restarts. → No tuple/backup loss. Keep the accepted exceptional
     same-window pause/crash/third-party-save residuals from W37B visible; do not claim unconditional crash protection.
 
+**Accepted preparation/action steps (W408):**
+
+(C40) Saving a planet point with `allowPlanetRespawn` is **not implemented in v1.8** (W37B): it is neither a test row nor a pass. Ordinary sleep follows the freeze matrix exactly. **Needs package K14**: qualified V02-V13/B1/R1 scene, packs/quorum/portal recipes and tuple readback.
+
 **Evidence to keep:** Per-host V02–V13 subcase map, freeze/B1/R1 qualification, full tuple/backup dumps and hashes,
 two restart state sheets, both-client quorum/time/weather/portal logs and compass/clock screens under phases 2/3/4.
 **Actual:**
@@ -754,6 +846,10 @@ analysis credit 120 points. Record starting balances, job/instance and device UU
 11. [H] Save/reopen mid-survey and mid-analysis using the phase-3 fixtures. → Progress/balance are coherent and final
     completion credits once; V1/V2 evidence supplements, not replaces, native persistence coverage.
 
+**Accepted preparation/action steps (W408):**
+
+(C41) Read UI strings and section-7 effective values from C4 before using the numeric controls. Produce owner, competitor, rebind, full-account and pause variants only by ordinary player actions on complete copies; never edit balances or force-load a chunk. **Needs package K14**: real values, scenes and variant recipes.
+
 **Evidence to keep:** Both menus/rotations/languages and live-job video, FE/points/job/instance before/after, owner
 refusals, pause/rebind/restart records and both clients' logs under phases 2/4 with phase-3 references.
 **Actual:**
@@ -782,6 +878,10 @@ including origin 12–15 blocks into an entity section; survival/creative varian
 7. [H] Compare logs and player-facing diagnostics. → Player sees translated reason; operator-only diagnostics retain
    bounded codes/positions, not an untranslated parameter map on the console.
 
+**Accepted preparation/action steps (W408):**
+
+(J21 A-F3/A-F10c/A-F10d, R542 N16) Watch a fuelled pad rocket from a ground viewpoint 20 blocks away through ASCENT: rocket/trail rise together without held-position jumps. Run `data get entity` on the assembled rocket: its name must not be `menu.advancedrocketrycommunity.rocket_flight`. Assemble the invalid/blocked-target variant: player feedback is translated with no `coordinate_space=absolute`. Explicitly build the high-seat rocket with origin 12-15 blocks into an entity section, reopen from several directions in survival and creative; do not just cite the precondition. **Needs package K14**: tall/slow-fall/named-pad scenes; **needs package K16**: regenerated tracking/recheck batches.
+
 **Evidence to keep:** Real-player camera/rocket/trail video, slow-fall from-rest position/health record, top-seat
 coordinates and survival/creative reopen views, named-pad refusal duration/actions and client/server logs under phase 2.
 **Actual:**
@@ -794,11 +894,14 @@ coordinates and survival/creative reopen views, named-pad refusal duration/actio
 
 **Phase/level/machine/accounts:** 2 DS/V1 main GPU A; packaged restarts in phase 3 where required; scripted.
 **Gate:** Ordinary copies except explicitly marked J fuel/cargo/bay follow-ups; all production switches off.
-**Preconditions:** [current V1/V2 status](../../../status/CURRENT_VERSION.md), external historical
+**Preconditions:** [current V1/V2 status](../../../status/CURRENT_VERSION.md), `J21-FINDING-MAP.md`, external historical
+`D:/GitHub/ARCE-Task-Evidence/pre-v18-client-20261006/REPORT.md`
+(SHA-256 `4bcee6e655da2a5cf50ab61bae324cb8c72398224dc6dd40bfbf205377b30aa3`),
 `D:/GitHub/ARCE-Task-Evidence/v18-client-20261010/REPORT.md` section 4 and
 `D:/GitHub/ARCE-Task-Evidence/v18-sp-20261104/REPORT.md` (rounds 1–8), with their plans/screenshots.
-Use P2 representative prior-world/many-machine/rocket copies; pin a finding→task→current expectation→batch map
-for W280–W282, W284–W296 and W301. An old report's offline Forge 47.4.22 profiles are not campaign profiles.
+Use P2 representative prior-world/many-machine/rocket copies and the delivered finding→task→current expectation→batch
+map for W280–W282, W284–W296 and W301. Regenerated batches **needs package K16**.
+An old report's offline Forge 47.4.22 profiles are not campaign profiles.
 
 1. [H] Inventory every historical finding before running. → No informational/known-limitation finding disappears
    because its task was merged; disposition and source screenshot accompany each current expected result.
@@ -825,6 +928,67 @@ for W280–W282, W284–W296 and W301. An old report's offline Forge 47.4.22 pro
 9. [H] Compare all findings with C4 code and current owner decisions. → Fixed items have fresh reproducer evidence;
    accepted limitations cite their scoped decision (for example fixed-midnight Moon); unresolved/missing cases are
    FAIL/NOT_COVERED, never a blanket pass on merged-task status.
+
+**Accepted preparation/action steps (W408):**
+
+(C42; R542) Use `J21-FINDING-MAP.md` for all 74 historical findings. Each has one base disposition: fixed (task/commit), known issue, matches design, or recheck on C4; a fixed item not yet seen in a client also owes its recheck. All fixed items still get fresh C4 evidence under original step 9. The 21 owed rechecks and N15-N19 below are actions, not closed results. K19's map is delivered; **needs package K16**: current-viewpoint/control batches, plus K14's physical scenes. Missing native receipt/control means NOT_COVERED with reason, not a blanket merged-task pass.
+
+**Candidate recheck actions (C42/R542; all must retain individual results).**
+`J21-FINDING-MAP.md` section 4 supplies these scene,
+action and observation recipes. Original batch names are historical inputs,
+not commands to replay: each **needs package K16** regeneration/qualification;
+physical scene/readback dependencies **needs package K14** (K10 for H06's
+generator). Run here or give an exact current-row evidence reference; do not
+skip the other Fixed findings required by step 9.
+
+| Finding | Action and expected observation | Original batch reference |
+|---|---|---|
+| A-F3 | A fuelled rocket on a pad, a second viewpoint 20 blocks away on the ground. Launch and record ASCENT. The rocket and its trail rise together, without the rocket holding still and jumping. | `r03-rocket-a.json`, `r03-rocket-b.json` |
+| A-F4 | A black-hole generator generating at Cygnus X-1. View the ring from two blocks below and from five blocks above. It is visible from both. | A: `r02-screens-*`. H13: `m62_bh_views_b11` |
+| A-F5 | Railgun, black-hole generator, laser drill and laser target screens with their longest reason lines, at GUI scale 3 in English and Chinese. Every line stays inside its box; hover shows the full text. | A: `r02-screens-a` to `-e`, `r03-pdrill*`. H13: `eg_bh`, `eg_drill_8`, `eg_rail_a`, `eg_target` (batches7) |
+| A-F6 | Satellite terminal and builder at scale 3 in both languages, idle and after a build. No text overlaps a button or a slot. | H13: `b1_terminal`, `b1_builder` (batches7) |
+| A-F7 | (1) A non-owner clicks Launch on the owner's railgun with its screen open. `UNAUTHORIZED` shows inside the screen. (2) Press Ride on an elevator. "Ride starting" is readable with the screen open. | `r03-perm-a.json` to `-c.json`, `r02-elevator-ride.json` |
+| A-F10a | On the Moon in a full suit, press F3. The life-support HUD hides while the debug screen is open and returns after. | `r04-f3.json` |
+| A-F10c | Run `data get entity` on an assembled rocket. Its name is not `menu.advancedrocketrycommunity.rocket_flight`. | None (a console command in r02) |
+| A-F10d | Assemble a rocket whose structure is invalid (for example a blocked target). The player's message is translated and has no `coordinate_space=absolute`. | None |
+| B-2 | Server with `equipment.classicEnabled=false`, client default. Hold the jackhammer on obsidian for 2.5 seconds. The "disabled" notice appears at the start, at most once per 20 ticks; no progress, drop or durability loss. | `r02-d03-jackhammer-disabled.json` |
+| B-3 | A sealed room with one vent holding 40,000 FE and no supply. Time the room until it loses air. Record the rate (the report measured 20 FE per tick, about 100 seconds). | `b11-moon-powered.json` |
+| B-5 | Edit the client configuration (a sky switch) once in place and once by rename. Record which edit the client applies without a restart. | None (edited by hand) |
+| 2-5 | A lit torch in a sealed, supplied Moon room. Stop the server, start it, join. The torch is still lit; an outdoor torch is still put out. | `c70` to `c73`, `c80`, `c81` (batches2) |
+| 2-7 | (1) Open the monitor bound to a rocket bound for the Moon: the destination is a name, not an ID. (2) Select the monitor with the linker: the text names the monitor. (3) Open the fluid loader: the status fits, with the full text on hover. | `c20`, `c22`, `c60`, `c61` (batches2); `c1_fluid_loader` (batches7) |
+| 2-8 | Bind a monitor to a rocket, fly to the Moon and back, open the monitor. It still shows the rocket, not `Stale binding`. | `c50_return_flight`, `c53` (batches2) |
+| 3-2 | Occupy the first Overworld landing point near a sea and return a second rocket from the station. It does not land on water. | `f04_fly_u20-to-earth`, `f05_landed_u21-earth`, `f11_visit_u22-earth-rocket-on-water` (batches3) |
+| 3-5 | Hold a multiblock controller and right-click the top of a machine casing without sneaking. The controller is placed. | `e20b_place_controllers_sneaking` (batches3), without the sneak |
+| 3-6 | Launch a data satellite's discovery mission from the terminal and claim it. The status line leaves `PENDING_DISCOVERY` at once. | `e02_terminal_press_s06-launch-mars`, `e02_terminal_press_s07-claim-mars` (batches3) |
+| 4-4 | Bind an elevator pair and ride it. In the server log, the `space_elevator` `bind`, `ride_request` and `ride_commit` lines carry the device owner, not `owner=-`. | `m42_bind`, `m45_ride_l20-ride-down` (batches4) |
+| 7-6c | An elevator terminal whose anchor is on another body than the station's orbit. Press Bind. Record the refusal text; today it is "An elevator endpoint rule fails [ELEVATOR_RULE]". | `eg_elevator` (batches7 and batches8) |
+| 8-2 | Create a station, register a pad, delete the station, then run `/arcepad list <that station>`. The reply says the station is unknown or cannot be visited. | `b3_register_b`, `chat_b3-07-deleted-pad-list` (batches8) |
+| 8-3 | Quote and confirm a warp, then cancel after three seconds, at GUI scales 2 and 3. The notice shows the cancellation, not "in 10 s", and stays inside the panel. | `warp8_countdown_b2-en2-cd`, `warp8_countdown_b2-en3-cd` (batches8) |
+
+**Additional R542 N15-N19 actions (not accepted as untested).**
+
+| Residual | Action and observation to record | Remaining input |
+|---|---|---|
+| N15 | Repeat logout/seat-release/rejoin from the side seat and with both real riders, not only the former top-seat one-rider case. Compare actual/assigned seats, safe position and health on rejoin; retain each role's result. | **Needs package K14** scene and **needs package K16** real-client batches; O5/O10 supply the two-account arrangement. |
+| N16 | Execute J20's high-seat console reopening in survival/creative with rocket origin 12-15 blocks into its entity section, recording actual origin/seat and all approach directions. | **Needs package K14** tall scene and **needs package K16** input mapping. |
+| N17 | Expand rocket-box interaction rechecks beyond one chest/three survival positions: exercise the K14-named inside, box-edge and outside controls and device kinds in survival/creative. Record which block/rocket interaction wins, compare unchanged protected state, and keep W321's accepted rectangular-box trade-off visible, not a demanded product change. | **Needs package K14** enumerated devices/positions; do not invent coordinates. |
+| N18 | Open every C30 screen in Chinese and at effective GUI scale 3, not only warp/flight; repeat longest reasons/hover and record clipping or unavailable controls. | K13's screen inventory is delivered; **needs package K16** per-screen batches and **needs package K05** machine scene. |
+| N19 | Separately recheck W303 elevator arrival/rejoin safety; W309 station creation from Space refusal; W300F second-loaded-copy seat cleanup; and Tau Ceti e route warning in navigation/warp. Record actual arrival/seat/health/authority or refusal receipt/state and warning text; no single result covers all four. | **Needs package K14** ordinary lifecycle scenes, **needs package K08** station/warp controls, **needs package K16** batches. |
+
+**R542 residual dispositions to retain beside observations.** N1 is
+KI-V180-CONNECT-01 (A18 counts every attempt); N2 is accepted current vent
+balance, not a v1.8 retune; N3 is KI-V180-CONFIG-01; N4-N8 and N12 are
+accepted design with the map's sources. N9 is W233's formed OBJ overlay design,
+shown to the owner in phase-2 screenshots. N10/N11/N13 are Low KI-V180-UI-01:
+generic ELEVATOR_RULE, non-ticking warp seconds and truncated builder status
+with hover are not demands for new v1.8 screens. N14/N24 are KI-V180-USER-01's
+documented slow-fall/rocket-box/config/experimental/rejoin limitations. N20 is
+accepted any-entry-as-visit design, including operator teleport. N21/N22 accept
+no-effect vanilla movement warnings, intended per-entry first-event WARN and
+dedicated-server language keys; this does not suppress unrelated errors.
+N23 is accepted action-bar-only loader feedback: actually read it in both
+languages (J23/J25), not merely quote the design. N15-N19 remain rechecks
+above, never automatically accepted or passed.
 
 **Evidence to keep:** Finding-to-task/batch/disposition matrix, original-reference hashes, every C4 repro result and
 failure attempt, screens/video, restart/state comparisons and native logs under phases 2/3. Preserve sealed old reports unchanged.
@@ -861,6 +1025,10 @@ Pin explicit historical G2, downgrade, X03 root-2 and C3 reader JARs/hashes/comm
    evidence replaces PENDING only where supported, never copied from C1/C2/C3 or this unrun checklist.
 7. [H] Run the separately selected C4 X01 S3 and X02 S5 campaigns under their own approved plans. → They remain
    separately accounted: this runner's 78 families do not imply all external storage/fault evidence is complete.
+
+**Accepted preparation/action steps (W408):**
+
+(C43) Root reviews the actual C4 outputs with a retained hashed manifest. Keep X01, X02, failed downgrade verdicts and open risk decisions as distinct result rows, never mark an entire family passed by assumption. Historical JAR/source identities still **needs package K01** / **needs package K02** and the per-family manifests **needs package K12**. Root's finished-output review is a Root action, not an invented package or verdict.
 
 **Evidence to keep:** Exact dry/full commands and runner revision, full family/case inventory, candidate and historical
 artifact identities, raw per-start logs/results/state/hash comparisons and aggregate report under phase 3. C4's existing
@@ -906,6 +1074,10 @@ work may truthfully have moved resources but stays locked; do not label it “no
 5. [P] Inspect the same labels on the gated loader/linker in both languages. → Same product vocabulary and correct
    current state; a gated screen is not labelled an ordinary-enabled production screen.
 
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
+
 **Evidence to keep:** Labeled loader/linker screenshots in both modes/languages, property/config/marker identities,
 client/server logs and unchanged no-hook endpoint/ledger-presence check under phase 2; mere lookup must not create a ledger.
 **Actual:**
@@ -932,7 +1104,11 @@ client/server logs and unchanged no-hook endpoint/ledger-presence check under ph
 9. [H] Present the applicable refusal fixtures one at a time. → Correct reason and no unauthorized new move for EMPTY,
    BANK_FULL, INCOMPATIBLE_FLUID, AMBIGUOUS_BANK, UNBOUND, STALE_BINDING, WAITING_UNLOADED, OUT_OF_RANGE,
    NOT_OWNER, ROCKET_BUSY, ESCROW_FULL, LEDGER_UNAVAILABLE, TRANSFER_JOURNAL_UNPROVED, UNSUPPORTED_DATA
-   and INVALID_DATA. Root must pin safe fixture controls for each; unavailable cases remain NOT_COVERED.
+   and INVALID_DATA. Safe controls for each **needs package K11**; unavailable cases remain NOT_COVERED.
+
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
 
 **Evidence to keep:** Before/PREPARING/UNKNOWN/apply/pending/release screens, exact endpoints and availability flags,
 L1/L2 markers, partial control, refusal case map and client/server logs under phase 2; no credit inferred from UI alone.
@@ -959,6 +1135,10 @@ loaded-chunk baseline and precise within/outside-6/8-block positions.
 8. [H] Compare loaded/ticketed chunks, endpoint totals and binding before/after all refusals. → No arbitrary chunk
    acquisition, forced load, provisional debit or identity rewrite; run any fill-dependent confirmation only on the gated copy.
 
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
+
 **Evidence to keep:** Selection/bind/clear/stale/range/unloaded feedback screens, positions/UUIDs/binding and chunk
 ticket baselines, exact unchanged totals and native logs under phase 2.
 **Actual:**
@@ -982,6 +1162,10 @@ Matrix is en_us/zh_cn × GUI scale 2/3/4 × windowed/fullscreen × disabled/READ
 5. [H] Repeat steps 1–4 for every cell. → Index every language/scale/mode/state and mark missing cells explicitly;
    no source gives a numeric reload-time budget, so report timing without inventing one.
 
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
+
 **Evidence to keep:** Indexed pre/post-reload native screenshots for all cells, reload timing, logs/configs and
 endpoint/binding comparisons under phase 2, with gated and no-hook modes clearly separated.
 **Actual:**
@@ -995,7 +1179,8 @@ endpoint/binding comparisons under phase 2, with gated and no-hook modes clearly
 **Phase/level/machine/accounts:** 4 V2, two owner-signed-in premium accounts A/B, two real GPU clients; both.
 **Gate:** Fill/competition only on the fuel-only marked world; production admission off.
 **Preconditions:** Fuel fixtures with A-owned loader/rocket, B-owned foreign control and two legal competing devices;
-Root pins how an owner-only menu's refusal is observed without granting B access to A's private screen.
+(C44) B records ordinary refusal and permitted synchronized feedback, never A's private screen;
+the exact observation recipe **needs package K11**.
 
 1. [P-B] Attempt ordinary interaction with A's device/rocket as foreign owner. → NOT_OWNER/refusal, no OP bypass,
    resource mutation or binding change; capture B's actual permitted view.
@@ -1009,6 +1194,10 @@ Root pins how an owner-only menu's refusal is observed without granting B access
 6. [H] Release the exact L2 proof/acknowledgement. → Final counts reconcile once. In the two admitted 1,000 mB
    control, device A/B are 4,000/4,000 and bank 2,000; do not require those totals if only one operation was admitted.
 7. [H] Reverse ownership and repeat steps 1–6. → Neither account receives special authority or divergent final state.
+
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
 
 **Evidence to keep:** Both continuous videos/logs, ordinary foreign-owner feedback, gate/UUID checks, admitted-request
 IDs, L1/L2/holds and exact raw/spendable endpoint totals under phase 4.
@@ -1032,6 +1221,10 @@ IDs, L1/L2/holds and exact raw/spendable endpoint totals under phase 4.
    or other rider remains; do not edit NBT to pretend the product cleared it.
 6. [P-A] Request a fill again. → Eligible operation proceeds through acknowledged L1/apply/L2 once and both client
    views reflect the server totals; baseline control is 5,000/0 → 4,000/1,000.
+
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
 
 **Evidence to keep:** Both client videos/logs including ROCKET_BUSY, actual/assigned seat state at each attempt,
 binding/operation IDs and pre/post exact fuel totals under phase 4.
@@ -1065,6 +1258,10 @@ Owner-disconnect and passenger-disconnect are independent runs, each with fresh 
 10. [P-A] Request the now-eligible fill. → Exactly one acknowledged transfer, both views/totals agree and no second
     credit occurs on another reconnect.
 
+**Accepted preparation/action steps (W408):**
+
+(C44; R542 N23) A opens the owner-only loader menu. B demonstrates ordinary refusal and only permitted synchronized feedback, never A's private menu. Keep the action-bar line visible/readable in en_us and zh_cn; action-bar-only feedback is accepted design. The extra fuel property selects a test seam only, not production admission. **Needs package K11**: exact menu/link/hold/seat-clear/probe and refusal recipes; owner O10 supplies UUIDs. Every negative action uses R546 receipt plus authoritative unchanged-state proof, server logs only where emitted.
+
 **Evidence to keep:** Both client disconnect/reconnect videos/logs, exact L1 evidence and UTC, server recovery/L2,
 binding/seat state and raw/available totals at each boundary under phase 4, plus phase-3 restart evidence when used.
 **Actual:**
@@ -1075,40 +1272,18 @@ binding/seat state and raw/available totals at each boundary under phase 4, plus
 
 ## Open questions for Root
 
-- **All J rows:** P1/P2/P3 must name the hosted artifacts, copied fixtures/coordinates/IDs, scripts and exact setup
-  commands. The plan gives fixture descriptions, not a ready-to-run literal archive/coordinate manifest. No missing
-  setup is made up here. Pin the reference-compatible drivers and each owner-required resource decision before use.
-- **J01:** Supply the complete current menu-status fixture sequence and a cap-control invocation. Historical fixed-owner
-  cap fixtures do not demonstrate another owner's bay admission; do not overstate that result.
-- **J02/J03:** Provide the distinct LAN fixture route. The dedicated named-client property cannot supply LAN admission.
-  Pin role/seat/pad coordinates before play. W254 step 3.4 is explicitly unreachable by a real client in this fixture;
-  retain the native X5 reference and the V2 not-run reason rather than seeking new bypasses.
-- **J04:** Provide real-client S3 controls for all ten online variants and EXIT.0–EXIT.10, or explicit unreachable/
-  synthetic-only coverage dispositions. W325's facility-only “online” cases are
-  not V2; C4 section 3.4's old “refuses real clients” sentence conflicts with W269's campaign exception, which this
-  checklist uses only with its full marked-world prerequisites.
-- **J05/J08/J09/J10:** Supply larger reference queue/load fixtures and raw measurement tooling. No source provides a
-  universal latency maximum for unbounded waits. Isolate other ticket owners for wait 23; do not compare a contaminated
-  column sweep to the 400-tick expiry. Reference results, not old Windows timings, determine budget findings.
-- **J11:** R245 requires a separately designed/reviewed persistence task before release if the reference first-event
-  tick exceeds budget; no disclosed Windows limitation substitutes for that measurement.
-- **J12–J16:** Confirm machine/account/time resources and second GPU, audio producer/preview paths (W16 predates later
-  producers), current client config invocation and long-font pack. Source descriptions do not name a universal GUI command.
-- **J17:** Pin fourteen debugger stop/save/deferral recipes on C4 with actual player award probes and queue observations.
-  The connected-player exception for bay selection does not authorize first-event H cuts; X uses external stops only.
-- **J18:** Qualify every freeze V-row and B1/R1 condition against current fixtures, including controlled packs/quorum/
-  portal attempts; runtime GameTest observations do not replace those native/real-client cases. Ordinary sleep does
-  not implement the still-undecided “save a planet point when allowPlanetRespawn is on” extension.
-- **J19:** Confirm current UI strings/control paths and the section-7 implementation values on C4; the design alone
-  is not evidence. Supply owner/competitor/rebind/account-full/pause fixtures without changing balance or loading chunks.
-- **J21:** Freeze a complete historical-finding→task→batch→current-disposition map, including informational and round-8
-  residuals. This checklist lists all finding families but cannot infer which old observations Root has explicitly accepted.
-- **J22:** Supply all historical artifact identities and the exact full family selection. Keep separate X01/X02 results,
-  failed downgrade verdicts and unresolved risk decisions visible; do not label all native evidence passing by assumption.
-- **J23–J29:** Pin C4's menu/hold/seat-clear/probe invocations, refusal fixtures and an authorized observation route for
-  B. Owner-only menu rules conflict with a literal demand for both clients to open A's screen; show B's ordinary refusal
-  and permitted synchronized feedback, or decide the observation method before testing. Do not relax ownership.
-  No production fuel/cargo/bay enabling is authorized; fuel P9 and affected no-hook reruns remain separate.
+- **Answered:** C1 candidate, W399 sessions/commands, W400 cells, W403 bounded observers/seals; C33-C44 cap scope, LAN/expiry non-coverage, per-variant dispositions, comparison/wait rules, REF first-event requirement, C4 audio, X-only cuts, unimplemented respawn extension, ordinary research variants, C42 findings and owner-only fuel views. R542 decides each residual; R546 fixes preview and refusal proof.
+- **All J rows:** source/API/historical identities **needs package K01** / **needs package K02**; current manifests **needs package K11**, **needs package K12**, **needs package K14** or **needs package K16** as each row specifies. Direct raw-tick/cache/all-ticket integration **needs package K15**. O10/O11/O12 supply UUIDs/node access/sitting arrangements.
+- **J01/J02:** cap/menu/held-rocket/pad/seat recipes **needs package K11**. J03 remains NOT_COVERED while switches off/no LAN gate; an owner-enabled different candidate is not authorized here.
+- **J04:** all 21 variants have individual synthetic-only/native references for this pass. Potential real-client external-stop recipes each **needs package K11** before changing coverage; EXIT.5 real-client expiry is unreachable.
+- **J05-J10:** larger queues/cargo/admitted/cold/isolated-wait-23 drivers **needs package K12**; marked/no-hook kit **needs package K11**; complete live observers **needs package K15**. No unbounded wait gains a maximum.
+- **J11:** actual-event REF run **needs package K12** / **needs package K15**. An over-budget tick opens R245's separate designed/reviewed task, not a waiver.
+- **J12-J16:** producer tables/long-text pack are delivered; audio-enabled live profile **needs package K13**, scene/pause/recheck batches **needs package K16**. O9/O12 supply machine/time. Preview uses the corrected namespace.
+- **J17:** fourteen external-stop/save/deferral recipes and real award probes **needs package K12**; connected-player H cuts remain forbidden.
+- **J18/J19:** freeze/B1/R1 qualification and ordinary owner/competitor/rebind/full-account/pause scenes/C4 values **needs package K14**. The planet-point extension is not a test.
+- **J20/J21:** K19 map is delivered; all 21 owed rechecks, all Fixed finding evidence and N15-N19 actions **needs package K16** batches plus **needs package K14** scenes; disc **needs package K10**, station/warp **needs package K08**, machines **needs package K05**. Missing receipt probes **needs package K18**.
+- **J22:** historical/per-family manifests **needs package K12**, JAR/source identities **needs package K01** / **needs package K02**. Root reviews finished output hashes; X01/X02, downgrade verdicts and risk decisions remain separate.
+- **J23-J29:** menus/permitted B views/holds/probes/legitimate seat-clear and refusal recipes **needs package K11**; no invented packet or forced owner-menu access.
 
 ## W397 preparation and verification record
 

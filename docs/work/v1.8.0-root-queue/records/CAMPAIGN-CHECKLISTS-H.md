@@ -6,10 +6,17 @@ Unrun P4 instructions for H01–H07 of [the plan](FINAL-CAMPAIGN-PLAN.md), from
 [the operator guide](../../../ENDGAME-OPERATOR-GUIDE.md) and
 [the reference method](../../../releases/v1.7.0/PERFORMANCE.md).
 
+Accepted common procedures for **every H row**: `CAMPAIGN-CHECKLISTS-A.md`, section "Accepted procedures and delivered tooling",
+pins C4 (C1), the four W400 `cell.json` paths/hashes, W399's commands and session
+fields, C2/R535's effective display cells, C5/C10/R535's matched sampling/review
+rules, R546's receipt-plus-state refusal proof, and W403's observers, evidence root
+and checksum commands. Apply them before the row's actions; old generic display
+wording or demands for nonexistent refusal logs do not override these decisions.
+
 ## Shared preconditions and evidence
 
 H means harness/operator and P means human; an arrow states the expected observation for that action.
-Use P2's representative v1.3–v1.7 world, specifically its endgame copy. Root must freeze device/target coordinates,
+Use P2's representative v1.3–v1.7 world, specifically its endgame copy. The scene **needs package K10** to freeze device/target coordinates,
 endpoint/station IDs, account UUIDs, inventories and fixture archives/hashes first; these are absent from the version
 checklist. Include the laser drill, railgun, black-hole generator, gravity field and elevator, not only one device.
 Use P1's C4 JAR/hash and Java 17 on Forge 47.4.10 without JEI by default; record actual JEI state, and use only
@@ -17,12 +24,12 @@ JEI 15.56.0.205 if installed. Repeat the 47.4.23 compatibility smoke. Pin diffic
 simulation-distance; sources do not assign mandatory values (the historical performance run used distances 2).
 
 Ordinary rows need no marked bay campaign gate or extra JVM property. Keep admission switches off and endgame
-settings as recorded; physical laser mining defaults off, so its destructive case needs Root's disposable-fixture
+settings as recorded; physical laser mining defaults off, so its destructive case **needs package K10** disposable-fixture
 configuration, not a silent production change. After a config edit, restart and check `/arce endgame status`;
 `/reload` does not reload the common config. Phase 4 V2 has two real authenticated accounts A/B on a packaged DS,
 `online-mode=true`, `white-list=true`, `enforce-whitelist=true`, `enable-rcon=false` and restricted access.
 
-Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/<C4 short SHA>/`. Keep V1 under
+Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/659bbcb6a/`. Keep V1 under
 `E/phase2-v1/<machine>/<round>/`, DS/S2 under `E/phase3-ds/<row>/`, V2 under `E/phase4-v2/<sitting>/` and REF/SOAK
 under `E/phase5-ref/<run>/`. Capture native server/client logs, candidate/JAR identity, fixture/config hashes,
 hardware/JVM, UTC step times and before/after resource, ticket and endpoint projections. Screenshots are
@@ -43,6 +50,10 @@ known initial energy/cargo; include contention appropriate to each system, with 
 5. [H] Run `/arce endgame audit all` and inspect both endpoints. → Audit, inventories, energy and visible outcomes
    agree. Repeat for each fixture-defined contention variant; sources give no universal winner or exact refusal code.
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K10**: target/device coordinates, contention scenes, owners, exact menus and native invocation; actor inputs are not two-real-client evidence.
+
 **Evidence to keep:** Both videos/logs, target/consent data, tick/order transcript, audit and exact before/after
 resource projections in phase 4.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -62,6 +73,10 @@ prepare station-member-but-not-device-owner variant without granting B operator 
 6. [H] Compare `/arce endgame audit all`, root, inventories and loaded chunks. → No unauthorized mutations,
    secret target-coordinate disclosure or arbitrary client-requested loading.
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K10**: five-device permission scenes, owner/member policies and positive controls; use R546 tool receipts/unchanged state and logs only on logging branches.
+
 **Evidence to keep:** Both clients' refusal and owner-success views, account/role manifest, audit and unchanged
 resource/chunk projections in phase 4. Pair this with I11's v1.8 owner-bound devices, without dropping either row.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -79,6 +94,10 @@ mapped to [the recovery matrix](../../../releases/v1.7.0/RECOVERY-MATRIX.md); ph
 4. [H] Restart the same copy. → Recovery preserves one authoritative effect/payment; uncertain work stops with diagnostics.
 5. [H] Restart a second time and compare the same fields. → No repeated destruction, duplicated drops, lost escrow
    or unbounded recovery. Include the v1.7 large-range request check: oversized requests must be bounded or refused.
+
+**Accepted preparation/action steps (W408):**
+
+**Needs package K10**: matched C4 batch-cut seam, owned-process external-stop invocation and large-range variant. No old boundary is guessed.
 
 **Evidence to keep:** Runner command/version, cut receipt, stopped-file projections, both restart logs and block,
 inventory/energy/ledger comparisons in phase 3. Exact batch/cut command is a Root prerequisite, not provided by §10.
@@ -98,6 +117,10 @@ denied target. Real third-party mods require the selected names, versions, licen
 4. [H] Run `/arce endgame zone list` and the relevant audit page. → The refusal is attributable and does not expose
    private coordinates to an unauthorized client.
 5. [H] Save and restart the copy twice, then repeat allow/deny. → Protection semantics and saved device state survive.
+
+**Accepted preparation/action steps (W408):**
+
+(C27) Record the inherited real-protection-mod item NOT_COVERED in v1.8, reason D9/O6 support scope; it moves to v1.9. Run adapter/event simulation only as supplementary evidence, never a real-mod pass. Its allow/deny scene **needs package K10**; no new third-party mod is selected.
 
 **Evidence to keep:** Adapter or real-mod identity/configuration/hashes, region manifest, event/audit transcript,
 allowed and denied state comparisons and restart logs in phase 3.
@@ -120,6 +143,10 @@ two real clients from phase 4 through SSH tunnels to the loopback-bound server, 
 5. [H] Perform the workload's periodic normal saves/restarts and compare state. → No duplicate/lost resources;
    report restart intervals rather than stitching together interrupted partial soaks.
 
+**Accepted preparation/action steps (W408):**
+
+**Needs package K10**: endgame workload/cleanup controls; **needs package K17**: combined reference world and save/restart schedule; **needs package K15**: qualified long-run observers. Owner O7 supplies real connections/equivalent decision; budgets and full duration stay unchanged.
+
 **Evidence to keep:** Continuous workload/timing/memory/GC/ticket samples, start/end resource projections,
 normal-stop/restart logs and host/JVM/config identity in phase 5. An interrupted soak needs a new full run.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -140,6 +167,10 @@ elevator, including successful and refused states and several simultaneous visib
    but give no numeric contrast threshold.
 6. [H] Press F3+T and reconnect. → Correct resources/state return without persistent OpenGL error storms.
 7. [P] Judge the same scenes on the second GPU category. → Separate environment and judgement are retained.
+
+**Accepted preparation/action steps (W408):**
+
+(J21 A-F4/A-F5) At a generating Cygnus X-1 black-hole generator view the ring from two blocks below and five blocks above: visible from both sides. Also open railgun, black-hole generator, laser drill and laser target at their longest reason lines, scale 3, en_us/zh_cn: lines fit, full hover available. **Needs package K10**: generating scene/coordinates; **needs package K16**: regenerated recheck batches. C2's effective viewport rule applies.
 
 **Evidence to keep:** Per-device screenshots, effect/screen video, scale/language/contact-sheet index, raw frame
 samples and both machines' client/server logs in phase 2. The owner supplies the visual verdict.
@@ -169,16 +200,18 @@ and 192 four-stack transit records. This supplements, not replaces, docs/17's ba
 7. [H] Compare whole-server mean/P95/P99/RSS to docs/17 and retain JFR/GC/network data. → Same global budgets as
    H05; a >60 ms reference flush is a failed obligation requiring Root's ADR follow-up, not a host-lag waiver.
 
+**Accepted preparation/action steps (W408):**
+
+(C28; ADR-054) Classify two real connections separately from builder fixture players (not real players). Report achieved railgun throughput against the unchanged required launch load; a shortfall is not met, never a reason to lower it. Windows history is not REF evidence. **Needs package K10**: actors, throughput method and native driver; **needs package K15**: REF sampling. O7 supplies real connections.
+
 **Evidence to keep:** Phase 5 load/throughput manifest, idle/cold/loaded timing output, raw per-flush samples
 including ramp, JFR/host samples, ticket audit and exact budget table with actual values.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
 
 ## Open questions for Root
 
-- H01–H07: Supply P2's concrete device/target coordinates, IDs, inventories, normal screen paths and current C4
-  native/refload commands. Missing fixture details remain NOT_COVERED.
-- H03: Pin the batch-cut seam and large-range request variant; no final client or server session is run by P4.
-- H04: O6 selects adapter evidence, but the historical G4 text still names real protection mods. Record whether
-  the adapter satisfies the inherited item or whether a separately named real-mod lane remains open.
-- H07: Freeze the verified actor method and report the railgun throughput deviation explicitly; do not silently
-  reduce ADR-054's required workload or use historical Windows measurements as REF evidence.
+- **Answered:** C27 real-mod H04 NOT_COVERED in v1.8, D9/O6, adapter supplementary and real-mod scope v1.9; C28 actor classification and unchanged achieved-versus-required load. H06 explicitly rechecks two-sided disc and long endgame reasons.
+- **H01-H07:** device/target/owner/resource scene, menu/native/refload controls, actors and throughput method **needs package K10**.
+- **H03:** C4 cut seam/large-range variant **needs package K10**.
+- **H05/H07:** raw-tick/JFR/all-ticket/cache integration **needs package K15**, combined world **needs package K17**. O7/O11 supply connections/node access; Windows history is not REF evidence.
+- **H06:** regenerated two-sided-disc/long-text batches **needs package K16** plus K10's scene; O9 supplies second GPU.
