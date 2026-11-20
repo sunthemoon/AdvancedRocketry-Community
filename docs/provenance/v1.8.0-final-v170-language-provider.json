@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-v170-language-provider",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/en_us.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java",
+      "source_sha256": "2fa75ef7c30a411a8980b046abfe9c067581a1786aca11a40bc9eeeca4568c80",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "7e9df0b59128615cd8f169cd336f0bfca43be50c7d4b2674a2271b6545cf1583",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity_v170/lang/en_us.json",
+      "audit_asset": "A0903",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170LanguageProvider"
+    },
+    {
+      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity_v170/lang/zh_cn.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V170LanguageProvider.java",
+      "source_sha256": "2fa75ef7c30a411a8980b046abfe9c067581a1786aca11a40bc9eeeca4568c80",
+      "authoring_commit": "7c4fff3e3fbf72c59dcff4e996f27fd768429811",
+      "base_commit": "aa5148867a30bea6ea8affe2038af1bc8c6019bb",
+      "target_sha256": "4174f3489c149a98a630658b757f257e2b448b0a457599e5a4623c422336e74f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity_v170/lang/zh_cn.json",
+      "audit_asset": "A0904",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V170LanguageProvider"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/endgame/model/EndgameCode.java",
+      "source_sha256": "ea56a07119dd7fd32ab3b9f4f5a7d0618ef1362527147cfe59f2a7a3c2125e8d",
+      "authoring_commit": "4cf1e01e17c5dcfc6c3bc8fd0d4b94665c3d4a0b",
+      "base_commit": "3e2b1d4d5cbe1165330f0295198537508bbbff20"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "b3a823aa10b265eaaa4ee261f96754c57e7fac42991eddea92d13313913e27d5",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

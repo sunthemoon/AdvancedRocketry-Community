@@ -1,0 +1,287 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-c16c-machine-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/centrifuge.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "64efa934c9614743ba81c1e8351b53881319282b7119be22d5948a59fe16068e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/centrifuge.json",
+      "audit_asset": "A0017",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/chemical_reactor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "f500736eaa48577a39bd6b77429ea3155995e0d6db8f0a00797ab9c0ef226a10",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/chemical_reactor.json",
+      "audit_asset": "A0019",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/crystallizer.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "3c44830392fc5c65753ad80c83238869c95a8e0dad5d1d92fdb3d3e078c28654",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/crystallizer.json",
+      "audit_asset": "A0023",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/precision_laser_etcher.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "c26365d359c466d6e426fe4a6fc7ca4910f9bc09a860d995b98ff0fae8f7013c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/precision_laser_etcher.json",
+      "audit_asset": "A0084",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/quartz_crucible.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "31c94ae2c7ed23c98766cc313a1c3819700467cbb056bb11e5a56cb8b39e9880",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/quartz_crucible.json",
+      "audit_asset": "A0087",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/quartz_crucible.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "e1d37fc5775cbf461173ec2cf94335c432573df2a6dfe6b8d3519d6deda2cfa6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/quartz_crucible.json",
+      "audit_asset": "A0257",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/centrifuge.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "70a2ddb09c4e1e09a8bc275ca43ea06d923897c0d28d1d4f9483d9a3412afb06",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/centrifuge.json",
+      "audit_asset": "A0339",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/chemical_reactor.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "586fe9ccea1985636bf83822062b9af048d1e0d9f8f9535bf060ad5cc8f03a2c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/chemical_reactor.json",
+      "audit_asset": "A0341",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/crystallizer.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "e463003d8f66c047605f3427a23cb01459788213709b58a7798872de5dfe7ea6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/crystallizer.json",
+      "audit_asset": "A0351",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/precision_laser_etcher.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "c52240407ae11f7e9238fe92497e323da404c679226893d8fdfa25e15142dd0b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/precision_laser_etcher.json",
+      "audit_asset": "A0445",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/quartz_crucible.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "090eccdce61d93bc113d9463a359bb23353b62926a0ae14fd7357f6e4bade93c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/quartz_crucible.json",
+      "audit_asset": "A0449",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/quartz_crucible_shell.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180C16cMachineData.java",
+      "source_sha256": "cabb276d0816b7e212c48d3ede3e96b08e495df8416d4a4f5c35c3ba1fc4f37e",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b",
+      "target_sha256": "3b6c55b0348b8562749ff1cd8f92bfbd4d0985ce2e6b1fb4753f7a6cf9c5ca56",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/quartz_crucible_shell.json",
+      "audit_asset": "A0450",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ArcCuttingData.java",
+      "source_sha256": "1af4b7ef01c6d62cce6105b51cde29a0e6f189ce68dc798439c77ec1eae02733",
+      "authoring_commit": "9bb091f42903a02056ffc8d8fefc2212e0db481c",
+      "base_commit": "952582e7d53c4a3ef1d7400d484fc064b38bf98b"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "ff3c43c06de9aa0343a4823871afdc8244e6283b6274735583c1c03e1d02aeb5",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

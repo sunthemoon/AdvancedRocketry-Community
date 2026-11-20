@@ -1,0 +1,380 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-surface-models",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/charcoal_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "aa1a03c9eec19ee558dd7fe34afb6e418ff5546a45f808a1da13f8f1bf8c12eb",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/charcoal_log.json",
+      "audit_asset": "A0018",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/dark_moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "646906372359e3b48b0e0b168290e8925e454b8747434ceca25cc138d7eebcf8",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/dark_moon_turf.json",
+      "audit_asset": "A0025",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/ferric_sand.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "e17de79716870da2526b62469588151408c0f0199d3a30612134fc2b6425a9d9",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/ferric_sand.json",
+      "audit_asset": "A0039",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/geode_shell.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "6f859f6671a8c4f8d01701ee46c2064f9c2940cac432703ad1d435849b574f57",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/geode_shell.json",
+      "audit_asset": "A0047",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "7e8267c2c8a086457c9ab4525db1f92152fc3aa17534e0dfca14f8d0a38b18c6",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/moon_turf.json",
+      "audit_asset": "A0066",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/charcoal_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "f135f17229237aac903016548380d2d000557bba46b47fc43ac40d3c32c62e30",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/charcoal_log.json",
+      "audit_asset": "A0170",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/charcoal_log_horizontal.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "2a8cd5cd765d00ed9a2287e6b6d4ce736050a56dddbbc64a8528a265a96b950a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/charcoal_log_horizontal.json",
+      "audit_asset": "A0171",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/dark_moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "434e793ecec583fe51c898e5c107042b11270aad77d44045d51d02a72e0be47f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/dark_moon_turf.json",
+      "audit_asset": "A0178",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/ferric_sand.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "d01877d81da7784054ccad9c393d09e941d6589cd25ae2d336e43aad3a6f7167",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/ferric_sand.json",
+      "audit_asset": "A0188",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/geode_shell.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "3f9bb6d82684bebfc2061b176bff602ed0a748d408b3052985bf9f036ef45816",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/geode_shell.json",
+      "audit_asset": "A0196",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "d83ff9030918bad0a3a621beb15353c755cf0b7d686a2862e87d20403a48f567",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/moon_turf.json",
+      "audit_asset": "A0235",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/charcoal_log.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "c05e053569e128bccea44f076cdd1d1fe4992618b93f9b02fa86a2ce836e4a19",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/charcoal_log.json",
+      "audit_asset": "A0340",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/dark_moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "e4d0b2bb7a893637b639d83b89e38fb75499a10dd8741ef49307c1940c824e6c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/dark_moon_turf.json",
+      "audit_asset": "A0353",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/ferric_sand.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "0a3fc55c3ec30efab796c7bcd5fc4904656d40576168610e8ef7aa5f7f65d298",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/ferric_sand.json",
+      "audit_asset": "A0373",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/geode_shell.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "d8dccaaca2844a34c3dc9d84cda6df53c197c2006e19ec05fa13d4daffb843a1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/geode_shell.json",
+      "audit_asset": "A0382",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/moon_turf.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceModels.java",
+      "source_sha256": "f2377764bbeb7934debef7902a3605df7e07cc8741c0d085d5b873f3db9ccc46",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "1c5e2ce07f151103e819a77a882796bf614deebbef70c1b2d1ded629d30a960d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/moon_turf.json",
+      "audit_asset": "A0424",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceModels"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/SurfaceContent.java",
+      "source_sha256": "5f33c474ed39d83d6b65cd005178edc149c9bf7192c217b2845732a4f8a82130",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "c32e1ead62c0078548eb9c3fff5d092bcad81bc408fbdfd383dc03712e618679",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

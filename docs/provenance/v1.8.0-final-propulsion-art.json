@@ -1,0 +1,548 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-propulsion-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "14518ee5dffe0889110fe6cd832602a7b8ed2ffd68404d26482d62381ab04c61",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_bottom.png",
+      "audit_asset": "A0587",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "26caa7d04482fbba1ba92e33a05221588b4ddf5f643a2448954992aa8e5b9e6a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_side.png",
+      "audit_asset": "A0588",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "aee4e7c0398d21894dd80a78f284fe127528406c9db7975b59d4e28de4f04ce7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_top.png",
+      "audit_asset": "A0589",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "740be5843eac7fe79087be6c216fee3c387b39ff12b5f7ec1f6f928a40f4a96c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_bottom.png",
+      "audit_asset": "A0593",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "f5107786e181c27eeb06ee653b733e875a14331007132d58376247d2ab517d68",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_side.png",
+      "audit_asset": "A0594",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "0cd09ac7f658f22532c78b9e66ea35ab603e2ee99aa0f61fbed44db0a39b7a4d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_top.png",
+      "audit_asset": "A0595",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "aee4e7c0398d21894dd80a78f284fe127528406c9db7975b59d4e28de4f04ce7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_bottom.png",
+      "audit_asset": "A0603",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "c6aca4d0e969f7e0489e35c9d92dac37959716b7d9d26bc97394cbda0b2376ed",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_side.png",
+      "audit_asset": "A0604",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "aee4e7c0398d21894dd80a78f284fe127528406c9db7975b59d4e28de4f04ce7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_top.png",
+      "audit_asset": "A0605",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "14518ee5dffe0889110fe6cd832602a7b8ed2ffd68404d26482d62381ab04c61",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_bottom.png",
+      "audit_asset": "A0606",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "c6aca4d0e969f7e0489e35c9d92dac37959716b7d9d26bc97394cbda0b2376ed",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_side.png",
+      "audit_asset": "A0607",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "aee4e7c0398d21894dd80a78f284fe127528406c9db7975b59d4e28de4f04ce7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_top.png",
+      "audit_asset": "A0608",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_core_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "601dd93c46d0674d8e928c89a8b70ce0256b2bb5b720fdd2f93fbe3a67687fcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_core_bottom.png",
+      "audit_asset": "A0695",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_core_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "af44ad6c790a14e298b235b244ad5c9be62960e3b847373c047525e77aab30dc",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_core_side.png",
+      "audit_asset": "A0696",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_core_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "601dd93c46d0674d8e928c89a8b70ce0256b2bb5b720fdd2f93fbe3a67687fcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_core_top.png",
+      "audit_asset": "A0697",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "601dd93c46d0674d8e928c89a8b70ce0256b2bb5b720fdd2f93fbe3a67687fcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_bottom.png",
+      "audit_asset": "A0698",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "af44ad6c790a14e298b235b244ad5c9be62960e3b847373c047525e77aab30dc",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_side.png",
+      "audit_asset": "A0699",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "601dd93c46d0674d8e928c89a8b70ce0256b2bb5b720fdd2f93fbe3a67687fcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_top.png",
+      "audit_asset": "A0700",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "bb4b084b9067f496f0bee743192d2061a78262e03d1843403fefe90f1e3d0df4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_bottom.png",
+      "audit_asset": "A0701",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "af44ad6c790a14e298b235b244ad5c9be62960e3b847373c047525e77aab30dc",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_side.png",
+      "audit_asset": "A0702",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "601dd93c46d0674d8e928c89a8b70ce0256b2bb5b720fdd2f93fbe3a67687fcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_top.png",
+      "audit_asset": "A0703",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "f74c434c5b69a544f0c382d04914e16859fbefc99d38b5af4e2c5a3a6236f52d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_bottom.png",
+      "audit_asset": "A0709",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "dbc81965b91afb01a2defccf2004b2b140dc303508ff2c77b3645f3de8e9be33",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_side.png",
+      "audit_asset": "A0710",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionArt.java",
+      "source_sha256": "5e16fd20278977943c1e12fbc045dd647dc896d2065f3fe92d4b7049ab2a3384",
+      "authoring_commit": "546eeefc8177f3d71a94d7673b46cd415cc89a49",
+      "base_commit": "1568699e158f2ce0dd509ed82a2df6d9ecb0ee18",
+      "target_sha256": "f74c434c5b69a544f0c382d04914e16859fbefc99d38b5af4e2c5a3a6236f52d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_top.png",
+      "audit_asset": "A0711",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180PropulsionArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PropulsionData.java",
+      "source_sha256": "e97f78b1449e44773912c1cf570f5e9dbe25b12cdafe8eb313abace72569ac70",
+      "authoring_commit": "91e4f27e08bff86dbfb9bdfa5075b78564d4465a",
+      "base_commit": "d49e4e68cbabbc76b8035388303233a5bfa906ab"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-propulsion.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "d9d9b881a7b66134d0c55c3c7e09d8a04cf5485a8985db2ef50a2615e5b01011",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}

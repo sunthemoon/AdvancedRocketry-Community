@@ -1,0 +1,248 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-airlock-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/airlock_door.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "4d69151d4129aa1f2ff4ffb8e64390b7f58a37b71886d66508bf44872266470a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/airlock_door.json",
+      "audit_asset": "A0005",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_bottom_left.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "4327dee8cb919c72c6bcfb9538a54584d8395ad3727d655f691ff6d437bc8bfd",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_bottom_left.json",
+      "audit_asset": "A0153",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_bottom_left_open.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "095a16c76cb3b83eb57e45db6465fdf07387134e30d9a4690c83cd74e4d4a8f1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_bottom_left_open.json",
+      "audit_asset": "A0154",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_bottom_right.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "21137ac19f70be385624438de45432012c7254f1a6d771166d524ba77003be3d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_bottom_right.json",
+      "audit_asset": "A0155",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_bottom_right_open.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "c29fe92ca1798485fbd8bc44a3ea9aae471aa56e3406b9c46b47bf78f5b30b6c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_bottom_right_open.json",
+      "audit_asset": "A0156",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_top_left.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "a8b624129003441dccb93b57e9e364f54d2fb5872cff1a45506218ee737f81e9",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_top_left.json",
+      "audit_asset": "A0157",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_top_left_open.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "b398d1db139284a3e8f195938b6a294f4001d9cc426f1bf8a816023ff427be7d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_top_left_open.json",
+      "audit_asset": "A0158",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_top_right.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "2baa3af2179d7a19a21a96b506f16621fee3748b33930a6a50fa8bd6014fd20b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_top_right.json",
+      "audit_asset": "A0159",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/airlock_door_top_right_open.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "f7f948b0c8b02da5b464a0078aaabbbe2577272236a6450015362c0d9a6ef70f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/airlock_door_top_right_open.json",
+      "audit_asset": "A0160",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/airlock_door.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180AirlockData.java",
+      "source_sha256": "10ef4d7bde1dcef2fffa510230617e2de472d50472bca8fa9dba049c6c90438a",
+      "authoring_commit": "c2c5974fc575d8e5387dd05d9d086a7571868d9d",
+      "base_commit": "e495440bbccc846c801fe09e6a31daf41dc37c8b",
+      "target_sha256": "5205350c6b782e43e1ab2595a5cc4ba357add1828af762408d2a8d77c6c1a3d1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/airlock_door.json",
+      "audit_asset": "A0312",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180AirlockData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c18a-airlock-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "9b613d4dd1207a8ae68b51df63cd1d1f6fc1fa5c9f24c38481872b6ffd521625",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-force-field-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/force_field.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "eb1da9cadb4542b1b83e33636db542290fb51c9ad3393fc18426548be4f83440",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/force_field.json",
+      "audit_asset": "A0043",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/force_field_projector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "e7ae227962d3c82b0bfe9fb3bfa38ec87f8419ecde9f211dcccffbe672868e53",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/force_field_projector.json",
+      "audit_asset": "A0044",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/force_field.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "497a3f009b61346b15609ca6f3f09ffa3d01d75872cd84b85d4878207fa9bd36",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/force_field.json",
+      "audit_asset": "A0192",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/force_field_projector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "139f4741d488a40089ea2d45e0340d4e3ba5c740cef093da25ea19b6969a6be8",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/force_field_projector.json",
+      "audit_asset": "A0193",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/force_field_projector.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "84f3e1b0e20ee470bf28cafb41cb51dfd268fd826ce89cf48c2449f8eed16ae4",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/force_field_projector.json",
+      "audit_asset": "A0378",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/force_field.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "f4f0c3686a3ef680498b03441cbabad9b7442ec11c5f18ea73a5b32987f6137e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/force_field.png",
+      "audit_asset": "A0658",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/force_field_projector_front.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "8abaac2fdde4bd28f06de5ce976174e13b7002956278ad9c98cf99e782aa1e36",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/force_field_projector_front.png",
+      "audit_asset": "A0659",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c17b-force-field-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "ad7d446add4c0c51d8e06bfb4ea61ed5ff8244fc8f51554afe8784262cb2ec18",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

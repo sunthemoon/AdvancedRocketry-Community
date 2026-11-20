@@ -1,0 +1,429 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-station-control-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/station_altitude_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "6133a8b5b1a6565265d2f70586cf8997ab7e654b60377fd52b9fbc3344ac555f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/station_altitude_controller.json",
+      "audit_asset": "A0116",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/station_gravity_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "fe717db40813cf30833357d6cbcb6f184b29a456a4332adfccae085cced76201",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/station_gravity_controller.json",
+      "audit_asset": "A0117",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/station_orientation_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "7d855e26319205435660147959531b0b6a6a83deb15fbae8d4530c193d4bb2f0",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/station_orientation_controller.json",
+      "audit_asset": "A0119",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/warp_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "b3641d5498a164a7b83e31ff453a15772c7dfe117ffd3859afe00c4394f87ec8",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/warp_controller.json",
+      "audit_asset": "A0133",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/station_altitude_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "388a0f6b71100e6a33c52b8ef1ef25e1e91c1ef66244e0de905b7f194e2af517",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/station_altitude_controller.json",
+      "audit_asset": "A0285",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/station_gravity_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "b78ee3eb746b116ff6fc1069a1238f7e46822a999843a4d579c97d22b7ad708f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/station_gravity_controller.json",
+      "audit_asset": "A0286",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/station_orientation_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "2d9049610e6bad496d03f232713aa4617f1936acc3628ead290edc92f0fb099d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/station_orientation_controller.json",
+      "audit_asset": "A0288",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/warp_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "44696af365187af32fb380c5f2b14d06a3e37062ef9575dbc20a1eebe2b94663",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/warp_controller.json",
+      "audit_asset": "A0295",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/station_altitude_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "c4c1a8ed2fdc11a1dbaf7fd361287257093d58bd34d2784798d2bcd01d9841ad",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/station_altitude_controller.json",
+      "audit_asset": "A0501",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/station_gravity_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "3666adca946dd8b7be40d5b8d8c3202ac7c1f4f412101d645623b1ab80c0d4e9",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/station_gravity_controller.json",
+      "audit_asset": "A0503",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/station_orientation_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "d22f67692aa459339fd268a040917ec518c997ee299342266695dcbf90c5549c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/station_orientation_controller.json",
+      "audit_asset": "A0505",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/warp_controller.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "3f0f2611f4716e372c50cd740b40be78e5285902da6ea972dd493d702f7d1a27",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/warp_controller.json",
+      "audit_asset": "A0554",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_altitude_controller_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "db306872e0202a66dff821619971957b1c2a00e40bd3fc064706c1a72fe068b3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/station_altitude_controller_side.png",
+      "audit_asset": "A0762",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_controller_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "932d5fbec9ffaeca9b885d4c7f9aa4f769dbe7c16073e488a9a7c4be1093cd2d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/station_controller_bottom.png",
+      "audit_asset": "A0763",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_controller_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "a5a79c1a5ccac6a3ddc20fdec6fa65391093671369d5622345bbc0666a79afaa",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/station_controller_top.png",
+      "audit_asset": "A0764",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_gravity_controller_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "e62b6e07ff6877b0b275510b3b1f276b23b1cb5e6972cc3e17d042d22ca8e670",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/station_gravity_controller_side.png",
+      "audit_asset": "A0765",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_orientation_controller_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "79c513f303f601c3155bd57407214ba08218275cd7a0548c829c3899c235ba0c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/station_orientation_controller_side.png",
+      "audit_asset": "A0767",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/warp_controller_side.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationControlData.java",
+      "source_sha256": "edb885a24350668d0030acb337f3367124643b03bebbd06145e979ab0c5181f2",
+      "authoring_commit": "6bd3824be1d638c49ae22a552a9f38cacff22dd4",
+      "base_commit": "3b0c064a986954e6feef97bbae578812ad376048",
+      "target_sha256": "9999c2e62ece8111c52c7ffe51ba5d03ab48a30372419546a45e012c55b563ba",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/warp_controller_side.png",
+      "audit_asset": "A0776",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationControlData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/controller/StationControllerKind.java",
+      "source_sha256": "e739703b2e73555e3aacf98186b454cfeb41c903ac1dbaa73555a65672fbbd12",
+      "authoring_commit": "f6f7d56341427c4c005b7c4a55b7cd915ec06993",
+      "base_commit": "c0d4c15d33b9c888b509a612c5e5b9ab3aeeb066"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/service/StationManagementCode.java",
+      "source_sha256": "0e45a05d7f47f2eaa79cec5f7477166cfcf848657f380000dc16dbff3a7c302d",
+      "authoring_commit": "bbd1522c612eddbd901cf509c26c7ea8af65c150",
+      "base_commit": "7ee20b92cc13a25c7492e62da35099a62fa927f1"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c17b-station-controls-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "d3fc840f37c07e717f2d21c92fe5fbad013f99c7b1e9cb0e7237f0f1e0b37763",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

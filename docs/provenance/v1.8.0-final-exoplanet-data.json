@@ -1,0 +1,104 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-exoplanet-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_f.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetData.java",
+      "source_sha256": "1a6177bca0646bdd498b65c9a4b0aef2c85ffe2e6a04907165aff0de3964d3db",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "284ff077267fc082f06f224d39e11bb9d0e63f5b73fbf7a2dcf19e80f8f30c8b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_f.json",
+      "audit_asset": "A0139",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_g.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetData.java",
+      "source_sha256": "1a6177bca0646bdd498b65c9a4b0aef2c85ffe2e6a04907165aff0de3964d3db",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+      "target_sha256": "a7e3915525565882d3dd8d7da11bb37a10570e5ac0e5a29767b2fb955571a685",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/celestial_visuals/tau_ceti_g.json",
+      "audit_asset": "A0140",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ExoplanetData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ExoplanetContent.java",
+      "source_sha256": "7dc0c007238ea705530850d91d627aac11ad90e72806edd71634be74b3f2f172",
+      "authoring_commit": "85a1975744792721ac358097969af45b7dd13c90",
+      "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/model/CelestialBodyDefinition.java",
+      "source_sha256": "0bf2d0dca9aadd5954d3370894fa7a351cd888d1027dc47270c962f62a45b233",
+      "authoring_commit": "cbff561a8e949c25e93d51365a260e0fd061be4d",
+      "base_commit": "e810fb390dd30dbaa4506a59bffee00b1c78083b"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfile.java",
+      "source_sha256": "1a2f86823cd58fac863e5df8e354ab30126c23fb7fa1cf7437edfbfb70c5e565",
+      "authoring_commit": "e810fb390dd30dbaa4506a59bffee00b1c78083b",
+      "base_commit": "9b48c7629e662ad28b4722995fe9d02566b64a86"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/model/SatelliteDefinition.java",
+      "source_sha256": "edd842b2ae38fd56df45ad97bcb490c4d1789200e3bf26685a4929bccdd317b2",
+      "authoring_commit": "0b35fccaaa7b7939d3a4fac0c1f49a1c8ec77238",
+      "base_commit": "a96ab5d473ba51d9b724c3ef29afa853bbc52efb"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/travel/route/model/RouteDefinition.java",
+      "source_sha256": "8ba17427f8d5aa87d8d1a77e13288a7f329c8f030176fe942d54de1e69209055",
+      "authoring_commit": "da3e6efbc933034186d27b1809756d67cedc7b30",
+      "base_commit": "a4ae20190e9f9a36b2a3cbabf1ea44b6746bc7d6"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "46e14f745d13bcf1f18d3f01cd25f7a4bfa164b11d7190251ef86716714058f8",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

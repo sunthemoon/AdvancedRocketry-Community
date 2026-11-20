@@ -1,0 +1,98 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-gas-charge-pad-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/gas_charge_pad.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "81597752f5a75d6f833b81765b1137d81a7bcf5919460979d0e6974a6b24e1d8",
+      "authoring_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "base_commit": "92070ab9ca6d459c6fb5b3237f7ef099a901b0d8",
+      "target_sha256": "ba81d98de810bfdf8ccc27a6f1f099306f1ef89fcab5cebcb51e54925be1ddc1",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/gas_charge_pad.json",
+      "audit_asset": "A0046",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180GasChargePadData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/gas_charge_pad.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "81597752f5a75d6f833b81765b1137d81a7bcf5919460979d0e6974a6b24e1d8",
+      "authoring_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "base_commit": "92070ab9ca6d459c6fb5b3237f7ef099a901b0d8",
+      "target_sha256": "bb828d096b020e68060f6ec648db059b443d721883aa2fa9049afc0bf8b9961f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/gas_charge_pad.json",
+      "audit_asset": "A0195",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180GasChargePadData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/gas_charge_pad.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "81597752f5a75d6f833b81765b1137d81a7bcf5919460979d0e6974a6b24e1d8",
+      "authoring_commit": "ce3c24ddffad580cacb45793a5ece55df91a0c42",
+      "base_commit": "92070ab9ca6d459c6fb5b3237f7ef099a901b0d8",
+      "target_sha256": "b00ce0d120c7fd43a80ab5d0a7f3f289bc37ac765475d1b106075d200272fcbb",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/gas_charge_pad.json",
+      "audit_asset": "A0380",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180GasChargePadData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "2c0fb501ef35c8de1d583477063dec09418589c68ac4ede389127778df1280f6",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}

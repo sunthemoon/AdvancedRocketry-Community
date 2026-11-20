@@ -1,0 +1,170 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-surface-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/charcoal_log.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "b6ceba5c49bfac39214b549713feea15bf0db47503d66db86d578c0a638d9c25",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/charcoal_log.png",
+      "audit_asset": "A0616",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/charcoal_log_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "0c661aeb0a2aa7a75bfd9779e0926b8b8bcc5d144ebee36760bbab626fb40d26",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/charcoal_log_top.png",
+      "audit_asset": "A0617",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/dark_moon_turf.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "719c30642339dbb686103028f9381451a0384ccb417e794ff2f5b0ea7466abcf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/dark_moon_turf.png",
+      "audit_asset": "A0629",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/ferric_sand.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "be88220207b82f93e2385c55699419786eb194f81731a4b200b6a9acde4af30f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/ferric_sand.png",
+      "audit_asset": "A0642",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/geode_shell.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "963486e1e3f3ad5b90d15f7450a7e516b0bfb33d0129b7f4d5d335eee3a4eb89",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/geode_shell.png",
+      "audit_asset": "A0664",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/moon_turf.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SurfaceArt.java",
+      "source_sha256": "9d4f38b0ed3651af9120a0bf9ff3edc1ea565356ee790063c038ef7cf188bf4c",
+      "authoring_commit": "d682e7238eef5aaa0df0a084c90ef63257084886",
+      "base_commit": "3d4cae8d47ffc28b1e3858139945262e9424bb17",
+      "target_sha256": "50e7bd71fe3b99e86051e806d54ceddfde62806c46ea30fecc14f3b4518150c7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/moon_turf.png",
+      "audit_asset": "A0691",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SurfaceArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    },
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-development-metadata.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "f5e2152955854068eaed58d4fd57a02ec1dbc22f868e31a2190860ffd20b6655",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}

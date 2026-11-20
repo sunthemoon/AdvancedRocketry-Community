@@ -1,0 +1,119 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-suit-component-art",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/high_pressure_tank.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SuitComponentArt.java",
+      "source_sha256": "88d4d8097e533e34e0d735b817026884fbdc96b3630f3520d5fbace5d3959994",
+      "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "base_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "target_sha256": "515e7d9444e457e50cf278e2a6c541b8a2e16d1b6bd702aa5b359e70ba94a79f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/high_pressure_tank.png",
+      "audit_asset": "A0803",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SuitComponentArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/low_pressure_tank.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SuitComponentArt.java",
+      "source_sha256": "88d4d8097e533e34e0d735b817026884fbdc96b3630f3520d5fbace5d3959994",
+      "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "base_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "target_sha256": "293127eeb8751ec540ef6540c055780f61f4498a1b00121c4f5009abf4cf7355",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/low_pressure_tank.png",
+      "audit_asset": "A0817",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SuitComponentArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/pressure_tank.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SuitComponentArt.java",
+      "source_sha256": "88d4d8097e533e34e0d735b817026884fbdc96b3630f3520d5fbace5d3959994",
+      "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "base_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "target_sha256": "8ab22a3d9a87d61484bcc83dd3ab14a93969d0f359d12911fa4fce6b254e6d7f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/pressure_tank.png",
+      "audit_asset": "A0834",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SuitComponentArt"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/super_high_pressure_tank.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SuitComponentArt.java",
+      "source_sha256": "88d4d8097e533e34e0d735b817026884fbdc96b3630f3520d5fbace5d3959994",
+      "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "base_commit": "9f8cbc909d601d380c358ee7369571e9c845df4f",
+      "target_sha256": "c2b5b9d387217a18bde65a994143675b4109124628d10172d6ff33eec8e309e2",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/item/super_high_pressure_tank.png",
+      "audit_asset": "A0852",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SuitComponentArt"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/ModIdentity.java",
+      "source_sha256": "bfe618f29cc1fb9bfa465cebedf731cd6d1136d45e1ecfba47441d4a5f2f0f92",
+      "authoring_commit": "ccae3a79242a1901daed0cadf0c15bb058f89c0b",
+      "base_commit": "8877ea2cbb84a45615fe653e15a8bd0214814d3e"
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "96ebbae60327b205cd6ddf9e1d2dc8d47d88009a6a1b2613aab144bc5496ca0f",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
+    ]
+  }
+}

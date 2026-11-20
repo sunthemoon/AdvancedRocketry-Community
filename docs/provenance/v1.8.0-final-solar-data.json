@@ -1,0 +1,228 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-final-solar-data",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-classic-content",
+  "source_commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "Final per-file coverage of the generation-only/scope-only subset in MATRIX-PROVENANCE-AUDIT Appendix A; no changes to historical receipts, assets or approvals.",
+  "candidate": {
+    "commit": "9172113ad4ecfb9047432f02b97d240fc06130b6",
+    "jar_sha256": "e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8"
+  },
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/solar_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "206ff65915795a07c0b42b07763ec581a022baa24639ebab3cb5a76eab03f540",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/solar_generator.json",
+      "audit_asset": "A0114",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/solar_panel.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "83250f88d2cbb6cac1b11e746fc72ccc0c427796eb8366deddaaef763f9d6718",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/blockstates/solar_panel.json",
+      "audit_asset": "A0115",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/solar_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "a94e0dcb4fb2a083937956f9deadf4d67c0dabedc7c91617fbeda7d63b5702eb",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/solar_generator.json",
+      "audit_asset": "A0283",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/solar_panel.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "3a55f389fdee5164d57e842bbe7c5e49ae3e55bf6a9d79e4e7741e53780b9b98",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/block/solar_panel.json",
+      "audit_asset": "A0284",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/solar_generator.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "87f886ea69da324df205c86e0e68c90aa757dad9e029a58df88eb310c7513e95",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/solar_generator.json",
+      "audit_asset": "A0494",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/solar_panel.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "d8b788278ef64f0f980dcf82e441086ffaeea352e02254f75673126c7cff8221",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored resource data; no upstream identity is assigned.",
+        "Deterministic provider output; Minecraft parents and textures, where used, are resource-location references, not copied files."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/models/item/solar_panel.json",
+      "audit_asset": "A0495",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_generator_bottom.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "e494f5c52266f4e9292c59466605803bc1f0fe1ce2300291dbbc125af5b50204",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/solar_generator_bottom.png",
+      "audit_asset": "A0758",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_generator_top.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "da560257e8c53d15d0a2bd060e4136acae6f5332bafc119a3443386db86796c9",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/solar_generator_top.png",
+      "audit_asset": "A0760",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_panel.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-classic-content",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "base_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "target_sha256": "d5e7b2969bf7dedb51f2897a2d272cce0f7025ba0a73dc207c4c53761663c313",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Retrospective final C5 pin of community-authored pixel art; no upstream identity is assigned.",
+        "Original repository-authored source; this record does not substitute for the maintainer visual/originality and MIT licence review."
+      ],
+      "jar_path": "assets/advancedrocketrycommunity/textures/block/solar_panel.png",
+      "audit_asset": "A0761",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData"
+    }
+  ],
+  "generator_dependencies": [
+    {
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+      "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+      "authoring_commit": "cb52c0b366bacacceaa31bb4f95babfee29d30e2",
+      "base_commit": "f2006e8e8967aca5d7319b84eb2bbd23aa2a87e2"
+    }
+  ],
+  "prior_scope_records": [
+    "docs/provenance/v1.8.0-c17c-solar-new-resources.md"
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "ea7d7feda77739392dfb921969f88a902a921caa822a379b1e14e500387d1127",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
+      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence.",
+      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
+    ]
+  }
+}
