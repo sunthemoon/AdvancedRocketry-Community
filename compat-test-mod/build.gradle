@@ -12,7 +12,11 @@ group = 'io.github.sunthemoon.advancedrocketrycommunity.compat'
 version = '1.0.0'
 base.archivesName = 'arce-adapter-compat-test'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-minecraft.mappings channel: 'official', version: '1.20.1'
+def fixtureAccessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    accessTransformer = fixtureAccessTransformer
+}
 
 def hostGroup = 'io.github.sunthemoon.advancedrocketrycommunity'
 def hostArtifact = 'advancedrocketry-community'
@@ -66,7 +70,7 @@ dependencies {
 // Shared fixture source, not host source/output or an included/project build.
 sourceSets.main {
     java.setSrcDirs([file('../src/adapterTest/java')])
-    resources.setSrcDirs([file('../src/adapterTest/resources')])
+    resources.setSrcDirs([file('../src/adapterTest/resources'), file('src/main/resources')])
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -112,9 +116,27 @@ def require = { boolean condition, String message ->
     }
 }
 
+def verifyFixtureAccessTransformer = tasks.register('verifyFixtureAccessTransformer') {
+    group = 'verification'
+    description = 'Limit fixture-owned platform access to the two vanilla entity-save members.'
+    inputs.file(fixtureAccessTransformer)
+    doLast {
+        def rules = fixtureAccessTransformer.readLines('UTF-8').findAll {
+            it.trim() && !it.trim().startsWith('#')
+        }
+        require(rules == [
+                'public net.minecraft.server.level.ServerLevel f_143244_ # entityManager',
+                'public net.minecraft.world.level.entity.PersistentEntitySectionManager m_157512_(JLjava/util/function/Consumer;)Z # storeChunkSections'
+        ], 'Fixture access transformer must expose exactly the two entity-save members')
+        report('fixture-platform-access.json', [file: fixtureAccessTransformer.absolutePath,
+                sha256: sha256(fixtureAccessTransformer), rules: rules])
+    }
+}
+
 def verifyApiClasspath = tasks.register('verifyApiClasspath') {
     group = 'verification'
     description = 'Audit published and Forge-remapped API provenance and the real consumer compile classpath.'
+    dependsOn verifyFixtureAccessTransformer
     inputs.files(configurations.publishedApi, sourceSets.main.compileClasspath)
     doLast {
         require(rootProject == project && allprojects.size() == 1 && gradle.includedBuilds.empty,
@@ -222,8 +244,17 @@ def verifyConsumerBoundary = tasks.register('verifyConsumerBoundary') {
         require(names.contains('META-INF/mods.toml') && names.contains('META-INF/LICENSE')
                 && names.contains('META-INF/NOTICE.md') && names.contains('pack.mcmeta')
                 && !names.any { it.startsWith('META-INF/jarjar/') }, 'Fixture archive metadata is incomplete or shaded')
+        new ZipFile(jar).withCloseable { archive ->
+            def transformer = archive.getEntry('META-INF/accesstransformer.cfg')
+            require(transformer != null, 'Fixture JAR must carry its own platform access transformer')
+            archive.getInputStream(transformer).withCloseable { stream ->
+                require(Arrays.equals(stream.bytes, fixtureAccessTransformer.bytes),
+                        'Packaged platform access must match the audited fixture-owned transformer')
+            }
+        }
         report('fixture-artifact.json', [file: jar.absolutePath, bytes: jar.length(),
-                sha256: sha256(jar), entries: names.sort(), reobfuscated: true])
+                sha256: sha256(jar), entries: names.sort(), reobfuscated: true,
+                fixture_access_transformer_sha256: sha256(fixtureAccessTransformer)])
     }
 }
 
