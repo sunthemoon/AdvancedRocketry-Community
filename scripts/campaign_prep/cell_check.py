@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 import re
 import shutil
-import subprocess
 import sys
 import time
 
@@ -217,6 +216,9 @@ def run_cell(manifest, output, java, expected, token, port):
                 if initial["errors_and_fatals"] or initial["native_findings"]:
                     raise ValueError("Server startup product/log finding; stop this cell")
                 if epoch == "first":
+                    # Readiness can precede the first completed END snapshot. Allow
+                    # one nominal ring before requiring overlap, then collect 180 s.
+                    time.sleep(5)
                     poll_start = time.monotonic()
                     with (output / "raw-replies.log").open("x", encoding="utf-8") as replies:
                         # Endpoint polls at t=0 and t=180 cover a full three-minute interval.

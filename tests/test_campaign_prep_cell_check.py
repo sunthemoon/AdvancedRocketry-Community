@@ -152,6 +152,26 @@ class CellCheckTests(unittest.TestCase):
         self.assertEqual([], self.audit([line])["native_findings"])
         self.assertEqual(1, len(self.audit([line, line])["native_findings"]))
 
+    def test_world_identity_excludes_changing_time_but_retains_seed(self):
+        nbt = check.nbt
+        data = {"LevelName": nbt.Tag(nbt.STRING, b"world"),
+                "WorldGenSettings": nbt.Tag(nbt.COMPOUND, {"seed": nbt.Tag(nbt.LONG, 425)}),
+                **{key: nbt.Tag(nbt.INT, value) for key, value in
+                   (("SpawnX", 0), ("SpawnY", 64), ("SpawnZ", 0), ("DataVersion", 3465))},
+                "Time": nbt.Tag(nbt.LONG, 3600)}
+        root = nbt.Tag(nbt.COMPOUND, {"Data": nbt.Tag(nbt.COMPOUND, data)})
+        target = self.root / "level.dat"
+        nbt.write_gzip(target, b"", root)
+        first = check.world_identity(target)
+        data["Time"] = nbt.Tag(nbt.LONG, 3700)
+        nbt.write_gzip(target, b"", root)
+        second = check.world_identity(target)
+        self.assertEqual(first["identity"], second["identity"])
+        self.assertGreater(second["time"], first["time"])
+        data["WorldGenSettings"].value["seed"] = nbt.Tag(nbt.LONG, 426)
+        nbt.write_gzip(target, b"", root)
+        self.assertNotEqual(first["identity"], check.world_identity(target)["identity"])
+
 
 if __name__ == "__main__":
     unittest.main()
