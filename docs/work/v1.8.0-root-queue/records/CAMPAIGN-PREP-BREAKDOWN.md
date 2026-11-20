@@ -345,4 +345,31 @@ NOT_COVERED above A1 if K18 is late or narrow. C34 leaves J03 NOT_COVERED unless
 leaves the "historically played" claim NOT_COVERED for two worlds. Root should check each of these against the
 Gate texts before accepting them, because a NOT_COVERED row is not a pass and may still block a Gate.
 
+## 8. Root decision R535
+
+Root (Claude) reviewed this record on 2026-11-20 and accepted it, with these changes. Everything not listed here
+is accepted as written. Owner items stay the owner's; no choice signs a risk, enables a switch or marks a Gate.
+
+| Item | Root's change |
+|---|---|
+| C2 | Minecraft's GUI scale needs at least 320 by 240 scaled pixels, so a 1280 by 720 window offers scales 1 to 3 and
+clamps 4 to 3. The campaign tests windowed 1280 by 720 at scales 2 and 3, and fullscreen at the machine's native
+resolution at scale 4 when that resolution offers it (1920 by 1080 does). Each screenshot records the effective
+scale read from the game, not the requested one. The rest of C2 stands. |
+| C4 | Accepted. The 4,096-block room footprint, the 30-minute flushed save and the two-hour restart are procedure
+parameters, not budgets; the record of the run names them as such. |
+| C5, C10 | Accepted. "Larger than the baseline's spread" is a trigger for Root's review, not a pass or fail limit;
+the finding's severity follows docs/17 section 3. |
+| N1 to N3 | Added to the owner packet's section 6 as O10 (the two accounts' UUIDs), O11 (the reference node login
+or script run) and O12 (when the second machine and a second player are free). |
+| O8 | The packet now names Root's recommendation: Intel PresentMon, or another tool the owner trusts that writes
+a PresentMon-format CSV, which W399's reader takes. |
+| Order | Lock-free packages first, at most two Codex workers and one Claude worker at a time: K13, K15, K19 and K06
+(its generation part). K16 starts as soon as W399 and W400 are merged and the lock is free, because it leads to
+the P9 dry run. K01 takes the lock briefly after C4. K02 to K12, K14, K17, K18, K20 and K21 follow in the record's
+dependency order. Before K02 and K03, Root locates or rebuilds the historical v1.0 and v1.3 to v1.7 JARs and adds
+that time. |
+| Estimate | The plan's phase 1 figure of 5 to 8 Root and worker days is superseded by this record's 17 to 30 worker
+days (estimates, not budgets). |
+
 docs/work/v1.8.0-root-queue/records/CAMPAIGN-PREP-BREAKDOWN.md
