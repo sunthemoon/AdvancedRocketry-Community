@@ -587,6 +587,7 @@ What is still open:
   arrival GameTest and no batch-order cause. W394 (R525) makes the assertion name the failing pick, the
   selector's reason and the reservations it saw. It stays open until the cause is known or runs show no
   recurrence.
+- **Writer benchmark unit test on a hosted runner (2026-11-20).** Shared regression run 44672650620 at `f2bf5b79c` failed `EscrowWriterBenchmarkAccessTest` line 41: neither root took the readback path, which the code takes only on a root's tenth published mutation, and a slow runner skips attempts made while a write is unpublished. The other 6,743 unit tests passed, and the same code passed on W404's branch run. W409 (R551) removes the timing dependence; the item stays open until W409 is merged.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
