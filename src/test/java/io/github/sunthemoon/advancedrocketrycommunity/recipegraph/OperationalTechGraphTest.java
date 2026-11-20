@@ -101,6 +101,13 @@ class OperationalTechGraphTest {
         assertTrue(model.required.containsAll(Set.of("op:research:lifetime:0", "op:research:lifetime:120",
                 "op:research:lifetime:240", "op:research:lifetime:360")));
         assertEquals(Set.of("base-model", "endgame", "elevator", "ground", "research-tree", "satellites", "solar/beacon"), model.unmodelled.keySet());
+        // Modes share real inputs; performing one mode is not a prerequisite of another.
+        for (var entry : List.of(new String[]{"op:laser:physical", "op:laser:logical"},
+                new String[]{"op:railgun:orbital", "op:railgun:local"})) {
+            var producer = model.graph.producers.get("operational:" + entry[0]);
+            assertTrue(producer.slots().stream().noneMatch(slot -> slot.contains(entry[1])));
+            assertTrue(producer.slots().contains(List.of(PackagedRecipeGraph.ENERGY)));
+        }
     }
 
     @Test void unseededCycleHasEveryNodeAndAnActualClosedPathButSeededOrAlternativeCyclesAreNotHardLocks() throws IOException {

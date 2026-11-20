@@ -225,11 +225,11 @@ final class OperationalTechGraph {
         op("op:laser:logical", cite("endgame/laser/LaserDrillOperation", "public static Decision decide("),
                 "op:formed:orbital_laser_drill", "op:station:" + id("earth"), id("laser_lens"), ENERGY);
         op("op:laser:physical", cite("endgame/laser/OrbitalLaserDrillBlockEntity", "private void physicalTick("),
-                "op:laser:logical", id("laser_target"), "access:overworld");
+                "op:formed:orbital_laser_drill", "op:station:" + id("earth"), id("laser_lens"), ENERGY, id("laser_target"), OVERWORLD);
         op("op:railgun:local", cite("endgame/railgun/RailgunLaunch", "public static EndgameCode refusal("),
                 "op:formed:railgun", ENERGY, "minecraft:cobblestone", OVERWORLD);
         op("op:railgun:orbital", cite("endgame/railgun/RailgunRoute", "public static EndgameCode check("),
-                "op:railgun:local", "op:station:" + id("earth"));
+                "op:formed:railgun", ENERGY, "minecraft:cobblestone", OVERWORLD, "op:station:" + id("earth"));
         op("op:gravity:active", cite("endgame/gravity/GravityFieldBlockEntity", "private EndgameCode check("), id("gravity_field_controller"), ENERGY, OVERWORLD);
         op("op:elevator:bound", cite("endgame/elevator/ElevatorRules", "public static Check bind("),
                 "op:station:" + id("earth"), id("elevator_anchor"), id("elevator_terminal"), OVERWORLD);
