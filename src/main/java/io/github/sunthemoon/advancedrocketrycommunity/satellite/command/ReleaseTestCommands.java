@@ -44,9 +44,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
@@ -61,10 +66,19 @@ public final class ReleaseTestCommands {
     /** The process exit status of a deliberate crash cut. */
     public static final int HALT_STATUS = 75;
     private static final String KEY = "SatelliteTerminal";
+    private boolean rawTickListenerRegistered;
+    private MinecraftServer rawTickServer;
+    private int rawCompletedTick;
+    private long[] rawVanilla;
+    private long[] rawPost;
 
     public void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean(PROPERTY)) {
             return;
+        }
+        if (!rawTickListenerRegistered) {
+            MinecraftForge.EVENT_BUS.register(this);
+            rawTickListenerRegistered = true;
         }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("satellite")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))
@@ -75,7 +89,8 @@ public final class ReleaseTestCommands {
                                 .then(Commands.literal("flush")
                                         .then(Commands.argument("count", IntegerArgumentType.integer(1, 50))
                                                 .executes(this::flushTiming)))
-                                .then(Commands.literal("ticks").executes(this::ticks))
+                                .then(Commands.literal("ticks").executes(this::ticks)
+                                        .then(Commands.literal("raw").executes(this::rawTicks)))
                                 .then(Commands.literal("worst-case").executes(this::worstCase)))
                         .then(Commands.literal("terminal")
                                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -143,6 +158,41 @@ public final class ReleaseTestCommands {
                 + " p95_ms=" + millis(total[94]) + " p99_ms=" + millis(total[98]) + " max_ms=" + millis(total[99])
                 + " satellite_post_p99_ms=" + millis(post[98]) + " satellite_post_max_ms=" + millis(post[99]) + " "
                 + SatelliteMissionSavedData.get(server).diagnostics());
+    }
+
+    /**
+     * tickServer increments tickCount before tickChildren (including console commands), then writes
+     * tickTimes[tickCount % 100], then fires END. SatelliteManager's NORMAL END listener writes its
+     * same-index post duration. LOWEST snapshots both completed rings, not a partially written tick.
+     * This also works for commands executed between ticks, where tickCount already names a completed tick.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void captureRawTicks(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            rawTickServer = event.getServer();
+            rawCompletedTick = rawTickServer.getTickCount();
+            rawVanilla = rawTickServer.tickTimes.clone();
+            rawPost = io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.postTickNanos();
+        }
+    }
+
+    /** The hook object survives integrated-server restarts, but its timing snapshot must not. */
+    @SubscribeEvent
+    public void clearRawTicks(ServerStoppedEvent event) {
+        if (rawTickServer == event.getServer()) {
+            rawTickServer = null;
+            rawVanilla = null;
+            rawPost = null;
+            rawCompletedTick = 0;
+        }
+    }
+
+    private int rawTicks(CommandContext<CommandSourceStack> context) {
+        MinecraftServer server = context.getSource().getServer();
+        if (rawTickServer != server) {
+            return report(context, "ticks_raw tick=" + server.getTickCount() + " entries=0 data=");
+        }
+        return report(context, RawTickTimings.format(server.getTickCount(), rawCompletedTick, rawVanilla, rawPost));
     }
 
     /**
