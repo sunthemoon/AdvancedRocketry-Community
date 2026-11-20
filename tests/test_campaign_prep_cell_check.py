@@ -21,7 +21,8 @@ class CellCheckTests(unittest.TestCase):
         for target, mod in ((runtime / "candidate.jar", "advancedrocketrycommunity"),
                             (runtime / "jei.jar", "jei")):
             with zipfile.ZipFile(target, "w") as archive:
-                archive.writestr("META-INF/mods.toml", f'modId="{mod}"\n')
+                archive.writestr("META-INF/mods.toml", f'[[mods]]\nmodId="{mod}"\n'
+                                 '\n[[dependencies.advancedrocketrycommunity]]\nmodId="jei"\nmandatory=false\n')
         for side in ("server", "client"):
             (cell / side / "mods").mkdir(parents=True)
             check.shutil.copy2(runtime / "candidate.jar", cell / side / "mods/candidate.jar")

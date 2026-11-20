@@ -15,6 +15,8 @@ import re
 import shutil
 import sys
 import time
+import tomllib
+import zipfile
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 if str(SCRIPTS) not in sys.path:
@@ -22,7 +24,7 @@ if str(SCRIPTS) not in sys.path:
 
 import loader_cut_nbt as nbt
 import prepare_campaign_cells as prep
-from campaign_client.cells import inventory, read_object
+from campaign_client.cells import read_object
 from campaign_client.processes import CapturedProcess
 from campaign_client.server import server_command, write_settings
 from campaign_observe.raw_ticks import PREFIX, RAW_TICK_COMMAND, parse_raw_tick_reply, summarize_raw_ticks
@@ -52,6 +54,19 @@ def tree_hashes(root):
             for p in sorted(root.rglob("*")) if p.is_file()}
 
 
+def declared_mods(jar):
+    """Read actual [[mods]] IDs, not optional dependency modId declarations."""
+    with zipfile.ZipFile(jar) as archive:
+        info = archive.getinfo("META-INF/mods.toml")
+        if info.file_size > 1024 * 1024:
+            raise ValueError("Oversized mod metadata")
+        value = tomllib.loads(archive.read(info).decode("utf-8"))
+    mods = value.get("mods")
+    if not isinstance(mods, list) or not 1 <= len(mods) <= 256:
+        raise ValueError("Missing or oversized [[mods]] declarations")
+    return {mod["modId"] for mod in mods}
+
+
 def validate_cell(path, expected):
     path = prep.safe_path(path)
     cell = path.parent
@@ -73,8 +88,8 @@ def validate_cell(path, expected):
     if value != actual:
         raise ValueError("Manifest differs from installed hashes, paths or fields")
     for side, key in (("server", "server_dir"), ("client", "client_game_dir")):
-        mods = inventory(Path(value[key]))
-        if sum(mod["jei"] for mod in mods) != int(side == "client" and jei):
+        mods = [declared_mods(p) for p in (Path(value[key]) / "mods").iterdir()]
+        if sum("jei" in ids for ids in mods) != int(side == "client" and jei):
             raise ValueError("JEI metadata placement disagrees with cell")
     server = Path(value["server_dir"])
     if (server / "world").exists() or (server / "logs").exists():
