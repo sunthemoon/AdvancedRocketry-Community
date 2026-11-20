@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 7282c4be6 (W391 merged, R520, R527 and R528: the fuel loader's missing native accounting variants (fluid substitution, rocket-bank loss and gain, split pruning saves, a stop after the migration's replacement) with exact oracles, after W391R's read-only review; gated probe, scripts and tests; branch run 44625121627 and governance run 44625124399 at `44866dc62` passed; W394's capacity diagnostic was merged just before as `79aabbadf`). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44630684725 at 659bbcb6a (candidate C4: W395, W394 and W391 merged) passed on its first attempt: build 15.2 minutes, shards 0 to 3 in 16.9, 21.3, 19.7 and 18.5 minutes, 1,867 GameTests, with 4, 5, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44630684714 there passed. Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: f3808fed0 (W407 merged, R544 and R552: the gated release-test subcommand `perf ticks raw` exports the last 100 completed ticks' numbers and total durations for whole-run tick percentiles; with W404's probe fix (`dd483ca5e`, R545) it is the production change of candidate C5; W409's test-only fix followed as `4d2f97abd`; branch run 44672880942 and governance run 44672881997 at `74bb89fa2` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 44681973284 at 9172113ad (candidate C5: W404, W407 and W409 merged, R555) passed on its first attempt: build 14.2 minutes, shards 0 to 3 in 15.0, 21.2, 19.1 and 18.0 minutes, 1,867 GameTests, with 3, 5, 1 and 3 `server-overloaded` entries against the per-shard maximum of 8; governance run 44681973374 there passed. Run 44672650620 at `f2bf5b79c` (W404 merged) passed on its second attempt after the writer benchmark test failed once (R551, fixed by W409). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 16
 asset_review_items: 95
 required_gates_approved: none
@@ -150,9 +150,8 @@ What is still open:
   on the candidate.
   W359's draft campaign plan is
   [FINAL-CAMPAIGN-PLAN](../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) (R439; not started), and once the accounting
-  and the rows merge, the next hosted build is candidate C4, on which every family runs again. Candidate C4 is
-  `659bbcb6a` (R529: hosted run 44630684725 passed on its first attempt, JAR SHA-256 `c048743e…f506cea1`); its
-  78 campaign families, X01 S3 and X02 S5 started natively on 2026-11-20 at 07:18. Its family `cargo-C-S4` failed at 10:53 on a gated test probe's over-strict fluid check, not a product defect (R539); the fix changes `src/main`, so a candidate C5 follows once C4's other results are in, and W404 fixes the probe. W327's
+  and the rows merge, the next hosted build is candidate C4, on which every family runs again. Candidate C4 was
+  `659bbcb6a` (R529); its native run started on 2026-11-20 at 07:18. Its family `cargo-C-S4` failed at 10:53 on a gated test probe's over-strict fluid check, not a product defect (R539); W404 fixed the probe and W407 added a gated raw tick export. **Candidate C5 is `9172113ad`** (R555: hosted run 44681973284 passed on its first attempt, JAR SHA-256 `e5cd2beb…4f1e35c8`). Root stopped C4's run at 14:12 with 29 families passed, `cargo-C-S4` failed and two skipped, as superseded development evidence; C5's native run started at 14:13 with a pre-run of the eight families W404 named, then all 78 families, X01 S3 and X02 S5. W327's
   read-only audit of
   R-042, R-043 and R-044 found 0 High, 6 Medium and 5 Low: the bay's NOT_LOADED lock can start on any world whose
   receipt-file presence cannot be proved and then holds every rocket, flight and satellite launch for the session;
