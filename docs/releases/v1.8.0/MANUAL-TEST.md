@@ -1,8 +1,8 @@
-# v1.8.0 manual-test report — C5 draft
+# v1.8.0 manual-test report — C6 draft
 
 **DRAFT; all execution results PENDING.** Candidate commit
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+`c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 These are report slots for the 117 IDs of the
 [final campaign plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md),
 not a new or reduced checklist. Follow each linked checklist's preconditions,
@@ -53,7 +53,7 @@ finding ID, or NOT_COVERED reason and what would cover it: PENDING
 ```
 
 Write the actual result records under
-`D:/GitHub/ARCE-Task-Evidence/final-campaign/9172113ad/results/`.
+`D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/results/`.
 Every final result needs a media/log reference and hash, tester and UTC time;
 a bare “PASS” is invalid. Native paths and hashes are catalogued in the final
 index, not mutable build directories. Client/server product ERRORs and
@@ -219,7 +219,7 @@ unexplained repeated WARNs fail; retain their exact lines.
 | J19 | Observatory/processor/survey V1/V2 | V1, V2 | PENDING |
 | J20 | Tracking/trails/Moon falling/high-seat console | V1 | PENDING |
 | J21 | Recheck every retained earlier client finding | DS, V1 | PENDING |
-| J22 | Full C5 native restart campaign | DS, S2 | PENDING |
+| J22 | Full C6 native restart campaign | DS, S2 | PENDING |
 | J23 | Fuel/linker bilingual labels | V1; one owner-signed-in account on a real GPU | PENDING |
 | J24 | Fuel amount/state matches authoritative totals | V1; one owner-signed-in account on a real GPU | PENDING |
 | J25 | Fuel linker binding/stale/range/unloaded feedback | V1; one owner-signed-in account on a real GPU | PENDING |

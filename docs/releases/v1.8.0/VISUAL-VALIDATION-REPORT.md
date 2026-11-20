@@ -1,12 +1,12 @@
-# v1.8.0 visual validation — C5 draft
+# v1.8.0 visual validation — C6 draft
 
-**DRAFT; all C5 visual results PENDING.** Candidate commit
-`9172113ad4ecfb9047432f02b97d240fc06130b6`, host JAR SHA-256
-`e5cd2beb4a38b4ea741c5103b18ba224d3f102ef6231adbc3a0849ad4f1e35c8`.
+**DRAFT; all C6 visual results PENDING.** Candidate commit
+`c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
+`9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 [Quality levels](../../17-V1PLUS-QUALITY-BUDGETS.md) require V1 real GPU and V2
 two real clients; V0 Xvfb/LLVMpipe is supplemental only. No client was run for
 this draft. Earlier listening, artwork approval and client rounds retain their
-own identities, not C5 observations.
+own identities, not C6 observations.
 
 ## Environment sheets
 
@@ -29,7 +29,7 @@ matrix in full, not a software-renderer substitution.
 
 ## Candidate visual inventory and result slots
 
-| Rows | Required observation | C5 actual / media / tester-date |
+| Rows | Required observation | C6 actual / media / tester-date |
 |---|---|---|
 | A12 | 64/512/2,048-block rockets, single/multiple, first display/flight/transition; mean FPS, 1% low, first stall, memory/cache release | PENDING |
 | A13/B06/C06/C07 | Core/destination/three machine screens, long names, errors and JEI agreement in display cells | PENDING |
@@ -47,20 +47,20 @@ matrix in full, not a software-renderer substitution.
 | I01 | Candidate base-to-endgame recording with visible build identity and route observations | PENDING |
 
 Inventory sources: [W402](../../work/v1.8.0-root-queue/records/W402.md) and
-[C5 refresh W410](../../work/v1.8.0-root-queue/records/W410.md). K13 classifies
+[C6 refresh W423](../../work/v1.8.0-root-queue/records/W423.md). K13 classifies
 857 presentation assets: 190 high-risk, 90 sampled picks, 529 represented family
 members and 48 unreferenced textures. The latter are outside the campaign as
 Low v1.9 cleanup under R546, not visually passed. Its 32 screen rows include
 28 menu types and four non-menu presentations; the eleven without another
 specific checklist row still receive I06/I08's every-screen pass. Hash the
-C5 K13 manifest and map each selected asset to its actual scene and receipt.
+C6 K13 manifest and map each selected asset to its actual scene and receipt.
 Scene construction/navigation inputs K05/K16 remain PENDING preparation.
 
 All eleven sound events and seventeen producer rows must be reconciled, not
 only the ten previously accepted NEW sounds. J15 uses
 `/playsound advancedrocketrycommunity:<id>`; `machine_large` is preview-only,
 and `ui_select` is included. Earlier D5 audio acceptance fixes content choice;
-it does not prove C5 trigger/distance/loop behaviour.
+it does not prove C6 trigger/distance/loop behaviour.
 
 ## Correctness, failures and media rules
 
