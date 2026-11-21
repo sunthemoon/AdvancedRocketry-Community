@@ -133,6 +133,15 @@ class K04Tests(unittest.TestCase):
         self.assertEqual(32, sum("rocket_fuel_cell" in c for c in commands))
         self.assertFalse(any("data merge entity" in c or "release-test refuel" in c for c in commands))
 
+    def test_endpoint_fuel_retains_final_partial_cell(self):
+        console = Mock()
+        k04.fuel(console, k04.rocket(64, (256, 100, 256)), "uuid", k04.MOON, 15201)
+        self.assertEqual(2, console.until.call_count)
+        final = console.until.call_args.args[0]
+        self.assertIn("amount:16000L", final)
+        self.assertIn(k04.MOON, final)
+        self.assertFalse(any("setblock" in c.args[0] and "air" in c.args[0] for c in console.send.call_args_list))
+
     def test_seal_refuses_unqualified_or_changed_world(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

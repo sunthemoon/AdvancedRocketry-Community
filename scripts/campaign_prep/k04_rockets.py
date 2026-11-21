@@ -157,16 +157,23 @@ def load_chunks(console, layout):
             console.until(f"execute in {dim} {checks} run say K04_LOADED", "[Server] K04_LOADED")
 
 
-def fuel(console, r, entity):
+def fuel(console, r, entity, dimension=OW, initial_fuel=0):
     at = pos(r["loader"])
-    console.send(f"setblock {at} {NS}:fuel_loader")
-    for _ in range(r["capacity"] // 500):
+    prefix = f"execute in {dimension} run "
+    console.send(prefix + f"setblock {at} {NS}:fuel_loader")
+    missing = r["capacity"] - initial_fuel
+    for cell in range(math.ceil(missing / 500)):
         root = "{schema_version:2,slot_role:1,item:{id:\"" + NS + ":rocket_fuel_cell\",Count:1b},buffered_units:0L,owner_id:" + common.uuid_nbt(OWNER) + "}"
-        console.send(f"data merge block {at} {{arce_fuel_loader:{root}}}")
-        console.until(f"execute if data block {at} {{arce_fuel_loader:{{slot_role:2,buffered_units:0L}}}} run say K04_CELL_CONSUMED",
-                      "[Server] K04_CELL_CONSUMED", 30)
-    # Retain the output canister; do not remove a device with buffered fuel.
-    console.send(f"data get block {at} arce_fuel_loader")
+        console.send(prefix + f"data merge block {at} {{arce_fuel_loader:{root}}}")
+        if cell == math.ceil(missing / 500) - 1 and missing % 500:
+            console.until(f"execute in {dimension} if data entity {entity} "
+                          f"{{{ROOT_KEY}:{{flight_data:{{fuel:{{amount:{r['capacity']}L}}}}}}}} run say K04_FULL",
+                          "[Server] K04_FULL", 30)
+        else:
+            console.until(f"execute in {dimension} if data block {at} {{arce_fuel_loader:{{slot_role:2,buffered_units:0L}}}} run say K04_CELL_CONSUMED",
+                          "[Server] K04_CELL_CONSUMED", 30)
+    # Retain final canister or partially spent cell buffer; never discard it.
+    console.send(prefix + f"data get block {at} arce_fuel_loader")
 
 
 def parse_report(lines):
@@ -226,8 +233,8 @@ def launch_return(console, report, r):
         if report["fuel"] != int(match.group(9)) - int(match.group(8)):
             raise ValueError("Landing fuel debit differs")
         legs.append(dict(launch=match.group(0), landed=report.copy()))
-        # Native fixture refuel is needed away from the source loader. Disclose it.
-        console.send(f"execute in {destination} run arce rocket release-test refuel {entity}")
+        endpoint = dict(r, loader=[report["x"] - 2, report["y"], report["z"]])
+        fuel(console, endpoint, entity, destination, report["fuel"])
     return report["entity"], legs
 
 
@@ -315,7 +322,7 @@ def run(output, name, stage, cell_path, java, lock_owner):
                 if layout["variant"] == "relaunch":
                     entity, legs = launch_return(console, report, r)
                     result["flights"] = legs
-                    result["additional_grant"] = "release-test refuel to full at both landed endpoints"
+                    result["additional_grant"] = "Console places an owner-bound native Fuel Loader and grants fuel cells at both landed endpoints; final partial buffers remain saved."
                     report = read_rocket(console, entity, r)
                 reports.append(report)
         else:
