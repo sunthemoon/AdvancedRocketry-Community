@@ -74,6 +74,7 @@ class LayoutTest(unittest.TestCase):
     def test_controller_last_and_research_identity_granted_explicitly(self):
         scene = k.layout(self.jar, "a100-idle")
         commands = k.build_commands(scene)
+        self.assertIn("fill -8 63 -8 8 63 8 minecraft:smooth_stone", commands)
         for m in scene["machines"]:
             controller = [s for s in commands if s.startswith(f"setblock {k.pos(m['pos'])} ")]
             self.assertEqual(len(controller), 1)

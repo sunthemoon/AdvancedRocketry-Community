@@ -136,7 +136,7 @@ def layout(jar, name, owners=OWNERS):
 
 def build_commands(scene):
     commands = ["gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "gamerule doMobSpawning false",
-                "time set 18000", "weather clear", "setworldspawn 0 64 0"]
+                "time set 18000", "weather clear", "fill -8 63 -8 8 63 8 minecraft:smooth_stone", "setworldspawn 0 64 0"]
     for x, z in scene["chunks"]:
         commands.append(f"fill {x*16} 305 {z*16} {x*16+15} 305 {z*16+15} minecraft:smooth_stone")
     for m in scene["machines"]:
