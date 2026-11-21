@@ -148,8 +148,8 @@ class Console:
             time.sleep(.1)
 
 
-def load_chunks(console, layout):
-    for dim in (OW, MOON):
+def load_chunks(console, layout, dimensions=(OW, MOON)):
+    for dim in dimensions:
         for r in layout["rockets"]:
             x, _, z = r["origin"]
             console.send(f"execute in {dim} run forceload add {x-16} {z-16} {x+31} {z+31}")
@@ -258,6 +258,9 @@ def launch_return(console, report, r):
         if report["fuel"] != int(match.group(9)) - int(match.group(8)):
             raise ValueError("Landing fuel debit differs")
         legs.append(dict(launch=match.group(0), landed=report.copy()))
+        # The native warm-up ticket expires after landing. A large refill can
+        # outlast it on an empty server; hold only the server-selected endpoint.
+        load_chunks(console, dict(rockets=[dict(origin=[report[k] for k in ("x", "y", "z")])]), (destination,))
         endpoint = dict(r, loader=[report["x"] - 2, report["y"], report["z"]])
         fuel(console, endpoint, entity, destination, report["fuel"])
         report = parse_report(console.send(f"execute in {destination} run arce rocket release-test report {entity}"))

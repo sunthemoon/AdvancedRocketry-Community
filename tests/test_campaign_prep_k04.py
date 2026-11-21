@@ -177,6 +177,14 @@ class K04Tests(unittest.TestCase):
             self.assertEqual(layout["rockets"][0]["observer"][axis] + delta, view["observer"][axis])
         self.assertEqual(layout["rockets"][0]["observer"]["yaw"], view["observer"]["yaw"])
 
+    def test_endpoint_refill_hold_is_bounded_and_dimension_specific(self):
+        console = Mock()
+        k04.load_chunks(console, dict(rockets=[dict(origin=[5, 21, 1])]), (k04.MOON,))
+        console.send.assert_called_once_with(f"execute in {k04.MOON} run forceload add -11 -15 36 32")
+        console.until.assert_called_once()
+        self.assertEqual(9, console.until.call_args.args[0].count("if loaded"))
+        self.assertNotIn(k04.OW, console.until.call_args.args[0])
+
     def test_seal_refuses_unqualified_or_changed_world(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
