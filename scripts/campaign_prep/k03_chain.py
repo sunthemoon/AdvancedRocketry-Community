@@ -193,7 +193,10 @@ def populate(console, name, owner, member):
         made["elevator_binding"] = q("arce endgame release-test elevator bind " + station,
                                       r"ARCE_RELEASE_TEST elevator bind code=OK")
         made["railgun_source"] = q("arce endgame release-test endpoint 4096 100 4096", r"ARCE_RELEASE_TEST endpoint")
-        made["railgun_target"] = q("arce endgame release-test endpoint 4160 100 4096", r"ARCE_RELEASE_TEST endpoint")
+        destination = re.search(r"destination_pos=(-?\d+),(-?\d+),(-?\d+)", made["railguns"])
+        require(destination is not None, "Railgun builder omitted destination position")
+        made["railgun_target"] = q("arce endgame release-test endpoint " + " ".join(destination.groups()),
+                                   r"ARCE_RELEASE_TEST endpoint")
     return made
 
 

@@ -132,6 +132,8 @@ class ChainTests(unittest.TestCase):
                 self.commands.append(command)
                 if "elevator build" in command:
                     return "station=" + k.DEFAULT_OWNER + " terminal_pos=1,2,3"
+                if "railguns " in command:
+                    return "destination_pos=4096,100,4160"
                 return "endpoint status=OK"
         c = Fake()
         k.populate(c, "FI08", k.DEFAULT_OWNER, k.DEFAULT_MEMBER)
@@ -139,6 +141,7 @@ class ChainTests(unittest.TestCase):
         persisted = next(i for i,s in enumerate(c.commands) if "persist root" in s)
         self.assertLess(persisted, binding)
         self.assertTrue(any("space run arce endgame release-test endpoint 1 2 3" in s for s in c.commands[:persisted]))
+        self.assertEqual(c.commands[-1], "arce endgame release-test endpoint 4096 100 4160")
 
     def test_qualification_retains_instance_and_device_differences(self):
         before = dict(roots={}, entities=[])
