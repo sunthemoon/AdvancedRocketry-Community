@@ -10,6 +10,7 @@ import os
 import re
 import shutil
 import sys
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -204,9 +205,11 @@ class TransactionHarness(flight.FlightHarness):
             self.command_marker(process, "say TXN_DIAGNOSTICS_DONE", "TXN_DIAGNOSTICS_DONE")
             raise
 
-    def disassemble(self, process, entity: str) -> None:
+    def disassemble(self, process, entity: str, logical: str):
         start = len(process.lines)
         process.command(f"arce rocket release-test disassemble {entity}")
+        if getattr(self, "sealed_disassembly_receipt", False):
+            return recovery.wait_disassembly_receipt(process, entity, logical, start)
         index = process.wait_for(flight.DISASSEMBLY_LOG, 45.0, start_at=start)
         match = flight.DISASSEMBLY_LOG.search(process.lines[index])
         if match.group(1) != entity or match.groups()[2:] != ("SUCCESS", "5", "0"):
@@ -252,8 +255,30 @@ def run_case(harness: TransactionHarness, case: str, evidence: Path) -> dict:
         else:
             command = f"arce rocket assemble {flight._position(flight.ASSEMBLER)}"
         start = len(process.lines)
+        deadline = time.monotonic() + 45.0
         process.command(command)
-        index = process.wait_for(PAUSED, 45.0, start_at=start)
+        pattern = PAUSED
+        if case.startswith("DISASSEMBLY:") and getattr(harness, "sealed_disassembly_receipt", False):
+            pattern = re.compile(rf"(?:{PAUSED.pattern})|(?:{recovery.DISASSEMBLY_RECEIPT.pattern})")
+        index = process.wait_for(pattern, 45.0, start_at=start)
+        if PAUSED.search(process.lines[index]) is None:
+            receipt = recovery.wait_disassembly_receipt(
+                process, before["entity"], before["logical"], start, deadline=deadline)
+            if receipt["form"] != "sealed":
+                raise SmokeError("Legacy disassembly completed without the requested transaction checkpoint")
+            restored = harness.contents(process)
+            if restored != {key: before[key] for key in restored}:
+                raise SmokeError("Sealed completion changed the complete structure hash or chest Items")
+            harness.material_authority(process, "BLOCKS", "none", f"TXN_{name}_SEALED")
+            disk = harness.finish_clean(process)
+            process = None
+            return dict(case=case, status="NOT_REACHABLE_ON_C6", disassembly_receipt=receipt,
+                        restored=restored, shutdown=disk,
+                        reason="RocketDisassemblyService.disassembleForReleaseTest selects "
+                        "RocketDisassemblyRequest.beginRetained -> SealedDisassemblyCoordinator.begin; "
+                        "it bypasses RocketTransactionExecutor.disassemble and its "
+                        "RocketTransactionReleaseProbe.bind(DISASSEMBLY) legacy checkpoints. "
+                        "The request completed SEALED, not a forced stop.")
         paused = validate_pause(case, PAUSED.search(process.lines[index]), before)
         # The marker follows saveEverything(flush=true). Kill immediately; do not
         # enqueue commands on the paused server thread or replace its world data.
@@ -275,8 +300,9 @@ def run_case(harness: TransactionHarness, case: str, evidence: Path) -> dict:
             recovered = harness.report(process, flight.EARTH, paused["entity"])
             validate_entity(recovered, paused, before)
         harness.material_authority(process, authority(case), paused["entity"], f"TXN_{name}_AUTHORITY")
+        disassembly = None
         if recovered:
-            harness.disassemble(process, paused["entity"])
+            disassembly = harness.disassemble(process, paused["entity"], recovered["logical"])
         restored = harness.contents(process)
         if restored != {key: before[key] for key in restored}:
             raise SmokeError("First restart changed the complete structure hash or chest Items")
@@ -295,7 +321,8 @@ def run_case(harness: TransactionHarness, case: str, evidence: Path) -> dict:
         if any(RECOVERED.search(line) for line in process.lines):
             raise SmokeError("Second restart repeated transaction recovery after journal cleanup")
         process = None
-        return dict(case=case, before=before, paused=paused, forced_stop=abrupt,
+        return dict(case=case, status="PASS", before=before, paused=paused, forced_stop=abrupt,
+                    disassembly_receipt=disassembly,
                     staged_journal_file=saved_journal.name,
                     staged_journal_sha256=server_smoke.digest_file(saved_journal),
                     recovery_outcome=outcome, authority=authority(case), recovered_entity=recovered,
@@ -349,6 +376,8 @@ def parse_args():
     parser.add_argument("--expected-version", default="1.20.1-1.0.0-dev")
     parser.add_argument("--wait-ready-status", action="store_true",
                         help="Poll Forge's starting response within the existing 30-second status budget")
+    parser.add_argument("--sealed-disassembly-receipt", action="store_true",
+                        help="Also accept SEALED/DONE receipts; report bypassed legacy cuts as unreachable")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(home) / "bin/java") if home else "java")
@@ -378,9 +407,20 @@ def main() -> int:
                                      expected_version=args.expected_version, startup_timeout=args.startup_timeout)
         harness.wait_ready_status = args.wait_ready_status
         summary["wait_ready_status"] = args.wait_ready_status
+        harness.sealed_disassembly_receipt = args.sealed_disassembly_receipt
+        summary["sealed_disassembly_receipt"] = args.sealed_disassembly_receipt
         for case in summary["requested_cases"]:
-            summary["cases"].append(run_case(harness, case, evidence))
-            print(f"[PASS] Transaction checkpoint {case}: kill and two restarts", flush=True)
+            result = run_case(harness, case, evidence)
+            summary["cases"].append(result)
+            if result["status"] == "NOT_REACHABLE_ON_C6":
+                print(f"[NOT_REACHABLE_ON_C6] Transaction checkpoint {case}: {result['reason']}", flush=True)
+            else:
+                print(f"[PASS] Transaction checkpoint {case}: kill and two restarts", flush=True)
+        unreachable = sum(row["status"] == "NOT_REACHABLE_ON_C6" for row in summary["cases"])
+        if unreachable:
+            summary.update(status="INCOMPLETE", complete_transaction_matrix=False,
+                           passed_cases=len(summary["cases"]) - unreachable, unreachable_cases=unreachable)
+            return 1
         summary.update(status="PASS", complete_transaction_matrix=len(summary["cases"]) == len(CASES))
         return 0
     except (OSError, ValueError, SmokeError) as error:

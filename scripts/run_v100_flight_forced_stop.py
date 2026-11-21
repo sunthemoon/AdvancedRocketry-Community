@@ -42,6 +42,64 @@ RECOVERY_CONTRACT = {
     "LANDED": ("COMMITTED", 0, 1, "KEEP_DESTINATION"),
 }
 RUN_TOKEN = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+UUID_PATTERN = r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+# Match whole INFO messages, not chat text or a successful-looking substring.
+INFO_PREFIX = r"^(?:\[[0-9:]+\] \[Server thread/INFO\] \[[^\]\r\n]+\]: )?"
+LEGACY_DISASSEMBLY = re.compile(INFO_PREFIX + flight.DISASSEMBLY_LOG.pattern + r"$")
+SEALED_DISASSEMBLY = re.compile(
+    INFO_PREFIX + rf"ARCE_ROCKET_SEALED_DISASSEMBLY entity=({UUID_PATTERN}) "
+    rf"logical=({UUID_PATTERN}) result=([A-Z_]+)$"
+)
+DISASSEMBLY_RECEIPT = re.compile(
+    rf"(?:{LEGACY_DISASSEMBLY.pattern})|(?:{SEALED_DISASSEMBLY.pattern})"
+)
+DISASSEMBLY_PENDING = re.compile(INFO_PREFIX + r"Release-test disassembly pending$")
+DISASSEMBLY_DURABLE = re.compile(
+    INFO_PREFIX + rf"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction=({UUID_PATTERN}) "
+    r"phase=DONE reason=SEALED additional=\[\] overflow=0$"
+)
+
+
+def wait_disassembly_receipt(process, entity: str, logical: str, start_at: int,
+                             *, deadline: float | None = None) -> dict:
+    """Opt-in receipts for one isolated request, sharing the original 45-second budget.
+
+    C6's diagnostic has a transaction ID, not the entity/logical IDs. These empty,
+    single-rocket fixtures allow exactly one completion after the identified receipt;
+    no block counts are inferred from it. World/content checks remain mandatory.
+    """
+    deadline = time.monotonic() + 45.0 if deadline is None else deadline
+
+    def wait(pattern, start):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise SmokeError("Disassembly receipt exceeded the existing 45-second budget")
+        return process.wait_for(pattern, remaining, start_at=start)
+
+    index = wait(DISASSEMBLY_RECEIPT, start_at)
+    line = process.lines[index].rstrip("\r\n")
+    legacy = LEGACY_DISASSEMBLY.fullmatch(line)
+    sealed = SEALED_DISASSEMBLY.fullmatch(line)
+    if legacy is not None:
+        if legacy.groups() != (entity, logical, "SUCCESS", str(flight.EXPECTED_BLOCKS), "0"):
+            raise SmokeError("Packaged disassembly did not restore the exact snapshot")
+        return dict(form="legacy", entity=entity, logical=logical, code="SUCCESS",
+                    blocks=flight.EXPECTED_BLOCKS, rolled_back=0)
+    if sealed is None or sealed.groups() != (entity, logical, "SEALED"):
+        raise SmokeError("Sealed disassembly receipt changed identity or result")
+    if not any(DISASSEMBLY_PENDING.fullmatch(text.rstrip("\r\n"))
+               for text in process.lines[start_at:index]):
+        raise SmokeError("Sealed disassembly receipt lacks the preceding DISASSEMBLY_PENDING answer")
+    durable_index = wait(DISASSEMBLY_DURABLE, index + 1)
+    receipts = [text for text in process.lines[start_at:durable_index + 1]
+                if DISASSEMBLY_RECEIPT.fullmatch(text.rstrip("\r\n"))]
+    if len(receipts) != 1:
+        raise SmokeError("Disassembly request emitted more than one receipt")
+    durable = DISASSEMBLY_DURABLE.fullmatch(process.lines[durable_index].rstrip("\r\n"))
+    if durable is None:
+        raise SmokeError("Sealed disassembly lacks its DONE durability diagnostic")
+    return dict(form="sealed", entity=entity, logical=logical, result="SEALED",
+                durability_transaction=durable.group(1), durability_phase="DONE")
 
 
 def verify_status(port: int, version: str, *, wait_ready_status: bool = False) -> None:
@@ -102,6 +160,53 @@ def validate_report(case: str, staged: dict, report: dict) -> None:
 
 
 class RecoveryHarness(flight.FlightHarness):
+    def disassemble_and_verify(self, process, report: dict, marker: str):
+        if not getattr(self, "sealed_disassembly_receipt", False):
+            return super().disassemble_and_verify(process, report, marker)
+        dimension, entity, logical = (str(report[key]) for key in ("dimension", "entity", "logical"))
+        start = len(process.lines)
+        command = f"arce rocket release-test disassemble {entity}"
+        # C6 requires deliberate disposal of the exact fuel read in the validated report.
+        if report["fuel"] > 0:
+            command += f" discard-fuel {report['fuel']}"
+        process.command(flight._in_dimension(dimension, command))
+        receipt = wait_disassembly_receipt(process, entity, logical, start)
+        # Kept identical to FlightHarness: a receipt alone never proves material restoration.
+        origin_x, origin_y, origin_z = [int(value) for value in report["origin"]]
+        conditions = (
+            f"unless entity {entity} "
+            f"if block {origin_x - 1} {origin_y} {origin_z} advancedrocketrycommunity:rocket_fuel_tank "
+            f"if block {origin_x} {origin_y} {origin_z} advancedrocketrycommunity:rocket_motor "
+            f"if block {origin_x + 1} {origin_y} {origin_z} minecraft:chest "
+            f"if block {origin_x} {origin_y + 1} {origin_z} advancedrocketrycommunity:rocket_seat "
+            f"if block {origin_x} {origin_y + 2} {origin_z} "
+            "advancedrocketrycommunity:guidance_computer"
+        )
+        self.command_marker(
+            process,
+            flight._in_dimension(dimension, f"execute {conditions} run say {marker}"),
+            marker,
+        )
+        chest_position = f"{origin_x + 1} {origin_y} {origin_z}"
+        data_start = len(process.lines)
+        process.command(flight._in_dimension(dimension, f"data get block {chest_position} Items"))
+        data_index = process.wait_for(flight.BLOCK_DATA_MARKER, 30.0, start_at=data_start)
+        data_match = flight.BLOCK_DATA_MARKER.search(process.lines[data_index])
+        chest_data = data_match.group(1) if data_match else ""
+        if (
+            'id: "minecraft:diamond"' not in chest_data
+            or "Count: 17b" not in chest_data
+            or 'id: "minecraft:iron_ingot"' not in chest_data
+            or "Count: 64b" not in chest_data
+        ):
+            raise SmokeError("Packaged disassembly changed chest inventory contents")
+        process.command(flight._in_dimension(
+            dimension,
+            f"fill {origin_x - 1} {origin_y} {origin_z} "
+            f"{origin_x + 1} {origin_y + 2} {origin_z} minecraft:air",
+        ))
+        return receipt
+
     def start(self, name: str) -> server_smoke.CapturedProcess:
         log = self.server / f"{RUN_TOKEN}-{name}-full.txt"
         process = server_smoke.CapturedProcess(flight._server_command(self.java), self.server, log)
@@ -191,7 +296,7 @@ def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
         report = harness.report(process, dimension, entity)
         validate_report(case, staged, report)
         verify_single_authority(process, harness, report, case)
-        harness.disassemble_and_verify(process, report, f"V100_{case}_DISASSEMBLED")
+        disassembly = harness.disassemble_and_verify(process, report, f"V100_{case}_DISASSEMBLED")
         process.command(f"forceload remove {flight.X} {flight.Z}")
         harness.stop(process)
         audit_recovery_log(process.lines, case, staged, harness.expected_version)
@@ -202,6 +307,7 @@ def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
             "same_world_restart": True, "one_loaded_authority": True,
             "snapshot_identity_and_fuel_preserved": True,
             "disassembly_blocks_and_expected_inventory_verified": True,
+            "disassembly_receipt": disassembly,
         }
     except BaseException:
         if process is not None:
@@ -241,6 +347,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-version", default="1.20.1-1.0.0-dev")
     parser.add_argument("--wait-ready-status", action="store_true",
                         help="Poll Forge's starting response within the existing 30-second status budget")
+    parser.add_argument("--sealed-disassembly-receipt", action="store_true",
+                        help="Also accept an identified SEALED receipt after pending, with DONE durability")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     java_home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(java_home) / "bin/java") if java_home else "java")
@@ -292,6 +400,8 @@ def main() -> int:
                                   startup_timeout=args.startup_timeout)
         harness.wait_ready_status = args.wait_ready_status
         summary["wait_ready_status"] = args.wait_ready_status
+        harness.sealed_disassembly_receipt = args.sealed_disassembly_receipt
+        summary["sealed_disassembly_receipt"] = args.sealed_disassembly_receipt
         for case in summary["requested_cases"]:
             result = run_case(harness, case)
             summary["cases"].append(result)
