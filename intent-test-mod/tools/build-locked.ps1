@@ -26,15 +26,41 @@ try {
         if ((Get-Date) -gt $deadline) { throw 'Timed out waiting for the heavy-JVM lock' }
         Start-Sleep -Seconds 60
     }
+    $mayRelease = $true
     try {
         Set-Content -LiteralPath "$lock\owner.txt" "$token $(Get-Date -Format o)"
         Set-Location -LiteralPath $workspace
         "LOCK_ACQUIRED $(Get-Date -Format o) $token" | Out-File $log -Append
-        & .\gradlew.bat -p intent-test-mod --offline clean build --console=plain *>> $log
-        $code = $LASTEXITCODE
+        # Native stderr must not become a terminating PowerShell NativeCommandError.
+        # Keep the wrapper process until its actual exit, including compiler warnings.
+        $process = Start-Process -FilePath $env:ComSpec -WindowStyle Hidden -PassThru `
+            -WorkingDirectory $workspace -ArgumentList '/d', '/c', 'gradlew.bat -p intent-test-mod --offline clean build --console=plain' `
+            -RedirectStandardOutput (Join-Path $EvidenceDirectory 'build-stdout.log') `
+            -RedirectStandardError (Join-Path $EvidenceDirectory 'build-stderr.log')
+        if (-not $process.WaitForExit(1800000)) {
+            $all = @(Get-CimInstance Win32_Process)
+            $owned = @($process.Id)
+            do {
+                $new = @($all | Where-Object { $_.ParentProcessId -in $owned -and $_.ProcessId -notin $owned })
+                $owned += @($new | ForEach-Object { $_.ProcessId })
+            } while ($new.Count -gt 0)
+            $java = @($all | Where-Object { $_.ProcessId -in $owned -and $_.Name -in @('java.exe', 'javaw.exe') })
+            & taskkill.exe /PID $process.Id /T /F | Out-File $log -Append
+            Start-Sleep -Seconds 2
+            foreach ($child in $java) {
+                $live = Get-CimInstance Win32_Process -Filter "ProcessId = $($child.ProcessId)"
+                if ($live -and $live.CreationDate -eq $child.CreationDate) {
+                    $mayRelease = $false
+                    throw "Owned JVM $($child.ProcessId) survived timeout; retain lock for Root"
+                }
+            }
+            throw 'Fixture Gradle build exceeded the 30-minute launcher limit; process tree stopped'
+        }
+        $process.Refresh()
+        $code = $process.ExitCode
     } finally {
         $owner = Get-Content -LiteralPath "$lock\owner.txt" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($owner -and $owner.StartsWith($token)) {
+        if ($mayRelease -and $owner -and $owner.StartsWith($token)) {
             $resolvedLock = (Resolve-Path -LiteralPath $lock).Path
             if ($resolvedLock -ne 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm') { throw 'Unexpected lock location' }
             Remove-Item -LiteralPath $resolvedLock -Recurse -Force

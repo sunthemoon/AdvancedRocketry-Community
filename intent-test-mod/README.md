@@ -56,7 +56,11 @@ Start-Process -FilePath powershell.exe -WindowStyle Hidden -ArgumentList '-NoPro
 
 It checks C:/D: free space, uses WORKER-RULES' atomic `cmd /c mkdir` loop,
 refuses a lock older than three hours, waits at most three hours, and releases
-only its own token in the same script's `finally`. It holds the lock only for:
+only its own token in the same script's `finally`. Compiler stderr is retained
+separately without treating warnings as a failed launcher. A 30-minute launcher
+limit stops the owned process tree and verifies that its JVMs are gone before
+releasing the lock; surviving owned JVMs leave the lock for Root. This is not a
+change to any test timeout. It holds the lock only for:
 
 ```powershell
 .\gradlew.bat -p intent-test-mod --offline clean build --console=plain

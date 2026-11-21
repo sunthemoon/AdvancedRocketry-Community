@@ -153,7 +153,7 @@ public final class IntentClient {
         session.claim(System.nanoTime(), old.time());
         capture = null; // Even a transport exception must not retry or restore the send budget.
         FriendlyByteBuf payload = new FriendlyByteBuf(Unpooled.wrappedBuffer(packet.payload()));
-        mc.getConnection().send(new ServerboundCustomPayloadPacket(new ResourceLocation(old.which().channel()), payload));
+        mc.getConnection().send(new ServerboundCustomPayloadPacket(ResourceLocation.tryParse(old.which().channel()), payload));
         LOG.info("ARCE_INTENT_FIXTURE stage=queued case={} channel={} protocol={} index=0 utc={} monotonic={} ordinal={} player={} dimension={} captured_container={} current_container={} current_menu={} target_position={} player_position={} fields=[{}] payload_hex={}",
                 old.which().id(), old.which().channel(), old.which().protocol(), Instant.now(), System.nanoTime(), session.sent(),
                 mc.player.getUUID(), old.dimension(), old.container(), mc.player.containerMenu.containerId, menuId(mc),
