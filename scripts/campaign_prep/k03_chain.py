@@ -322,7 +322,7 @@ def run(args):
         if args.mode == "build":
             receipt["made"] = populate(c, args.fixture, owner, member)
         for label, command, pattern in (
-            ("stations", "arce station admin dump", r"Station|station|ARCE_STATION"),
+            ("stations", "arce station admin dump", r"ARCE_STATION_REGION_DUMP count="),
             ("satellites", "arce satellite admin evidence", r"ARCE_SATELLITE_EVIDENCE"),
             ("forced_overworld", "forceload query", r"force loaded|force load"),
             ("forced_space", f"execute in {NS}:space run forceload query", r"force loaded|force load")):
