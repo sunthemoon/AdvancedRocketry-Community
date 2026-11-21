@@ -154,6 +154,8 @@ class ChainTests(unittest.TestCase):
         self.assertEqual(k.check_created_ids({"line":"mission="+actor}, {"mission":[-1,-1,-1,-1]}), [actor])
         with self.assertRaisesRegex(ValueError, "missing from saved readback"):
             k.check_created_ids({"line":"mission="+actor}, {})
+        with self.assertRaisesRegex(ValueError, "missing from saved readback"):
+            k.check_created_ids({"stations":[{"id":actor}]}, {})
         self.assertEqual(k.check_created_ids({"requested_member":actor}, {}), [])
 
     def test_qualification_compares_actual_elevator_pair_tag(self):

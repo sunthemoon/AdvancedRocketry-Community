@@ -249,6 +249,7 @@ def check_created_ids(made, state):
     # do not imply memberships and are intentionally not treated as created records.
     text = json.dumps(made)
     created = set(re.findall(r"\b(?:id|mission|satellite|terminal|instance|station|source|destination|anchor|pair)=([a-f0-9-]{36})", text))
+    created.update(re.findall(r'"(?:id|mission)":\s*"([a-f0-9-]{36})"', text))
     require(created <= saved_uuids(state), "Command-returned IDs missing from saved readback: " + str(sorted(created - saved_uuids(state))))
     return sorted(created)
 
