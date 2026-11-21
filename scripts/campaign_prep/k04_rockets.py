@@ -235,10 +235,22 @@ def launch_return(console, report, r):
         lines = console.send(f"execute in {source} run arce rocket release-test launch {report['entity']} {name}")
         match = launch_receipt(lines, report, source, destination)
         transfer = match.group(1)
+        deadline = time.monotonic() + 30
+        acknowledged = console.process.wait_for(re.compile(re.escape(
+            f"ARCE_TRANSFER_PREPARE transfer={transfer} logical={match.group(3)} source={source} destination={destination} code=SUCCESS ")),
+            max(0, deadline - time.monotonic()), start_at=start)
         marker = re.compile(r"ARCE_TRANSFER_PHASE transfer=" + re.escape(transfer) + r" .*event=landed_reservation_retained ")
-        console.process.wait_for(marker, 30, start_at=start)
-        land = next(flight.PHASE_LOG.search(line) for line in console.process.lines[start:]
-                    if "event=landing_complete " in line and transfer in line)
+        end = console.process.wait_for(marker, max(0, deadline - time.monotonic()), start_at=start)
+        phases = [(index, m) for index, line in enumerate(console.process.lines[start:end+1], start)
+                  if (m := flight.PHASE_LOG.search(line)) and m.group(1) == transfer]
+        if not phases or acknowledged >= phases[0][0] or [m.group(4) for _, m in phases] != flight.EXPECTED_FLIGHT_EVENTS:
+            raise ValueError("Flight acknowledgement/phase sequence differs")
+        for _, phase in phases:
+            if (phase.group(2) != match.group(3) or int(phase.group(6)) != int(match.group(9))
+                    or int(phase.group(7)) != int(match.group(9)) - int(match.group(8))
+                    or int(phase.group(8)) != int(match.group(8))):
+                raise ValueError("Flight phase identity/fuel debit differs")
+        land = next(m for _, m in phases if m.group(4) == "landing_complete")
         entity = land.group(5)
         report = parse_report(console.send(f"execute in {destination} run arce rocket release-test report {entity}"))
         if report["logical"] != match.group(3) or report["blocks"] != r["expected_blocks"] or report["state"] != "LANDED":
