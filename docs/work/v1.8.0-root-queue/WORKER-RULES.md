@@ -75,8 +75,12 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   }
   ```
 
-  Never remove a lock that is not yours. If the lock is older than three hours, stop and
-  say so in your record instead of breaking it. (Changed by Root on 2026-10-22: W122 saw
+  Never remove a lock that is not yours. A lock older than three hours is not stale while the process named by
+  `pid=` in its `owner.txt` is still running: keep waiting. C6's campaign runner holds one lock for a whole
+  family, and its cargo-B3-S6 family of 96 native cases holds it for about four hours. If the lock is older than
+  three hours and that process is gone, or `owner.txt` names no pid, stop and say so in your record instead of
+  breaking it. (Changed by Root on 2026-11-22, R607: at 02:27 W431's runner, W434's launcher and W435 all stopped
+  on the three-hour age while C6's live runner held the lock.) (Changed by Root on 2026-10-22: W122 saw
   `New-Item -ItemType Directory` let two scripts take the lock in the same millisecond, and an
   unchecked `finally` remove another script's lock, so three heavy JVMs overlapped for about four
   minutes. Use the atomic `mkdir` and the owner check above.)
