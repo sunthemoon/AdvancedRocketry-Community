@@ -116,7 +116,8 @@ def layout(jar, name, owners=OWNERS):
                                  facing="north", mirrored=False, cells=cells, pattern=pattern,
                                  active_selection=copy % 2 == 0,
                                  recipe=RECIPES[index] if index < 7 else "ground-survey" if index == 7 else "ground-analysis",
-                                 owner=owners[copy % 2] if index >= 7 else None,
+                                 owner=(owners[copy % 2] if name == "two-owners" else
+                                        str(uuid5(UUID(owners[0]), f"owner-{kind}-{copy}"))) if index >= 7 else None,
                                  owner_policy="Research owner only" if index >= 7 else "No per-player owner field; world interaction policy"))
     if name == "a100-idle":
         machines = machines[:100]
@@ -125,7 +126,8 @@ def layout(jar, name, owners=OWNERS):
     return dict(schema_version=1, name=name, dimension=common.OW, machines=machines,
                 chunks=sorted({tuple(m["chunk"]) for m in machines}), observer_standpoints=views,
                 viewport_cells=[dict(width=1280, height=720, requested_gui_scale=s, fov=70) for s in (2, 3)],
-                views_status="GEOMETRIC_PROPOSAL_NOT_SEEN_ON_CLIENT", owner_uuids=list(owners),
+                views_status="GEOMETRIC_PROPOSAL_NOT_SEEN_ON_CLIENT",
+                owner_uuids=sorted({m["owner"] for m in machines if m["owner"]}),
                 owner_accounts="Disposable UUID parameters, not O5 authenticated accounts",
                 preparation_status="NATIVE_BUILD_PENDING" if name in RUNNABLE else "PLAN_ONLY_NOT_BUILT",
                 grants="Console-built blocks and research identities only; idle scenes have no input or energy grants.",
@@ -135,9 +137,9 @@ def layout(jar, name, owners=OWNERS):
 def build_commands(scene):
     commands = ["gamerule doDaylightCycle false", "gamerule doWeatherCycle false", "gamerule doMobSpawning false",
                 "time set 18000", "weather clear", "setworldspawn 0 64 0"]
+    for x, z in scene["chunks"]:
+        commands.append(f"fill {x*16} 305 {z*16} {x*16+15} 305 {z*16+15} minecraft:smooth_stone")
     for m in scene["machines"]:
-        x, y, z = m["pos"]
-        commands.append(f"fill {x-3} 305 {z-3} {x+4} 305 {z+4} minecraft:smooth_stone")
         cells = sorted(m["cells"], key=lambda c: c["controller"])
         for cell in cells:
             block = cell["block"]
@@ -208,8 +210,8 @@ def declared_fields(root=common.ROOT):
     return dict(source_sha256=sources, fields=fields,
                 distance=dict(squared_maximum=64, radius_blocks=8, source=(RUNTIME / "ClassicControllerMenu.java").as_posix(),
                               source_expression="distanceToSqr(controller centre) <= 64",
-                              example_controller=[25603, 308, 25602], inside=[25603.5, 308.5, 25609.5],
-                              outside=[25603.5, 308.5, 25611.5], coordinate_basis="Player position, not eye height; all other policy checks still apply",
+                              example_controller=[25603, 308, 25602], inside=[25603.5, 306, 25609.5],
+                              outside=[25603.5, 306, 25611.5], coordinate_basis="Player feet on y=305 platform, not eye height; all other policy checks still apply",
                               intent_sent=False),
                 limitation="Not a complete C06 fixture: representative Electrolyzer/Rolling/Precision and live extreme-value refusals remain unbuilt. "
                            "No read-only projection is relabelled as a server refusal; no arbitrary corrupt NBT is substituted.")
@@ -485,6 +487,15 @@ def main():
         readback = json.loads((folder / "readback.json").read_text(encoding="ascii"))
         if readback["status"] != "MATCHED" or common.tree_hashes(folder / "world") != readback["world_files"]:
             raise ValueError("Unverified/changed source world")
+        if (folder / "manifest.json").exists() or (folder / "SHA256SUMS.txt").exists():
+            raise ValueError("Do not overwrite a scene manifest or sealed evidence")
+        scene_manifest = dict(schema_version=1, candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH,
+                              scene=args.scene, kind="NATIVE_IDLE_SCENE_ONLY", source_world="world",
+                              layout="layout.json", grants="commands.txt", native_build="build.json",
+                              native_restart="readback.json", world_files=readback["world_files"],
+                              formation_and_idle="C6 block-entity readbacks, not generator assertions",
+                              client_started=False, required_gates_approved=False)
+        (folder / "manifest.json").write_bytes(common.json_bytes(scene_manifest))
         common.seal(folder)
     print(f"K05 {args.action}: {args.output}")
 
