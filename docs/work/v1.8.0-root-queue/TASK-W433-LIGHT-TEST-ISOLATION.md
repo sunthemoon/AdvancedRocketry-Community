@@ -28,5 +28,7 @@ Root: Claude. Date: 2026-11-21. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 
 ## Rules
 
+- `src/main` is frozen at candidate C6 while its campaign and the release evidence are prepared (R600): this fix is
+  built and proven on its branch and merged only with a defect fix that makes a new candidate, or after the release.
 - Commit on the branch in one reviewable commit plus the record, in the style of AGENTS.md section 6. Do not push.
 - The last line of your answer is the path of the record.
