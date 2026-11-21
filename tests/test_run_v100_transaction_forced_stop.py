@@ -193,5 +193,18 @@ class TransactionForcedStopTests(unittest.TestCase):
                 txn.read_journal(path)
 
 
+class ReadyStatusTests(unittest.TestCase):
+    def test_transaction_start_passes_ready_status_mode_without_changing_checkpoint(self):
+        harness = txn.TransactionHarness(java="java", server=Path("isolated"), port=25610,
+                                         expected_version="1.20.1-1.8.0-dev", startup_timeout=240)
+        harness.wait_ready_status = True
+        with patch.object(txn.server_smoke, "CapturedProcess") as process, \
+                patch.object(txn.recovery, "verify_status") as verify:
+            harness.start("test", "ASSEMBLY:EXTRACTING:3")
+            verify.assert_called_once_with(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
+            self.assertIn("-Dadvancedrocketrycommunity.transactionCheckpoint=ASSEMBLY:EXTRACTING:3",
+                          process.call_args.args[0])
+
+
 if __name__ == "__main__":
     unittest.main()

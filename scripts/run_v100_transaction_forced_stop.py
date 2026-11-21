@@ -152,7 +152,8 @@ class TransactionHarness(flight.FlightHarness):
         process._arce_started_at = datetime.now(timezone.utc).isoformat()
         try:
             process.wait_for(server_smoke.READY_MARKER, self.startup_timeout)
-            server_smoke.validate_status_identity(server_smoke.wait_for_status(self.port), self.expected_version)
+            recovery.verify_status(self.port, self.expected_version,
+                                   wait_ready_status=getattr(self, "wait_ready_status", False))
             return process
         except BaseException:
             process.abort()
@@ -346,6 +347,8 @@ def parse_args():
         parser.add_argument(f"--{option}", type=Path, required=True)
     parser.add_argument("--base-commit", required=True)
     parser.add_argument("--expected-version", default="1.20.1-1.0.0-dev")
+    parser.add_argument("--wait-ready-status", action="store_true",
+                        help="Poll Forge's starting response within the existing 30-second status budget")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(home) / "bin/java") if home else "java")
@@ -373,6 +376,8 @@ def main() -> int:
                        harness_sha256=server_smoke.digest_file(Path(__file__)))
         harness = TransactionHarness(java=java, server=session, port=port,
                                      expected_version=args.expected_version, startup_timeout=args.startup_timeout)
+        harness.wait_ready_status = args.wait_ready_status
+        summary["wait_ready_status"] = args.wait_ready_status
         for case in summary["requested_cases"]:
             summary["cases"].append(run_case(harness, case, evidence))
             print(f"[PASS] Transaction checkpoint {case}: kill and two restarts", flush=True)

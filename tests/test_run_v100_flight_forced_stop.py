@@ -39,6 +39,52 @@ def reports(case):
 
 
 class FlightForcedStopTests(unittest.TestCase):
+    def test_status_default_keeps_single_strict_identity_check(self):
+        status = {"text": "Server is still starting! Please wait before reconnecting."}
+        with patch.object(recovery.server_smoke, "wait_for_status", return_value=status) as poll:
+            with self.assertRaisesRegex(recovery.SmokeError, "no version"):
+                recovery.verify_status(25610, "1.20.1-1.8.0-dev")
+            poll.assert_called_once_with(25610)
+
+    def test_ready_status_retries_only_starting_response_with_remaining_budget(self):
+        starting = {"text": "Server is still starting! Please wait before reconnecting."}
+        ready = {"version": {"name": "1.20.1"}}
+        with patch.object(recovery.server_smoke, "wait_for_status", side_effect=[starting, ready]) as poll, \
+                patch.object(recovery.server_smoke, "validate_status_identity") as identity, \
+                patch.object(recovery.time, "monotonic", side_effect=[10, 10.5, 11]), \
+                patch.object(recovery.time, "sleep") as sleep:
+            recovery.verify_status(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
+            self.assertEqual([29.5, 29], [call.kwargs["timeout"] for call in poll.call_args_list])
+            identity.assert_called_once_with(ready, "1.20.1-1.8.0-dev")
+            sleep.assert_called_once_with(0.1)
+
+    def test_ready_status_does_not_accept_invalid_or_mismatched_identity(self):
+        for status in ({"text": "different response"}, {"version": {"name": "other"}},
+                       {"text": "Server is still starting! Please wait before reconnecting.", "extra": True}):
+            with self.subTest(status=status), \
+                    patch.object(recovery.server_smoke, "wait_for_status", return_value=status) as poll:
+                with self.assertRaises(recovery.SmokeError):
+                    recovery.verify_status(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
+                self.assertEqual(1, poll.call_count)
+
+    def test_ready_status_expires_without_extending_original_budget(self):
+        starting = {"text": "Server is still starting! Please wait before reconnecting."}
+        with patch.object(recovery.server_smoke, "wait_for_status", return_value=starting) as poll, \
+                patch.object(recovery.time, "monotonic", side_effect=[0, 0, 30]), \
+                patch.object(recovery.time, "sleep"):
+            with self.assertRaisesRegex(recovery.SmokeError, "within 30 seconds"):
+                recovery.verify_status(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
+            poll.assert_called_once_with(25610, timeout=30)
+
+    def test_recovery_start_passes_explicit_ready_status_mode(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="1.20.1-1.8.0-dev", startup_timeout=240)
+        harness.wait_ready_status = True
+        with patch.object(recovery.server_smoke, "CapturedProcess"), \
+                patch.object(recovery, "verify_status") as verify:
+            harness.start("test")
+            verify.assert_called_once_with(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
+
     def test_matrix_includes_every_durable_transfer_phase(self):
         self.assertEqual(10, len(recovery.CASES))
         self.assertEqual(set(recovery.CASES) - {"ASSEMBLED", "FUELED"},
