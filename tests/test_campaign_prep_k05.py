@@ -51,7 +51,14 @@ class LayoutTest(unittest.TestCase):
         self.assertEqual(Counter(m["kind"] for m in active), dict.fromkeys(k.KINDS, 8))
         self.assertTrue(all(m["copy"] % 2 == 0 for m in active))
         self.assertEqual(len(k.variant_plan(scene)["selected"]), 72)
-        self.assertEqual(scene["preparation_status"], "PLAN_ONLY_NOT_BUILT")
+        self.assertEqual(scene["preparation_status"], "NATIVE_BUILD_PENDING")
+        plan = k.variant_plan(scene)
+        self.assertEqual((plan["native_active"], plan["menu_start_positions"]), (56, 16))
+        self.assertEqual(Counter(m["activation"] for m in active), {"NATIVE_RECIPE": 56, "START_BY_MENU": 16})
+        for copy in range(0, 16, 2):
+            pair = [m for m in active if m["copy"] == copy and m["owner"]]
+            self.assertEqual(len({m["owner"] for m in pair}), 1)
+        self.assertIn("not 72 active", plan["reported_population"])
 
     def test_no_overlaps_and_exact_chunk_footprints(self):
         seen = set()
@@ -119,6 +126,26 @@ class LayoutTest(unittest.TestCase):
 
 
 class ReadbackTest(unittest.TestCase):
+    def test_snbt_roundtrip_preserves_types_arrays_and_metadata(self):
+        value = k.parse_snbt('{x:12L,items:[{id:"minecraft:diamond",Count:3b,tag:{k05_machine:"lathe-00"}}],uuid:[I;1,-2,3,4]}')
+        self.assertEqual(k.parse_snbt(k.snbt(value)), value)
+
+    def test_resource_ledger_separates_metadata_and_counts_energy(self):
+        root = k.parse_snbt('{arce_classic_resources:{banks:[{items:[{id:"minecraft:diamond",Count:3b,tag:{k05_machine:"lathe-00"}},{}]},{fluid:{FluidName:"minecraft:water",Amount:10}}]}}')
+        hatch = k.parse_snbt('{arce_classic_hatch:{energy:1000}}')
+        totals = k.totals(dict(controller=root, hatches=[dict(nbt=hatch), dict(nbt=None)]))
+        self.assertEqual(totals["FE"], 1000)
+        self.assertEqual(totals["fluid:minecraft:water"], 10)
+        self.assertEqual(sum(v for name,v in totals.items() if name.startswith("item:")), 3)
+        self.assertEqual(k.totals(dict(controller=None, hatches=[]))["FE"], 0)
+
+    def test_bundled_ingredient_resolution_and_cycle_refusal(self):
+        with zipfile.ZipFile(io.BytesIO(archive_bytes())) as archive:
+            self.assertEqual(k.resolve_ingredient(archive, {"tag":"forge:ingots/iron"}), ["minecraft:iron_ingot"])
+            self.assertEqual(k.resolve_ingredient(archive, [{"item":"minecraft:stone"}, {"item":"minecraft:air"}]), ["minecraft:air", "minecraft:stone"])
+            with self.assertRaisesRegex(ValueError, "Cyclic"):
+                k.resolve_ingredient(archive, {"tag":"a:b"}, ("a:b",))
+
     def test_snbt_compound_order_and_numeric_types(self):
         a = k.parse_snbt('{b:[I;1,-2],a:{x:0L,s:"minecraft:air"}}')
         b = k.parse_snbt('{a:{s:"minecraft:air",x:0L},b:[I;1,-2]}')

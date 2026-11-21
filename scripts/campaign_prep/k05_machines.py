@@ -7,6 +7,8 @@ variants remain preparation plans, not worlds or claims of campaign coverage.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
+import copy as copying
 import json
 import math
 from pathlib import Path
@@ -34,7 +36,7 @@ OWNERS = ("43500000-0000-4000-8000-000000000001", "43500000-0000-4000-8000-00000
 SCENES = ("a100-idle", "b144-idle", "b144-half-active", "b144-unload-restart",
           "damage-structure", "damage-controller", "damage-explosion", "damage-piston",
           "two-owners", "declared-limits")
-RUNNABLE = ("a100-idle", "b144-idle", "two-owners")
+RUNNABLE = tuple(name for name in SCENES if name != "damage-piston")
 JAVA_ROOT = common.JAVA_ROOT
 RUNTIME = JAVA_ROOT / "machine/classic/runtime"
 ROWS = ("C01", "C02", "C03", "C04", "C06", "C08", "I02", "I03", "I06", "I08")
@@ -117,7 +119,8 @@ def layout(jar, name, owners=OWNERS):
                                  active_selection=copy % 2 == 0,
                                  recipe=RECIPES[index] if index < 7 else "ground-survey" if index == 7 else "ground-analysis",
                                  owner=(owners[copy % 2] if name == "two-owners" else
-                                        str(uuid5(UUID(owners[0]), f"owner-{kind}-{copy}"))) if index >= 7 else None,
+                                        str(uuid5(UUID(owners[0]), f"research-pair-{copy}"))) if index >= 7 else None,
+                                 activation=("START_BY_MENU" if index >= 7 else "NATIVE_RECIPE") if copy % 2 == 0 else "IDLE",
                                  owner_policy="Research owner only" if index >= 7 else "No per-player owner field; world interaction policy"))
     if name == "a100-idle":
         machines = machines[:100]
@@ -130,7 +133,7 @@ def layout(jar, name, owners=OWNERS):
                 owner_uuids=sorted({m["owner"] for m in machines if m["owner"]}),
                 owner_accounts="Disposable UUID parameters, not O5 authenticated accounts",
                 preparation_status="NATIVE_BUILD_PENDING" if name in RUNNABLE else "PLAN_ONLY_NOT_BUILT",
-                grants="Console-built blocks and research identities only; idle scenes have no input or energy grants.",
+                grants="Console-built blocks/identities. Active recipe inputs and limited FE are fixture grants; no job/progress NBT is synthesized. Damage grants are individually recorded.",
                 client_started=False, required_gates_approved=False)
 
 
@@ -172,9 +175,11 @@ def variant_plan(scene):
                                            before=None, after=None, drops=None, outcome="NOT_OBSERVED"))
     elif name in ("b144-half-active", "b144-unload-restart"):
         result.update(selected=[m["id"] for m in scene["machines"] if m["active_selection"]],
-                      blocker="C6 ResearchReleaseCommands targets only (8+16*i,300,8), i=0..2, under researchVerificationPaused. "
-                              "It cannot start/read the 16 selected remote research jobs. No arbitrary SavedData or job-progress injection.",
-                      unload_witness="NOT_AVAILABLE: W70's ChunkEvent witness lives inside its GameTest, which must not run/export here.")
+                      native_active=56, menu_start_positions=16, reported_population="56 natively active plus 16 menu-start positions, not 72 active",
+                      research_pre_step="START_BY_MENU: use each pair's placeholder owner through normal ResearchControllerMenu. "
+                          "First complete a survey for analysis, claim it at the paired processor, and start another survey at the observatory; "
+                          "supply native FE, verify both jobs and payment, then begin sampling. Bind O5 accounts before campaign use. No synthesized job NBT.",
+                      unload_witness="Console unless-loaded witness for every remote chunk, followed by disk reload and full ledger equality; not W70's in-process event listener.")
     return result
 
 
@@ -234,8 +239,8 @@ def generate(output, jar_path=common.JAR, owners=OWNERS):
     manifest = dict(schema_version=1, package="K05", candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH,
                     scenes=list(SCENES), native_idle_builder=list(RUNNABLE), recipes=recipes, declared_fields=fields,
                     requested_rows=list(ROWS), status="PARTIAL_PREPARATION_NOT_CAMPAIGN_ACCEPTANCE",
-                    limitations=["No half-active or active unload fixture is delivered until all 72 jobs are natively proven.",
-                                 "Damage variants are unexecuted plans without seeded resource/drop ledgers or piston rigs.",
+                    limitations=["R608: 56 native recipe jobs plus 16 START_BY_MENU research positions; never 72 proven active jobs.",
+                                 "Piston damage is out of scope under R608.",
                                  "Two research-owner UUIDs do not prove C03 Precision shared-container permissions.",
                                  "Not all delivered v1.8 kinds/facings, representative v1.2 machines or high-risk assets are placed.",
                                  "No client, V1/V2, REF performance, O5 identity or Gate acceptance is claimed."])
@@ -319,9 +324,12 @@ class Console:
             raise ValueError("Rejected console command; see console log")
         return lines
 
-    def nbt(self, at):
+    def nbt(self, at, missing_ok=False):
         lines = self.send(f"data get block {pos(at)}")
         values = [line.split("has the following block data: ", 1)[1] for line in lines if "has the following block data: " in line]
+        if not values and missing_ok and any("not a block entity" in line or "not a block entity" in line.lower()
+                                             or "target a block entity" in line for line in lines):
+            return None
         if len(values) != 1:
             raise ValueError(f"Missing/ambiguous block-entity readback at {at}")
         return parse_snbt(values[0])
@@ -364,8 +372,200 @@ def idle_ledger(console, machine):
     return dict(machine=machine["id"], controller=root, hatches=hatches)
 
 
+def snbt(value):
+    if isinstance(value, dict):
+        if set(value) == {"array_type", "values"}:
+            prefix = "" if value["array_type"] == "list" else value["array_type"] + ";"
+            return "[" + prefix + ",".join(map(snbt, value["values"])) + "]"
+        return "{" + ",".join(json.dumps(k) + ":" + snbt(v) for k, v in value.items()) + "}"
+    return value
+
+
+def number(value):
+    return int(re.sub(r"[bBsSlL]$", "", value))
+
+
+def string(value):
+    return json.loads(value) if value.startswith('"') else value
+
+
+def machine_ledger(console, machine):
+    root = console.nbt(machine["pos"], missing_ok=True)
+    hatches = [dict(pos=c["pos"], nbt=console.nbt(c["pos"], missing_ok=True)) for c in machine["cells"] if c["role"]]
+    return dict(machine=machine["id"], controller=root, hatches=hatches)
+
+
+def resolve_ingredient(jar, ingredient, seen=()):
+    """Resolve bundled tag members; vanilla iron/redstone leaves are declared explicitly."""
+    if isinstance(ingredient, list):
+        return sorted({item for entry in ingredient for item in resolve_ingredient(jar, entry, seen)})
+    if "item" in ingredient:
+        return [ingredient["item"]]
+    tag = ingredient["tag"]
+    if tag in seen:
+        raise ValueError("Cyclic recipe tag")
+    vanilla = {"forge:ingots/iron": ["minecraft:iron_ingot"], "forge:dusts/redstone": ["minecraft:redstone"]}
+    if tag in vanilla:
+        return vanilla[tag]
+    ns, name = tag.split(":")
+    definition = json.loads(jar.read(f"data/{ns}/tags/items/{name}.json"))
+    result = set()
+    for value in definition["values"]:
+        value = value["id"] if isinstance(value, dict) else value
+        result.update(resolve_ingredient(jar, {"tag": value[1:]} if value.startswith("#") else {"item": value}, (*seen, tag)))
+    return sorted(result)
+
+
+def grant_resources(console, machine, recipe=None, damage=False):
+    root = console.nbt(machine["pos"])
+    resources = copying.deepcopy(root["arce_classic_resources"])
+    banks = resources["banks"]["values"]
+    def ports(kind):
+        return sorted([b for b in banks if string(b["kind"]) == kind],
+                      key=lambda b: blockpos_long([number(b[k]) for k in "xyz"]))
+    grants = dict(machine=machine["id"], items=[], fluids=[], energy_fe=0)
+    if damage:
+        if ports("item_input"):
+            payload = parse_snbt('{id:"minecraft:diamond",Count:3b,tag:{k05_machine:' + json.dumps(machine["id"]) + '}}')
+            ports("item_input")[0]["items"]["values"][0] = payload
+            grants["items"].append(payload)
+    elif recipe:
+        with zipfile.ZipFile(common.JAR) as jar:
+            for i, row in enumerate(recipe["item_inputs"]):
+                item = resolve_ingredient(jar, row["ingredient"])[0]
+                tag = ',tag:{k05_lens:' + json.dumps(machine["id"]) + '}' if item == NS + ":laser_lens" else ""
+                payload = parse_snbt('{id:' + json.dumps(item) + ',Count:' + str(row["count"]) + 'b' + tag + '}')
+                ports("item_input")[0]["items"]["values"][i] = payload
+                grants["items"].append(payload)
+        for bank, row in zip(ports("fluid_input"), recipe["fluid_inputs"], strict=False):
+            payload = parse_snbt('{FluidName:' + json.dumps(row["fluid"]) + ',Amount:' + str(row["amount"]) + '}')
+            bank["fluid"] = payload
+            grants["fluids"].append(payload)
+    if grants["items"] or grants["fluids"]:
+        console.send(f"data modify block {pos(machine['pos'])} arce_classic_resources set value {snbt(resources)}")
+    if recipe or damage and machine["owner"]:
+        amount = min(10000, 40 * recipe["energy_per_tick"]) if recipe else 1000
+        plug = next(c for c in machine["cells"] if c["role"] == "energy_input")
+        console.send(f"data modify block {pos(plug['pos'])} arce_classic_hatch.energy set value {amount}")
+        grants["energy_fe"] = amount
+    return grants
+
+
+def totals(ledger):
+    result = Counter()
+    root = ledger["controller"]
+    if root:
+        for bank in root["arce_classic_resources"]["banks"]["values"]:
+            for item in bank.get("items", {}).get("values", []):
+                if item:
+                    result["item:" + string(item["id"]) + ":" + json.dumps(item.get("tag", {}), sort_keys=True)] += number(item["Count"])
+            fluid = bank.get("fluid", {})
+            if fluid:
+                result["fluid:" + string(fluid["FluidName"])] += number(fluid["Amount"])
+    result["FE"] = sum(number(h["nbt"]["arce_classic_hatch"]["energy"]) for h in ledger["hatches"] if h["nbt"])
+    return result
+
+
+def start_recipes(console, scene, recipes):
+    grants = []
+    selected = [m for m in scene["machines"] if m["active_selection"] and not m["owner"]]
+    for m in selected:
+        grants.append(grant_resources(console, m, recipes[m["recipe"]]))
+    # Vanilla block-data edits reload the entity but do not enqueue a production
+    # formation. A real disk cycle re-observes it; never set ready/progress flags.
+    cycle_chunks(console, scene)
+    deadline = time.monotonic() + 120
+    while True:
+        ledgers = [machine_ledger(console, m) for m in selected]
+        if all(totals(v)["FE"] == 0 for v in ledgers):
+            break
+        if time.monotonic() > deadline:
+            raise ValueError("Native recipes did not consume their bounded energy grants")
+        time.sleep(.25)
+    for m, grant, ledger in zip(selected, grants, ledgers, strict=True):
+        job = ledger["controller"]["arce_classic_machine"]["job"]
+        if not job or number(job["ticks"]) < 1 or number(job["ticks"]) >= number(job["duration"]):
+            raise ValueError("Native progress not in flight: " + m["id"])
+        if number(job["energy"]) != grant["energy_fe"] or number(job["ticks"]) * number(job["energy_per_tick"]) != grant["energy_fe"]:
+            raise ValueError("Paid progress does not reconcile: " + m["id"])
+    return dict(native_active=56, menu_start_positions=16, grants=grants, progress_readbacks=ledgers,
+                report="56 natively active (in-flight, energy-exhausted checkpoint) plus 16 START_BY_MENU positions; not 72 active. "
+                       "Campaign must feed native recipe jobs and run the menu pre-step before sampling.")
+
+
+def cycle_chunks(console, scene):
+    console.send("save-all flush")
+    console.send("forceload remove all")
+    deadline = time.monotonic() + 120
+    witnesses = []
+    for x, z in scene["chunks"]:
+        token = f"K05_UNLOADED_{x}_{z}"
+        while True:
+            lines = console.send(f"execute unless loaded {x*16} 308 {z*16} run say {token}")
+            if any("[Server] " + token in line for line in lines):
+                witnesses.append(dict(chunk=[x,z], lines=lines))
+                break
+            if time.monotonic() > deadline:
+                raise ValueError("Remote chunk never became unavailable")
+            time.sleep(.25)
+    # Recheck every chunk after all witnesses, without a data command that could reload it.
+    for x, z in scene["chunks"]:
+        token = f"K05_STILL_UNLOADED_{x}_{z}"
+        if not any("[Server] " + token in line for line in console.send(f"execute unless loaded {x*16} 308 {z*16} run say {token}")):
+            raise ValueError("Production reloaded a remote fixture chunk")
+    load_chunks(console, scene)
+    return witnesses
+
+
+def unload_reload(console, scene):
+    before = [machine_ledger(console, m) for m in scene["machines"]]
+    witnesses = cycle_chunks(console, scene)
+    after = [machine_ledger(console, m) for m in scene["machines"]]
+    if before != after:
+        raise ValueError("Native disk unload/reload changed per-machine ledgers")
+    return dict(before=before, after=after, witnesses=witnesses, matched=True,
+                boundary="Native unavailable-chunk console witnesses; not an in-process ChunkEvent observer or object-instance identity test")
+
+
+def damage_scene(console, scene):
+    targets = variant_plan(scene)["targets"]
+    chosen = [next(m for m in scene["machines"] if m["id"] == t["machine"]) for t in targets]
+    grants = [grant_resources(console, m, damage=True) for m in chosen]
+    cycle_chunks(console, scene)
+    before = [machine_ledger(console, m) for m in chosen]
+    for t in targets:
+        console.send(t["proposed_command"])
+    if scene["name"] == "damage-explosion":
+        deadline = time.monotonic() + 30
+        while not any("[Server] K05_TNT_DONE" in line for line in console.send("execute unless entity @e[type=minecraft:tnt] run say K05_TNT_DONE")):
+            if time.monotonic() > deadline:
+                raise ValueError("Primed TNT did not detonate")
+            time.sleep(.25)
+    after = [machine_ledger(console, m) for m in chosen]
+    lines = console.send("execute as @e[type=minecraft:item] run data get entity @s")
+    drops = [parse_snbt(line.split("has the following entity data: ",1)[1]) for line in lines if "has the following entity data: " in line]
+    observations = []
+    for m, b, a, target in zip(chosen, before, after, targets, strict=True):
+        count = Counter()
+        own_drops = []
+        for entity in drops:
+            item = entity.get("Item", {})
+            if string(item.get("tag", {}).get("k05_machine", '""')) == m["id"]:
+                own_drops.append(entity)
+                count["item:" + string(item["id"]) + ":" + json.dumps(item.get("tag", {}), sort_keys=True)] += number(item["Count"])
+        initial, remaining = totals(b), totals(a)
+        matched = initial == remaining + count
+        observations.append(dict(machine=m["id"], before=b, after=a, drops=own_drops, before_totals=dict(initial),
+                                 after_totals=dict(remaining), drop_totals=dict(count), conserved=matched,
+                                 controller_present=a["controller"] is not None, action=target["proposed_command"]))
+    return dict(grants=grants, observations=observations, raw_drop_readbacks=drops,
+                conserved=all(o["conserved"] for o in observations),
+                rule="Per-machine resource before = after + drops; physical structure block loot is separate from resource contents. "
+                     "Research has no item/fluid bank: its seeded contents are 1000 FE in its physical plug. Piston out of scope (R608).")
+
+
 def run(output, name, stage, cell_path, java, lock_owner):
-    """One native idle build or readback, never acquires/releases the caller's lock."""
+    """One native build or readback, never acquires/releases the caller's lock."""
     from scripts import run_dedicated_server_smoke as smoke
     if name not in RUNNABLE or stage not in ("build", "readback"):
         raise ValueError("Variant has no native implementation; do not substitute an idle scene")
@@ -386,6 +586,11 @@ def run(output, name, stage, cell_path, java, lock_owner):
     if stage == "build" and world.exists() or stage == "readback" and not world.is_dir():
         raise ValueError("Missing readback source or occupied build world")
     world_before = common.tree_hashes(world) if stage == "readback" else None
+    parent_name = "b144-half-active" if name == "b144-unload-restart" else "b144-idle"
+    parent_world = output / parent_name / "world" if stage == "build" and name not in ("a100-idle", "b144-idle") else None
+    parent_before = common.tree_hashes(parent_world) if parent_world else None
+    if parent_world and not parent_before:
+        raise ValueError("Verified parent source world is required")
     copy = folder / (stage + "-server")
     if copy.exists():
         raise ValueError("Occupied disposable server")
@@ -401,6 +606,8 @@ def run(output, name, stage, cell_path, java, lock_owner):
             raise ValueError("Copied server candidate mismatch")
         if stage == "readback":
             shutil.copytree(world, copy / "world")
+        elif parent_world:
+            shutil.copytree(parent_world, copy / "world")
         props = smoke.expected_server_properties(smoke.allocate_port(), False)
         props.update({"level-name": "world", "level-seed": "20261006", "level-type": "minecraft:flat",
                       "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"}),
@@ -413,7 +620,7 @@ def run(output, name, stage, cell_path, java, lock_owner):
         process.wait_for(smoke.READY_MARKER, 240)
         console = Console(process)
         load_chunks(console, scene)
-        if stage == "build":
+        if stage == "build" and not parent_world:
             commands = (folder / "commands.txt").read_text(encoding="ascii").splitlines()
             for offset in range(0, len(commands), 32):
                 console.send(commands[offset:offset + 32])
@@ -426,11 +633,40 @@ def run(output, name, stage, cell_path, java, lock_owner):
             if time.monotonic() >= deadline:
                 raise ValueError("Formation did not settle")
             time.sleep(.25)
-        ledgers = [idle_ledger(console, m) for m in scene["machines"]]
+        recipes = json.loads((output / "manifest.json").read_text(encoding="ascii"))["recipes"]
+        if stage == "build":
+            if name == "b144-half-active":
+                result["activity"] = start_recipes(console, scene, recipes)
+            elif name == "b144-unload-restart":
+                result["unload"] = unload_reload(console, scene)
+                result["activity"] = json.loads((output / parent_name / "build.json").read_text())["activity"]
+            elif name.startswith("damage-"):
+                result["damage"] = damage_scene(console, scene)
+                # Preserve actually observed drops in a preparation world; do not
+                # let a later queue wait despawn evidence or change its contents.
+                console.send("execute as @e[type=minecraft:item] run data merge entity @s {Age:-32768s,PickupDelay:32767s,NoGravity:1b,Motion:[0d,0d,0d]}")
+                result["drop_preservation"] = "Observed item contents unchanged; infinite fixture age/no gravity only after damage readback."
+            elif name == "two-owners":
+                for m in scene["machines"]:
+                    if m["owner"]:
+                        key = "arce_observatory" if m["kind"] == "observatory" else "arce_astrobody_data_processor"
+                        console.send(f"data modify block {pos(m['pos'])} {key}.owner_id set value {common.uuid_nbt(m['owner'])}")
+                cycle_chunks(console, scene)
+            elif name == "declared-limits":
+                result["declared_limits"] = declared_fields()
+                result["declared_limits"]["native_probes"] = "Read-only menu scalar bounds have no console setter. Client projection/refusal observations remain campaign work, not fabricated job NBT."
+        ledgers = [machine_ledger(console, m) for m in scene["machines"]] if (name.startswith("damage-") or name in ("b144-half-active", "b144-unload-restart")) else [idle_ledger(console, m) for m in scene["machines"]]
         if stage == "readback":
             previous = json.loads((folder / "build.json").read_text(encoding="ascii"))
             if ledgers != previous["ledgers"]:
                 raise ValueError("Restart changed per-machine ledgers")
+            if "damage" in previous:
+                lines = console.send("execute as @e[type=minecraft:item] run data get entity @s")
+                drops = [parse_snbt(line.split("has the following entity data: ",1)[1]) for line in lines if "has the following entity data: " in line]
+                expected = Counter(json.dumps(d["Item"], sort_keys=True) for d in previous["damage"]["raw_drop_readbacks"])
+                if Counter(json.dumps(d["Item"], sort_keys=True) for d in drops) != expected:
+                    raise ValueError("Restart changed dropped item contents")
+                result["drop_contents_matched"] = True
         console.send("forceload remove all")
         console.send("save-all flush")
         console.commands.append("stop")
@@ -444,7 +680,7 @@ def run(output, name, stage, cell_path, java, lock_owner):
             raise ValueError("Native ERROR/FATAL; see console log")
         if stage == "build":
             shutil.copytree(copy / "world", world)
-        result.update(status="BUILT_IDLE" if stage == "build" else "MATCHED", exit_code=code, ledgers=ledgers,
+        result.update(status="BUILT" if stage == "build" else "MATCHED", exit_code=code, ledgers=ledgers,
                       world_files=common.tree_hashes(world))
     except BaseException as failure:
         result["error"] = str(failure)
@@ -455,12 +691,13 @@ def run(output, name, stage, cell_path, java, lock_owner):
         result["commands"] = console.commands if console else []
         result["cell_unchanged"] = common.tree_hashes(source) == source_before
         result["source_world_unchanged"] = world_before is None or common.tree_hashes(world) == world_before
+        result["parent_source_unchanged"] = parent_before is None or common.tree_hashes(parent_world) == parent_before
         (folder / (stage + ".json")).write_bytes(common.json_bytes(result))
         if copy.exists():
             if copy.resolve().parent != folder.resolve() or copy.name not in ("build-server", "readback-server"):
                 raise ValueError("Unsafe cleanup target")
             shutil.rmtree(copy)
-    if not result["cell_unchanged"] or not result["source_world_unchanged"]:
+    if not result["cell_unchanged"] or not result["source_world_unchanged"] or not result["parent_source_unchanged"]:
         raise ValueError("Immutable source changed")
     return result
 
@@ -483,7 +720,7 @@ def main():
         run(args.output, args.scene, args.stage, args.cell, args.java, args.lock_owner)
     else:
         if args.scene not in RUNNABLE:
-            raise ValueError("Only native idle scenes may be sealed")
+            raise ValueError("Scene is out of scope")
         folder = args.output / args.scene
         readback = json.loads((folder / "readback.json").read_text(encoding="ascii"))
         if readback["status"] != "MATCHED" or common.tree_hashes(folder / "world") != readback["world_files"]:
@@ -491,11 +728,13 @@ def main():
         if (folder / "manifest.json").exists() or (folder / "SHA256SUMS.txt").exists():
             raise ValueError("Do not overwrite a scene manifest or sealed evidence")
         scene_manifest = dict(schema_version=1, candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH,
-                              scene=args.scene, kind="NATIVE_IDLE_SCENE_ONLY", source_world="world",
+                              scene=args.scene, kind="NATIVE_SCENE_PREPARATION_NOT_CAMPAIGN_ACCEPTANCE", source_world="world",
                               layout="layout.json", grants="commands.txt", native_build="build.json",
                               native_restart="readback.json", world_files=readback["world_files"],
                               formation_and_idle="C6 block-entity readbacks, not generator assertions",
                               client_started=False, required_gates_approved=False)
+        build_result = json.loads((folder / "build.json").read_text(encoding="ascii"))
+        scene_manifest["observations"] = {key: build_result[key] for key in ("activity", "unload", "damage", "declared_limits") if key in build_result}
         (folder / "manifest.json").write_bytes(common.json_bytes(scene_manifest))
         common.seal(folder)
     print(f"K05 {args.action}: {args.output}")
