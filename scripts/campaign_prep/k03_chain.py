@@ -278,7 +278,7 @@ def run(args):
             receipt["made"] = populate(c, args.fixture, owner, member)
         for label, command, pattern in (
             ("stations", "arce station admin dump", r"Station|station|ARCE_STATION"),
-            ("satellites", "arce satellite evidence", r"ARCE_SATELLITE_EVIDENCE"),
+            ("satellites", "arce satellite admin evidence", r"ARCE_SATELLITE_EVIDENCE"),
             ("forced_overworld", "forceload query", r"force loaded|force load"),
             ("forced_space", f"execute in {NS}:space run forceload query", r"force loaded|force load")):
             if operational:
