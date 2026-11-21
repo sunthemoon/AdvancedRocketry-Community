@@ -42,6 +42,8 @@ try {
             -WorkingDirectory $workspace -ArgumentList '/d', '/c', 'gradlew.bat -p intent-test-mod --offline clean build --console=plain' `
             -RedirectStandardOutput (Join-Path $EvidenceDirectory 'build-stdout.log') `
             -RedirectStandardError (Join-Path $EvidenceDirectory 'build-stderr.log')
+        # Windows PowerShell 5.1 needs the handle retained before exit to preserve ExitCode.
+        $null = $process.Handle
         if (-not $process.WaitForExit(1800000)) {
             $all = @(Get-CimInstance Win32_Process)
             $owned = @($process.Id)
@@ -63,6 +65,7 @@ try {
         }
         $process.Refresh()
         $code = $process.ExitCode
+        if ($null -eq $code) { throw 'Native process exit code was unavailable; do not report success' }
     } finally {
         $owner = Get-Content -LiteralPath "$lock\owner.txt" -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($mayRelease -and $owner -and $owner.StartsWith($token)) {
