@@ -208,8 +208,12 @@ def snapshot(world):
 def projection(state):
     """Only stable authority; tick clocks and machine processing are not frozen."""
     roots = {name: payload["data"] for name, payload in state["roots"].items()}
-    return dict(research_accounts=roots.get(NS + "_satellite_missions.dat", {}).get("research_accounts", []),
+    missions = roots.get(NS + "_satellite_missions.dat", {})
+    endgame = roots.get(NS + "_endgame.dat", {})
+    return dict(research_accounts=missions.get("research_accounts", []),
                 stations=roots.get(NS + "_stations.dat", {}).get("stations", []),
+                missions=missions.get("missions", []), instances=missions.get("instances", []),
+                device_endpoints=endgame.get("endpoints", []), device_pairs=endgame.get("pairs", []),
                 rockets=[{k: row["value"].get(k) for k in ("UUID", "RocketEntityData")}
                          for row in state["entities"] if row["value"]["id"] == NS + ":rocket"])
 
@@ -267,7 +271,9 @@ def run(args):
         require("build=1.20.1-" + pin["version"][1:] + "-dev" in receipt["first_load_report"], "Host build identity differs")
         receipt["first_load_migration_lines"] = [line.strip() for line in p.lines if re.search(r"migrat|refus|quarantin", line, re.I)]
         # This checkpoint precedes all population commands. The host's migration is not bypassed.
-        require("operational=true" in receipt["first_load_report"], "Host refused managed roots")
+        operational = "operational=true" in receipt["first_load_report"]
+        if args.mode == "build":
+            require(operational, "Historical host refused managed roots")
         if args.mode == "build":
             receipt["made"] = populate(c, args.fixture, owner, member)
         for label, command, pattern in (
@@ -275,7 +281,8 @@ def run(args):
             ("satellites", "arce satellite evidence", r"ARCE_SATELLITE_EVIDENCE"),
             ("forced_overworld", "forceload query", r"force loaded|force load"),
             ("forced_space", f"execute in {NS}:space run forceload query", r"force loaded|force load")):
-            receipt["readbacks"][label] = c.query(command, pattern)
+            if operational:
+                receipt["readbacks"][label] = c.query(command, pattern)
         c.query("save-all flush", server.SAVE_MARKER.pattern)
         receipt["console_commands"].append("stop")
         p.command("stop")
@@ -291,7 +298,7 @@ def run(args):
         if args.mode == "qualify":
             saved = json.loads((folder / "source-state.json").read_text(encoding="utf-8"))
             receipt["authority_comparison"] = check_qualification(saved, state)
-            receipt["status"] = "OBSERVATION" if receipt["errors"] or not all(receipt["authority_comparison"].values()) else "PASS"
+            receipt["status"] = "OBSERVATION" if not operational or receipt["errors"] or not all(receipt["authority_comparison"].values()) else "PASS"
         else:
             require(not receipt["errors"], "Historical host logged ERROR/FATAL")
             shutil.copytree(runtime / "world", folder / "source-world")
@@ -301,8 +308,10 @@ def run(args):
                 classification=f"reconstructed on JAR ({pin['sha256']}), not historically played",
                 actors=dict(owner=owner, member=member, classification="disposable placeholders pending owner item O5"),
                 source_inventory_sha256=digest(evidence / "files.json"), content=receipt["made"],
+                parent_seal_sha256=digest(source.parent / "SHA256SUMS.txt"),
                 not_covered=uncovered(args.fixture), serves=["E-10", {"FI05":"K07", "FI06":"K08", "FI07":"K09", "FI08":"K10"}[args.fixture]],
                 inherited_coordinates=dict(paused=[0,100,0], running=[4,100,0], earth_rocket=[384,101,384], moon_rocket=[8,80,8]),
+                forced_chunk_baseline=snapshot(source)["forced_chunks"], forced_chunks_after=state["forced_chunks"],
                 first_load=receipt["first_load_report"], commands=receipt["console_commands"]))
             receipt["status"] = "PASS"
     except BaseException as exc:

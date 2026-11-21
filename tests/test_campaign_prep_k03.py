@@ -108,6 +108,44 @@ class ChainTests(unittest.TestCase):
         self.assertFalse(result["stations"])
         self.assertTrue(result["research_accounts"])
 
+    def test_fi06_uses_distinct_owners_and_native_pad_readback(self):
+        class Fake:
+            def __init__(self): self.commands = []
+            def query(self, command, marker, timeout=60):
+                self.commands.append(command)
+                if "admin create" in command: return "Created id=" + k.DEFAULT_MEMBER
+                if "admin inspect" in command: return "region=0,0,1,1 pad=10,80,20"
+                return "ok"
+        c = Fake()
+        made = k.populate(c, "FI06", k.DEFAULT_OWNER, k.DEFAULT_MEMBER)
+        self.assertEqual({s["owner"] for s in made["stations"]}, {k.DEFAULT_OWNER,k.DEFAULT_MEMBER})
+        self.assertEqual(made["stations"][0]["core"], [14,80,24])
+        self.assertEqual(made["stations"][0]["core_energy"], 0)
+        self.assertFalse(any("data merge" in s or "warp confirm" in s for s in c.commands))
+
+    def test_fi08_waits_for_registered_endpoints_before_binding(self):
+        class Fake:
+            def __init__(self): self.commands = []
+            def query(self, command, marker, timeout=60):
+                self.commands.append(command)
+                if "elevator build" in command:
+                    return "station=" + k.DEFAULT_OWNER + " terminal_pos=1,2,3"
+                return "endpoint status=OK"
+        c = Fake()
+        k.populate(c, "FI08", k.DEFAULT_OWNER, k.DEFAULT_MEMBER)
+        binding = next(i for i,s in enumerate(c.commands) if "elevator bind" in s)
+        persisted = next(i for i,s in enumerate(c.commands) if "persist root" in s)
+        self.assertLess(persisted, binding)
+        self.assertTrue(any("space run arce endgame release-test endpoint 1 2 3" in s for s in c.commands[:persisted]))
+
+    def test_qualification_retains_instance_and_device_differences(self):
+        before = dict(roots={}, entities=[])
+        after = dict(roots={k.NS+"_satellite_missions.dat":{"data":{"instances":[{"id":"instance"}]}},
+                           k.NS+"_endgame.dat":{"data":{"endpoints":[{"id":"device"}]}}}, entities=[])
+        result = k.check_qualification(before, after)
+        self.assertFalse(result["instances"])
+        self.assertFalse(result["device_endpoints"])
+
 
 if __name__ == "__main__":
     unittest.main()
