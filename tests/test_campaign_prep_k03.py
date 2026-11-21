@@ -118,7 +118,9 @@ class ChainTests(unittest.TestCase):
                 return "ok"
         c = Fake()
         made = k.populate(c, "FI06", k.DEFAULT_OWNER, k.DEFAULT_MEMBER)
-        self.assertEqual({s["owner"] for s in made["stations"]}, {k.DEFAULT_OWNER,k.DEFAULT_MEMBER})
+        self.assertEqual({s["owner"] for s in made["stations"]},
+                         {k.derived_actor(k.DEFAULT_OWNER,256),k.derived_actor(k.DEFAULT_MEMBER,256)})
+        self.assertNotIn(k.DEFAULT_OWNER, {s["owner"] for s in made["stations"]})
         self.assertEqual(made["stations"][0]["core"], [14,80,24])
         self.assertEqual(made["stations"][0]["core_energy"], 0)
         self.assertFalse(any("data merge" in s or "warp confirm" in s for s in c.commands))

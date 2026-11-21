@@ -88,6 +88,10 @@ def actors(owner, member):
     return owner, member
 
 
+def derived_actor(actor, offset):
+    return str(uuid.UUID(int=uuid.UUID(actor).int + offset))
+
+
 def uncovered(name):
     result = ["Historical player activity and a complete historically played/pre-sky source are NOT_COVERED; this is a reconstruction."]
     if name == "FI06":
@@ -130,7 +134,7 @@ def populate(console, name, owner, member):
     elif name == "FI06":
         # Distinct owners avoid silently bypassing the per-owner limit.
         stations = []
-        for index, actor in enumerate((owner, member)):
+        for index, actor in enumerate((derived_actor(owner, 256), derived_actor(member, 256))):
             line = q(f"arce station admin create {actor} {NS}:earth K03 orbital {index}", r"Created .* id=[a-f0-9-]{36}")
             station = re.search(r"id=([a-f0-9-]{36})", line).group(1)
             detail = q("arce station admin inspect " + station, r"region=\S+ pad=")
@@ -150,7 +154,7 @@ def populate(console, name, owner, member):
         for i in range(3):
             x, y, z = 2048 + i * 32, 100, 2048
             # setup loads one terminal chunk itself; no new persistent force ticket.
-            actor = str(uuid.UUID(int=uuid.UUID(owner).int + 16 + i))
+            actor = derived_actor(owner, 16 + i)
             line = q(f"arce satellite release-test terminal {x} {y} {z} setup {actor}",
                      rf"ARCE_RELEASE_TEST setup pos={x},{y},{z} .*status=READY")
             made["terminals"].append(dict(pos=[x,y,z], owner=actor, result=line))
@@ -158,7 +162,8 @@ def populate(console, name, owner, member):
     else:
         q("forceload add 4096 4096 4176 4176", "force load")
         made["railguns"] = q(f"arce endgame release-test railguns 4096 100 4096 {owner} 64", r"ARCE_RELEASE_TEST railguns")
-        made["elevator"] = q(f"arce endgame release-test elevator build 4160 100 4160 {owner} {member}", r"ARCE_RELEASE_TEST elevator built")
+        made["elevator_owner"] = derived_actor(owner, 512)
+        made["elevator"] = q(f"arce endgame release-test elevator build 4160 100 4160 {made['elevator_owner']} {member}", r"ARCE_RELEASE_TEST elevator built")
         station = re.search(r"station=([a-f0-9-]{36})", made["elevator"]).group(1)
         terminal = re.search(r"terminal_pos=(-?\d+),(-?\d+),(-?\d+)", made["elevator"])
         deadline = time.monotonic() + 150
