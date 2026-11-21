@@ -1,5 +1,4 @@
 """Portable tests: native JVM execution is deliberately outside governance."""
-import copy
 import json
 from pathlib import Path
 import subprocess
@@ -152,12 +151,14 @@ class K04Tests(unittest.TestCase):
             root = Path(temp)
             (root / "world").mkdir()
             (root / "world" / "test").write_bytes(b"world")
+            (root / "layout.json").write_bytes(k04.common.json_bytes(k04.scene("64")))
             for stage, status in (("build", "BUILT"), ("readback", "MATCHED")):
                 (root / (stage + ".json")).write_bytes(k04.common.json_bytes(dict(
                     status=status, cell_unchanged=True, source_world_unchanged=True,
                     world_files=k04.common.tree_hashes(root / "world"))))
             inventory = k04.common.tree_hashes(root)
             k04.seal(root)
+            inventory["manifest.json"] = k04.common.file_hash(root / "manifest.json")
             for line in (root / "SHA256SUMS.txt").read_text().splitlines():
                 h, p = line.split("  ", 1)
                 self.assertEqual(inventory.pop(p), h)

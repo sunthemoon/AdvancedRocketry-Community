@@ -50,15 +50,15 @@ def rocket(size, origin):
         for dz in range(depth):
             for dx in range(width):
                 name = "rocket_motor" if dy == 0 else "rocket_fuel_tank" if dy == 1 else "minecraft:iron_block"
-                if (dx, dy, dz) == (0, 2, 0):
+                if (dx, dy, dz) == (0, height - 1, 0):
                     name = "rocket_seat"
-                if (dx, dy, dz) == (1, 2, 0):
+                if (dx, dy, dz) == (1, height - 1, 0):
                     name = "guidance_computer"
                 blocks.append(dict(pos=[x + dx, y + dy, z + dz], block=name if ":" in name else NS + ":" + name))
     centre = (x + width / 2, y + height / 2, z + depth / 2)
     return dict(expected_blocks=size, origin=list(origin), dimensions=[width, height, depth],
                 assembler=[x, y - 1, z], loader=[x - 2, y, z], blocks=blocks,
-                seat_blocks=[[x, y + 2, z]], relative_seat_anchors=[[0, 2, 0]],
+                seat_blocks=[[x, y + height - 1, z]], relative_seat_anchors=[[0, height - 1, 0]],
                 capacity=width * depth * 1000,
                 observer=viewpoint((x + width / 2, y + height / 2 + 4, z - 36), centre))
 
@@ -77,7 +77,8 @@ def scene(name):
                 rows=["A12", "I09", "K17"] + (["A10"] if any(r["expected_blocks"] == 2048 for r in rockets) else []),
                 grants=["Console places all blocks, pads and assemblers.",
                         "Console claims each Fuel Loader for SERVER_CONSOLE_OWNER and supplies one native fuel cell at a time.",
-                        "The normal loader tick consumes every cell; no direct rocket fuel or snapshot edits.",
+                        "The normal loader tick consumes every cell; no direct rocket fuel or snapshot edits. "
+                        "The previous empty canister is overwritten by the next grant; the final canister is retained.",
                         "release-test report reads state; release-test launch drives only relaunch copies."])
 
 
@@ -93,8 +94,8 @@ def build_commands(layout):
         commands.extend([f"fill {x} {y} {z} {x+w-1} {y+h-1} {z+d-1} minecraft:iron_block",
                          f"fill {x} {y} {z} {x+w-1} {y} {z+d-1} {NS}:rocket_motor",
                          f"fill {x} {y+1} {z} {x+w-1} {y+1} {z+d-1} {NS}:rocket_fuel_tank",
-                         f"setblock {x} {y+2} {z} {NS}:rocket_seat",
-                         f"setblock {x+1} {y+2} {z} {NS}:guidance_computer"])
+                         f"setblock {x} {y+h-1} {z} {NS}:rocket_seat",
+                         f"setblock {x+1} {y+h-1} {z} {NS}:guidance_computer"])
     return commands
 
 
@@ -127,6 +128,7 @@ class Console:
         self.commands.append(command)
         self.process.command(command)
         token = f"K04_BARRIER_{len(self.commands)}"
+        self.commands.append("say " + token)
         self.process.command("say " + token)
         self.process.wait_for(re.compile(r"\[Server\] " + token + r"\b"), 60, start_at=start)
         lines = self.process.lines[start:]
@@ -191,9 +193,12 @@ def read_rocket(console, entity, r, dimension=OW):
     # remains separate and is exercised only by the relaunch variant.
     anchor = f"{ROOT_KEY}.snapshot.passenger_anchors"
     lines = console.send(prefix + f"data get entity {entity} {anchor}")
-    if not any("[I; 0, 2, 0]" in line for line in lines):
+    expected = r["relative_seat_anchors"][0]
+    pattern = r"\[I;\s*" + r",\s*".join(map(str, expected)) + r"\]"
+    if not any(re.search(pattern, line) for line in lines):
         raise ValueError("Native seat anchor differs")
-    report.update(seat_readback=lines, launch_readiness="FUELED (RocketFlightData.launchReady)")
+    report.update(seat_readback=lines, launch_readiness="FUELED (RocketFlightData.launchReady)",
+                  current_seat_block=[report[k] + delta for k, delta in zip(("x", "y", "z"), expected)])
     return report
 
 
@@ -355,6 +360,13 @@ def seal(folder):
             raise ValueError("Unqualified scene")
         if receipt["world_files"] != common.tree_hashes(folder / "world"):
             raise ValueError("Source world changed since native receipt")
+    inventory = common.tree_hashes(folder)
+    manifest = dict(schema_version=1, candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH,
+                    layout=json.loads((folder / "layout.json").read_text(encoding="ascii")),
+                    build=json.loads((folder / "build.json").read_text(encoding="ascii")),
+                    readback=json.loads((folder / "readback.json").read_text(encoding="ascii")),
+                    inventory_before_manifest=inventory)
+    (folder / "manifest.json").write_bytes(common.json_bytes(manifest))
     inventory = common.tree_hashes(folder)
     (folder / "SHA256SUMS.txt").write_text("".join(f"{h}  {p}\n" for p, h in inventory.items()), encoding="ascii")
 
