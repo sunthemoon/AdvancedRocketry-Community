@@ -54,9 +54,10 @@ launch the included bounded lock-wait script as a detached process:
 Start-Process -FilePath powershell.exe -WindowStyle Hidden -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$PWD\intent-test-mod\tools\build-locked.ps1"
 ```
 
-It checks C:/D: free space, uses WORKER-RULES' atomic `cmd /c mkdir` loop,
-refuses a lock older than three hours, waits at most three hours, and releases
-only its own token in the same script's `finally`. Compiler stderr is retained
+It checks C:/D: free space, yields 90 seconds before the first lock attempt,
+uses WORKER-RULES' atomic `cmd /c mkdir` loop, refuses a lock older than three
+hours, waits at most three hours, and releases only its own token in the same
+script's `finally`. Compiler stderr is retained
 separately without treating warnings as a failed launcher. A 30-minute launcher
 limit stops the owned process tree and verifies that its JVMs are gone before
 releasing the lock; surviving owned JVMs leave the lock for Root. This is not a

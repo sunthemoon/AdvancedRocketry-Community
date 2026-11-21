@@ -3,6 +3,9 @@ $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $lock = 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
 $token = "W432 pid=$PID $([guid]::NewGuid())"
+if (Test-Path -LiteralPath (Join-Path $EvidenceDirectory 'SHA256SUMS.txt')) {
+    throw 'Evidence directory is sealed; select a fresh EvidenceDirectory'
+}
 New-Item -ItemType Directory -Path $EvidenceDirectory -Force | Out-Null
 $log = Join-Path $EvidenceDirectory 'build.log'
 $result = Join-Path $EvidenceDirectory 'build-result.txt'
@@ -12,6 +15,8 @@ try {
         if ((Get-PSDrive $drive).Free -lt 10GB) { throw "$drive has less than 10 GB free" }
     }
     $deadline = (Get-Date).AddHours(3)
+    # A fresh launcher also yields before trying, so relaunches cannot reacquire immediately.
+    Start-Sleep -Seconds 90
     while ($true) {
         $ErrorActionPreference = 'Continue'
         cmd /c mkdir "$lock" 2>$null
