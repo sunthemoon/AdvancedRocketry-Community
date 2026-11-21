@@ -586,7 +586,7 @@ What is still open:
   arrival GameTest and no batch-order cause. W394 (R525) makes the assertion name the failing pick, the
   selector's reason and the reservations it saw. It stays open until the cause is known or runs show no
   recurrence.
-- **Light-transmission GameTests on a hosted runner (2026-11-21).** Run 44861941486 at `76bff783e` (source equal to candidate C6, whose own run passed) failed `monoMotorsDoNotOccludeAndPassLightToTheCellBeneath` on its first attempt and `sawDoesNotOccludeAndPassesLightWithoutChangingServerGeometry` on its second; in both, an opaque control read light it should not. W433 (R600) isolates these tests; the item stays open until W433 is merged and runs pass.
+- **Light-transmission GameTests on a hosted runner (2026-11-21).** Run 44861941486 at `76bff783e` (source equal to candidate C6, whose own run passed) failed `monoMotorsDoNotOccludeAndPassLightToTheCellBeneath` on its first attempt and `sawDoesNotOccludeAndPassesLightWithoutChangingServerGeometry` on its second; in both, an opaque control read light it should not. W433 (R600, R602) isolates these tests; its branch run 44886451261 at `7c0acc54f` passed all 1,886 GameTests. The item stays open until W433 is merged, which waits for the end of the C6 freeze, and the shared runs pass.
 - **Campaign families `cargo-G2-REUSE` and `w336-downgrade` (C2 2026-11-11, C3 2026-11-12).** On both candidates
   each start of the historical JAR `ba046688` refused the transfer journal's future schema 3 after rewriting
   `level.dat` and `level.dat_old`, as W176 recorded: `cargo-G2-REUSE` passed six of its nine S1 rows and failed the
