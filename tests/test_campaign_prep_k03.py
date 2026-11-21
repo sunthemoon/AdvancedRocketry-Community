@@ -148,6 +148,19 @@ class ChainTests(unittest.TestCase):
         self.assertFalse(result["instances"])
         self.assertFalse(result["device_endpoints"])
 
+    def test_returned_ids_must_exist_in_native_save(self):
+        actor = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+        self.assertEqual(k.saved_uuids({"id":[-1,-1,-1,-1]}), {actor})
+        self.assertEqual(k.check_created_ids({"line":"mission="+actor}, {"mission":[-1,-1,-1,-1]}), [actor])
+        with self.assertRaisesRegex(ValueError, "missing from saved readback"):
+            k.check_created_ids({"line":"mission="+actor}, {})
+        self.assertEqual(k.check_created_ids({"requested_member":actor}, {}), [])
+
+    def test_qualification_compares_actual_elevator_pair_tag(self):
+        empty = dict(roots={}, entities=[])
+        changed = dict(roots={k.NS+"_endgame.dat":{"data":{"elevator_pairs":[{"pair":"x"}]}}}, entities=[])
+        self.assertFalse(k.check_qualification(empty, changed)["device_pairs"])
+
 
 if __name__ == "__main__":
     unittest.main()

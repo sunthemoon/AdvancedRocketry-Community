@@ -99,7 +99,7 @@ def uncovered(name):
     if name == "FI07":
         result += ["RUNNING resource missions and gas missions are NOT_COVERED: the archived host terminal setup hook advances its asteroid mission to READY. No arbitrary deadline/status editing is permitted."]
     if name == "FI08":
-        result += ["Drill, black-hole and gravity reference-load variants are NOT_COVERED here; the archived railgun/elevator builders provide the bounded device seed. Full reference-load construction, owners and sampling remain K10."]
+        result += ["Drill, black-hole and gravity variants are NOT_COVERED: the host offers only the combined refload builder, which changes the physical-drill toggle and maximum-depth configuration and inserts synthetic root mass. TASK prohibits budget changes. No standalone owner/target setup command for those devices is registered; K10 must qualify its reference-load procedure separately."]
     return result
 
 
@@ -218,7 +218,8 @@ def projection(state):
     return dict(research_accounts=missions.get("research_accounts", []),
                 stations=roots.get(NS + "_stations.dat", {}).get("stations", []),
                 missions=missions.get("missions", []), instances=missions.get("instances", []),
-                device_endpoints=endgame.get("endpoints", []), device_pairs=endgame.get("pairs", []),
+                device_endpoints=endgame.get("endpoints", []), device_pairs=endgame.get("elevator_pairs", []),
+                warp_energy=roots.get(NS + "_stations.dat", {}).get("warp_energy", []),
                 rockets=[{k: row["value"].get(k) for k in ("UUID", "RocketEntityData")}
                          for row in state["entities"] if row["value"]["id"] == NS + ":rocket"])
 
@@ -226,6 +227,30 @@ def projection(state):
 def check_qualification(source, loaded):
     before, after = projection(source), projection(loaded)
     return {key: before[key] == after[key] for key in before}
+
+
+def saved_uuids(value):
+    """Decode UUID int arrays from read-only NBT projections, not a save mutation."""
+    result = set()
+    if isinstance(value, dict):
+        for entry in value.values():
+            result.update(saved_uuids(entry))
+    elif isinstance(value, list):
+        if len(value) == 4 and all(type(v) is int and -(2**31) <= v < 2**31 for v in value):
+            result.add(str(uuid.UUID(int=sum((v & 0xffffffff) << ((3-i)*32) for i,v in enumerate(value)))))
+        else:
+            for entry in value:
+                result.update(saved_uuids(entry))
+    return result
+
+
+def check_created_ids(made, state):
+    # Only IDs explicitly returned by mutation commands; actors and requested members
+    # do not imply memberships and are intentionally not treated as created records.
+    text = json.dumps(made)
+    created = set(re.findall(r"\b(?:id|mission|satellite|terminal|instance|station|source|destination|anchor|pair)=([a-f0-9-]{36})", text))
+    require(created <= saved_uuids(state), "Command-returned IDs missing from saved readback: " + str(sorted(created - saved_uuids(state))))
+    return sorted(created)
 
 
 def run(args):
@@ -306,6 +331,7 @@ def run(args):
             receipt["status"] = "OBSERVATION" if not operational or receipt["errors"] or not all(receipt["authority_comparison"].values()) else "PASS"
         else:
             require(not receipt["errors"], "Historical host logged ERROR/FATAL")
+            receipt["created_ids_verified"] = check_created_ids(receipt["made"], state)
             shutil.copytree(runtime / "world", folder / "source-world")
             write(folder / "source-state.json", state)
             write(folder / "source-files.json", fixture.file_inventory(folder / "source-world"))
