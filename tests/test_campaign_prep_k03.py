@@ -3,7 +3,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from scripts.campaign_prep import k03_chain as k
 
@@ -162,6 +162,30 @@ class ChainTests(unittest.TestCase):
         empty = dict(roots={}, entities=[])
         changed = dict(roots={k.NS+"_endgame.dat":{"data":{"elevator_pairs":[{"pair":"x"}]}}}, entities=[])
         self.assertFalse(k.check_qualification(empty, changed)["device_pairs"])
+
+    def test_starting_status_retries_with_decreasing_original_budget(self):
+        server = Mock()
+        starting = {"text":"Server is still starting! Please wait before reconnecting."}
+        server.wait_for_status.side_effect = [starting,{"players":{"online":0}}]
+        with patch.object(k.time,"monotonic",side_effect=[0,1,2]), patch.object(k.time,"sleep"):
+            result = k.ready_status(server, 123, "version")
+        self.assertEqual(result,{"players":{"online":0}})
+        self.assertEqual([c.kwargs["timeout"] for c in server.wait_for_status.call_args_list], [29,28])
+        server.validate_status_identity.assert_called_once_with(result,"version")
+
+    def test_starting_status_expires_and_invalid_status_is_not_retried(self):
+        server = Mock()
+        server.wait_for_status.return_value = {"text":"Server is still starting! Please wait before reconnecting."}
+        with patch.object(k.time,"monotonic",side_effect=[0,1,31]), patch.object(k.time,"sleep"):
+            with self.assertRaisesRegex(ValueError,"30 seconds"):
+                k.ready_status(server,123,"version")
+        self.assertEqual(server.wait_for_status.call_count,1)
+        server.wait_for_status.reset_mock()
+        server.wait_for_status.return_value = {"invalid":True}
+        server.validate_status_identity.side_effect = ValueError("identity")
+        with self.assertRaisesRegex(ValueError,"identity"):
+            k.ready_status(server,123,"version")
+        self.assertEqual(server.wait_for_status.call_count,1)
 
 
 if __name__ == "__main__":

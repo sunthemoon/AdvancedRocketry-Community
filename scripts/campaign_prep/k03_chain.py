@@ -115,6 +115,20 @@ class Console:
         return self.process.lines[index].strip()
 
 
+def ready_status(server, port, version):
+    """W431/R607 pattern: retry only Forge's exact starting reply, within 30 s."""
+    deadline = time.monotonic() + 30
+    starting = {"text": "Server is still starting! Please wait before reconnecting."}
+    while True:
+        remaining = deadline - time.monotonic()
+        require(remaining > 0, "Server status did not become ready within 30 seconds")
+        status = server.wait_for_status(port, timeout=remaining)
+        if status != starting:
+            server.validate_status_identity(status, version)
+            return status
+        time.sleep(min(0.1, remaining))
+
+
 def populate(console, name, owner, member):
     q, made = console.query, {}
     if name == "FI05":
@@ -294,7 +308,7 @@ def run(args):
         p = server.CapturedProcess(command, runtime, evidence / "console.log")
         p.wait_for(server.READY_MARKER, 240)
         port = int(server.parse_java_properties((runtime / "server.properties").read_bytes())["server-port"])
-        status = server.wait_for_status(port)
+        status = ready_status(server, port, "1.20.1-" + pin["version"][1:] + "-dev")
         require(status.get("players", {}).get("online") == 0, "Unexpected player")
         receipt["server_status"] = status
         c = Console(p, receipt["console_commands"])
