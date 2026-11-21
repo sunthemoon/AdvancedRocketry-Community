@@ -142,6 +142,30 @@ class K04Tests(unittest.TestCase):
         self.assertIn(k04.MOON, final)
         self.assertFalse(any("setblock" in c.args[0] and "air" in c.args[0] for c in console.send.call_args_list))
 
+    def test_checked_journal_admission_still_requires_landing(self):
+        entity, logical = "0"*8 + "-0000-0000-0000-000000000001", "0"*8 + "-0000-0000-0000-000000000002"
+        report = dict(entity=entity, logical=logical, fuel=16000)
+        for code in ("SUCCESS", "JOURNAL_PENDING"):
+            line = (f"ARCE_RELEASE_TEST_LAUNCH request={entity} entity={entity} logical={logical} "
+                    f"source={k04.OW} destination={k04.MOON} checkpoint=none code={code} required_fuel=1642 fuel_before=16000")
+            self.assertEqual(code, k04.launch_receipt([line], report, k04.OW, k04.MOON).group(7))
+            for old, new in ((code, "INSUFFICIENT_FUEL"), ("fuel_before=16000", "fuel_before=15000"),
+                             ("required_fuel=1642", "required_fuel=17000"), ("checkpoint=none", "checkpoint=CUT"),
+                             (f"source={k04.OW}", f"source={k04.MOON}")):
+                with self.assertRaises(ValueError):
+                    k04.launch_receipt([line.replace(old, new)], report, k04.OW, k04.MOON)
+
+    def test_journal_pending_is_not_a_successful_flight(self):
+        from unittest.mock import patch
+        console = Mock()
+        console.process.lines = []
+        console.process.wait_for.side_effect = TimeoutError("no actual landing")
+        match = Mock()
+        match.group.return_value = "0"*8 + "-0000-0000-0000-000000000001"
+        with patch.object(k04, "launch_receipt", return_value=match):
+            with self.assertRaisesRegex(TimeoutError, "actual landing"):
+                k04.launch_return(console, dict(entity="uuid"), k04.rocket(64, (256, 100, 256)))
+
     def test_seal_refuses_unqualified_or_changed_world(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

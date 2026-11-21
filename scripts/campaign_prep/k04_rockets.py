@@ -212,15 +212,28 @@ def read_rocket(console, entity, r, dimension=OW):
     return report
 
 
+def launch_receipt(lines, report, source, destination):
+    from scripts import run_v060_flight_server_smoke as flight
+    match = next((flight.LAUNCH_LOG.search(line) for line in lines if flight.LAUNCH_LOG.search(line)), None)
+    if match is None:
+        raise ValueError("Missing native launch receipt")
+    if (match.group(2) != report["entity"] or match.group(3) != report["logical"]
+            or match.group(4) != source or match.group(5) != destination or match.group(6) != "none"
+            or match.group(7) not in ("SUCCESS", "JOURNAL_PENDING")
+            or int(match.group(9)) != report["fuel"] or not 0 < int(match.group(8)) <= report["fuel"]):
+        raise ValueError("Native launch authority/route/fuel refused: " + match.group(0))
+    # C6's normal checked-journal route acknowledges admission asynchronously.
+    # Pending is not completion: the caller still requires the actual landing.
+    return match
+
+
 def launch_return(console, report, r):
     from scripts import run_v060_flight_server_smoke as flight
     legs = []
     for source, destination, name in ((OW, MOON, "MOON"), (MOON, OW, "EARTH")):
         start = len(console.process.lines)
         lines = console.send(f"execute in {source} run arce rocket release-test launch {report['entity']} {name}")
-        match = next((flight.LAUNCH_LOG.search(line) for line in lines if flight.LAUNCH_LOG.search(line)), None)
-        if match is None or match.group(7) != "SUCCESS":
-            raise ValueError("Native launch refused: " + "".join(lines))
+        match = launch_receipt(lines, report, source, destination)
         transfer = match.group(1)
         marker = re.compile(r"ARCE_TRANSFER_PHASE transfer=" + re.escape(transfer) + r" .*event=landed_reservation_retained ")
         console.process.wait_for(marker, 30, start_at=start)
@@ -235,6 +248,7 @@ def launch_return(console, report, r):
         legs.append(dict(launch=match.group(0), landed=report.copy()))
         endpoint = dict(r, loader=[report["x"] - 2, report["y"], report["z"]])
         fuel(console, endpoint, entity, destination, report["fuel"])
+        report = parse_report(console.send(f"execute in {destination} run arce rocket release-test report {entity}"))
     return report["entity"], legs
 
 
