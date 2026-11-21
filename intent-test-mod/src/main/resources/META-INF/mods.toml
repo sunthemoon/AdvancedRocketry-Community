@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="arce_intent_test"
+version="1.0.0"
+displayName="ARCE Intent Campaign Fixture (Never Ship)"
+displayTest="IGNORE_SERVER_VERSION"
+description='''Client-only, opt-in bounded refusal probes for disposable campaign worlds. Not a gameplay mod. Unofficial; not supported by the original Advanced Rocketry maintainers.'''
+
+[[dependencies.arce_intent_test]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.10,48)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.arce_intent_test]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.arce_intent_test]]
+modId="advancedrocketrycommunity"
+mandatory=true
+versionRange="[1.20.1-1.8.0-dev]"
+ordering="AFTER"
+side="CLIENT"
