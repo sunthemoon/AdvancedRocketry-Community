@@ -35,6 +35,9 @@ try {
     try {
         Set-Content -LiteralPath "$lock\owner.txt" "$token $(Get-Date -Format o)"
         Set-Location -LiteralPath $workspace
+        foreach ($drive in @('C', 'D')) {
+            if ((Get-PSDrive $drive).Free -lt 10GB) { throw "$drive has less than 10 GB free after lock wait" }
+        }
         "LOCK_ACQUIRED $(Get-Date -Format o) $token" | Out-File $log -Append
         # Native stderr must not become a terminating PowerShell NativeCommandError.
         # Keep the wrapper process until its actual exit, including compiler warnings.
@@ -45,6 +48,7 @@ try {
         # Windows PowerShell 5.1 needs the handle retained before exit to preserve ExitCode.
         $null = $process.Handle
         if (-not $process.WaitForExit(1800000)) {
+            $mayRelease = $false
             $all = @(Get-CimInstance Win32_Process)
             $owned = @($process.Id)
             do {
@@ -61,6 +65,7 @@ try {
                     throw "Owned JVM $($child.ProcessId) survived timeout; retain lock for Root"
                 }
             }
+            $mayRelease = $true
             throw 'Fixture Gradle build exceeded the 30-minute launcher limit; process tree stopped'
         }
         $process.Refresh()
