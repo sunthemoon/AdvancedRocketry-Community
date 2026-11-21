@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -41,6 +42,25 @@ RECOVERY_CONTRACT = {
     "LANDED": ("COMMITTED", 0, 1, "KEEP_DESTINATION"),
 }
 RUN_TOKEN = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+
+
+def verify_status(port: int, version: str, *, wait_ready_status: bool = False) -> None:
+    if not wait_ready_status:
+        server_smoke.validate_status_identity(server_smoke.wait_for_status(port), version)
+        return
+    # Forge may publish Done before its first server tick publishes status.
+    # Retry only that exact transitional response, within the original budget.
+    deadline = time.monotonic() + 30.0
+    starting = {"text": "Server is still starting! Please wait before reconnecting."}
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise SmokeError("Server status did not become ready within 30 seconds")
+        status = server_smoke.wait_for_status(port, timeout=remaining)
+        if status != starting:
+            server_smoke.validate_status_identity(status, version)
+            return
+        time.sleep(min(0.1, remaining))
 
 
 def force_stop(process, harness):
@@ -90,8 +110,9 @@ class RecoveryHarness(flight.FlightHarness):
         setattr(process, "_arce_started_at", datetime.now(timezone.utc).isoformat())
         try:
             process.wait_for(server_smoke.READY_MARKER, self.startup_timeout)
-            server_smoke.validate_status_identity(
-                server_smoke.wait_for_status(self.port), self.expected_version,
+            verify_status(
+                self.port, self.expected_version,
+                wait_ready_status=getattr(self, "wait_ready_status", False),
             )
             return process
         except BaseException:
@@ -218,6 +239,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--base-commit", required=True)
     parser.add_argument("--expected-version", default="1.20.1-1.0.0-dev")
+    parser.add_argument("--wait-ready-status", action="store_true",
+                        help="Poll Forge's starting response within the existing 30-second status budget")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     java_home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(java_home) / "bin/java") if java_home else "java")
@@ -267,6 +290,8 @@ def main() -> int:
         harness = RecoveryHarness(java=java, server=session, port=port,
                                   expected_version=args.expected_version,
                                   startup_timeout=args.startup_timeout)
+        harness.wait_ready_status = args.wait_ready_status
+        summary["wait_ready_status"] = args.wait_ready_status
         for case in summary["requested_cases"]:
             result = run_case(harness, case)
             summary["cases"].append(result)
