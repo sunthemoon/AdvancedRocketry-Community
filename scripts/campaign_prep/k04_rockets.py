@@ -392,6 +392,19 @@ def run(output, name, stage, cell_path, java, lock_owner):
     return result
 
 
+def actual_views(layout, reports):
+    views = []
+    for r, report in zip(layout["rockets"], reports, strict=True):
+        observer = dict(r["observer"])
+        for axis, original in zip(("x", "y", "z"), r["origin"]):
+            observer[axis] += report[axis] - original
+        views.append(dict(entity=report["entity"], dimension=report["dimension"],
+                          seat_block=report["current_seat_block"], seated_rider_feet=report["seated_rider_feet"],
+                          observer=observer, shared_multi_world_overview=layout["overview"],
+                          camera_status=layout["camera_status"]))
+    return views
+
+
 def seal(folder):
     if (folder / "SHA256SUMS.txt").exists():
         raise ValueError("Never overwrite a seal")
@@ -407,6 +420,7 @@ def seal(folder):
                     build=json.loads((folder / "build.json").read_text(encoding="ascii")),
                     readback=json.loads((folder / "readback.json").read_text(encoding="ascii")),
                     inventory_before_manifest=inventory)
+    manifest["actual_views"] = actual_views(manifest["layout"], manifest["readback"]["rockets"])
     (folder / "manifest.json").write_bytes(common.json_bytes(manifest))
     inventory = common.tree_hashes(folder)
     (folder / "SHA256SUMS.txt").write_text("".join(f"{h}  {p}\n" for p, h in inventory.items()), encoding="ascii")

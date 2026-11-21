@@ -166,6 +166,17 @@ class K04Tests(unittest.TestCase):
             with self.assertRaisesRegex(TimeoutError, "actual landing"):
                 k04.launch_return(console, dict(entity="uuid"), k04.rocket(64, (256, 100, 256)))
 
+    def test_relaunch_camera_tracks_native_return_origin(self):
+        layout = k04.scene("64-relaunch")
+        report = dict(entity="uuid", dimension=k04.OW, x=-1, y=-63, z=-1,
+                      current_seat_block=[-1, -60, -1], seated_rider_feet=[-.5, -59.85, -.5])
+        view = k04.actual_views(layout, [report])[0]
+        self.assertEqual([-1, -60, -1], view["seat_block"])
+        self.assertEqual(layout["overview"], view["shared_multi_world_overview"])
+        for axis, delta in (("x", -257), ("y", -163), ("z", -257)):
+            self.assertEqual(layout["rockets"][0]["observer"][axis] + delta, view["observer"][axis])
+        self.assertEqual(layout["rockets"][0]["observer"]["yaw"], view["observer"]["yaw"])
+
     def test_seal_refuses_unqualified_or_changed_world(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -188,6 +199,8 @@ class K04Tests(unittest.TestCase):
             for stage, status in (("build", "BUILT"), ("readback", "MATCHED")):
                 (root / (stage + ".json")).write_bytes(k04.common.json_bytes(dict(
                     status=status, cell_unchanged=True, source_world_unchanged=True,
+                    rockets=[dict(entity="uuid", dimension=k04.OW, x=256, y=100, z=256,
+                                  current_seat_block=[256, 103, 256], seated_rider_feet=[256.5, 103.15, 256.5])],
                     world_files=k04.common.tree_hashes(root / "world"))))
             inventory = k04.common.tree_hashes(root)
             k04.seal(root)
