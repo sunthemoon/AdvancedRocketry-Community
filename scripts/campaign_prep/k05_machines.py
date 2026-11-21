@@ -206,7 +206,7 @@ def declared_fields(root=common.ROOT):
                   "research.analysis", "research.owner", "research.diagnostic_role"):
         add(field, None, "ResearchControllerMenu.java" if field.startswith("research") else "ClassicControllerMenu.java",
             "Fixed translated title/enum label, not a user-editable name; no declared text-length limit")
-    add("research.diagnostic_coordinates", 32767, "ResearchControllerMenu.java", "Signed-short display cast; this is not a server coordinate admission limit")
+    add("research.diagnostic_coordinates", None, "ResearchControllerMenu.java", "Signed-short display cast, not a declared coordinate admission limit; no test value invented")
     return dict(source_sha256=sources, fields=fields,
                 distance=dict(squared_maximum=64, radius_blocks=8, source=(RUNTIME / "ClassicControllerMenu.java").as_posix(),
                               source_expression="distanceToSqr(controller centre) <= 64",
@@ -310,6 +310,7 @@ class Console:
         for command in commands:
             self.process.command(command)
         token = f"K05_BARRIER_{len(self.commands)}"
+        self.commands.append("say " + token)
         self.process.command("say " + token)
         self.process.wait_for(re.compile(r"\[Server\] " + token + r"$"), 60, start_at=start)
         lines = self.process.lines[start:]
