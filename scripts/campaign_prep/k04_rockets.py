@@ -198,7 +198,10 @@ def read_rocket(console, entity, r, dimension=OW):
     if not any(re.search(pattern, line) for line in lines):
         raise ValueError("Native seat anchor differs")
     report.update(seat_readback=lines, launch_readiness="FUELED (RocketFlightData.launchReady)",
-                  current_seat_block=[report[k] + delta for k, delta in zip(("x", "y", "z"), expected)])
+                  current_seat_block=[report[k] + delta for k, delta in zip(("x", "y", "z"), expected)],
+                  seated_rider_feet=[report["x"] + expected[0] + .5, report["y"] + expected[1] + .15,
+                                     report["z"] + expected[2] + .5],
+                  seat_position_basis="Native anchor plus C6 RocketPassengerPosition offset; no player boarded.")
     return report
 
 
@@ -287,6 +290,12 @@ def run(output, name, stage, cell_path, java, lock_owner):
         process.wait_for(smoke.READY_MARKER, 240)
         console = Console(process)
         load_chunks(console, layout)
+        if stage == "readback":
+            baseline = json.loads((folder / "build.json").read_text(encoding="ascii"))
+            # The landing allocator, not the generator, chooses return coordinates.
+            for previous in baseline["rockets"]:
+                actual = dict(rockets=[dict(origin=[previous[k] for k in ("x", "y", "z")])])
+                load_chunks(console, actual)
         reports = []
         if stage == "build":
             for command in (folder / "commands.txt").read_text(encoding="ascii").splitlines():
@@ -310,7 +319,6 @@ def run(output, name, stage, cell_path, java, lock_owner):
                     report = read_rocket(console, entity, r)
                 reports.append(report)
         else:
-            baseline = json.loads((folder / "build.json").read_text(encoding="ascii"))
             for r, previous in zip(layout["rockets"], baseline["rockets"], strict=True):
                 report = read_rocket(console, previous["entity"], r)
                 if comparable(report) != comparable(previous):
