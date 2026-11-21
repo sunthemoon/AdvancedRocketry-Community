@@ -1,0 +1,99 @@
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.artifacts.ProjectDependency
+
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+
+group = 'io.github.sunthemoon.arceintenttest'
+version = '1.0.0'
+base.archivesName = 'arce-intent-test'
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft { mappings channel: 'official', version: '1.20.1' }
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.10'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+    options.sourcepath = files()
+    options.annotationProcessorPath = files()
+}
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+['CaseBuilderTest', 'ProbeSessionTest', 'CaseGuardTest', 'ProtocolPinTest'].each { testClass ->
+    def isolated = tasks.register("isolated${testClass}", Test) {
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        filter { includeTestsMatching "io.github.sunthemoon.arceintenttest.${testClass}" }
+    }
+    tasks.named('check') { dependsOn isolated }
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+tasks.named('jar', Jar) {
+    from('../LICENSE') { into 'META-INF' }
+    from('../NOTICE.md') { into 'META-INF' }
+    finalizedBy 'reobfJar'
+}
+
+def require = { boolean condition, String message ->
+    if (!condition) { throw new GradleException(message) }
+}
+def pinLines = { File input -> input.readLines('UTF-8').findAll { it.trim() && !it.startsWith('#') } }
+def fixturePrefix = 'io/github/sunthemoon/arceintenttest/'
+def hostPrefix = 'io/github/sunthemoon/advancedrocketrycommunity/'
+def sha256 = { File input -> MessageDigest.getInstance('SHA-256').digest(input.bytes).encodeHex().toString() }
+
+def verifyConsumerBoundary = tasks.register('verifyConsumerBoundary') {
+    group = 'verification'
+    description = 'Check the pinned wire surface, isolated consumer classpath and unshaded reobfuscated JAR.'
+    dependsOn 'reobfJar'
+    inputs.file('../src/test/resources/network-protocols.txt')
+    inputs.file('src/main/resources/network-protocols.txt')
+    doLast {
+        require(rootProject == project && allprojects.size() == 1 && gradle.includedBuilds.empty,
+                'Fixture must be an independent single-project build')
+        require(pinLines(file('../src/test/resources/network-protocols.txt')) ==
+                pinLines(file('src/main/resources/network-protocols.txt')), 'Product network pin changed; requalify fixture')
+        require(configurations.compileClasspath.allDependencies.findAll { it instanceof ProjectDependency }.empty,
+                'No product project dependency is allowed')
+        def classpath = sourceSets.main.compileClasspath.files.collect { File dependency ->
+            require(dependency.isFile() && dependency.name.endsWith('.jar'), 'Only platform dependency JARs are allowed')
+            new ZipFile(dependency).withCloseable { zip ->
+                require(!zip.entries().any { it.name.startsWith(hostPrefix) }, 'Product classes leaked into classpath')
+            }
+            [file: dependency.absolutePath, sha256: sha256(dependency)]
+        }
+        require(sourceSets.main.java.srcDirs.collect { it.canonicalFile } == [file('src/main/java').canonicalFile],
+                'Fixture may not compile product sources')
+        File jar = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        def names
+        new ZipFile(jar).withCloseable { zip ->
+            names = zip.entries().findAll { !it.directory }.collect { it.name }
+            def classes = names.findAll { it.endsWith('.class') }
+            require(!classes.empty && classes.every { it.startsWith(fixturePrefix) }, 'Archive has shaded classes')
+            require(classes.every { name ->
+                !new String(zip.getInputStream(zip.getEntry(name)).bytes, 'ISO-8859-1').contains(hostPrefix)
+            }, 'Fixture bytecode references product implementation classes')
+            require(names.size() == names.toSet().size(), 'Duplicate archive entries')
+            require(['META-INF/mods.toml', 'META-INF/LICENSE', 'META-INF/NOTICE.md', 'pack.mcmeta',
+                     'network-protocols.txt'].every { names.contains(it) }, 'Archive metadata incomplete')
+            require(!names.any { it.startsWith('META-INF/jarjar/') || it.endsWith('accesstransformer.cfg') },
+                    'Fixture needs neither bundled dependencies nor access transformers')
+        }
+        File report = layout.buildDirectory.file('reports/consumer/boundary.json').get().asFile
+        report.parentFile.mkdirs()
+        report.text = JsonOutput.prettyPrint(JsonOutput.toJson([jar: jar.absolutePath, sha256: sha256(jar),
+                reobfuscated: true, entries: names.sort(), compile_classpath: classpath,
+                product_dependency: 'none; independently encoded pinned wire fields'])) + '\n'
+    }
+}
+tasks.named('check') { dependsOn verifyConsumerBoundary }
