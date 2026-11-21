@@ -1,4 +1,4 @@
-"""Deterministic K05 scene inputs and native idle-scene build/restart readback.
+"""Deterministic K05 scene inputs and native build/restart readback.
 
 Generate never launches Minecraft. Run one `run` invocation under the detached
 WORKER-RULES lock launcher, then release and yield >=90 seconds. Unsupported
@@ -120,7 +120,8 @@ def layout(jar, name, owners=OWNERS):
                                  recipe=RECIPES[index] if index < 7 else "ground-survey" if index == 7 else "ground-analysis",
                                  owner=(owners[copy % 2] if name == "two-owners" else
                                         str(uuid5(UUID(owners[0]), f"research-pair-{copy}"))) if index >= 7 else None,
-                                 activation=("START_BY_MENU" if index >= 7 else "NATIVE_RECIPE") if copy % 2 == 0 else "IDLE",
+                                 activation=("START_BY_MENU" if index >= 7 else "NATIVE_RECIPE")
+                                     if copy % 2 == 0 and name in ("b144-half-active", "b144-unload-restart") else "IDLE",
                                  owner_policy="Research owner only" if index >= 7 else "No per-player owner field; world interaction policy"))
     if name == "a100-idle":
         machines = machines[:100]
@@ -425,9 +426,10 @@ def grant_resources(console, machine, recipe=None, damage=False):
                       key=lambda b: blockpos_long([number(b[k]) for k in "xyz"]))
     grants = dict(machine=machine["id"], items=[], fluids=[], energy_fe=0)
     if damage:
-        if ports("item_input"):
+        item_banks = ports("item_input") or ports("item_output")
+        if item_banks:
             payload = parse_snbt('{id:"minecraft:diamond",Count:3b,tag:{k05_machine:' + json.dumps(machine["id"]) + '}}')
-            ports("item_input")[0]["items"]["values"][0] = payload
+            item_banks[0]["items"]["values"][0] = payload
             grants["items"].append(payload)
     elif recipe:
         with zipfile.ZipFile(common.JAR) as jar:

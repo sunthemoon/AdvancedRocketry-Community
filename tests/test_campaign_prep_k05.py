@@ -60,6 +60,11 @@ class LayoutTest(unittest.TestCase):
             self.assertEqual(len({m["owner"] for m in pair}), 1)
         self.assertIn("not 72 active", plan["reported_population"])
 
+    def test_idle_scenes_do_not_label_selected_positions_as_started(self):
+        for name in ("a100-idle", "b144-idle", "two-owners", "damage-controller", "declared-limits"):
+            with self.subTest(scene=name):
+                self.assertTrue(all(m["activation"] == "IDLE" for m in k.layout(self.jar, name)["machines"]))
+
     def test_no_overlaps_and_exact_chunk_footprints(self):
         seen = set()
         for m in k.layout(self.jar, "b144-idle")["machines"]:
@@ -126,6 +131,21 @@ class LayoutTest(unittest.TestCase):
 
 
 class ReadbackTest(unittest.TestCase):
+    def test_damage_seeds_output_bank_when_no_item_input_exists(self):
+        class Console:
+            def __init__(self):
+                self.commands = []
+            def nbt(self, at):
+                return k.parse_snbt('{arce_classic_resources:{banks:[{kind:"item_output",x:1,y:2,z:3,items:[{},{},{},{}]}]}}')
+            def send(self, command):
+                self.commands.append(command)
+        console = Console()
+        grants = k.grant_resources(console, dict(id="centrifuge-00", pos=[1, 2, 3], owner=None), damage=True)
+        self.assertEqual(len(grants["items"]), 1)
+        self.assertEqual(grants["items"][0]["Count"], "3b")
+        self.assertIn('"item_output"', console.commands[0])
+        self.assertIn('"k05_machine":"centrifuge-00"', console.commands[0])
+
     def test_snbt_roundtrip_preserves_types_arrays_and_metadata(self):
         value = k.parse_snbt('{x:12L,items:[{id:"minecraft:diamond",Count:3b,tag:{k05_machine:"lathe-00"}}],uuid:[I;1,-2,3,4]}')
         self.assertEqual(k.parse_snbt(k.snbt(value)), value)
