@@ -504,7 +504,9 @@ def batches():
             "their bounds. If the launch is refused the request stops, and core-flight-observe then stops as well.")
         add("core-flight-observe-" + suffix, "A02/I01/J20", "16/4: flight and landing", [
             *prelude(),
-            require(f"data get entity {PLAYER} Dimension", f'entity data: "{MOON}"', attempts=40),
+            # The rocket first: the player may already stand on the Moon (in the room) without having flown.
+            rocket_data("current_dimension", f'"{MOON}"', attempts=40),
+            require(f"data get entity {PLAYER} Dimension", f'entity data: "{MOON}"', attempts=10),
             rocket_data("state", '"LANDED"', attempts=40),
             # F5 only once the loading screen is gone: a key sent to it would leave the camera in the wrong mode.
             dict(op="require_screen", open=False, timeout=20), key("F5"), shot("a02-flight-" + suffix),

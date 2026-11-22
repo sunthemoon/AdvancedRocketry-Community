@@ -275,7 +275,10 @@ class RouteGateTest(unittest.TestCase):
         self.assertEqual(plan.count(launch), 1)
         self.assertEqual(plan[plan.index(launch) + 1]["expect"], 'entity data: "COUNTDOWN"')
         observe = self.core("core-flight-observe")
+        # The rocket's own dimension comes first: the player can be on the Moon without having flown.
+        self.assertIn("flight_data.current_dimension", observe[3]["command"])
         self.assertEqual(observe[3]["expect"], f'entity data: "{k16.MOON}"')
+        self.assertIn(f"data get entity {k16.PLAYER} Dimension", observe[4]["command"])
         self.assertEqual(sum(1 for op in observe if op.get("key") == "F5"), 3)  # Back to first person.
 
     def test_station_request_keeps_the_first_target_and_names_the_refusal(self):
