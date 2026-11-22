@@ -235,6 +235,31 @@ def compare(before, after, scene):
     return result
 
 
+def validate_readbacks(value, scene):
+    """Check supporting-scene contents, without claiming missing fuel/supply setup."""
+    if scene in ("component", "flight-recovery"):
+        text = value["rocket"]
+        capacity, mass, thrust, entities = (1500,254,2400,0) if scene == "component" else (1000,210,2400,1)
+        for field, number in (("fuel_capacity",capacity),("mass",mass),("thrust",thrust),
+                              ("block_count",5),("block_entity_count",entities)):
+            chain.require(re.search(rf"\b{field}: {number}(?:L)?[,}}]", text), "Missing captured metric: "+field)
+        chain.require('state: "ASSEMBLED"' in text and "fuel: {amount: 0L," in text,
+                      "Supporting rocket must be assembled and zero-fuel")
+        if scene == "component":
+            chain.require("owner_id" not in value["loader"] and "buffered_units: 0L" in value["loader"],
+                          "Supporting loader must be explicitly unclaimed, not an F=750 claim")
+        else:
+            chain.require(FX+":cargo_inventory" in text and 'id: "minecraft:diamond"' in text
+                          and 'id: "minecraft:iron_ingot"' in text and "Count: 17b" in text
+                          and "Count: 64b" in text, "Opaque cargo inventory incomplete")
+    elif scene == "moon":
+        chain.require(value["atmosphere_sealing"] and "oxygen_units: 0" in value["vent"]
+                      and "energy: 0" in value["vent"], "Expected tagged, unsupplied supporting room")
+    elif scene == "payload":
+        chain.require(FX+":research_payload" in value["terminal"] and "SatelliteIdentity" in value["terminal"],
+                      "No registered payload/chip identity")
+
+
 def checked_copy(source, target):
     chain.require(source.is_dir() and not target.exists(), "Copy requires a source and a fresh destination")
     before = fixture.file_inventory(source)
@@ -333,6 +358,8 @@ def run(args):
         # Explicit reload and command barrier; receipt retains actual listener logs.
         reload_pack(console)
         receipt["readbacks"] = readbacks(console, layout)
+        if args.mode != "remove":
+            validate_readbacks(receipt["readbacks"], args.scene)
         if args.mode in ("qualify","changed"):
             receipt["matches_after_reload"] = compare(baseline, receipt["readbacks"], args.scene)
         console.all("save-all flush")
@@ -363,7 +390,7 @@ def run(args):
             else:
                 process.abort()
             chain.require(process.process.poll() is not None, "Owned JVM alive; retain lock/runtime")
-        if prepared:
+        if runtime.exists():
             for name in ("logs/debug.log", "config/advancedrocketrycommunity-common.toml"):
                 if (runtime / name).is_file():
                     shutil.copy2(runtime / name, evidence / Path(name).name)
