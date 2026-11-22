@@ -185,12 +185,20 @@ def clock_check(before, after, boot_game_time=None):
 
 
 def terminal_disk(world, pos=TERMINAL):
-    state = chain.snapshot(world)
-    matches = [row["value"]["SatelliteTerminal"] for row in state["block_entities"]
-               if tuple(row["value"].get(k) for k in ("x", "y", "z")) == pos
-               and "SatelliteTerminal" in row["value"]]
+    from scripts import v170_world_fixture as fixture
+    from scripts import v120_precision_world_fixture as region
+    # A crash may leave unrelated entity chunks half-written. The reward oracle
+    # reads the owning block chunk, not every entity chunk in every dimension.
+    # No region bounds or NBT validation is relaxed.
+    cx, cz = pos[0] >> 4, pos[2] >> 4
+    path = world / "region" / f"r.{cx >> 5}.{cz >> 5}.mca"
+    raw = region._read_regular(path, region.MAX_REGION_BYTES)
+    chunk = region._decode_chunk(region._region_chunk(raw, cx, cz), cx, cz)
+    matches = [row["SatelliteTerminal"] for row in chunk.get("block_entities", [])
+               if tuple(row.get(k) for k in ("x", "y", "z")) == pos and "SatelliteTerminal" in row]
     chain.require(len(matches) == 1, "Terminal missing on disk")
-    return matches[0], state["forced_chunks"]
+    tickets = {p.relative_to(world).as_posix(): fixture.read_nbt(p) for p in sorted(world.rglob("chunks.dat"))}
+    return matches[0], tickets
 
 
 def resource_mission(root, pos=TERMINAL):
@@ -280,6 +288,9 @@ def run(args):
         chain.require(not errors, "Native ERROR/FATAL: " + str(errors))
         after = root_state(runtime / "world")
         chain.write(evidence / "registry.json", after)
+        if args.mode.startswith(("cut-", "recover-")):
+            # Preserve the actual stopped cut even if a readback/oracle refuses it.
+            shutil.copytree(runtime / "world", evidence / "source-world")
         receipt["scheduler"] = scheduler_observation(process.lines)
         receipt["same_tick"] = same_tick_observation(process.lines)
         if args.mode == "build":
@@ -306,7 +317,7 @@ def run(args):
         chain.write(evidence / "files.json", fixture.file_inventory(runtime / "world"))
         chain.require(inventory == fixture.file_inventory(source), "Source changed")
         chain.verify_seal(source.parent)
-        if args.mode == "build" or args.mode.startswith(("cut-", "recover-")) or args.mode == "load-start":
+        if args.mode == "build" or args.mode == "load-start":
             destination = folder / "source-world" if args.mode == "build" else evidence / "source-world"
             shutil.copytree(runtime / "world", destination)
         receipt["status"] = "PASS"
