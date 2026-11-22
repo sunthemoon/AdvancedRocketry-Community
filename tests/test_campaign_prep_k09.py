@@ -206,6 +206,26 @@ class K09Tests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load.check_cut(args, state, state, Path("world"), {})
 
+    def test_terminal_readback_targets_owning_block_chunk(self):
+        from scripts import v120_precision_world_fixture as region
+        terminal = dict(x=2048, y=100, z=2048, SatelliteTerminal=dict(reward_buffer=[]))
+        with TemporaryDirectory() as tmp:
+            world = Path(tmp).resolve()
+            with patch.object(region, "_read_regular", return_value=b"raw") as read, \
+                 patch.object(region, "_region_chunk", return_value=b"chunk") as select, \
+                 patch.object(region, "_decode_chunk", return_value=dict(block_entities=[terminal])):
+                saved, tickets = m.terminal_disk(world)
+                self.assertEqual(saved, terminal["SatelliteTerminal"])
+                self.assertEqual(tickets, {})
+                self.assertEqual(read.call_args.args[0], world / "region/r.4.4.mca")
+                select.assert_called_once_with(b"raw", 128, 128)
+
+    def test_terminal_readback_still_rejects_invalid_allocation(self):
+        from scripts import v120_precision_world_fixture as region
+        with TemporaryDirectory() as tmp, patch.object(region, "_read_regular", return_value=bytes(8192)):
+            with self.assertRaises(region.FixtureError):
+                m.terminal_disk(Path(tmp).resolve())
+
     def test_seal_catches_changed_and_unlisted_world_bytes(self):
         with TemporaryDirectory() as tmp:
             folder = Path(tmp).resolve()
