@@ -32,6 +32,7 @@ X, Z = 12296, 12296  # interior of chunk; no inherited region at these sites
 VARIANTS = ("idle", "active", "large-range", "batch-cut")
 PHYSICAL_CLASS = "io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserPhysicalDrill"
 BREAK_LINE = 218  # after one removeBlock, before collected.addAll, inside the nine-cell loop
+BREAKPOINT_ACK = re.compile(r"(?:Deferring|Set(?: deferred)?) breakpoint " + re.escape(PHYSICAL_CLASS) + ":218")
 
 
 def named_uuid(name):
@@ -287,7 +288,7 @@ def batch_cut(console, args, evidence, receipt, debug_port):
     debug = server.CapturedProcess(debugger_command(args.java, debug_port), evidence, evidence/"debugger.log")
     try:
         debug.command(f"stop at {PHYSICAL_CLASS}:{BREAK_LINE}")
-        debug.wait_for(re.compile(r"[Dd]eferred breakpoint|Set breakpoint"), 30)
+        debug.wait_for(BREAKPOINT_ACK, 30)
         console.query("save-all flush", r"Saved the game")
         console.query("save-off", r"Automatic saving is now disabled")
         receipt["before_cut"] = load.readbacks(console)

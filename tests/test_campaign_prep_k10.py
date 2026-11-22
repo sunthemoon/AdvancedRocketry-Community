@@ -22,6 +22,12 @@ class K10Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 k.debugger_command(Path("java"), port)
 
+    def test_breakpoint_ack_requires_the_exact_requested_location(self):
+        self.assertIsNotNone(k.BREAKPOINT_ACK.search("Deferring breakpoint " + k.PHYSICAL_CLASS + ":218."))
+        self.assertIsNotNone(k.BREAKPOINT_ACK.search("Set breakpoint " + k.PHYSICAL_CLASS + ":218"))
+        self.assertIsNone(k.BREAKPOINT_ACK.search("Set deferred uncaught java.lang.Throwable"))
+        self.assertIsNone(k.BREAKPOINT_ACK.search("Deferring breakpoint " + k.PHYSICAL_CLASS + ":217."))
+
     def test_actor_roles_are_explicit(self):
         actors = k.actors()
         self.assertEqual(104, len(actors["actors"]))
