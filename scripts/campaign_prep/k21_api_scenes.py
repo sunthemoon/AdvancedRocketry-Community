@@ -41,6 +41,7 @@ PACKS = {
     "satellite_payload_changed.zip": "b6cafb4e45e3b97c53513c217137e3de8b8af9507fbff73f4dab10fb8f55570a",
 }
 SCENES = ("component", "moon", "payload", "flight-recovery")
+MODES = ("build", "qualify", "changed", "changed-qualify", "remove")
 OWNER = "c6fcdf97-8f10-450e-ad36-67a644d23c2b"
 CONSOLE_OWNER = "00000000-0000-0000-0000-000000000005"
 COMPONENTS = {(264,101,264): "minecraft:diamond_block", (263,101,264): "minecraft:emerald_block",
@@ -269,8 +270,8 @@ def checked_copy(source, target):
 
 
 def run(args):
-    chain.require(args.scene in SCENES and args.mode in ("build","qualify","changed","remove"), "Unknown run")
-    chain.require(args.mode != "changed" or args.scene == "payload", "Changed pack is payload-only")
+    chain.require(args.scene in SCENES and args.mode in MODES, "Unknown run")
+    chain.require(not args.mode.startswith("changed") or args.scene == "payload", "Changed pack is payload-only")
     chain.require(args.mode != "remove" or args.scene in ("component","payload"), "Only two removal scenes")
     # Check authority before creating an output or starting a process.
     lock = args.lock / "owner.txt"
@@ -289,7 +290,9 @@ def run(args):
     else:
         chain.verify_seal(folder)
         layout = json.loads((folder / "manifest.json").read_text())["layout"]
-        source = folder / "source-world"
+        source_folder = folder / "changed" if args.mode == "changed-qualify" else folder
+        chain.verify_seal(source_folder)
+        source = source_folder / "source-world"
         source_inventory = fixture.file_inventory(source)
         evidence = args.output / ("removal-"+args.scene) if args.mode == "remove" else folder / args.mode
     evidence.mkdir(parents=True, exist_ok=False)
@@ -339,7 +342,8 @@ def run(args):
                 if command.startswith("arce_sat_fixture"):
                     chain.require(any('"result":0' in line for line in lines), "Payload create unsuccessful")
         elif args.mode != "remove":
-            baseline = json.loads((folder / "creation/receipt.json").read_text())["readbacks"]
+            baseline_path = folder / ("changed/receipt.json" if args.mode == "changed-qualify" else "creation/receipt.json")
+            baseline = json.loads(baseline_path.read_text())["readbacks"]
             receipt["matches"] = compare(baseline, readbacks(console, layout), args.scene)
         if args.scene == "moon" and args.mode == "build":
             pack = "atmosphere_tag_enabled.zip"
@@ -359,7 +363,7 @@ def run(args):
         receipt["readbacks"] = readbacks(console, layout)
         if args.mode != "remove":
             validate_readbacks(receipt["readbacks"], args.scene)
-        if args.mode in ("qualify","changed"):
+        if args.mode in ("qualify","changed","changed-qualify"):
             receipt["matches_after_reload"] = compare(baseline, receipt["readbacks"], args.scene)
         console.all("save-all flush")
         receipt["commands"].append("stop")
@@ -376,8 +380,14 @@ def run(args):
             chain.require(source_inventory == fixture.file_inventory(source), "Source world changed")
             chain.verify_seal(folder)
             receipt["source_unchanged"] = True
-        if args.mode in ("build","remove"):
-            checked_copy(runtime / "world", (folder / "source-world") if args.mode == "build" else evidence / "outcome-world")
+        if args.mode in ("build","changed","remove"):
+            destination = folder / "source-world" if args.mode == "build" else evidence / (
+                "source-world" if args.mode == "changed" else "outcome-world")
+            checked_copy(runtime / "world", destination)
+            if args.mode == "changed":
+                chain.write(evidence / "manifest.json", dict(identity=pins, layout=layout,
+                    variant="changed payload definition; no started mission", readbacks=receipt["readbacks"],
+                    commands=receipt["commands"], inventory="world-files.json"))
         receipt["status"] = "QUALIFIED_SUPPORTING_SCENE_NOT_CAMPAIGN_PASS" if args.mode != "remove" else "REMOVAL_OUTCOME_RECORDED_NOT_GATE"
     except BaseException as error:
         receipt["error"] = f"{type(error).__name__}: {error}"
@@ -406,7 +416,7 @@ def run(args):
 def parser():
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--scene", choices=SCENES, required=True)
-    result.add_argument("--mode", choices=("build","qualify","changed","remove"), required=True)
+    result.add_argument("--mode", choices=MODES, required=True)
     result.add_argument("--output",type=Path,default=OUTPUT)
     result.add_argument("--jar",type=Path,default=common.JAR)
     result.add_argument("--fixture",type=Path,default=FIXTURE)

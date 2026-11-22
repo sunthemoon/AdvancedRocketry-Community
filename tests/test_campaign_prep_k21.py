@@ -149,6 +149,9 @@ class CampaignPrepK21Test(unittest.TestCase):
                                        "--template","x","--java","java"])
         with self.assertRaisesRegex(ValueError, "two removal"):
             k21.run(args)
+        args.mode = "changed-qualify"
+        with self.assertRaisesRegex(ValueError, "payload-only"):
+            k21.run(args)
 
 
 if __name__ == "__main__":
