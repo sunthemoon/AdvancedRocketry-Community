@@ -238,6 +238,12 @@ def batch_cut(console, args, evidence, receipt, debug_port):
         console.query("save-all flush", r"Saved the game")
         console.query("save-off", r"Automatic saving is now disabled")
         receipt["before_cut"] = load.readbacks(console)
+        # Native save-all completed; saves are now off. Keep the stopped-store
+        # baseline before any start/link/payment, without changing a save byte.
+        # CapturedProcess deliberately does not expose cwd; the caller supplies
+        # the runtime explicitly in the receipt instead of searching processes.
+        baseline = device_state(Path(receipt["runtime"]) / "world")
+        chain.write(evidence / "pre-cut-disk-state.json", baseline)
         console.query(load.HOOK+"drive on", "ARCE_RELEASE_TEST refload drive on")
         debug.wait_for(re.compile(r"Breakpoint hit:.*LaserPhysicalDrill.*line=218"), 120)
         debug.command("where")
@@ -248,6 +254,7 @@ def batch_cut(console, args, evidence, receipt, debug_port):
             semantics="First removed cell in a planned 3x3 layer; before drops appended and marker.layerDone; all threads suspended by jdb. No eval or set performed.",
             pid=console.process.process.pid, stop="taskkill /T /F owned direct Java PID" if sys.platform == "win32" else "Popen.kill owned direct Java PID")
         hard_stop(console.process)
+        receipt["cut_disk_comparison"] = compare(baseline, device_state(Path(receipt["runtime"]) / "world"))
     finally:
         debug.abort()
 
@@ -272,6 +279,7 @@ def run(args):
     runtime = args.output / "_work" / (args.variant+"-"+args.mode)
     chain.require(not runtime.exists(), "Runtime already exists")
     receipt = dict(status="FAIL", mode=args.mode, variant=args.variant, commands=[],
+        runtime=str(runtime),
         source=str(source), source_seal_sha256=chain.digest(source.parent/"SHA256SUMS.txt"),
         candidate_commit=common.CANDIDATE, jar_sha256=chain.digest(args.jar),
         driver_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=common.ROOT, text=True).strip(),
@@ -337,7 +345,7 @@ def run(args):
         chain.write(evidence/"state.json", after)
         receipt["disk_state_sha256"] = chain.digest(evidence/"state.json")
         if args.mode != "build":
-            receipt["comparison"] = compare(before, after, exact=args.variant != "batch-cut")
+            receipt["comparison"] = compare(before, after)
         else:
             old = device_keys(before)
             created = [row for key,row in device_keys(after).items() if key not in old]
