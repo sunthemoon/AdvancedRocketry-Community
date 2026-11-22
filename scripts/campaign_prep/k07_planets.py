@@ -189,7 +189,7 @@ def check_creation(name, made, state, projected):
 def audit_errors(name, lines):
     errors = [line.strip() for line in lines if re.search(r"/(ERROR|FATAL)\]", line)]
     expected = [line for line in errors if name == "blocked-binding" and "/ERROR]" in line
-                and "Rejected planetary catalog; last valid generation remains active: Planetary lifetime bindings exceed 128" in line]
+                and "Rejected planetary catalog; last valid generation remains active: Planetary binding rejection: Planetary lifetime bindings exceed 128" in line]
     chain.require(len(expected) == (1 if name == "blocked-binding" else 0)
                   and errors == expected, "Unexpected native ERROR/FATAL or missing binding refusal")
     return dict(all_errors=errors, expected_binding_refusals=expected)

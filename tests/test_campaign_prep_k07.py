@@ -185,7 +185,7 @@ class K07Tests(unittest.TestCase):
         sleep.assert_called_once_with(.1)
 
     def test_only_exact_binding_refusal_error_is_expected(self):
-        expected = "[main/ERROR] Rejected planetary catalog; last valid generation remains active: Planetary lifetime bindings exceed 128"
+        expected = "[main/ERROR] Rejected planetary catalog; last valid generation remains active: Planetary binding rejection: Planetary lifetime bindings exceed 128"
         self.assertEqual(k07.audit_errors("blocked-binding", [expected])["all_errors"], [expected])
         for name, lines in (("discovered", [expected]), ("blocked-binding", []),
                             ("blocked-binding", [expected, expected]),
