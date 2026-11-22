@@ -181,14 +181,32 @@ class K09Tests(unittest.TestCase):
             self.assertEqual(load.source_for(args), Path("evidence/missions-101") / parent / "source-world")
 
     def test_raw_sampler_keeps_ticks_and_no_ref_verdict(self):
-        console = SimpleNamespace(query=lambda *_: "ARCE_RELEASE_TEST ticks_raw tick=3 entries=2 data=1:1000000,2:2000000")
+        replies = iter(("ARCE_RELEASE_TEST ticks_raw tick=1 entries=0 data=",
+                       "ARCE_RELEASE_TEST ticks_raw tick=3 entries=2 data=2:1000000,3:2000000",
+                       "ARCE_RELEASE_TEST ticks_raw tick=4 entries=2 data=3:2000000,4:3000000"))
+        console = SimpleNamespace(query=lambda *_: next(replies))
         args = SimpleNamespace(warmup_seconds=2, sample_seconds=3, stop_seconds=1, qualification=True)
         with TemporaryDirectory() as tmp, patch.object(load.time, "sleep"), patch.object(load, "schedule", return_value=[0]):
             receipt = {}
             load.sample(console, Path(tmp), args, receipt)
             self.assertNotIn("reference_budgets", receipt["sampling"]["summary"])
-            self.assertEqual(receipt["sampling"]["summary"]["tick_count"], 2)
-            self.assertIn("1,1000000", (Path(tmp) / "ticks.csv").read_text())
+            self.assertEqual(receipt["sampling"]["summary"]["tick_count"], 3)
+            self.assertIn("2,1000000", (Path(tmp) / "ticks.csv").read_text())
+            self.assertEqual(receipt["sampling"]["first_tick_exclusive"], 1)
+
+    def test_sampler_discards_all_warmup_ring_entries(self):
+        replies = iter(("ARCE_RELEASE_TEST ticks_raw tick=10 entries=1 data=9:999999999",
+                       "ARCE_RELEASE_TEST ticks_raw tick=11 entries=2 data=10:999999999,11:1000000",
+                       "ARCE_RELEASE_TEST ticks_raw tick=12 entries=2 data=11:1000000,12:2000000"))
+        console = SimpleNamespace(query=lambda *_: next(replies))
+        args = SimpleNamespace(warmup_seconds=2, sample_seconds=3, stop_seconds=1, qualification=True)
+        with TemporaryDirectory() as tmp, patch.object(load.time, "sleep"), patch.object(load, "schedule", return_value=[0]):
+            receipt = {}
+            load.sample(console, Path(tmp), args, receipt)
+            summary = receipt["sampling"]["summary"]
+            self.assertEqual(summary["first_tick"], 11)
+            self.assertEqual(summary["last_tick"], 12)
+            self.assertEqual(summary["mean_ms"], 1.5)
 
     def test_cut_oracles(self):
         for cut, phase, buffer, status, acknowledged in (("A", "cut", 184, "ready", 0),

@@ -241,7 +241,10 @@ def run(args):
     source = load.source_for(args)
     chain.verify_seal(source.parent)
     inventory = fixture.file_inventory(source)
-    evidence = folder / args.mode
+    tag = getattr(args, "run_tag", "")
+    chain.require(not tag or re.fullmatch(r"[a-z0-9][a-z0-9-]{0,31}", tag), "Invalid run tag")
+    chain.require(not tag or args.mode != "build", "Source construction cannot be tagged/replaced")
+    evidence = (folder / tag if tag else folder) / args.mode
     evidence.mkdir(parents=True, exist_ok=False)
     runtime = args.output / "_work" / (args.variant + "-" + args.mode)
     chain.require(not runtime.exists(), "Runtime already exists")
@@ -368,6 +371,7 @@ def main():
     parser.add_argument("--java", type=Path, required=True)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--owner", default=OWNER)
+    parser.add_argument("--run-tag", default="", help="New qualification namespace; immutable sources are reused")
     parser.add_argument("--warmup-seconds", type=float, default=120)
     parser.add_argument("--sample-seconds", type=float, default=600)
     parser.add_argument("--stop-seconds", type=float, default=1800)

@@ -16,10 +16,11 @@ def utc_now():
 def source_for(args):
     from . import k09_missions as m
     folder = args.output / args.variant
+    run_folder = folder / args.run_tag if getattr(args, "run_tag", "") else folder
     if args.mode == "build" or args.mode.startswith(("baseline-", "cut-")):
         return m.PARENT
     if args.mode == "load-restart":
-        previous = folder / "load-start"
+        previous = run_folder / "load-start"
         receipt = json.loads((previous / "receipt.json").read_text())
         stopped = datetime.fromisoformat(receipt["stopped_utc"])
         chain.require((datetime.now(timezone.utc) - stopped).total_seconds() >= args.stop_seconds,
@@ -27,7 +28,7 @@ def source_for(args):
         return previous / "source-world"
     if args.mode.startswith("recover-"):
         _, cut, step = args.mode.split("-")
-        return folder / ("cut-" + cut if step == "1" else "recover-" + cut + "-1") / "source-world"
+        return run_folder / ("cut-" + cut if step == "1" else "recover-" + cut + "-1") / "source-world"
     return folder / "source-world"
 
 
@@ -37,13 +38,19 @@ def sample(console, evidence, args, receipt):
         stop_seconds=args.stop_seconds, warmup_discarded=True, interval_seconds=1,
         qualification=args.qualification, reference_budget_comparison=False)
     time.sleep(args.warmup_seconds)
+    anchor = raw_ticks.parse_raw_tick_reply(console.query(raw_ticks.RAW_TICK_COMMAND, raw_ticks.PREFIX)).tick
+    receipt["sampling"]["first_tick_exclusive"] = anchor
     polls = []
     with (evidence / "tick-replies.log").open("x", encoding="utf-8") as stream:
-        for _ in schedule(args.sample_seconds, 1):
+        def collect():
             line = console.query(raw_ticks.RAW_TICK_COMMAND, raw_ticks.PREFIX)
             stream.write(utc_now() + " " + line + "\n")
             stream.flush()
-            polls.append(raw_ticks.parse_raw_tick_reply(line))
+            poll = raw_ticks.parse_raw_tick_reply(line)
+            polls.append(raw_ticks.RawTickPoll(poll.tick, tuple((tick, ns) for tick, ns in poll.samples if tick > anchor)))
+        for _ in schedule(args.sample_seconds, 1):
+            collect()
+        collect()  # Include the final polling interval, not only the reply at t=duration-1.
     summary = raw_ticks.summarize_raw_ticks(polls, 500)
     # The threshold is descriptive only; do not apply REF budgets on this PC.
     summary.pop("reference_budgets")
