@@ -108,8 +108,16 @@ def client_steps(rows, actors, variant):
 
 class Console(planets.Console):
     def all(self, command):
-        lines = super().all(command)
-        chain.require(not any("Station creation failed:" in s or "Station not found" in s for s in lines), str(lines))
+        # A false /execute predicate legitimately has no output. Bound every
+        # reply with a later queued echo, not a wait for the command itself.
+        start = len(self.process.lines)
+        self.commands.append(command)
+        self.process.command(command)
+        self.query("say K08_READBACK_END", r"\[Server\] K08_READBACK_END")
+        lines = [s.strip() for s in self.process.lines[start:] if "K08_READBACK_END" not in s]
+        failures = ("Station creation failed:", "Station not found", "Unknown or incomplete command",
+                    "That position is out of this world!", "That position is not loaded")
+        chain.require(not any(message in s for s in lines for message in failures), command + " " + str(lines))
         return lines
 
 
@@ -126,7 +134,13 @@ def readbacks(console, rows):
 
 
 def await_loaded(console, x, y, z):
-    console.query(f"execute in {SPACE} if loaded {x} {y} {z} run say K08_LOADED", r"\[Server\] K08_LOADED")
+    deadline = time.monotonic() + 60
+    while True:
+        lines = console.all(f"execute in {SPACE} if loaded {x} {y} {z} run say K08_LOADED")
+        if any("[Server] K08_LOADED" in s for s in lines):
+            return
+        chain.require(time.monotonic() < deadline, "Station chunk did not load within 60 seconds")
+        time.sleep(.1)
 
 
 def populate(console, variant, plan):

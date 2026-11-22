@@ -27,6 +27,21 @@ def state():
 
 
 class K08Tests(unittest.TestCase):
+    def test_silent_console_predicate_is_bounded_by_queued_echo(self):
+        class Process:
+            def __init__(self): self.lines=[]
+            def command(self,command):
+                if command == "say K08_READBACK_END":
+                    self.lines.append("[Server] K08_READBACK_END")
+            def wait_for(self,pattern,timeout,start_at):
+                for index in range(start_at,len(self.lines)):
+                    if pattern.search(self.lines[index]): return index
+                raise AssertionError("Echo not found")
+        commands=[]
+        console = prep.Console(Process(),commands)
+        self.assertEqual(console.all("execute if loaded 0 128 0 run say marker"),[])
+        self.assertEqual(len(commands),2)
+
     def test_uuid_signed_native_words(self):
         for text in (prep.OWNER, prep.OUTSIDER, "ffffffff-ffff-ffff-ffff-ffffffffffff"):
             self.assertEqual(text, prep.uuid_text(words(text)))
