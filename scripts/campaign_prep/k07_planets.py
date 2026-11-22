@@ -246,12 +246,14 @@ def run(args):
     chain.require(chain.digest(args.jar) == common.JAR_HASH, "Pinned C6 JAR required")
     folder = args.output / args.variant
     source = source_for(args.variant, args.fixtures) if args.mode == "build" else folder / "source-world"
+    chain.require(not server.is_link_or_junction(source), "Linked source root")
     chain.verify_seal(source.parent)
     before_files = fixture.file_inventory(source)
     evidence = folder / ("creation" if args.mode == "build" else "qualification")
     chain.require(not (folder / "SHA256SUMS.txt").exists() or args.mode == "qualify", "Source is sealed")
     evidence.mkdir(parents=True, exist_ok=False)
     runtime = args.output / "_work" / (args.variant + "-" + args.mode)
+    chain.require(not runtime.exists(), "Existing runtime is not owned by this invocation")
     receipt = dict(status="FAIL", commands=[], hooks=[], variant=args.variant, mode=args.mode,
                    driver_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                    driver_sha256=chain.digest(Path(__file__)))
@@ -296,6 +298,10 @@ def run(args):
         chain.require(receipt["exit_code"] == 0, "Server exit was not clean")
         receipt["errors"] = [line.strip() for line in process.lines if re.search(r"/(ERROR|FATAL)\]", line)]
         chain.require(not receipt["errors"], "Native ERROR/FATAL; retain failure")
+        config = runtime / "config" / (NS + "-common.toml")
+        chain.require(config.is_file(), "Missing generated COMMON configuration")
+        shutil.copy2(config, evidence / "host-common.toml")
+        receipt["common_config_sha256"] = chain.digest(config)
         state, projected = authority(runtime / "world")
         chain.write(evidence / "state.json", state)
         chain.write(evidence / "authority.json", projected)
