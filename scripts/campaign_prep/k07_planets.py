@@ -186,6 +186,15 @@ def check_creation(name, made, state, projected):
                       (("balance", 20), ("lifetime_earned", 120), ("lifetime_spent", 100))), "Paid receipt research totals differ")
 
 
+def audit_errors(name, lines):
+    errors = [line.strip() for line in lines if re.search(r"/(ERROR|FATAL)\]", line)]
+    expected = [line for line in errors if name == "blocked-binding" and "/ERROR]" in line
+                and "Rejected planetary catalog; last valid generation remains active: Planetary lifetime bindings exceed 128" in line]
+    chain.require(len(expected) == (1 if name == "blocked-binding" else 0)
+                  and errors == expected, "Unexpected native ERROR/FATAL or missing binding refusal")
+    return dict(all_errors=errors, expected_binding_refusals=expected)
+
+
 def populate(console, name, owner):
     if name == "private-station":
         line = console.query(f"arce station admin create {owner} {NS}:mars K07 private Mars",
@@ -303,8 +312,7 @@ def run(args):
         process.command("stop")
         receipt["exit_code"] = process.finish()
         chain.require(receipt["exit_code"] == 0, "Server exit was not clean")
-        receipt["errors"] = [line.strip() for line in process.lines if re.search(r"/(ERROR|FATAL)\]", line)]
-        chain.require(not receipt["errors"], "Native ERROR/FATAL; retain failure")
+        receipt["error_audit"] = audit_errors(args.variant, process.lines)
         config = runtime / "config" / (NS + "-common.toml")
         chain.require(config.is_file(), "Missing generated COMMON configuration")
         shutil.copy2(config, evidence / "host-common.toml")

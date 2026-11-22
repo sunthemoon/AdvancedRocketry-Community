@@ -184,6 +184,15 @@ class K07Tests(unittest.TestCase):
             self.assertEqual(k07.await_catalog(console, "12 bodies"), ["is valid with 12 bodies"])
         sleep.assert_called_once_with(.1)
 
+    def test_only_exact_binding_refusal_error_is_expected(self):
+        expected = "[main/ERROR] Rejected planetary catalog; last valid generation remains active: Planetary lifetime bindings exceed 128"
+        self.assertEqual(k07.audit_errors("blocked-binding", [expected])["all_errors"], [expected])
+        for name, lines in (("discovered", [expected]), ("blocked-binding", []),
+                            ("blocked-binding", [expected, expected]),
+                            ("blocked-binding", [expected, "[main/ERROR] unrelated failure"])):
+            with self.assertRaises(ValueError):
+                k07.audit_errors(name, lines)
+
     def test_private_station_save_checks_rights(self):
         identity = [1, 2, 3, 4]
         station = next(iter(k07.chain.saved_uuids(identity)))
