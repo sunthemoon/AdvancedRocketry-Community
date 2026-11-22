@@ -92,7 +92,8 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             processes = patches.enter_context(patch.object(runner.smoke, "CapturedProcess", return_value=process))
             patches.enter_context(patch.object(runner, "raw_snapshot", side_effect=lambda _: before_creation_raw()))
             regular = patches.enter_context(patch.object(runner, "check", side_effect=AssertionError("wrong side")))
-            report = runner.run(args)
+            runner.run(args)
+            report = json.loads((args.evidence_dir / "results.json").read_text())
             self.assertEqual("PASS", report["status"])
             self.assertEqual(2, processes.call_count)
             for call in processes.call_args_list:
