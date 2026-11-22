@@ -793,15 +793,17 @@ def refused_start(accepted=(JOURNAL_HOLD,), unaccepted=(), filtered=None, findin
 class SkipTests(unittest.TestCase):
     """Root decision R486, answer 2: the optional fourth field of the property."""
 
-    def test_only_the_registry_and_four_ledger_cases_skip_the_fixture_baseline(self):
+    def test_only_the_planned_registry_ledger_and_journal_cases_skip_fixture_setup(self):
         cases = faults.plan()
         live = [case for case in cases if not case.offline]
-        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS", "RESOURCE_ESCROW"})
+        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS", "RESOURCE_ESCROW", "ROCKET_TRANSFERS"})
         ledger = [case for case in live if case.store == "RESOURCE_ESCROW" and case.skip]
         self.assertEqual({case.fault for case in ledger}, {"MOVE_ERROR", "MOVE_DENIED", "READ_ERROR", "READ_CORRUPT"})
         self.assertEqual(len(ledger), 4)
         self.assertTrue(all(case.skip == case.count == 1 for case in ledger))
-        self.assertTrue(all(case.skip == 0 for case in live if case.store not in ("RESOURCE_ESCROW", "SATELLITE_MISSIONS")))
+        self.assertEqual([(case.fault, case.count, case.skip) for case in live if case.store == "ROCKET_TRANSFERS" and case.skip],
+                         [("WRITE_ERROR", 4, 2)])
+        self.assertTrue(all(case.skip == 0 for case in live if case.store == "BAY_RECEIPTS"))
         self.assertEqual({case.skip for case in live if case.store == "SATELLITE_MISSIONS"}, {1})
         self.assertTrue(all(case.skip == 0 for case in cases if case.offline))
         registry = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
@@ -897,8 +899,11 @@ class NotApplicableTests(unittest.TestCase):
         self.assertEqual(declared["hold_markers"], {"ROCKET_TRANSFERS": ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"],
                                                     "SATELLITE_MISSIONS": ["ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED"]})
         self.assertIn("only after an ARCE_RELEASE_STORAGE_FAULT injected line", declared["hold_rule"])
-        self.assertEqual(len(declared["skips"]), 2)
-        ledger_skip, skip = declared["skips"]
+        self.assertEqual(len(declared["skips"]), 3)
+        ledger_skip, journal_skip, skip = declared["skips"]
+        self.assertEqual((journal_skip["store"], journal_skip["skip"], journal_skip["cases"]),
+                         ("ROCKET_TRANSFERS", 2, ["X02-ROCKET_TRANSFERS-WRITE_ERROR-4"]))
+        self.assertEqual(journal_skip["reason"], faults.skip_default("ROCKET_TRANSFERS", "WRITE_ERROR", 4)[1])
         self.assertEqual((ledger_skip["store"], ledger_skip["skip"], set(ledger_skip["cases"])),
                          ("RESOURCE_ESCROW", 1, {f"X02-RESOURCE_ESCROW-{fault}-1" for fault in faults.LEDGER_BASELINE_FAULTS}))
         self.assertEqual(ledger_skip["reason"], faults.CASE_SKIP[("RESOURCE_ESCROW", "MOVE_ERROR")][1])
@@ -914,7 +919,7 @@ class NotApplicableTests(unittest.TestCase):
         self.assertEqual(faults.declarations([faults.Case("BAY_RECEIPTS", "STALE")])["skips"], [])
 
     def test_the_original_ledger_bootstrap_faults_remain_explicit_reproducible_cases(self):
-        self.assertEqual(faults.MODEL, "W368-X02-v3")
+        self.assertEqual(faults.MODEL, "W368-X02-v4")
         for fault in faults.LEDGER_BASELINE_FAULTS:
             name = f"X02-RESOURCE_ESCROW-{fault}-1"
             target, bootstrap = faults.by_id(name), faults.by_id(name + "-S0")
@@ -925,6 +930,17 @@ class NotApplicableTests(unittest.TestCase):
             self.assertEqual(faults.declarations([bootstrap])["skips"], [])
             with self.assertRaises(faults.FaultError):
                 faults.by_id(name + "-S1")
+
+    def test_only_the_four_write_journal_case_targets_the_removal_after_both_setup_writes(self):
+        name = "X02-ROCKET_TRANSFERS-WRITE_ERROR-4"
+        case = faults.by_id(name)
+        self.assertEqual((case.skip, case.spec, case.native), (2, "ROCKET_TRANSFERS:WRITE_ERROR:4:2", ("S", "FS_O3J_AFTER")))
+        self.assertEqual(faults.by_id(name + "-S0").spec, "ROCKET_TRANSFERS:WRITE_ERROR:4")
+        self.assertEqual(faults.by_id(name + "-S1").spec, "ROCKET_TRANSFERS:WRITE_ERROR:4:1")
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-WRITE_ERROR-1").skip, 0)
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-READ_ERROR-1").skip, 0)
+        with self.assertRaises(faults.FaultError):
+            faults.by_id(name + "-S2")
 
     def test_a_declared_case_is_recorded_without_a_start_and_listed_as_uncovered_scope(self):
         with tempfile.TemporaryDirectory() as temp:
