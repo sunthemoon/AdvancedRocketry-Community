@@ -60,7 +60,9 @@ class K10Tests(unittest.TestCase):
         self.assertEqual(17, len(mapping))
         for name, row in mapping.items():
             if name != "physical-layer":
-                self.assertEqual("NOT_COVERED", row["status"])
+                self.assertEqual("MAPPED_NOT_RERUN", row["status"])
+                self.assertIsNotNone(row["boundary"])
+                self.assertIn("NOT_COVERED", row["coverage"])
                 self.assertIn("not a physical", row["reason"])
 
     def test_window_defaults_and_short_classification(self):

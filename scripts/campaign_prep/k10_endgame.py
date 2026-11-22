@@ -96,13 +96,33 @@ def ground_check(world):
 def historical_cuts(archive):
     with zipfile.ZipFile(archive) as z:
         cuts = sorted(set(re.findall(r"(?:^|/)cut-([^/]+)/", "\n".join(z.namelist()), re.M)))
+    boundaries = {
+        "escrow-unsaved": "source escrow/input/FE changed in RAM, before any chunk save; no transit on disk",
+        "escrow-saved": "persist chunks after escrow, before TransitLedger.register's 40-tick saved-tag eligibility",
+        "registered-unflushed": "TransitLedger.register made REGISTERED; coalesced flush held; root on disk has no record",
+        "registered-flushed": "persist root after REGISTERED, before the source's released entry is chunk-saved",
+        "claimed-unsaved": "TransitLedger.claim / destination incoming in RAM; root and destination chunk not saved",
+        "claimed-root-saved": "persist root after CLAIMED, destination incoming chunk not saved",
+        "claimed-chunk-saved": "destination incoming/receipt chunk saved, CLAIMED root held and not persisted",
+        "moved-unflushed": "destination incoming moved to receive buffer, TransitLedger.acknowledge not flushed",
+        "ack-flushed": "acknowledgement root persisted, destination chunk still has incoming before move",
+        "removed-unsaved": "destination removal/retirement barrier persisted, destination removal not chunk-saved",
+        "removed-saved": "destination removal/retirement barrier and removal chunk both persisted",
+        "source-removed-unsaved": "source retirement barrier persisted after durable transfer; source removal not chunk-saved",
+        "elevator-cargo": "cross-Level elevator transfer CLAIMED root persisted, space terminal incoming chunk not saved",
+        "ride-countdown": "ElevatorRides.request/pending before the 100-tick commit",
+        "ride-commit": "ElevatorRides.commit after teleport/charge, before subsequent save",
+        "ride-commit-saved": "ElevatorRides.commit then save-all flush, before halt",
+    }
     result = {}
     for cut in cuts:
         ride = cut.startswith("ride-")
-        result[cut] = dict(status="NOT_COVERED", c6_seam=(
+        result[cut] = dict(status="MAPPED_NOT_RERUN" if cut in boundaries else "NOT_COVERED", c6_seam=(
             "ElevatorRides countdown/commit; elevator release-test ride/state and endgame halt" if ride else
             "TransitLedger and cargo endpoints; release-test railguns/fill/launch/endpoint/ledger/persist chunks|root|hold/halt"),
-            reason="Existing subsystem seams, but not a physical block-processing batch; no one-to-one match to LaserPhysicalDrill.remove. Not rerun or credited by K10.")
+            boundary=boundaries.get(cut),
+            coverage="NOT_COVERED by this K10 runtime qualification",
+            reason="These matched subsystem boundaries are not a physical block-processing batch. K10 qualifies LaserPhysicalDrill.remove separately; transit/ride cuts need their own runtime disk oracle and are not credited by K10." if cut in boundaries else "No C6 seam identified")
     result["physical-layer"] = dict(c6_seam=f"{PHYSICAL_CLASS}:{BREAK_LINE}",
         method="JDWP line breakpoint after first cell removeBlock, before marker.layerDone; owned-process hard stop",
         historical="Recovery matrix has A0 seven-event vectors and A1 debt/credit test, no native physical cut in the historical archive",
