@@ -105,7 +105,7 @@ class K08Tests(unittest.TestCase):
         actions = steps["actions"]
         self.assertEqual(actions[2]["actor"], prep.MEMBER)
         self.assertIn(rows[0]["id"], actions[2]["command"])
-        self.assertEqual(actions[0]["command"],f"/arce station invite {rows[0]['id']} {prep.MEMBER}")
+        self.assertEqual(actions[0]["command"],f"/arce station invite {rows[0]['id']} <online-name-for-{prep.MEMBER}>")
         removal = next(a for a in actions if a["command"].startswith("/arce station remove"))
         self.assertIn(" uuid "+prep.MEMBER, removal["command"])
         deletion = next(a for a in actions if a["command"].startswith("/arce station admin delete"))
@@ -122,6 +122,15 @@ class K08Tests(unittest.TestCase):
         self.assertEqual(steps["approach"][0]["feet"],[4.5,128,2.5])
         self.assertEqual(steps["approach"][0]["look_at"],[4.5,128.5,4.5])
         self.assertTrue(any(a["command"].endswith(":tau_ceti_e") for a in steps["actions"]))
+
+    def test_invite_requires_player_name_not_bare_uuid(self):
+        rows = [dict(id=str(UUID(int=i+1)),owner=a) for i,a in enumerate((prep.OWNER,prep.OTHER))]
+        actors = [prep.OWNER,prep.OTHER,prep.OTHER,prep.OTHER]
+        steps = prep.client_steps(rows,actors,"two","CampaignB")
+        self.assertEqual(steps["actions"][0]["command"],f"/arce station invite {rows[0]['id']} CampaignB")
+        for value in ("bad name",prep.OTHER,"bad\nstop"):
+            with self.assertRaisesRegex(ValueError,"Invalid online"):
+                prep.client_steps(rows,actors,"two",value)
 
     def test_overlay_expectations_remain_conditional_not_observations(self):
         rows = [dict(id=str(UUID(int=i+1)),owner=a) for i,a in enumerate((prep.OWNER,prep.OTHER))]

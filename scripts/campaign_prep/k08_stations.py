@@ -76,13 +76,16 @@ def creation_plan(variant, inherited, owner, other, member, outsider):
             for i, actor in enumerate(owners)]
 
 
-def client_steps(rows, actors, variant):
+def client_steps(rows, actors, variant, member_name=None):
     owner, other, member, outsider = actors
+    if member_name is not None:
+        chain.require(re.fullmatch(r"[A-Za-z0-9_]{1,16}", member_name) is not None, "Invalid online player name")
+    invitee = member_name or f"<online-name-for-{member}>"
     selected = [next(r for r in rows if r["owner"] == actor) for actor in (owner, other)]
     first, second = selected
     station = first["id"]
     target = "k06:warp_target" if variant in ("target-removal", "cost-change") else NS + ":moon"
-    steps = [dict(actor=owner, command=f"/arce station invite {station} {member}", precondition="Owner and invitee online; UUID player selector names the invitee; invitation is not membership"),
+    steps = [dict(actor=owner, command=f"/arce station invite {station} {invitee}", precondition=f"Owner and invitee online; verify player name maps to UUID {member}. EntityArgument.player requires the online name, not a bare UUID. Invitation is not membership"),
         dict(actor=member, command=f"/arce station decline {station}", precondition="Invitation exists; reinvite for the accept case"),
         dict(actor=member, command=f"/arce station accept {station}", precondition="A new invitation exists"),
         dict(actor=member, command=f"/arce station warp {target}", precondition="Accepted member, not owner/operator, local at station A's core; membership alone does not grant warp authority"),
@@ -316,7 +319,7 @@ def run(args, load_action=None):
             receipt["status"] = "PASS"
             chain.write(folder / "manifest.json", dict(schema_version=1, **receipt,
                 stations=rows, actors=actors, owners="Disposable placeholders pending O5; distinct operator-created owners, not ordinary purchases",
-                client_steps=client_steps(rows, actors, args.variant) if args.variant not in ("ten", "hundred") else None,
+                client_steps=client_steps(rows, actors, args.variant, args.member_name) if args.variant not in ("ten", "hundred") else None,
                 serves=["B-2","F-1","F-2","F-3","F-4","F01","F02","F03","F04","F05","F06","F07"],
                 classification="C6 copy of reconstructed FI06, not historically played; pending and docked-rocket states NOT_COVERED",
                 source_inventory_sha256=chain.digest(evidence / "files.json"),
@@ -354,6 +357,7 @@ def parser():
     result.add_argument("--template", type=Path, required=True)
     result.add_argument("--java", type=Path, required=True)
     result.add_argument("--lock-owner", required=True)
+    result.add_argument("--member-name", help="Online name matching --member for the scripted invite; unresolved until O5")
     for name, default in (("owner", OWNER), ("other", OTHER), ("member", MEMBER), ("outsider", OUTSIDER)):
         result.add_argument("--" + name, default=default)
     return result
