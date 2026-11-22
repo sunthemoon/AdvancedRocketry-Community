@@ -129,6 +129,20 @@ class K07Tests(unittest.TestCase):
             x, _, z, xx, _, zz = site["platform"]
             self.assertEqual((x // 16, z // 16), (xx // 16, zz // 16))
 
+    def test_sites_fit_shipped_height_not_overworld_height(self):
+        with tempfile.TemporaryDirectory() as directory:
+            jar = Path(directory) / "host.jar"
+            for height in (256, 128):
+                with zipfile.ZipFile(jar, "w") as archive:
+                    for body in ("mars", "venus", "moon"):
+                        archive.writestr(f"data/{k07.NS}/dimension_type/{body}.json",
+                                         json.dumps(dict(min_y=0, height=height)))
+                if height == 256:
+                    self.assertEqual(len(k07.validate_site_heights(jar)), 3)
+                else:
+                    with self.assertRaises(ValueError):
+                        k07.validate_site_heights(jar)
+
     def test_host_permissions_parse_inherited_capture_without_running_it(self):
         result = k07.host_properties("difficulty=peaceful\nview-distance=2\n")
         self.assertEqual(result, "difficulty=normal\nview-distance=2\nfunction-permission-level=4\n")

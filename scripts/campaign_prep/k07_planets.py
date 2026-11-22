@@ -71,8 +71,8 @@ def hazard_plan():
         ("venus-roof", "venus", 8224, True, ["heat", "pressure", "vacuum"]),
         ("moon-vacuum", "moon", 8192, False, ["vacuum"]),
     ):
-        sites.append(dict(name=name, dimension=NS + ":" + body, feet=[x + 2.5, 305, 8194.5],
-                          platform=[x, 304, 8192, x + 6, 304, 8198], roof=roof,
+        sites.append(dict(name=name, dimension=NS + ":" + body, feet=[x + 2.5, 241, 8194.5],
+                          platform=[x, 240, 8192, x + 6, 240, 8198], roof=roof,
                           unprotected_hazards=hazards, observed_player_damage=False))
     return dict(sites=sites, interval_ticks=20, environmental_damage=2.0,
                 priority=["pressure", "heat", "cold", "solar"], warning_heartbeat_ticks=100,
@@ -106,6 +106,19 @@ def host_properties(original):
     # The inherited capture function contains save-all/stop (never called here).
     # It still has to parse with permission 4, as in K03's C6 qualification.
     return original.replace("difficulty=peaceful", "difficulty=normal") + "function-permission-level=4\n"
+
+
+def validate_site_heights(jar):
+    dimensions = {}
+    with zipfile.ZipFile(jar) as archive:
+        for site in hazard_plan()["sites"]:
+            name = site["dimension"].split(":")[1]
+            value = json.loads(archive.read(f"data/{NS}/dimension_type/{name}.json"))
+            y = site["platform"][1]
+            chain.require(value["min_y"] <= y and y + 5 < value["min_y"] + value["height"],
+                          "Hazard site outside shipped dimension height: " + name)
+            dimensions[name] = value
+    return dimensions
 
 
 def authority(world):
@@ -142,8 +155,12 @@ class Console(chain.Console):
         start = len(self.process.lines)
         self.query(command, r".+")
         self.query("say K07_READBACK_END", r"\[Server\] K07_READBACK_END")
-        return [line.strip() for line in self.process.lines[start:]
-                if "K07_READBACK_END" not in line and "[K07] " not in line]
+        lines = [line.strip() for line in self.process.lines[start:]
+                 if "K07_READBACK_END" not in line and "[K07] " not in line]
+        chain.require(not any(message in line for line in lines for message in
+                      ("Unknown or incomplete command", "That position is out of this world!", "That position is not loaded")),
+                      "Native command failed: " + command + " " + str(lines))
+        return lines
 
 
 def blocked_attempt(console):
@@ -264,6 +281,7 @@ def run(args):
         encoding="utf-8-sig").startswith(args.lock_owner), "W438 heavy-JVM lock required")
     chain.require(min(shutil.disk_usage(p).free for p in ("C:/", "D:/")) >= 10 * 1024**3, "10 GiB free required")
     chain.require(chain.digest(args.jar) == common.JAR_HASH, "Pinned C6 JAR required")
+    dimension_types = validate_site_heights(args.jar) if args.variant == "hazards" else None
     folder = args.output / args.variant
     source = source_for(args.variant, args.fixtures) if args.mode == "build" else folder / "source-world"
     chain.require(not server.is_link_or_junction(source), "Linked source root")
@@ -347,6 +365,7 @@ def run(args):
                 classification="C6 copy of a reconstructed historical source, not historically played",
                 commands=receipt["commands"], readbacks=receipt["readbacks"], made=receipt["made"],
                 effective_values=values(args.jar), hazard_plan=hazard_plan() if args.variant == "hazards" else None,
+                hazard_dimension_types=dimension_types,
                 sky_observation="NOT_COVERED: sky profiles are client-only resources; hashes identify C6 bytes, not a rendered first-load sky",
                 source_inventory_sha256=chain.digest(evidence / "files.json"), hooks=receipt["hooks"],
                 client_started=False, required_gates_approved=False))
