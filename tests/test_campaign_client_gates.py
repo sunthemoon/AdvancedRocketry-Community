@@ -193,6 +193,50 @@ class GateTests(Fixture):
             cursor_captured((0, 0, 0, 0), client, desktop)
 
 
+class FocusTests(unittest.TestCase):
+    """The real adapter with fake DLLs: no WinDLL is loaded, so this also runs off Windows."""
+
+    def adapter(self, front, grants):
+        from scripts.campaign_client.windows import Windows
+        adapter = Windows.__new__(Windows)
+        adapter.k, adapter.u = Mock(), Mock()
+        state = {"front": front, "grants": list(grants)}
+        def set_foreground(handle):
+            if state["grants"].pop(0):
+                state["front"] = handle
+                return 1
+            return 0
+        adapter.u.GetForegroundWindow.side_effect = lambda: state["front"]
+        adapter.u.SetForegroundWindow.side_effect = set_foreground
+        adapter.u.GetWindowThreadProcessId.return_value = 77
+        adapter.u.AttachThreadInput.return_value = 1
+        adapter.k.GetCurrentThreadId.return_value = 11
+        return adapter
+
+    def test_window_already_in_front_is_left_alone(self):
+        adapter = self.adapter(456, [])
+        adapter.focus(456)
+        adapter.u.SetForegroundWindow.assert_not_called()
+
+    def test_plain_request_is_enough_when_windows_grants_it(self):
+        adapter = self.adapter(999, [True])
+        adapter.focus(456)
+        adapter.u.AttachThreadInput.assert_not_called()
+
+    def test_refused_request_is_repeated_on_the_foreground_threads_queue_and_detached(self):
+        adapter = self.adapter(999, [False, True])
+        adapter.focus(456)
+        self.assertEqual([(11, 77, True), (11, 77, False)],
+                         [call.args for call in adapter.u.AttachThreadInput.call_args_list])
+        self.assertEqual(2, adapter.u.SetForegroundWindow.call_count)
+
+    def test_a_second_refusal_is_reported_and_still_detached(self):
+        adapter = self.adapter(999, [False, False])
+        with self.assertRaisesRegex(ValueError, "refused to bring the client window"):
+            adapter.focus(456)
+        self.assertEqual((11, 77, False), adapter.u.AttachThreadInput.call_args_list[-1].args)
+
+
 class LockLabelTests(Fixture):
     def test_owner_names_the_session_and_keeps_the_pid_field(self):
         path = self.root / "heavy-jvm"

@@ -31,6 +31,8 @@ class Windows:
             (self.u, "MapVirtualKeyW", [W.UINT, W.UINT], W.UINT),
             (self.u, "ClientToScreen", [W.HWND, C.POINTER(W.POINT)], W.BOOL),
             (self.u, "SetWindowPos", [W.HWND, W.HWND] + [C.c_int] * 4 + [W.UINT], W.BOOL),
+            (self.k, "GetCurrentThreadId", [], W.DWORD),
+            (self.u, "AttachThreadInput", [W.DWORD, W.DWORD, W.BOOL], W.BOOL),
             (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
             (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
@@ -81,7 +83,26 @@ class Windows:
         return self.u.GetForegroundWindow()
 
     def focus(self, handle):
-        self.require(self.u.SetForegroundWindow(handle))
+        """Bring the disposable client's window to the front.
+
+        Windows refuses SetForegroundWindow to a process that neither owns the foreground window nor
+        was started by it, which is the case for a session launched without a console window (W443's
+        first v2 round failed every request here). Sharing the foreground thread's input queue for the
+        one call lifts that refusal; no key or pointer event is injected.
+        """
+        if self.u.GetForegroundWindow() == handle or self.u.SetForegroundWindow(handle):
+            return
+        front = self.u.GetForegroundWindow()
+        current = self.k.GetCurrentThreadId()
+        other = self.u.GetWindowThreadProcessId(front, None) if front else 0
+        attached = bool(other and other != current and self.u.AttachThreadInput(current, other, True))
+        try:
+            granted = self.u.SetForegroundWindow(handle)
+        finally:
+            if attached:
+                self.u.AttachThreadInput(current, other, False)
+        if not granted or self.u.GetForegroundWindow() != handle:
+            raise ValueError("Windows refused to bring the client window to the front")
 
     def size(self, handle):
         rect = W.RECT()
