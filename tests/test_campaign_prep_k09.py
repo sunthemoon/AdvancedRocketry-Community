@@ -212,7 +212,7 @@ class K09Tests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             world = Path(tmp).resolve()
             with patch.object(region, "_read_regular", return_value=b"raw") as read, \
-                 patch.object(region, "_region_chunk", return_value=b"chunk") as select, \
+                 patch.object(m, "crash_region_chunk", return_value=b"chunk") as select, \
                  patch.object(region, "_decode_chunk", return_value=dict(block_entities=[terminal])):
                 saved, tickets = m.terminal_disk(world)
                 self.assertEqual(saved, terminal["SatelliteTerminal"])
@@ -223,8 +223,21 @@ class K09Tests(unittest.TestCase):
     def test_terminal_readback_still_rejects_invalid_allocation(self):
         from scripts import v120_precision_world_fixture as region
         with TemporaryDirectory() as tmp, patch.object(region, "_read_regular", return_value=bytes(8192)):
-            with self.assertRaises(region.FixtureError):
+            with self.assertRaises(ValueError):
                 m.terminal_disk(Path(tmp).resolve())
+
+    def test_crash_reader_accepts_only_complete_unpadded_records(self):
+        import struct
+        raw = bytearray(8192)
+        raw[:4] = bytes((0, 0, 2, 1))
+        raw += struct.pack(">I", 9) + b"\x02abcdefgh"
+        self.assertEqual(m.crash_region_chunk(raw, 128, 128), b"abcdefgh")
+        for invalid in (raw[:-1], raw[:8192], raw[:4]):
+            with self.assertRaises(ValueError):
+                m.crash_region_chunk(invalid, 128, 128)
+        raw[8196] = 3
+        with self.assertRaises(ValueError):
+            m.crash_region_chunk(raw, 128, 128)
 
     def test_seal_catches_changed_and_unlisted_world_bytes(self):
         with TemporaryDirectory() as tmp:

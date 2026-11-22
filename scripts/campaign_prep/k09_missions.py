@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import struct
 import sys
 import time
 import tomllib
@@ -184,6 +185,24 @@ def clock_check(before, after, boot_game_time=None):
                 wall_downtime_counted=False, scope="Stopped native clock versus observed game ticks, not wall seconds")
 
 
+def crash_region_chunk(raw, cx, cz):
+    """Read a complete record even when a halted RegionFile lacks trailing padding.
+
+    Never pad or edit the file. The header, declared sector span, compression,
+    compressed-size bound and actual record bytes must all be present and valid.
+    """
+    from scripts import v120_precision_world_fixture as region
+    chain.require(len(raw) >= 8192, "Truncated region header")
+    index = 4 * ((cx & 31) + 32 * (cz & 31))
+    sector, count = int.from_bytes(raw[index:index+3], "big"), raw[index+3]
+    start = sector * 4096
+    chain.require(sector >= 2 and count >= 1 and start + 5 <= len(raw), "Invalid region allocation")
+    length = struct.unpack_from(">I", raw, start)[0]
+    chain.require(2 <= length <= region.MAX_COMPRESSED_CHUNK + 1 and raw[start+4] == 2
+                  and start + 4 + length <= min(len(raw), start + count * 4096), "Incomplete/invalid chunk record")
+    return raw[start+5:start+4+length]
+
+
 def terminal_disk(world, pos=TERMINAL):
     from scripts import v170_world_fixture as fixture
     from scripts import v120_precision_world_fixture as region
@@ -193,7 +212,7 @@ def terminal_disk(world, pos=TERMINAL):
     cx, cz = pos[0] >> 4, pos[2] >> 4
     path = world / "region" / f"r.{cx >> 5}.{cz >> 5}.mca"
     raw = region._read_regular(path, region.MAX_REGION_BYTES)
-    chunk = region._decode_chunk(region._region_chunk(raw, cx, cz), cx, cz)
+    chunk = region._decode_chunk(crash_region_chunk(raw, cx, cz), cx, cz)
     matches = [row["SatelliteTerminal"] for row in chunk.get("block_entities", [])
                if tuple(row.get(k) for k in ("x", "y", "z")) == pos and "SatelliteTerminal" in row]
     chain.require(len(matches) == 1, "Terminal missing on disk")
