@@ -382,6 +382,30 @@ def raw_snapshot(world: Path) -> dict:
                 block_entities=terrain["block_entities"], entities=entities(world))
 
 
+def check_before_creation(raw: dict, initial: dict) -> dict:
+    """X01-10's defined old side: no ledger, exact neutral fixture, no admission.
+
+    FF_N1's Java recover probe requires an existing ledger before it can enable
+    its next-attempt switch. Do not wait for that unreachable CREATED marker,
+    create a ledger in Python, or run the start probe (which replaces fixtures).
+    """
+    require(raw["ledger"] is None, "Before-creation replay invented a ledger")
+    require(raw["journal"] == initial["journal"] and not raw["journal"]["transfers"],
+            "Before-creation replay changed the journal")
+    require(len(raw["entities"]) == len(initial["entities"]) == 1, "Before-creation replay changed rocket count")
+    rocket, first = raw["entities"][0], initial["entities"][0]
+    require(all(rocket[k] == first[k] for k in ("UUID", "id", "Pos", "RocketEntityData")),
+            "Before-creation replay changed the rocket identity, payload, fuel or authority")
+    require(raw["block_entities"] == initial["block_entities"], "Before-creation replay changed a device root")
+    state = rocket_state(rocket, None)
+    device = device_state(dict(block_entities=raw["block_entities"]), DEVICE_POS, None)
+    require(state["cargo"] == 0 and not state["bound"] and state["epoch"] == 0 and not state["markers"]
+            and state["fuel"] == 1000 and not state["passengers"] and device is not None
+            and device["amount"] == TOTAL and device["epoch"] == 0 and not device["markers"],
+            "Before-creation replay did not conserve the neutral 5,000 mB fixture")
+    return dict(ledger=None, journal=0, rocket=state, device=device, total=TOTAL)
+
+
 def retain_failed_files(session: Path, world: Path, destination: Path) -> dict:
     """Keep original native bytes before owned-server cleanup, including failed/absent decodes."""
     files = [world / name for name in ("level.dat", "level.dat_old", "region/r.0.0.mca", "entities/r.0.0.mca")]
@@ -540,6 +564,11 @@ def run(args) -> None:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                                 "-Dadvancedrocketrycommunity.escrowCase=" + case]
+                before_creation = bool(getattr(args, "replay_before_creation", False))
+                require(not before_creation or case == "FF_N1" and restart and getattr(args, "replay_world", None) is not None,
+                        "Before-creation oracle is only for the X01 FF_N1 restart")
+                if before_creation:
+                    command = [part for part in command if not part.startswith("-Dadvancedrocketrycommunity.escrowScenario=")]
                 replay.trace_command(args, command, restart)
                 if not restart:
                     command[1:1] = [f"-D{key}={value}" for key, value in sorted(CASES[case].get("properties", {}).items())]
@@ -549,7 +578,11 @@ def run(args) -> None:
                 process = smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
                 execution_error = None
                 try:
-                    process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
+                    wanted = r"Done \(" if before_creation else re.escape(marker(case, restart))
+                    process.wait_for(re.compile(wanted), args.startup_timeout)
+                    if before_creation:
+                        process.command("save-all flush")
+                        process.wait_for(re.compile("Saved the game"), args.startup_timeout)
                     if restart:
                         process.command("stop"); start["exit_code"] = process.finish()
                     else:
@@ -573,6 +606,14 @@ def run(args) -> None:
                 try:
                     require(execution_error is None, "Start execution: " + str(execution_error))
                     require("error" not in start["raw"], "Raw decoding: " + str(start["raw"].get("error")))
+                    if before_creation:
+                        require(start["exit_code"] == 0 and not any("/ERROR]" in line or "/FATAL]" in line for line in lines),
+                                "Before-creation server failed or logged ERROR/FATAL")
+                        require(sum("Saved the game" in line for line in lines) == 1, "Missing/repeated before-creation save")
+                        initial = args.replay_context["raw0"]
+                        start["disk"] = check_before_creation(json.loads(raw.read_text(encoding="utf-8")), initial)
+                        start.update(status="PASS", oracle="FF_N1 before creation: absent ledger and exact neutral endpoints")
+                        continue
                     observations(lines, case, restart)
                     if case in ("FS_O3_AFTER", "FS_LOAD_O3_AFTER") and restart == 1:
                         first_raw = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))

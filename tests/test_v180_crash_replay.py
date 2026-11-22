@@ -88,6 +88,36 @@ class BuilderTests(unittest.TestCase):
         replay.materialize(self.t.kill, self.root / "copy", states[0])
         self.assertFalse((self.root / "copy/data/a.dat").exists())
 
+    def test_same_thread_next_open_completes_a_moved_attempt_without_directory_force(self):
+        self.t.write(data=b"baseline")
+        self.t.write(old=b"baseline", data=b"candidate")
+        writes = replay.read_trace(self.t.trace, self.t.kill)
+        self.assertTrue(writes[0].complete)
+        self.assertFalse(writes[1].complete)
+        self.assertEqual("move", writes[0].phase)  # Completion is not directory durability.
+        states = self.states(late_stores=set())
+        self.assertEqual(6, len(states))
+        self.assertTrue(all(s.derivations[0]["open_seq"] == 6 for s in states))
+
+    def test_next_open_cannot_complete_an_unmoved_attempt_or_a_different_threads_write(self):
+        for thread, truncate in (("writer", True), ("other", False)):
+            with self.subTest(thread=thread):
+                self.t.write(data=b"baseline")
+                if truncate:
+                    self.t.ops.pop(); self.t.save()
+                self.t.write(old=b"baseline", data=b"next", thread=thread)
+                with self.assertRaisesRegex(replay.ReplayError, "Overlapping"):
+                    self.states()
+                self.t.ops = []
+
+    def test_completed_nonforced_write_remains_eligible_for_late_loss(self):
+        self.t.write(data=b"baseline")
+        self.t.write(old=b"baseline", data=b"candidate")
+        states = self.states(late_stores={"RESOURCE_ESCROW"})
+        late = [s for s in states if any(d["kind"] == "LATE-LOSS" for d in s.derivations)]
+        self.assertEqual(1, len(late))
+        self.assertEqual(b"old", late[0].changes["data/a.dat"])
+
     def test_untouched_seam_roots_are_hashed_but_region_and_player_files_are_not(self):
         self.t.write()
         name = "data/advancedrocketrycommunity_celestial.dat"
@@ -220,6 +250,75 @@ class BuilderTests(unittest.TestCase):
 
 
 class CampaignTests(unittest.TestCase):
+    def test_all_old_b3_roots_use_the_existing_unconsumed_source_oracle_only(self):
+        roots = ("data/advancedrocketrycommunity_bay_receipts.dat", "data/advancedrocketrycommunity_satellite_missions.dat")
+        state = replay.State("late", {}, [dict(kind="LATE-LOSS")], dict.fromkeys(roots))
+        self.assertEqual("B1_STAGED", campaign.side_for(state, "B3_MOVED", "B3_STAGED"))
+        self.assertEqual("B8_MOVED", campaign.side_for(state, "B8_MOVED", "B8_STAGED"))
+        for root in roots:
+            changed = copy.deepcopy(state); changed.files[root] = "present"
+            self.assertNotEqual("B1_STAGED", campaign.side_for(changed, "B3_MOVED", "B3_STAGED"))
+        self.assertIn("B1_STAGED", campaign.outcomes("X01-02")["late_loss_oracles"])
+
+    def test_followup_is_a_new_named_child_never_an_overwrite_or_escape(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(campaign, "EVIDENCE_ROOT", Path(tmp)):
+            root = Path(tmp); sha = "a" * 40
+            original = root / sha; original.mkdir(); manifest = original / "MANIFEST.json"
+            pins = dict(source_commit=sha, candidate_commit=sha, jar_sha256="b" * 64)
+            manifest.write_text(json.dumps(dict(model=replay.MODEL, status="FAIL", **pins)))
+            triage = root / (sha + "-triage"); triage.mkdir(); sealed = triage / "SHA256SUMS.txt"; sealed.write_text("unchanged")
+            args = SimpleNamespace(**pins, triage_of=manifest, triage_run="followup-bay", evidence_dir=triage / "followup-bay")
+            campaign.evidence_target(args)
+            self.assertEqual("unchanged", sealed.read_text())
+            for label in ("../escape", "followup-a/b", "other"):
+                args.triage_run = label
+                with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+            args.triage_run = "followup-bay"; args.evidence_dir.mkdir()
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+
+    def test_triage_directory_is_new_pinned_sibling_and_original_is_untouched(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(campaign, "EVIDENCE_ROOT", Path(tmp)):
+            root = Path(tmp); sha = "a" * 40
+            original = root / sha; original.mkdir()
+            manifest = original / "MANIFEST.json"
+            pins = dict(source_commit=sha, candidate_commit=sha, jar_sha256="b" * 64)
+            raw = json.dumps(dict(model=replay.MODEL, status="FAIL", **pins)).encode()
+            manifest.write_bytes(raw)
+            args = SimpleNamespace(**pins, evidence_dir=root / (sha + "-triage"), triage_of=manifest)
+            result = campaign.evidence_target(args)
+            self.assertEqual(replay.sha(raw), result["sha256"])
+            self.assertEqual(raw, manifest.read_bytes())
+            args.triage_of = None
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+            args.evidence_dir = original
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+            args.triage_of = manifest; args.evidence_dir = root / (sha + "-triage")
+            args.jar_sha256 = "c" * 64
+            with self.assertRaisesRegex(replay.ReplayError, "pins/model"): campaign.evidence_target(args)
+            args.jar_sha256 = pins["jar_sha256"]
+            args.evidence_dir.mkdir()
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+
+    def test_triage_refuses_missing_foreign_or_unfinished_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(campaign, "EVIDENCE_ROOT", Path(tmp)):
+            root = Path(tmp); sha = "a" * 40
+            original = root / sha; original.mkdir()
+            manifest = original / "MANIFEST.json"
+            pins = dict(source_commit=sha, candidate_commit=sha, jar_sha256="b" * 64)
+            args = SimpleNamespace(**pins, evidence_dir=root / (sha + "-triage"), triage_of=manifest)
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+            manifest.write_text(json.dumps(dict(model=replay.MODEL, status="IN_PROGRESS", **pins)))
+            with self.assertRaisesRegex(replay.ReplayError, "not finished"): campaign.evidence_target(args)
+            args.triage_of = root / "other.json"; args.triage_of.write_bytes(manifest.read_bytes())
+            with self.assertRaises(replay.ReplayError): campaign.evidence_target(args)
+
+    def test_triage_runner_pins_harness_and_product_separately(self):
+        args = SimpleNamespace(source_commit="product", candidate_commit="product", jar_sha256="jar",
+                               triage_of=Path("MANIFEST.json"), replay_harness_commit="harness")
+        actual = campaign.runner_args(args, Path("scratch"), Path("output"), "case", "owner")
+        self.assertEqual("harness", actual.source_commit)
+        self.assertEqual("product", actual.candidate_pin["source_commit"])
+
     def test_case_oracle_uses_only_the_rewound_store_not_an_independent_write(self):
         state = replay.State("old-journal", {}, [dict(kind="S-OLD", store="ROCKET_TRANSFERS")])
         self.assertEqual("B3_MOVED", campaign.side_for(state, "B3_MOVED", "B3_STAGED", "BAY_RECEIPTS"))

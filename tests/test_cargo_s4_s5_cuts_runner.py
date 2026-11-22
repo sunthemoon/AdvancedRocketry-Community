@@ -57,7 +57,72 @@ def retired_disk():
     return disk
 
 
+def before_creation_raw():
+    section = dict(schema_version=1, resource_epoch=0, markers=[])
+    root = dict(resource_escrow=copy.deepcopy(section), snapshot=dict(relative_blocks=[dict(block_entity=dict(
+        adapter="advancedrocketrycommunity:pressurized_tank_v1", data=dict(tank=dict(fluid={}))))]),
+        assembly_transaction_id=[1, 2, 3, 4], owner_id=[5, 5, 5, 5],
+        flight_data=dict(passengers=dict(assignments=[]), fuel=dict(amount=1000), state="FUELED"))
+    device_root = dict(role="LOAD", owner=[5, 5, 5, 5], device=[7, 7, 7, 7],
+                       binding=dict(logical_rocket=[1, 2, 3, 4]), resource_escrow=copy.deepcopy(section),
+                       tank=dict(FluidName="minecraft:water", Amount=5000))
+    return dict(ledger=None, journal=dict(transfers=[]),
+                entities=[dict(UUID=[9, 9, 9, 9], id="advancedrocketrycommunity:rocket", Pos=[68.5, 100.0, 64.5], RocketEntityData=root)],
+                block_entities=[dict(x=64, y=100, z=64, arce_rocket_fluid_cargo=device_root)])
+
+
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
+    def test_before_creation_runs_two_native_saves_without_the_recover_probe(self):
+        import v180_crash_replay as replay
+        import run_v180_crash_replay as campaign
+        from contextlib import ExitStack
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as patches:
+            root = Path(tmp); (root / "template/libraries").mkdir(parents=True)
+            kill = root / "kill"; kill.mkdir()
+            jar = root / "candidate.jar"; jar.write_bytes(b"candidate")
+            initial = before_creation_raw(); initial["ledger"] = dict(writer_generation=1)
+            args = SimpleNamespace(source_server=root / "template", jar=jar, source_commit="source", lock_owner="owner",
+                session_dir=root / "session", evidence_dir=root / "evidence", java="java", startup_timeout=240,
+                case=[campaign.CASES["X01-10"][1]], dev=False, replay_world=kill, replay_state=replay.State("old", {}),
+                replay_context=dict(starts=[dict(restart=0, disk={})], raw0=initial), replay_before_creation=True)
+            process = Mock(); process.finish.return_value = 0; process.lines = ["Done (2s)!", "Saved the game"]
+            for name in ("assert_pin", "require_lock", "preflight"):
+                patches.enter_context(patch.object(runner, name, return_value={}))
+            patches.enter_context(patch.object(runner.smoke, "allocate_port", return_value=25565))
+            patches.enter_context(patch.object(runner.smoke, "write_server_configuration"))
+            processes = patches.enter_context(patch.object(runner.smoke, "CapturedProcess", return_value=process))
+            patches.enter_context(patch.object(runner, "raw_snapshot", side_effect=lambda _: before_creation_raw()))
+            regular = patches.enter_context(patch.object(runner, "check", side_effect=AssertionError("wrong side")))
+            runner.run(args)
+            report = json.loads((args.evidence_dir / "results.json").read_text())
+            self.assertEqual("PASS", report["status"])
+            self.assertEqual(2, processes.call_count)
+            for call in processes.call_args_list:
+                self.assertFalse(any("escrowScenario=" in p for p in call.args[0]))
+            self.assertEqual(["save-all flush", "stop"] * 2, [c.args[0] for c in process.command.call_args_list])
+            regular.assert_not_called()
+            self.assertEqual(["PASS", "PASS"], [s["status"] for s in report["cases"][0]["starts"][1:]])
+            self.assertFalse(args.session_dir.exists())
+
+    def test_before_creation_requires_absence_identity_neutral_authority_and_exact_resources(self):
+        initial = before_creation_raw()
+        initial["ledger"] = dict(writer_generation=1)
+        raw = before_creation_raw()
+        self.assertEqual(5000, runner.check_before_creation(raw, initial)["total"])
+        for change in (lambda d: d.update(ledger={}), lambda d: d["entities"].clear(),
+                       lambda d: d["entities"].append(copy.deepcopy(d["entities"][0])),
+                       lambda d: d["entities"][0].update(UUID=[0, 0, 0, 0]),
+                       lambda d: d["entities"][0]["RocketEntityData"]["flight_data"]["fuel"].update(amount=999),
+                       lambda d: d["block_entities"][0]["arce_rocket_fluid_cargo"]["tank"].update(Amount=4999),
+                       lambda d: d["journal"]["transfers"].append({})):
+            changed = copy.deepcopy(raw); change(changed)
+            with self.assertRaises(runner.smoke.SmokeError): runner.check_before_creation(changed, initial)
+        # Equality with a damaged initial image must not grant a pass either.
+        for change in (lambda d: d["block_entities"][0]["arce_rocket_fluid_cargo"]["tank"].update(Amount=4999),
+                       lambda d: d["entities"][0]["RocketEntityData"]["resource_escrow"].update(ledger_id="unexpected")):
+            changed = copy.deepcopy(raw); change(changed)
+            with self.assertRaises(runner.smoke.SmokeError): runner.check_before_creation(changed, changed)
+
     def test_accounted_veto_keeps_the_o1_choice_separate_from_one_sided_disk(self):
         import escrow_accounting as accounting
         import loader_cut_nbt as nbt

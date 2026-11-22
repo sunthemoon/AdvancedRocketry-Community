@@ -128,7 +128,12 @@ def read_trace(trace: Path, kill: Path) -> list[Write]:
                 if op["target"] != target:
                     raise ReplayError("Open target differs from its pending file")
                 if key in active and not active[key].complete:
-                    raise ReplayError("Overlapping writes on a thread/store")
+                    # Some writers request directory force only at checkpoints.
+                    # The next open on this same thread proves that the previous
+                    # moved attempt returned; it does not prove rename durability.
+                    if active[key].phase != "move" or active[key].target != target:
+                        raise ReplayError("Overlapping writes on a thread/store")
+                    active[key].complete = True
                 previous = targets.get(target)
                 if previous is not None and not previous.complete:
                     raise ReplayError("Overlapping writes to one target")
