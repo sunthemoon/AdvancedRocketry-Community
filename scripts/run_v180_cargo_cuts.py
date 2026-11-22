@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import shutil
 import uuid
+import zlib
 import v180_crash_replay as replay
 
 import bay_integrated_evidence as evidence_tools
@@ -230,7 +231,7 @@ def run(args) -> None:
                         healthy = evidence / f"{case}-{restart}-healthy.json"
                         healthy.write_text(json.dumps(contention.healthy(world), indent=2), encoding="utf-8")
                         start["healthy_raw"] = dict(file=healthy.name, sha256=native.digest(healthy))
-                except (OSError, ValueError, KeyError, native.smoke.SmokeError) as failure:
+                except (OSError, EOFError, zlib.error, ValueError, KeyError, native.smoke.SmokeError) as failure:
                     start["raw_error"] = str(failure)
                 try:
                     require("process_error" not in start and "raw_error" not in start,

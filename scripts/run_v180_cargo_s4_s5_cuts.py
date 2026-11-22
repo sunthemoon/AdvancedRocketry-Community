@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import shutil
 import uuid
+import zlib
 import v180_crash_replay as replay
 
 import bay_integrated_evidence as evidence_tools
@@ -567,7 +568,7 @@ def run(args) -> None:
                     raw = evidence / f"{case}-{restart}-raw.json"
                     raw.write_text(json.dumps(raw_snapshot(world), indent=1), encoding="utf-8")
                     start["raw"] = dict(file=raw.name, sha256=digest(raw))
-                except (OSError, ValueError, KeyError, smoke.SmokeError) as failure:
+                except (OSError, EOFError, zlib.error, ValueError, KeyError, smoke.SmokeError) as failure:
                     start["raw"] = dict(error=str(failure))
                 try:
                     require(execution_error is None, "Start execution: " + str(execution_error))
