@@ -93,7 +93,7 @@ class K08Tests(unittest.TestCase):
         source = Path(prep.__file__).read_text(encoding="utf-8")
         for forbidden in ("write_nbt", "write_region", "data merge", "data modify", "summon ", "execute as "):
             self.assertNotIn(forbidden, source)
-        self.assertIn('":solar_generator"', '"' + prep.NS + ':solar_generator"') if False else self.assertIn('solar_generator', source)
+        self.assertIn('solar_generator', source)
 
     def test_c10_defaults_and_short_window_label(self):
         parsed = load.parser().parse_args(["--variant","ten","--mode","load","--run-label","loaded",
