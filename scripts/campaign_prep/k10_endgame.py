@@ -399,6 +399,10 @@ def run(args):
         if process is not None:
             process.abort()
             chain.require(process.process.poll() is not None, "Owned JVM alive; retain runtime and lock")
+        if args.variant == "batch-cut" and args.mode == "build" and receipt["status"] != "PASS" and (runtime/"world").exists():
+            # A failed cut/read-only decoder must not erase the actual stopped
+            # bytes needed to diagnose it. Keep only the world, not the server.
+            shutil.copytree(runtime/"world", evidence/"failed-cut-world")
         if (runtime/"logs/debug.log").exists():
             shutil.copy2(runtime/"logs/debug.log", evidence/"debug.log")
         chain.write(evidence/"receipt.json", receipt)
