@@ -274,10 +274,17 @@ def hard_stop(captured):
     captured.process.wait(timeout=30)
 
 
+def debugger_command(java, port):
+    chain.require(type(port) is int and 1 <= port <= 65535, "Invalid debugger port")
+    jdb = java.with_name("jdb.exe" if sys.platform == "win32" else "jdb")
+    # Windows jdb -attach selects shared memory by default; force the socket
+    # connector to match the explicitly loopback-bound dt_socket agent.
+    return [str(jdb), "-connect", f"com.sun.jdi.SocketAttach:hostname=127.0.0.1,port={port}"]
+
+
 def batch_cut(console, args, evidence, receipt, debug_port):
     from scripts import run_dedicated_server_smoke as server
-    jdb = args.java.with_name("jdb.exe" if sys.platform == "win32" else "jdb")
-    debug = server.CapturedProcess([str(jdb), "-attach", f"127.0.0.1:{debug_port}"], evidence, evidence/"debugger.log")
+    debug = server.CapturedProcess(debugger_command(args.java, debug_port), evidence, evidence/"debugger.log")
     try:
         debug.command(f"stop at {PHYSICAL_CLASS}:{BREAK_LINE}")
         debug.wait_for(re.compile(r"[Dd]eferred breakpoint|Set breakpoint"), 30)

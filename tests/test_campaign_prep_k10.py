@@ -14,6 +14,14 @@ class K10Tests(unittest.TestCase):
         # Independently checked with Java 17 UUID.nameUUIDFromBytes via jshell.
         self.assertEqual("894c3119-32d4-3eb8-ba7a-7cea0e537912", k.named_uuid("arce-refload-owner-0"))
 
+    def test_debugger_forces_loopback_socket_on_every_platform(self):
+        command = k.debugger_command(Path("jdk/bin/java"), 12345)
+        self.assertEqual("-connect", command[1])
+        self.assertEqual("com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=12345", command[2])
+        for port in (0, -1, 65536, True):
+            with self.assertRaises(ValueError):
+                k.debugger_command(Path("java"), port)
+
     def test_actor_roles_are_explicit(self):
         actors = k.actors()
         self.assertEqual(104, len(actors["actors"]))
