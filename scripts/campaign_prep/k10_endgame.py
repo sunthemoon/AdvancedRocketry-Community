@@ -164,16 +164,32 @@ class Console(planets.Console):
 
 def device_state(world):
     """Read-only native projection, keeping FULL device roots, not synthesized tags."""
-    state = chain.snapshot(world)
+    from scripts import v170_world_fixture as fixture
+    from scripts import v120_precision_world_fixture as region
+    from scripts.campaign_prep.k09_missions import crash_region_chunk
     devices = []
     kinds = {"orbital_laser_drill", "laser_target", "railgun", "black_hole_generator",
              "gravity_field_controller", "elevator_anchor", "elevator_terminal"}
-    for row in state["block_entities"]:
-        value = row["value"]
-        if value["id"].split(":")[-1] in kinds:
-            devices.append(row)
-    return dict(devices=devices, endgame=state["roots"][common.NS+"_endgame.dat"]["data"],
-        stations=state["roots"][common.NS+"_stations.dat"]["data"]["stations"], forced_chunks=state["forced_chunks"])
+    # Entity regions are not this device-store oracle. In particular a live
+    # save/forced stop may leave unrelated entity-sector padding unfinished.
+    # K09's reader requires every declared record byte, compression and sector
+    # bound, but does not require unused trailing sector padding. No repair.
+    for path in sorted(world.rglob("region/r.*.*.mca")):
+        raw = region._read_regular(path, region.MAX_REGION_BYTES)
+        chain.require(len(raw) >= 8192, "Truncated region header")
+        rx, rz = map(int, path.stem.split(".")[1:])
+        for slot in range(1024):
+            if not int.from_bytes(raw[slot*4:slot*4+3], "big"):
+                continue
+            cx, cz = rx*32 + slot%32, rz*32 + slot//32
+            chunk = region._decode_chunk(crash_region_chunk(raw, cx, cz), cx, cz)
+            for value in chunk.get("block_entities", []):
+                if value.get("id") in {common.NS+":"+kind for kind in kinds}:
+                    devices.append(dict(region=path.relative_to(world).as_posix(), value=value))
+    return dict(devices=devices,
+        endgame=fixture.read_nbt(world/"data"/(common.NS+"_endgame.dat"))["data"],
+        stations=fixture.read_nbt(world/"data"/(common.NS+"_stations.dat"))["data"]["stations"],
+        forced_chunks={p.relative_to(world).as_posix(): fixture.read_nbt(p) for p in sorted(world.rglob("chunks.dat"))})
 
 
 def device_keys(state):

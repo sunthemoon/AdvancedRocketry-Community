@@ -135,6 +135,28 @@ class K10Tests(unittest.TestCase):
         self.assertEqual("00000000-0000-0000-0000-000000000001", rows[0]["device_id"])
         self.assertEqual(1, len(k.device_index(state, {("region/r.0.0.mca",1,2,3)})))
 
+    def test_device_reader_excludes_entities_and_requires_complete_record(self):
+        # Fabricated bytes supplied to the reader, never an edited native save.
+        import struct
+        world = Path("synthetic-oracle")
+        path = world / "region/r.0.0.mca"
+        raw = bytearray(8198)
+        raw[:4] = bytes((0,0,2,1))
+        raw[8192:8196] = struct.pack(">I", 2)
+        raw[8196:] = bytes((2,0))
+        value = dict(id=k.common.NS+":laser_target",x=0,y=0,z=0,endgame={})
+        def paths(self, pattern):
+            return iter([path]) if pattern == "region/r.*.*.mca" else iter([])
+        with patch.object(Path, "rglob", paths), \
+             patch("scripts.campaign_prep.k03_chain.snapshot", side_effect=AssertionError("world-wide oracle")), \
+             patch("scripts.v170_world_fixture.read_nbt", return_value={"data":{"stations":[]}}), \
+             patch("scripts.v120_precision_world_fixture._decode_chunk", return_value={"block_entities":[value]}), \
+             patch("scripts.v120_precision_world_fixture._read_regular", return_value=bytes(raw)) as read:
+            self.assertEqual(value,k.device_state(world)["devices"][0]["value"])
+            read.return_value = bytes(raw[:-1])
+            with self.assertRaisesRegex(ValueError,"Incomplete/invalid"):
+                k.device_state(world)
+
     def test_unobservable_caches_and_tickets_are_not_inferred(self):
         plan = load.observation_plan()
         self.assertIn("NOT_COVERED", plan["cache_scope"])
