@@ -180,6 +180,27 @@ def device_keys(state):
             for row in state["devices"]}
 
 
+def device_index(state, excluded=()):
+    """Human-readable IDs/dimensions derived from native roots, never new IDs."""
+    result = []
+    for row in state["devices"]:
+        value, region = row["value"], row["region"]
+        key = (region, value["x"], value["y"], value["z"])
+        if key in excluded:
+            continue
+        root = value["endgame"]
+        device_id, owner_id = (chain.saved_uuids(root[name]) for name in ("device_id", "owner_id"))
+        chain.require(len(device_id) == len(owner_id) == 1, "Unidentified fixture device")
+        dim = OW if region.startswith("region/") else common.NS + ":space"
+        chain.require(dim == OW or region.startswith("dimensions/"+common.NS+"/space/region/"), "Unexpected device dimension")
+        owner_id = next(iter(owner_id))
+        stations = [s for s in state["stations"] if chain.saved_uuids(s["owner_id"]) == {owner_id}]
+        result.append(dict(kind=value["id"], pos=[value[c] for c in ("x","y","z")], dimension=dim,
+            device_id=next(iter(device_id)), owner_id=owner_id, native_state=root,
+            stations=[dict(station_id=next(iter(chain.saved_uuids(s["station_id"]))), orbit_body=s["orbit_body"]) for s in stations]))
+    return result
+
+
 def compare(before, after, exact=True):
     old, new = device_keys(before), device_keys(after)
     chain.require(old.keys() == new.keys(), "Device set changed on restart")
@@ -377,6 +398,7 @@ def run(args):
             old = device_keys(before)
             created = [row for key,row in device_keys(after).items() if key not in old]
             chain.write(evidence/"created-devices.json", created)
+            receipt["devices"] = device_index(after, old)
             receipt["created_device_count"] = len(created)
             chain.require(len(created) == 152, "Expected 152 new devices (20+4+16+64+32+16)")
         shutil.copy2(runtime/"config"/(common.NS+"-common.toml"), evidence/"host-common.toml")

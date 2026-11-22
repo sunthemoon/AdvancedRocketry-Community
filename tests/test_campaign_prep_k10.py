@@ -111,6 +111,16 @@ class K10Tests(unittest.TestCase):
             k.compare(state,other)
         self.assertFalse(k.compare(state,other,exact=False)["full_device_roots_equal"])
 
+    def test_device_index_uses_native_ids_and_dimension(self):
+        value = dict(id="test:device", x=1,y=2,z=3,
+            endgame=dict(device_id=[0,0,0,1], owner_id=[0,0,0,2]))
+        state = dict(devices=[dict(region="region/r.0.0.mca",value=value),
+            dict(region="dimensions/advancedrocketrycommunity/space/region/r.0.0.mca",value=value)], stations=[])
+        rows = k.device_index(state)
+        self.assertEqual([k.OW,k.SPACE], [r["dimension"] for r in rows])
+        self.assertEqual("00000000-0000-0000-0000-000000000001", rows[0]["device_id"])
+        self.assertEqual(1, len(k.device_index(state, {("region/r.0.0.mca",1,2,3)})))
+
     def test_unobservable_caches_and_tickets_are_not_inferred(self):
         plan = load.observation_plan()
         self.assertIn("NOT_COVERED", plan["cache_scope"])
