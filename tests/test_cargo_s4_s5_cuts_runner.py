@@ -86,7 +86,7 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
                 replay_context=dict(starts=[dict(restart=0, disk={})], raw0=initial), replay_before_creation=True)
             process = Mock(); process.finish.return_value = 0; process.lines = ["Done (2s)!", "Saved the game"]
             for name in ("assert_pin", "require_lock", "preflight"):
-                patches.enter_context(patch.object(runner, name))
+                patches.enter_context(patch.object(runner, name, return_value={}))
             patches.enter_context(patch.object(runner.smoke, "allocate_port", return_value=25565))
             patches.enter_context(patch.object(runner.smoke, "write_server_configuration"))
             processes = patches.enter_context(patch.object(runner.smoke, "CapturedProcess", return_value=process))
