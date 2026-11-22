@@ -168,6 +168,11 @@ the window must be in front, and a window that covers the whole desktop on a sin
 refused as undecidable. `status` reports the same reading as `pointer_captured` (null when the
 window is not in front).
 
+In launch mode the driver brings its disposable client to the front before each input. When Windows
+refuses that to a session started without a console window, the driver first shares the foreground
+thread's input queue for the call, and as a last resort sends one synthetic Alt tap, the only
+desktop-wide input it ever sends. Attach mode never does either: the owner brings the window forward.
+
 ## Other session options
 
 - A launch client may set `"pause_on_lost_focus": true`; the disposable `options.txt` then gets

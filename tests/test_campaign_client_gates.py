@@ -229,11 +229,19 @@ class FocusTests(unittest.TestCase):
         self.assertEqual([(11, 77, True), (11, 77, False)],
                          [call.args for call in adapter.u.AttachThreadInput.call_args_list])
         self.assertEqual(2, adapter.u.SetForegroundWindow.call_count)
+        adapter.u.keybd_event.assert_not_called()
 
-    def test_a_second_refusal_is_reported_and_still_detached(self):
-        adapter = self.adapter(999, [False, False])
+    def test_last_resort_is_one_alt_tap_that_is_always_released(self):
+        adapter = self.adapter(999, [False, False, True])
+        adapter.focus(456)
+        self.assertEqual([(0x12, 0, 0, 0), (0x12, 0, 2, 0)], [call.args for call in adapter.u.keybd_event.call_args_list])
+        self.assertEqual((11, 77, False), adapter.u.AttachThreadInput.call_args_list[-1].args)
+
+    def test_a_final_refusal_is_reported_with_alt_released_and_the_queue_detached(self):
+        adapter = self.adapter(999, [False, False, False])
         with self.assertRaisesRegex(ValueError, "refused to bring the client window"):
             adapter.focus(456)
+        self.assertEqual((0x12, 0, 2, 0), adapter.u.keybd_event.call_args_list[-1].args)
         self.assertEqual((11, 77, False), adapter.u.AttachThreadInput.call_args_list[-1].args)
 
 

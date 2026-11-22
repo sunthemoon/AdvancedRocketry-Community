@@ -33,6 +33,7 @@ class Windows:
             (self.u, "SetWindowPos", [W.HWND, W.HWND] + [C.c_int] * 4 + [W.UINT], W.BOOL),
             (self.k, "GetCurrentThreadId", [], W.DWORD),
             (self.u, "AttachThreadInput", [W.DWORD, W.DWORD, W.BOOL], W.BOOL),
+            (self.u, "keybd_event", [W.BYTE, W.BYTE, W.DWORD, C.c_size_t], None),
             (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
             (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
@@ -101,6 +102,17 @@ class Windows:
         finally:
             if attached:
                 self.u.AttachThreadInput(current, other, False)
+        if granted and self.u.GetForegroundWindow() == handle:
+            return
+        # Last resort, launch mode only (attach mode never calls focus): one synthetic Alt tap makes this
+        # process the receiver of the last input event, which Windows accepts as the right to choose the
+        # foreground window. It is the only desktop-wide input the driver ever sends (W443: the shared
+        # queue alone was still refused while a browser held the foreground).
+        self.u.keybd_event(0x12, 0, 0, 0)
+        try:
+            granted = self.u.SetForegroundWindow(handle)
+        finally:
+            self.u.keybd_event(0x12, 0, 2, 0)
         if not granted or self.u.GetForegroundWindow() != handle:
             raise ValueError("Windows refused to bring the client window to the front")
 
