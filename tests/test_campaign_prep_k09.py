@@ -128,6 +128,19 @@ class K09Tests(unittest.TestCase):
         after = copy.deepcopy(before)
         after["instances"] = [dict(schema_version=2, origin_kind="survey_mission", origin_id=[1, 2, 3, 4], seed=5)]
         m.compare_missions(before, after)
+
+    def test_root3_adds_only_empty_ground_surveys(self):
+        before, after = root(), root()
+        before["schema_version"] = 3
+        after.update(schema_version=4, ground_surveys=[])
+        m.compare_missions(before, after)
+        after["ground_surveys"] = [dict(job="unexpected")]
+        with self.assertRaises(ValueError):
+            m.compare_missions(before, after)
+        before["schema_version"] = 4
+        after["ground_surveys"] = []
+        with self.assertRaises(ValueError):
+            m.compare_missions(before, after)
         after["instances"][0]["seed"] = 9
         with self.assertRaises(ValueError):
             m.compare_missions(before, after)

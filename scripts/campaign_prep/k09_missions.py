@@ -167,7 +167,10 @@ def compare_missions(before, after):
             instance.update(schema_version=2, origin_kind="survey_mission", origin_id=instance.pop("source_mission"))
     chain.require(instances == after["instances"], "Instance snapshot changed beyond schema-1 migration")
     for field in ("satellites", "ground_surveys"):
-        chain.require(before.get(field) == after.get(field), "Unexpected authority change: " + field)
+        initial = before.get(field)
+        if field == "ground_surveys" and field not in before and before.get("schema_version") == 3:
+            initial = []  # C6's explicit root-3 -> root-4 migration, not an arbitrary missing section.
+        chain.require(initial == after.get(field), "Unexpected authority change: " + field)
     return dict(ids_equal=True, snapshots_equal=True, accounts_equal=True, completed=transitions)
 
 
