@@ -129,6 +129,10 @@ class K07Tests(unittest.TestCase):
             x, _, z, xx, _, zz = site["platform"]
             self.assertEqual((x // 16, z // 16), (xx // 16, zz // 16))
 
+    def test_host_permissions_parse_inherited_capture_without_running_it(self):
+        result = k07.host_properties("difficulty=peaceful\nview-distance=2\n")
+        self.assertEqual(result, "difficulty=normal\nview-distance=2\nfunction-permission-level=4\n")
+
     def test_existing_c6_environment_contract(self):
         base = k07.ROOT / k07.common.JAVA_ROOT
         exposure = (base / "celestial/environment/EnvironmentalExposure.java").read_text()

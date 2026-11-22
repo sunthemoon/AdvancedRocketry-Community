@@ -102,6 +102,12 @@ def site_commands():
     return commands
 
 
+def host_properties(original):
+    # The inherited capture function contains save-all/stop (never called here).
+    # It still has to parse with permission 4, as in K03's C6 qualification.
+    return original.replace("difficulty=peaceful", "difficulty=normal") + "function-permission-level=4\n"
+
+
 def authority(world):
     """Stopped, read-only native projection; never a save serializer."""
     state = chain.snapshot(world)
@@ -206,6 +212,7 @@ def populate(console, name, owner):
     if name == "blocked-binding":
         return blocked_attempt(console)
     if name == "hazards":
+        console.all("gamerule doDaylightCycle true")
         for command in site_commands():
             console.all(command)
         # No persistent tickets in a campaign source; subsequent readbacks explicitly load their small areas.
@@ -262,7 +269,7 @@ def run(args):
         fixture.prepare(args.template, runtime, args.jar, source)
         # prepare's peaceful fixture override is unsuitable for C20. Use vanilla default difficulty.
         properties = runtime / "server.properties"
-        properties.write_text(properties.read_text(encoding="ascii").replace("difficulty=peaceful", "difficulty=normal"), encoding="ascii")
+        properties.write_text(host_properties(properties.read_text(encoding="ascii")), encoding="ascii")
         argfile = "win_args.txt" if sys.platform == "win32" else "unix_args.txt"
         command = [str(args.java), "-Xms512M", "-Xmx2G"]
         if args.mode == "build" and args.variant == "paid-pending":
