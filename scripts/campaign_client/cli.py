@@ -54,6 +54,8 @@ def main(argv=None):
     session = commands.add_parser("session", help="Run an owner-approved live round")
     session.add_argument("session", type=Path)
     session.add_argument("--jvm-lock", type=Path, required=True, help="Machine-wide heavy-JVM lock directory")
+    session.add_argument("--lock-label", help="Name written before pid= in the lock's owner.txt "
+                         "(default: campaign-<run directory name>)")
     frames = commands.add_parser("frames", help="Analyze a previously captured PresentMon CSV")
     frames.add_argument("csv", type=Path)
     group = frames.add_mutually_exclusive_group(required=True)
@@ -82,7 +84,7 @@ def main(argv=None):
         if args.command == "request":
             return submit(args.run, args.ops, args.mode, args.players, args.timeout)
         from .session import run_session
-        return run_session(args.session, args.jvm_lock)
+        return run_session(args.session, args.jvm_lock, args.lock_label)
     except (OSError, ValueError, KeyError, TypeError, RuntimeError, TimeoutError) as exc:
         print(redact(f"FAIL: {type(exc).__name__}: {exc}"), file=sys.stderr)
         return 1

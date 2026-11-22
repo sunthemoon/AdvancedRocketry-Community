@@ -4,6 +4,7 @@ from ctypes import wintypes as W
 from pathlib import PureWindowsPath
 
 from .attach import ProcessIdentity, WindowIdentity
+from .gates import cursor_captured
 
 
 class Windows:
@@ -30,6 +31,11 @@ class Windows:
             (self.u, "MapVirtualKeyW", [W.UINT, W.UINT], W.UINT),
             (self.u, "ClientToScreen", [W.HWND, C.POINTER(W.POINT)], W.BOOL),
             (self.u, "SetWindowPos", [W.HWND, W.HWND] + [C.c_int] * 4 + [W.UINT], W.BOOL),
+            (self.k, "GetCurrentThreadId", [], W.DWORD),
+            (self.u, "AttachThreadInput", [W.DWORD, W.DWORD, W.BOOL], W.BOOL),
+            (self.u, "keybd_event", [W.BYTE, W.BYTE, W.DWORD, C.c_size_t], None),
+            (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
+            (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
         for dll, name, args, result in definitions:
             fn = getattr(dll, name)
@@ -78,20 +84,75 @@ class Windows:
         return self.u.GetForegroundWindow()
 
     def focus(self, handle):
-        self.require(self.u.SetForegroundWindow(handle))
+        """Bring the disposable client's window to the front.
+
+        Windows refuses SetForegroundWindow to a process that neither owns the foreground window nor
+        was started by it, which is the case for a session launched without a console window (W443's
+        first v2 round failed every request here). Sharing the foreground thread's input queue for the
+        one call lifts that refusal; no key or pointer event is injected.
+        """
+        if self.u.GetForegroundWindow() == handle or self.u.SetForegroundWindow(handle):
+            return
+        front = self.u.GetForegroundWindow()
+        current = self.k.GetCurrentThreadId()
+        other = self.u.GetWindowThreadProcessId(front, None) if front else 0
+        attached = bool(other and other != current and self.u.AttachThreadInput(current, other, True))
+        try:
+            granted = self.u.SetForegroundWindow(handle)
+        finally:
+            if attached:
+                self.u.AttachThreadInput(current, other, False)
+        if granted and self.u.GetForegroundWindow() == handle:
+            return
+        # Last resort, launch mode only (attach mode never calls focus): one synthetic Alt tap makes this
+        # process the receiver of the last input event, which Windows accepts as the right to choose the
+        # foreground window. It is the only desktop-wide input the driver ever sends (W443: the shared
+        # queue alone was still refused while a browser held the foreground).
+        self.u.keybd_event(0x12, 0, 0, 0)
+        try:
+            granted = self.u.SetForegroundWindow(handle)
+        finally:
+            self.u.keybd_event(0x12, 0, 2, 0)
+        if not granted or self.u.GetForegroundWindow() != handle:
+            raise ValueError("Windows refused to bring the client window to the front")
 
     def size(self, handle):
         rect = W.RECT()
         self.require(self.u.GetClientRect(handle, C.byref(rect)))
         return rect.right, rect.bottom
 
+    def cursor_captured(self, handle):
+        clip, origin = W.RECT(), W.POINT(0, 0)
+        self.require(self.u.GetClipCursor(C.byref(clip)))
+        self.require(self.u.ClientToScreen(handle, C.byref(origin)))
+        width, height = self.size(handle)
+        left, top = self.u.GetSystemMetrics(76), self.u.GetSystemMetrics(77)
+        desktop = (left, top, left + self.u.GetSystemMetrics(78), top + self.u.GetSystemMetrics(79))
+        return cursor_captured((clip.left, clip.top, clip.right, clip.bottom),
+                               (origin.x, origin.y, origin.x + width, origin.y + height), desktop)
+
     def post(self, handle, message, word=0, value=0):
         self.require(self.u.PostMessageW(handle, message, word, value))
 
+    # Shift, as the virtual key the system reports for it. GLFW polls the real state of both Shift keys
+    # and releases one it sees pressed only in a window message, so a posted Shift never holds
+    # (W443: the sneak-and-use on the rocket assembler arrived as a plain use).
+    SYSTEM_KEYS = {0x10: 0xA0, 0xA0: 0xA0, 0xA1: 0xA1}
+
     def key(self, handle, code, down):
+        if code in self.SYSTEM_KEYS:
+            if down and self.u.GetForegroundWindow() != handle:
+                raise ValueError("Shift is a desktop-wide key and needs the client window in front")
+            self.system_key(code, down)
+            return
         scan = self.u.MapVirtualKeyW(code, 0)
         flags = 1 | scan << 16 | (0 if down else 3 << 30)
         self.post(handle, 0x100 if down else 0x101, code, flags)
+
+    def system_key(self, code, down):
+        """Press or release Shift in the system input queue. A release is always allowed."""
+        key = self.SYSTEM_KEYS[code]
+        self.u.keybd_event(key, self.u.MapVirtualKeyW(key, 0) & 0xFF, 0 if down else 2, 0)
 
     def point(self, handle, x, y, screen=False):
         width, height = self.size(handle)

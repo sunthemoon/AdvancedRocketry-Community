@@ -86,6 +86,20 @@ class Input:
         self.sleep(op.get("settle", 0.2))
         return {"op": kind, "client_size": self.backend.size(self.handle)}
 
+    def screen_open(self):
+        """Whether Minecraft shows the pointer (a screen, chat or menu); read only while the window is in front."""
+        self.guard()
+        return not self.backend.cursor_captured(self.handle)
+
+    def wait_screen(self, open_, timeout):
+        deadline = time.monotonic() + timeout
+        while True:
+            if self.screen_open() == open_:
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            self.sleep(0.1)
+
     def screenshot(self, game, output):
         if output.exists():
             raise ValueError("Screenshot evidence already exists")
@@ -115,6 +129,14 @@ class Input:
             # Releases are bounded cleanup, not new actions after the session deadline.
             self.sleep = time.sleep
             for code in list(self.held):
-                self.key_state(code, False)
+                try:
+                    self.key_state(code, False)
+                except Exception:
+                    # A desktop-wide key (Shift) must not stay pressed because the window lost the front.
+                    release = getattr(self.backend, "system_key", None)
+                    if release is None or code not in getattr(self.backend, "SYSTEM_KEYS", ()):
+                        raise
+                    release(code, False)
+                    self.held.discard(code)
         finally:
             self.sleep = sleep

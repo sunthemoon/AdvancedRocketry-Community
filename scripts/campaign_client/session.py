@@ -1,5 +1,6 @@
 """Session lifecycle and file-drop rounds; owner clients are never owned processes."""
 import os
+import re
 import shutil
 import time
 import uuid
@@ -8,6 +9,7 @@ from pathlib import Path
 from .attach import AttachedClient, matching_windows
 from .cells import copy_tree, load_cell
 from .evidence import copy_log, dumps, now, write_json
+from .gates import ExpectationFailed, PreconditionFailed
 from .input import Input
 from .launch import prepare_client
 from .processes import CapturedProcess, require_windows
@@ -15,16 +17,24 @@ from .protocol import INPUTS, load_session, read_request
 from .server import server_command, write_settings
 
 
+def lock_label(value):
+    """The words before ``pid=`` in owner.txt: they name the session, so another worker can tell who holds the lock."""
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9._-]{1,64}", value):
+        raise ValueError("Lock label needs 1..64 letters, digits, dots, underscores or hyphens")
+    return value
+
+
 class MachineLock:
-    def __init__(self, path):
+    def __init__(self, path, label="campaign-session"):
         self.path, self.token = Path(path), uuid.uuid4().hex
+        self.label = lock_label(label)
         self.retain = False
 
     def __enter__(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.mkdir()  # Atomic and fail-closed if the machine is busy; never break someone else's lock.
         try:
-            (self.path / "owner.txt").write_text(f"W399 campaign pid={os.getpid()} {self.token} {now()}", encoding="utf-8")
+            (self.path / "owner.txt").write_text(f"{self.label} pid={os.getpid()} {self.token} {now()}", encoding="utf-8")
         except BaseException:
             self.path.rmdir()
             raise
@@ -53,7 +63,8 @@ class Session:
         self.summary = {"schema_version": 1, "started_at": now(), "mode": spec["mode"], "status": "STARTING",
                         "forge": cell["forge"], "jei": cell["jei"], "version_id": cell["version_id"],
                         "candidate_sha256": cell["candidate"]["sha256"], "request_count": 0,
-                        "failed_requests": 0, "screenshots": [], "cleanup_errors": []}
+                        "failed_requests": 0, "precondition_failures": 0, "screenshots": [], "cleanup_errors": []}
+        self.request_start = 0
 
     def check_time(self):
         if any(getattr(process, "error", None) for process, _ in self.owned):
@@ -160,6 +171,34 @@ class Session:
             self.sleep(0.1)
         raise TimeoutError("Attached log wait expired")
 
+    def pointer_captured(self, client):
+        """Diagnostic only: None when the window is not in front or the state cannot be read."""
+        handle = client["input"].handle
+        try:
+            return self.backend.cursor_captured(handle) if self.backend.foreground() == handle else None
+        except (OSError, ValueError, AttributeError):
+            return None
+
+    def log_source(self, client):
+        return self.server if self.server is not None else client["process"]
+
+    def send_command(self, client, command):
+        """Send one command and return the log position its reply starts at."""
+        if self.server is None:
+            start = client["process"].count
+            client["input"].key("T")
+            client["input"].perform({"op": "text", "text": "/" + command.lstrip("/")})
+            client["input"].key("ENTER")
+            return start
+        start = self.server.count
+        self.server.command(command)
+        return start
+
+    def log_wait(self, client, substring, timeout, start):
+        if self.server is None:
+            return self.client_wait(client, substring, timeout, start)
+        return self.server.wait_for(substring, timeout, self.sleep, start)
+
     def perform(self, op):
         self.check_time()
         kind = op["op"]
@@ -175,26 +214,51 @@ class Session:
             client["process"].job.close()
             return {"closed": True}
         if kind == "server":
-            if self.server is None:
-                start = client["process"].count
-                client["input"].key("T")
-                client["input"].perform({"op": "text", "text": "/" + op["command"].lstrip("/")})
-                client["input"].key("ENTER")
-                if op.get("wait"):
-                    return {"receipt": self.client_wait(client, op["wait"], op.get("timeout", 30), start)}
-            else:
-                start = self.server.count
-                self.server.command(op["command"])
-                if op.get("wait"):
-                    return {"receipt": self.server.wait_for(op["wait"], op.get("timeout", 30), self.sleep, start)}
+            start = self.send_command(client, op["command"])
+            if op.get("wait"):
+                return {"receipt": self.log_wait(client, op["wait"], op.get("timeout", 30), start)}
             self.sleep(op.get("settle", 0.3))
             return {"command_sent": True, "tail": self.server.tail(op.get("tail", 3)) if self.server else []}
+        if kind == "require":
+            # Ask again only for a reply; no input is repeated, and a command here should be a readback.
+            attempts = op.get("attempts", 1)
+            for attempt in range(1, attempts + 1):
+                start = self.send_command(client, op["command"])
+                try:
+                    receipt = self.log_wait(client, op["expect"], op.get("timeout", 5), start)
+                    return {"precondition": "MET", "attempt": attempt, "receipt": receipt}
+                except TimeoutError:
+                    self.check_time()
+                    if attempt < attempts:
+                        self.sleep(op.get("interval", 1))
+            raise PreconditionFailed(f"{op['command']!r} did not report {op['expect']!r} in {attempts} attempt(s)")
+        if kind == "expect_log":
+            try:
+                return {"expectation": "MET",
+                        "line": self.log_wait(client, op["pattern"], op.get("timeout", 30), self.request_start)}
+            except TimeoutError:
+                self.check_time()
+                raise ExpectationFailed(f"no log line with {op['pattern']!r} since the request began") from None
+        if kind == "require_screen":
+            if not client["input"].wait_screen(op["open"], op.get("timeout", 5)):
+                raise PreconditionFailed("a screen is not open" if op["open"] else "a screen is open")
+            return {"screen_open": op["open"]}
+        if kind == "close_screen":
+            # ESC with no screen open would open the Game Menu, so it is sent only to a screen.
+            if not client["input"].screen_open():
+                return {"screen_was_open": False, "closed": False}
+            client["input"].key("ESC")
+            if not client["input"].wait_screen(False, op.get("timeout", 5)):
+                raise PreconditionFailed("the open screen did not close on ESC")
+            self.sleep(op.get("settle", 0.3))
+            return {"screen_was_open": True, "closed": True}
         if kind == "client_wait":
             return {"line": self.client_wait(client, op["pattern"], op.get("timeout", 30), op.get("start_at", 0))}
         if kind == "status":
             if client.get("attached"):
                 client["attached"].verify(foreground=False)
             return {"size": self.backend.size(client["input"].handle),
+                    "pointer_captured": self.pointer_captured(client),
                     "server_alive": self.server.process.poll() is None if self.server else None,
                     "client_alive": client["process"].process.poll() is None if client["process"] else True,
                     "server_tail": self.server.tail(op.get("tail", 6)) if self.server else []}
@@ -230,11 +294,21 @@ class Session:
                             attached = self.clients[name].get("attached")
                             if attached:
                                 attached.verify()
+                        source = self.log_source(next(iter(self.clients.values())))
+                        self.request_start = source.count if source is not None else 0
                         for op in request["ops"]:
                             record["outputs"].append(dict(self.perform(op), t=now()))
                             if op["op"] == "stop":
                                 stop = True
                                 break
+                    except PreconditionFailed as exc:
+                        # The remaining actions of this request were not sent.
+                        record["error"] = f"PRECONDITION_FAILED: {exc}"
+                        self.summary["failed_requests"] += 1
+                        self.summary["precondition_failures"] += 1
+                    except ExpectationFailed as exc:
+                        record["error"] = f"EXPECTATION_FAILED: {exc}"
+                        self.summary["failed_requests"] += 1
                     except Exception as exc:
                         record["error"] = f"{type(exc).__name__}: {exc}"
                         self.summary["failed_requests"] += 1
@@ -300,8 +374,11 @@ class Session:
         return 0 if self.summary["status"] == "COMPLETE" and not self.summary["failed_requests"] else 1
 
 
-def run_session(path, lock):
+def run_session(path, lock, label=None):
     spec = load_session(path)
+    # Default: the run directory's name, reduced to the label's alphabet.
+    label = lock_label(label if label is not None
+                       else ("campaign-" + re.sub(r"[^A-Za-z0-9._-]", "-", spec["run_dir"].name))[:64])
     cell = load_cell(spec["cell"])
     # No platform probing, process access or JVM start until validation has succeeded.
     require_windows("Live sessions require Windows")
@@ -309,7 +386,7 @@ def run_session(path, lock):
         if shutil.disk_usage(drive).free < 10 * 1024**3:
             raise ValueError("At least 10 GiB free is required on system and run drives")
     from .windows import Windows
-    with MachineLock(lock) as held:
+    with MachineLock(lock, label) as held:
         session = Session(spec, cell, Windows())
         try:
             return session.execute()
