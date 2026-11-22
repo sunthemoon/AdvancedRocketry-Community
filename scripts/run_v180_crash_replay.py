@@ -48,6 +48,7 @@ CASES = {
 TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 LIMIT = 100 * 1024**2
+EVIDENCE_ROOT = Path("D:/GitHub/ARCE-Task-Evidence/x01-crash-replay")
 
 
 def write_json(path: Path, value) -> None:
@@ -94,6 +95,12 @@ def runner_args(args, scratch: Path, output: Path, case: str, owner: str):
                   allow_shim=False, dev=False, tranche=None, stop_on_failure=True,
                   replay_commands=[],
                   candidate_pin=dict(candidate_commit=args.candidate_commit, jar_sha256=args.jar_sha256))
+    if getattr(args, "triage_of", None):
+        # Pin the changed harness separately. candidate_pin still verifies that
+        # its production tree is exactly the original candidate's source.
+        values.update(source_commit=args.replay_harness_commit)
+        values["candidate_pin"].update(source_commit=args.source_commit,
+                                       harness_commit=args.replay_harness_commit)
     return SimpleNamespace(**values)
 
 
@@ -159,10 +166,36 @@ def case_plan(trace: Path, kill: Path, case: str) -> list[replay.State]:
 
 def outcomes(case: str) -> dict:
     _, recorded, old, _, _ = CASES[case]
-    return dict(new_oracle=recorded, old_oracle=old, late_loss_oracles=[x for x in (recorded, old) if x],
+    value = dict(new_oracle=recorded, old_oracle=old, late_loss_oracles=[x for x in (recorded, old) if x],
                 allowed_markers=[],
                 rule="An existing oracle must pass on both starts; a marker alone never grants PASS.",
                 protected_roots="Byte identity alone never substitutes for resource conservation.")
+    if case == "X01-10":
+        value.update(old_oracle="FF_N1 before creation: absent ledger, exact neutral endpoints, 5000 mB water, 1000 mB fuel",
+                     rule="Old side uses check_before_creation on both saves; S-NEW keeps the unchanged FF_N1 oracle.")
+    return value
+
+
+def evidence_target(args) -> dict | None:
+    """Triage is a new sibling, never an append to either sealed run."""
+    original = EVIDENCE_ROOT / args.candidate_commit
+    triage = getattr(args, "triage_of", None)
+    intended = original.with_name(original.name + "-triage") if triage else original
+    evidence = args.evidence_dir.resolve()
+    if evidence != intended.resolve() or evidence.exists():
+        raise replay.ReplayError("Evidence must be a new candidate directory (or opt-in <SHA>-triage sibling)")
+    if not triage:
+        return None
+    manifest = Path(triage)
+    if manifest.resolve() != (original / "MANIFEST.json").resolve() or not manifest.is_file() or manifest.is_symlink():
+        raise replay.ReplayError("Triage requires the original run's MANIFEST.json")
+    raw = manifest.read_bytes()
+    value = json.loads(raw)
+    if any(value.get(k) != getattr(args, k) for k in ("source_commit", "candidate_commit", "jar_sha256")) or value.get("model") != replay.MODEL:
+        raise replay.ReplayError("Triage pins/model differ from the original run")
+    if value.get("status") not in ("PASS", "FAIL"):
+        raise replay.ReplayError("Original run is not finished")
+    return dict(manifest=str(manifest.resolve()), sha256=hashlib.sha256(raw).hexdigest())
 
 
 def check_size(evidence: Path) -> None:
@@ -230,6 +263,8 @@ def run_case(args, case: str, evidence: Path, scratch: Path, owner: str) -> dict
         restart.replay_world, restart.replay_state, restart.replay_context = kill, state, context
         restart.replay_old_item = side == "ITEM_EARLIER"
         restart.replay_old_registry = alias == "R" and side == "R2"
+        restart.replay_before_creation = case == "X01-10" and any(
+            d["kind"] in ("S-OLD", "S-EMPTY", "S-PREFIX", "S-TORN", "S-STAGED") for d in state.derivations)
         after_first = scratch / (state.id + "-after-first")
 
         def preserve(world):
@@ -298,11 +333,12 @@ def run(args) -> dict:
     preflight()
     if not re.fullmatch(r"[0-9a-f]{40}", args.candidate_commit):
         raise replay.ReplayError("Candidate commit must be a full SHA-1")
-    bay.assert_pin(args.source_commit)
-    evidence_tools.candidate_pin(args.jar, args.jar_sha256, args.candidate_commit)
-    intended = Path("D:/GitHub/ARCE-Task-Evidence/x01-crash-replay") / args.candidate_commit
+    original = evidence_target(args)
+    pin = evidence_tools.candidate_pin(args.jar, args.jar_sha256, args.candidate_commit)
+    args.replay_harness_commit = pin["harness_commit"]
+    bay.assert_pin(args.replay_harness_commit if original else args.source_commit)
     evidence = args.evidence_dir.resolve()
-    if evidence != intended.resolve() or evidence.exists() or evidence.drive.upper() != "D:":
+    if evidence.drive.upper() != "D:":
         raise replay.ReplayError("Evidence must be a new x01-crash-replay/<candidate SHA> directory on D:")
     if (not TEMP.is_dir() or TEMP.resolve().drive.upper() != "D:" or TEMP.is_symlink()
             or getattr(TEMP, "is_junction", lambda: False)()):
@@ -319,6 +355,9 @@ def run(args) -> dict:
     manifest = dict(model=replay.MODEL, source_commit=args.source_commit, candidate_commit=args.candidate_commit,
                     jar_sha256=args.jar_sha256, cases=cases, uncovered=replay.UNCOVERED,
                     commands=[], results=[], status="IN_PROGRESS")
+    if original:
+        manifest.update(triage_of=original, harness_commit=args.replay_harness_commit, production_pin=pin,
+                        source_server=str(args.source_server.resolve()))
     write_json(evidence / "MANIFEST.json", manifest)
     try:
         for index, case in enumerate(cases):
@@ -378,6 +417,7 @@ def main() -> int:
     for key in ("source-commit", "candidate-commit", "jar-sha256", "java"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--triage-of", type=Path, help="Original MANIFEST.json; permits only a new <SHA>-triage sibling")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
     parser.add_argument("--flight-timeout", type=float, default=120)
