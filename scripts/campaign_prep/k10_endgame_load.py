@@ -54,6 +54,7 @@ def throughput(before, after, ticks, seconds):
         escrowed_per_game_second=escrowed * 20 / ticks, escrowed_per_wall_second=escrowed / seconds,
         shortfall=max(0, required - escrowed), load_obligation="NOT_MET" if escrowed < required else "RATE_REACHED_PROXY_ONLY",
         delivery_throughput="NOT_COVERED: hook observes lastLaunch/OK on the next pass, not delivered cargo",
+        counter_window_uncertainty="Status/raw-tick replies are separate console commands, not an atomic pair; next-pass escrow counting has up to 20 ticks of phase lag.",
         source="ReferenceLoadReleaseTestCommands.launchRailguns; unchanged ADR-054 section 7")
 
 
@@ -119,6 +120,10 @@ def sample(console, evidence, args, receipt):
     receipt["sampling"] = dict(summary=summary, checkpoints=[v for _, v in checkpoints],
         reference_budget_verdict="NOT_PERFORMED", ramp="console.log includes warmup and ramp; not discarded from flush evidence")
     receipt["load_start"], receipt["load_end"] = before, statuses[-1]
+    receipt["load_counts"] = dict(minimums={key: min(s[key] for s in statuses) for key in
+        ("drills_running", "fields_active", "generators_burning", "elevators_bound", "players")},
+        required=dict(drills_running=20, fields_active=64, generators_burning=16, elevators_bound=8),
+        caveats="Running is not proof that a drill completed work. Max-depth shafts are finite; COMPLETE/TARGET_UNLOADED codes and any count shortfall remain failures of the full load, never a reason to lower it. Fixture players are not the two real connections.")
     receipt["throughput"] = throughput(before, statuses[-1], last.tick - first.tick, elapsed)
     receipt["during_end"] = readbacks(console)
     console.query(HOOK + "drive off", r"ARCE_RELEASE_TEST refload drive off")

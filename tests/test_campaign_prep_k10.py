@@ -53,6 +53,7 @@ class K10Tests(unittest.TestCase):
         self.assertIn("NOT_COVERED", plan["H04"])
         self.assertIn("SCRIPTED_ONLY", plan["status"])
         self.assertEqual(5, len(plan["menus"]))
+        self.assertIn("2..16", plan["menus"]["gravity_field_controller"])
 
     def test_historical_mapping_does_not_invent_equivalence(self):
         mapping = k.historical_cuts(k.common.ROOT / "docs/work/v1.7.0-c13-closure/root-checks.zip")

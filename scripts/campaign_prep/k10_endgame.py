@@ -119,11 +119,11 @@ def client_steps():
         menus=dict(orbital_laser_drill="Mode, target Previous/Next, Link, Start then danger Confirm for PHYSICAL; Stop; inspect target marker's LaserTargetMenu",
             railgun="Previous/Next endpoint, minimum stack, Launch; inspect both input/outbox and receive buffer",
             black_hole_generator="Fuel slot, buffer/status, redstone control; generation is fuel/context driven, no target selector",
-            gravity_field_controller="Start/Stop, radius Down/Up (1..8), multiplier Down/Up, redstone; trusted-player commands are owner-only",
+            gravity_field_controller="Start/Stop, radius Down/Up (2..16), multiplier Down/Up (10..200 percent), redstone; trusted-player commands are owner-only",
             elevator="Terminal endpoint Previous/Next and Bind, Ride, Unbind; use normal station invite/accept for member control"),
         H01="For each supported target-sharing system prepare two separately owner-bound devices and a common valid target. A selects/confirms, B selects/confirms; retain both menus, actual ordering, audit and before/after FE/cargo. Physical targets are owner-private unless OP-linked; don't invent an ordinary shared-target permission. Generators/fields have no endpoint selector: compare shared FE sink/overlap policy rather than promise a universal target contention code.",
         H02="B non-OP/non-owner opens all five screens and tries each applicable control; attempts owner OP command. Record receipt plus unchanged target/cargo/energy/station/chunks (R546), then A positive control. Repeat as station member without device ownership. Role scene preparation is a campaign prerequisite, not qualified by hook actors.",
-        H03_large_range="Use the maximum-depth 256/3x3 shaft on large-range copy. C6 exposes no arbitrary laser range input: an oversized physical range request is NOT_COVERED. Coordinate grammar refusal is supplementary only. For gravity increase radius to 8, press Up once more; compare read-only radius and policy response, not a fabricated NBT radius.",
+        H03_large_range="Use the maximum-depth 256/3x3 shaft on large-range copy. C6 exposes no arbitrary laser range input: an oversized physical range request is NOT_COVERED. Coordinate grammar refusal is supplementary only. For gravity increase radius to 16, press Up once more; compare read-only radius and policy response, not a fabricated NBT radius.",
         H06="Open all five ordinary screens, successful and refused states; record en_us/zh_cn, scales 2/3/4, effective viewport, window/fullscreen, F3+T/reconnect and second real GPU. View generating Cygnus X-1 ring two blocks below and five above. Railgun/generator/drill/target longest reason at scale 3: fit and full hover. Run together with effects and capture frame samples; owner supplies verdict.",
         H04="NOT_COVERED in v1.8 D9/O6/C27; moves to v1.9. No adapter or real-mod lane built.")
 
@@ -285,7 +285,8 @@ def run(args):
         driver_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=common.ROOT, text=True).strip(),
         driver_sha256=chain.digest(Path(__file__)), load_driver_sha256=chain.digest(Path(load.__file__)),
         hooks=["-Dadvancedrocketrycommunity.releaseTestHooks=true", "permission-2 refload build <x> <z>, drive on|off, status",
-               "satellite release-test perf ticks raw (read only)", "JDWP loopback breakpoint only for batch-cut"],
+               "endgame release-test persist root", "satellite release-test perf ticks raw (read only)",
+               "JDWP loopback breakpoint only for batch-cut"],
         classification="Native Windows tooling qualification, not REF/V1/V2/Gate evidence")
     process = None
     try:
