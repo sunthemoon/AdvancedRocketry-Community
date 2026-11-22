@@ -221,7 +221,9 @@ def populate(console, name, owner):
     if name == "blocked-binding":
         return blocked_attempt(console)
     if name == "hazards":
-        console.all("gamerule doDaylightCycle true")
+        # FI05's reconstruction disabled these two rules; C20 uses vanilla defaults.
+        for rule in ("doDaylightCycle", "doMobSpawning"):
+            console.all("gamerule " + rule + " true")
         for command in site_commands():
             console.all(command)
         # No persistent tickets in a campaign source; subsequent readbacks explicitly load their small areas.
