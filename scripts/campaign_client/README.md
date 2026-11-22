@@ -171,7 +171,15 @@ window is not in front).
 In launch mode the driver brings its disposable client to the front before each input. When Windows
 refuses that to a session started without a console window, the driver first shares the foreground
 thread's input queue for the call, and as a last resort sends one synthetic Alt tap, the only
-desktop-wide input it ever sends. Attach mode never does either: the owner brings the window forward.
+desktop-wide input it sends for that purpose. Attach mode never does either: the owner brings the
+window forward.
+
+Shift (`SHIFT`, or virtual keys 160 and 161) is the one key sent through the system input queue
+instead of a window message, in both modes: GLFW polls the real state of the Shift keys and releases
+one it has only seen in a message, so a posted Shift never holds and a sneak-and-use arrives as a plain
+use. It is pressed only while the target window is in front, and a release is always sent, including
+at cleanup. Pair every `keydown` of Shift with a `keyup` in the same request; a session killed between
+the two would leave Shift pressed on the desktop until the next physical Shift press.
 
 ## Other session options
 

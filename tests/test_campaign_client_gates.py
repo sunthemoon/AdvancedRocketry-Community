@@ -245,6 +245,50 @@ class FocusTests(unittest.TestCase):
         self.assertEqual((11, 77, False), adapter.u.AttachThreadInput.call_args_list[-1].args)
 
 
+class ShiftKeyTests(unittest.TestCase):
+    def adapter(self, front=456):
+        from scripts.campaign_client.windows import Windows
+        adapter = Windows.__new__(Windows)
+        adapter.k, adapter.u = Mock(), Mock()
+        adapter.u.GetForegroundWindow.return_value = front
+        adapter.u.MapVirtualKeyW.return_value = 0x2A
+        adapter.u.PostMessageW.return_value = 1
+        return adapter
+
+    def test_shift_goes_through_the_system_queue_and_other_keys_stay_window_messages(self):
+        adapter = self.adapter()
+        adapter.key(456, 0x10, True)
+        adapter.key(456, 0x10, False)
+        self.assertEqual([(0xA0, 0x2A, 0, 0), (0xA0, 0x2A, 2, 0)], [c.args for c in adapter.u.keybd_event.call_args_list])
+        adapter.u.PostMessageW.assert_not_called()
+        adapter.key(456, 0x45, True)
+        self.assertEqual(1, adapter.u.PostMessageW.call_count)
+        self.assertEqual(2, adapter.u.keybd_event.call_count)
+
+    def test_shift_is_pressed_only_with_the_window_in_front_but_always_released(self):
+        adapter = self.adapter(front=999)
+        with self.assertRaisesRegex(ValueError, "needs the client window in front"):
+            adapter.key(456, 0x10, True)
+        adapter.u.keybd_event.assert_not_called()
+        adapter.key(456, 0x10, False)
+        self.assertEqual((0xA0, 0x2A, 2, 0), adapter.u.keybd_event.call_args.args)
+
+    def test_cleanup_releases_shift_even_when_the_window_cannot_be_verified(self):
+        from scripts.campaign_client.input import Input
+        backend = Mock()
+        backend.SYSTEM_KEYS = {0x10: 0xA0}
+        def verify():
+            raise ValueError("Disposable window identity or foreground changed")
+        keys = Input(backend, 456, verify, 0.05, lambda seconds: None, "launch")
+        keys.held.update({0x10})
+        keys.release()
+        backend.system_key.assert_called_once_with(0x10, False)
+        self.assertEqual(set(), keys.held)
+        keys.held.add(0x45)  # An ordinary key stays a refused window message, as before.
+        with self.assertRaises(ValueError):
+            keys.release()
+
+
 class LockLabelTests(Fixture):
     def test_owner_names_the_session_and_keeps_the_pid_field(self):
         path = self.root / "heavy-jvm"

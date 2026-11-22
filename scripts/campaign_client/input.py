@@ -129,6 +129,14 @@ class Input:
             # Releases are bounded cleanup, not new actions after the session deadline.
             self.sleep = time.sleep
             for code in list(self.held):
-                self.key_state(code, False)
+                try:
+                    self.key_state(code, False)
+                except Exception:
+                    # A desktop-wide key (Shift) must not stay pressed because the window lost the front.
+                    release = getattr(self.backend, "system_key", None)
+                    if release is None or code not in getattr(self.backend, "SYSTEM_KEYS", ()):
+                        raise
+                    release(code, False)
+                    self.held.discard(code)
         finally:
             self.sleep = sleep

@@ -134,10 +134,25 @@ class Windows:
     def post(self, handle, message, word=0, value=0):
         self.require(self.u.PostMessageW(handle, message, word, value))
 
+    # Shift, as the virtual key the system reports for it. GLFW polls the real state of both Shift keys
+    # and releases one it sees pressed only in a window message, so a posted Shift never holds
+    # (W443: the sneak-and-use on the rocket assembler arrived as a plain use).
+    SYSTEM_KEYS = {0x10: 0xA0, 0xA0: 0xA0, 0xA1: 0xA1}
+
     def key(self, handle, code, down):
+        if code in self.SYSTEM_KEYS:
+            if down and self.u.GetForegroundWindow() != handle:
+                raise ValueError("Shift is a desktop-wide key and needs the client window in front")
+            self.system_key(code, down)
+            return
         scan = self.u.MapVirtualKeyW(code, 0)
         flags = 1 | scan << 16 | (0 if down else 3 << 30)
         self.post(handle, 0x100 if down else 0x101, code, flags)
+
+    def system_key(self, code, down):
+        """Press or release Shift in the system input queue. A release is always allowed."""
+        key = self.SYSTEM_KEYS[code]
+        self.u.keybd_event(key, self.u.MapVirtualKeyW(key, 0) & 0xFF, 0 if down else 2, 0)
 
     def point(self, handle, x, y, screen=False):
         width, height = self.size(handle)
