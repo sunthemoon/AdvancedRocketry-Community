@@ -62,9 +62,10 @@ def station_rows(state):
 
 def creation_plan(variant, inherited, owner, other, member, outsider):
     actors = [uuid_text(v) for v in (owner, other, member, outsider)]
-    chain.require(len(set(actors)) == 4, "Four distinct actors required")
+    chain.require(actors[0] != actors[1], "Two distinct station owners required")
+    chain.require(actors[0] not in actors[2:], "Member/non-member must not be station A's owner")
     occupied = {row["owner"] for row in inherited}
-    chain.require(not occupied.intersection(actors), "Actor already owns an inherited station")
+    chain.require(not occupied.intersection(actors[:2]), "New owner already owns an inherited station")
     total = {"ten": 10, "hundred": 100}.get(variant)
     count = total - len(inherited) if total else 2
     chain.require(0 < count <= 100, "Cannot reach requested count from parent")
@@ -81,9 +82,10 @@ def client_steps(rows, actors, variant):
     first, second = selected
     station = first["id"]
     target = "k06:warp_target" if variant in ("target-removal", "cost-change") else NS + ":moon"
-    steps = [dict(actor=owner, command=f"/arce station invite {station} <online-name-for-{member}>", precondition="Owner and invitee online; invitation is not membership"),
+    steps = [dict(actor=owner, command=f"/arce station invite {station} {member}", precondition="Owner and invitee online; UUID player selector names the invitee; invitation is not membership"),
         dict(actor=member, command=f"/arce station decline {station}", precondition="Invitation exists; reinvite for the accept case"),
         dict(actor=member, command=f"/arce station accept {station}", precondition="A new invitation exists"),
+        dict(actor=member, command=f"/arce station warp {target}", precondition="Accepted member, not owner/operator, local at station A's core; membership alone does not grant warp authority"),
         dict(actor=owner, command=f"/arce station remove {station} uuid {member}", precondition="Member accepted; UUID removal also works offline"),
         dict(actor=outsider, command=f"/arce station warp {target}", precondition="Non-operator, not owner/member, at this station, aiming at its core within 5 blocks"),
         dict(actor=outsider, command=f"/arce station warp confirm {station}", precondition="Same local non-operator; record refusal and unchanged authority"),
@@ -92,7 +94,9 @@ def client_steps(rows, actors, variant):
         dict(actor=owner, command=f"/arce station warp confirm {station}", precondition="Same actor/station; confirm within 200 ticks; memory-only 200-tick countdown starts"),
         dict(actor=owner, command="/arce station warp cancel", precondition="Separate run: cancel 3 seconds into countdown; capture GUI scales 2 and 3"),
         dict(actor=other, command=f"/arce station warp {NS}:earth", precondition=f"Independent run at Moon station {second['id']}, its core and sufficient folded energy"),
-        dict(actor=other, command=f"/arce station warp confirm {second['id']}", precondition="Confirm its own quote within 200 ticks; capture independent due/commit ticks")]
+        dict(actor=other, command=f"/arce station warp confirm {second['id']}", precondition="Confirm its own quote within 200 ticks; capture independent due/commit ticks"),
+        dict(actor=other, command=f"/arce station warp {NS}:tau_ceti_e", precondition="Separate interstellar run at station B; target legitimately known, enough folded FE for effective interstellar cost; do not substitute shared Space as target"),
+        dict(actor=other, command=f"/arce station warp confirm {second['id']}", precondition="Confirm that interstellar quote within 200 ticks; capture server-selected class, charge and unchanged physical positions")]
     overlay = None
     if variant in ("target-removal", "cost-change"):
         pack = "station_" + variant.replace("-", "_") + ".zip"
@@ -102,6 +106,10 @@ def client_steps(rows, actors, variant):
             actual="NOT_COVERED: no local player consent, therefore no pending warp or due-commit observation",
             recovery=f'datapack disable "file/{pack}"; wait for catalog adoption; two ordinary restarts; verify orbit/energy and no revived countdown')
     return dict(classification="SCRIPTED_CLIENT_STEPS_NOT_EXECUTED", stations=selected, actions=steps, overlay=overlay,
+        role_binding="The second owner may also be station A's invitee/member, then its non-member after removal; two real accounts suffice. Roles are sequential states, not four required simultaneous accounts.",
+        approach=[dict(station=row["id"], feet=[row["pad"][0]+4.5,row["pad"][1],row["pad"][2]+2.5],
+                       look_at=[row["pad"][0]+4.5,row["pad"][1]+.5,row["pad"][2]+4.5])
+                  for row in selected if "pad" in row],
         ordinary_creation="On a fresh FI06 copy, each eligible O5 account on a catalog surface Level (not Space), owning zero stations, uses advancedrocketrycommunity:station_deployment_kit. Server resolves its surface body; 1 kit consumed outside Creative. Do not run this on an account already owning an operator-created K08 station.",
         pending="NOT_COVERED: request/confirm require getPlayerOrException and the player's own non-silent source; an /execute wrapper is not local consent. Quotes/countdowns are lifecycle-owned memory, never SavedData and never retained by restart.",
         docked_rocket="NOT_COVERED: no C6 station docking command/hook found; use ordinary flight/landing with matching stationary rocket authority, then F04's countdown stop and committed two-restart cases. Teleporting/summoning an entity is not docking.",

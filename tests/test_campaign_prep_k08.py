@@ -93,17 +93,35 @@ class K08Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             prep.creation_plan("two",[],prep.OWNER,prep.OWNER,prep.MEMBER,prep.OUTSIDER)
 
+    def test_two_clients_can_fill_sequential_member_and_non_member_roles(self):
+        plan = prep.creation_plan("two",[],prep.OWNER,prep.OTHER,prep.OTHER,prep.OTHER)
+        self.assertEqual([r["owner"] for r in plan],[prep.OWNER,prep.OTHER])
+        with self.assertRaisesRegex(ValueError,"must not"):
+            prep.creation_plan("two",[],prep.OWNER,prep.OTHER,prep.OWNER,prep.OUTSIDER)
+
     def test_client_commands_bound_to_station_and_actors(self):
         rows = [dict(id=str(UUID(int=i+1)),owner=a) for i,a in enumerate((prep.OWNER,prep.OTHER))]
         steps = prep.client_steps(rows,[prep.OWNER,prep.OTHER,prep.MEMBER,prep.OUTSIDER],"two")
         actions = steps["actions"]
         self.assertEqual(actions[2]["actor"], prep.MEMBER)
         self.assertIn(rows[0]["id"], actions[2]["command"])
-        self.assertIn(" uuid "+prep.MEMBER, actions[3]["command"])
-        self.assertEqual(actions[6]["actor"], prep.OUTSIDER)
-        self.assertTrue(actions[6]["command"].endswith(" confirm"))
+        self.assertEqual(actions[0]["command"],f"/arce station invite {rows[0]['id']} {prep.MEMBER}")
+        removal = next(a for a in actions if a["command"].startswith("/arce station remove"))
+        self.assertIn(" uuid "+prep.MEMBER, removal["command"])
+        deletion = next(a for a in actions if a["command"].startswith("/arce station admin delete"))
+        self.assertEqual(deletion["actor"], prep.OUTSIDER)
+        self.assertTrue(deletion["command"].endswith(" confirm"))
+        self.assertTrue(any(a["actor"]==prep.MEMBER and a["command"].startswith("/arce station warp ") for a in actions))
         self.assertIn("NOT_COVERED", steps["pending"])
         self.assertIn("NOT_COVERED", steps["docked_rocket"])
+
+    def test_core_approach_and_interstellar_target_are_explicit(self):
+        rows = [dict(id=str(UUID(int=i+1)),owner=a,pad=[i*1024,128,0])
+                for i,a in enumerate((prep.OWNER,prep.OTHER))]
+        steps = prep.client_steps(rows,[prep.OWNER,prep.OTHER,prep.OTHER,prep.OTHER],"two")
+        self.assertEqual(steps["approach"][0]["feet"],[4.5,128,2.5])
+        self.assertEqual(steps["approach"][0]["look_at"],[4.5,128.5,4.5])
+        self.assertTrue(any(a["command"].endswith(":tau_ceti_e") for a in steps["actions"]))
 
     def test_overlay_expectations_remain_conditional_not_observations(self):
         rows = [dict(id=str(UUID(int=i+1)),owner=a) for i,a in enumerate((prep.OWNER,prep.OTHER))]
