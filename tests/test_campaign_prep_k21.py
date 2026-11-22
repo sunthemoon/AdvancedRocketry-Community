@@ -153,6 +153,14 @@ class CampaignPrepK21Test(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "payload-only"):
             k21.run(args)
 
+    def test_qualification_names_cannot_replace_sources_or_escape(self):
+        args = k21.parser().parse_args(["--scene","payload","--mode","changed-qualify","--lock-owner","x",
+                                       "--template","x","--java","java"])
+        for label in ("../escape", "source-world", "qualify", "qualify-"+"a"*41, "qualify-x/y"):
+            args.qualification_name = label
+            with self.assertRaisesRegex(ValueError, "qualification name"):
+                k21.run(args)
+
 
 if __name__ == "__main__":
     unittest.main()

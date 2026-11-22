@@ -273,6 +273,9 @@ def run(args):
     chain.require(args.scene in SCENES and args.mode in MODES, "Unknown run")
     chain.require(not args.mode.startswith("changed") or args.scene == "payload", "Changed pack is payload-only")
     chain.require(args.mode != "remove" or args.scene in ("component","payload"), "Only two removal scenes")
+    label = args.qualification_name or args.mode
+    chain.require(args.qualification_name is None or (args.mode in ("qualify","changed-qualify")
+                  and re.fullmatch(r"(?:changed-)?qualify-[a-z0-9-]{1,40}", label)), "Invalid qualification name")
     # Check authority before creating an output or starting a process.
     lock = args.lock / "owner.txt"
     chain.require(args.lock_owner.startswith("W445 pid=") and lock.read_text(encoding="utf-8-sig").startswith(args.lock_owner),
@@ -294,9 +297,9 @@ def run(args):
         chain.verify_seal(source_folder)
         source = source_folder / "source-world"
         source_inventory = fixture.file_inventory(source)
-        evidence = args.output / ("removal-"+args.scene) if args.mode == "remove" else folder / args.mode
+        evidence = args.output / ("removal-"+args.scene) if args.mode == "remove" else folder / label
     evidence.mkdir(parents=True, exist_ok=False)
-    runtime = args.output / "_work" / (args.scene+"-"+args.mode)
+    runtime = args.output / "_work" / (args.scene+"-"+label)
     chain.require(not runtime.exists(), "Occupied runtime is not ours")
     receipt = dict(status="FAIL", scene=args.scene, mode=args.mode, commands=[], identity=pins,
                    driver_commit=subprocess.check_output(["git","rev-parse","HEAD"], cwd=common.ROOT,text=True).strip(),
@@ -433,6 +436,7 @@ def parser():
     result.add_argument("--java",type=Path,required=True)
     result.add_argument("--terminal",type=int,nargs=3,default=(264,101,264))
     result.add_argument("--owner",default=OWNER)
+    result.add_argument("--qualification-name", help="Fresh qualification directory; never replaces a prior receipt")
     return result
 
 
