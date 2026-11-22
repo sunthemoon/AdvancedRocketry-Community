@@ -1,5 +1,6 @@
 import copy
 import gzip
+import sys
 import tempfile
 import unittest
 import uuid
@@ -7,6 +8,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from scripts import run_v100_transaction_forced_stop as txn
+from tests.test_run_v100_flight_forced_stop import ReceiptProcess, disassembly_lines, TRANSFER
 
 
 TRANSACTION = "12345678-1234-5678-9012-123456789012"
@@ -204,6 +206,97 @@ class ReadyStatusTests(unittest.TestCase):
             verify.assert_called_once_with(25610, "1.20.1-1.8.0-dev", wait_ready_status=True)
             self.assertIn("-Dadvancedrocketrycommunity.transactionCheckpoint=ASSEMBLY:EXTRACTING:3",
                           process.call_args.args[0])
+
+
+class SealedDisassemblyTests(unittest.TestCase):
+    def harness(self, enabled=False):
+        harness = txn.TransactionHarness(java="java", server=Path("isolated"), port=25610,
+                                         expected_version="test", startup_timeout=240)
+        harness.sealed_disassembly_receipt = enabled
+        return harness
+
+    def test_option_is_explicit_and_defaults_off(self):
+        args = ["runner", "source", "--session-dir", "session", "--baseline-summary", "baseline",
+                "--evidence-dir", "evidence", "--artifact", "artifact", "--base-commit", "a" * 40]
+        for enabled in (False, True):
+            with patch.object(sys, "argv", args + (["--sealed-disassembly-receipt"] if enabled else [])):
+                self.assertEqual(enabled, txn.parse_args().sealed_disassembly_receipt)
+
+    def test_both_receipts_use_the_requested_entity_and_logical_id(self):
+        for form in ("legacy", "sealed"):
+            process = ReceiptProcess(disassembly_lines(form, entity=ENTITY))
+            receipt = self.harness(True).disassemble(process, ENTITY, TRANSFER)
+            self.assertEqual(form, receipt["form"])
+            for mutation in (dict(entity=TRANSACTION), dict(logical=ENTITY)):
+                values = dict(entity=ENTITY)
+                values.update(mutation)
+                with self.subTest(form=form, mutation=mutation), self.assertRaises(txn.SmokeError):
+                    self.harness(True).disassemble(ReceiptProcess(disassembly_lines(form, **values)), ENTITY, TRANSFER)
+
+    def test_missing_receipt_pending_done_or_wrong_result_fails(self):
+        lines = disassembly_lines(entity=ENTITY)
+        for value in ([], lines[1:], lines[:-1], disassembly_lines(entity=ENTITY, result="REJECTED")):
+            with self.subTest(lines=value), self.assertRaises(txn.SmokeError):
+                self.harness(True).disassemble(ReceiptProcess(value), ENTITY, TRANSFER)
+
+    def test_default_still_requires_the_legacy_receipt_with_original_timeout(self):
+        harness = self.harness()
+        process = ReceiptProcess(disassembly_lines("legacy", entity=ENTITY))
+        harness.disassemble(process, ENTITY, TRANSFER)
+        self.assertEqual((txn.flight.DISASSEMBLY_LOG, 45.0, 0), process.waits[0])
+        with self.assertRaises(txn.SmokeError):
+            harness.disassemble(ReceiptProcess(disassembly_lines(entity=ENTITY)), ENTITY, TRANSFER)
+
+    def test_observed_sealed_completion_is_not_a_passed_checkpoint(self):
+        harness = self.harness(True)
+        process = ReceiptProcess(disassembly_lines(entity=ENTITY))
+        before = dict(snapshot=SNAPSHOT, items_snbt="complete chest")
+        assembly = f"ARCE_ROCKET_TRANSACTION operation=assembly code=SUCCESS blocks=5 snapshot={SNAPSHOT} entity={ENTITY}"
+        self.assertIsNotNone(txn.flight.ASSEMBLY_LOG.search(assembly))
+        original_command = process.command
+
+        def command(text):
+            original_command(text)
+            if "rocket assemble" in text:
+                process.lines.append(assembly)
+
+        process.command = command
+        harness.start = Mock(return_value=process)
+        harness.contents = Mock(side_effect=[dict(before), dict(before)])
+        harness.report = Mock(return_value=dict(entity=ENTITY, logical=TRANSFER, snapshot=SNAPSHOT))
+        harness.operator_report = Mock()
+        harness.configure_rocket = Mock()
+        harness.command_marker = Mock()
+        harness.material_authority = Mock()
+        harness.finish_clean = Mock(return_value={"journal_entries": 0})
+        with patch.object(txn.recovery, "force_stop") as kill:
+            row = txn.run_case(harness, "DISASSEMBLY:RESTORING:3", Path("unused"))
+            self.assertEqual("NOT_REACHABLE_ON_C6", row["status"])
+            self.assertIn("RocketTransactionReleaseProbe.bind(DISASSEMBLY)", row["reason"])
+            kill.assert_not_called()
+        harness.material_authority.assert_called_once()
+        harness.finish_clean.assert_called_once_with(process)
+
+    def test_unreachable_case_cannot_make_the_matrix_pass(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args = Mock(base_commit="a" * 40, cases=list(txn.CASES), expected_version="test",
+                        evidence_dir=root / "evidence", session_dir=root / "session", baseline_summary=root / "baseline",
+                        java="java", startup_timeout=240, wait_ready_status=True, sealed_disassembly_receipt=True)
+            args.session_dir.mkdir()
+            rows = [dict(case=case, status="NOT_REACHABLE_ON_C6" if case.startswith("DISASSEMBLY:") else "PASS")
+                    for case in txn.CASES]
+            with patch.object(txn, "parse_args", return_value=args), \
+                    patch.object(txn, "prepare_session", return_value=(args.session_dir, 25610, {})), \
+                    patch.object(txn.server_smoke, "resolve_java", return_value=("java", "17")), \
+                    patch.object(txn.server_smoke, "digest_file", return_value="hash"), \
+                    patch.object(txn, "run_case", side_effect=[dict(row, reason="code path") for row in rows]):
+                self.assertEqual(1, txn.main())
+            import json
+            summary = json.loads((args.evidence_dir / "summary.json").read_text())
+            self.assertEqual("INCOMPLETE", summary["status"])
+            self.assertFalse(summary["complete_transaction_matrix"])
+            self.assertEqual((13, 12, 25), (summary["passed_cases"], summary["unreachable_cases"], len(summary["cases"])))
 
 
 if __name__ == "__main__":

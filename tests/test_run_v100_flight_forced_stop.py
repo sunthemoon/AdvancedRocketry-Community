@@ -1,4 +1,5 @@
 import copy
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,167 @@ from scripts import run_v100_flight_forced_stop as recovery
 
 
 TRANSFER = "11111111-1111-1111-1111-111111111111"
+ENTITY = "22222222-2222-2222-2222-222222222222"
+
+
+class ReceiptProcess:
+    """Deterministic line-backed process; no sockets, JVMs or Windows APIs."""
+    def __init__(self, lines):
+        self.lines = []
+        self.output = lines
+        self.commands = []
+        self.waits = []
+
+    def command(self, command):
+        self.commands.append(command)
+        if "release-test disassemble" in command:
+            self.lines.extend(self.output)
+        if "data get block" in command:
+            self.lines.append('has the following block data: [{id: "minecraft:diamond", Count: 17b}, '
+                              '{id: "minecraft:iron_ingot", Count: 64b}]')
+
+    def wait_for(self, pattern, timeout, *, start_at=0):
+        self.waits.append((pattern, timeout, start_at))
+        for index in range(start_at, len(self.lines)):
+            if pattern.search(self.lines[index]):
+                return index
+        raise recovery.SmokeError("Missing requested receipt/marker")
+
+
+def disassembly_lines(form="sealed", **changes):
+    values = dict(entity=ENTITY, logical=TRANSFER, result="SEALED", code="SUCCESS", blocks=5, rolled_back=0)
+    values.update(changes)
+    if form == "legacy":
+        return [("ARCE_RELEASE_TEST_DISASSEMBLY entity={entity} logical={logical} "
+                 "code={code} blocks={blocks} rolled_back={rolled_back}").format(**values)]
+    return ["Release-test disassembly pending",
+            ("ARCE_ROCKET_SEALED_DISASSEMBLY entity={entity} logical={logical} result={result}").format(**values),
+            f"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction={ENTITY} "
+            "phase=DONE reason=SEALED additional=[] overflow=0"]
+
+
+class DisassemblyReceiptTests(unittest.TestCase):
+    def read(self, lines):
+        process = ReceiptProcess([])
+        process.lines = lines
+        return recovery.wait_disassembly_receipt(process, ENTITY, TRANSFER, 0)
+
+    def test_both_complete_forms_are_accepted_as_whole_info_messages(self):
+        for form in ("legacy", "sealed"):
+            for prefix in ("", "[15:37:44] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "):
+                with self.subTest(form=form, prefix=prefix):
+                    result = self.read([prefix + line + "\n" for line in disassembly_lines(form)])
+                    self.assertEqual(form, result["form"])
+                    self.assertEqual((ENTITY, TRANSFER), (result["entity"], result["logical"]))
+                    if form == "sealed":
+                        self.assertNotIn("blocks", result)
+                        self.assertEqual("DONE", result["durability_phase"])
+
+    def test_wrong_entity_or_logical_id_is_rejected_for_both_forms(self):
+        for form in ("legacy", "sealed"):
+            for mutation in (dict(entity=TRANSFER), dict(logical=ENTITY)):
+                with self.subTest(form=form, mutation=mutation), self.assertRaises(recovery.SmokeError):
+                    self.read(disassembly_lines(form, **mutation))
+
+    def test_non_sealed_results_and_bad_legacy_counts_fail(self):
+        for result in ("REJECTED", "HELD", "SEALED_EXTRA"):
+            with self.subTest(result=result), self.assertRaises(recovery.SmokeError):
+                self.read(disassembly_lines(result=result))
+        for mutation in (dict(code="FAILED"), dict(blocks=4), dict(rolled_back=1)):
+            with self.subTest(mutation=mutation), self.assertRaises(recovery.SmokeError):
+                self.read(disassembly_lines("legacy", **mutation))
+
+    def test_missing_receipt_pending_or_durability_cannot_pass(self):
+        lines = disassembly_lines()
+        for value in ([], [lines[0]], lines[1:], lines[:-1], [lines[1], lines[0], lines[2]],
+                      [lines[0], lines[2], lines[1]], lines[:2] + disassembly_lines("legacy") + lines[2:]):
+            with self.subTest(lines=value), self.assertRaises(recovery.SmokeError):
+                self.read(value)
+
+    def test_substrings_chat_and_malformed_durability_do_not_pass(self):
+        for form in ("legacy", "sealed"):
+            lines = disassembly_lines(form)
+            at = 0 if form == "legacy" else 1
+            for changed in ("prefix " + lines[at], lines[at] + " trailing",
+                            "[15:37:44] [Server thread/INFO] [minecraft/MinecraftServer]: "
+                            "[Server] " + lines[at]):
+                value = list(lines)
+                value[at] = changed
+                with self.subTest(form=form, changed=changed), self.assertRaises(recovery.SmokeError):
+                    self.read(value)
+        for change in ("phase=HELD", "reason=REJECTED", "overflow=1", "additional=[other]"):
+            lines = disassembly_lines()
+            key = change.split("=")[0]
+            old = dict(phase="phase=DONE", reason="reason=SEALED", overflow="overflow=0",
+                       additional="additional=[]")[key]
+            lines[-1] = lines[-1].replace(old, change)
+            with self.subTest(change=change), self.assertRaises(recovery.SmokeError):
+                self.read(lines)
+
+    def test_existing_lines_are_excluded_and_one_budget_is_shared(self):
+        process = ReceiptProcess([])
+        process.lines = disassembly_lines()
+        with self.assertRaises(recovery.SmokeError):
+            recovery.wait_disassembly_receipt(process, ENTITY, TRANSFER, len(process.lines))
+        with patch.object(recovery.time, "monotonic", side_effect=[0, 1, 5]):
+            recovery.wait_disassembly_receipt(process, ENTITY, TRANSFER, 0)
+        self.assertEqual([44, 40], [call[1] for call in process.waits[-2:]])
+        with patch.object(recovery.time, "monotonic", side_effect=[0, 45]):
+            with self.assertRaisesRegex(recovery.SmokeError, "45-second"):
+                recovery.wait_disassembly_receipt(process, ENTITY, TRANSFER, 0)
+
+    def test_option_defaults_off_and_is_explicit(self):
+        args = ["runner", "source", "--session-dir", "session", "--baseline-summary", "baseline",
+                "--evidence-dir", "evidence", "--base-commit", "a" * 40]
+        for enabled in (False, True):
+            with patch.object(sys, "argv", args + (["--sealed-disassembly-receipt"] if enabled else [])):
+                self.assertEqual(enabled, recovery.parse_args().sealed_disassembly_receipt)
+
+    def test_default_delegates_unchanged_to_shared_harness(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="test", startup_timeout=240)
+        with patch.object(recovery.flight.FlightHarness, "disassemble_and_verify") as original:
+            harness.disassemble_and_verify("process", {"entity": ENTITY}, "marker")
+            original.assert_called_once_with("process", {"entity": ENTITY}, "marker")
+
+    def test_opt_in_preserves_block_and_inventory_assertions_for_both_forms(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="test", startup_timeout=240)
+        harness.sealed_disassembly_receipt = True
+        report = dict(entity=ENTITY, logical=TRANSFER, dimension=recovery.flight.EARTH, origin=[384, 101, 384], fuel=0)
+        for form in ("legacy", "sealed"):
+            process = ReceiptProcess(disassembly_lines(form))
+            with patch.object(harness, "command_marker") as marker:
+                result = harness.disassemble_and_verify(process, report, "verified")
+                self.assertEqual(form, result["form"])
+                command = marker.call_args.args[1]
+                self.assertIn(f"unless entity {ENTITY}", command)
+                self.assertEqual(5, command.count("if block"))
+            process = ReceiptProcess(disassembly_lines(form))
+            with patch.object(harness, "command_marker", side_effect=recovery.SmokeError("blocks absent")):
+                with self.assertRaisesRegex(recovery.SmokeError, "blocks absent"):
+                    harness.disassemble_and_verify(process, report, "verified")
+            process = ReceiptProcess(disassembly_lines(form))
+            original_command = process.command
+
+            def missing_inventory(command):
+                original_command(command)
+                if "data get block" in command:
+                    process.lines[-1] = "has the following block data: []"
+
+            process.command = missing_inventory
+            with patch.object(harness, "command_marker"), self.assertRaisesRegex(recovery.SmokeError, "inventory"):
+                harness.disassemble_and_verify(process, report, "verified")
+
+    def test_opt_in_explicitly_consents_to_only_the_reported_fuel(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="test", startup_timeout=240)
+        harness.sealed_disassembly_receipt = True
+        process = ReceiptProcess(disassembly_lines())
+        report = dict(entity=ENTITY, logical=TRANSFER, dimension=recovery.flight.EARTH, origin=[384, 101, 384], fuel=628)
+        with patch.object(harness, "command_marker"):
+            harness.disassemble_and_verify(process, report, "verified")
+        self.assertIn(f"disassemble {ENTITY} discard-fuel 628", process.commands[0])
 
 
 def receipt(case, **changes):
