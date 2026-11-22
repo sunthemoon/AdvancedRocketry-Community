@@ -142,18 +142,42 @@ class Console(chain.Console):
 
 def blocked_attempt(console):
     console.query('datapack enable "file/data_only_test_mars.zip"', r"Enabled data pack")
-    first = console.all("arce celestial validate")
-    chain.require(any("is valid with 12 bodies" in line for line in first), "K06 test body not accepted")
+    first = await_catalog(console, "is valid with 12 bodies")
     console.query('datapack disable "file/data_only_test_mars.zip"', r"Disabled data pack")
-    console.all("arce celestial validate")
+    await_catalog(console, "is valid with 11 bodies")
     console.query('datapack enable "file/catalog_128.zip"', r"Enabled data pack")
-    refused = console.all("arce celestial validate")
-    chain.require(any("Planetary lifetime bindings exceed 128" in line for line in refused), "Lifetime binding refusal not observed")
+    refused = await_catalog(console, "Planetary lifetime bindings exceed 128")
     console.query('datapack disable "file/catalog_128.zip"', r"Disabled data pack")
-    restored = console.all("arce celestial validate")
-    chain.require(any("is valid with 11 bodies" in line for line in restored), "Supported pack recovery failed")
+    restored = await_catalog(console, "is valid with 11 bodies")
     return dict(adopt=first, refused=refused, restored=restored,
                 meaning="Catalog binding refused by lifetime reservation limit; not a corrupt/blocked SavedData store. Refused catalog is not retained across restart.")
+
+
+def await_catalog(console, marker):
+    deadline = time.monotonic() + 60
+    while True:
+        lines = console.all("arce celestial validate")
+        if any(marker in line for line in lines):
+            return lines
+        chain.require(time.monotonic() < deadline, "Catalog did not report " + marker)
+        time.sleep(.1)
+
+
+def check_creation(name, made, state, projected):
+    if name == "private-station":
+        stations = [s for s in projected["stations"] if made["station"] in chain.saved_uuids(s["station_id"])]
+        chain.require(len(stations) == 1, "Created station ID not saved")
+        station = stations[0]
+        chain.require(chain.saved_uuids(station["owner_id"]) == {made["owner"]}
+                      and station["orbit_body"] == NS + ":mars"
+                      and not station["members"] and not station["invitations"], "Private station rights differ")
+    if name == "paid-pending":
+        pending = [m for m in projected["missions"] if m["status"] == "claim_pending_discovery"]
+        chain.require(len(pending) == 1 and chain.saved_uuids(pending[0]["owner_id"]) == {made["owner"]},
+                      "Stopped world lacks one owned paid-pending receipt")
+        accounts = [a for a in projected["research_accounts"] if made["owner"] in chain.saved_uuids(a["owner_id"])]
+        chain.require(len(accounts) == 1 and all(accounts[0][key] == value for key, value in
+                      (("balance", 20), ("lifetime_earned", 120), ("lifetime_spent", 100))), "Paid receipt research totals differ")
 
 
 def populate(console, name, owner):
@@ -289,9 +313,7 @@ def run(args):
                 chain.require(NS + ":mars" not in discovered and NS + ":venus" not in discovered, "FI04 was not undiscovered")
             else:
                 chain.require({NS + ":mars", NS + ":venus"} <= discovered, "FI05 discoveries missing")
-            if args.variant == "paid-pending":
-                chain.require(sum(m["status"] == "claim_pending_discovery" for m in projected["missions"]) == 1,
-                              "Stopped world lacks exactly one paid-pending receipt")
+            check_creation(args.variant, receipt["made"], state, projected)
             shutil.copytree(runtime / "world", folder / "source-world")
             chain.write(folder / "manifest.json", dict(schema_version=1, variant=args.variant,
                 candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH, parent_source=str(source),

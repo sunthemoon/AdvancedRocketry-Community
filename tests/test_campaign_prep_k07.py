@@ -170,8 +170,27 @@ class K07Tests(unittest.TestCase):
     def test_bad_binding_refusal_not_accepted(self):
         console = unittest.mock.Mock()
         console.all.return_value = ["unknown command"]
-        with self.assertRaises(ValueError):
+        with patch.object(k07.time, "monotonic", side_effect=[0, 61]), self.assertRaises(ValueError):
             k07.blocked_attempt(console)
+
+    def test_catalog_wait_has_bounded_async_reload(self):
+        console = unittest.mock.Mock()
+        console.all.side_effect = [["previous catalog"], ["is valid with 12 bodies"]]
+        with patch.object(k07.time, "sleep") as sleep:
+            self.assertEqual(k07.await_catalog(console, "12 bodies"), ["is valid with 12 bodies"])
+        sleep.assert_called_once_with(.1)
+
+    def test_private_station_save_checks_rights(self):
+        identity = [1, 2, 3, 4]
+        station = next(iter(k07.chain.saved_uuids(identity)))
+        actor = next(iter(k07.chain.saved_uuids([4, 3, 2, 1])))
+        state = dict(stations=[dict(station_id=identity, owner_id=[4, 3, 2, 1],
+                     orbit_body=k07.NS + ":mars", members=[], invitations=[])])
+        made = dict(station=station, owner=actor)
+        k07.check_creation("private-station", made, {}, state)
+        state["stations"][0]["members"].append(dict(id=[1, 1, 1, 1]))
+        with self.assertRaises(ValueError):
+            k07.check_creation("private-station", made, {}, state)
 
 
 if __name__ == "__main__":
