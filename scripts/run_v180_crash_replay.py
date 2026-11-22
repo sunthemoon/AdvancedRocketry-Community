@@ -139,6 +139,12 @@ def run_existing(module, args, output: Path) -> tuple[dict, str | None]:
 
 
 def side_for(state: replay.State, recorded: str, old: str | None, store=None, target=None) -> str:
+    # Losing both first-creation roots at B3 leaves the original unconsumed
+    # source package, not the INTENT which B3_STAGED needs to resume a flight.
+    roots = ("data/advancedrocketrycommunity_bay_receipts.dat", "data/advancedrocketrycommunity_satellite_missions.dat")
+    if recorded == "B3_MOVED" and any(d["kind"] == "LATE-LOSS" for d in state.derivations) and all(
+            name in state.files and state.files[name] is None for name in roots):
+        return "B1_STAGED"
     sides = [d["kind"] for d in state.derivations if d["kind"] != "LATE-LOSS" and (store is None or d["store"] == store)]
     if target and any(target in d.get("targets", []) for d in state.derivations if d["kind"] == "LATE-LOSS"):
         return old or recorded
@@ -173,6 +179,8 @@ def outcomes(case: str) -> dict:
     if case == "X01-10":
         value.update(old_oracle="FF_N1 before creation: absent ledger, exact neutral endpoints, 5000 mB water, 1000 mB fuel",
                      rule="Old side uses check_before_creation on both saves; S-NEW keeps the unchanged FF_N1 oracle.")
+    if case == "X01-02":
+        value["late_loss_oracles"].append("B1_STAGED")
     return value
 
 
@@ -181,6 +189,13 @@ def evidence_target(args) -> dict | None:
     original = EVIDENCE_ROOT / args.candidate_commit
     triage = getattr(args, "triage_of", None)
     intended = original.with_name(original.name + "-triage") if triage else original
+    followup = getattr(args, "triage_run", None)
+    if followup:
+        if not triage or not re.fullmatch(r"followup-[a-z0-9-]+", followup):
+            raise replay.ReplayError("A follow-up requires --triage-of and a safe followup-<name> label")
+        # Each follow-up is independently sealed. Never rewrite a prior run's
+        # manifest, state table, verdicts or checksums when another cause is found.
+        intended = intended / followup
     evidence = args.evidence_dir.resolve()
     if evidence != intended.resolve() or evidence.exists():
         raise replay.ReplayError("Evidence must be a new candidate directory (or opt-in <SHA>-triage sibling)")
@@ -418,6 +433,7 @@ def main() -> int:
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--triage-of", type=Path, help="Original MANIFEST.json; permits only a new <SHA>-triage sibling")
+    parser.add_argument("--triage-run", help="New followup-<name> subdirectory; preserves an already sealed triage run")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
     parser.add_argument("--flight-timeout", type=float, default=120)

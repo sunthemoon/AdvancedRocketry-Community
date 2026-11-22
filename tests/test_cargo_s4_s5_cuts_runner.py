@@ -74,6 +74,7 @@ def before_creation_raw():
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
     def test_before_creation_runs_two_native_saves_without_the_recover_probe(self):
         import v180_crash_replay as replay
+        import run_v180_crash_replay as campaign
         from contextlib import ExitStack
         with tempfile.TemporaryDirectory() as tmp, ExitStack() as patches:
             root = Path(tmp); (root / "template/libraries").mkdir(parents=True)
@@ -82,7 +83,7 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             initial = before_creation_raw(); initial["ledger"] = dict(writer_generation=1)
             args = SimpleNamespace(source_server=root / "template", jar=jar, source_commit="source", lock_owner="owner",
                 session_dir=root / "session", evidence_dir=root / "evidence", java="java", startup_timeout=240,
-                case=["FF_N1"], dev=False, replay_world=kill, replay_state=replay.State("old", {}),
+                case=[campaign.CASES["X01-10"][1]], dev=False, replay_world=kill, replay_state=replay.State("old", {}),
                 replay_context=dict(starts=[dict(restart=0, disk={})], raw0=initial), replay_before_creation=True)
             process = Mock(); process.finish.return_value = 0; process.lines = ["Done (2s)!", "Saved the game"]
             for name in ("assert_pin", "require_lock", "preflight"):
