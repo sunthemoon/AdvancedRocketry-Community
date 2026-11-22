@@ -86,6 +86,20 @@ class Input:
         self.sleep(op.get("settle", 0.2))
         return {"op": kind, "client_size": self.backend.size(self.handle)}
 
+    def screen_open(self):
+        """Whether Minecraft shows the pointer (a screen, chat or menu); read only while the window is in front."""
+        self.guard()
+        return not self.backend.cursor_captured(self.handle)
+
+    def wait_screen(self, open_, timeout):
+        deadline = time.monotonic() + timeout
+        while True:
+            if self.screen_open() == open_:
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            self.sleep(0.1)
+
     def screenshot(self, game, output):
         if output.exists():
             raise ValueError("Screenshot evidence already exists")

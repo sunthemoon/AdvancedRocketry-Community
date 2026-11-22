@@ -122,7 +122,8 @@ Cleanup has bounded process-stop grace periods after the input deadline.
 Actions: `key`, `keydown`, `keyup`, `combo` (`keys`), `text`, `click`, `move`,
 `scroll` (`x`, `y`, `notches`), `resize`, `screenshot` (`name`), `sleep`, `server`
 (`command`, optional `wait`), `client_wait` (`pattern`, optional `start_at`),
-`status`, `close_client` (launch only), `stop`. Optional `player`, `hold`, `settle`,
+`status`, `close_client` (launch only), `stop`, and the gates `require`, `require_screen`,
+`close_screen` and `expect_log` described below. Optional `player`, `hold`, `settle`,
 `timeout` and `tail` apply where accepted by the parser. Unlike the untracked
 driver, log wait strings are literal substrings, not regexes: convert historical
 regex batches before reuse. This avoids unbounded regex evaluation inside a timed
@@ -140,6 +141,44 @@ copied/streamed logs mask access-token, client-ID and XUID fields. Do not put
 credentials in session or request files; redaction is not an invitation to
 collect them. Startup failures also clean up every owned process tree. Suspended
 creation and per-process Windows jobs prevent descendants escaping ownership.
+
+## Gates
+
+Four actions let a request check the state it depends on before it acts. They exist because a
+request whose actions all succeed can still have acted on the wrong state (a closed screen, a dead
+player, a missing rocket).
+
+- `require` (`command`, `expect`, optional `attempts` 1–60, `interval` 0.05–30 s, `timeout` 0.01–30 s
+  per attempt): sends the command and waits for a reply line that contains `expect` (a literal
+  substring) among the lines written after the command. It repeats the command, never an input, so
+  use a readback such as `data get`. One action may wait at most 300 seconds in total.
+- `require_screen` (`open`: true or false, optional `timeout` up to 30 s): waits until Minecraft
+  shows the pointer (a container screen, chat, a menu or the death screen) or has captured it.
+- `close_screen` (optional `timeout`): sends ESC only when a screen is open, and then requires it
+  to close. With no screen open it sends nothing, because ESC would open the Game Menu.
+- `expect_log` (`pattern`, optional `timeout` up to 300 s): waits for a server line (the client log
+  in an integrated world) written since this request began, for outcomes that follow a click.
+
+When a gate is not met the request stops there: its remaining actions are not sent, its result
+carries `PRECONDITION_FAILED: ...` (or `EXPECTATION_FAILED: ...` for `expect_log`), it counts as a
+failed request, and `summary.json` counts it in `precondition_failures`. Later requests still run.
+
+The screen state is read from the pointer clip that GLFW sets while the game holds the pointer, so
+the window must be in front, and a window that covers the whole desktop on a single monitor is
+refused as undecidable. `status` reports the same reading as `pointer_captured` (null when the
+window is not in front).
+
+## Other session options
+
+- A launch client may set `"pause_on_lost_focus": true`; the disposable `options.txt` then gets
+  `pauseOnLostFocus:true`. The default stays false, because an unattended integrated world would
+  pause whenever another window takes the focus. Attach clients keep their own options.
+- `session --lock-label <name>` sets the words before `pid=` in the lock's `owner.txt` (letters,
+  digits, dots, underscores and hyphens, at most 64). The default is `campaign-<run directory name>`,
+  so another worker reading the lock can tell which round holds it.
+- A fixture's request files are `{id, ops}` objects. Copy them into `requests/` by the file-drop
+  protocol above (`.tmp`, then rename), which keeps their ids. The `request` command is for a bare
+  list of actions and gives it a generated id.
 
 The frame analysis subcommand reads existing PresentMon CSVs, does not install
 or start a capture tool, and requires an explicit threshold and PID/name filter.

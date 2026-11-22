@@ -5,19 +5,23 @@ from pathlib import Path
 from uuid import UUID
 
 from .cells import path_at, read_object
+from .gates import MAX_GATE_SECONDS, gate_seconds
 
 VK = {"ESC": 27, "ENTER": 13, "TAB": 9, "BACK": 8, "SPACE": 32, "SHIFT": 16,
       "CTRL": 17, "END": 35, "HOME": 36, "DELETE": 46, "UP": 38, "DOWN": 40,
       "LEFT": 37, "RIGHT": 39, "SLASH": 191,
       **{chr(n): n for n in range(65, 91)}, **{str(n): 48 + n for n in range(10)},
       **{f"F{n}": 111 + n for n in range(1, 13)}}
-INPUTS = {"key", "keydown", "keyup", "combo", "text", "click", "move", "scroll", "resize", "screenshot"}
+INPUTS = {"key", "keydown", "keyup", "combo", "text", "click", "move", "scroll", "resize", "screenshot",
+          "require_screen", "close_screen"}
 FIELDS = {
     "key": {"key", "hold"}, "keydown": {"key"}, "keyup": {"key"}, "combo": {"keys", "hold"},
     "text": {"text"}, "click": {"x", "y", "right", "hold"}, "move": {"x", "y"},
     "scroll": {"x", "y", "notches"}, "resize": {"width", "height"}, "screenshot": {"name"},
     "server": {"command", "wait", "timeout", "tail"}, "client_wait": {"pattern", "timeout", "start_at"},
     "sleep": {"seconds"}, "status": {"tail"}, "stop": set(), "close_client": set(),
+    "require": {"command", "expect", "attempts", "interval", "timeout"},
+    "expect_log": {"pattern", "timeout"}, "require_screen": {"open", "timeout"}, "close_screen": {"timeout"},
 }
 
 
@@ -99,6 +103,21 @@ def validate_request(request, mode, players):
             number(op.get("tail", 6), 0, 100, "tail", True)
         if kind == "sleep":
             number(op.get("seconds"), 0, 120, "sleep")
+        if kind == "require":
+            one_line(op.get("command"), 4096, "console command")
+            one_line(op.get("expect"), 512, "expected reply")
+            number(op.get("attempts", 1), 1, 60, "attempts", True)
+            number(op.get("interval", 1), 0.05, 30, "attempt interval")
+            number(op.get("timeout", 5), 0.01, 30, "reply timeout")
+            if gate_seconds(op) > MAX_GATE_SECONDS:
+                raise ValueError("Gate may wait longer than 300 seconds")
+        if kind == "expect_log":
+            one_line(op.get("pattern"), 512, "wait substring")
+            number(op.get("timeout", 30), 0.01, 300, "wait timeout")
+        if kind in ("require_screen", "close_screen"):
+            if kind == "require_screen" and type(op.get("open")) is not bool:
+                raise ValueError("require_screen needs open: true or false")
+            number(op.get("timeout", 5), 0.01, 30, "screen timeout")
     return request
 
 
@@ -166,8 +185,12 @@ def load_session(path):
         fields = {"player_name", "language", "gui_scale", "window_size"}
         if spec["mode"] == "attach":
             fields |= {"pid", "account_label", "game_dir"}
-        if not isinstance(client, dict) or set(client) != fields:
+        # Optional, launch only: the disposable client's pauseOnLostFocus option (default false).
+        optional = {"pause_on_lost_focus"} if spec["mode"] == "launch" else set()
+        if not isinstance(client, dict) or set(client) - optional != fields:
             raise ValueError("Invalid client fields")
+        if type(client.get("pause_on_lost_focus", False)) is not bool:
+            raise ValueError("Invalid pause_on_lost_focus")
         name = string(client["player_name"], r"[A-Za-z0-9_]{3,16}", "player name")
         if name.lower() in names:
             raise ValueError("Duplicate player")

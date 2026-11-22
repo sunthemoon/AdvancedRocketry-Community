@@ -9,9 +9,11 @@ def prepare_client(cell, spec, game, port, java, singleplayer=False):
     for name in ("mods", "config", "defaultconfigs", "resourcepacks", "saves"):
         if (source / name).exists():
             copy_tree(source / name, game / name)
+    # False unless the session asks: a focus-loss pause would stop an unattended integrated world.
+    pause = "true" if spec.get("pause_on_lost_focus", False) else "false"
     (game / "options.txt").write_text(
         f"lang:{spec['language']}\nguiScale:{spec['gui_scale']}\nfullscreen:false\n"
-        "pauseOnLostFocus:false\ntutorialStep:none\nonboardAccessibility:false\n"
+        f"pauseOnLostFocus:{pause}\ntutorialStep:none\nonboardAccessibility:false\n"
         "skipMultiplayerWarning:true\njoinedFirstServer:true\nnarrator:0\n", encoding="utf-8")
     check_game(cell, game)
     # This helper reads only the isolated official runtime, never a signed-in launcher profile.

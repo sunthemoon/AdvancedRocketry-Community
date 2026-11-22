@@ -4,6 +4,7 @@ from ctypes import wintypes as W
 from pathlib import PureWindowsPath
 
 from .attach import ProcessIdentity, WindowIdentity
+from .gates import cursor_captured
 
 
 class Windows:
@@ -30,6 +31,8 @@ class Windows:
             (self.u, "MapVirtualKeyW", [W.UINT, W.UINT], W.UINT),
             (self.u, "ClientToScreen", [W.HWND, C.POINTER(W.POINT)], W.BOOL),
             (self.u, "SetWindowPos", [W.HWND, W.HWND] + [C.c_int] * 4 + [W.UINT], W.BOOL),
+            (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
+            (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
         for dll, name, args, result in definitions:
             fn = getattr(dll, name)
@@ -84,6 +87,16 @@ class Windows:
         rect = W.RECT()
         self.require(self.u.GetClientRect(handle, C.byref(rect)))
         return rect.right, rect.bottom
+
+    def cursor_captured(self, handle):
+        clip, origin = W.RECT(), W.POINT(0, 0)
+        self.require(self.u.GetClipCursor(C.byref(clip)))
+        self.require(self.u.ClientToScreen(handle, C.byref(origin)))
+        width, height = self.size(handle)
+        left, top = self.u.GetSystemMetrics(76), self.u.GetSystemMetrics(77)
+        desktop = (left, top, left + self.u.GetSystemMetrics(78), top + self.u.GetSystemMetrics(79))
+        return cursor_captured((clip.left, clip.top, clip.right, clip.bottom),
+                               (origin.x, origin.y, origin.x + width, origin.y + height), desktop)
 
     def post(self, handle, message, word=0, value=0):
         self.require(self.u.PostMessageW(handle, message, word, value))
