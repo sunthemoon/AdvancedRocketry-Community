@@ -85,6 +85,29 @@ class K08BTests(unittest.TestCase):
         self.assertEqual(prep.balance(Console(),"test")["balance"],123)
         with self.assertRaises(ValueError): prep.balance(Console(),"missing")
 
+    def test_inherited_vent_transition_conserves_fe_oxygen_and_identity(self):
+        root = dict(energy=23620,oxygen_units=3960,oxygen_phase=19,oxygen_canisters=0,
+                    empty_canisters=0,schema_version=2,scrubbers=dict(banks=[],generation="same",phase=3))
+        old = [dict(region=f"dimensions/{prep.NS}/moon/region/r.0.0.mca",value=dict(
+            id=prep.NS+":oxygen_vent",x=64,y=100,z=64,arce_oxygen_vent=root))]
+        new = copy.deepcopy(old)
+        new[0]["value"]["arce_oxygen_vent"].update(energy=23480,oxygen_units=3959,oxygen_phase=6)
+        new[0]["value"]["arce_oxygen_vent"]["scrubbers"]["phase"] = 0
+        self.assertEqual(prep.check_block_entities(old,new)[0]["active_ticks"],7)
+        for key,value in (("energy",23640),("oxygen_units",3961),("schema_version",3)):
+            bad = copy.deepcopy(new); bad[0]["value"]["arce_oxygen_vent"][key] = value
+            with self.assertRaises(ValueError): prep.check_block_entities(old,bad)
+        bad = copy.deepcopy(new); bad[0]["value"]["x"] += 1
+        with self.assertRaises(ValueError): prep.check_block_entities(old,bad)
+        with self.assertRaises(ValueError): prep.check_block_entities(old,new+copy.deepcopy(new))
+
+    def test_other_block_entity_changes_remain_exactly_rejected(self):
+        before = [dict(region="region/r.0.0.mca",value=dict(id=prep.NS+":warp_core",x=1,y=2,z=3,schema_version=1))]
+        self.assertEqual(prep.check_block_entities(before,copy.deepcopy(before)),[])
+        bad = copy.deepcopy(before); bad[0]["value"]["schema_version"] = 2
+        with self.assertRaises(ValueError): prep.check_block_entities(before,bad)
+        with self.assertRaises(ValueError): prep.check_block_entities(before,[])
+
     def test_settled_poll_waits_for_zero_pending(self):
         plan = [dict(station="test",energy=dict(target=prep.IN_SYSTEM))]
         readings = [dict(balance=prep.IN_SYSTEM,pending=20),dict(balance=prep.IN_SYSTEM+20,pending=0)]

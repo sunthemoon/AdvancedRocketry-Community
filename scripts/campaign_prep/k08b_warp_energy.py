@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from pathlib import Path
 import re
 import shutil
@@ -171,6 +170,51 @@ def compare_rows(before, after, plan):
         chain.require(expected == new, "Station authority or unselected energy changed")
 
 
+def check_block_entities(before, after):
+    """Retain every BE and field, accounting for FI06's live Moon vent.
+
+    That inherited loaded vent has no cartridges or fuel input. Its ordinary
+    20 FE/active-tick and 1 oxygen/20-active-tick transition is not a fixture
+    mutation. All other block-entity payloads must match exactly.
+    """
+    def key(r):
+        v = r["value"]
+        return r["region"],v["x"],v["y"],v["z"],v["id"]
+    old = {key(r):r for r in before}
+    new = {key(r):r for r in after}
+    chain.require(len(old) == len(before) and len(new) == len(after) and old.keys() == new.keys(),
+                  "Temporary BE remains, inherited BE lost or duplicate identity")
+    transitions = []
+    for k,value in old.items():
+        if value == new[k]:
+            continue
+        chain.require(k == (f"dimensions/{NS}/moon/region/r.0.0.mca",64,100,64,NS+":oxygen_vent"),
+                      "Unexpected inherited block-entity mutation: " + str(k))
+        a, b = value["value"]["arce_oxygen_vent"], new[k]["value"]["arce_oxygen_vent"]
+        chain.require(a["scrubbers"]["banks"] == [] and a["oxygen_canisters"] == 0,
+                      "Unsupported inherited vent inputs")
+        spent = a["energy"]-b["energy"]
+        chain.require(spent >= 0 and spent % 20 == 0, "Vent FE conservation failed")
+        active = spent//20
+        expected = json.loads(json.dumps(value))
+        vent = expected["value"]["arce_oxygen_vent"]
+        # Inactive supply resets oxygen phase to zero; startup may do so
+        # before active ticks, and a final inactive tick may do so after them.
+        candidates = []
+        for initial in {0,a["oxygen_phase"]}:
+            debits,phase = divmod(initial+active,20)
+            for final in {0,phase}:
+                candidate = json.loads(json.dumps(expected))
+                root = candidate["value"]["arce_oxygen_vent"]
+                root.update(energy=b["energy"],oxygen_units=a["oxygen_units"]-debits,oxygen_phase=final)
+                root["scrubbers"]["phase"] = (a["scrubbers"]["phase"]+debits)%4
+                candidates.append(candidate)
+        chain.require(new[k] in candidates,"Inherited vent resource/phase transition differs from C6")
+        transitions.append(dict(identity=k,active_ticks=active,fe_consumed=spent,
+                                oxygen_consumed=a["oxygen_units"]-b["oxygen_units"]))
+    return transitions
+
+
 def check_lock(token):
     chain.require(token.startswith("W442 pid=") and (chain.LOCK/"owner.txt").read_text(
         encoding="utf-8-sig").startswith(token), "W442 heavy-JVM lock required")
@@ -259,6 +303,10 @@ def run(args):
         chain.require(not receipt["errors"],"Native ERROR/FATAL")
         state, authority = planets.authority(runtime/"world")
         after = stations.station_rows(state)
+        # Keep stopped readbacks even if a later invariant refuses export.
+        for name,value in (("state",state),("authority",authority),("stations",after),
+                           ("files",fixture.file_inventory(runtime/"world"))):
+            chain.write(evidence/(name+".json"),value)
         compare_rows(rows,after,plan if args.mode == "build" else [])
         chain.require(stations.forced_projection(state) == stations.forced_projection(parent_state),
                       "Inherited force tickets changed")
@@ -269,10 +317,7 @@ def run(args):
         if args.mode == "build":
             expected["warp_energy"] = authority["warp_energy"]
         receipt["authority_matches"] = planets.comparison(expected,authority,"station")
-        chain.require(parent_state["block_entities"] == state["block_entities"],"Temporary BE remains or old BE changed")
-        for name,value in (("state",state),("authority",authority),("stations",after),
-                           ("files",fixture.file_inventory(runtime/"world"))):
-            chain.write(evidence/(name+".json"),value)
+        receipt["inherited_machine_transitions"] = check_block_entities(parent_state["block_entities"],state["block_entities"])
         chain.require(before == fixture.file_inventory(source),"Parent changed")
         chain.verify_seal(source.parent)
         receipt["source_unchanged"] = True
