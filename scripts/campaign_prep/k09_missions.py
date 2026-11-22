@@ -77,9 +77,22 @@ def same_tick_observation(lines):
     return dict(claims=claims, status="NOT_COVERED", tick=None,
         reason="DeliveryAudit records save_epoch, not arrival server tick; timestamps and raw tick polls cannot correlate intents.",
         a0="ResourceMissionsTest.twoOwnersSettleInTheSameTickIndependently",
-        a1="SatelliteGameTests.terminalMissionIsServerAuthoritativeAndClaimsExactlyOnce; SatelliteLifecycleGameTests (per-player same-tick limiter only)",
+        a1="SatelliteGameTests.terminalMissionIsServerAuthoritativeAndClaimsExactlyOnce; SatelliteLifecycleGameTests.menuIntentsAreSpacedPerPlayer (per-player same-tick limiter only)",
         a1_same_tick_two_owner="NOT_COVERED: no such A1 test in frozen C6; the two-owner same-tick test is A0, not A1",
         intent_tool="K18")
+
+
+def scheduler_observation(lines):
+    rows = []
+    for line in lines:
+        match = re.search(r"ARCE_SATELLITE_SCHEDULER completed=(\d+) pruned=(\d+) inspected=(\d+) remaining=(\d+)", line)
+        if match:
+            values = dict(zip(("completed", "pruned", "inspected", "remaining"), map(int, match.groups())))
+            chain.require(values["completed"] <= 32 and values["inspected"] <= 64, "Scheduler exceeded fixed pass budget")
+            rows.append(dict(line=line.strip(), **values))
+    return dict(passes=rows, scope="Changed ordinary scheduler passes only; hooks may call completeDue without this line",
+                max_completed=max((r["completed"] for r in rows), default=None),
+                max_inspected=max((r["inspected"] for r in rows), default=None))
 
 
 def cut_mapping():
@@ -264,6 +277,7 @@ def run(args):
         chain.require(not errors, "Native ERROR/FATAL: " + str(errors))
         after = root_state(runtime / "world")
         chain.write(evidence / "registry.json", after)
+        receipt["scheduler"] = scheduler_observation(process.lines)
         receipt["same_tick"] = same_tick_observation(process.lines)
         if args.mode == "build":
             active = [m for m in after["missions"] if m["status"] == "active"]

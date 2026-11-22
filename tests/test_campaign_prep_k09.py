@@ -61,6 +61,30 @@ class K09Tests(unittest.TestCase):
         self.assertIsNone(observation["tick"])
         self.assertIn("A0", observation["a1_same_tick_two_owner"])
 
+    def test_scheduler_budget_is_observed_not_raised(self):
+        line = "ARCE_SATELLITE_SCHEDULER completed=32 pruned=0 inspected=64 remaining=100"
+        self.assertEqual(m.scheduler_observation([line])["max_completed"], 32)
+        for bad in (line.replace("completed=32", "completed=33"), line.replace("inspected=64", "inspected=65")):
+            with self.assertRaises(ValueError):
+                m.scheduler_observation([bad])
+        self.assertIsNone(m.scheduler_observation([])["max_completed"])
+
+    def test_nondefault_limits_rejected_without_edit(self):
+        expected = dict(unfinishedMissionsGlobal=1024, unfinishedMissionsPerOwner=64, finishedMissionsPerOwner=128,
+            missionsTotal=3072, satellitesGlobal=4096, satellitesPerOwner=256, asteroidInstancesGlobal=2048,
+            asteroidInstancesPerOwner=16, intentIntervalTicks=10, selectionIntervalTicks=2,
+            asteroidInstanceTtlTicks=168000, asteroidMissionTimePercent=100, gasMissionTimePercent=100)
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "common.toml"
+            text = "[satellites]\n" + "".join(f"{k} = {v}\n" for k,v in expected.items())
+            path.write_text(text)
+            self.assertEqual(m.config_readback(path), expected)
+            changed = text.replace("unfinishedMissionsGlobal = 1024", "unfinishedMissionsGlobal = 2048")
+            path.write_text(changed)
+            with self.assertRaises(ValueError):
+                m.config_readback(path)
+            self.assertEqual(path.read_text(), changed)
+
     def test_mapping_never_equates_snapshot_with_durability(self):
         mapping = m.cut_mapping()
         self.assertIn("not durable", mapping["async"]["boundary"])
