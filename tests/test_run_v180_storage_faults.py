@@ -816,7 +816,9 @@ class SkipTests(unittest.TestCase):
         for case in live:
             self.assertEqual(case.spec.count(":"), 3 if case.skip else 2, case.id)
         self.assertEqual(faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 4).view(),
-                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4))
+                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4-S0", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4))
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-WRITE_ERROR-4").view(),
+                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4, skip=2))
         self.assertIn("baseline request", faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
         self.assertEqual(set(faults.DEFAULT_SKIP), {"SATELLITE_MISSIONS"})
 
