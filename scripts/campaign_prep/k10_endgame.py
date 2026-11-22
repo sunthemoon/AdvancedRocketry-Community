@@ -312,6 +312,7 @@ def run(args):
         if args.mode == "build":
             receipt["preloaded_chunks"] = preload(console)
             receipt["build_reply"] = console.query(load.HOOK+f"build {X} {Z}", "ARCE_RELEASE_TEST refload built")
+            shutil.copy2(runtime/"config"/(common.NS+"-common.toml"), evidence/"built-common.toml")
             # Identity/registration become authoritative only after chunk save,
             # registration pass and root persistence, not the build return.
             console.query("save-all flush", r"Saved the game")
@@ -394,6 +395,7 @@ def main():
     parser.add_argument("--warmup", type=float, default=120)
     parser.add_argument("--duration", type=float, default=600)
     parser.add_argument("--qualification", action="store_true")
+    parser.add_argument("--jfr", action="store_true", help="K15 bounded JFR/GC observer on this owned server only")
     args = parser.parse_args()
     chain.require(not args.mode.startswith("recover") or args.variant == "batch-cut", "Recovery only for batch-cut")
     print(json.dumps(run(args), indent=2))

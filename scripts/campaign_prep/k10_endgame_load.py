@@ -76,6 +76,12 @@ def observation_plan():
 
 def sample(console, evidence, args, receipt):
     receipt["windows"] = windows(args.warmup, args.duration, args.qualification)
+    if args.jfr:
+        from scripts.campaign_observe import jdk
+        target = jdk.CampaignJvm(console.process.process, "server")
+        jcmd = args.java.with_name("jcmd.exe" if args.java.suffix == ".exe" else "jcmd")
+        receipt["jfr_start"] = jdk.start_jfr(target, evidence, "load.jfr", name="k10",
+            duration_s=math.ceil(args.warmup + args.duration + 120), max_mib=16, jcmd=jcmd)
     receipt["before_drive"] = readbacks(console)
     if args.variant != "idle":
         console.query(HOOK + "drive on", r"ARCE_RELEASE_TEST refload drive on")
@@ -120,4 +126,8 @@ def sample(console, evidence, args, receipt):
     # not a promise that all cargo settles; the readback retains pending work.
     time.sleep(6)
     receipt["after_drive"] = readbacks(console)
+    if args.jfr:
+        receipt["jfr_stop"] = jdk.stop_jfr(target, evidence, "load.jfr", name="k10", jcmd=jcmd)
+        receipt["jfr"] = jdk.summarize_recording(evidence / "load.jfr", evidence / "jfr-events.json",
+            jfr=args.java.with_name("jfr.exe" if args.java.suffix == ".exe" else "jfr"))
     receipt["observations"] = observation_plan()
