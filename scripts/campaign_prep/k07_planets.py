@@ -147,13 +147,13 @@ class Console(chain.Console):
 
 
 def blocked_attempt(console):
-    console.query('datapack enable "file/data_only_test_mars.zip"', r"Enabled data pack")
+    console.query('datapack enable "file/data_only_test_mars.zip"', r"Enabling data pack")
     first = await_catalog(console, "is valid with 12 bodies")
-    console.query('datapack disable "file/data_only_test_mars.zip"', r"Disabled data pack")
+    console.query('datapack disable "file/data_only_test_mars.zip"', r"Disabling data pack")
     await_catalog(console, "is valid with 11 bodies")
-    console.query('datapack enable "file/catalog_128.zip"', r"Enabled data pack")
+    console.query('datapack enable "file/catalog_128.zip"', r"Enabling data pack")
     refused = await_catalog(console, "Planetary lifetime bindings exceed 128")
-    console.query('datapack disable "file/catalog_128.zip"', r"Disabled data pack")
+    console.query('datapack disable "file/catalog_128.zip"', r"Disabling data pack")
     restored = await_catalog(console, "is valid with 11 bodies")
     return dict(adopt=first, refused=refused, restored=restored,
                 meaning="Catalog binding refused by lifetime reservation limit; not a corrupt/blocked SavedData store. Refused catalog is not retained across restart.")
