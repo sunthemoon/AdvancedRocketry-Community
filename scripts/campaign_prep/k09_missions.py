@@ -287,6 +287,7 @@ def run(args):
             receipt["status"] = "PASS"
             chain.write(folder / "manifest.json", dict(schema_version=1, **receipt,
                 effective_values=effective_values(args.jar), batch_owners=batch_owners(),
+                source_inventory=fixture.file_inventory(runtime / "world"),
                 owner_policy="Batch and survey actors fixed by C6 hooks; --owner reserves client placeholder only, O5 unresolved",
                 missions=after["missions"], instances=after["instances"], clock=after["clock"],
                 cut_mapping=cut_mapping(), client_steps=client_steps(),
