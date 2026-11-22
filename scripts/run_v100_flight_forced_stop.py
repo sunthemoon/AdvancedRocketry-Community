@@ -58,6 +58,51 @@ DISASSEMBLY_DURABLE = re.compile(
     INFO_PREFIX + rf"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction=({UUID_PATTERN}) "
     r"phase=DONE reason=SEALED additional=\[\] overflow=0$"
 )
+LAUNCH_RECEIPT = re.compile(INFO_PREFIX + flight.LAUNCH_LOG.pattern + r"$")
+LAUNCH_PREPARED = re.compile(
+    INFO_PREFIX + rf"ARCE_TRANSFER_PREPARE transfer=({UUID_PATTERN}) logical=({UUID_PATTERN}) "
+    r"source=([^ ]+) destination=([^ ]+) code=([A-Z_]+) candidates=(\d+) chunks=(\d+) detail=([^\r\n]+)$"
+)
+LAUNCH_FAILED = re.compile(
+    INFO_PREFIX.replace("/INFO", "/(?:INFO|ERROR)") + rf"ARCE_TRANSFER_PREPARE_FAILED transfer=({UUID_PATTERN}) "
+    rf"logical=({UUID_PATTERN}) source=({UUID_PATTERN})$"
+)
+LAUNCH_OUTCOME = re.compile(
+    rf"(?:{LAUNCH_RECEIPT.pattern})|(?:{LAUNCH_PREPARED.pattern})|(?:{LAUNCH_FAILED.pattern})"
+)
+
+
+def wait_launch_receipt(process, entity: str, logical: str, dimension: str,
+                        destination: str, checkpoint: str, fuel: int, start_at: int):
+    """C6 admission is confirmed by the post-acknowledgement prepared callback.
+
+    The admin command also prints 'launch failed: JOURNAL_PENDING'. That command
+    answer is not the asynchronous outcome; only the identified callback proves
+    countdown admission. Pending and confirmation share the old launch budget.
+    """
+    deadline = time.monotonic() + 30.0
+
+    def wait(pattern, start):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise SmokeError("Launch receipt exceeded the existing 30-second budget")
+        return process.wait_for(pattern, remaining, start_at=start)
+
+    index = wait(LAUNCH_RECEIPT, start_at)
+    launch = LAUNCH_RECEIPT.fullmatch(process.lines[index].rstrip("\r\n"))
+    if launch is None or (launch[2], launch[3], launch[4], launch[5], launch[6], int(launch[9])) != (
+            entity, logical, dimension, destination, checkpoint, fuel):
+        raise SmokeError("Launch receipt changed rocket identity, route, checkpoint or fuel")
+    if launch[7] == "SUCCESS":
+        return launch, index, dict(form="legacy", code="SUCCESS")
+    if launch[7] != "JOURNAL_PENDING":
+        raise SmokeError(f"Could not launch restart checkpoint {checkpoint}: {launch[7]}")
+    confirmed_at = wait(LAUNCH_OUTCOME, index + 1)
+    prepared = LAUNCH_PREPARED.fullmatch(process.lines[confirmed_at].rstrip("\r\n"))
+    if prepared is None or prepared.groups()[:5] != (launch[1], logical, dimension, destination, "SUCCESS"):
+        raise SmokeError("Pending launch lacks the matching successful journal acknowledgement callback")
+    return launch, confirmed_at, dict(form="journalled", code="JOURNAL_PENDING",
+                                     confirmation=prepared.group(0), transfer=launch[1], logical=logical)
 
 
 def wait_disassembly_receipt(process, entity: str, logical: str, start_at: int,
@@ -160,6 +205,43 @@ def validate_report(case: str, staged: dict, report: dict) -> None:
 
 
 class RecoveryHarness(flight.FlightHarness):
+    def launch_to_checkpoint(self, process, *, dimension: str, entity: str,
+                             destination_name: str, checkpoint: str):
+        if not getattr(self, "journalled_launch_receipt", False):
+            return super().launch_to_checkpoint(process, dimension=dimension, entity=entity,
+                                                destination_name=destination_name, checkpoint=checkpoint)
+        # This v1.0 forced-stop matrix covers the outward Earth/Moon leg only.
+        if dimension != flight.EARTH or destination_name != "moon":
+            raise SmokeError("Journalled checkpoint mode requires the isolated Earth/Moon leg")
+        fueled = self.refuel(process, dimension, entity)
+        start = len(process.lines)
+        process.command(flight._in_dimension(
+            dimension, f"arce rocket release-test launch {entity} {destination_name} {checkpoint}",
+        ))
+        launch, launch_index, receipt = wait_launch_receipt(
+            process, entity, fueled["logical"], dimension, flight.MOON, checkpoint, fueled["amount"], start,
+        )
+        transfer = launch[1]
+        pause_pattern = re.compile(
+            rf"ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint={re.escape(checkpoint)} "
+            rf"transfer={re.escape(transfer)} "
+        )
+        pause_index = process.wait_for(pause_pattern, 30.0, start_at=launch_index)
+        pause = flight.PAUSE_LOG.search(process.lines[pause_index])
+        if pause is None:
+            raise SmokeError(f"Could not parse paused checkpoint {checkpoint}")
+        paused_checkpoint, paused_transfer, phase, state, paused_entity = pause.groups()
+        if paused_checkpoint != checkpoint or paused_transfer != transfer:
+            raise SmokeError("Release checkpoint froze the wrong transfer")
+        dimension = flight.EARTH if phase == "PREPARED" else flight.MOON
+        report = self.report(process, dimension, paused_entity)
+        if report["state"] != state:
+            raise SmokeError("Paused entity report changed the frozen flight state")
+        return dict(transfer_id=transfer, logical_rocket_id=launch[3], source_entity=entity,
+                    paused_entity=paused_entity, paused_dimension=dimension, phase=phase, state=state,
+                    checkpoint=checkpoint, required_fuel=int(launch[8]), fuel_before=int(launch[9]),
+                    report=report, launch_receipt=receipt)
+
     def disassemble_and_verify(self, process, report: dict, marker: str):
         if not getattr(self, "sealed_disassembly_receipt", False):
             return super().disassemble_and_verify(process, report, marker)
@@ -349,6 +431,8 @@ def parse_args() -> argparse.Namespace:
                         help="Poll Forge's starting response within the existing 30-second status budget")
     parser.add_argument("--sealed-disassembly-receipt", action="store_true",
                         help="Also accept an identified SEALED receipt after pending, with DONE durability")
+    parser.add_argument("--journalled-launch-receipt", action="store_true",
+                        help="Accept JOURNAL_PENDING only with its matching post-acknowledgement SUCCESS callback")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     java_home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(java_home) / "bin/java") if java_home else "java")
@@ -402,6 +486,8 @@ def main() -> int:
         summary["wait_ready_status"] = args.wait_ready_status
         harness.sealed_disassembly_receipt = args.sealed_disassembly_receipt
         summary["sealed_disassembly_receipt"] = args.sealed_disassembly_receipt
+        harness.journalled_launch_receipt = args.journalled_launch_receipt
+        summary["journalled_launch_receipt"] = args.journalled_launch_receipt
         for case in summary["requested_cases"]:
             result = run_case(harness, case)
             summary["cases"].append(result)

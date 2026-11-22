@@ -10,6 +10,7 @@ from scripts import run_v100_flight_forced_stop as recovery
 
 TRANSFER = "11111111-1111-1111-1111-111111111111"
 ENTITY = "22222222-2222-2222-2222-222222222222"
+LOGICAL = "33333333-3333-3333-3333-333333333333"
 
 
 class ReceiptProcess:
@@ -46,6 +47,139 @@ def disassembly_lines(form="sealed", **changes):
             ("ARCE_ROCKET_SEALED_DISASSEMBLY entity={entity} logical={logical} result={result}").format(**values),
             f"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction={ENTITY} "
             "phase=DONE reason=SEALED additional=[] overflow=0"]
+
+
+def launch_lines(code="JOURNAL_PENDING"):
+    return [f"ARCE_RELEASE_TEST_LAUNCH request={TRANSFER} entity={ENTITY} logical={LOGICAL} "
+            f"source={recovery.flight.EARTH} destination={recovery.flight.MOON} "
+            f"checkpoint=COUNTDOWN code={code} required_fuel=372 fuel_before=1000",
+            "Release-test launch failed: JOURNAL_PENDING",
+            f"ARCE_TRANSFER_PREPARE transfer={TRANSFER} logical={LOGICAL} "
+            f"source={recovery.flight.EARTH} destination={recovery.flight.MOON} "
+            "code=SUCCESS candidates=1 chunks=1 detail=selected"]
+
+
+class JournalledLaunchTests(unittest.TestCase):
+    def read(self, lines, start=0):
+        process = ReceiptProcess([])
+        process.lines = lines
+        result = recovery.wait_launch_receipt(process, ENTITY, LOGICAL, recovery.flight.EARTH,
+                                              recovery.flight.MOON, "COUNTDOWN", 1000, start)
+        return result, process
+
+    def test_pending_requires_post_acknowledgement_callback(self):
+        for prefix in ("", "[15:37:44] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "):
+            (launch, index, receipt), _ = self.read([prefix + line + "\n" for line in launch_lines()])
+            self.assertEqual("JOURNAL_PENDING", launch[7])
+            self.assertEqual(2, index)
+            self.assertEqual("journalled", receipt["form"])
+            self.assertEqual((TRANSFER, LOGICAL), (receipt["transfer"], receipt["logical"]))
+
+    def test_wrong_rocket_route_checkpoint_or_fuel_in_launch_fails(self):
+        for old, new in ((f"entity={ENTITY}", f"entity={TRANSFER}"), (f"logical={LOGICAL}", f"logical={ENTITY}"),
+                         (f"source={recovery.flight.EARTH}", "source=other:world"),
+                         (f"destination={recovery.flight.MOON}", "destination=other:world"),
+                         ("checkpoint=COUNTDOWN", "checkpoint=ASCENT"), ("fuel_before=1000", "fuel_before=999")):
+            lines = launch_lines()
+            lines[0] = lines[0].replace(old, new)
+            with self.subTest(old=old), self.assertRaises(recovery.SmokeError):
+                self.read(lines)
+
+    def test_foreign_callback_cannot_confirm_pending_launch(self):
+        for old, new in ((TRANSFER, ENTITY), (LOGICAL, ENTITY), (recovery.flight.EARTH, "other:world"),
+                         (recovery.flight.MOON, "other:world")):
+            lines = launch_lines()
+            lines[2] = lines[2].replace(old, new)
+            with self.subTest(old=old), self.assertRaises(recovery.SmokeError):
+                self.read(lines)
+
+    def test_missing_stale_or_early_confirmation_fails(self):
+        lines = launch_lines()
+        for value, start in (([], 0), (lines[:1], 0), (lines[:2], 0), ([lines[2]] + lines[:2], 0),
+                             (lines, len(lines))):
+            with self.subTest(value=value, start=start), self.assertRaises(recovery.SmokeError):
+                self.read(value, start)
+
+    def test_refusal_after_pending_wins_over_later_success(self):
+        lines = launch_lines()
+        for refusal in (lines[2].replace("code=SUCCESS", "code=TRANSFER_JOURNAL_BLOCKED"),
+                        lines[0].replace("code=JOURNAL_PENDING", "code=TRANSFER_PREPARE_FAILED"),
+                        f"[15:37:44] [Server thread/ERROR] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+                        f"ARCE_TRANSFER_PREPARE_FAILED transfer={TRANSFER} logical={LOGICAL} source={ENTITY}"):
+            with self.subTest(refusal=refusal), self.assertRaises(recovery.SmokeError):
+                self.read(lines[:2] + [refusal] + lines[2:])
+
+    def test_chat_substrings_and_malformed_confirmations_fail(self):
+        for at in (0, 2):
+            for prefix, suffix in (("prefix ", ""), ("", " trailing" if at == 0 else "\nother"),
+                                   ("[15:37:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Server] ", "")):
+                lines = launch_lines()
+                lines[at] = prefix + lines[at] + suffix
+                with self.subTest(at=at, prefix=prefix, suffix=suffix), self.assertRaises(recovery.SmokeError):
+                    self.read(lines)
+
+    def test_one_decreasing_launch_budget_and_no_wait_on_legacy_success(self):
+        process = ReceiptProcess([])
+        process.lines = launch_lines()
+        with patch.object(recovery.time, "monotonic", side_effect=[0, 1, 5]):
+            recovery.wait_launch_receipt(process, ENTITY, LOGICAL, recovery.flight.EARTH,
+                                         recovery.flight.MOON, "COUNTDOWN", 1000, 0)
+        self.assertEqual([29, 25], [call[1] for call in process.waits])
+        with patch.object(recovery.time, "monotonic", side_effect=[0, 1, 30]):
+            with self.assertRaisesRegex(recovery.SmokeError, "30-second"):
+                self.read(launch_lines())
+        (_, _, receipt), process = self.read(launch_lines("SUCCESS")[:1])
+        self.assertEqual("legacy", receipt["form"])
+        self.assertEqual(1, len(process.waits))
+
+    def test_non_pending_refusals_fail_without_confirmation(self):
+        for code in ("TRANSFER_JOURNAL_BLOCKED", "INVALID_STATE", "TRANSFER_PREPARE_FAILED"):
+            with self.subTest(code=code), self.assertRaises(recovery.SmokeError):
+                self.read(launch_lines(code))
+
+    def test_option_defaults_off_and_is_explicit(self):
+        args = ["runner", "source", "--session-dir", "session", "--baseline-summary", "baseline",
+                "--evidence-dir", "evidence", "--base-commit", "a" * 40]
+        for enabled in (False, True):
+            with patch.object(sys, "argv", args + (["--journalled-launch-receipt"] if enabled else [])):
+                self.assertEqual(enabled, recovery.parse_args().journalled_launch_receipt)
+
+    def test_default_delegates_to_unchanged_shared_harness(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="test", startup_timeout=240)
+        kwargs = dict(dimension=recovery.flight.EARTH, entity=ENTITY, destination_name="moon", checkpoint="COUNTDOWN")
+        with patch.object(recovery.flight.FlightHarness, "launch_to_checkpoint") as original:
+            harness.launch_to_checkpoint("process", **kwargs)
+            original.assert_called_once_with("process", **kwargs)
+        process = ReceiptProcess([])
+        process.lines = launch_lines()
+        with patch.object(harness, "refuel"), self.assertRaises(recovery.SmokeError):
+            # The unchanged default still rejects JOURNAL_PENDING even with a callback.
+            harness.launch_to_checkpoint(process, **kwargs)
+
+    def test_opt_in_still_requires_pause_and_unchanged_report_state(self):
+        harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                          expected_version="test", startup_timeout=240)
+        harness.journalled_launch_receipt = True
+        kwargs = dict(dimension=recovery.flight.EARTH, entity=ENTITY, destination_name="moon", checkpoint="COUNTDOWN")
+        pause = f"ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint=COUNTDOWN transfer={TRANSFER} "
+        pause += f"phase=PREPARED state=COUNTDOWN entity={ENTITY}"
+        for state in (None, "FUELED", "COUNTDOWN"):
+            process = ReceiptProcess([])
+            process.lines = launch_lines() + ([pause] if state else [])
+            process.command = lambda command: process.commands.append(command)
+            # Exclude fake pre-command lines, then emit them in the command callback.
+            output, process.lines = process.lines, []
+            process.command = lambda command: process.lines.extend(output)
+            with patch.object(harness, "refuel", return_value=dict(logical=LOGICAL, amount=1000)), \
+                    patch.object(harness, "report", return_value=dict(state=state)):
+                if state != "COUNTDOWN":
+                    with self.assertRaises(recovery.SmokeError):
+                        harness.launch_to_checkpoint(process, **kwargs)
+                else:
+                    result = harness.launch_to_checkpoint(process, **kwargs)
+                    self.assertEqual("journalled", result["launch_receipt"]["form"])
+                    self.assertEqual(TRANSFER, result["transfer_id"])
 
 
 class DisassemblyReceiptTests(unittest.TestCase):
