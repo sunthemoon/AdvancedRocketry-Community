@@ -15,6 +15,10 @@ before the first case runs: the declarations that follow from the case itself, a
 native cut of each offline group and declares, with the facts of that recording, the cases whose damage the kept
 image cannot carry. An inability that shows only while a case runs is INCOMPLETE.
 
+Model v3 targets L1 rather than fixture creation for the four ledger move/read faults. Their original bootstrap
+experiments remain available through explicit -S0 identifiers. This changes the declared injection position only;
+the classification rules, detection/hold markers, existing oracles, counts and timeouts are unchanged.
+
 The manifest declares, before any case runs, the hold markers of each store (Root decision R486). A hold line at
 ERROR is accepted only in the faulted start of that store and only after the injection. The existing runner's check
 of that start is not edited: its result is recorded, and beside it this runner's own evaluation of the same start
@@ -46,7 +50,7 @@ import run_v180_crash_replay as x01
 import v180_crash_replay as replay
 from campaign_observe.process import read_process
 
-MODEL = "W368-X02-v2"
+MODEL = "W368-X02-v3"
 PROPERTY = "-Dadvancedrocketrycommunity.storageFault="
 MARKER = "ARCE_RELEASE_STORAGE_FAULT"
 SEEN_HELD, CAUGHT_LATER, NOT_CAUGHT = "SEEN_HELD", "CAUGHT_LATER", "NOT_CAUGHT"
@@ -125,6 +129,16 @@ DEFAULT_SKIP = {
                               "smoke 2, write 1). Skipping one write puts the fault on the terminal launch's write, "
                               "which is the write that R3 cuts."),
 }
+# W446: these faults leave the probe's first (empty baseline) generation UNKNOWN.
+# While it retries, the probe queues autosaves instead of creating its rocket.
+# Fault the intended L1 write, as the registry cases already skip their baseline.
+# The old bootstrap fault remains addressable with an explicit -S0 case ID.
+LEDGER_BASELINE_FAULTS = ("MOVE_ERROR", "MOVE_DENIED", "READ_ERROR", "READ_CORRUPT")
+CASE_SKIP = {("RESOURCE_ESCROW", fault): (1,
+    "Runner F's first ledger write is its empty fixture baseline. An UNKNOWN baseline queues successor autosaves "
+    "before the probe creates its rocket; no cargo cut exists to reach. Passing that write puts the fault on L1. "
+    "W446's four -S1 native controls passed the unchanged oracles; -S0 retains the original bootstrap experiment.")
+    for fault in LEDGER_BASELINE_FAULTS}
 # Root decision R491, answer 1: the production lines that show a later start refusing the store. Exactly one is
 # declared for each store, and the manifest lists them before any case runs. A line counts only at ERROR, in a restart
 # of a case whose faulted store is that store. A release-test assertion, a crash wrapper, an unrelated service error or
@@ -146,8 +160,12 @@ class FaultError(ValueError):
     pass
 
 
-def default_skip(store: str) -> int:
-    return DEFAULT_SKIP.get(store, (0, ""))[0]
+def skip_default(store: str, fault: str | None = None) -> tuple[int, str]:
+    return CASE_SKIP.get((store, fault), DEFAULT_SKIP.get(store, (0, "")))
+
+
+def default_skip(store: str, fault: str | None = None) -> int:
+    return skip_default(store, fault)[0]
 
 
 @dataclass(frozen=True)
@@ -163,10 +181,10 @@ class Case:
 
     @property
     def id(self) -> str:
-        """The skip is named only when it is not the store's planned one."""
+        """The skip is named only when it is not this case's planned one."""
         if self.offline:
             return f"X02-{self.store}-{self.fault}"
-        return f"X02-{self.store}-{self.fault}-{self.count}" + ("" if self.skip == default_skip(self.store) else f"-S{self.skip}")
+        return f"X02-{self.store}-{self.fault}-{self.count}" + ("" if self.skip == default_skip(self.store, self.fault) else f"-S{self.skip}")
 
     @property
     def spec(self) -> str:
@@ -213,7 +231,7 @@ def plan(stores=None, faults=None, counts=None) -> list[Case]:
                 for count in counts or DEFAULT_COUNTS[fault]:
                     if type(count) is not int or not 1 <= count <= MAX_COUNT:
                         raise FaultError(f"Count outside 1..{MAX_COUNT}: {count}")
-                    cases.append(Case(store, fault, count, default_skip(store)))
+                    cases.append(Case(store, fault, count, default_skip(store, fault)))
             else:
                 raise FaultError(f"Unknown fault: {fault}")
     if len(set(cases)) != len(cases):
@@ -230,7 +248,7 @@ def by_id(identifier: str) -> Case:
         if fault in OFFLINE_FAULTS and count is None and skip is None:
             return Case(store, fault)
         if fault in LIVE_FAULTS and count is not None and int(count) <= MAX_COUNT:
-            case = Case(store, fault, int(count), default_skip(store) if skip is None else int(skip))
+            case = Case(store, fault, int(count), default_skip(store, fault) if skip is None else int(skip))
             # One identifier for each case: a suffix that repeats the store's planned skip is refused.
             if case.skip <= MAX_SKIP and case.id == identifier:
                 return case
@@ -1148,8 +1166,13 @@ def summary(manifest: dict) -> str:
 def declarations(cases: list[Case]) -> dict:
     """What the manifest declares before any case runs: the hold markers, the skips and the cases without an outcome."""
     live = [case for case in cases if not case.offline and case.skip]
+
+    def reason(case):
+        planned, explanation = skip_default(case.store, case.fault)
+        return explanation if case.skip == planned else "Named in the case identifier by the caller."
+
     skips = [dict(store=store, skip=skip, cases=[case.id for case in live if (case.store, case.skip) == (store, skip)],
-                  reason=DEFAULT_SKIP[store][1] if skip == default_skip(store) else "Named in the case identifier by the caller.")
+                  reason=" ".join(dict.fromkeys(reason(case) for case in live if (case.store, case.skip) == (store, skip))))
              for store, skip in sorted({(case.store, case.skip) for case in live})]
     return dict(detection_markers={store: list(markers) for store, markers in DETECTION_MARKERS.items()},
                 detection_rule="A later start has detected a fault only by a line at ERROR that carries a marker declared "

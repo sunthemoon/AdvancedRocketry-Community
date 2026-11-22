@@ -793,10 +793,15 @@ def refused_start(accepted=(JOURNAL_HOLD,), unaccepted=(), filtered=None, findin
 class SkipTests(unittest.TestCase):
     """Root decision R486, answer 2: the optional fourth field of the property."""
 
-    def test_the_registry_cases_skip_the_runners_baseline_write_and_no_other_store_skips(self):
+    def test_only_the_registry_and_four_ledger_cases_skip_the_fixture_baseline(self):
         cases = faults.plan()
         live = [case for case in cases if not case.offline]
-        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS"})
+        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS", "RESOURCE_ESCROW"})
+        ledger = [case for case in live if case.store == "RESOURCE_ESCROW" and case.skip]
+        self.assertEqual({case.fault for case in ledger}, {"MOVE_ERROR", "MOVE_DENIED", "READ_ERROR", "READ_CORRUPT"})
+        self.assertEqual(len(ledger), 4)
+        self.assertTrue(all(case.skip == case.count == 1 for case in ledger))
+        self.assertTrue(all(case.skip == 0 for case in live if case.store not in ("RESOURCE_ESCROW", "SATELLITE_MISSIONS")))
         self.assertEqual({case.skip for case in live if case.store == "SATELLITE_MISSIONS"}, {1})
         self.assertTrue(all(case.skip == 0 for case in cases if case.offline))
         registry = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
@@ -892,8 +897,11 @@ class NotApplicableTests(unittest.TestCase):
         self.assertEqual(declared["hold_markers"], {"ROCKET_TRANSFERS": ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"],
                                                     "SATELLITE_MISSIONS": ["ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED"]})
         self.assertIn("only after an ARCE_RELEASE_STORAGE_FAULT injected line", declared["hold_rule"])
-        self.assertEqual(len(declared["skips"]), 1)
-        skip = declared["skips"][0]
+        self.assertEqual(len(declared["skips"]), 2)
+        ledger_skip, skip = declared["skips"]
+        self.assertEqual((ledger_skip["store"], ledger_skip["skip"], set(ledger_skip["cases"])),
+                         ("RESOURCE_ESCROW", 1, {f"X02-RESOURCE_ESCROW-{fault}-1" for fault in faults.LEDGER_BASELINE_FAULTS}))
+        self.assertEqual(ledger_skip["reason"], faults.CASE_SKIP[("RESOURCE_ESCROW", "MOVE_ERROR")][1])
         self.assertEqual((skip["store"], skip["skip"], len(skip["cases"])), ("SATELLITE_MISSIONS", 1, len(faults.LIVE_FAULTS) + 1))
         self.assertEqual(skip["reason"], faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
         self.assertEqual(declared["not_applicable"], [dict(case="X02-BAY_RECEIPTS-WRITE_ERROR-4",
@@ -904,6 +912,19 @@ class NotApplicableTests(unittest.TestCase):
         other = faults.declarations([faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1-S3"), faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1")])
         self.assertEqual([(entry["skip"], entry["reason"].split(" ")[0]) for entry in other["skips"]], [(1, "Runner"), (3, "Named")])
         self.assertEqual(faults.declarations([faults.Case("BAY_RECEIPTS", "STALE")])["skips"], [])
+
+    def test_the_original_ledger_bootstrap_faults_remain_explicit_reproducible_cases(self):
+        self.assertEqual(faults.MODEL, "W368-X02-v3")
+        for fault in faults.LEDGER_BASELINE_FAULTS:
+            name = f"X02-RESOURCE_ESCROW-{fault}-1"
+            target, bootstrap = faults.by_id(name), faults.by_id(name + "-S0")
+            self.assertEqual((target.skip, target.spec), (1, f"RESOURCE_ESCROW:{fault}:1:1"))
+            self.assertEqual((bootstrap.skip, bootstrap.spec), (0, f"RESOURCE_ESCROW:{fault}:1"))
+            self.assertEqual(target.native, bootstrap.native)
+            self.assertEqual(bootstrap.view()["id"], name + "-S0")
+            self.assertEqual(faults.declarations([bootstrap])["skips"], [])
+            with self.assertRaises(faults.FaultError):
+                faults.by_id(name + "-S1")
 
     def test_a_declared_case_is_recorded_without_a_start_and_listed_as_uncovered_scope(self):
         with tempfile.TemporaryDirectory() as temp:
