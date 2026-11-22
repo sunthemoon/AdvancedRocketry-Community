@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import time
+import tomllib
 from uuid import UUID
 import zipfile
 
@@ -59,6 +60,16 @@ def effective_values(jar):
         instance_reclaim_ticks=1200, instance_changes=16, instance_inspections=32),
         limit_authority="Pinned C6 SatelliteLimits, RegistryLimits, InstanceLedger; COMMON readback retained per run",
         deadline_semantics="ACTIVE completes to READY at completes_at_logical_time; missions do not expire. AVAILABLE instances expire at expires_at.")
+
+
+def config_readback(path):
+    values = tomllib.loads(path.read_text(encoding="utf-8"))["satellites"]
+    expected = dict(unfinishedMissionsGlobal=1024, unfinishedMissionsPerOwner=64, finishedMissionsPerOwner=128,
+        missionsTotal=3072, satellitesGlobal=4096, satellitesPerOwner=256, asteroidInstancesGlobal=2048,
+        asteroidInstancesPerOwner=16, intentIntervalTicks=10, selectionIntervalTicks=2,
+        asteroidInstanceTtlTicks=168000, asteroidMissionTimePercent=100, gasMissionTimePercent=100)
+    chain.require(all(values.get(k) == v for k, v in expected.items()), "Non-default mission limits")
+    return values
 
 
 def same_tick_observation(lines):
@@ -142,6 +153,8 @@ def compare_missions(before, after):
         if instance["schema_version"] == 1:
             instance.update(schema_version=2, origin_kind="survey_mission", origin_id=instance.pop("source_mission"))
     chain.require(instances == after["instances"], "Instance snapshot changed beyond schema-1 migration")
+    for field in ("satellites", "ground_surveys"):
+        chain.require(before.get(field) == after.get(field), "Unexpected authority change: " + field)
     return dict(ids_equal=True, snapshots_equal=True, accounts_equal=True, completed=transitions)
 
 
@@ -213,6 +226,7 @@ def run(args):
         receipt["server_status"] = chain.ready_status(server, port, "1.20.1-1.8.0-dev")
         chain.require(receipt["server_status"]["players"]["online"] == 0, "Unexpected player")
         console = Console(process, receipt["commands"])
+        receipt["effective_common"] = config_readback(runtime / "config" / (common.NS + "-common.toml"))
         if args.mode == "build":
             # A single fixed-actor survey: C6 has no generic kind/owner launch hook.
             console.query(WRITER + "terminal-place", r"ARCE_RELEASE_SRW_TERMINAL placed")
@@ -256,6 +270,7 @@ def run(args):
             chain.require(sum(m["kind"] == "data" for m in active) == SIZES[args.variant], "Requested active data set not retained")
             chain.require(any(m["kind"] == "survey" for m in active), "Active survey not retained")
             receipt["active_count"] = len(active)
+            receipt["status"] = "PASS"
             chain.write(folder / "manifest.json", dict(schema_version=1, **receipt,
                 effective_values=effective_values(args.jar), batch_owners=batch_owners(),
                 owner_policy="Batch and survey actors fixed by C6 hooks; --owner reserves client placeholder only, O5 unresolved",
