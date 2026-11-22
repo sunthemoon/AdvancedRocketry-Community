@@ -239,7 +239,7 @@ def validate_readbacks(value, scene):
     """Check supporting-scene contents, without claiming missing fuel/supply setup."""
     if scene in ("component", "flight-recovery"):
         text = value["rocket"]
-        capacity, mass, thrust, entities = (1500,254,2400,0) if scene == "component" else (1000,210,2400,1)
+        capacity, mass, thrust, entities = (1500,254,2400,0) if scene == "component" else (1000,210,1000,1)
         for field, number in (("fuel_capacity",capacity),("mass",mass),("thrust",thrust),
                               ("block_count",5),("block_entity_count",entities)):
             chain.require(re.search(rf"\b{field}: {number}(?:L)?[,}}]", text), "Missing captured metric: "+field)
@@ -298,10 +298,9 @@ def run(args):
     receipt = dict(status="FAIL", scene=args.scene, mode=args.mode, commands=[], identity=pins,
                    driver_commit=subprocess.check_output(["git","rev-parse","HEAD"], cwd=common.ROOT,text=True).strip(),
                    driver_sha256=chain.digest(Path(__file__)), client_started=False)
-    process, prepared = None, False
+    process = None
     try:
         fixture.prepare(args.template, runtime, args.jar, source)
-        prepared = True
         shutil.copy2(args.fixture, runtime / "mods" / args.fixture.name)
         if args.scene in ("moon","payload") and args.mode == "build":
             pack = "atmosphere_tag_disabled.zip" if args.scene == "moon" else "satellite_payload.zip"

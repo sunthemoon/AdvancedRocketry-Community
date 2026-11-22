@@ -100,6 +100,20 @@ class CampaignPrepK21Test(unittest.TestCase):
         with self.assertRaises(ValueError):
             k21.compare(moon, dict(moon, atmosphere_sealing=False), "moon")
 
+    def test_content_witnesses_reject_wrong_numbers_or_lost_payload(self):
+        component = dict(rocket='{fuel_capacity: 1500L, mass: 254L, thrust: 2400L, block_count: 5, '
+                         'block_entity_count: 0, state: "ASSEMBLED", fuel: {amount: 0L, capacity: 1500L}}',
+                         loader='{buffered_units: 0L}')
+        k21.validate_readbacks(component, "component")
+        with self.assertRaisesRegex(ValueError, "mass"):
+            k21.validate_readbacks(dict(component, rocket=component["rocket"].replace("254L","253L")), "component")
+        with self.assertRaisesRegex(ValueError, "unclaimed"):
+            k21.validate_readbacks(dict(component, loader="{owner_id: [I; 0,0,0,5], buffered_units: 0L}"), "component")
+        with self.assertRaisesRegex(ValueError, "payload"):
+            k21.validate_readbacks(dict(terminal="{inventory: {}}"), "payload")
+        with self.assertRaises(ValueError):
+            k21.validate_readbacks(dict(vent="{oxygen_units: 0, energy: 0}", atmosphere_sealing=False), "moon")
+
     def test_copy_inventory_and_immutable_source(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
