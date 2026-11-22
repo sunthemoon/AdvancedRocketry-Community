@@ -10,6 +10,7 @@ import csv
 import json
 import math
 from pathlib import Path
+import platform
 import re
 import sys
 import time
@@ -116,6 +117,7 @@ def action(console, rows, evidence, args):
     after = console.all(command)
     stations.chain.require(forced_reply(after) == original, "Native tickets not restored")
     result = dict(plan=plan, role=args.run_label, stations=len(rows), source_world="Same immutable source per count",
+        host=dict(node=platform.node(), platform=platform.platform(), machine=platform.machine()),
         baseline_definition="All station platform chunks unloaded", treatment_definition="All station platform chunks force-loaded",
         unload=unloaded, reload=reloaded, baseline=baseline, original_force_reply=original_reply,
         restored_force_reply=after, observed=observed, player_count=0,

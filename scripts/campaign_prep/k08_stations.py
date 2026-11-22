@@ -21,6 +21,7 @@ if __package__ in (None, ""):
 from scripts.campaign_prep import k03_chain as chain
 from scripts.campaign_prep import k07_planets as planets
 from scripts.campaign_prep import k16_core as common
+from scripts.campaign_observe.common import safe_path, utc_now
 
 NS, SPACE = common.NS, common.SPACE
 OUTPUT = common.EVIDENCE / "final-campaign/c8fa16e16/fixtures/K08"
@@ -185,6 +186,8 @@ def run(args, load_action=None):
     from scripts import run_dedicated_server_smoke as server
     from scripts import v170_world_fixture as fixture
     check_lock(args.lock_owner)
+    for name in ("output", "fixtures", "jar", "template", "java"):
+        setattr(args, name, safe_path(getattr(args, name)))
     chain.require(chain.digest(args.jar) == common.JAR_HASH, "Pinned C6 JAR required")
     folder = args.output / args.variant
     source = args.fixtures / "K03/FI06/source-world" if args.mode == "build" else folder / "source-world"
@@ -200,6 +203,7 @@ def run(args, load_action=None):
     runtime = args.output / "_work" / (args.variant + "-" + evidence.name)
     chain.require(not runtime.exists(), "Existing runtime is not owned")
     receipt = dict(status="FAIL", commands=[], variant=args.variant, mode=args.mode,
+        start_utc=utc_now(), template=str(args.template), forge="47.4.10", jei="absent",
         candidate_commit=common.CANDIDATE, jar_sha256=common.JAR_HASH, hooks=[],
         driver_commit=subprocess.check_output(["git","rev-parse","HEAD"], cwd=common.ROOT, text=True).strip(),
         driver_sha256=chain.digest(Path(__file__)), parent_source=str(source),
@@ -258,6 +262,7 @@ def run(args, load_action=None):
         receipt["commands"].append("stop")
         process.command("stop")
         receipt["exit_code"] = process.finish()
+        receipt["end_utc"] = utc_now()
         chain.require(receipt["exit_code"] == 0, "Unclean native exit")
         receipt["errors"] = [s.strip() for s in process.lines if re.search(r"/(ERROR|FATAL)\]", s)]
         chain.require(not receipt["errors"], "Native ERROR/FATAL")

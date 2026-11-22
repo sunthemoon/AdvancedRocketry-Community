@@ -156,6 +156,36 @@ class K08Tests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"changed"):
                 prep.chain.verify_seal(root)
 
+    def test_successful_sampler_has_only_post_warmup_ticks(self):
+        class Console:
+            def __init__(self): self.tick=10
+            def query(self,*args):
+                self.tick+=1
+                return f"ARCE_RELEASE_TEST ticks_raw tick={self.tick} entries=2 data={self.tick-1}:1000000,{self.tick}:1000000"
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            with patch.object(load,"schedule",return_value=iter([0,1])):
+                result = load.sample(Console(),folder,2)
+            self.assertEqual(result["start_after_tick"],11)
+            self.assertEqual(result["summary"]["first_tick"],12)
+            self.assertEqual(result["summary"]["tick_count"],3)
+            self.assertEqual(result["summary"]["missing_tick_count"],0)
+            self.assertIn("NOT_PERFORMED",result["reference_comparison"])
+            self.assertEqual(len((folder/"samples.csv").read_text().splitlines()),4)
+
+    def test_created_authority_does_not_accept_duplicate_owner(self):
+        rows = prep.station_rows(state())
+        with self.assertRaisesRegex(ValueError,"Per-owner"):
+            prep.check_created("two",[],rows+rows,[])
+
+    def test_source_qualification_checks_all_stable_fields(self):
+        before = dict(stations=[dict(owner=prep.OWNER)],warp_energy=[456])
+        self.assertTrue(all(prep.planets.comparison(before,before,"station").values()))
+        for key in before:
+            after = dict(before,**{key:[]})
+            with self.assertRaisesRegex(ValueError,"Restart authority"):
+                prep.planets.comparison(before,after,"station")
+
 
 if __name__ == "__main__":
     unittest.main()
