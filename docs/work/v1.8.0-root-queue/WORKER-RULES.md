@@ -105,6 +105,13 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   refused such separate removals (W98's and W109's locks, W106's and W109's GameTest worlds),
   and a left lock stalled every worker until Root removed it (about 80 minutes on 2026-10-20). Delete your
   `build/gametest/world` and export trees in the same script's `finally` for the same reason.
+
+  Start a detached process with no console window: the owner asked on 2026-11-22 that background work keep
+  only the main window on screen, and closing such a window stops the process. Launch it through
+  `D:/GitHub/ARCE-Task-Evidence/root-queue/tools/hidden_run.py` with pyenv's `pythonw.exe`
+  (`pythonw.exe -B hidden_run.py <working directory> <program> [arguments...]`), which runs the program with
+  `CREATE_NO_WINDOW` and waits for it, rather than WMI-starting `cmd.exe`, `powershell.exe` or `python.exe`
+  directly. A Minecraft client still opens its own window. (Added by Root on 2026-11-23, R626.)
 - **runData:** run it once, under the lock, whenever you change data generation. Commit its
   output together with the generator change.
 - **Unit tests:** before your final record, run the whole unit suite once (`test`, with no
