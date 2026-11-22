@@ -23,7 +23,7 @@ class ReceiptProcess:
 
     def command(self, command):
         self.commands.append(command)
-        if "release-test disassemble" in command:
+        if "release-test disassemble" in command or "release-test launch" in command:
             self.lines.extend(self.output)
         if "data get block" in command:
             self.lines.append('has the following block data: [{id: "minecraft:diamond", Count: 17b}, '
@@ -151,9 +151,8 @@ class JournalledLaunchTests(unittest.TestCase):
         with patch.object(recovery.flight.FlightHarness, "launch_to_checkpoint") as original:
             harness.launch_to_checkpoint("process", **kwargs)
             original.assert_called_once_with("process", **kwargs)
-        process = ReceiptProcess([])
-        process.lines = launch_lines()
-        with patch.object(harness, "refuel"), self.assertRaises(recovery.SmokeError):
+        process = ReceiptProcess(launch_lines())
+        with patch.object(harness, "refuel"), self.assertRaisesRegex(recovery.SmokeError, "Could not launch"):
             # The unchanged default still rejects JOURNAL_PENDING even with a callback.
             harness.launch_to_checkpoint(process, **kwargs)
 
@@ -165,12 +164,7 @@ class JournalledLaunchTests(unittest.TestCase):
         pause = f"ARCE_RELEASE_TEST_FLIGHT_PAUSED checkpoint=COUNTDOWN transfer={TRANSFER} "
         pause += f"phase=PREPARED state=COUNTDOWN entity={ENTITY}"
         for state in (None, "FUELED", "COUNTDOWN"):
-            process = ReceiptProcess([])
-            process.lines = launch_lines() + ([pause] if state else [])
-            process.command = lambda command: process.commands.append(command)
-            # Exclude fake pre-command lines, then emit them in the command callback.
-            output, process.lines = process.lines, []
-            process.command = lambda command: process.lines.extend(output)
+            process = ReceiptProcess(launch_lines() + ([pause] if state else []))
             with patch.object(harness, "refuel", return_value=dict(logical=LOGICAL, amount=1000)), \
                     patch.object(harness, "report", return_value=dict(state=state)):
                 if state != "COUNTDOWN":
