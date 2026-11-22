@@ -44,6 +44,7 @@ import run_dedicated_server_smoke as smoke
 import run_v180_bay_forced_stop as bay
 import run_v180_crash_replay as x01
 import v180_crash_replay as replay
+from campaign_observe.process import read_process
 
 MODEL = "W368-X02-v2"
 PROPERTY = "-Dadvancedrocketrycommunity.storageFault="
@@ -1055,7 +1056,8 @@ def machine_lock(path=None, timeout=3 * 3600):
             path.mkdir()
             break
         except FileExistsError:
-            if time.time() - path.stat().st_mtime > 3 * 3600 or time.monotonic() >= deadline:
+            old = time.time() - path.stat().st_mtime > 3 * 3600
+            if (old and not lock_owner_running(path)) or time.monotonic() >= deadline:
                 raise FaultError("Heavy-JVM lock stale or wait exhausted; not breaking it")
             time.sleep(60)
     owner = path / "owner.txt"
@@ -1065,6 +1067,24 @@ def machine_lock(path=None, timeout=3 * 3600):
     finally:
         if owner.is_file() and owner.read_text(encoding="utf-8-sig").strip() == token:
             owner.unlink(); path.rmdir()
+
+
+def lock_owner_running(path: Path) -> bool:
+    """R607: age alone does not make a live campaign's lock stale. Never remove a foreign lock."""
+    try:
+        owner = (path / "owner.txt").read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        return False
+    match = re.search(r"\bpid=([1-9][0-9]*)\b", owner)
+    if not match:
+        return False
+    try:
+        read_process(int(match[1]))
+    except (OSError, ValueError):
+        # An inaccessible or vanished process is not evidence that it is safe to
+        # take the lock. Stop with the lock intact for Root to inspect.
+        raise FaultError("Cannot verify the old heavy-JVM lock owner's process; not breaking it")
+    return True
 
 
 def groups(cases: list[Case]) -> list[list[Case]]:

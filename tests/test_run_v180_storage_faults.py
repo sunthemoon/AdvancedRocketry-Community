@@ -716,6 +716,43 @@ class RunnerTests(unittest.TestCase):
                 self.fail("A foreign lock was taken")
         self.assertEqual((lock / "owner.txt").read_text(encoding="utf-8"), "another worker")
 
+    def test_an_old_lock_with_a_live_owner_is_waited_on_not_broken(self):
+        lock = self.root / "heavy-jvm"
+        lock.mkdir()
+        owner = lock / "owner.txt"
+        owner.write_text("another campaign pid=12345", encoding="utf-8")
+
+        def release(seconds):
+            self.assertEqual(seconds, 60)
+            self.assertEqual(owner.read_text(), "another campaign pid=12345")
+            owner.unlink()
+            lock.rmdir()
+
+        with patch.object(faults.time, "time", return_value=10**10), \
+                patch.object(faults, "read_process", return_value={}) as process, \
+                patch.object(faults.time, "sleep", side_effect=release):
+            with faults.machine_lock(lock):
+                process.assert_called_once_with(12345)
+        self.assertFalse(lock.exists())
+
+    def test_old_missing_or_unverifiable_owner_stops_without_breaking_the_lock(self):
+        lock = self.root / "heavy-jvm"
+        lock.mkdir()
+        owner = lock / "owner.txt"
+        for content in (None, "no pid", "worker pid=12345"):
+            with self.subTest(owner=content):
+                if content is not None:
+                    owner.write_text(content, encoding="utf-8")
+                with patch.object(faults.time, "time", return_value=10**10), \
+                        patch.object(faults, "read_process", side_effect=ProcessLookupError), \
+                        patch.object(faults.time, "sleep") as sleep, self.assertRaises(faults.FaultError):
+                    with faults.machine_lock(lock):
+                        self.fail("A foreign lock was taken")
+                self.assertTrue(lock.is_dir())
+                sleep.assert_not_called()
+                if content is not None:
+                    self.assertEqual(owner.read_text(), content)
+
     def test_the_evidence_bound_stops_the_campaign(self):
         evidence = self.root / "bounded"; evidence.mkdir()
         (evidence / "a.log").write_bytes(b"x" * 10)
