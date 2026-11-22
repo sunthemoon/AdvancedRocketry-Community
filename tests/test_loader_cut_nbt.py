@@ -1,5 +1,6 @@
 """W107C's bounded NBT and Anvil fixture tools, without a JVM or native process."""
 from pathlib import Path
+import gzip
 import random
 import struct
 import sys
@@ -20,6 +21,33 @@ def string(value: str) -> Tag:
 
 def compound(**fields) -> Tag:
     return Tag(COMPOUND, dict(fields))
+
+
+class DamagedCompressedSavedDataTest(unittest.TestCase):
+    def test_corrupt_streams_are_failed_decodes_not_unhandled_eof(self):
+        original = gzip.compress(nbt.write(b"", compound(value=Tag(INT, 17))), mtime=0)
+        broken_deflate = bytearray(original)
+        broken_deflate[10] = 7  # Reserved DEFLATE block type.
+        bad_crc = bytearray(original)
+        bad_crc[-8] ^= 1
+        for damaged in (original[:len(original) // 2], original[:-1],
+                        original[:-8] + bytes(8), bytes(broken_deflate), bytes(bad_crc), b"not gzip"):
+            with self.subTest(damaged=damaged), tempfile.TemporaryDirectory() as temporary:
+                path = Path(temporary) / "saved.dat"
+                path.write_bytes(damaged)
+                with self.assertRaisesRegex(nbt.NbtError, "Cannot decode compressed SavedData"):
+                    nbt.read_gzip(path)
+                self.assertEqual(path.read_bytes(), damaged)
+
+    def test_valid_stream_and_existing_expanded_bound_are_preserved(self):
+        from unittest.mock import patch
+        root = compound(value=Tag(INT, 17))
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "saved.dat"
+            nbt.write_gzip(path, b"", root)
+            self.assertEqual(nbt.read_gzip(path), (b"", root))
+            with patch.object(nbt, "MAX_DECODED", 4), self.assertRaises(nbt.NbtError):
+                nbt.read_gzip(path)
 
 
 def section(y: int, palette: list[str], blocks: dict) -> Tag:

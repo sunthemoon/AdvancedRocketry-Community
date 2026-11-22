@@ -166,8 +166,13 @@ def read_gzip(path: Path) -> tuple[bytes, Tag]:
     raw = path.read_bytes()
     if len(raw) > MAX_COMPRESSED:
         raise NbtError("Compressed SavedData exceeds its bound")
-    with gzip.GzipFile(fileobj=io.BytesIO(raw)) as stream:
-        payload = stream.read(MAX_DECODED + 1)
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(raw)) as stream:
+            payload = stream.read(MAX_DECODED + 1)
+    except (OSError, EOFError, zlib.error) as failure:
+        # Native runners retain decoding failures as failed observations and still
+        # start the stopped world again. A torn gzip stream must use that route too.
+        raise NbtError(f"Cannot decode compressed SavedData: {failure}") from failure
     return read(payload)
 
 
