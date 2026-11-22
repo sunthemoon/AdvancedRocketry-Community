@@ -378,7 +378,7 @@ def run(args):
         chain.write(evidence / "world-files.json", fixture.file_inventory(runtime / "world"))
         if source:
             chain.require(source_inventory == fixture.file_inventory(source), "Source world changed")
-            chain.verify_seal(folder)
+            chain.verify_seal(source_folder)
             receipt["source_unchanged"] = True
         if args.mode in ("build","changed","remove"):
             destination = folder / "source-world" if args.mode == "build" else evidence / (
@@ -400,6 +400,11 @@ def run(args):
                 process.abort()
             chain.require(process.process.poll() is not None, "Owned JVM alive; retain lock/runtime")
         if runtime.exists():
+            # A refused removal start may already have changed native files.
+            # Preserve that stopped outcome as well; never throw it away merely
+            # because there was no READY marker or normal readback.
+            if args.mode == "remove" and (runtime / "world").is_dir() and not (evidence / "outcome-world").exists():
+                checked_copy(runtime / "world", evidence / "outcome-world")
             for name in ("logs/debug.log", "config/advancedrocketrycommunity-common.toml"):
                 if (runtime / name).is_file():
                     shutil.copy2(runtime / name, evidence / Path(name).name)
