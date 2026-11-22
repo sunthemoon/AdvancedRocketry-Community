@@ -236,7 +236,9 @@ def readbacks(console, name):
     commands = ["arce beta data-report", "arce celestial validate", "arce celestial list", "arce celestial systems",
                 "arce celestial route earth_mars", "arce celestial route earth_venus",
                 "arce satellite admin evidence", "arce station admin dump", "difficulty",
-                "gamerule doDaylightCycle", "gamerule doWeatherCycle", "gamerule naturalRegeneration"]
+                "time query daytime", *["gamerule " + rule for rule in
+                    ("doDaylightCycle", "doWeatherCycle", "naturalRegeneration", "fallDamage", "fireDamage",
+                     "drowningDamage", "freezeDamage", "doMobSpawning")]]
     result = {command: console.all(command) for command in commands}
     chain.require(any("operational=true" in line for line in result[commands[0]]), "Managed roots unavailable")
     if name == "hazards":
