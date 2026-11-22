@@ -239,6 +239,16 @@ class K09Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             m.crash_region_chunk(raw, 128, 128)
 
+    def test_ticket_comparison_is_an_exact_set_not_list_order(self):
+        first = {"data/chunks.dat": dict(DataVersion=3465, data=dict(Forced=[1, 2, 3]))}
+        second = {"data/chunks.dat": dict(DataVersion=3465, data=dict(Forced=[3, 1, 2]))}
+        self.assertEqual(load.ticket_projection(first), load.ticket_projection(second))
+        second["data/chunks.dat"]["data"]["Forced"] = [1, 2, 4]
+        self.assertNotEqual(load.ticket_projection(first), load.ticket_projection(second))
+        second["data/chunks.dat"]["data"]["Forced"] = [1, 1, 2]
+        with self.assertRaises(ValueError):
+            load.ticket_projection(second)
+
     def test_seal_catches_changed_and_unlisted_world_bytes(self):
         with TemporaryDirectory() as tmp:
             folder = Path(tmp).resolve()

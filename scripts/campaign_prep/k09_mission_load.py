@@ -106,5 +106,15 @@ def check_cut(args, before, after, world, receipt):
         receipt["reclaimed_instance"] = instance_id
     # Compare native persistent tickets across the cut, including other dimensions.
     source_terminal, source_tickets = m.terminal_disk(source_for(args))
-    chain.require(tickets == source_tickets, "Unexpected persistent chunk ticket")
+    chain.require(ticket_projection(tickets) == ticket_projection(source_tickets), "Unexpected persistent chunk ticket")
     receipt["tickets_unchanged"] = True
+
+
+def ticket_projection(tickets):
+    """Vanilla serializes a set with unstable iteration order; retain raw replies too."""
+    result = json.loads(json.dumps(tickets))
+    for root in result.values():
+        values = root["data"]["Forced"]
+        chain.require(all(type(v) is int for v in values) and len(values) == len(set(values)), "Invalid forced set")
+        root["data"]["Forced"] = sorted(values)
+    return result
