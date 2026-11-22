@@ -716,6 +716,43 @@ class RunnerTests(unittest.TestCase):
                 self.fail("A foreign lock was taken")
         self.assertEqual((lock / "owner.txt").read_text(encoding="utf-8"), "another worker")
 
+    def test_an_old_lock_with_a_live_owner_is_waited_on_not_broken(self):
+        lock = self.root / "heavy-jvm"
+        lock.mkdir()
+        owner = lock / "owner.txt"
+        owner.write_text("another campaign pid=12345", encoding="utf-8")
+
+        def release(seconds):
+            self.assertEqual(seconds, 60)
+            self.assertEqual(owner.read_text(), "another campaign pid=12345")
+            owner.unlink()
+            lock.rmdir()
+
+        with patch.object(faults.time, "time", return_value=10**10), \
+                patch.object(faults, "read_process", return_value={}) as process, \
+                patch.object(faults.time, "sleep", side_effect=release):
+            with faults.machine_lock(lock):
+                process.assert_called_once_with(12345)
+        self.assertFalse(lock.exists())
+
+    def test_old_missing_or_unverifiable_owner_stops_without_breaking_the_lock(self):
+        lock = self.root / "heavy-jvm"
+        lock.mkdir()
+        owner = lock / "owner.txt"
+        for content in (None, "no pid", "worker pid=12345"):
+            with self.subTest(owner=content):
+                if content is not None:
+                    owner.write_text(content, encoding="utf-8")
+                with patch.object(faults.time, "time", return_value=10**10), \
+                        patch.object(faults, "read_process", side_effect=ProcessLookupError), \
+                        patch.object(faults.time, "sleep") as sleep, self.assertRaises(faults.FaultError):
+                    with faults.machine_lock(lock):
+                        self.fail("A foreign lock was taken")
+                self.assertTrue(lock.is_dir())
+                sleep.assert_not_called()
+                if content is not None:
+                    self.assertEqual(owner.read_text(), content)
+
     def test_the_evidence_bound_stops_the_campaign(self):
         evidence = self.root / "bounded"; evidence.mkdir()
         (evidence / "a.log").write_bytes(b"x" * 10)
@@ -756,10 +793,17 @@ def refused_start(accepted=(JOURNAL_HOLD,), unaccepted=(), filtered=None, findin
 class SkipTests(unittest.TestCase):
     """Root decision R486, answer 2: the optional fourth field of the property."""
 
-    def test_the_registry_cases_skip_the_runners_baseline_write_and_no_other_store_skips(self):
+    def test_only_the_planned_registry_ledger_and_journal_cases_skip_fixture_setup(self):
         cases = faults.plan()
         live = [case for case in cases if not case.offline]
-        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS"})
+        self.assertEqual({case.store for case in live if case.skip}, {"SATELLITE_MISSIONS", "RESOURCE_ESCROW", "ROCKET_TRANSFERS"})
+        ledger = [case for case in live if case.store == "RESOURCE_ESCROW" and case.skip]
+        self.assertEqual({case.fault for case in ledger}, {"MOVE_ERROR", "MOVE_DENIED", "READ_ERROR", "READ_CORRUPT"})
+        self.assertEqual(len(ledger), 4)
+        self.assertTrue(all(case.skip == case.count == 1 for case in ledger))
+        self.assertEqual([(case.fault, case.count, case.skip) for case in live if case.store == "ROCKET_TRANSFERS" and case.skip],
+                         [("WRITE_ERROR", 4, 2)])
+        self.assertTrue(all(case.skip == 0 for case in live if case.store == "BAY_RECEIPTS"))
         self.assertEqual({case.skip for case in live if case.store == "SATELLITE_MISSIONS"}, {1})
         self.assertTrue(all(case.skip == 0 for case in cases if case.offline))
         registry = faults.Case("SATELLITE_MISSIONS", "WRITE_ERROR", 1, 1)
@@ -772,7 +816,9 @@ class SkipTests(unittest.TestCase):
         for case in live:
             self.assertEqual(case.spec.count(":"), 3 if case.skip else 2, case.id)
         self.assertEqual(faults.Case("ROCKET_TRANSFERS", "WRITE_ERROR", 4).view(),
-                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4))
+                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4-S0", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4))
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-WRITE_ERROR-4").view(),
+                         dict(id="X02-ROCKET_TRANSFERS-WRITE_ERROR-4", store="ROCKET_TRANSFERS", fault="WRITE_ERROR", count=4, skip=2))
         self.assertIn("baseline request", faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
         self.assertEqual(set(faults.DEFAULT_SKIP), {"SATELLITE_MISSIONS"})
 
@@ -855,8 +901,14 @@ class NotApplicableTests(unittest.TestCase):
         self.assertEqual(declared["hold_markers"], {"ROCKET_TRANSFERS": ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"],
                                                     "SATELLITE_MISSIONS": ["ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED"]})
         self.assertIn("only after an ARCE_RELEASE_STORAGE_FAULT injected line", declared["hold_rule"])
-        self.assertEqual(len(declared["skips"]), 1)
-        skip = declared["skips"][0]
+        self.assertEqual(len(declared["skips"]), 3)
+        ledger_skip, journal_skip, skip = declared["skips"]
+        self.assertEqual((journal_skip["store"], journal_skip["skip"], journal_skip["cases"]),
+                         ("ROCKET_TRANSFERS", 2, ["X02-ROCKET_TRANSFERS-WRITE_ERROR-4"]))
+        self.assertEqual(journal_skip["reason"], faults.skip_default("ROCKET_TRANSFERS", "WRITE_ERROR", 4)[1])
+        self.assertEqual((ledger_skip["store"], ledger_skip["skip"], set(ledger_skip["cases"])),
+                         ("RESOURCE_ESCROW", 1, {f"X02-RESOURCE_ESCROW-{fault}-1" for fault in faults.LEDGER_BASELINE_FAULTS}))
+        self.assertEqual(ledger_skip["reason"], faults.CASE_SKIP[("RESOURCE_ESCROW", "MOVE_ERROR")][1])
         self.assertEqual((skip["store"], skip["skip"], len(skip["cases"])), ("SATELLITE_MISSIONS", 1, len(faults.LIVE_FAULTS) + 1))
         self.assertEqual(skip["reason"], faults.DEFAULT_SKIP["SATELLITE_MISSIONS"][1])
         self.assertEqual(declared["not_applicable"], [dict(case="X02-BAY_RECEIPTS-WRITE_ERROR-4",
@@ -867,6 +919,30 @@ class NotApplicableTests(unittest.TestCase):
         other = faults.declarations([faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1-S3"), faults.by_id("X02-SATELLITE_MISSIONS-WRITE_ERROR-1")])
         self.assertEqual([(entry["skip"], entry["reason"].split(" ")[0]) for entry in other["skips"]], [(1, "Runner"), (3, "Named")])
         self.assertEqual(faults.declarations([faults.Case("BAY_RECEIPTS", "STALE")])["skips"], [])
+
+    def test_the_original_ledger_bootstrap_faults_remain_explicit_reproducible_cases(self):
+        self.assertEqual(faults.MODEL, "W368-X02-v4")
+        for fault in faults.LEDGER_BASELINE_FAULTS:
+            name = f"X02-RESOURCE_ESCROW-{fault}-1"
+            target, bootstrap = faults.by_id(name), faults.by_id(name + "-S0")
+            self.assertEqual((target.skip, target.spec), (1, f"RESOURCE_ESCROW:{fault}:1:1"))
+            self.assertEqual((bootstrap.skip, bootstrap.spec), (0, f"RESOURCE_ESCROW:{fault}:1"))
+            self.assertEqual(target.native, bootstrap.native)
+            self.assertEqual(bootstrap.view()["id"], name + "-S0")
+            self.assertEqual(faults.declarations([bootstrap])["skips"], [])
+            with self.assertRaises(faults.FaultError):
+                faults.by_id(name + "-S1")
+
+    def test_only_the_four_write_journal_case_targets_the_removal_after_both_setup_writes(self):
+        name = "X02-ROCKET_TRANSFERS-WRITE_ERROR-4"
+        case = faults.by_id(name)
+        self.assertEqual((case.skip, case.spec, case.native), (2, "ROCKET_TRANSFERS:WRITE_ERROR:4:2", ("S", "FS_O3J_AFTER")))
+        self.assertEqual(faults.by_id(name + "-S0").spec, "ROCKET_TRANSFERS:WRITE_ERROR:4")
+        self.assertEqual(faults.by_id(name + "-S1").spec, "ROCKET_TRANSFERS:WRITE_ERROR:4:1")
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-WRITE_ERROR-1").skip, 0)
+        self.assertEqual(faults.by_id("X02-ROCKET_TRANSFERS-READ_ERROR-1").skip, 0)
+        with self.assertRaises(faults.FaultError):
+            faults.by_id(name + "-S2")
 
     def test_a_declared_case_is_recorded_without_a_start_and_listed_as_uncovered_scope(self):
         with tempfile.TemporaryDirectory() as temp:

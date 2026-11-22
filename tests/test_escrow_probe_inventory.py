@@ -39,7 +39,9 @@ class EscrowProbeInventoryTest(unittest.TestCase):
         # W370 adds tests/test_v180_crash_replay.py.
         # W376 (X03-V) adds tests/test_run_v180_x03_repair.py.
         # W373B adds tests/test_accounting_cut_oracle.py and tests/test_run_v180_accounting_cuts.py.
-        self.assertEqual(44, len(self.coverage["tests"]))
+        # W446 adds tests/test_x02_damaged_decoding.py, which names FC_LOAD_L2_REPLACED and FS_O3J_AFTER.
+        self.assertEqual(45, len(self.coverage["tests"]))
+        self.assertIn("tests/test_x02_damaged_decoding.py", self.coverage["tests"])
         self.assertIn("run_v180_accounting_cuts", self.coverage["direct"])
         for case in ("FS_AC_LOSS", "FS_LOAD_AC_READBACK", "FS_AC_O4_ACK"):
             self.assertEqual({"scripts/run_v180_accounting_cuts.py"}, {o for o in self.rows[case] if o.startswith("scripts/")})
