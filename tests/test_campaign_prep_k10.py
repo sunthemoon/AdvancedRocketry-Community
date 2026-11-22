@@ -22,6 +22,9 @@ class K10Tests(unittest.TestCase):
         self.assertEqual(0, actors["real_connections"]["count"])
         self.assertEqual(2, actors["real_connections"]["required"])
         self.assertIn("FakePlayer", actors["physical_break_actor"])
+        players = [r for r in actors["actors"] if r["classification"].startswith("embedded-channel")]
+        self.assertEqual(44, len({r["profile_name"] for r in players}))
+        self.assertTrue(all(len(r["profile_name"]) <= 16 for r in players))
 
     def test_ground_has_no_inherited_regions(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -49,9 +49,11 @@ def actors():
                 "black-hole device owner" if i < 12 else "gravity menu owner" if i < 20 else
                 "railgun request owner" if i < 36 else "elevator/station owner")
         result.append(dict(uuid=owner(i), index=i, role=role,
+            profile_name="arceOwner" + owner(i)[:6] if i < 8 or 12 <= i < 20 else None,
             classification="embedded-channel Creative fixture player" if i < 8 or 12 <= i < 20 else "UUID authority only; no connection"))
     for i in range(28):
         result.append(dict(uuid=named_uuid(f"arce-refload-visitor-{i}"), index=i,
+            profile_name="arceVisitor" + str(i) if i < 20 else "arceRider" + named_uuid(f"arce-refload-visitor-{i}")[:6],
             role="field visitor" if i < 20 else "station-member rider",
             classification="embedded-channel Creative fixture player; not real client"))
     for i in range(32):
@@ -219,10 +221,13 @@ def forced(console):
 def unload(console, baseline, receipt):
     current = forced(console)
     added = {dim: sorted(set(current[dim]) - set(baseline[dim])) for dim in current}
-    # Only exact UUIDs created by refload, never selectors or other sessions.
+    # Brigadier's players argument rejects a bare UUID as potentially an
+    # entity selector. Use only exact fixed facility profile names, not @a.
     for row in actors()["actors"]:
         if row["classification"].startswith("embedded-channel"):
-            console.all("kick " + row["uuid"] + " K10 fixture cleanup")
+            replies = console.all("kick " + row["profile_name"] + " K10 fixture cleanup")
+            chain.require(not any("provided selector includes entities" in line for line in replies),
+                          "Invalid player-only cleanup target")
     for dim, coords in added.items():
         for x,z in coords:
             console.all(f"execute in {dim} run forceload remove {x*16} {z*16}")
