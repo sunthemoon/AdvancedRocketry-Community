@@ -43,7 +43,9 @@ def uuid_text(value):
 def station_rows(state):
     root = state["roots"][NS + "_stations.dat"]["data"]
     energy = {uuid_text(row["station_id"]): row["energy"] for row in root["warp_energy"]}
-    cores = [row["value"] for row in state["block_entities"] if row["value"]["id"] == NS + ":warp_core"]
+    cores = [row["value"] for row in state["block_entities"]
+             if row["value"]["id"] == NS + ":warp_core"
+             and row["region"].startswith(f"dimensions/{NS}/space/region/")]
     result = []
     for row in root["stations"]:
         bounds = row["region"]
@@ -196,6 +198,17 @@ def check_lock(token):
         chain.require(min(shutil.disk_usage(p).free for p in ("C:/", "D:/")) >= 10*1024**3, "10 GiB free required")
 
 
+def forced_projection(state):
+    # Vanilla serializes a set as a long array; insertion/rehash order is not
+    # chunk authority. Retain every other field and the exact distinct tickets.
+    value = json.loads(json.dumps(state["forced_chunks"]))
+    for root in value.values():
+        tickets = root["data"]["Forced"]
+        chain.require(len(tickets) == len(set(tickets)), "Duplicate native force ticket")
+        root["data"]["Forced"] = sorted(tickets)
+    return value
+
+
 def run(args, load_action=None):
     from scripts import run_dedicated_server_smoke as server
     from scripts import v170_world_fixture as fixture
@@ -304,7 +317,7 @@ def run(args, load_action=None):
             expected = json.loads((folder / "creation/authority.json").read_text())
             receipt["authority_matches"] = planets.comparison(expected, authority, "station")
             chain.require(rows == json.loads((folder / "creation/stations.json").read_text()), "Station readback changed")
-            chain.require(state["forced_chunks"] == parent_state["forced_chunks"], "Force tickets not restored")
+            chain.require(forced_projection(state) == forced_projection(parent_state), "Force tickets not restored")
         receipt["status"] = "PASS"
     except BaseException as exc:
         receipt["error"] = f"{type(exc).__name__}: {exc}"

@@ -22,8 +22,9 @@ def state():
         members=[dict(id=words(prep.MEMBER))], invitations=[dict(id=words(prep.OUTSIDER))])
     root = dict(stations=[station], warp_energy=[dict(station_id=words(prep.OWNER),energy=456)])
     return dict(roots={prep.NS+"_stations.dat":dict(data=root)}, block_entities=[
-        dict(value=dict(id=prep.NS+":warp_core",x=4,y=128,z=4)),
-        dict(value=dict(id=prep.NS+":warp_core",x=1024,y=128,z=4))])
+        dict(region=f"dimensions/{prep.NS}/space/region/r.0.0.mca",value=dict(id=prep.NS+":warp_core",x=4,y=128,z=4)),
+        dict(region="region/r.0.0.mca",value=dict(id=prep.NS+":warp_core",x=5,y=128,z=4)),
+        dict(region=f"dimensions/{prep.NS}/space/region/r.0.0.mca",value=dict(id=prep.NS+":warp_core",x=1024,y=128,z=4))])
 
 
 class K08Tests(unittest.TestCase):
@@ -45,6 +46,16 @@ class K08Tests(unittest.TestCase):
     def test_uuid_signed_native_words(self):
         for text in (prep.OWNER, prep.OUTSIDER, "ffffffff-ffff-ffff-ffff-ffffffffffff"):
             self.assertEqual(text, prep.uuid_text(words(text)))
+
+    def test_native_force_tickets_compare_sets_but_preserve_other_fields(self):
+        first = dict(forced_chunks={"data/chunks.dat":dict(DataVersion=1,data=dict(Forced=[2,1]))})
+        second = dict(forced_chunks={"data/chunks.dat":dict(DataVersion=1,data=dict(Forced=[1,2]))})
+        self.assertEqual(prep.forced_projection(first),prep.forced_projection(second))
+        second["forced_chunks"]["data/chunks.dat"]["data"]["Forced"]=[1,3]
+        self.assertNotEqual(prep.forced_projection(first),prep.forced_projection(second))
+        second["forced_chunks"]["data/chunks.dat"]["data"]["Forced"]=[1,1]
+        with self.assertRaisesRegex(ValueError,"Duplicate"):
+            prep.forced_projection(second)
 
     def test_native_owners_members_region_energy_and_cores(self):
         row = prep.station_rows(state())[0]
