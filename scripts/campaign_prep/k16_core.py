@@ -87,8 +87,9 @@ LAYOUTS = {
         "input": (52, 43), "charge": (28, 43), "hydrogen": (124, 43), "oxygen": (148, 43),
         "hot0": (16, 160), "hot1": (34, 160), "hot2": (52, 160)}),
     "classic": ((220, 128), "ClassicControllerScreen", {"status": (110, 60)}),
-    "rolling": ((196, 212), "RollingMachineScreen", {"status": (98, 60)}),
-    "precision": ((244, 225), "PrecisionAssemblerScreen", {"status": (122, 60)}),
+    # "energy" is the centre of the gauge rectangle each screen passes to isHovering for its energy tooltip.
+    "rolling": ((196, 212), "RollingMachineScreen", {"status": (98, 60), "energy": (64, 48)}),
+    "precision": ((244, 225), "PrecisionAssemblerScreen", {"status": (122, 60), "energy": (158, 52)}),
     "suit": ((176, 202), "equipment/SuitWorkstationScreen", {"install": (88, 38), "status": (88, 60)}),
     "flight": ((248, 216), "RocketFlightScreen", {
         "earth": (69, 99), "moon": (179, 99), "other": (71, 124), "station": (177, 124),
@@ -97,8 +98,9 @@ LAYOUTS = {
     "fluid_loader": ((176, 90), "FluidFuelLoaderScreen", {"status": (88, 45)}),
     "terminal": ((352, 234), "SatelliteTerminalScreen", {
         "previous": (19, 91), "next": (205, 91), "assemble": (28, 113), "launch": (75, 113),
-        "claim": (123, 113), "cancel": (181, 113), "status": (110, 62)}),
-    "builder": ((224, 202), "SatelliteBuilderScreen", {"assemble": (153, 72), "status": (110, 85)}),
+        "claim": (123, 113), "cancel": (181, 113), "status": (110, 62), "energy": (197, 34)}),
+    "builder": ((224, 202), "SatelliteBuilderScreen", {"assemble": (153, 72), "status": (110, 85),
+                                                       "energy": (206, 40)}),
     "railgun": ((176, 222), "RailgunScreen", {
         "previous": (16, 83), "next": (34, 83), "launch": (66, 83), "auto": (108, 83),
         "redstone": (148, 83), "status": (88, 118), "input0": (16, 26), "hot0": (16, 206)}),
@@ -162,9 +164,19 @@ def click(viewport, screen, control):
     return dict(op="click", x=x, y=y, settle=0.8)
 
 
+FLOOR = {OW: 150, MOON: 150, SPACE: 128}  # The y a player stands at on each fixture platform.
+ROOM_BREAK_CELL = (34, 152, 36)
+REVISION = 2  # 1 is the sealed final/ set; 2 is the W443 route fix. The world is not interchangeable.
+
+
 def look(pos, dim=OW):
+    """Stand on the platform north of the device and look at the centre of its north face.
+
+    The player always stands on the floor: one teleported to a controller one block up (the lathe at
+    y 151) falls back to the floor with the same pitch and then aims at the block below it.
+    """
     x, y, z = pos
-    return s(f"execute in {dim} run tp {PLAYER} {x + .5} {y} {z - 2.5} "
+    return s(f"execute in {dim} run tp {PLAYER} {x + .5} {FLOOR[dim]} {z - 2.5} "
              f"facing {x + .5} {y - 1.12:.2f} {z}", settle=0.8)
 
 
@@ -273,13 +285,15 @@ def core_world(jar):
         for y, block in enumerate(blocks, 151):
             commands.append(f"setblock {x} {y} 50 " + (block if ":" in block else NS + ":" + block))
         devices[-1].update(source_blocks=blocks, valid_variant=valid)
-    # Moon room matches gen2.py's topology. Boundary is closed and has an explicit break/repair block.
+    # Moon room matches gen2.py's topology. Boundary is closed; its break/repair cell (34,152,36) is glass,
+    # which a player breaks by hand in under a second and places back from one item.
     commands += [f"execute in {MOON} run fill 32 150 32 36 154 36 minecraft:iron_block hollow",
-                 f"execute in {MOON} run fill 32 154 32 36 154 36 minecraft:glass"]
+                 f"execute in {MOON} run fill 32 154 32 36 154 36 minecraft:glass",
+                 f"execute in {MOON} run setblock {' '.join(map(str, ROOM_BREAK_CELL))} minecraft:glass"]
+    # The vent and its generator are placed empty. Version 1 merged {schema_version:1,...} onto the vent's
+    # saved schema-2 root, which C6 quarantines as invalid data, so the room never had air (W443).
+    # core-room supplies both by normal use actions instead.
     place("oxygen_vent", (34, 150, 34), dim=MOON)
-    commands.append(f"execute in {MOON} run data merge block 34 150 34 "
-                    "{arce_oxygen_vent:{schema_version:1,oxygen_canisters:16,empty_canisters:0,"
-                    "oxygen_units:1000,energy:40000,oxygen_phase:0}}")
     place("combustion_generator", (33, 150, 34), dim=MOON)
     place("co2_scrubber", (35, 150, 34), dim=MOON)
     commands += [f"execute in {MOON} run setblock 34 151 33 minecraft:torch",
@@ -306,10 +320,62 @@ def core_world(jar):
     return commands, devices, supplies
 
 
+ROCKET = f"@e[type={NS}:rocket,limit=1]"
+ROOM_STATUS = f"execute as {PLAYER} run arce atmosphere status"
+SUIT_PATH = f"entity {PLAYER} Inventory[{{Slot:102b}}].tag.arce_space_suit_oxygen"
+MOON_LANDING = "0 32 31 79"  # Block corners of the chunks around the legal rocket's column (10, 50).
+WARP_REFUSAL = f"target={CYGNUS} class=INTERSTELLAR"
+
+
+def require(command, expect, attempts=1, interval=0.5, timeout=1):
+    """A bounded readback gate; the harness stops the request with PRECONDITION_FAILED when it is not met."""
+    return dict(op="require", command=command, expect=expect, attempts=attempts, interval=interval, timeout=timeout)
+
+
+def screen_open():
+    return dict(op="require_screen", open=True, timeout=5)
+
+
+def right_click(viewport):
+    return dict(op="click", x=viewport[0] // 2, y=viewport[1] // 2, right=True, settle=1)
+
+
+def prelude():
+    """Start from a known state: no held Shift, no open screen (ESC only if one is open), a living player."""
+    return [dict(op="keyup", key="SHIFT"), dict(op="close_screen"),
+            require(f"execute if entity @e[type=minecraft:player,name={PLAYER}]", "Test passed", attempts=3)]
+
+
+def aim(stand, target, dim=OW):
+    """Teleport to stand and look from the eye (1.62 above the feet) at target."""
+    x, y, z = target
+    return s(f"execute in {dim} run tp {PLAYER} {stand[0]} {stand[1]} {stand[2]} "
+             f"facing {x} {y - 1.62:.2f} {z}", settle=0.8)
+
+
+def open_gated(viewport, pos, dim=OW):
+    return [*open_screen(viewport, pos, dim), screen_open()]
+
+
+def rocket_data(path, expect, attempts=1, interval=0.5):
+    return require(f"data get entity {ROCKET} RocketEntityData.flight_data.{path}", "entity data: " + expect,
+                   attempts=attempts, interval=interval)
+
+
+def suit_ready():
+    """A worn chest piece whose oxygen is present and not zero. A failed first test prints nothing at all."""
+    return require(f"execute if data {SUIT_PATH} unless data {SUIT_PATH}{{oxygen_units:0}}", "Test passed")
+
+
+def room(expect, attempts=30):
+    return require(ROOM_STATUS, expect, attempts=attempts, interval=0.5)
+
+
 def batches():
     """A request per checklist step; the index holds metadata forbidden by the wire schema."""
     requests, index = {}, []
-    def add(name, row, step, ops, *, prerequisites="Joined fixture copy, no screen open", mode="dedicated"):
+    def add(name, row, step, ops, *, prerequisites="Joined fixture copy; the request closes an open screen itself",
+            mode="dedicated"):
         request = {"id": name, "ops": ops}
         validate_request(request, "launch", [PLAYER])
         if len(json_bytes(request)) > 256 * 1024:
@@ -320,75 +386,139 @@ def batches():
     for viewport in VIEWPORTS:
         suffix = viewport_id(viewport)
         add("core-00-" + suffix, "I01", "2: combustion generator operation", [
-            s(f"item replace entity {PLAYER} hotbar.0 with minecraft:coal 16"),
-            *open_screen(viewport, (6, 150, 6)), click(viewport, "combustion", "hot0"),
-            click(viewport, "combustion", "fuel"), shot("i01-generator-" + suffix), key("ESC"),
+            *prelude(), s(f"item replace entity {PLAYER} hotbar.0 with minecraft:coal 16"),
+            *open_gated(viewport, (6, 150, 6)), click(viewport, "combustion", "hot0"),
+            click(viewport, "combustion", "fuel"), shot("i01-generator-" + suffix), dict(op="close_screen"),
             s("data get block 6 150 6")])
         add("core-01-" + suffix, "I01/A02", "2/3: first generator and electrolyzer batch", [
+            *prelude(),
             s(f"gamemode survival {PLAYER}"), s(f"item replace entity {PLAYER} hotbar.0 with minecraft:water_bucket"),
             s(f"item replace entity {PLAYER} hotbar.1 with minecraft:redstone 5"),
             s(f"item replace entity {PLAYER} hotbar.2 with {NS}:empty_canister 2"),
-            look((40, 150, 34)), key("1"),
-            dict(op="click", x=viewport[0] // 2, y=viewport[1] // 2, right=True, settle=1),
-            *open_screen(viewport, (40, 150, 34)), click(viewport, "electrolyzer", "hot2"),
+            look((40, 150, 34)), key("1"), right_click(viewport),
+            *open_gated(viewport, (40, 150, 34)), click(viewport, "electrolyzer", "hot2"),
             click(viewport, "electrolyzer", "input"), click(viewport, "electrolyzer", "hot1"),
             click(viewport, "electrolyzer", "charge"), {"op": "sleep", "seconds": 12},
-            shot("a02-electrolyzer-" + suffix), key("ESC"), s("data get block 40 150 34")])
-        for name, pos, layout in (("rolling", (20, 150, 20), "rolling"),
-                                  ("precision", (30, 150, 20), "precision"),
-                                  ("lathe", (42, 151, 20), "classic"),
-                                  ("terminal", (6, 150, 70), "terminal"),
-                                  ("builder", (12, 150, 70), "builder")):
-            add("core-screen-" + name + "-" + suffix, "A13/A17/J21", "read current screen and hover", [
-                *open_screen(viewport, pos), shot("a13-" + name + "-" + suffix),
-                dict(click(viewport, layout, "status"), op="move"), shot("a13-hover-" + name + "-" + suffix), key("ESC")])
-        add("core-rocket-invalid-" + suffix, "A02/J20", "9/7: invalid source", [
-            *open_screen(viewport, (26, 150, 50)), shot("a02-invalid-rocket-" + suffix),
-            s("data get block 26 150 50")])
-        add("core-rocket-assemble-" + suffix, "A02/I01", "10/4: assemble legal source", [
-            *open_screen(viewport, (10, 150, 50)), shot("a02-assembled-" + suffix),
-            s(f"data get entity @e[type={NS}:rocket,limit=1]"),
-            s("data get block 10 150 50")])
-        add("core-room-" + suffix, "A02/A17", "4-8: sealed room and boundary cycle", [
-            s(f"execute in {MOON} run tp {PLAYER} 34.5 151 33.5"),
-            s(f"execute as {PLAYER} run arce atmosphere status"), shot("a02-room-" + suffix),
-            s(f"execute in {MOON} run setblock 34 152 36 minecraft:air"),
-            {"op": "sleep", "seconds": 5}, shot("a02-room-open-" + suffix),
-            s(f"execute in {MOON} run setblock 34 152 36 minecraft:iron_block"),
-            {"op": "sleep", "seconds": 5}, shot("a02-room-closed-" + suffix),
-            s(f"execute in {MOON} run data get block 34 150 34")],
-            prerequisites="Suit equipped and filled through normal refill; compare outside vacuum separately. "
-            "Room power/oxygen are fixture grants; this is not proof of crafting or full A02 coverage.")
+            shot("a02-electrolyzer-" + suffix), dict(op="close_screen"), s("data get block 40 150 34")])
+        # hover: the layout's control under which the screen draws a tooltip, or None when it draws none.
+        for name, pos, layout, hover in (("rolling", (20, 150, 20), "rolling", "energy"),
+                                         ("precision", (30, 150, 20), "precision", "energy"),
+                                         ("lathe", (42, 151, 20), "classic", None),
+                                         ("terminal", (6, 150, 70), "terminal", "energy"),
+                                         ("builder", (12, 150, 70), "builder", "energy")):
+            hovering = [] if hover is None else [dict(click(viewport, layout, hover), op="move"),
+                                                 shot("a13-hover-" + name + "-" + suffix)]
+            add("core-screen-" + name + "-" + suffix, "A13/A17/J21",
+                "read current screen and hover its energy gauge" if hover else
+                "read current screen; ClassicControllerScreen draws no tooltip, so there is no hover capture", [
+                    *prelude(), *open_gated(viewport, pos), shot("a13-" + name + "-" + suffix), *hovering,
+                    dict(op="close_screen")])
+        add("core-rocket-invalid-" + suffix, "A02/J20", "9/7: invalid source is refused", [
+            *prelude(), *open_screen(viewport, (26, 150, 50)),
+            require("data get block 26 150 50 RocketAssemblerData.code", 'block data: "MISSING_SEAT"', attempts=10),
+            shot("a02-invalid-rocket-" + suffix), s("data get block 26 150 50")],
+            prerequisites="None. The assembler has no screen: a right-click validates and reports in the action bar. "
+            "MISSING_SEAT is C6's code for this source (stone in place of the guidance computer).")
+        add("core-rocket-assemble-" + suffix, "A02/I01", "10/4: validate and assemble the legal source", [
+            *prelude(), *open_screen(viewport, (10, 150, 50)),
+            require("data get block 10 150 50 RocketAssemblerData.code", 'block data: "SUCCESS"', attempts=10),
+            # Sneak and use with an empty hand is the assembler's assemble action.
+            dict(op="keydown", key="SHIFT", settle=0.5), right_click(viewport),
+            dict(op="keyup", key="SHIFT", settle=0.5),
+            rocket_data("state", '"ASSEMBLED"', attempts=20), shot("a02-assembled-" + suffix),
+            s(f"data get entity {ROCKET} RocketEntityData.flight_data"), s("data get block 10 150 50")],
+            prerequisites="The legal source at (10,151..155,50) is still blocks (no rocket assembled from it yet).")
+        fuelling = []
+        for _ in range(4):
+            # Insert one cell, let its 500 units transfer (25 per tick), then take the returned item with an empty hand.
+            fuelling += [key("1"), right_click(viewport), {"op": "sleep", "seconds": 1.5}, key("9"), right_click(viewport)]
+        add("core-rocket-fuel-" + suffix, "A02/I01", "11/4: fuel the assembled rocket through the fuel loader", [
+            *prelude(), rocket_data("fuel.capacity", "2000L"),
+            s(f"item replace entity {PLAYER} hotbar.0 with {NS}:rocket_fuel_cell 4"),
+            s(f"item replace entity {PLAYER} hotbar.8 with minecraft:air"), look((12, 150, 53)), *fuelling,
+            rocket_data("fuel.amount", "2000L", attempts=10), shot("i01-rocket-fueled-" + suffix),
+            s(f"data get entity {ROCKET} RocketEntityData.flight_data"), s("data get block 12 150 53")],
+            prerequisites="core-rocket-assemble passed: an assembled rocket owned by this player stands within "
+            "6 blocks of the fuel loader (12,150,53). The four fuel cells are a disclosed grant.")
+        add("core-suit-" + suffix, "A02/A17", "4: wear the suit and refill it from two oxygen canisters", [
+            *prelude(),
+            *(s(f"item replace entity {PLAYER} armor.{slot} with {NS}:space_suit_{piece}")
+              for slot, piece in (("head", "helmet"), ("chest", "chestplate"), ("legs", "leggings"), ("feet", "boots"))),
+            s(f"item replace entity {PLAYER} hotbar.0 with {NS}:oxygen_canister 2"),
+            # Look at the sky so that the use action reaches the canister and no block.
+            s(f"execute in {OW} run tp {PLAYER} 4.5 150 4.5 0 -60", settle=0.8), key("1"),
+            right_click(viewport), right_click(viewport),
+            require(f"data get {SUIT_PATH}.oxygen_units", "entity data: 2000", attempts=5),
+            shot("a02-suit-" + suffix)],
+            prerequisites="None. The four suit pieces and two oxygen canisters are disclosed grants; the refill is "
+            "the canister's normal use action.")
+        add("core-room-" + suffix, "A02/A17", "4-8: supply the room, then open and restore its boundary", [
+            *prelude(), suit_ready(),
+            s(f"item replace entity {PLAYER} hotbar.0 with minecraft:coal 16"),
+            s(f"item replace entity {PLAYER} hotbar.1 with {NS}:oxygen_canister 3"),
+            s(f"item replace entity {PLAYER} hotbar.2 with minecraft:glass 1"),
+            s(f"item replace entity {PLAYER} hotbar.8 with minecraft:air"),
+            # Fuel the generator beside the vent through its own screen.
+            aim((34.5, 151, 33.5), (33.5, 151, 34.5), MOON), key("9"), right_click(viewport), screen_open(),
+            click(viewport, "combustion", "hot0"), click(viewport, "combustion", "fuel"), dict(op="close_screen"),
+            # Three canisters into the vent by hand: a fourth is refused once the vent has used a unit.
+            aim((34.5, 151, 33.5), (34.5, 151, 34.5), MOON), key("2"),
+            right_click(viewport), right_click(viewport), right_click(viewport),
+            room("Atmosphere=BREATHABLE vents=1 providers=1"), shot("a02-room-" + suffix),
+            # Break the glass cell of the south wall with an empty hand.
+            aim((34.5, 151, 34.5), (34.5, 152.5, 36), MOON), key("9"),
+            dict(op="click", x=viewport[0] // 2, y=viewport[1] // 2, hold=1.5, settle=0.5),
+            room("Atmosphere=VACUUM"), shot("a02-room-open-" + suffix),
+            # Place the glass back on the top face of the wall block below the gap.
+            aim((34.5, 151, 34.5), (34.5, 152, 36.5), MOON), key("3"), right_click(viewport),
+            room("Atmosphere=BREATHABLE vents=1 providers=1"), shot("a02-room-closed-" + suffix),
+            s(f"execute in {MOON} run data get block 34 150 34"),
+            s(f"execute in {MOON} run data get block 33 150 34")],
+            prerequisites="core-suit passed (the request requires a worn suit with oxygen). The coal, three oxygen "
+            "canisters and one glass block are disclosed grants; the vent and the generator are placed empty and are "
+            "supplied here by normal use actions. Compare outside vacuum separately; this is not full A02 coverage.")
         # Keep launch/cancel separate: an arbitrary second click could cancel the countdown.
         add("core-flight-plan-" + suffix, "A02/I01/J20", "12-16/4: board and request Moon flight", [
-            s(f"execute as @e[type={NS}:rocket,limit=1] at @s run tp {PLAYER} ~ ~ ~3 facing ~ ~0.9 ~"),
-            key("9"), dict(op="click", x=viewport[0] // 2, y=viewport[1] // 2, right=True, settle=1),
+            *prelude(), rocket_data("fuel.amount", "2000L"), suit_ready(),
+            s(f"execute in {MOON} run forceload add {MOON_LANDING}"),
+            s(f"item replace entity {PLAYER} hotbar.8 with minecraft:air"),
+            s(f"execute as {ROCKET} at @s run tp {PLAYER} ~ ~ ~3 facing ~ ~0.9 ~", settle=0.8),
+            key("9"), right_click(viewport), screen_open(),
             click(viewport, "flight", "moon"), click(viewport, "flight", "board"),
             shot("a02-flight-boarded-" + suffix), click(viewport, "flight", "launch"),
+            rocket_data("state", '"COUNTDOWN"', attempts=8, interval=0.25),
             shot("a02-flight-intent-" + suffix)],
-            prerequisites="Legal assembled rocket normally fueled via (12,150,53); full filled suit. "
-            "Review first reply. If destination loading refuses, retry launch only after it is ready; "
-            "never blindly click the shared launch/cancel bounds twice.")
+            prerequisites="core-rocket-fuel and core-suit passed (both are required by readback). The request loads "
+            "the Moon landing chunks first and never repeats the launch click: the launch and cancel buttons share "
+            "their bounds. If the launch is refused the request stops, and core-flight-observe then stops as well.")
         add("core-flight-observe-" + suffix, "A02/I01/J20", "16/4: flight and landing", [
-            key("ESC"), key("F5"), {"op": "sleep", "seconds": 15}, shot("a02-flight-" + suffix),
+            *prelude(),
+            require(f"data get entity {PLAYER} Dimension", f'entity data: "{MOON}"', attempts=40),
+            key("F5"), rocket_data("state", '"LANDED"', attempts=40), shot("a02-flight-" + suffix),
+            key("F5"), key("F5"),
             s(f"data get entity {PLAYER} Dimension"), s(f"data get entity {PLAYER} Pos"),
-            s(f"execute in {MOON} run data get entity @e[type={NS}:rocket,limit=1]")],
-            prerequisites="Previous flight request accepted, not refused. Continue bounded observations "
-            "until LANDED; use the same console's Earth button for return, preserving fuel ledgers.")
-        add("core-station-" + suffix, "A06/A13/A17/I01", "station controls and inter-system warp preparation", [
-            s("arce station admin dump"), *open_screen(viewport, (6, 128, 6), SPACE),
-            shot("a13-station-warp-" + suffix), click(viewport, "warp", "next"),
-            click(viewport, "warp", "quote"), shot("i01-warp-quote-" + suffix), key("ESC")],
-            prerequisites="Fixture station is an administrative grant. Place/charge normal warp core (10,128,6), "
-            "unlock a permitted inter-system target before requesting the quote. Confirmation remains "
-            "conditional on the visible valid quote and owner consent, not an unconditional click.")
+            s(f"data get entity {ROCKET} RocketEntityData.flight_data"),
+            s(f"execute in {MOON} run forceload remove {MOON_LANDING}")],
+            prerequisites="core-flight-plan passed (the request requires the player on the Moon and then a landed "
+            "rocket). Use the same console's Earth button for a return, preserving fuel ledgers.")
+        add("core-station-" + suffix, "A06/A13/A17/I01",
+            "station controls; the inter-system quote is refused for lack of warp energy", [
+            *prelude(), suit_ready(), s("arce station admin dump"), *open_gated(viewport, (6, 128, 6), SPACE),
+            shot("a13-station-warp-" + suffix), click(viewport, "warp", "quote"),
+            dict(op="expect_log", pattern="action=request code=WARP_INSUFFICIENT_ENERGY", timeout=10),
+            dict(op="expect_log", pattern=WARP_REFUSAL, timeout=10),
+            shot("i01-warp-quote-" + suffix), dict(op="close_screen")],
+            prerequisites="core-suit passed. The fixture station is an administrative grant with no warp energy. "
+            "The controller opens on its first target, Cygnus X-1, and this request does not change it: its intent "
+            "is the refusal WARP_INSUFFICIENT_ENERGY for the inter-system quote. A warp-ready station is package "
+            "K08B's subject, not this fixture's.")
         add("core-railgun-" + suffix, "I01/H07", "6: select receiver and launch a disclosed 32-iron payload", [
-            s(f"execute in {MOON} run forceload add 76 76"),
+            *prelude(), s(f"execute in {MOON} run forceload add 76 76"),
             s('data modify block 76 150 76 endgame.input.Items set value '
               '[{Slot:0,id:"minecraft:iron_ingot",Count:32b}]'),
-            *open_screen(viewport, (76, 150, 76)), click(viewport, "railgun", "next"),
+            *open_gated(viewport, (76, 150, 76)), click(viewport, "railgun", "next"),
             shot("i01-railgun-before-" + suffix), click(viewport, "railgun", "launch"),
-            shot("i01-railgun-after-" + suffix), key("ESC"),
+            shot("i01-railgun-after-" + suffix), dict(op="close_screen"),
             s("data get block 76 150 76"), s("arce endgame transfer list"),
             s(f"execute in {MOON} run data get block 76 150 76"),
             s(f"execute in {MOON} run forceload remove 76 76")])
@@ -401,6 +531,33 @@ def batches():
             "to LAN; pauseOnLostFocus=true; normal ambience volume and video/audio capture. "
             "Client tick/audio spacing requires video review, not wall-time or server-menu inference.")
     return requests, index
+
+
+CHANGES = [
+    "Every core request starts by releasing Shift, closing an open screen (ESC only when one is open) and "
+    "requiring a living player, and gates its clicks on an open screen or a server readback.",
+    "Room: the oxygen vent and its generator are placed empty (revision 1's data merge made the vent's saved "
+    "root invalid for C6); core-room fuels the generator and fills the vent by hand, and the boundary cell "
+    "(34,152,36) is glass that the player breaks and places back.",
+    "Rocket: core-rocket-assemble validates and then assembles with sneak and use; the new core-rocket-fuel "
+    "loads four fuel cells through the fuel loader at (12,150,53).",
+    "Suit: the new core-suit puts on the four pieces and refills the chest piece from two canisters.",
+    "Lathe: the player stands on the floor to aim at the controller one block up; the classic controller "
+    "screen draws no tooltip, so core-screen-lathe has no hover capture.",
+    "Hover: the rolling machine, precision assembler, satellite terminal and satellite builder requests "
+    "move the pointer to the energy gauge, where each screen draws a tooltip.",
+    "Station: core-station no longer presses the next-target button; its intent is the refusal "
+    "WARP_INSUFFICIENT_ENERGY for the inter-system quote to Cygnus X-1.",
+    "Flight: core-flight-plan requires fuel and suit, loads the Moon landing chunks and requires COUNTDOWN "
+    "after one launch click; core-flight-observe requires the Moon and LANDED, and restores first person.",
+    "J21 recheck B-3: the vent merge no longer names schema_version.",
+]
+
+# The order in which one dedicated session runs the core route; each request gates on the ones before it.
+CORE_ROUTE = ("core-00", "core-01", "core-screen-rolling", "core-screen-precision", "core-screen-lathe",
+              "core-screen-terminal", "core-screen-builder", "core-rocket-invalid", "core-rocket-assemble",
+              "core-rocket-fuel", "core-suit", "core-room", "core-flight-plan", "core-flight-observe",
+              "core-station", "core-railgun")
 
 
 def recheck_manifest(root=ROOT):
@@ -443,7 +600,8 @@ def recheck_batches(rows):
             elif row["finding"] == "A-F10a":
                 ops = [s(f"execute in {MOON} run tp {PLAYER} 34.5 151 33.5"), shot(name + "-hud"),
                        key("F3"), shot(name + "-debug"), key("F3"), shot(name + "-restored")]
-                requirement += "Equip and fill a legal full suit; capture HUD before opening F3."
+                requirement += "Run core-suit and core-room first (suit worn and filled, room supplied); "
+                requirement += "capture HUD before opening F3."
             elif row["finding"] == "A-F10d":
                 ops = [*open_screen(viewport, (26, 150, 50)), shot(name)]
             elif row["finding"] in ("A-F6", "3-6"):
@@ -461,14 +619,18 @@ def recheck_batches(rows):
                 ops = [s(f"execute in {MOON} run tp {PLAYER} 34.5 151 33.5"),
                        s(f"execute in {MOON} run data get block 34 150 34"), shot(name)]
                 if row["finding"] == "B-3":
-                    # Supply rate variant is separate from the reusable powered-room fixture.
+                    # Supply rate variant is separate from the reusable room fixture. The merge names no
+                    # schema_version: the saved root keeps its own schema and its scrubbers key, where a
+                    # schema_version:1 would make C6 quarantine the whole root as invalid data (W443).
                     ops = [s(f"execute in {MOON} run data merge block 34 150 34 "
-                             "{arce_oxygen_vent:{schema_version:1,oxygen_canisters:0,empty_canisters:0,"
+                             "{arce_oxygen_vent:{oxygen_canisters:0,empty_canisters:0,"
                              "oxygen_units:1000,energy:40000,oxygen_phase:0}}"), *ops,
                            {"op": "sleep", "seconds": 100},
                            s(f"execute in {MOON} run data get block 34 150 34"), shot(name + "-after")]
-                    requirement += "No adjacent power source fuel. Time the supplied 40000 FE with no replenishment."
+                    requirement += "No adjacent power source fuel (run on a copy where core-room has not fuelled "
+                    requirement += "the generator). Time the supplied 40000 FE with no replenishment."
                 else:
+                    requirement += "Run core-room first: the room is supplied by that request, not by the fixture. "
                     requirement += "Run before and after two save/stop/restarts of the same copy; record lit "
                     requirement += "inside (34,151,33) and outdoor (39,150,33) torches separately."
             elif row["finding"] in ("2-7", "2-8"):
@@ -573,12 +735,16 @@ def generate(output, jar_path=JAR, root=ROOT):
     more, more_steps = recheck_batches(rechecks)
     blobs.update(more)
     steps.extend(more_steps)
-    manifest = dict(schema_version=1, package="K16", candidate_commit=CANDIDATE, jar_sha256=JAR_HASH,
+    manifest = dict(schema_version=1, package="K16", revision=REVISION, core_route=list(CORE_ROUTE),
+                    changes_from_revision_1=CHANGES, candidate_commit=CANDIDATE, jar_sha256=JAR_HASH,
                     player=dict(name=PLAYER, offline_uuid=OWNER, premium_identity=False,
                                 persisted_playerdata=False, spawn=[4, 150, 4]),
                     dimensions=[OW, MOON, SPACE], devices=devices, supplies=supplies,
-                    grants="All placed structures, chest contents, vent supply and railgun energy are fixture "
-                           "grants. None proves I01 survival crafting or the owner-selected O4 subset.",
+                    grants="All placed structures, chest contents and railgun energy are fixture grants, and so "
+                           "are the items the core requests put into the player's hands or armour slots (coal, "
+                           "canisters, fuel cells, glass, the four suit pieces). The vent, its generator, the suit "
+                           "and the rocket are then supplied through normal use actions. None proves I01 survival "
+                           "crafting or the owner-selected O4 subset.",
                     checklist_rows=["A02", "A06", "A13", "A17", "E07", "I01", "J21"],
                     client_runs=False, required_gates_approved=False)
     blobs.update({"world-commands.txt": ("\n".join(commands) + "\n").encode("ascii"),
@@ -679,6 +845,14 @@ def seal(output):
     target.write_text("".join(f"{value}  {name}\n" for name, value in members.items()), encoding="ascii", newline="\n")
 
 
+def vent_root_current(name, lines):
+    """C6 saves a working vent at schema 2 with a scrubbers key; any other root is one it has set aside."""
+    if name != "oxygen_vent":
+        return True
+    text = "\n".join(lines)
+    return "arce_oxygen_vent: {" in text and "schema_version: 2" in text and "scrubbers: {" in text
+
+
 def abort_owned(process, output):
     """Retain the caller's lock if its directly owned Java cannot be confirmed dead."""
     try:
@@ -777,6 +951,8 @@ def build(output, cell_path, java, lock_owner):
                 raise ValueError(f"Missing device: {device['name']} {dim} {pos}")
             lines = send(f"execute in {dim} run data get block {pos}")
             readbacks.append(dict(name=device["name"], dimension=dim, pos=device["pos"], lines=lines))
+            if not vent_root_current(device["name"], lines):
+                raise ValueError("The oxygen vent's saved root is not the current schema")
         for dim in (OW, MOON, SPACE):
             send(f"execute in {dim} run forceload remove all")
         station_lines = send("arce station admin dump")

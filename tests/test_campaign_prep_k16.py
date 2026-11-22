@@ -73,7 +73,8 @@ class BatchTest(unittest.TestCase):
     def test_wire_schema_and_request_sizes(self):
         requests, index = self.all_batches()
         self.assertEqual(set(requests), {entry["file"] for entry in index})
-        self.assertEqual(len(requests), 108)
+        # W443 (revision 2): core-rocket-fuel and core-suit add two requests per viewport to revision 1's 108.
+        self.assertEqual(len(requests), 114)
         for raw in requests.values():
             self.assertLessEqual(len(raw), 256 * 1024)
             request = json.loads(raw)
@@ -123,6 +124,180 @@ class BatchTest(unittest.TestCase):
 
     def test_generation_is_pure_and_deterministic(self):
         self.assertEqual(self.all_batches(), self.all_batches())
+
+
+class RouteGateTest(unittest.TestCase):
+    """Revision 2 (W443): what the dedicated rehearsal of 2026-11-22 showed the core route lacked."""
+
+    def core(self, name, viewport=(1280, 720, 3)):
+        requests, _ = k16.batches()
+        return json.loads(requests[f"batches/{name}-{k16.viewport_id(viewport)}.json"])["ops"]
+
+    def test_core_route_lists_every_dedicated_core_request_once(self):
+        _, index = k16.batches()
+        for viewport in k16.VIEWPORTS:
+            suffix = "-" + k16.viewport_id(viewport) + ".json"
+            names = [entry["file"][len("batches/"):-len(suffix)] for entry in index
+                     if entry["file"].endswith(suffix) and entry["mode"] == "dedicated"]
+            self.assertEqual(sorted(names), sorted(k16.CORE_ROUTE))
+        self.assertEqual(len(k16.CORE_ROUTE), 16)
+        order = k16.CORE_ROUTE.index
+        self.assertLess(order("core-rocket-assemble"), order("core-rocket-fuel"))
+        self.assertLess(order("core-suit"), order("core-room"))
+        self.assertLess(order("core-rocket-fuel"), order("core-flight-plan"))
+        self.assertLess(order("core-flight-plan"), order("core-flight-observe"))
+
+    def test_every_core_request_starts_from_a_checked_state_and_never_sends_a_bare_escape(self):
+        for viewport in k16.VIEWPORTS:
+            for name in k16.CORE_ROUTE:
+                ops = self.core(name, viewport)
+                with self.subTest(name=name, viewport=viewport):
+                    self.assertEqual(ops[:3], k16.prelude())
+                    self.assertEqual(ops[1], {"op": "close_screen"})
+                    self.assertEqual(ops[2]["op"], "require")
+                    self.assertFalse(any(op.get("key") == "ESC" for op in ops))
+
+    def test_gui_clicks_follow_an_open_screen_gate(self):
+        for name in k16.CORE_ROUTE:
+            ops, gated = self.core(name), False
+            for op in ops:
+                if op["op"] == "require_screen" and op["open"]:
+                    gated = True
+                elif op["op"] == "close_screen":
+                    gated = False
+                elif op["op"] == "move" or (op["op"] == "click" and not op.get("right") and "hold" not in op):
+                    self.assertTrue(gated, f"{name}: a control click without an open-screen gate")
+
+    def test_room_is_supplied_by_use_actions_and_never_by_vent_nbt(self):
+        ops = self.core("core-room")
+        commands = [op.get("command", "") for op in ops]
+        self.assertFalse(any("arce_oxygen_vent" in command and "merge" in command for command in commands))
+        self.assertEqual(ops[3], k16.suit_ready())
+        gates = [op["expect"] for op in ops if op["op"] == "require" and op["command"] == k16.ROOM_STATUS]
+        self.assertEqual(gates, ["Atmosphere=BREATHABLE vents=1 providers=1", "Atmosphere=VACUUM",
+                                 "Atmosphere=BREATHABLE vents=1 providers=1"])
+        self.assertFalse(any("setblock" in command for command in commands))
+        hold = [op for op in ops if op["op"] == "click" and "hold" in op]
+        self.assertEqual(len(hold), 1)
+        self.assertFalse(hold[0].get("right", False))
+        # Each screenshot comes after the gate for the state it shows.
+        kinds = [(op["op"], op.get("expect", op.get("name"))) for op in ops if op["op"] in ("require", "screenshot")]
+        self.assertLess(kinds.index(("require", "Atmosphere=VACUUM")), kinds.index(("screenshot", "a02-room-open-1280x720-s3")))
+
+    def test_world_places_the_vent_empty_and_a_glass_break_cell(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "fixture.jar"
+            PatternAndOutputTest.fixture_jar(self, path)
+            with zipfile.ZipFile(path) as jar:
+                commands, devices, _ = k16.core_world(jar)
+        self.assertFalse(any("arce_oxygen_vent" in command for command in commands))
+        self.assertIn(f"execute in {k16.MOON} run setblock 34 152 36 minecraft:glass", commands)
+        self.assertIn(f"execute in {k16.MOON} run setblock 34 150 34 {k16.NS}:oxygen_vent", commands)
+        self.assertTrue(any(device["name"] == "oxygen_vent" for device in devices))
+
+    def test_no_request_writes_a_stale_vent_schema(self):
+        requests, _ = k16.batches()
+        more, _ = k16.recheck_batches(k16.recheck_manifest())
+        for name, raw in (requests | more).items():
+            for op in json.loads(raw)["ops"]:
+                if "arce_oxygen_vent" in op.get("command", "") and "merge" in op["command"]:
+                    self.assertNotIn("schema_version", op["command"], name)
+
+    def test_vent_root_check(self):
+        good = ['34, 150, 34 has the following block data: {x: 34, arce_oxygen_vent: {schema_version: 2, '
+                'scrubbers: {generation: "g", phase: 0, banks: []}, oxygen_canisters: 0}}']
+        self.assertTrue(k16.vent_root_current("oxygen_vent", good))
+        self.assertFalse(k16.vent_root_current("oxygen_vent", [good[0].replace("schema_version: 2", "schema_version: 1")]))
+        self.assertFalse(k16.vent_root_current("oxygen_vent", ["34, 150, 34 has the following block data: {x: 34}"]))
+        self.assertTrue(k16.vent_root_current("pump", []))
+
+    def test_player_stands_on_the_floor_to_aim_at_a_raised_controller(self):
+        self.assertEqual(k16.look((42, 151, 20))["command"],
+                         "execute in minecraft:overworld run tp ArceTester1 42.5 150 17.5 facing 42.5 149.88 20")
+        # Floor-level devices keep revision 1's command byte for byte.
+        self.assertEqual(k16.look((6, 150, 6))["command"],
+                         "execute in minecraft:overworld run tp ArceTester1 6.5 150 3.5 facing 6.5 148.88 6")
+        self.assertEqual(k16.look((6, 128, 6), k16.SPACE)["command"],
+                         f"execute in {k16.SPACE} run tp ArceTester1 6.5 128 3.5 facing 6.5 126.88 6")
+        self.assertIn(k16.look((42, 151, 20)), self.core("core-screen-lathe"))
+
+    def test_aim_looks_from_the_eye(self):
+        self.assertEqual(k16.aim((34.5, 151, 34.5), (34.5, 152, 36.5), k16.MOON)["command"],
+                         f"execute in {k16.MOON} run tp ArceTester1 34.5 151 34.5 facing 34.5 150.38 36.5")
+
+    def test_hover_points_lie_inside_the_screens_tooltip_rectangles(self):
+        rectangles = {"rolling": ("RollingMachineScreen", (58, 27, 12, 43), "isHovering(58, 27, 12, 43"),
+                      "terminal": ("SatelliteTerminalScreen", (181, 19, 32, 31), "isHovering(181, 19, 32, 31"),
+                      "builder": ("SatelliteBuilderScreen", (197, 18, 18, 44), "isHovering(197, 18, 18, 44"),
+                      "precision": ("PrecisionAssemblerScreen", (151, 34, 14, 37),
+                                    "isHovering(151, ENERGY_GAUGE_Y, 14, ENERGY_GAUGE_HEIGHT")}
+        for layout, (source, (x, y, width, height), anchor) in rectangles.items():
+            text = (k16.ROOT / k16.JAVA_ROOT / "client" / (source + ".java")).read_text(encoding="utf-8")
+            with self.subTest(layout=layout):
+                self.assertIn(anchor, text)
+                px, py = k16.LAYOUTS[layout][2]["energy"]
+                self.assertTrue(x <= px < x + width and y <= py < y + height)
+                moves = [op for op in self.core("core-screen-" + layout) if op["op"] == "move"]
+                expected = k16.gui_point((1280, 720, 3), k16.LAYOUTS[layout][0], (px, py))["pixel"]
+                self.assertEqual([[op["x"], op["y"]] for op in moves], [expected])
+        precision = (k16.ROOT / k16.JAVA_ROOT / "client/PrecisionAssemblerScreen.java").read_text(encoding="utf-8")
+        self.assertIn("ENERGY_GAUGE_Y = 34", precision)
+        self.assertIn("ENERGY_GAUGE_HEIGHT = 37", precision)
+        # The classic controller screen draws no tooltip, so the lathe request takes no hover capture.
+        classic = (k16.ROOT / k16.JAVA_ROOT / "client/ClassicControllerScreen.java").read_text(encoding="utf-8")
+        self.assertNotIn("renderTooltip", classic)
+        lathe = self.core("core-screen-lathe")
+        self.assertFalse(any(op["op"] == "move" or "hover" in op.get("name", "") for op in lathe))
+
+    def test_rocket_is_validated_assembled_and_fuelled_behind_readbacks(self):
+        ops = self.core("core-rocket-assemble")
+        kinds = [(op["op"], op.get("key", op.get("expect"))) for op in ops]
+        success = kinds.index(("require", 'block data: "SUCCESS"'))
+        down, up = kinds.index(("keydown", "SHIFT")), kinds.index(("keyup", "SHIFT"), 3)
+        assembled = kinds.index(("require", 'entity data: "ASSEMBLED"'))
+        self.assertTrue(success < down < up < assembled)
+        self.assertEqual([op["op"] for op in ops[down + 1:up]], ["click"])
+        self.assertTrue(ops[down + 1]["right"])
+        fuel = self.core("core-rocket-fuel")
+        self.assertEqual(fuel[3]["expect"], "entity data: 2000L")
+        self.assertIn("fuel.capacity", fuel[3]["command"])
+        self.assertEqual(sum(1 for op in fuel if op["op"] == "click" and op.get("right")), 8)
+        amount = [op for op in fuel if op["op"] == "require" and "fuel.amount" in op["command"]]
+        self.assertEqual([op["expect"] for op in amount], ["entity data: 2000L"])
+        source = (k16.ROOT / k16.JAVA_ROOT / "rocket/assembler/RocketAssemblerBlock.java").read_text(encoding="utf-8")
+        self.assertIn("RocketRuntime.requestAssembler(serverPlayer, position, player.isShiftKeyDown())", source)
+
+    def test_flight_requests_gate_on_fuel_suit_and_arrival(self):
+        plan = self.core("core-flight-plan")
+        self.assertEqual(plan[3]["expect"], "entity data: 2000L")
+        self.assertEqual(plan[4], k16.suit_ready())
+        launch = k16.click((1280, 720, 3), "flight", "launch")
+        self.assertEqual(plan.count(launch), 1)
+        self.assertEqual(plan[plan.index(launch) + 1]["expect"], 'entity data: "COUNTDOWN"')
+        observe = self.core("core-flight-observe")
+        self.assertEqual(observe[3]["expect"], f'entity data: "{k16.MOON}"')
+        self.assertEqual(sum(1 for op in observe if op.get("key") == "F5"), 3)  # Back to first person.
+
+    def test_station_request_keeps_the_first_target_and_names_the_refusal(self):
+        ops = self.core("core-station")
+        self.assertNotIn(k16.click((1280, 720, 3), "warp", "next"), ops)
+        self.assertNotIn(k16.click((1280, 720, 3), "warp", "confirm"), ops)
+        patterns = [op["pattern"] for op in ops if op["op"] == "expect_log"]
+        self.assertEqual(patterns, ["action=request code=WARP_INSUFFICIENT_ENERGY",
+                                    f"target={k16.CYGNUS} class=INTERSTELLAR"])
+        _, index = k16.batches()
+        entry = next(e for e in index if e["file"] == "batches/core-station-1280x720-s3.json")
+        self.assertIn("refus", entry["step"])
+        self.assertIn("K08B", entry["prerequisites"])
+
+    def test_gates_are_bounded(self):
+        from scripts.campaign_client.gates import MAX_GATE_SECONDS, gate_seconds
+        requests, _ = k16.batches()
+        for raw in requests.values():
+            for op in json.loads(raw)["ops"]:
+                if op["op"] == "require":
+                    self.assertLessEqual(gate_seconds(op), 60)
+                    self.assertLessEqual(gate_seconds(op), MAX_GATE_SECONDS)
 
 
 class PatternAndOutputTest(unittest.TestCase):
@@ -235,6 +410,9 @@ class PatternAndOutputTest(unittest.TestCase):
                 with self.assertRaises(FileExistsError):
                     k16.generate(root / "one", jar)
             self.assertFalse(manifest["client_runs"])
+            self.assertEqual(manifest["revision"], 2)
+            self.assertEqual(manifest["core_route"], list(k16.CORE_ROUTE))
+            self.assertTrue(manifest["changes_from_revision_1"])
             self.assertFalse(manifest["required_gates_approved"])
             self.assertIn("fixture grants", manifest["grants"])
 
