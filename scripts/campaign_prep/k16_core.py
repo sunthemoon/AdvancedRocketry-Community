@@ -353,8 +353,19 @@ def aim(stand, target, dim=OW):
              f"facing {x} {y - 1.62:.2f} {z}", settle=0.8)
 
 
-def open_gated(viewport, pos, dim=OW):
-    return [*open_screen(viewport, pos, dim), screen_open()]
+def arrive():
+    """After a teleport that may change dimension: wait until the loading screen has returned the pointer.
+
+    The loading screen is a screen too, so a click sent during it is lost and an open-screen gate would pass
+    on it. It appears a moment after the teleport, hence the fixed wait before the check.
+    """
+    return [{"op": "sleep", "seconds": 1.5}, dict(op="require_screen", open=False, timeout=20),
+            {"op": "sleep", "seconds": 0.5}]
+
+
+def open_gated(viewport, pos, dim=OW, travel=False):
+    ops = open_screen(viewport, pos, dim)
+    return [*ops[:3], *(arrive() if travel else []), ops[3], screen_open()]
 
 
 def rocket_data(path, expect, attempts=1, interval=0.5):
@@ -446,7 +457,7 @@ def batches():
               for slot, piece in (("head", "helmet"), ("chest", "chestplate"), ("legs", "leggings"), ("feet", "boots"))),
             s(f"item replace entity {PLAYER} hotbar.0 with {NS}:oxygen_canister 2"),
             # Look at the sky so that the use action reaches the canister and no block.
-            s(f"execute in {OW} run tp {PLAYER} 4.5 150 4.5 0 -60", settle=0.8), key("1"),
+            s(f"execute in {OW} run tp {PLAYER} 4.5 150 4.5 0 -60", settle=0.8), *arrive(), key("1"),
             right_click(viewport), right_click(viewport),
             require(f"data get {SUIT_PATH}.oxygen_units", "entity data: 2000", attempts=5),
             shot("a02-suit-" + suffix)],
@@ -459,7 +470,7 @@ def batches():
             s(f"item replace entity {PLAYER} hotbar.2 with minecraft:glass 1"),
             s(f"item replace entity {PLAYER} hotbar.8 with minecraft:air"),
             # Fuel the generator beside the vent through its own screen.
-            aim((34.5, 151, 33.5), (33.5, 151, 34.5), MOON), key("9"), right_click(viewport), screen_open(),
+            aim((34.5, 151, 33.5), (33.5, 151, 34.5), MOON), *arrive(), key("9"), right_click(viewport), screen_open(),
             click(viewport, "combustion", "hot0"), click(viewport, "combustion", "fuel"), dict(op="close_screen"),
             # Three canisters into the vent by hand: a fourth is refused once the vent has used a unit.
             aim((34.5, 151, 33.5), (34.5, 151, 34.5), MOON), key("2"),
@@ -482,7 +493,7 @@ def batches():
             *prelude(), rocket_data("fuel.amount", "2000L"), suit_ready(),
             s(f"execute in {MOON} run forceload add {MOON_LANDING}"),
             s(f"item replace entity {PLAYER} hotbar.8 with minecraft:air"),
-            s(f"execute as {ROCKET} at @s run tp {PLAYER} ~ ~ ~3 facing ~ ~0.9 ~", settle=0.8),
+            s(f"execute as {ROCKET} at @s run tp {PLAYER} ~ ~ ~3 facing ~ ~0.9 ~", settle=0.8), *arrive(),
             key("9"), right_click(viewport), screen_open(),
             click(viewport, "flight", "moon"), click(viewport, "flight", "board"),
             shot("a02-flight-boarded-" + suffix), click(viewport, "flight", "launch"),
@@ -494,7 +505,9 @@ def batches():
         add("core-flight-observe-" + suffix, "A02/I01/J20", "16/4: flight and landing", [
             *prelude(),
             require(f"data get entity {PLAYER} Dimension", f'entity data: "{MOON}"', attempts=40),
-            key("F5"), rocket_data("state", '"LANDED"', attempts=40), shot("a02-flight-" + suffix),
+            rocket_data("state", '"LANDED"', attempts=40),
+            # F5 only once the loading screen is gone: a key sent to it would leave the camera in the wrong mode.
+            dict(op="require_screen", open=False, timeout=20), key("F5"), shot("a02-flight-" + suffix),
             key("F5"), key("F5"),
             s(f"data get entity {PLAYER} Dimension"), s(f"data get entity {PLAYER} Pos"),
             s(f"data get entity {ROCKET} RocketEntityData.flight_data"),
@@ -503,7 +516,7 @@ def batches():
             "rocket). Use the same console's Earth button for a return, preserving fuel ledgers.")
         add("core-station-" + suffix, "A06/A13/A17/I01",
             "station controls; the inter-system quote is refused for lack of warp energy", [
-            *prelude(), suit_ready(), s("arce station admin dump"), *open_gated(viewport, (6, 128, 6), SPACE),
+            *prelude(), suit_ready(), s("arce station admin dump"), *open_gated(viewport, (6, 128, 6), SPACE, travel=True),
             shot("a13-station-warp-" + suffix), click(viewport, "warp", "quote"),
             dict(op="expect_log", pattern="action=request code=WARP_INSUFFICIENT_ENERGY", timeout=10),
             dict(op="expect_log", pattern=WARP_REFUSAL, timeout=10),
@@ -516,7 +529,7 @@ def batches():
             *prelude(), s(f"execute in {MOON} run forceload add 76 76"),
             s('data modify block 76 150 76 endgame.input.Items set value '
               '[{Slot:0,id:"minecraft:iron_ingot",Count:32b}]'),
-            *open_gated(viewport, (76, 150, 76)), click(viewport, "railgun", "next"),
+            *open_gated(viewport, (76, 150, 76), travel=True), click(viewport, "railgun", "next"),
             shot("i01-railgun-before-" + suffix), click(viewport, "railgun", "launch"),
             shot("i01-railgun-after-" + suffix), dict(op="close_screen"),
             s("data get block 76 150 76"), s("arce endgame transfer list"),

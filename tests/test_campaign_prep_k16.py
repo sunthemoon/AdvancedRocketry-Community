@@ -290,6 +290,18 @@ class RouteGateTest(unittest.TestCase):
         self.assertIn("refus", entry["step"])
         self.assertIn("K08B", entry["prerequisites"])
 
+    def test_dimension_changes_wait_for_the_loading_screen_before_any_click(self):
+        waited = dict(op="require_screen", open=False, timeout=20)
+        for name in ("core-suit", "core-room", "core-flight-plan", "core-station", "core-railgun"):
+            ops = self.core(name)
+            first_click = next(i for i, op in enumerate(ops) if op["op"] == "click")
+            with self.subTest(name=name):
+                self.assertIn(waited, ops[:first_click])
+                self.assertEqual(ops[ops.index(waited) - 1], {"op": "sleep", "seconds": 1.5})
+        observe = self.core("core-flight-observe")
+        first_f5 = next(i for i, op in enumerate(observe) if op.get("key") == "F5")
+        self.assertEqual(observe[first_f5 - 1], waited)
+
     def test_gates_are_bounded(self):
         from scripts.campaign_client.gates import MAX_GATE_SECONDS, gate_seconds
         requests, _ = k16.batches()
