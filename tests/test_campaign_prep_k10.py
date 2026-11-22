@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts.campaign_prep import k10_endgame as k
 from scripts.campaign_prep import k10_endgame_load as load
@@ -111,6 +112,17 @@ class K10Tests(unittest.TestCase):
         plan = load.observation_plan()
         self.assertIn("NOT_COVERED", plan["cache_scope"])
         self.assertIn("not every Forge ticket", plan["ticket_scope"])
+
+    def test_jfr_stop_does_not_overwrite_start_output(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "load.jfr").write_bytes(b"start output")
+            with patch("scripts.campaign_observe.jdk.stop_jfr", return_value="stopped") as stop, \
+                 patch("scripts.campaign_observe.jdk.summarize_recording", return_value={}) as summary:
+                load.finish_recording(object(), root, "jcmd", "jfr")
+                self.assertEqual("load-stopped.jfr", stop.call_args.args[2])
+                self.assertEqual(root / "load-stopped.jfr", summary.call_args.args[0])
+            self.assertEqual(b"start output", (root / "load.jfr").read_bytes())
 
 
 if __name__ == "__main__":

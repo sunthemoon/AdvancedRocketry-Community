@@ -75,6 +75,15 @@ def observation_plan():
         campaign="K17 supplies combined world and periodic save/restart schedule; O7 supplies two real authenticated connections. Four continuous hours and REF hardware remain unrun.")
 
 
+def finish_recording(target, evidence, jcmd, jfr):
+    from scripts.campaign_observe import jdk
+    # JFR.start can create its filename immediately. K15 deliberately refuses
+    # overwriting evidence, so stop into a DIFFERENT new file, not that path.
+    stopped = jdk.stop_jfr(target, evidence, "load-stopped.jfr", name="k10", jcmd=jcmd)
+    summary = jdk.summarize_recording(evidence / "load-stopped.jfr", evidence / "jfr-events.json", jfr=jfr)
+    return stopped, summary
+
+
 def sample(console, evidence, args, receipt):
     receipt["windows"] = windows(args.warmup, args.duration, args.qualification)
     if args.jfr:
@@ -132,7 +141,6 @@ def sample(console, evidence, args, receipt):
     time.sleep(6)
     receipt["after_drive"] = readbacks(console)
     if args.jfr:
-        receipt["jfr_stop"] = jdk.stop_jfr(target, evidence, "load.jfr", name="k10", jcmd=jcmd)
-        receipt["jfr"] = jdk.summarize_recording(evidence / "load.jfr", evidence / "jfr-events.json",
-            jfr=args.java.with_name("jfr.exe" if args.java.suffix == ".exe" else "jfr"))
+        receipt["jfr_stop"], receipt["jfr"] = finish_recording(target, evidence, jcmd,
+            args.java.with_name("jfr.exe" if args.java.suffix == ".exe" else "jfr"))
     receipt["observations"] = observation_plan()
