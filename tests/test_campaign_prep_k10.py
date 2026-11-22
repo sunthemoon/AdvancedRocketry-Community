@@ -157,6 +157,18 @@ class K10Tests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"Incomplete/invalid"):
                 k.device_state(world)
 
+    def test_shaft_oracle_is_bounded_and_rejects_a_changed_cell(self):
+        with patch("scripts.v170_world_fixture.block_at", return_value={"Name":"minecraft:stone"}) as read:
+            shaft = k.shaft_projection({}, [k.X,300,k.Z-96])
+            self.assertEqual(256*9, read.call_count)
+            self.assertEqual([44,299],[shaft["layers"][i]["y"] for i in (0,-1)])
+        before = dict(devices=[],stations=[],forced_chunks={},shafts=[shaft])
+        after = json.loads(json.dumps(before))
+        self.assertTrue(k.compare(before,after)["shaft_blocks_equal"])
+        after["shafts"][0]["layers"][0]["blocks"][0] = {"Name":"minecraft:air"}
+        with self.assertRaisesRegex(ValueError,"target blocks changed"):
+            k.compare(before,after)
+
     def test_unobservable_caches_and_tickets_are_not_inferred(self):
         plan = load.observation_plan()
         self.assertIn("NOT_COVERED", plan["cache_scope"])

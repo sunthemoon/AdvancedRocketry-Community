@@ -170,6 +170,7 @@ def device_state(world):
     devices = []
     kinds = {"orbital_laser_drill", "laser_target", "railgun", "black_hole_generator",
              "gravity_field_controller", "elevator_anchor", "elevator_terminal"}
+    shafts = []
     # Entity regions are not this device-store oracle. In particular a live
     # save/forced stop may leave unrelated entity-sector padding unfinished.
     # K09's reader requires every declared record byte, compression and sector
@@ -183,13 +184,25 @@ def device_state(world):
                 continue
             cx, cz = rx*32 + slot%32, rz*32 + slot//32
             chunk = region._decode_chunk(crash_region_chunk(raw, cx, cz), cx, cz)
+            if path.parent == world/"region":
+                for marker in [d["pos"] for d in overworld_devices() if d["kind"] == "laser_target"]:
+                    if (marker[0]//16, marker[2]//16) == (cx,cz):
+                        shafts.append(shaft_projection(chunk, marker))
             for value in chunk.get("block_entities", []):
                 if value.get("id") in {common.NS+":"+kind for kind in kinds}:
                     devices.append(dict(region=path.relative_to(world).as_posix(), value=value))
-    return dict(devices=devices,
+    return dict(devices=devices, shafts=shafts,
         endgame=fixture.read_nbt(world/"data"/(common.NS+"_endgame.dat"))["data"],
         stations=fixture.read_nbt(world/"data"/(common.NS+"_stations.dat"))["data"]["stations"],
         forced_chunks={p.relative_to(world).as_posix(): fixture.read_nbt(p) for p in sorted(world.rglob("chunks.dat"))})
+
+
+def shaft_projection(chunk, marker):
+    from scripts.v170_world_fixture import block_at
+    x, y, z = marker
+    return dict(marker=marker, cell_order="dx -1..1, then dz -1..1", layers=[
+        dict(y=height, blocks=[block_at(chunk,[x+dx,height,z+dz]) for dx in (-1,0,1) for dz in (-1,0,1)])
+        for height in range(y-256,y)])
 
 
 def device_keys(state):
@@ -226,7 +239,9 @@ def compare(before, after, exact=True):
         chain.require(not changes, "Unloaded device roots changed on restart: " + str(changes))
     chain.require(before["stations"] == after["stations"], "Station roles changed")
     chain.require(before["forced_chunks"] == after["forced_chunks"], "Persistent tickets changed")
+    chain.require(before.get("shafts",[]) == after.get("shafts",[]), "Physical target blocks changed on restart/cut")
     return dict(device_set_equal=True, full_device_roots_equal=not changes, changed_devices=changes,
+                shaft_blocks_equal=True, shaft_count=len(after.get("shafts",[])),
                 stations_equal=True, persistent_tickets_equal=True,
                 root_scope="Transit root epochs/reconciliation may progress; retained in full, not asserted byte-identical")
 
