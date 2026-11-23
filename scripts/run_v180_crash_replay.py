@@ -28,8 +28,11 @@ import run_v180_cargo_s4_s5_cuts as settlement
 import run_v180_item_cuts as item
 import run_v180_registry_writer_cuts as registry
 import v180_crash_replay as replay
+import v180_passive_observation as passive
 
 RUNNERS = dict(B=bay, F=fluid, S=settlement, I=item, R=registry)
+# The runners' own independent raw decoders, reused by the opt-in passive observation (W451).
+RAW = dict(F=fluid.raw_snapshot, S=settlement.raw_snapshot, I=item.oracle.read)
 # Design section 3, not a new selection for any existing campaign.
 CASES = {
     "X01-01": ("B", "B1_MOVED", "B1_STAGED", "BAY_RECEIPTS", ()),
@@ -268,6 +271,17 @@ def run_case(args, case: str, evidence: Path, scratch: Path, owner: str) -> dict
     # No replay server has been started. This is the immutable per-case state table.
     replay.write_table(evidence / "states.json", states, case, lambda s: outcomes(case) | dict(selected_oracle=selected(s)))
     check_size(args.evidence_dir)
+    if getattr(args, "observe_passive", False):
+        # W451: the named state only, probe-free. No oracle runs and no results.jsonl row is written.
+        report = passive.observe_case(args, case, states, kill, context, "world-" + recorded, RAW[alias], evidence, TEMP,
+                                      lambda: bay.assert_pin(args.replay_harness_commit))
+        shutil.rmtree(kill)
+        commands.extend(dict(state=report["state"], variant=v["variant"], restart=s["start"], command=s["command"])
+                        for v in report["variants"] for s in v["starts"])
+        write_json(evidence / "commands.json", commands)
+        check_size(args.evidence_dir)
+        return dict(case=case, states=len(states), starts=len(commands), status="OBSERVED", observed=report["state"],
+                    verdicts={v["variant"]: v["classification"]["verdict"] for v in report["variants"]})
     rows, errors = [], []
     for state in states:
         preflight()
@@ -346,6 +360,10 @@ def run_case(args, case: str, evidence: Path, scratch: Path, owner: str) -> dict
 
 def run(args) -> dict:
     preflight()
+    observe = bool(getattr(args, "observe_passive", False))
+    if observe and (not getattr(args, "triage_run", None) or not args.case
+                    or any(case not in passive.OBSERVED for case in args.case)):
+        raise replay.ReplayError("Passive observation needs --triage-run and only the cases of W448 E7 and E8")
     if not re.fullmatch(r"[0-9a-f]{40}", args.candidate_commit):
         raise replay.ReplayError("Candidate commit must be a full SHA-1")
     original = evidence_target(args)
@@ -373,6 +391,10 @@ def run(args) -> dict:
     if original:
         manifest.update(triage_of=original, harness_commit=args.replay_harness_commit, production_pin=pin,
                         source_server=str(args.source_server.resolve()))
+    if observe:
+        manifest.update(observation=dict(states={c: passive.OBSERVED[c] for c in cases}, variants=[v[0] for v in passive.VARIANTS],
+                                         dwell_seconds=getattr(args, "observe_dwell", passive.DWELL_SECONDS),
+                                         note="Observation only; the S3 and triage verdicts are unchanged."))
     write_json(evidence / "MANIFEST.json", manifest)
     try:
         for index, case in enumerate(cases):
@@ -402,7 +424,8 @@ def run(args) -> dict:
                         shutil.rmtree(scratch / case)
             manifest["results"].append(row)
             write_json(evidence / "MANIFEST.json", manifest)
-        manifest["status"] = "PASS" if all(r["status"] == "PASS" for r in manifest["results"]) else "FAIL"
+        wanted = "OBSERVED" if observe else "PASS"
+        manifest["status"] = wanted if all(r["status"] == wanted for r in manifest["results"]) else "FAIL"
         return manifest
     except Exception as failure:
         manifest.update(status="FAIL", error=str(failure))
@@ -415,6 +438,11 @@ def run(args) -> dict:
         write_json(evidence / "MANIFEST.json", manifest)
         summary = ["# X01 crash replay", "", "Status: " + manifest["status"], "", "| Case | Status | States |", "|---|---|---|"]
         summary.extend(f"| {r['case']} | {r['status']} | {r.get('states', 0)} |" for r in manifest["results"])
+        if observe:
+            summary.extend(["", "## Passive observation", "", "Observation only; the S3 and triage verdicts are unchanged.", "",
+                            "| Case | State | Variant | Verdict |", "|---|---|---|---|"])
+            summary.extend(f"| {r['case']} | {r['observed']} | {name} | {verdict} |" for r in manifest["results"]
+                           for name, verdict in r.get("verdicts", {}).items())
         summary.extend(["", "## Uncovered", *["- " + x for x in replay.UNCOVERED]])
         if (evidence / "LOG-REDUCTION.json").exists():
             summary.extend(["", "Passing logs reduced to markers to meet the evidence budget; see LOG-REDUCTION.json."])
@@ -434,12 +462,16 @@ def main() -> int:
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--triage-of", type=Path, help="Original MANIFEST.json; permits only a new <SHA>-triage sibling")
     parser.add_argument("--triage-run", help="New followup-<name> subdirectory; preserves an already sealed triage run")
+    parser.add_argument("--observe-passive", action="store_true",
+                        help="With --triage-run: start the W448 E7/E8 state twice with no probe; adds evidence, never a verdict")
+    parser.add_argument("--observe-dwell", type=float, default=passive.DWELL_SECONDS,
+                        help="Seconds each passive start runs before save-all flush")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
     parser.add_argument("--flight-timeout", type=float, default=120)
     parser.add_argument("--settle-timeout", type=float, default=180)
     try:
-        return 0 if run(parser.parse_args())["status"] == "PASS" else 1
+        return 0 if run(parser.parse_args())["status"] in ("PASS", "OBSERVED") else 1
     except (OSError, ValueError, bay.smoke.SmokeError, evidence_tools.CandidateError) as failure:
         print("FAIL: " + str(failure)); return 1
 
