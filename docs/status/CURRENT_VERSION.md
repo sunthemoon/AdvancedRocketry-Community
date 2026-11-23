@@ -37,7 +37,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 6bc5b628c (W454 merged, R655: the K12 queue fixture driver; every campaign preparation package is merged except K02's follow-up W447, which is running; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 076d817a1 (W447 merged, R661: K02's opt-in journalled-launch mode of the flight runner, with tests; every campaign preparation package is merged, K02 as partial with its follow-ups W461 and W462 queued under R662; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 45115605836 at afeb38417 passed (W454's merge and R654 to R656); governance runs 45115605918 and 45115607657 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 5
 asset_review_items: 0
@@ -72,10 +72,11 @@ in the linked task evidence, not additional owner-packet items.
   original bay-receipt images as R636 requires gives 49 SEEN_HELD, 14 CAUGHT_LATER, 5 NOT_CAUGHT,
   0 INCOMPLETE and 4 NOT_APPLICABLE; [C6-SWITCH-REPORT section 13](../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md#13-x01-to-x03-c6-results-recorded-dispositions-and-residuals)
   retains the original runs, the alternative repaired-image tally and R636/R639 classifications.
-- **Preparation packages.** The final campaign packages are delivered except the running K02
-  follow-up [W447](../work/v1.8.0-root-queue/TASK-W447-K02-ASYNC-LAUNCH-AND-SEALED-CUTS.md); delivery is not campaign
+- **Preparation packages.** The final campaign packages are delivered; delivery is not campaign
   execution, and the accepted partial packages retain their uncovered steps under R638, R642,
-  R647 and R655. K20's checklist second pass is merged ([W456](../work/v1.8.0-root-queue/records/W456.md), R654), K12 is accepted
+  R647, R655 and R661. K02 is accepted as partial ([W447](../work/v1.8.0-root-queue/records/W447.md), R661): its flight
+  matrix has 5 PASS and 5 FAIL, its sealed native cuts on a diagnostic JAR built from C6 have 81 PASS and
+  8 FAIL of 89, and four of W437's legacy disassembly rows remain NOT_REACHABLE_ON_C6. K20's checklist second pass is merged ([W456](../work/v1.8.0-root-queue/records/W456.md), R654), K12 is accepted
   as partial ([W454](../work/v1.8.0-root-queue/records/W454.md), R655), and [QUEUE](../work/v1.8.0-root-queue/QUEUE.md) records each package's boundary.
 - **Assets and accounting.** The asset plan has no REVIEW or IMPORT entries and retains
   89 IMPORTED, 365 EXCLUDE and 444 REGENERATE files under
@@ -158,9 +159,10 @@ The reference node (REF) is the owner's Debian 12 machine with 4 vCPU and 8 GiB,
   unselected loader cuts. Close with exact candidate-bound named evidence and required
   S1/S2 integration/restart coverage, preserving failed and structurally unreachable rows
   rather than treating fixture evidence from an earlier JAR as acceptance.
-- **Partial packages and checklist integration.** K02's W447 follow-up, the K02/K12
-  checklist fill and the final audit's remaining checklist check await Root's follow-up
-  under [W459 M9 and QUEUE R658](../work/v1.8.0-root-queue/records/W459.md); K12's J05, J08, J09, J10, J11 and J17 gaps
+- **Partial packages and checklist integration.** K02's eight failed UNKNOWN native cuts await
+  W461's rerun with the exact UNKNOWN log expectation, and its five failed flight checkpoints await
+  W462's classification (both R662, [QUEUE](../work/v1.8.0-root-queue/QUEUE.md)); the K02/K12 checklist fill and the final
+  audit's remaining checklist check follow under [W459 M9 and QUEUE R658](../work/v1.8.0-root-queue/records/W459.md); K12's J05, J08, J09, J10, J11 and J17 gaps
   remain as accepted under [W454/R655](../work/v1.8.0-root-queue/records/W454.md). Close only when those deliveries and
   checklist updates have evidence for the covered steps and explicitly retain the
   uncovered steps, including the reference-node flush bracket and external-stop recipes.
