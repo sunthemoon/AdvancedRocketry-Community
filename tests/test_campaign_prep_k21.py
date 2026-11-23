@@ -161,6 +161,95 @@ class CampaignPrepK21Test(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "qualification name"):
                 k21.run(args)
 
+    def test_r638_revision_preserves_vent_and_separates_supplies(self):
+        layout = k21.plan("moon", moon_revision=2)
+        self.assertEqual(layout["positions"]["moon_vent"], [264,220,264])
+        self.assertEqual(layout["positions"]["moon_generator"], [263,220,264])
+        self.assertNotEqual(layout["positions"]["moon_supply"], layout["positions"]["suit_chest"])
+        commands = k21.build_commands(layout)
+        self.assertEqual(len(commands), 9)
+        self.assertIn("setblock 264 222 264 minecraft:air", "\n".join(commands))
+        self.assertIn("fill 263 223 263 265 223 265 minecraft:iron_block", "\n".join(commands))
+        self.assertTrue(all(c.startswith(f"execute in {k21.MOON} run ") for c in commands))
+        self.assertTrue(any("combustion_generator" in c for c in commands))
+        self.assertFalse(any("setblock 264 220 264" in c for c in commands))
+        for item, count in (("coal",16),("oxygen_canister",3),("glass",4)):
+            self.assertTrue(any(c.endswith(f":{item} {count}") for c in commands))
+        for command in commands:
+            self.assertNotIn("data ", command)
+            self.assertNotIn("{", command)
+
+    def test_r638_revision_bounds_are_checked_before_lock_or_output(self):
+        for scene, revision in (("component",2),("moon",3),("moon",0)):
+            with self.assertRaisesRegex(ValueError, "Moon revision"):
+                k21.plan(scene, moon_revision=revision)
+        for scene, mode in (("payload","build"),("component","qualify"),("moon","changed")):
+            args = k21.parser().parse_args(["--scene",scene,"--mode",mode,"--moon-revision","2",
+                "--lock-owner","x","--template","x","--java","java"])
+            with self.assertRaisesRegex(ValueError, "Moon revision|payload-only"):
+                k21.run(args)
+
+    @staticmethod
+    def revision_readbacks():
+        return dict(moon_revision=2, vent='{schema_version: 2, scrubbers: {generation: "uuid", phase: 0, banks: []}, oxygen_units: 0, energy: 0}',
+            equipment="unchanged suit stacks", atmosphere_sealing=True, atmosphere_permeable=False,
+            generator="{schema: 1, duration: 0, fuel: {}, remaining: 0, energy: 0}",
+            room_supply='[{Slot: 0b, id: "minecraft:coal", Count: 16b}, '
+                        '{Slot: 1b, id: "advancedrocketrycommunity:oxygen_canister", Count: 3b}, '
+                        '{Slot: 2b, id: "minecraft:glass", Count: 4b}]',
+            geometry=dict(feet=True, head=True, roof=True, breach=True, boundary=True))
+
+    def test_r638_witnesses_refuse_missing_supplies_or_mixed_roots(self):
+        value = self.revision_readbacks()
+        k21.validate_readbacks(value, "moon")
+        for key, bad in (("vent", value["vent"].replace("schema_version: 2", "schema_version: 1")),
+                         ("vent", value["vent"].replace("banks: []", "banks: [{}]")),
+                         ("generator", value["generator"].replace("energy: 0", "energy: 1")),
+                         ("room_supply", value["room_supply"].replace("16b", "15b")),
+                         ("geometry", dict(value["geometry"], head=False)), ("atmosphere_permeable", True)):
+            with self.subTest(key=key, bad=bad), self.assertRaises(ValueError):
+                k21.validate_readbacks(dict(value, **{key:bad}), "moon")
+
+    def test_r638_restart_comparison_covers_every_added_witness(self):
+        value = self.revision_readbacks()
+        self.assertEqual(len(k21.compare(value, value.copy(), "moon")), 8)
+        for key in ("generator","room_supply","geometry","vent","equipment"):
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                k21.compare(value, dict(value, **{key:"changed"}), "moon")
+
+    def test_r638_readbacks_use_moved_boundary_and_capture_headroom(self):
+        class Native:
+            def __init__(self):
+                self.commands = []
+            def all(self, command):
+                self.commands.append(command)
+                if command == "arce beta data-report":
+                    return ["operational=true"]
+                if "data get" in command:
+                    return ["block data: {native: 1}"]
+                if " run say " in command:
+                    return ["[Server] "+command.split(" run say ",1)[1]]
+                return []
+        native = Native()
+        result = k21.readbacks(native, k21.plan("moon", moon_revision=2))
+        self.assertEqual(result["generator"], "{native: 1}")
+        self.assertTrue(all(result["geometry"].values()))
+        self.assertIn(f"execute in {k21.MOON} if block 265 222 264 #{k21.NS}:atmosphere_sealing run say K21_TAG_atmosphere_sealing", native.commands)
+
+    def test_r638_client_steps_are_actions_with_expected_readbacks_not_results(self):
+        steps = k21.client_steps()
+        self.assertEqual(steps["atmosphere"]["source"], "moon-r2/source-world")
+        self.assertEqual(steps["atmosphere"]["status"], "SCRIPTED_ONLY_NOT_EXECUTED")
+        for step in steps["atmosphere"]["steps"] + steps["component"]["claim_and_half_fill"]:
+            self.assertTrue(step["action"])
+            self.assertTrue(step["expected_readback"])
+        room = json.dumps(steps["atmosphere"])
+        for witness in ("BREATHABLE", "VACUUM", "scrubbers", "health/HUD", "break", "repairs", "reload"):
+            self.assertIn(witness, room)
+        loader = json.dumps(steps["component"]["claim_and_half_fill"])
+        for witness in ("empty-handed", "slot_role=0", "127,254,381", "n=1..41", "fuel750", "Survival", "owner_id"):
+            self.assertIn(witness, loader)
+
 
 if __name__ == "__main__":
     unittest.main()
