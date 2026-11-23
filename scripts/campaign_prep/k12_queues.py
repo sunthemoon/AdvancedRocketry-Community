@@ -158,6 +158,10 @@ NOT_COVERED = {
         "without a player or a second flight request.",
     "J10 geometry worlds": "The four checked-margin rockets in two terrain cohorts are not built. cold_columns "
         "qualifies a destination from the region files alone; the capacity cases need connected players.",
+    "J11 flush interval": "The raw sample is vanilla's tick time plus the satellite runtime's post-tick time. The receipt "
+        "barrier runs in another END-tick handler, and nothing shows that the sample includes it; the qualification's "
+        "largest candidate was about 4 ms against the 139.804 ms development sample. REF needs K15's JFR file events "
+        "or a wall-clock bracket for the flush itself.",
     "J11 participant": "The qualification launches through the gated hook with nobody aboard (participants=0). An "
         "eligible player's product-route launch belongs to the REF sitting.",
 }
