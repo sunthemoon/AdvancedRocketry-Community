@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c33a9e971 (W427 merged, R595: the deterministic K16 generator for C6's core route world and batches; scripts and tests only, after W425's cell checker (`0693df70c`), W428's harness fixes (`85e4cefc3`) and W426's fixture build (`ea9944892`); `src/main` equals candidate C6 and stays frozen there (R600); branch run 44801847443 and governance run 44801852148 at `e0a05e5ea` passed). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 44861941486 at 76bff783e (W427 merged; source equal to C6) passed on its third attempt; attempts 1 and 2 each failed one light-transmission GameTest (R600, W433); on attempt 3 shards 0 to 3 passed 406, 645, 406 and 429 GameTests with 4, 3, 1 and 3 `server-overloaded` entries; governance run 44861941518 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-ledger_planned_units: 16
+latest_code_commit: 14a1b53cc (W452 merged, R648: the K17 reference workload driver; the campaign preparation packages K01 to K21 are merged except K02's follow-up W447 and K12's W454, both in progress; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 45105618074 at 854069fa5 passed (the merges of W452 and W453); governance runs 45105618083 and 45105631216 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+ledger_planned_units: 5
 asset_review_items: 95
 required_gates_approved: none
-last_updated: 2026-10-26
+last_updated: 2026-11-23
 ```
 
 ## Current state
@@ -101,6 +101,20 @@ It does not run:
 
 What is still open:
 
+- **Current state on 2026-11-23.** Candidate C6 (`c8fa16e16`, R581) has complete native evidence: the integrated
+  campaign stands at 75 PASS and 3 FAILED of 78 families, the three being R-044's known downgrade limit kept failed
+  (R632); X03's repair passes from both world origins (R616); X01's crash replay, with W448's harness repairs, has 72
+  of 82 states passing both starts and 10 Windows late-loss states failed, in which W451 saw no quantity lost or
+  created but ledger authority and history lost and the next operation untested (R637, R641); X02's fault matrix,
+  with W446's repairs, has 49 SEEN_HELD, 16 CAUGHT_LATER, 3 NOT_CAUGHT and 4 NOT_APPLICABLE, its open items
+  classified (R636, R639). W455 filled C6-SWITCH-REPORT and FUEL-ADMISSION-REPORT from this evidence (R651).
+  The owner's packet carries C6's results (R652): P1 (R-044) ready to sign with its text unchanged, P3 (X03-D)
+  recommended yes, P4 to P9 recommended no for v1.8, keeping the five switches and the fuel loader off. The final
+  campaign's preparation packages are delivered except K02's follow-up (W447) and K12 (W454); several are partial by
+  design, because their remaining steps need the owner's accounts or are not coverable with the switches off (R638,
+  R642, R647). K20's second pass (W456) and the ADR-062 revision 8 draft (W457) are in progress. K10 measured railgun
+  throughput below ADR-054's requirement in short Windows windows (R635); REF decides. No Required Gate is approved,
+  no switch is enabled and no residual risk is accepted. The paragraphs below are the history up to C6.
 - **Ledger.** 5 units are still PLANNED: C17a 4 and C17c 1, the five loader variants, which wait for the escrow
   chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-09 the owner chose
   to target enabling all five in v1.8 after an integrated test on one candidate JAR
