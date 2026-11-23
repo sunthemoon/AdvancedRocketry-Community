@@ -141,6 +141,10 @@ class SettledDisassemblyProtocolTests(unittest.TestCase):
             with self.subTest(replies=replies), self.assertRaisesRegex(recovery.SmokeError, "more than one"):
                 self.run_protocol(ProtocolProcess([replies]))
 
+    def test_protocol_requires_sealed_and_done_not_legacy_success(self):
+        with self.assertRaisesRegex(recovery.SmokeError, "requires SEALED and DONE"):
+            self.run_protocol(ProtocolProcess([disassembly_lines("legacy")]))
+
     def test_material_failure_and_wrong_inventory_still_fail(self):
         for inventory in ("[]", '[{Slot: 0b, id: "minecraft:diamond", Count: 17b}, '
                           '{Slot: 26b, id: "minecraft:iron_ingot", Count: 64b}, {Count: 1b}]'):

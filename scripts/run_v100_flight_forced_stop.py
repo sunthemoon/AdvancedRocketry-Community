@@ -121,6 +121,8 @@ def submit_disassembly_protocol(process, command: str, entity: str, logical: str
             elif DISASSEMBLY_PENDING.fullmatch(line):
                 answered = True
             elif DISASSEMBLY_RECEIPT.fullmatch(line):
+                if SEALED_DISASSEMBLY.fullmatch(line) is None:
+                    raise SmokeError("Settled disassembly protocol requires SEALED and DONE receipts")
                 receipt = wait_disassembly_receipt(process, entity, logical, start_at, deadline=deadline)
                 receipt["requests"] = attempts
                 return receipt
