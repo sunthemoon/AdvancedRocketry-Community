@@ -165,3 +165,16 @@ owner.
   only what every normal start changes (LastPlayed and the rotation), and two later starts were measured. C6 repeats
   the case. A narrower text drops the sentence, and then (b) also needs the pre-downgrade backup.
 - **Items 1 and 8.** The same choices as in section 2 apply.
+
+## 6. C6's rerun (added 2026-11-23, R652)
+
+C6's integrated campaign ran `accounting-root3-old-jar` on 2026-11-22 (attempt 2, ended 11:06) with C6's JAR and the
+same root-2 JAR as W373B (SHA-256 `459669bf...f81744b`). Its result is the same as W373B's:
+
+- the old JAR refused all three starts with `ARCE-BETA-2001`, exit code 0; the ledger stayed byte-equal; each start
+  changed only `level.dat` and `level.dat_old`, and the other 40 world files were unchanged;
+- the restored root-2 world passed on the old JAR, with its 4,000 mB and 1,000 mB of water intact;
+- two later starts of C6 on the refused world logged no ERROR, and the ledger stayed root 3.
+
+The family stays FAILED (R618). The text of section 5 therefore stands unchanged for signing; it is packet item P1.
+Evidence: `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/campaign-attempt2/accounting-root3-old-jar-attempt2/native/results.json`.
