@@ -442,6 +442,10 @@ def run(output, scene, stage, cell_path, java, lock_owner):
         installed = list((runtime / "mods").glob("*.jar"))
         chain.require(len(installed) == 1 and common.file_hash(installed[0]) == common.JAR_HASH, "Copied JAR mismatch")
         load_world = lineage if stage == "reopen-2" else source_world
+        loaded_before = common.tree_hashes(load_world)
+        if stage == "reopen-2":
+            previous = json.loads((folder / "reopen-1.json").read_text())
+            chain.require(loaded_before == previous["saved_world_files"], "Restart lineage changed since first reopen")
         shutil.copytree(load_world, runtime / "world")
         props = smoke.expected_server_properties(smoke.allocate_port(), False)
         props.update({"level-name": "world", "view-distance": "2", "simulation-distance": "2", "spawn-protection": "0"})
@@ -516,6 +520,8 @@ def run(output, scene, stage, cell_path, java, lock_owner):
         result["commands"] = console.commands if console else []
         result["parent_unchanged"] = common.tree_hashes(source_world) == before
         result["cell_unchanged"] = common.tree_hashes(template) == template_before
+        result["loaded_source_unchanged"] = (common.tree_hashes(load_world) == loaded_before
+                                             if "loaded_before" in locals() else None)
         write(receipt_path, result)
         if runtime.exists():
             chain.require(runtime.resolve().parent == folder.resolve() and runtime.name == "_server", "Unsafe cleanup target")
@@ -523,7 +529,7 @@ def run(output, scene, stage, cell_path, java, lock_owner):
         if stage == "reopen-2" and lineage.exists():
             chain.require(lineage.resolve().parent == folder.resolve(), "Unsafe lineage cleanup")
             shutil.rmtree(lineage)
-    chain.require(result["parent_unchanged"] and result["cell_unchanged"], "Immutable input changed")
+    chain.require(result["parent_unchanged"] and result["cell_unchanged"] and result["loaded_source_unchanged"], "Immutable input changed")
     return result
 
 
@@ -533,9 +539,12 @@ def seal(output, scene):
     for stage in STAGES:
         receipt = json.loads((folder / (stage + ".json")).read_text())
         chain.require(receipt["status"] == ("BUILT" if stage == "build" else "MATCHED")
-                      and receipt["parent_unchanged"] and receipt["cell_unchanged"], "Incomplete native qualification")
+                      and receipt["parent_unchanged"] and receipt["cell_unchanged"]
+                      and receipt["loaded_source_unchanged"], "Incomplete native qualification")
         chain.require(receipt["world_files"] == common.tree_hashes(folder / "world"), "Source changed since receipt")
     inventory = common.tree_hashes(folder)
+    sizes = [(folder / name).stat().st_size for name in inventory]
+    chain.require(all(size <= 50 * 1024**2 for size in sizes) and sum(sizes) <= 100 * 1024**2, "Evidence size limit exceeded")
     chain.require(not any(name.startswith("_server/") or name.startswith("_restart-world/") for name in inventory), "Disposable output retained")
     write(folder / "manifest.json", dict(schema_version=1, status="PARTIAL_INPUT_NOT_CAMPAIGN_ACCEPTANCE",
         parent=json.loads((folder / "parent.json").read_text()), candidate_commit=common.CANDIDATE,
