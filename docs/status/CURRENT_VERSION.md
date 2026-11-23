@@ -153,10 +153,11 @@ The reference node (REF) is the owner's Debian 12 machine with 4 vCPU and 8 GiB,
 [docs/17 section 4](../17-V1PLUS-QUALITY-BUDGETS.md#4-参考服务器预算).
 
 - **Native and named-test coverage.** The C6 native results replace the old wait for a
-  candidate run, not the remaining NOT_COVERED rows: [W455](../work/v1.8.0-root-queue/records/W455.md)/R651 leaves the
-  named hosted GameTest rows open because shards publish aggregate rather than per-method
-  results, and [FUEL-ADMISSION-REPORT F22/F23](../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) retains older
-  unselected loader cuts. Close with exact candidate-bound named evidence and required
+  candidate run, not the remaining NOT_COVERED rows. [W466](../work/v1.8.0-root-queue/records/W466.md)/R671 maps all 89
+  named hosted GameTest rows of the C6 report to C6's per-shard results (hosted A1 PASS, 86 distinct methods),
+  correcting W455/R651's reading that only an aggregate existed; hosted A1 is not native, client, reference-node
+  or soak evidence. [FUEL-ADMISSION-REPORT F22/F23](../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) retains older
+  unselected loader cuts. Close the rest with exact candidate-bound named evidence and required
   S1/S2 integration/restart coverage, preserving failed and structurally unreachable rows
   rather than treating fixture evidence from an earlier JAR as acceptance.
 - **Partial packages and checklist integration.** K02's eight UNKNOWN native cuts that failed in W447

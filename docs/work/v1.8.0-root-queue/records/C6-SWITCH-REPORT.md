@@ -242,7 +242,7 @@ External paths are code spans, never Markdown links. In result cells, `C6/` mean
 | `C6/x02-s5-satellite/COMPARISON.json` | `48cbf6164068e42031b1cc3bf739628a26461886c64e65e6d441b51c135bcab9` |
 | `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip` | `d189bea1278f5b4672708fcd6fab20767703803c51da5d655916230d1b0b50e8` |
 
-The candidate build-evidence ZIP contains the unit XML members cited in section 12.2. Its prefix is `AdvancedRocketry-Community/AdvancedRocketry-Community/build/test-results/test/`. It does **not** contain hosted GameTest shard results. R581 records the hosted aggregate (1,886 passed), but this fill leaves exact named GameTest rows NOT_COVERED rather than inventing per-method evidence. This does not reverse R581's aggregate result.
+The candidate build-evidence ZIP contains the unit XML members cited in section 12.2. Its prefix is `AdvancedRocketry-Community/AdvancedRocketry-Community/build/test-results/test/`. It does **not** contain hosted GameTest shard results. R581 records the hosted aggregate (1,886 passed), but this fill leaves exact named GameTest rows NOT_COVERED rather than inventing per-method evidence. This does not reverse R581's aggregate result. (Correction added by Root on 2026-11-24, R671: the run's four shard artifacts, which this fill did not read, do contain per-method results; [W466](W466.md) maps the named rows to them.)
 
 ### 2.2 Production changes between C1 and C4 preparation
 
@@ -508,7 +508,7 @@ None of these rows existed at C1. Their smokes ran on locally built JARs.
 #### GameTest rows of W325-MATRIX
 
 The retained test inventory and historical execution come from [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md),
-section 3.2. R581 supplies the C6 aggregate; individual named shard records are not in the supplied evidence, so those exact rows remain open. Class names are short; W333's
+section 3.2. R581 supplies the C6 aggregate; individual named shard records are not in the supplied evidence, so those exact rows remain open. (Correction added by Root on 2026-11-24, R671: the shard artifacts hold those records, and [W466](W466.md) fills each row's C6 cell from them.) Class names are short; W333's
 packages are in [W333-DESIGN](W333-DESIGN.md).
 
 | Row | Variant | C1 | Changed since C1 | Test in C6's hosted run | C6 |
