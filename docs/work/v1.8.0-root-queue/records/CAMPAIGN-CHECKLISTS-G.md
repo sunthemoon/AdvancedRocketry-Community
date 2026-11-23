@@ -18,7 +18,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 ## Shared preconditions and artifact rules
 
 H marks harness/operator actions; P marks human actions/judgements. Each arrow supplies the expected observation.
-Use the P2 representative v1.3–v1.7 world, specifically the mission fixture, on disposable copies. The manifest **needs package K09** to pin its
+Use the P2 representative v1.3–v1.7 world, specifically the mission fixture, on disposable copies. The manifest **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)** to pin its
 archive/hash, terminal coordinates, satellite/mission/instance IDs, launch packages, owner UUIDs, target bodies,
 reward snapshots and the ordinary start/claim/cancel controls before running. The cited version sections do not
 give these values; do not invent them. Include data, survey, asteroid and gas missions and at least three satellite
@@ -38,6 +38,75 @@ Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. DS/
 candidate/JAR SHA-256 and fixture hashes. Name screenshots `<row>-<step>-<client>-<language>-<scale>.png` and
 videos `<row>-<client>.mkv`. Add artifact hashes/references to `E/results/RESULTS.md`, `results.json` and
 `FINDINGS.md`, then seal `E/SHA256SUMS.txt`. A missing fixture/driver means NOT_COVERED, never PASS.
+
+## Package preparation index (W456, R649)
+
+This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
+Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
+remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
+Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
+an observed client result; preserve every original action, oracle, result field and budget.
+
+### G-K09: 102/501/1001-active source sets and mapped cuts
+
+Source: `W441.md; QUEUE.md row W441`. Root acceptance/disposition: **R625** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K09/missions-101/SHA256SUMS.txt` | `5b027e007f8b610f9b80f99366a0b8c1a5eb20a9337224738c50ecee00e613a2` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K09/missions-500/SHA256SUMS.txt` | `08a626789f83cf582855ec2342b1c88f59bda885e3e09ba0f2255a2bc7099bc6` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K09/missions-1000/SHA256SUMS.txt` | `0217b28fad685ca6927f45a7eb56b0930c35ec4f284a0bb52b8b5e0428d67e14` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K09/missions-101/cut-A/SHA256SUMS.txt` | `bb6268ea16a2403de2a46f33033ca4887543a92eed2861921e3bb0cf749b183d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K09/missions-101/cut-B/SHA256SUMS.txt` | `29b00acab7e42b5f9c2c7746376a7b70d17f18eb5ea139393d34d4a998331905` |
+
+**Recipe and original-step mapping.** manifest.json missions/effective_values/scheduler/client_steps.workflow and controls map G01/G02/G05-G07. cut_mapping and cut-A/cut-B with recover-A-1/-2 and recover-B-1/-2 map G04's separate before/after reward-store cuts. Use k09_mission_load.py for matched windows; preserve logical clocks and each deadline.
+
+**Remaining coverage and reasons.** Active asteroid/gas missions NOT_COVERED: C6 setup completes the asteroid and cannot start active gas. 200-tick data missions finish inside warm-up; sustained 500/1000 load remains unprepared, not supplied by K17's smaller refill recipe. No arrival server tick exists: G03 V2 same-tick is NOT_COVERED; actual counterpart is A0 ResourceMissionsTest.twoOwnersSettleInTheSameTickIndependently, not A1. Cuts C/D/neither-store are mapped, not qualified; logical TTL/tickets do not prove physical instance travel, internal cache cleanup or every Forge ticket. Full soak/real 30-minute stop/REF/client claims remain open.
+
+**Mapping in checklist G.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| G01 | missions-101/500/1000 manifests effective_common/effective_values/scheduler/missions and k09_mission_load.py -> original startup/load/save/restart/500/1000 steps. 102/501/1001 ACTIVE only at source, not throughout sample. |
+| G02 | manifest.json clock/mission deadlines and load-restart receipts -> original offline/logical-tick/catch-up steps; downtime is not progress. |
+| G03 | manifest.json same_tick -> original concurrent claim action; tick=null/NOT_COVERED, A0 counterpart named, no server-arrival witness. |
+| G04 | manifest.json cut_mapping.A/B/C/D/neither plus cut-A/cut-B/recover-* -> each original boundary action; only A/B qualified, C/D/neither NOT_COVERED. |
+| G05 | manifest.json instances/effective_values and A/B restart receipt reconciliation -> original logical instance/ticket/reclaim steps; synthetic advance1220 is not real TTL/physical travel. |
+| G06 | manifest.json client_steps.workflow/controls -> original terminal/destination/reward presentation steps; no physical instance dimension exists. |
+| G07 | manifest.json client_steps.preconditions/controls -> original two-owner launch/claim/cancel/refusal steps; terminals owner-private or OP, no invented membership observer. |
+
+### G-K15: bounded observers, with explicit remaining visibility gaps
+
+Source: `W403.md; QUEUE.md row W403; W452.md/R648`. Root acceptance/disposition: **R548; R648 for A08/A09** in `../QUEUE.md`.
+
+**Recipe and original-step mapping.** Tracked scripts/campaign_observe/{ticks,process,jdk,host,evidence}.py and scripts/run_campaign_observer.py at implementation 385c079dc10718f781a425527cd3e9a0765a0518 supply matched-copy window/process/heap/JFR/evidence operations. Use sample_ticks/force-load queries and owned-process-only diagnostics at the row's existing sampling step; K17 schedule and K08/K09/K10 load drivers supply concrete harness integrations.
+
+**Remaining coverage and reasons.** W403 created no sealed live fixture or SHA256SUMS.txt: none is invented. Window aggregates cannot prove whole-run percentiles/spike lengths. C6/K17's release-test raw sampler is used only in the separately labelled R648 REF run for A09. All-Forge-ticket, queue-internal, client/GPU allocation and direct cache-release proof remain NOT_COVERED where unavailable; histogram/heap/RSS proxies are labelled, not direct evidence. Actual REF acceptance/full windows and overhead checks remain unexecuted.
+
+**Mapping in checklist G.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| G01 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+
+### G-K18: bounded client intent JAR and case/readback matrix
+
+Source: `W432.md; intent-test-mod/README.md; QUEUE.md row W432`. Root acceptance/disposition: **R601** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS.txt` | `aac26e987be0617ad63cec39b54aefb0fe7f3372085863ab14cd49731e392e57` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS-CORRECTED-1.txt` | `d29b209b8e7133f2d50f8463d3d9a1fa616572b2fe8b919ddbe58de254ec188f` |
+
+**Recipe and original-step mapping.** Install arce-intent-test-1.0.0.jar only on the probing client. intent-test-mod/README.md Triggering one case steps 1-6 and Case table map C08/D09/I11 flight_stale/range/non_owner/late and classic_stale/range/non_owner/late; E03 flight_forbidden_surface/private_station; E07 late and motion_disabled. R/C/M/L readbacks are required separately. F8 captures; a single F9 queues at most one bounded packet.
+
+**Remaining coverage and reasons.** Use SHA256SUMS-CORRECTED-1.txt: the original list's final-validator hash is stale and preserved, not silently repaired. There are three C2S channels, five S2C-only; no payload-terminal, research-menu, callback-fault, packet-burst, late-S2C/cache, all-ticket or same-tick claim control exists. Those branches remain NOT_COVERED with the README's named A0/A1 references/gaps. Client queue log is not server receipt. Actual real-client/server qualification and unchanged-state/loaded-chunk readbacks remain campaign work.
+
+**Mapping in checklist G.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| G03 | No settlement packet or server arrival-tick probe; same-tick V2 NOT_COVERED and A0 counterpart, not a fabricated A1. |
 
 ## G01 — Active missions, restart, 500/1,000 load and flush cost
 
@@ -63,7 +132,7 @@ worst-case-root fixtures. Capture scheduler clock, statuses, deadlines, registry
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C24, R535) Read C6's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. **Needs package K09**: >100/500/1,000 scenes, per-kind deadlines/default readback and driver; **needs package K15**: raw sampling.
+(C10/C24, R535) Read C6's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: >100/500/1,000 scenes, per-kind deadlines/default readback and driver; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry G-K15 (R548; R648 for A08/A09)**: raw sampling.
 
 **Evidence to keep:** Phase 3 restart projections and writer-drain logs; phase 5 500/1,000/worst-root manifests,
 raw timing/GC/RSS/flush samples, backlog and reward comparisons, and reference hardware record.
@@ -86,7 +155,7 @@ with one per-kind expiry inside the running window; these are procedure paramete
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C24) The online interval is inside the four-hour soak; the stopped-server control is the soak restart plus one 30-minute stop, a procedure parameter. Read effective default scheduler limits; arrange one expiry per kind inside the appropriate running window, not wall-clock downtime. **Needs package K09**: deadlines, scene and scheduler observations. Use A's matched sample/review rule where comparing costs.
+(C10/C24) The online interval is inside the four-hour soak; the stopped-server control is the soak restart plus one 30-minute stop, a procedure parameter. Read effective default scheduler limits; arrange one expiry per kind inside the appropriate running window, not wall-clock downtime. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: deadlines, scene and scheduler observations. Use A's matched sample/review rule where comparing costs.
 
 **Evidence to keep:** Disconnect/reconnect and stop/start times, logical clock/deadline snapshots, scheduler work
 counts/tick samples, mission/reward projections and logs in phase 3.
@@ -107,7 +176,7 @@ Configure the harness's input synchronization and server-tick observation before
 
 **Accepted preparation/action steps (W408):**
 
-(C9) Keep each claim's server receipt tick; "same tick" requires one identical tick in the server record, with no overlap tolerance. Otherwise report the gap, still check the two distinct once-only rewards/no gain or loss, and mark only same-tick V2 NOT_COVERED with its named A1 test. **Needs package K09**: tick observation and ready missions; bounded intent support, if needed, **needs package K18**. Owner O5 supplies coordinated inputs.
+(C9) Keep each claim's server receipt tick; "same tick" requires one identical tick in the server record, with no overlap tolerance. Otherwise report the gap, still check the two distinct once-only rewards/no gain or loss, and mark only same-tick V2 NOT_COVERED with its named A1 test. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: tick observation and ready missions; bounded intent support, if needed, **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry G-K18 (R601)**. Owner O5 supplies coordinated inputs.
 
 **Evidence to keep:** Both client logs/video and server tick-correlated claim transcript, exact rewards, balances
 and terminal projections in phase 4. If same-tick delivery cannot be established, record NOT_COVERED for that variant.
@@ -144,7 +213,7 @@ Freeze one cut per complete copied world; A/B/D/C below are the matrix's histori
 
 **Accepted preparation/action steps (W408):**
 
-(C25) The exact matching C6 saved-boundary/epoch map **needs package K09** before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write.
+(C25) The exact matching C6 saved-boundary/epoch map **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)** before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write.
 
 **Evidence to keep:** Runner command/version, candidate installed-copy hash, cut logs, stopped-disk projections,
 both restart logs and exact reward conservation comparison in phase 3.
@@ -174,7 +243,7 @@ for unload/reload; capture initial loaded/forced chunks, registry/cache counts a
 
 **Accepted preparation/action steps (W408):**
 
-(C24/C26; ADR-051) Read effective default scheduler/TTL values, arrange per-kind expiry deadlines inside the C24 online window and 30-minute stop control; never count downtime as progress. Test the inherited "instance chunks" as owning-terminal unloading and logical record reclamation, not a nonexistent world region. **Needs package K09**: concrete mission/deadline/unload controls.
+(C24/C26; ADR-051) Read effective default scheduler/TTL values, arrange per-kind expiry deadlines inside the C24 online window and 30-minute stop control; never count downtime as progress. Test the inherited "instance chunks" as owning-terminal unloading and logical record reclamation, not a nonexistent world region. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: concrete mission/deadline/unload controls.
 
 **Evidence to keep:** Instance lifecycle/expiry manifest, chunk and `/forceload query` observations, cache/record
 counts, cancellation/completion receipts and restart comparisons in phase 3.
@@ -200,7 +269,7 @@ failure/cancel/expiry fixtures and the relevant star-map targets. Keep the refer
 
 **Accepted preparation/action steps (W408):**
 
-(C26; ADR-051) State explicitly in the result that inherited "instance visuals" means logical record/target/reward presentation; no instance dimension/region is implemented or invented. **Needs package K09**: real terminal/mission/UI scene.
+(C26; ADR-051) State explicitly in the result that inherited "instance visuals" means logical record/target/reward presentation; no instance dimension/region is implemented or invented. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: real terminal/mission/UI scene.
 
 **Evidence to keep:** Mission gameplay video, step screenshots, progress/target/reward projections and client/server
 logs in phase 2, with hardware and language/scale indexes. Sources supply no mission-specific FPS threshold.
@@ -222,7 +291,7 @@ Prepare a separate B-owned mission so private balances can be compared.
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K09**: actual owners, missions, observer permissions and start/claim/cancel controls; R546's common receipt/state rule applies to every negative action.
+**K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: actual owners, missions, observer permissions and start/claim/cancel controls; R546's common receipt/state rule applies to every negative action.
 
 **Evidence to keep:** Paired screenshots/video at each phase, account permissions, private balance projections,
 both client logs and server log in phase 4.
@@ -231,7 +300,7 @@ both client logs and server log in phase 4.
 ## Open questions for Root
 
 - **Answered:** C24 online soak/restart plus separate 30-minute stop/default limits/per-kind expiry procedure; C10/R535 samples; C9 same-tick proof/no tolerance; C25 cut mapping rule; C26/ADR-051 logical presentation/terminal unloading/record reclamation instead of physical-instance wording.
-- **G01-G07:** immutable mission IDs/owners/packages/rewards, controls, effective defaults, deadlines and driver **needs package K09**.
-- **G01/G02/G05:** raw scheduler/tick/all-ticket observations **needs package K15** alongside K09's workload. Downtime is not progress.
-- **G03:** actual receipt-tick observation **needs package K09**; extra intent support if required **needs package K18**. O5 coordinates inputs. Unproved identical ticks means same-tick V2 NOT_COVERED with named A1 test.
-- **G04:** each historical cut's C6 epoch/save-boundary mapping **needs package K09**; no match means NOT_COVERED with reason.
+- **G01-G07:** immutable mission IDs/owners/packages/rewards, controls, effective defaults, deadlines and driver **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**.
+- **G01/G02/G05:** raw scheduler/tick/all-ticket observations **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry G-K15 (R548; R648 for A08/A09)** alongside K09's workload. Downtime is not progress.
+- **G03:** actual receipt-tick observation **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**; extra intent support if required **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry G-K18 (R601)**. O5 coordinates inputs. Unproved identical ticks means same-tick V2 NOT_COVERED with named A1 test.
+- **G04:** each historical cut's C6 epoch/save-boundary mapping **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**; no match means NOT_COVERED with reason.

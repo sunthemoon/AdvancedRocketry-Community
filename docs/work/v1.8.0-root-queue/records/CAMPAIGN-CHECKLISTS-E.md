@@ -26,7 +26,7 @@ P2 supplies **representative v1.3 to v1.7 worlds**, **a v1.0 world**, **the
 reference workload world of docs/17 section 4**, and associated immutable hashes.
 The planetary scene is a P2-derived disposable copy with a fueled legal rocket,
 powered Satellite Terminal, Data Satellite components, supplied sealed rooms,
-complete oxygen-filled equipment and authorized station access. The scene **needs package K07** to name
+complete oxygen-filled equipment and authorized station access. The scene **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)** to name
 actual paths, coordinates, owners, station IDs and each pack variant; the source
 manuals do not provide a universal fixture placement script.
 
@@ -50,6 +50,186 @@ Moon, Mars, Venus and Space use their actual registered Levels. The gas giant
 is an **unmapped body**, not a Level. `/arce celestial goto` is not a general
 planet teleporter; use normal rocket travel or P2's explicitly recorded setup.
 Do not invent a gas-giant dimension or use a raw Level change as discovery proof.
+
+## Package preparation index (W456, R649)
+
+This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
+Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
+remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
+Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
+an observed client result; preserve every original action, oracle, result field and budget.
+
+### E-K03: reconstructed FI05-FI08 chain
+
+Source: `W436.md; QUEUE.md row W436`. Root acceptance/disposition: **R614** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K03/FI05/SHA256SUMS.txt` | `86185f41558aff1fa917a4de3fff78a0f6413107983e3593ccbfd078de0f4cf0` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K03/FI06/SHA256SUMS.txt` | `c3fc97cdd481b620f6ed114431d5b23f04aa6046d9b864cd7a92959030efb8b2` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K03/FI07/SHA256SUMS.txt` | `b588390b7224c85c321712aec0e40bcf202eb2bab54d68e517f5dcbd93171f66` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K03/FI08/SHA256SUMS.txt` | `d29f4656341ee439aab6d64f4f2fdbb6580f639dcf53c10815c79c6806e8a994` |
+
+**Recipe and original-step mapping.** Each FI05-FI08 manifest.json commands/content and CONTENT-READBACK.json maps E10's v1.4-v1.7 loads and feeds K07-K10. Use source-world copies and the separate qualification observations.
+
+**Remaining coverage and reasons.** Historically played/complete pre-sky claims NOT_COVERED (no retained played source). FI06 membership/charged-warp, FI07 active resource/gas missions and FI08 drill/black-hole/gravity gaps are not filled by the historical chain; use the current packages' qualified inputs or scripted actions, never synthetic saves.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E10 | FI05-FI08/manifest.json content/host/commands and CONTENT-READBACK.json -> each original upgrade-and-reopen step. E09 station acquisition needs K08/player action; chain does not supply historically played/pre-sky acceptance. |
+
+### E-K06: 23 hashed data/resource packs, not blanket live qualification
+
+Source: `W406.md; QUEUE.md row W406`. Root acceptance/disposition: **R550** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/SHA256SUMS.txt` | `3be8336be6e1aed8fc2859323d0ecbae9b7209f2fc8048a09944407a45992ca5` |
+
+**Recipe and original-step mapping.** manifest.json packs[].path/rows/prerequisites/load_check and campaign_values give the per-row reload sequence: B03 route baseline/valid/invalid/unknown; B06 test_mars/locked; E01 itinerary; E05 100/128/129 and ID bounds; F05 station overlays; D04 tag pair; D08/D09 payload pair; E06/E11 sky resource packs. Run load_check at the existing row step and retain actual generations/quotes.
+
+**Remaining coverage and reasons.** candidate_loads_run=false in this manifest. K21 separately qualified tag/payload loads, K08 loaded station baselines and K07 binding refusal; those do not prove B03's live quotes/two restarts, every catalog, sky load, removed selection or cooldown. Unperformed branches remain NOT_COVERED. Invalid packs are refusal-only, never setup. The 48-character value is a station name. Preserve the manifest's recorded generator commit and C6 JAR identity.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E01 | campaign_values.E01_surface_itinerary/E01_route_legs and route load_checks -> original consecutive-travel steps. Server mass/quotes/debits must be observed. |
+| E05 | packs[catalog_100.zip/catalog_128.zip/catalog_129.zip/catalog_id_128.zip/catalog_id_129.zip].load_check -> original catalog/ID/control/cooldown steps on separate complete baselines. |
+| E08 | Use the named recipe/step selector above at the unchanged original row actions; preparation is partial as described, not an observed result. |
+
+### E-K07: seven earned planetary/hazard variants
+
+Source: `W438.md; QUEUE.md row W438`. Root acceptance/disposition: **R617** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/discovered/SHA256SUMS.txt` | `5330ebe043370bc1a795d37067fb215f8e2cb3ce3a3395f2c288ffd5ddacb547` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/undiscovered/SHA256SUMS.txt` | `ce4ec77ffed74857e219a75086fa9968c0fc6f869d03f236117118600d4fc211` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/private-station/SHA256SUMS.txt` | `7fca7ba15db6b03acfa3ba46d224a39b8ccaf761712cf1716091b805fa812adc` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/paid-pending/SHA256SUMS.txt` | `4bc88b4ef7c5c87968a6edf9277d6fb6634864396c33e71971c130371ac301e3` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/blocked-binding/SHA256SUMS.txt` | `6b1cb4bbab060d4278f31c6c47baa2c2b99a6067393c3d70c1314c8edb51b538` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/pre-sky/SHA256SUMS.txt` | `f8c75e78dfa7bad964a6a4a3dcf3c8e36f6293e086db8bf4eeec2ecb0bf4a26b` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K07/hazards/SHA256SUMS.txt` | `82dfc1ed05495a4a0e96e1226bd96b0c9daef676aa27df1504eab517aa6f828a` |
+
+**Recipe and original-step mapping.** Each manifest.json commands/readbacks/effective_values maps E01 values; discovered/undiscovered/private-station map E02/E03; hazards.hazard_plan.campaign_steps maps E04; paid-pending/blocked-binding map E08; pre-sky from FI04 maps E09/E10; hazard_plan.sites supplies E06/E11 viewpoints.
+
+**Remaining coverage and reasons.** Discovery is world-wide, research owner-private: undiscovered uses FI04, not a balance reset on FI05. Private station is operator-created with placeholders. Paid-pending uses the fixed hook actor and heals on normal reload, so a retained pending client menu is NOT_COVERED. Isolated thermal/pressure/solar player damage is NOT_COVERED because a full built-in suit grants all protection and an incomplete set loses oxygen protection. R617 leaves live hazards/pending-menu controls as campaign steps; quotes/flights/rendered skies/O5/V1/V2 remain unexecuted.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E01 | discovered/manifest.json effective_values -> original research/travel/config steps; C6 quotes/flights not supplied. |
+| E02 | discovered/undiscovered manifests -> original private captured-price/shared discovery steps; use FI04 for undiscovered world. |
+| E03 | private-station/manifest.json commands/readbacks -> original private-station owner/member/refusal steps; K18 forbidden-surface case has separate prerequisites. |
+| E04 | hazards/manifest.json hazard_plan.sites/equipment/campaign_steps -> each original isolated/combined/supplied-room step; isolation remains NOT_COVERED, not inferred from full-suit protection. |
+| E06 | hazards/manifest.json hazard_plan.sites plus discovered effective sky resource hashes -> original per-body/day/night/second-GPU observations, not rendered results. |
+| E08 | paid-pending and blocked-binding manifests commands/readbacks -> original pending/reload/recovery actions. No-hook paid receipt heals, so retained menu control is missing. |
+| E09 | pre-sky/discovered manifests -> original new-body station procedure's world seed only; K08/player owns station acquisition. |
+| E10 | pre-sky/manifest.json parent_source=FI04 -> original first-load/upgrade sky comparison; reconstructed, not played; K03 chain complements it. |
+
+### E-K08: station sets, two-account recipes and ordinary-energy copies
+
+Source: `W440.md; W442.md; QUEUE.md rows W440/W442`. Root acceptance/disposition: **R621/R627** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/two/SHA256SUMS.txt` | `021440c6b39bd9864ba5106358b454e2f105103b85e2ecf3b2cbe4acb646ee52` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/ten/SHA256SUMS.txt` | `0919948566148e793440c0bade53006f0e2486f41b485ce7210ad9149d7cc1e2` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/hundred/SHA256SUMS.txt` | `1089dab5a1f238eb955d3d751fb2d0206b9bccebe696418ad87bb0b21ba7c773` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/client-steps-addendum/SHA256SUMS.txt` | `405e16eea3273dec74e4f2c2904be59cd878bd4e5729b6c204aa1a0f305f8847` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/two/SHA256SUMS.txt` | `9e11421235fa268c33b421cb22e6eb665e3852a9f0b610cd65e5e54de4d9d693` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/target-removal/SHA256SUMS.txt` | `79f68839d090a25598c13197607cba0a5bb858fa67e703e79ce6110f95fbdb4c` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/cost-change/SHA256SUMS.txt` | `1c2bb1169b55c9f682a685b1b66b8c88344999ce6c84a4b1b19e86d345eeba80` |
+
+**Recipe and original-step mapping.** K08 manifests stations/regions/commands and client-steps-addendum/client-steps.json variants[].client_steps.actions/approach/ordinary_creation/overlay/pending/docked_rocket map B02, E05/E09/E10 and F01-F07. Use K08 ten/hundred with k08_station_load.py for F01; use a fresh K08B two/target-removal/cost-change source-world per paid F02/F03/F05/F07 operation, retaining the same bound station IDs.
+
+**Remaining coverage and reasons.** K08B closes only energy preparation: two A/B 3,288,096/2,902,914 FE; removal A 2,756,374; changed-cost A 8,381,014. Operator-created stations and placeholder owners are not ordinary acquisition/O5 evidence. Bind by fresh command-built outputs, never editing sealed owners. Live local consent/warp, memory-only countdown, F05 before-due overlay and two post-abort restarts, docked rocket, membership/refusals and V1/V2 remain scripted/NOT_COVERED (no saved pending or docking command). Full REF windows and direct caches remain unqualified.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E05 | two manifest's 48-character station name and addendum ordinary_creation -> original long-name display action; no body-name field invented. |
+| E09 | addendum ordinary_creation + separate FI06 copy with eligible A/B -> original normal deployment around target body; K08 operator-created ownership is not this result. |
+
+### E-K15: bounded observers, with explicit remaining visibility gaps
+
+Source: `W403.md; QUEUE.md row W403; W452.md/R648`. Root acceptance/disposition: **R548; R648 for A08/A09** in `../QUEUE.md`.
+
+**Recipe and original-step mapping.** Tracked scripts/campaign_observe/{ticks,process,jdk,host,evidence}.py and scripts/run_campaign_observer.py at implementation 385c079dc10718f781a425527cd3e9a0765a0518 supply matched-copy window/process/heap/JFR/evidence operations. Use sample_ticks/force-load queries and owned-process-only diagnostics at the row's existing sampling step; K17 schedule and K08/K09/K10 load drivers supply concrete harness integrations.
+
+**Remaining coverage and reasons.** W403 created no sealed live fixture or SHA256SUMS.txt: none is invented. Window aggregates cannot prove whole-run percentiles/spike lengths. C6/K17's release-test raw sampler is used only in the separately labelled R648 REF run for A09. All-Forge-ticket, queue-internal, client/GPU allocation and direct cache-release proof remain NOT_COVERED where unavailable; histogram/heap/RSS proxies are labelled, not direct evidence. Actual REF acceptance/full windows and overhead checks remain unexecuted.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E05 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+| E06 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+| E07 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+| E11 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+
+### E-K16: v2 core scene, mapped controls and conditional recheck batches
+
+Source: `W427.md; W443.md; QUEUE.md rows W427/W443`. Root acceptance/disposition: **R595; R628 supersedes final/ with v2/** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K16/v2/SHA256SUMS.txt` | `27df12a711d23f500dd7370fab35a6c5d457f6eebd93e8366ee191889b140fa9` |
+
+**Recipe and original-step mapping.** v2/batch-index.json maps each row/step/file; manifest.json core_route/devices/supplies and candidate-recipes.json give counts/positions/recipes. A02/I01 use core-00/core-01, core-room/core-suit, core-rocket-assemble/-fuel/-invalid, core-flight-plan/-observe; A06/A13/A17 use core-station/core-screen-*; E07 uses sp-pause; J20/J21 use rechecks.json and batches/j21-*.json. controls.json gives effective viewport targets, not old pointer replay.
+
+**Remaining coverage and reasons.** R628 accepts only the en_us 1280x720 scale-3 dedicated rehearsal; scale2/fullscreen/zh_cn, integrated pause and 63 J21 requests are generated, not rehearsed. Fullscreen screen gate needs checking. B-5/3-2/8-2 remain checkpoint-only; no complete continuous quantitative crafting witness or all-screen/first-join/dual-seat/station ownership-transfer procedure is supplied. Return flight/paid warp/satellite flow, O5 accounts, N15-N19 physical setup and V1/V2 remain partial. Never replay old NBT-writing setup; R638 applies. Desktop-wide Alt/Shift are the recorded night-round operating condition.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E07 | batch-index.json entry sp-pause -> original step9 integrated pause branch. Generated only, not rehearsed; no dedicated pause substitution. |
+
+### E-K17: combined reference world and four-hour schedule
+
+Source: `W452.md; QUEUE.md row W452`. Root acceptance/disposition: **R648** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K17/source/SHA256SUMS.txt` | `d03941ecdb4bff0d1742cf452959293b951e2e26b2972d8983e6f5c0ccd3daf1` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K17/readback-settled/SHA256SUMS.txt` | `a4aba18f3649e82a8e00e5d20f0efc508ad3c35c8b21357938a9811c7efc3df4` |
+
+**Recipe and original-step mapping.** source/layout.json maps the 16 Moon rooms, ten station IDs, mission records and 2048/64/64 pads. source/schedule.json actions and client_steps.{connect,assembly_2048,flights,missions,a11} map A08-A11/I05/I10; use k17_reference.py schedule/run on disposable copies. Two 7200-s sampled segments, 120-s warm-up, flushed saves each 1800 s, one restart at sampled 7200 s, autosave retained.
+
+**Remaining coverage and reasons.** R648: A08 has no test properties; keep forge tps means/RSS/GC/forced chunks. A09 is a separate labelled REF run on the same world/schedule adding only -Dadvancedrocketrycommunity.releaseTestHooks=true for the read-only raw sampler; compare forge tps means under C10's baseline-spread review rule. The 16 forced room chunks are declared workload, not unexpected tickets. Without clients flights/disassembly/dimension transfer remain scripted; ACTIVE missions fall from 101 to zero within ~6000 ticks. Record actual counts and ordinary refills, not a sustained-load claim. K17 does not supply sustained 500/1000 mission or H07 endgame throughput. Full four hours/REF/two real connections/all-ticket/direct-cache evidence remains unexecuted.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E11 | Use the named recipe/step selector above at the unchanged original row actions; preparation is partial as described, not an observed result. |
+
+### E-K18: bounded client intent JAR and case/readback matrix
+
+Source: `W432.md; intent-test-mod/README.md; QUEUE.md row W432`. Root acceptance/disposition: **R601** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS.txt` | `aac26e987be0617ad63cec39b54aefb0fe7f3372085863ab14cd49731e392e57` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS-CORRECTED-1.txt` | `d29b209b8e7133f2d50f8463d3d9a1fa616572b2fe8b919ddbe58de254ec188f` |
+
+**Recipe and original-step mapping.** Install arce-intent-test-1.0.0.jar only on the probing client. intent-test-mod/README.md Triggering one case steps 1-6 and Case table map C08/D09/I11 flight_stale/range/non_owner/late and classic_stale/range/non_owner/late; E03 flight_forbidden_surface/private_station; E07 late and motion_disabled. R/C/M/L readbacks are required separately. F8 captures; a single F9 queues at most one bounded packet.
+
+**Remaining coverage and reasons.** Use SHA256SUMS-CORRECTED-1.txt: the original list's final-validator hash is stale and preserved, not silently repaired. There are three C2S channels, five S2C-only; no payload-terminal, research-menu, callback-fault, packet-burst, late-S2C/cache, all-ticket or same-tick claim control exists. Those branches remain NOT_COVERED with the README's named A0/A1 references/gaps. Client queue log is not server receipt. Actual real-client/server qualification and unchanged-state/loaded-chunk readbacks remain campaign work.
+
+**Mapping in checklist E.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| E03 | flight_forbidden_surface/private_station cases -> original gas-surface/private-station refusal actions; require ready owner rocket, actual discovered forbidden target and nonmember B. |
+| E05 | No catalog/cache/S2C injection; original cache/late-render branches remain NOT_COVERED, not covered by flight_late. |
+| E07 | flight_late/classic_late/motion_disabled -> original late-C2S/lifecycle negatives; late S2C cache/render controls NOT_COVERED. |
 
 ## E01 - Research, consecutive planetary travel and return
 
@@ -87,7 +267,7 @@ leg and never change the graph to force direct Mars-to-Venus travel.
 
 **Accepted preparation/action steps (W408):**
 
-(C1/C19) Flight wire protocol is C6's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. **Needs package K06**: actual per-leg server quotes/load qualification; **needs package K07**: run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset.
+(C1/C19) Flight wire protocol is C6's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**: actual per-leg server quotes/load qualification; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -138,7 +318,7 @@ values **200 ticks / 120 reward / 100 captured undiscovered fee**.
 
 **Accepted preparation/action steps (W408):**
 
-(C7) **Needs package K07**: fresh undiscovered and private-station copies, preserving earned balances/IDs/history; zero-start numeric totals are conditional, never obtained by resetting an account. Owner O5 still supplies coordinated real inputs. Use the packs below for held-menu rule changes, not a grant of research.
+(C7) **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: fresh undiscovered and private-station copies, preserving earned balances/IDs/history; zero-start numeric totals are conditional, never obtained by resetting an account. Owner O5 still supplies coordinated real inputs. Use the packs below for held-menu rule changes, not a grant of research.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -195,7 +375,7 @@ use supported station controls, not direct edits to observed SavedData.
 
 **Accepted preparation/action steps (W408):**
 
-(C7/C14 corrected by R546) **Needs package K07**: naturally earned discovery/private-station variants; **needs package K18**: bounded forbidden gas-surface/stale intents and receipt/state proof. No tool reach means NOT_COVERED with reason and named A1 test, not a pass from a disabled Use surface control.
+(C7/C14 corrected by R546) **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: naturally earned discovery/private-station variants; **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**: bounded forbidden gas-surface/stale intents and receipt/state proof. No tool reach means NOT_COVERED with reason and named A1 test, not a pass from a disabled Use surface control.
 
 **Evidence to keep:** Sitting-2 both menu/quote videos, active/editable target
 projections, membership/gas-intent/cancellation receipts, loaded-chunk and fuel
@@ -247,7 +427,7 @@ hazard. Station orbit never imports its planet's surface heat/pressure.
 
 **Accepted preparation/action steps (W408):**
 
-(C20) Leave damage modifiers, difficulty and game rules at C6/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. **Needs package K07**: isolated/combined sites, equipment, exact coordinates and observation intervals.
+(C20) Leave damage modifiers, difficulty and game rules at C6/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: isolated/combined sites, equipment, exact coordinates and observation intervals.
 
 **Evidence to keep:** Per-hazard step screenshots/video, effective pack/tag
 values, damage-attempt/health/oxygen/resource timeline, vent supply and logs.
@@ -270,7 +450,7 @@ and **128-body** catalogs, valid/invalid reload variants and missing/rejected
 client-cache method; baseline/JEI absent. Run English/Chinese, GUI scales
 **2/3/4**, smallest supported and large windows, windowed/fullscreen.
 C2/R535 supplies tested pixels/effective scales; no supported minimum is declared.
-W406 reads C6's 100-tick cooldown; live retry/presentation **needs package K06**.
+W406 reads C6's 100-tick cooldown; live retry/presentation **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
 
 | Step | Action, for each display/catalog cell | Expected observation |
 |---|---|---|
@@ -295,7 +475,7 @@ W406 reads C6's 100-tick cooldown; live retry/presentation **needs package K06**
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C6 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. **Needs package K06**: live loads/retry observations; **needs package K08**: station; **needs package K18**: missing/rejected/late client control; **needs package K15**: cache readback.
+(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C6 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**: live loads/retry observations; **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**: station; **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**: missing/rejected/late client control; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: cache readback.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -366,7 +546,7 @@ SKY-V1-08's pre-sky-world identity/time/light/inventory comparison is in E10.
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W399/W403) Use A's same-cell/same-viewport Vanilla/Forge paired captures, twice-run baselines, average/1% low/first-stall/longest-frame definitions and reporting-only 50 ms. No FPS floor or stall limit exists; spread triggers Root review only. **Needs package K15**: direct allocation/cache observation and client sky-pack live checks; **needs package K07**: viewpoints/effect scenes. O8/O9 supply approved capture/version and two GPU categories.
+(C5, R535; W399/W403) Use A's same-cell/same-viewport Vanilla/Forge paired captures, twice-run baselines, average/1% low/first-stall/longest-frame definitions and reporting-only 50 ms. No FPS floor or stall limit exists; spread triggers Root review only. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: direct allocation/cache observation and client sky-pack live checks; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: viewpoints/effect scenes. O8/O9 supply approved capture/version and two GPU categories.
 
 **Evidence to keep:** `phase2-v1/<machine>/<round>/` complete body/time/
 display/immersion/effect matrix, native screenshots, videos, frame-time/memory
@@ -410,7 +590,7 @@ behavior, not proof from server time alone.
 
 **Accepted preparation/action steps (W408):**
 
-(C14/C22) Run the pause branch in phase 2 using W399 `mode=launch`, `singleplayer=true`, one copied-save client; **needs package K16**: qualified integrated round and converted batches. If unavailable by that phase, pause alone is NOT_COVERED because dedicated menus do not pause the world. SKY-V2-01/navigation V2 lifecycle remains sitting 2. Late-packet intent receipt/readback **needs package K18** and direct cache readback **needs package K15**; unavailable branches carry reason and named A1 test.
+(C14/C22) Run the pause branch in phase 2 using W399 `mode=launch`, `singleplayer=true`, one copied-save client; **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry E-K16 (R595; R628 supersedes final/ with v2/)**: qualified integrated round and converted batches. If unavailable by that phase, pause alone is NOT_COVERED because dedicated menus do not pause the world. SKY-V2-01/navigation V2 lifecycle remains sitting 2. Late-packet intent receipt/readback **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)** and direct cache readback **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; unavailable branches carry reason and named A1 test.
 
 **Evidence to keep:** Phase-2 audio/video, transition/body/menu/rocket IDs,
 raw cache/memory observations and unpaused-tick timing; sitting-2 both-client
@@ -452,7 +632,7 @@ station/progress identities and `advancedrocketrycommunity_planetary_bindings.js
 | 12 | [H] Compare original fixture hashes and all preserved projections. | Originals intact; no unexplained resource/identity change. |
 
 An allowed **blocked historical-progress** variant also follows DISC-MIG-01.
-That independently backed-up state **needs package K07**; never erase historical IDs
+That independently backed-up state **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; never erase historical IDs
 to make it proceed. Run this additional step list on that variant:
 
 | Step | Action | Expected observation |
@@ -471,7 +651,7 @@ or deleted as a normal test shortcut. This row is S1/reload, not an S2 cut claim
 
 **Accepted preparation/action steps (W408):**
 
-(C23) Recovery is only a complete-world backup restore or documented station commands on another backed-up copy. If a variant has no supported recovery, report it as such. Never selectively merge backups, erase IDs or promote scratch files. **Needs package K07**: earned paid-pending/blocked histories, coherent removal/restore variants and supported recovery recipe; missing pack load/quote controls **needs package K06**.
+(C23) Recovery is only a complete-world backup restore or documented station commands on another backed-up copy. If a variant has no supported recovery, report it as such. Never selectively merge backups, erase IDs or promote scratch files. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: earned paid-pending/blocked histories, coherent removal/restore variants and supported recovery recipe; missing pack load/quote controls **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
 
 **Evidence to keep:** `phase3-ds/E08/` all pack variants, generation/reload/
 refusal/restore logs, binding and station/progress projections, pending-claim
@@ -505,7 +685,7 @@ Use ordinary station creation while standing on that mapped orbitable surface.
 
 **Accepted preparation/action steps (W408):**
 
-(C8) Use an account with ordinary ownership capacity, not a bypass; the two real accounts each create one owned station by ordinary play. **Needs package K07**: eligible owner/surface scene and **needs package K08** for the station command/region manifest.
+(C8) Use an account with ordinary ownership capacity, not a bypass; the two real accounts each create one owned station by ordinary play. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: eligible owner/surface scene and **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)** for the station command/region manifest.
 
 **Evidence to keep:** `phase3-ds/E09/` creation/arrival receipts, station
 UUID/orbit/member/region and environment projections, both restart logs and
@@ -544,7 +724,7 @@ new state on C6 and label it an untouched historical upgrade fixture.
 
 **Accepted preparation/action steps (W408):**
 
-(C7/C8) **Needs package K03**: hashed historical v1.4-v1.7 chain; **needs package K07**: pre-sky copy from an eligible ordinary owner. Label rebuilt worlds "reconstructed on JAR (hash), not historically played". No retained played pre-sky source means the played-world claim is NOT_COVERED; format migration remains testable. Keep earned balances/bindings, no ownership-limit bypass.
+(C7/C8) **K03 supplied input/limits: reconstructed FI05-FI08 chain; entry E-K03 (R614)**: hashed historical v1.4-v1.7 chain; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: pre-sky copy from an eligible ordinary owner. Label rebuilt worlds "reconstructed on JAR (hash), not historically played". No retained played pre-sky source means the played-world claim is NOT_COVERED; format migration remains testable. Keep earned balances/bindings, no ownership-limit bypass.
 
 **Evidence to keep:** `phase3-ds/E10/<source>/` old runtime/world/pack
 hashes, raw inventory and schemas, migration differences, both restart logs,
@@ -567,7 +747,7 @@ switches off, no properties. **Sources:** v1.4 section 13.2 and GATE-1.4 G7.
 **Preconditions:** P2 planetary scene and **reference workload world of
 docs/17 section 4**; baseline/JEI absent, server heap <=4 GiB. Same-machine
 Vanilla/Forge frame-time baselines from A12. The actual resource-allocation/cache
-profiling tool and version **needs package K15**; screenshots alone cannot prove
+profiling tool and version **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; screenshots alone cannot prove
 that sky resources are not rebuilt every frame.
 
 | Step | Action | Expected observation |
@@ -581,7 +761,7 @@ that sky resources are not rebuilt every frame.
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W403) Keep paired Vanilla/Forge frame measures, 1% low, first/longest stall and twice-run baseline spread for Root review only; no FPS floor, stall limit or extra CPU/network/cache limit exists. **Needs package K15**: actual per-frame allocation/GPU/cache and raw-tick observation, not proof from histograms/screenshots; missing direct proof is NOT_COVERED. **Needs package K17**: reference world.
+(C5, R535; W403) Keep paired Vanilla/Forge frame measures, 1% low, first/longest stall and twice-run baseline spread for Root review only; no FPS floor, stall limit or extra CPU/network/cache limit exists. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: actual per-frame allocation/GPU/cache and raw-tick observation, not proof from histograms/screenshots; missing direct proof is NOT_COVERED. **K17 supplied input/limits: combined reference world and four-hour schedule; entry E-K17 (R648)**: reference world.
 
 **Evidence to keep:** Phase-2 raw resource/frame/allocation traces and E06
 media references; `phase5-ref/<run>/E11/` host/JVM/workload/config identity,
@@ -598,15 +778,15 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C1 flight protocol 10; C19/W406 itinerary Earth-Mars-Earth-Venus-Earth; C7/C8 history/ownership; C20 default modifiers; C21/W406 catalogs/source cooldown 100; C2 effective pixels; C22 integrated pause/sitting-2 lifecycle; C23 supported recovery only.
-- **E01-E11:** planetary coordinates, earned world variants and effective mission/config/resource values **needs package K07**; live quotes/pack loads/recovery/runtime cooldown **needs package K06**.
-- **E02/E03:** earned undiscovered/private-station variants **needs package K07**; O5 supplies second real input. Never reset balances.
-- **E03/E05/E07:** forbidden-surface/cache/late probes with receipt/A1 references **needs package K18**; direct allocation/cache observation **needs package K15**.
-- **E04:** isolated/combined default-modifier hazard sites/equipment **needs package K07**.
-- **E05:** exact 48-character station name is answered; permitted creation **needs package K08**. Valid catalogs use separate complete 11-binding baselines; never erase history or use invalid catalogs as setup.
-- **E06/E11:** live observer/client sky-pack qualification **needs package K15**; viewpoints **needs package K07**. O8/O9 confirm capture and second GPU category.
-- **E07:** qualified integrated pause round **needs package K16**, otherwise pause alone is NOT_COVERED. Sitting-2 SKY/navigation V2 lifecycle remains required.
-- **E08:** earned paid-pending/blocked copies, coherent packs and actual supported recovery **needs package K07**; absent supported recovery stays explicit.
-- **E09/E10:** station-eligible owner/commands **needs package K08**, historical chain **needs package K03**, pre-sky source **needs package K07**; the played-source claim is NOT_COVERED where not retained.
+- **E01-E11:** planetary coordinates, earned world variants and effective mission/config/resource values **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; live quotes/pack loads/recovery/runtime cooldown **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
+- **E02/E03:** earned undiscovered/private-station variants **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; O5 supplies second real input. Never reset balances.
+- **E03/E05/E07:** forbidden-surface/cache/late probes with receipt/A1 references **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**; direct allocation/cache observation **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**.
+- **E04:** isolated/combined default-modifier hazard sites/equipment **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**.
+- **E05:** exact 48-character station name is answered; permitted creation **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**. Valid catalogs use separate complete 11-binding baselines; never erase history or use invalid catalogs as setup.
+- **E06/E11:** live observer/client sky-pack qualification **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; viewpoints **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**. O8/O9 confirm capture and second GPU category.
+- **E07:** qualified integrated pause round **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry E-K16 (R595; R628 supersedes final/ with v2/)**, otherwise pause alone is NOT_COVERED. Sitting-2 SKY/navigation V2 lifecycle remains required.
+- **E08:** earned paid-pending/blocked copies, coherent packs and actual supported recovery **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; absent supported recovery stays explicit.
+- **E09/E10:** station-eligible owner/commands **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**, historical chain **K03 supplied input/limits: reconstructed FI05-FI08 chain; entry E-K03 (R614)**, pre-sky source **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; the played-source claim is NOT_COVERED where not retained.
 
 ## W396 preparation and verification record
 

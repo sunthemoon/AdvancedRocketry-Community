@@ -18,7 +18,7 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 - H means a harness/operator action; P means a human action or judgement. Every numbered action below has its
   expected observation after the arrow. Run scripted actions before asking for judgement.
 - Use the P2 representative v1.3–v1.7 world fixture, specifically its station/warp copy. P2 does not supply archive
-  names, station IDs, coordinates, owner UUIDs or a charging recipe. These **needs package K08** in its fixture manifest
+  names, station IDs, coordinates, owner UUIDs or a charging recipe. These **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)** in its fixture manifest
   before execution. `<station-A>`, `<station-B>`, `<target-A>` and `<target-B>` below mean those recorded values,
   not literal command arguments. Both targets must be known, orbitable, different from the starting orbit, and
   include the Earth/Tau Ceti e inter-system route. Never substitute the shared Space body as an orbit target.
@@ -44,6 +44,77 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 - For every row, also record Forge/JEI, machine, start/end UTC, JAR SHA-256 and FAIL finding/NOT_COVERED reason.
   Missing fixture values or instrumentation mean NOT_COVERED, not an invented command or PASS.
 
+## Package preparation index (W456, R649)
+
+This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
+Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
+remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
+Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
+an observed client result; preserve every original action, oracle, result field and budget.
+
+### F-K06: 23 hashed data/resource packs, not blanket live qualification
+
+Source: `W406.md; QUEUE.md row W406`. Root acceptance/disposition: **R550** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/SHA256SUMS.txt` | `3be8336be6e1aed8fc2859323d0ecbae9b7209f2fc8048a09944407a45992ca5` |
+
+**Recipe and original-step mapping.** manifest.json packs[].path/rows/prerequisites/load_check and campaign_values give the per-row reload sequence: B03 route baseline/valid/invalid/unknown; B06 test_mars/locked; E01 itinerary; E05 100/128/129 and ID bounds; F05 station overlays; D04 tag pair; D08/D09 payload pair; E06/E11 sky resource packs. Run load_check at the existing row step and retain actual generations/quotes.
+
+**Remaining coverage and reasons.** candidate_loads_run=false in this manifest. K21 separately qualified tag/payload loads, K08 loaded station baselines and K07 binding refusal; those do not prove B03's live quotes/two restarts, every catalog, sky load, removed selection or cooldown. Unperformed branches remain NOT_COVERED. Invalid packs are refusal-only, never setup. The 48-character value is a station name. Preserve the manifest's recorded generator commit and C6 JAR identity.
+
+**Mapping in checklist F.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| F05 | packs[station_baseline.zip/station_target_removal.zip/station_cost_change.zip].load_check -> original before-due overlay/refusal/recovery actions; real countdown is K08 client work. |
+
+### F-K08: station sets, two-account recipes and ordinary-energy copies
+
+Source: `W440.md; W442.md; QUEUE.md rows W440/W442`. Root acceptance/disposition: **R621/R627** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/two/SHA256SUMS.txt` | `021440c6b39bd9864ba5106358b454e2f105103b85e2ecf3b2cbe4acb646ee52` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/ten/SHA256SUMS.txt` | `0919948566148e793440c0bade53006f0e2486f41b485ce7210ad9149d7cc1e2` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/hundred/SHA256SUMS.txt` | `1089dab5a1f238eb955d3d751fb2d0206b9bccebe696418ad87bb0b21ba7c773` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08/client-steps-addendum/SHA256SUMS.txt` | `405e16eea3273dec74e4f2c2904be59cd878bd4e5729b6c204aa1a0f305f8847` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/two/SHA256SUMS.txt` | `9e11421235fa268c33b421cb22e6eb665e3852a9f0b610cd65e5e54de4d9d693` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/target-removal/SHA256SUMS.txt` | `79f68839d090a25598c13197607cba0a5bb858fa67e703e79ce6110f95fbdb4c` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K08B/cost-change/SHA256SUMS.txt` | `1c2bb1169b55c9f682a685b1b66b8c88344999ce6c84a4b1b19e86d345eeba80` |
+
+**Recipe and original-step mapping.** K08 manifests stations/regions/commands and client-steps-addendum/client-steps.json variants[].client_steps.actions/approach/ordinary_creation/overlay/pending/docked_rocket map B02, E05/E09/E10 and F01-F07. Use K08 ten/hundred with k08_station_load.py for F01; use a fresh K08B two/target-removal/cost-change source-world per paid F02/F03/F05/F07 operation, retaining the same bound station IDs.
+
+**Remaining coverage and reasons.** K08B closes only energy preparation: two A/B 3,288,096/2,902,914 FE; removal A 2,756,374; changed-cost A 8,381,014. Operator-created stations and placeholder owners are not ordinary acquisition/O5 evidence. Bind by fresh command-built outputs, never editing sealed owners. Live local consent/warp, memory-only countdown, F05 before-due overlay and two post-abort restarts, docked rocket, membership/refusals and V1/V2 remain scripted/NOT_COVERED (no saved pending or docking command). Full REF windows and direct caches remain unqualified.
+
+**Mapping in checklist F.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| F01 | ten/hundred manifests plus k08_station_load.py -> original unloaded/loaded/repeated-baseline steps; short Windows qualification is not full REF. |
+| F02 | K08B/two source-world + addendum variants[two].client_steps.actions -> original independent local quote/confirm/warp steps on fresh copies. |
+| F03 | K08B/two + addendum pending/actions -> original owner/passenger reconnect countdown controls. Pending is memory-only and requires live players. |
+| F04 | addendum client_steps.docked_rocket -> original dock-before-warp actions; no docking hook/source exists, so not a prepared docked fixture. |
+| F05 | K08B target-removal/cost-change + corresponding addendum overlay/pending actions -> original confirmation-before-overlay/due-abort/two-restart steps. Baseline packs active, overlays disabled at start. |
+| F06 | two/addendum client_steps.actions -> original invite/accept/remove/nonmember/admin-delete controls. Invite uses online name; remove uses uuid; no forced-open owner menu. |
+| F07 | Fresh K08B two/cost-change copies + addendum approach/actions -> original in-system/interstellar controller/sky/cancel steps, with three-second cancellation and scales2/3. |
+
+### F-K15: bounded observers, with explicit remaining visibility gaps
+
+Source: `W403.md; QUEUE.md row W403; W452.md/R648`. Root acceptance/disposition: **R548; R648 for A08/A09** in `../QUEUE.md`.
+
+**Recipe and original-step mapping.** Tracked scripts/campaign_observe/{ticks,process,jdk,host,evidence}.py and scripts/run_campaign_observer.py at implementation 385c079dc10718f781a425527cd3e9a0765a0518 supply matched-copy window/process/heap/JFR/evidence operations. Use sample_ticks/force-load queries and owned-process-only diagnostics at the row's existing sampling step; K17 schedule and K08/K09/K10 load drivers supply concrete harness integrations.
+
+**Remaining coverage and reasons.** W403 created no sealed live fixture or SHA256SUMS.txt: none is invented. Window aggregates cannot prove whole-run percentiles/spike lengths. C6/K17's release-test raw sampler is used only in the separately labelled R648 REF run for A09. All-Forge-ticket, queue-internal, client/GPU allocation and direct cache-release proof remain NOT_COVERED where unavailable; histogram/heap/RSS proxies are labelled, not direct evidence. Actual REF acceptance/full windows and overhead checks remain unexecuted.
+
+**Mapping in checklist F.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| F01 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+| F07 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+
 ## F01 — Concurrent stations, unload/reload and station benchmark
 
 **Phase/level/machine/accounts:** 3 DS on the development PC, one client A; 5 REF on the reference node.
@@ -68,7 +139,7 @@ owner, permissions, energy and docked rockets. Prepare separate 10- and 100-reco
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10, R535) Each real account owns one ordinary-created station; load-only 10/100 records use permission-2 `/arce station admin create` with distinct owner UUIDs and an operator-created label. Run the standard two-minute discarded warm-up/ten-minute intervals and two matched baselines, spread prompting Root review only. **Needs package K08**: worlds, energy/region/owner manifest and 10/100 driver; **needs package K15**: live query/raw-tick observation.
+(C8/C10, R535) Each real account owns one ordinary-created station; load-only 10/100 records use permission-2 `/arce station admin create` with distinct owner UUIDs and an operator-created label. Run the standard two-minute discarded warm-up/ten-minute intervals and two matched baselines, spread prompting Root review only. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: worlds, energy/region/owner manifest and 10/100 driver; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry F-K15 (R548; R648 for A08/A09)**: live query/raw-tick observation.
 
 **Evidence to keep:** F01 record projections before/unloaded/reloaded/each restart, chunk/ticket counts, command
 transcript, 10/100 workload manifest, raw reference samples and logs in the phase 3 and phase 5 folders.
@@ -94,7 +165,7 @@ record the loaded config rather than assuming defaults.
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10) Use ordinary A/B-owned stations, never bypass their per-owner limit; any comparison inherits A's matched windows/review rule. **Needs package K08**: exact commands, regions, targets, energy and due-commit controls.
+(C8/C10) Use ordinary A/B-owned stations, never bypass their per-owner limit; any comparison inherits A's matched windows/review rule. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: exact commands, regions, targets, energy and due-commit controls.
 
 **Evidence to keep:** Both videos/logs, quotes, confirmations, due/commit tick transcript, per-station pre/post state,
 position and energy comparisons in the phase 4 sitting folder.
@@ -119,7 +190,7 @@ positions, station orbit and energy before each run; do not reset player data to
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10) Retain ordinary ownership and matched sampling where measured. **Needs package K08**: separate owner/passenger reconnect copies, balances and countdown commands.
+(C8/C10) Retain ordinary ownership and matched sampling where measured. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: separate owner/passenger reconnect copies, balances and countdown commands.
 
 **Evidence to keep:** Both videos, connection/countdown/commit logs and pre/post player/station fields in phase 4.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -142,7 +213,7 @@ logical/entity identities, cargo, fuel, seats, station ID and coordinates.
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10) Keep eligible ordinary ownership and A's matched sampling where measured. **Needs package K08**: docked-rocket/station manifest, balances and commands.
+(C8/C10) Keep eligible ordinary ownership and A's matched sampling where measured. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: docked-rocket/station manifest, balances and commands.
 
 **Evidence to keep:** Phase 3 logs, normal-stop writer-drain lines, countdown and committed projections, restart
 comparisons, rocket screenshot and station quote.
@@ -165,9 +236,9 @@ comparisons, rocket screenshot and station quote.
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10) Keep ordinary owner limits and matched comparisons. **Needs package K08**: live overlay activation boundary before the due commit, folded energy and effective cost readback. Pack generation below is not a timing qualification.
+(C8/C10) Keep ordinary owner limits and matched comparisons. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: live overlay activation boundary before the due commit, folded energy and effective cost readback. Pack generation below is not a timing qualification.
 
-(W406) Keep baseline enabled below exactly one overlay; confirm Earth→`k06:warp_target`, then activate/reload overlay **before** due commit. Removal expects WARP_TARGET_UNAVAILABLE. Reparenting to Tau Ceti changes IN_SYSTEM→INTERSTELLAR with no Level; WARP_QUOTE_CHANGED is conditional on differing effective costs and folded balance sufficient for the larger cost (another guard can mask it). Read effective costs, do not assume defaults; `/reload` is not config reload. Verify no debit/relocation/resurrected consent, remove overlay/reload and perform two clean restarts. Activation/energy control still **needs package K08**; actual load **needs package K06**.
+(W406) Keep baseline enabled below exactly one overlay; confirm Earth→`k06:warp_target`, then activate/reload overlay **before** due commit. Removal expects WARP_TARGET_UNAVAILABLE. Reparenting to Tau Ceti changes IN_SYSTEM→INTERSTELLAR with no Level; WARP_QUOTE_CHANGED is conditional on differing effective costs and folded balance sufficient for the larger cost (another guard can mask it). Read effective costs, do not assume defaults; `/reload` is not config reload. Verify no debit/relocation/resurrected consent, remove overlay/reload and perform two clean restarts. Activation/energy control still **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**; actual load **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry F-K06 (R550)**.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -195,13 +266,13 @@ granted ownership by an operator during the test.
 1. [P] B requests `/arce station warp <target-A>` locally. → Refused; no quote that grants commit authority.
 2. [P] B tries `/arce station warp confirm <station-A>`. → Refused; no countdown, charge or relocation.
 3. [P] B attempts station deletion and permission changes through the ordinary station interface. → Refused;
-   membership and ownership remain unchanged. Exact command grammar still **needs package K08**.
+   membership and ownership remain unchanged. Exact command grammar still **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**.
 4. [P] A requests/confirms a valid warp. → Owner can operate the same fixture; a broken fixture is not a refusal pass.
 5. [H] Compare registry, energy and chunk counts around B's attempts. → No mutation or arbitrary chunk load.
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10) Keep ordinary ownership/member rules; comparisons use A's matched plan. **Needs package K08**: exact deletion/permission grammar, owner/member/non-OP actions and station IDs. Refusals use R546 receipt and unchanged state, logs only where emitted.
+(C8/C10) Keep ordinary ownership/member rules; comparisons use A's matched plan. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: exact deletion/permission grammar, owner/member/non-OP actions and station IDs. Refusals use R546 receipt and unchanged state, logs only where emitted.
 
 **Evidence to keep:** Both clients' refusal/success views and logs, member-list and chunk-count comparisons in phase 4.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -229,7 +300,7 @@ warp, one deliberate valid refusal fixture. Record CPU/GPU/driver/resolution and
 
 **Accepted preparation/action steps (W408):**
 
-(C8/C10; J21 finding 8-3) In separate warp runs at effective GUI scales 2/3, quote, confirm, then cancel after three seconds. Expect cancellation text, not a lingering "in 10 s", inside the panel. Non-ticking seconds remain accepted Low KI-V180-UI-01 (R542 N11), not a new fix requirement. **Needs package K08**: countdown/cancel scenes; direct context cache evidence **needs package K15**.
+(C8/C10; J21 finding 8-3) In separate warp runs at effective GUI scales 2/3, quote, confirm, then cancel after three seconds. Expect cancellation text, not a lingering "in 10 s", inside the panel. Non-ticking seconds remain accepted Low KI-V180-UI-01 (R542 N11), not a new fix requirement. **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**: countdown/cancel scenes; direct context cache evidence **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry F-K15 (R548; R648 for A08/A09)**.
 
 **Evidence to keep:** Phase 2 screenshots/cache and log observations, warp gameplay video, scale/language index,
 phase 4 synchronized views and phase 2 second-GPU report. No numeric cache-release time is specified by the sources.
@@ -238,7 +309,7 @@ phase 4 synchronized views and phase 2 second-GPU report. No numeric cache-relea
 ## Open questions for Root
 
 - **Answered:** C8 ordinary A/B ownership and distinct-owner operator load records; C10/R535 sampling/review; W406 baseline/overlay filenames, hashes and outcomes; finding 8-3 cancellation recheck and R542 Low non-ticking notice.
-- **F01-F07:** station worlds/regions/owners/energy, exact local warp/deletion/member commands and 10/100 driver **needs package K08**.
-- **F01/F07:** live query/tick/direct-cache observation **needs package K15**.
-- **F05:** actual loads **needs package K06**; before-commit overlay timing, differing effective costs and sufficient folded balance **needs package K08**. No filename is missing, but generation does not prove due-commit behavior.
+- **F01-F07:** station worlds/regions/owners/energy, exact local warp/deletion/member commands and 10/100 driver **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**.
+- **F01/F07:** live query/tick/direct-cache observation **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry F-K15 (R548; R648 for A08/A09)**.
+- **F05:** actual loads **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry F-K06 (R550)**; before-commit overlay timing, differing effective costs and sufficient folded balance **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry F-K08 (R621/R627)**. No filename is missing, but generation does not prove due-commit behavior.
 - O9 supplies second GPU/time arrangements; ordinary refusal steps use R546 receipt and unchanged-state proof.

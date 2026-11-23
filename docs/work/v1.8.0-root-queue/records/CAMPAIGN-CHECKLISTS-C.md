@@ -23,7 +23,7 @@ orientations and no mirroring; Precision is 3x3x4, four orientations and
 mirroring, five input/two output Item ports and one Energy input. Use the
 tracked [Rolling pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/rolling_machine.json)
 and [Precision pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/precision_assembler.json),
-not an improvised shell. The layout **needs package K05** to record anchors, orientation, mirror, all chunks,
+not an improvised shell. The layout **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)** to record anchors, orientation, mirror, all chunks,
 resource stores/owners, and layout/pack hashes. Keep original fixtures unchanged.
 
 Every row uses Java 17, Minecraft 1.20.1 and matching C6 client/server on Forge
@@ -53,6 +53,79 @@ add slot/energy and stale-menu checks. All actual/result fields remain blank.
 - Feed resources through normal slots/typed capabilities. Do not edit observed
   inventories or process progress through NBT to make a result match.
 
+## Package preparation index (W456, R649)
+
+This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
+Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
+remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
+Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
+an observed client result; preserve every original action, oracle, result field and budget.
+
+### C-K05: nine r608 machine scenes and field inventory
+
+Source: `W435.md; QUEUE.md row W435`. Root acceptance/disposition: **R612; R608 preparation choices** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/a100-idle/SHA256SUMS.txt` | `239f4f439f8875dfb36995e8773355a49a7b5f3f9e78eb7393b38dfe836fd10f` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-idle/SHA256SUMS.txt` | `3b4c28ac927e28cf6ed6ba40d7d4ba77cfea9c220ab8cda5fdf7c237a82dfec9` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-half-active/SHA256SUMS.txt` | `b2bb9eeadcb3448846ae91b8178e192ad70a080de70d6d7637c97678ad9f457d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-unload-restart/SHA256SUMS.txt` | `a76b37a2ad9ed083148dea561684a836e2ee0edfce2c3f35c16985ba0ff4b779` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-structure/SHA256SUMS.txt` | `8cac9c169dbc4e6b9fd093096b01fb9ff17b1b954dddb74c796df31989a78417` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-controller/SHA256SUMS.txt` | `d52eeca0b94cb5ee11a6b16e4807b438581305555a99a12fa510861e61cf4c7d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-explosion/SHA256SUMS.txt` | `7f654afab7bc0bc10c1c87df03f0dce31b513faf6ada561c7f67c2acc4716297` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/two-owners/SHA256SUMS.txt` | `09bb41f6656db14fbdd8e43898441e595ec3b1008f5d18195461fd3529aa6eca` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/declared-limits/SHA256SUMS.txt` | `11d82f88f3f5c88c1899d1a3b98d7e58b5ac92da8e12a1fc8278bf6b4e98cca9` |
+
+**Recipe and original-step mapping.** r608/manifest.json recipes/scenes/declared_fields and each scene's manifest.json layout/ledgers: C01 a100/b144; C02 unload; C03 two-owners; C04 three damage modes; C06 declared-limits; C08 distance; I02/I06/I08 and J21 machine views. Match the original numbered action to its named scene, not to a passing verdict.
+
+**Remaining coverage and reasons.** Half-active preparation is 56 real, energy-exhausted jobs plus 16 START_BY_MENU research sites, not 72 running jobs. Supply ordinary FE, load the 36 named chunks, bind accounts and perform the 16 menu starts before sampling. C13 has 18 fields inventoried but live at-limit/one-past refusal is NOT_COVERED (read-only projections/no setter). Cross-chunk ports, shared Precision, repair/resume, all delivered kinds/facings and actual GUI/V1/V2 remain partial. Piston rig is out of scope. C08 squared distance is 64 (radius 8), but no hostile intent was sent.
+
+**Mapping in checklist C.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| C01 | r608/a100-idle, b144-idle, b144-half-active manifest.json layout/ledgers and r608/manifest.json recipes -> idle/half-active sampling steps. Do not sample until 56 jobs are resupplied and 16 research starts verified. |
+| C02 | b144-unload-restart manifest.json -> original unload/reload/restart steps (36 unloaded witnesses, 144 ledgers); cross-chunk ports remain partial. |
+| C03 | two-owners manifest.json -> original two-client permission/ledger actions; O5 binding/shared Precision/concurrency remain unexecuted. |
+| C04 | damage-structure/controller/explosion manifests -> each damage mode's before/after/drops action. Repair/resume and Rolling/Precision remain partial; piston not prepared. |
+| C06 | declared-limits manifest.json and r608/manifest.json declared_fields -> original long/extreme-value display/refusal steps; inventory is not an executed boundary check. |
+| C08 | r608/manifest.json declared_fields.distance -> original retained-menu/range actions. At controller (25603,308,25602), feet (25603.5,306,25609.5)/(25603.5,306,25611.5) are inside/outside radius8; pair with K18. |
+
+### C-K15: bounded observers, with explicit remaining visibility gaps
+
+Source: `W403.md; QUEUE.md row W403; W452.md/R648`. Root acceptance/disposition: **R548; R648 for A08/A09** in `../QUEUE.md`.
+
+**Recipe and original-step mapping.** Tracked scripts/campaign_observe/{ticks,process,jdk,host,evidence}.py and scripts/run_campaign_observer.py at implementation 385c079dc10718f781a425527cd3e9a0765a0518 supply matched-copy window/process/heap/JFR/evidence operations. Use sample_ticks/force-load queries and owned-process-only diagnostics at the row's existing sampling step; K17 schedule and K08/K09/K10 load drivers supply concrete harness integrations.
+
+**Remaining coverage and reasons.** W403 created no sealed live fixture or SHA256SUMS.txt: none is invented. Window aggregates cannot prove whole-run percentiles/spike lengths. C6/K17's release-test raw sampler is used only in the separately labelled R648 REF run for A09. All-Forge-ticket, queue-internal, client/GPU allocation and direct cache-release proof remain NOT_COVERED where unavailable; histogram/heap/RSS proxies are labelled, not direct evidence. Actual REF acceptance/full windows and overhead checks remain unexecuted.
+
+**Mapping in checklist C.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| C01 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+
+### C-K18: bounded client intent JAR and case/readback matrix
+
+Source: `W432.md; intent-test-mod/README.md; QUEUE.md row W432`. Root acceptance/disposition: **R601** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS.txt` | `aac26e987be0617ad63cec39b54aefb0fe7f3372085863ab14cd49731e392e57` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS-CORRECTED-1.txt` | `d29b209b8e7133f2d50f8463d3d9a1fa616572b2fe8b919ddbe58de254ec188f` |
+
+**Recipe and original-step mapping.** Install arce-intent-test-1.0.0.jar only on the probing client. intent-test-mod/README.md Triggering one case steps 1-6 and Case table map C08/D09/I11 flight_stale/range/non_owner/late and classic_stale/range/non_owner/late; E03 flight_forbidden_surface/private_station; E07 late and motion_disabled. R/C/M/L readbacks are required separately. F8 captures; a single F9 queues at most one bounded packet.
+
+**Remaining coverage and reasons.** Use SHA256SUMS-CORRECTED-1.txt: the original list's final-validator hash is stale and preserved, not silently repaired. There are three C2S channels, five S2C-only; no payload-terminal, research-menu, callback-fault, packet-burst, late-S2C/cache, all-ticket or same-tick claim control exists. Those branches remain NOT_COVERED with the README's named A0/A1 references/gaps. Client queue log is not server receipt. Actual real-client/server qualification and unchanged-state/loaded-chunk readbacks remain campaign work.
+
+**Mapping in checklist C.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| C03 | Use the named recipe/step selector above at the unchanged original row actions; preparation is partial as described, not an observed result. |
+| C08 | README Case table classic_stale/range/non_owner/late and flight_stale/range/late, Trigger steps1-6, readbacks C/R/L -> original menu/range/refusal steps. Unsupported ordinary menu mutations remain NOT_COVERED. |
+
 ## C01 - Idle/active machine reference load
 
 **Header:** Phase 5; REF; accepted normal-user Debian 12 node, 4 vCPU/8 GiB,
@@ -61,7 +134,7 @@ no properties. **Sources:** v1.2 sections 10.1, 13.1 and 13.5.
 
 **Preconditions:** K05 many-machine layout: **100 idle**, then a separate **144-controller**
 scene (16 of nine kinds), first idle then **72 active** (C11); baseline
-Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **needs package K05**. Use the
+Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. Use the
 [quality budgets](../../../17-V1PLUS-QUALITY-BUDGETS.md), section 4.
 
 | Step | Action | Expected observation |
@@ -75,7 +148,7 @@ Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **needs package K05**. U
 
 **Accepted preparation/action steps (W408):**
 
-(C11; C10/R535) Run two distinct scenes: 100 idle machines; then 144 controllers, 16 of each of nine kinds, idle and half active (72), using the scale test's recipes. The second population/mix is an accepted procedure choice, not a new budget or an extra unspecified active population on the first scene. Apply A's matched two-minute warm-up/ten-minute sample and twice-run baseline rules. **Needs package K05**: layout, recipes and exact ledgers; **needs package K15**: qualified measurements.
+(C11; C10/R535) Run two distinct scenes: 100 idle machines; then 144 controllers, 16 of each of nine kinds, idle and half active (72), using the scale test's recipes. The second population/mix is an accepted procedure choice, not a new budget or an extra unspecified active population on the first scene. Apply A's matched two-minute warm-up/ten-minute sample and twice-run baseline rules. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: layout, recipes and exact ledgers; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry C-K15 (R548; R648 for A08/A09)**: qualified measurements.
 
 **Evidence to keep:** `phase5-ref/<run>/C01/` layout and active-count manifest,
 recipe hashes, all raw samples/intervals, CPU/cache/scan observations and ledgers.
@@ -113,7 +186,7 @@ fixture tickets. Set no production chunk-loading bypass for the case.
 
 **Accepted preparation/action steps (W408):**
 
-(C12) For each unload/reload or damage mode, capture the per-machine ledger before and after plus drops: before equals after plus drops, with legitimate processing conversions reconciled. Record refusal versus teardown per mode as an observation; neither is failure by itself. **Needs package K05**: coordinates, chunk-boundary/unload controls, ledgers and damage variants.
+(C12) For each unload/reload or damage mode, capture the per-machine ledger before and after plus drops: before equals after plus drops, with legitimate processing conversions reconciled. Record refusal versus teardown per mode as an observation; neither is failure by itself. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: coordinates, chunk-boundary/unload controls, ledgers and damage variants.
 
 **Evidence to keep:** `phase3-ds/C02/` chunk/ticket observations, initial,
 unloaded, reloaded and restarted state, logs/exits and exact batch ledgers.
@@ -150,7 +223,7 @@ Item slots. O5 supplies actual concurrent input, not a single-client claim.
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K05**: the two-player permission/controller scene and resource ledger. Owner O5 supplies coordinated inputs; retained-menu refusals use the common R546 proof method, with missing intent reach **needs package K18**.
+**K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: the two-player permission/controller scene and resource ledger. Owner O5 supplies coordinated inputs; retained-menu refusals use the common R546 proof method, with missing intent reach **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**.
 
 **Evidence to keep:** Sitting-1 both-client video/logs, simultaneous input
 times, menu IDs/generations, server inventory projections and batch accounting.
@@ -186,12 +259,12 @@ limits rather than assuming explosions guarantee arbitrary item recovery.
 
 **Accepted preparation/action steps (W408):**
 
-(C12) The oracle for every mode is per-machine conservation: before ledger equals after ledger plus drops, accounting for recipe conversions. Record protected refusal or teardown separately; neither outcome fails solely for not being the other. An actual-break branch not reached remains NOT_COVERED with its reason. **Needs package K05**: safe damage/unload recipes, coordinates and ledgers.
+(C12) The oracle for every mode is per-machine conservation: before ledger equals after ledger plus drops, accounting for recipe conversions. Record protected refusal or teardown separately; neither outcome fails solely for not being the other. An actual-break branch not reached remains NOT_COVERED with its reason. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: safe damage/unload recipes, coordinates and ledgers.
 
 **Evidence to keep:** Per-mode phase-2 video/screenshots; `phase3-ds/C04/`
 damage commands/input receipts, collision observations, resource/drop projections
 and any refusal. A protection that prevents a damage mode leaves the requested
-actual-break variant NOT_COVERED; a supported fixture **needs package K05**.
+actual-break variant NOT_COVERED; a supported fixture **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**.
 
 Actual:
 Screenshot or video:
@@ -237,7 +310,7 @@ Precision PREC-M-05.
 English/Chinese, GUI scales **2/3/4**, windowed/fullscreen. Precision has seven
 numbered Item slots, FE gauge, progress/status and a missing-casing variant.
 C13 takes names/numbers at and one past each C6-declared limit;
-extracted values and fixtures **needs package K05**. Fields without limits
+extracted values and fixtures **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. Fields without limits
 are recorded as such, not assigned fabricated extremes.
 
 | Step | Action, for every machine/language/scale/window cell | Expected observation |
@@ -252,7 +325,7 @@ are recorded as such, not assigned fabricated extremes.
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C6's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **Needs package K05**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
+(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C6's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
 
 **Evidence to keep:** Per-cell native screenshots and actual resolutions,
 recipe/diagnostic fixture bytes, server values and client/server logs in phase 2.
@@ -301,7 +374,7 @@ ordinary copy, switches off, no properties. **Source:** v1.2 section 12.2.
 
 **Preconditions:** P2 protected machine/port fixture, A authorized and B not;
 baseline/JEI absent. Manifest supplies actual permission boundary and normal
-menu distance. The bounded retained-menu/intent method **needs package K18** where
+menu distance. The bounded retained-menu/intent method **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)** where
 normal UI closure prevents the requested operation; no fabricated packets or
 unspecified coordinates are assumed to exist in the harness.
 
@@ -316,7 +389,7 @@ unspecified coordinates are assumed to exist in the harness.
 
 **Accepted preparation/action steps (W408):**
 
-(C14 corrected by R546) **Needs package K18**: separately built never-shipped fixture mod, bounded ordinary-client stale/range/permission/late intents against the eight-channel pin's applicable C2S channels; no invented packet. **Needs package K05**: actual protected boundary and measured distance. Record tool receipt and unchanged authoritative state; logs only where emitted. If K18 is absent at the phase or cannot reach a branch, that branch is NOT_COVERED with reason and its named A1 test. Closed/disabled UI alone is no refusal proof.
+(C14 corrected by R546) **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**: separately built never-shipped fixture mod, bounded ordinary-client stale/range/permission/late intents against the eight-channel pin's applicable C2S channels; no invented packet. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: actual protected boundary and measured distance. Record tool receipt and unchanged authoritative state; logs only where emitted. If K18 is absent at the phase or cannot reach a branch, that branch is NOT_COVERED with reason and its named A1 test. Closed/disabled UI alone is no refusal proof.
 
 **Evidence to keep:** Sitting-1 both-client media/logs, positions/distances,
 permission/menu identities, bounded intent description and before/after resources
@@ -332,6 +405,6 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C11 fixes 100 idle and 144-controller/72-active scenes; C10/R535 fixes samples/review; C12 fixes per-mode conservation; C2 fixes effective pixels; C13 uses C6-declared limits only. C05 stays NOT_COVERED under O6/D9.
-- **C01-C04/C06-C08:** exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance **needs package K05**. O5 supplies C03 coordinated input.
-- **C01:** complete raw/live measurements **needs package K15**, with no new idle-cost/percentage threshold.
-- **C08/retained-menu negatives:** bounded ordinary-client tool, receipt/readback and named A1 fallbacks **needs package K18**. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.
+- **C01-C04/C06-C08:** exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. O5 supplies C03 coordinated input.
+- **C01:** complete raw/live measurements **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry C-K15 (R548; R648 for A08/A09)**, with no new idle-cost/percentage threshold.
+- **C08/retained-menu negatives:** bounded ordinary-client tool, receipt/readback and named A1 fallbacks **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.
