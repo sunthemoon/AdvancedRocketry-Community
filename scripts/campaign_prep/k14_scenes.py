@@ -315,7 +315,7 @@ def check_command(command):
                   "NBT writes are not allowed")
     chain.require(command.startswith(("execute ", "setblock ", "fill ", "item replace block ", "say ",
         "save-all", "stop", "list", "arce rocket assemble ", "arce rocket status ", "arce rocket release-test report ",
-        "arce station admin dump", "arce celestial ", "datapack list")), "Unreviewed command")
+        "arce station admin dump", "arce celestial ", "arce endgame device inspect ", "datapack list")), "Unreviewed command")
 
 
 class Console(rockets.Console):
@@ -347,6 +347,14 @@ class Console(rockets.Console):
         return lines
 
 
+def kernel_formation(root):
+    if "arce_classic_machine" in root:
+        return root["arce_classic_machine"]["structure"]["formation_state"]
+    if "arce_multiblock" in root:
+        return root["arce_multiblock"]["formation_state"]
+    return None
+
+
 def native_state(console, layout):
     result = dict(devices=[], rockets=[], hosts={}, stations=console.send("arce station admin dump"),
                   catalog=console.send("arce celestial list"), packs=console.send("datapack list"))
@@ -364,12 +372,17 @@ def native_state(console, layout):
         else:
             root = console.block(device["pos"])
         row = dict(kind=device["kind"], pos=device["pos"], facing=device["facing"], nbt=root)
-        if "arce_classic_machine" in root:
-            row["formation"] = root["arce_classic_machine"]["structure"]["formation_state"]
+        formation = kernel_formation(root)
+        if formation is not None:
+            row["formation"] = formation
             chain.require(row["formation"] == '"FORMED"', "Unformed classic pattern: " + str(device["pos"]))
         else:
             row["formation"] = ("NOT_COVERED: ordinary player must place research controller" if device["player_controller_required"] else
                                 "NOT_COVERED: endgame root does not persist live formation")
+        if "endgame" in root:
+            row["live_inspection"] = console.send("arce endgame device inspect " + rockets.pos(device["pos"]))
+            if any(" structure=OK " in line for line in row["live_inspection"]):
+                row["formation"] = '"FORMED"'
         if device["kind"] in ("observatory", "astrobody_data_processor"):
             row["research_identity"] = root.get("arce_" + device["kind"])
             row["identity_status"] = "NOT_COVERED: controller site empty; A must place controller via ordinary setPlacedBy"

@@ -189,6 +189,12 @@ class K14Tests(unittest.TestCase):
         changed["devices"][0]["nbt"]["id"] = "other"
         self.assertNotEqual(k14.comparable(state), k14.comparable(changed))
 
+    def test_each_kernel_formation_root_is_read_without_guessing(self):
+        self.assertEqual(k14.kernel_formation({"arce_classic_machine": {"structure": {"formation_state": '"FORMED"'}}}), '"FORMED"')
+        self.assertEqual(k14.kernel_formation({"arce_multiblock": {"formation_state": '"FORMED"'}}), '"FORMED"')
+        self.assertEqual(k14.kernel_formation({"arce_multiblock": {"formation_state": '"UNFORMED"'}}), '"UNFORMED"')
+        self.assertIsNone(k14.kernel_formation({"endgame": {"energy": "0"}}))
+
     def test_frozen_recipe_is_taken_from_the_sealed_member(self):
         recipe = k14.frozen_recipe()
         self.assertEqual(recipe["status"], "NOT_COVERED")
