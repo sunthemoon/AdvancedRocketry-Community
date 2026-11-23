@@ -41,6 +41,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import threading
 import time
 import uuid
 
@@ -49,6 +50,7 @@ import run_dedicated_server_smoke as smoke
 import run_v180_bay_forced_stop as bay
 import run_v180_crash_replay as x01
 import v180_crash_replay as replay
+import v180_fault_candidates as candidates
 from campaign_observe.process import read_process
 
 MODEL = "W368-X02-v4"
@@ -683,11 +685,14 @@ def sha(path: Path) -> str | None:
 
 
 @contextmanager
-def hooks(observer=None):
+def hooks(observer=None, keeper=None):
     """While active: the first start of an args object that names `storage_fault` gets the property, and `observer`
     is called after each server process has ended. The existing runners are not edited; the two names they look up
     at call time (`v180_crash_replay.trace_command`, `run_dedicated_server_smoke.CapturedProcess`) are replaced and
-    put back."""
+    put back.
+
+    `keeper` (W450, only with --keep-candidates) is given each line of the first start's log as it arrives, on a
+    thread of its own that ends with the process's output."""
     original_command, original_process = replay.trace_command, smoke.CapturedProcess
 
     def command_hook(args, command, restart):
@@ -700,8 +705,28 @@ def hooks(observer=None):
         def __init__(self, command, cwd, log_path):
             self._arce_cwd, self._arce_log, self._arce_reported = Path(cwd), Path(log_path), False
             super().__init__(command, cwd, log_path)
+            self._arce_watcher = None
+            if keeper is not None and start_number(self._arce_log) == 0:
+                self._arce_watcher = threading.Thread(target=self._arce_watch, daemon=True)
+                self._arce_watcher.start()
+
+        def _arce_watch(self):
+            seen = 0
+            while True:
+                with self.condition:
+                    while seen >= len(self.lines):
+                        if not self.reader.is_alive():
+                            return
+                        self.condition.wait(0.2)
+                    fresh = self.lines[seen:]
+                    seen = len(self.lines)
+                for line in fresh:
+                    keeper.line(self._arce_cwd, line)
 
         def _arce_ended(self):
+            if self._arce_watcher is not None and self.process.poll() is not None:
+                # The output has ended with the process; the keeper has then seen every line before its report is read.
+                self._arce_watcher.join(30)
             if observer is not None and not self._arce_reported and self.process.poll() is not None:
                 self._arce_reported = True
                 observer(self._arce_cwd, self._arce_log)
@@ -897,10 +922,17 @@ def run_live(args, case: Case, evidence: Path, scratch: Path, owner: str) -> dic
             except (OSError, ValueError):
                 pass
 
-    with hooks(observer):
+    keeper = None
+    if getattr(args, "keep_candidates", False):
+        keeper = candidates.Keeper(case.store, lambda cwd: cwd / ("world-" + native) / "data" / STORES[case.store],
+                                   evidence / "candidates")
+    with hooks(observer, keeper):
         result, error = x01.run_existing(runner_of(case), arguments, output)
     logs = read_logs(output)
     x01.keep_logs(output, evidence, "live")
+    if keeper is not None:
+        # Beside the observation, which stays as it is without the option; the class does not read this file.
+        x01.write_json(evidence / "candidates.json", keeper.report())
     if (output / "results.json").is_file():
         shutil.copyfile(output / "results.json", evidence / "runner-results.json")
     first = logs.get(0, [])
@@ -1252,6 +1284,9 @@ def campaign(args, cases: list[Case], evidence: Path, scratch: Path) -> dict:
     manifest = dict(model=MODEL, source_commit=args.source_commit, candidate_commit=args.candidate_commit,
                     jar_sha256=args.jar_sha256, cases=[case.id for case in cases], **declarations(cases),
                     planning=[], phase="PLANNING", uncovered=UNCOVERED, results=[], status="IN_PROGRESS")
+    if getattr(args, "keep_candidates", False):
+        # Named only when asked for, so that a manifest without the option is the one it always was.
+        manifest["keep_candidates"] = True
     # The declarations that follow from the cases themselves are on disk before anything is started.
     x01.write_json(evidence / "MANIFEST.json", manifest)
     holds = 0
@@ -1340,6 +1375,9 @@ def main() -> int:
     parser.add_argument("--store", action="append", choices=STORES)
     parser.add_argument("--fault", action="append", choices=[*LIVE_FAULTS, *OFFLINE_FAULTS])
     parser.add_argument("--count", action="append", type=int, help="For live faults; the default is 1, and 1 and 4 for WRITE_ERROR")
+    parser.add_argument("--keep-candidates", action="store_true",
+                        help="Live cases only: keep the store file after each moved write of the faulted start, when "
+                             "its SHA-256 is the one the injector logged (W450). Off by default; no class reads it")
     parser.add_argument("--cooldown", type=float, default=90, help="Seconds between two holds of the heavy-JVM lock")
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
