@@ -44,8 +44,9 @@ videos `<row>-<client>.mkv`. Add artifact hashes/references to `E/results/RESULT
 This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
 Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
 remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
-Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
-an observed client result; preserve every original action, oracle, result field and budget.
+No package delivery remains in progress. Root accepted K02 as partial under R661/R664/R667
+and K12 as partial under R655; their uncovered observations and unexecuted client/REF work remain open.
+A delivered recipe is not an observed client result; preserve every original action, oracle, result field and budget.
 
 ### G-K09: 102/501/1001-active source sets and mapped cuts
 

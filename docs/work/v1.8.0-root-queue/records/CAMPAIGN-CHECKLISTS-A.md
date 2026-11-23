@@ -219,8 +219,9 @@ to owner-signed-in clients or inspect JVM arguments.
 This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
 Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
 remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
-Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
-an observed client result; preserve every original action, oracle, result field and budget.
+No package delivery remains in progress. Root accepted K02 as partial under R661/R664/R667
+and K12 as partial under R655; their uncovered observations and unexecuted client/REF work remain open.
+A delivered recipe is not an observed client result; preserve every original action, oracle, result field and budget.
 
 ### A-K01: sources/API and independent fixture binaries
 
@@ -235,24 +236,81 @@ Source: `W424.md; W426.md; QUEUE.md rows W424/W426`. Root acceptance/disposition
 
 **Remaining coverage and reasons.** W424's failed build remains history; W426 completes packaging only. The local release differs from the hosted release (594 class entries), so never substitute it. Connections, menus and V1/V2 are not packaging evidence. The root SHA256SUMS is append-only history; verify current files with w426/SHA256SUMS-CURRENT.txt.
 
-### A-K02: historical sources; forced-stop qualification in progress
+### A-K02: historical sources and partial forced-stop delivery
 
-Source: `W431.md; W437.md; QUEUE.md rows W431/W437/W447`. Root acceptance/disposition: **R611/R631** in `../QUEUE.md`.
+Sources are [W431](W431.md), [W437](W437.md), [W447](W447.md) and [W461](W461.md) through [W465](W465.md).
+Root accepted the source preparation under R611, W437 under R631 and W447 under R661 as partial K02,
+the UNKNOWN reruns under R664, the flight classifications/protocol under R663/R665/R666, and W465 under R667.
+These decisions are recorded in [QUEUE](../QUEUE.md); K02 remains partial, not a campaign or Gate pass.
 
-| External checksum list (sealed input directory) | SHA-256 of the list |
+| External checksum list or retained run index | SHA-256 of the listed file |
 |---|---|
 | `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/SHA256SUMS.txt` | `06bf9946a02e6bda58577811c9c7b69ca84fb779f38f14fa7843fd6d42f357ab` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R612-W437-restart-20261122/SHA256SUMS.txt` | `e5078a1c2153df3987d0f81f9548fa61ee3ba7000377147bd4b2a4205a9c5572` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R631-W447/inventory.json` | `c8665bd53513e81f80c4597040c9f69015a4d64ab0d8fac623e8f01752c7cc6e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/inventory.json` | `af675b05ab8ec48d79350af5c021dcb0210223ba74132c23014d8b69756d5a29` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/control-010-attempt-2/inventory.json` | `102e2d105a0bac03b269cc9ab3b825b93c87231684a44c9d317d3dff71a8ba1f` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W462/artifact-hashes.json` | `6ac00d083f1499a747d521cd150a3700bfb3cb2cb5e646242fa4de9f93ff609e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R663-W463/corrected/summary.json` | `929418496c6d9ea7b87453ba13556c971bc1657047a1c4035b85cb4cf22cda9e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R665-W464/artifact-hashes.json` | `25533a156c47d2fbcd33cc58139eab6a47c657024bde68e540e5ca11ab5e0ce4` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R666-W465/artifact-hashes.json` | `9833228907a1e374f6af61da810732ba967b69705c9a63457505a139df878efe` |
 
-**Recipe and original-step mapping.** FI01/FI02/FI03/FI04/FI09 manifest.json and qualification directories map respectively to A03, B01, B04, pre-sky/API, and I03. Forced-stop runners retain W437's explicit sealed-disassembly option.
+**Recipe and original-step mapping.** The K02 root above contains each source's `manifest.json`, `source-world/` and qualification directory.
+FI01 maps to A03 and retains a scripted Beta archive, not a historical player world.
+FI02 maps to B01 and is reconstructed on the pinned v1.0 JAR, not historically played.
+FI03 maps to B04 and is a reconstructed, flushed TRANSIT_PREPARED source with no passenger; its C6 copy-load proves readability, not completed flight recovery.
+FI04 supplies the pre-sky/API core baseline but not the missing historical adapter/custom-payload branch.
+FI09 maps to I03 and reconstructs all 30 old blocks, 57 items and 19 block-entity types at 24 positions on pinned v1.7.
+W431 records the exact layouts, host JAR hashes and copy-load qualifications; none of these inputs is a played-world-history claim.
 
-**Remaining coverage and reasons.** Needs package K02 — in progress (W447). W437's flight 2 PASS/8 FAIL (JOURNAL_PENDING) and transaction 13 PASS/12 NOT_REACHABLE_ON_C6 stay unchanged pending the follow-up. Historical sources are reconstructed, not historically played; genuine adjacent-chunk/current-seat/expiry controls remain separate, NOT_COVERED where absent.
+For A04, `R666-W465/run.py`, `summary.json`, `baseline-forced-chunks.json` and `baseline-world-identity.json` identify the flight run of record.
+It has **7 PASS and 3 FAIL: NOT_REACHABLE_ON_C6** under R666's loaded-ends contract, accepted under R667.
+The uncounted baseline persists only Overworld chunk (24,24) and Moon chunk (0,0); no counted case adds a chunk.
+All four modes (`--wait-ready-status`, `--sealed-disassembly-receipt`, `--journalled-launch-receipt` and `--settled-disassembly-protocol`) are explicit.
+The 30-second pause and 45-second disassembly budgets, identity/fuel/authority checks, SEALED/DONE receipts, five restored blocks and exact inventory oracle remain unchanged.
+This is an unmanned stand-in for a nearby requester, not connected-player or passenger qualification.
+
+W447's `R631-W447/native/plan.json` and `native/summary.json` cover all 89 direct sealed-disassembly rows, with 81 PASS and 8 FAIL in that attempt.
+W461's `R662-W461/native/summary.json` and `control-010-attempt-2/cohort-summary.json` add passing attempts for all eight UNKNOWN rows and both controls under R664.
+Together they give a passing C6 attempt for every one of the 89 rows, not an all-attempts pass or an integrated-flight proof.
+The eight original UNKNOWN/log-gate failures remain failed; W461 also retains control 010's first failed Yggdrasil key-fetch attempt separately from its authorized second PASS.
+W461 permits exactly one matching intentional UNKNOWN ERROR only at the selected UNKNOWN stage; all other log and recovery/resource checks remain.
+W437's fresh transaction matrix remains 13 PASS and 12 NOT_REACHABLE_ON_C6.
+W447 maps eight of those twelve legacy disassembly purposes to sealed semantic counterparts, without relabelling a legacy checkpoint as passed; the full mapping is in checklist A, entry A-K02.
+
+**W437 legacy-disassembly mapping retained from W447.** Each original row below remains NOT_REACHABLE_ON_C6 because retained disassembly bypasses the legacy executor's indexed probe.
+The sealed fixture has six payload-bearing cells, not the legacy five-block rocket; a semantic counterpart is not an exact indexed cut.
+
+| Original legacy checkpoint | Sealed counterpart and retained boundary |
+|---|---|
+| SNAPSHOT_VALIDATED:0 | W447 rows 001-003 pass C0_BASELINE_SAVED/PREPARE_PROOF_CURRENT; this supplies semantic preparation coverage only. |
+| LOCKED:0 | W447 rows 004-007 and 014-015 pass C1_RETAIN_BEFORE/AFTER and C1_ACK; retained ownership is not the old LOCKED phase. |
+| RESTORING:1 | W447 rows 016-019 pass C2_STAGE_BEFORE/AFTER around the first inert placement, not usable legacy restoration. |
+| RESTORING:2 | W447 rows 020-027 pass PARTIAL_C_SAVED and its store/force/readback cuts; this is semantic partial-disk coverage only. |
+| RESTORING:3 | No third-placement cut exists in this runner; the exact index remains uncovered. |
+| RESTORING:4 | No fourth-placement cut exists in this runner; the exact index remains uncovered. |
+| RESTORING:5 | No fifth-placement cut matches; a full six-cell sealed proof does not establish this index. |
+| RESTORED:5 | W447 rows 036-039 pass SEALED_PROOF_CURRENT/C3_ELECT_BEFORE; all terrain is proved before election, not five restored blocks. |
+| COMMITTED:5 | W447 rows 046-047 and 068-069 pass C3_ACK/C5_ACK as separate election/retirement boundaries; its UNKNOWN variants remain failed history despite W461's new passing attempts. |
+| ROLLING_BACK:2 | W447 rows 080-081 pass partial-state ROLLBACK_ERASE_BEFORE/AFTER; no exact two-erased index is proved. |
+| ROLLED_BACK:2 | W447 row 082 passes ROLLBACK_PROOF_CURRENT for that partial state; this is semantic proved rollback only. |
+| FAILED:1 | No first-restoration-failure cut matches; rows 078-079 test the different, later UNSEAL_PREPARE_FAILED boundary. |
+
+**Remaining coverage and reasons.** W437's flight 2 PASS/8 FAIL, W447's flight 5 PASS/5 FAIL and W463's corrected flight 5 PASS/5 FAIL remain counted history, not rewritten by W465.
+W447's DESCENT/LANDED cleanup failures and W463's unloaded-destination rejections are HARNESS findings under W462/W464, not counted passes or a diagnosed PRODUCT defect.
+DESTINATION_SPAWNED, PASSENGERS_TRANSFERRED and SOURCE_REMOVED remain failed NOT_REACHABLE_ON_C6 cuts: the clean-journal pause cannot stop before C6 dispatches the next acknowledged phase.
+RESTORING:3, RESTORING:4, RESTORING:5 and FAILED:1 have no exact sealed counterpart; all twelve original legacy rows remain NOT_REACHABLE_ON_C6.
+Genuine adjacent-chunk entity arrival, current-seat selection and native 200-tick expiry remain separate NOT_COVERED observations because K02 has no genuine controls for them.
+Passengers, real clients, played historical sources and the missing historical adapter payload remain outside K02's qualified coverage.
+[KI-V180-DISASSEMBLY-01](../../../releases/v1.8.0/KNOWN-ISSUES.md) records the support boundary: wait for settlement, make a fresh request after preparation, reconfirm exact fuel disposal and stay online in the same dimension within eight blocks until completion.
+This guidance and R666's baseline do not qualify real-player behavior.
 
 **Mapping in checklist A.**
 
 | Original row/actions | Recipe selector and retained limitation |
 |---|---|
-| A04 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
-| A05 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
+| A04 | Entry A-K02 pins W465's ten flight cases and W447/W461's 89 sealed rows for the original forced-stop actions. The twelve legacy rows retain the mapping above; the three flight checkpoints and genuine readiness/seat/expiry observations remain uncovered under R667. |
+| A05 | W465 supplies unmanned restoration evidence only. Entry A-K02 records that two-seat passengers, real disconnect/reconnect, adjacent-chunk arrival, current-seat selection and expiry remain NOT_COVERED because no qualified player controls were delivered. |
 
 ### A-K04: legal 64/512/2048 and multi-rocket inputs
 
@@ -497,7 +555,7 @@ has no selected checkpoint or injected fault. The runner retains the release-
 test hook property for its bounded operator reports on recovery processes.
 Use the existing [transaction runner](../../../../scripts/run_v100_transaction_forced_stop.py)
 and [flight runner](../../../../scripts/run_v100_flight_forced_stop.py), not a
-graceful stop masquerading as a cut. Their C6-compatible baselines **needs package K02** — in progress (W447); entry A-K02.
+graceful stop masquerading as a cut. Entry A-K02 pins the delivered C6 baselines and run hashes accepted as partial under R661/R664/R667; W465 supplies 7 PASS and 3 failed NOT_REACHABLE_ON_C6 flight cuts, and W447/W461 supply a passing attempt for each of 89 sealed rows without rewriting earlier failures.
 
 **Command templates for the campaign, not commands run while preparing this
 file:** Bind `$sourceServer`, `$baselineSummary`, `$candidateJar`,
@@ -556,7 +614,7 @@ in the release matrix: 128 pending players, four attempts/tick, 200-tick wait.
 
 **Accepted preparation/action steps (W408):**
 
-(C3) Qualify both v1.0 forced-stop runners on C6 themselves; J22 is not a substitute. Any oracle change must be reviewed and state its new check. **Needs package K02** — in progress (W447); entry A-K02: retargeted baselines and deterministic adjacent-chunk arrival, current-seat selection and native-expiry controls. Record those as three separate observations; any control still unavailable is NOT_COVERED with that reason, not covered by durable cuts.
+(C3) Qualify both v1.0 forced-stop runners on C6 themselves; J22 is not a substitute. Any oracle change must be reviewed and state its new check. Entry A-K02 pins the delivered retargeted baselines and accepted run evidence under R661/R664/R667. Deterministic adjacent-chunk arrival, current-seat selection and native-expiry controls remain NOT_COVERED because no genuine controls were delivered. Record those as three separate observations; any control still unavailable is NOT_COVERED with that reason, not covered by durable cuts.
 
 **Evidence to keep:** `phase3-ds/A04/<case>/` command lines, PIDs, cut receipts,
 exit codes, staged journal, raw pre/post NBT, authority/resource comparisons and
@@ -599,7 +657,7 @@ the second operator or authorized scripted input to a signed-in window.
 
 **Accepted preparation/action steps (W408):**
 
-(C3) Keep the three native readiness/current-seat/expiry observations separate as A04 requires. Their genuine controls remain open (**Needs package K02** — in progress (W447); entry A-K02), and preparation is required for the two-seat scene; owner O5 supplies coordinated real input. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+(C3) Keep the three native readiness/current-seat/expiry observations separate as A04 requires. Their genuine controls remain NOT_COVERED because K02 delivered no native adjacent-chunk/current-seat/expiry setup. Entry A-K02 records R667's partial acceptance; W465's unmanned matrix does not cover passengers, and preparation is required for the two-seat scene; owner O5 supplies coordinated real input. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** `phase4-v2/sitting-1/` both videos/logs, server phase and
 seat receipts, disconnect/rejoin UTC times and saved resource projections.
@@ -624,9 +682,8 @@ fixture and bounded observer, record the subcase NOT_COVERED. Keep the documente
 | 7 | [H] Compare both players' positions, seats and saved rocket projection. | Single authority and no extra recovery/debit; keep the native outcome even if readiness/expiry was not reached. |
 
 Keep the corresponding raw readiness/queue/tick and real connection evidence
-with A05. The source gives no genuine latency-injection setup or exact adjacent
-fixture coordinates; these inputs **needs package K02** — in progress (W447); entry A-K02, rather than converting the
-historical JDI false-return experiment into a claimed native observation.
+with A05. K02 supplies no genuine latency-injection setup or exact adjacent fixture coordinates, so these observations remain NOT_COVERED under R667, as entry A-K02 records.
+The historical JDI false-return experiment is not a native observation.
 
 Actual:
 Screenshot or video:
@@ -1065,8 +1122,8 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C1 identity, W400 cell paths/hashes, W399 session/reset/frame commands, C2/R535 viewports, C4 room/schedule parameters, C5/C10/R535 sampling/review and C6 first-join trials/reset. W403 observers/seals are delivered but not fully live-qualified.
-- **A01-A18:** Sources/API JARs are required; current core/world/control/batch and live harness qualification remain required; immutable Beta/historical/forced-stop baselines remain open (**needs package K02** — in progress (W447); entry A-K02). Entry A-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
-- **A04/A05:** genuine adjacent-chunk/current-seat/expiry controls each **needs package K02** — in progress (W447); entry A-K02, otherwise the separate observation is NOT_COVERED.
+- **A01-A18:** Sources/API JARs are required; current core/world/control/batch and live harness qualification remain required; entry A-K02 supplies the pinned FI01-FI04/FI09 source manifests and W437/W447/W461-W465 runs under R611/R631/R661-R667. Historical play, real passengers/clients, native readiness/seat/expiry controls and the three unreachable flight cuts remain outside the accepted partial coverage. Entry A-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+- **A04/A05:** Genuine adjacent-chunk/current-seat/expiry controls remain NOT_COVERED because K02 delivered no native control for those observations. Entry A-K02 pins the accepted partial sources and W465/W447/W461 runs under R667/R664; durable cuts do not qualify the separate player observations.
 - **A08-A11:** The combined world/layout remains required; raw-tick/queue/all-ticket/live observer integration remains required. O7/O11 supply connections/equivalent decision and node acceptance. Entry A-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 - **A12:** Legal three-size/multi-rocket fixtures remain required; direct cache/allocation proof remains required, not a histogram inference. O8 confirms capture/version (PresentMon recommended); O9 the second GPU/subset. Entry A-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 - **A18:** no trial-count decision remains: ten fresh no-JEI trials per lane plus every V2 A/B first join; live qualification remains required; O10 supplies UUIDs. No tolerated timeout rate exists.
