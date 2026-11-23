@@ -145,7 +145,9 @@ class K12ReaderTests(unittest.TestCase):
 
     def test_first_event_tick_candidates_come_from_raw_samples_only(self):
         elected = f"ARCE_FIRST_EVENT_ELECTED kind=first_moon_landing event={A} transfer={B} participants=0"
-        lines = [T.format(5000), T.format(5040), elected, T.format(5041), T.format(5060)]
+        poll = "]: kind=first_moon_landing source=KNOWN:ELECTED event=" + A + " receipt={} hold=none"
+        lines = [T.format(5000), T.format(5040), elected, T.format(5041), poll.format("PENDING"), T.format(5043),
+                 poll.format("CONFIRMED"), T.format(5046), T.format(5060)]
         replies = [raw(60, 31, [1_000_000] * 9 + [140_000_000] + [2_000_000] * 20)]
         pairs = [[5059, 60, 5060]]
         seen = k12.first_event_observation(lines, replies, pairs)
@@ -155,6 +157,14 @@ class K12ReaderTests(unittest.TestCase):
         self.assertEqual(140.0, seen["largest_candidate_ms"])
         self.assertEqual(30, seen["window"]["tick_count"])
         self.assertEqual(0, seen["participants"])
+        flush = seen["receipt_flush"]
+        self.assertEqual([5041, 5046], flush["confirmed_between_game_ticks"])
+        self.assertEqual(list(range(40, 49)), [row["tick"] for row in flush["candidate_ticks"]])
+        self.assertEqual(140.0, flush["largest_candidate_ms"])
+        self.assertEqual([5, 6], flush["election_to_confirmed_ticks"])
+        self.assertEqual(dict(tick=40, ms=140.0), seen["largest_window_sample"])
+        early = k12.first_event_observation(lines[:5], replies, [[5042, 44, 5043]])
+        self.assertIn("unfinished_reason", early["receipt_flush"])
         with self.assertRaisesRegex(ValueError, "exactly one"):
             k12.first_event_observation(lines + [elected], replies, pairs)
         with self.assertRaises(ValueError):

@@ -180,6 +180,7 @@ REPORT = re.compile(r"ARCE_RELEASE_R042_REPORT cell=(\w+) kind=(\w+) found=true 
                     r"protected=(true|false) refusal=(\w+) watching=(true|false) logical=(\S+)")
 GATE_CLOSED = re.compile(r"ARCE_RELEASE_R042_GATE_CLOSED cell=(\w+) kind=(\w+) reason=(\w+) tick=(\d+)")
 ELECTED = re.compile(r"ARCE_FIRST_EVENT_ELECTED kind=first_moon_landing event=(\S+) transfer=(\S+) participants=(\d+)")
+RECEIPT = re.compile(r"kind=first_moon_landing source=\S+ event=\S+ receipt=(\w+) ")
 LANDED = re.compile(r"ARCE_TRANSFER_PHASE transfer=(\S+) .*event=landing_complete entity=(\S+) ")
 JOURNAL_HELD = "ARCE_RELEASE_JOURNAL_STARTUP_HELD"
 JOURNAL_RELEASED = "ARCE_RELEASE_JOURNAL_STARTUP_RELEASED"
@@ -354,12 +355,28 @@ def first_event_observation(lines, raw_lines, pairs):
     index, match = elected[0]
     polls, summary = raw_summary(raw_lines)
     event, offset = bracket(lines, index), tick_offset(pairs)
-    candidates = ticks_in_bracket(raw_ticks.merge_polls(polls), offset, event)
+    merged = raw_ticks.merge_polls(polls)
+    candidates = ticks_in_bracket(merged, offset, event)
+    # The checked receipt flush is a later END tick: after the journal acknowledges the election. No production
+    # line marks it, so it is bracketed by the status polls on either side of receipt=CONFIRMED.
+    statuses = [(i, RECEIPT.search(line)[1]) for i, line in enumerate(lines) if i > index and RECEIPT.search(line)]
+    confirmed = next((i for i, state in statuses if state == "CONFIRMED"), None)
+    receipt = dict(unfinished_reason="no status poll saw receipt=CONFIRMED in this window")
+    if confirmed is not None:
+        earlier = [i for i, state in statuses if i < confirmed]
+        span = [bracket(lines, earlier[-1])[0] if earlier else event[0], bracket(lines, confirmed)[1]]
+        flush = ticks_in_bracket(merged, offset, span)
+        receipt = dict(confirmed_between_game_ticks=span, candidate_ticks=flush,
+                       largest_candidate_ms=max((row["ms"] for row in flush), default=None),
+                       election_to_confirmed_ticks=elapsed(event, [span[1], span[1]]))
+    largest = max(merged["samples"], key=lambda sample: sample[1], default=None)
     return dict(event=match[1], transfer=match[2], participants=int(match[3]), election_game_ticks=event,
                 tick_offset=offset, candidate_ticks=candidates,
-                largest_candidate_ms=max((row["ms"] for row in candidates), default=None),
-                basis="The first-event tick is one of the candidates; the bracket cannot name which. The receipt "
-                      "barrier runs at that tick's END or a following one, inside the same candidates.",
+                largest_candidate_ms=max((row["ms"] for row in candidates), default=None), receipt_flush=receipt,
+                largest_window_sample=dict(tick=largest[0], ms=largest[1] / 1_000_000) if largest else None,
+                basis="The election's tick is one of candidate_ticks and the checked receipt flush one of "
+                      "receipt_flush.candidate_ticks; a bracket cannot name which. Launch, flight and chunk "
+                      "work are in the window too, so largest_window_sample need not be either of them.",
                 window=summary)
 
 
@@ -754,8 +771,13 @@ def stage_qualify(console, spec, result, name, built):
         result["progression_before"] = [line.rstrip() for line in console.send("arce progression status")]
         console.poll_raw()
         console.send(f"execute in {OW} run arce rocket release-test launch {rocket['entity']} MOON")
-        result["finished"] = console.observe(lambda: bool(seen(console, ELECTED)) and bool(seen(console, LANDED)), 120)
-        console.observe(lambda: False, 5)  # the receipt barrier and DELIVERED follow the election
+        def confirmed():
+            return any(match[1] == "CONFIRMED" for line in console.process.lines if (match := RECEIPT.search(line)))
+
+        result["finished"] = console.observe(
+            lambda: bool(seen(console, ELECTED)) and bool(seen(console, LANDED)) and confirmed(), 120,
+            lambda: console.send("arce progression status"))
+        console.observe(lambda: False, 5)  # DELIVERED and the landing's own writes follow
         result["progression_after"] = [line.rstrip() for line in console.send("arce progression status")]
         result["first_event"] = first_event_observation(console.process.lines, console.raw, console.pairs)
         return
