@@ -169,6 +169,8 @@ class K12ReaderTests(unittest.TestCase):
         self.assertEqual([425, 432], done["end_to_unloaded_ticks"])
         self.assertEqual([300, 302], done["last_loaded"])
         self.assertEqual(rows, done["raw_rows"])
+        self.assertEqual([[425, 432], [205, 212]], [column["end_to_unloaded_ticks"] for column in done["columns"]])
+        self.assertEqual([100, 102], done["columns"][1]["last_loaded"])
         open_window = k12.ticket_series(rows[:2], [90, 95])
         self.assertIn("unfinished_reason", open_window)
         self.assertNotIn("end_to_unloaded_ticks", open_window)

@@ -367,8 +367,16 @@ def ticket_series(rows, end):
     """Wait 23: when the census columns were last seen loaded and first seen all unloaded after `end`."""
     loaded = [row for row in rows if any(row["loaded"])]
     clear = next((row for row in rows if not any(row["loaded"]) and row["ticks"][0] >= end[1]), None)
+    columns = []
+    for index in range(len(rows[0]["loaded"]) if rows else 0):
+        seen_loaded = [row["ticks"] for row in rows if row["loaded"][index]]
+        gone = next((row["ticks"] for row in rows if not row["loaded"][index] and row["ticks"][0] >= end[1]), None)
+        columns.append(dict(index=index, last_loaded=seen_loaded[-1] if seen_loaded else None, first_unloaded=gone,
+                            end_to_unloaded_ticks=elapsed(end, gone) if gone else None))
     result = dict(claim_end=end, polls=len(rows), last_loaded=loaded[-1]["ticks"] if loaded else None,
-                  all_unloaded=clear["ticks"] if clear else None, raw_rows=rows)
+                  all_unloaded=clear["ticks"] if clear else None, columns=columns, raw_rows=rows,
+                  note="The destination column is also where this claim's own rocket lands; its flight "
+                       "ticket is the same transfer's, not another owner's, and is not separable here.")
     if clear is None:
         result["unfinished_reason"] = "columns still loaded when the window closed"
     else:
@@ -509,7 +517,7 @@ def procedure():
         raw_ticks=dict(command=raw_ticks.RAW_TICK_COMMAND, cadence="at least once per second (the reply holds 100 ticks)",
                        pairing="one `time query gametime` before and after each poll gives the game-time offset"),
         steps={
-            "bay-queue": ["Start a copy with the journal hold; wait for " + JOURNAL_HELD + ".",
+            "bay-queue": ["Start a copy with the journal hold; wait for " + JOURNAL_HELD + ". C6 bounds the hold at 60 seconds (bound_ms=60000), so arm and release inside it.",
                           "Arm the raw-tick polls; send `arce rocket release-test journal-hold-release`.",
                           "Poll game time until every claim logs READY_SOURCE; claim_waits gives waits 10 to 12 and 17.",
                           "Read every claim's status and stop. Unfinished claims stay listed as unfinished."],
@@ -768,6 +776,7 @@ def stage_qualify(console, spec, result, name, built):
             before = console.tick()
             loaded = [console.loaded(*column) for column in columns]
             rows.append(dict(ticks=[before, console.tick()], loaded=loaded))
+            console.poll_raw()
             if not any(loaded):
                 break
             time.sleep(1)
