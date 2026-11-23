@@ -364,9 +364,10 @@ def run(output, stage, cell_path, java, lock_owner):
         if stage == "nohook":
             # This is a command-registration refusal, NOT a fuel-attempt/menu proof.
             start = len(process.lines)
-            console.commands.append("arce bay release-test pending")
-            process.command(console.commands[-1])
-            console.send("say K11_REFUSAL_BARRIER")
+            for value in ("arce bay release-test pending", "say K11_REFUSAL_BARRIER"):
+                console.commands.append(value)
+                process.command(value)
+            process.wait_for(re.compile(r"\[Server\] K11_REFUSAL_BARRIER\b"), 60, start_at=start)
             lines = process.lines[start:]
             if not any("Unknown or incomplete command" in v or "Incorrect argument" in v for v in lines):
                 raise ValueError("No-hook release-test command did not refuse")
