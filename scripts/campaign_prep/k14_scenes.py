@@ -103,7 +103,7 @@ def core_layout(jar):
 
 
 def commands_for(layout):
-    commands = []
+    commands = ["fill -124 180 -124 -116 180 -116 minecraft:stone"]
     for device in layout["devices"]:
         # Two blocks below the controller leave the below-anchor cells intact.
         cells = device["cells"]
@@ -276,6 +276,23 @@ def generate(output, fixtures=FIXTURES, jar_path=common.JAR):
     write(output / "values.json", source_values(jar_path))
     write(output / "frozen-recipe.json", frozen_recipe())
     write(output / "client-steps.json", client_steps(layout))
+    write(output / "sleep-hosts.json", {host: dict(level=NS + ":" + host, type_key=NS + ":" + host,
+        room_min=[32, 128 if host == "space" else 150, 32], room_max=[36, 132 if host == "space" else 154, 36],
+        bed_foot=[34, 129 if host == "space" else 151, 35], bed_head=[34, 129 if host == "space" else 151, 34],
+        vent=[34, 128 if host == "space" else 150, 34], generator=[33, 128 if host == "space" else 150, 34],
+        scrubber=[35, 128 if host == "space" else 150, 34],
+        status="NOT_COVERED", reason="Blueprint only: visit and build by ordinary play; no remote chunk force-loaded.",
+        preparation="Build sealed room, install generator/vent/scrubber, load coal and oxygen canisters via native GUIs. "
+            "Read atmosphere at both registered bed halves until BREATHABLE; ambient f is allowed. "
+            "Prove live Space VISIT inside K16 Core Station; create independent prior-home and never-set-home player copies.",
+        V_rows={f"V{number:02}": "NOT_COVERED: required native hook/player/control not supplied" for number in range(2, 14)})
+        for host in HOSTS})
+    write(output / "scope.json", dict(status="PARTIAL_INPUT_NOT_CAMPAIGN_ACCEPTANCE", write_scope=[
+        "scripts/campaign_prep/k14_scenes.py", "tests/test_campaign_prep_k14.py", "docs/work/v1.8.0-root-queue/records/W449.md"],
+        not_implemented="Planet-point saving via allowPlanetRespawn is not implemented in v1.8; not a test row or pass.",
+        unqualified_native_controls=["V02 actual runtime holder flags", "V03 override/missing/reused packs and reload policy",
+            "V07 player-bearing forced/off-world/invalid-home/pending-backup fixtures", "V12 loaded portal and Forge veto"],
+        prohibited_substitutes=["direct save editing", "forced chunks", "injected balances/owners", "artificial sleep callback", "real client launch"]))
     write(output / "dependencies.json", dict(parents=pins, k05=k05, k13=pack_pin,
         missing_resource_pack=dict(path=str(fixtures / "K13/k13-missing-resource-pack.zip"),
             sha256=common.file_hash(fixtures / "K13/k13-missing-resource-pack.zip"),
