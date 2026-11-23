@@ -238,6 +238,10 @@ The reference node (REF) is the owner's Debian 12 machine with 4 vCPU and 8 GiB,
 
 Each item below remains open: a merged fix or a passing rerun is not an explicit closure of
 the stated recurrence condition, and historical failed attempts remain failed.
+[W467](../work/v1.8.0-root-queue/records/W467.md) surveyed the 346 hosted regression runs from 2026-11-02 to 2026-11-23
+under R672's rule (R674): the 18 items that met it are closed in the implementation log, and the items below keep
+their conditions; the adapter-component and bay exit FIFO items had hosted recurrences after their fixes, and the
+bay deployment matrix item had one (run 42403168945, the race W322 later fixed).
 
 - **Escrow proof and monitor timing.** [W94](../work/v1.8.0-root-queue/records/W94.md), [W94B's follow-up](../work/v1.8.0-root-queue/QUEUE.md),
   [W111](../work/v1.8.0-root-queue/records/W111.md) and [W209](../work/v1.8.0-root-queue/records/W209.md) corrected the supersession/fixture-generation
@@ -245,92 +249,36 @@ the stated recurrence condition, and historical failed attempts remain failed.
   the existing proof budget and arbitrary explicit saves/I/O stalls are not prevented.
   Close only with the remaining proof-budget/recurrence evidence, not W209's scoped
   reproduction fix.
-- **Relogin (2026-10-25).** The 600-tick handoff timeout was not reproduced;
-  [W161](../work/v1.8.0-root-queue/records/W161.md) corrected the capture/dismount ordering and failure cleanup.
-  It stays open until hosted runs show no recurrence.
-- **Planetary flight (2026-11-03).** [W270](../work/v1.8.0-root-queue/records/W270.md) corrected the landing-budget
-  observer after run 41559401551's leg timeout with a forced-supersession control.
-  It stays open until hosted runs show no recurrence.
-- **Bay hold retry (2026-11-03).** [W271](../work/v1.8.0-root-queue/records/W271.md) paces the recovery fixtures after
-  the local `bay_deployment_hook81` DEADLINE retry and its stalled-readback reproduction.
-  It stays open until hosted runs show no recurrence.
 - **Adapter component (2026-11-03).** [W272](../work/v1.8.0-root-queue/records/W272.md) keeps pending-disassembly
   submissions advancing after the local `Original component block not yet published` timeouts.
   It stays open until local and hosted runs show no recurrence.
 - **Adapter capture stray button (2026-11-03).** [W273](../work/v1.8.0-root-queue/records/W273.md) removes the fixture
   start control without drops after the loaded `throwingCapturePreservesSource` failures.
   It stays open until loaded and hosted runs show no recurrence.
-- **Reconnect scheduling (2026-11-04).** [W283](../work/v1.8.0-root-queue/records/W283.md) matches the installed
-  occupancy-census readiness after run 41776065592's `Own spawn did not queue` failures.
-  It stays open until runs show no recurrence.
-- **Live-return dismount (2026-11-04).** [W283](../work/v1.8.0-root-queue/records/W283.md) measures retry-history advance
-  from its prior count after the repeated `Definite F7 callback lost the first retry backoff`
-  failures. It stays open until runs show no recurrence; W375 closed a separate
-  autosave-sensitive live-return observation, not this entry.
 - **Classic scale and sawmill under load (2026-11-04).** [W283](../work/v1.8.0-root-queue/records/W283.md) did not
   reproduce the scale-stage and `Batch did not complete exactly once` failures in its
   loaded repetitions, so neither is fixed. Both stay open until loaded runs show no recurrence.
 - **Bay deployment matrix (2026-11-05).** [W298](../work/v1.8.0-root-queue/records/W298.md) corrected the observer's
   assumption that a recorded destination ID is already a published entity after run
   41870324437. It stays open until runs show no recurrence.
-- **Adapter registration (2026-11-05).** [W299](../work/v1.8.0-root-queue/records/W299.md) applies start-control removal
-  to the registration/component fixtures after run 41891733393's duplicate-item failure.
-  It stays open until runs show no recurrence.
 - **Adapter restore under load (2026-11-05).** [W299](../work/v1.8.0-root-queue/records/W299.md) records the
   `throwingRestoreCleansPartialInventoryAndRetries` ASSEMBLY timeout when capture
   exceeded its callback budget. It stays open until loaded runs show no recurrence;
   no fix is queued unless it recurs.
-- **Sealed world protection (2026-11-05).** [W302](../work/v1.8.0-root-queue/records/W302.md) encloses the fixture and
-  siblings after ambient water caused the protection timeout and a following bay-lock
-  failure in run 41958063402. It stays open until runs with W298 show no recurrence.
-- **Bay pending spawn (2026-11-05).** [W322](../work/v1.8.0-root-queue/records/W322.md) holds the service's competing
-  destination spawn after the local and run 42403168945 PREPARED-authority race.
-  It stays open until runs show no recurrence.
-- **Bay packet descent (2026-11-06).** [QUEUE's W288/W262 history](../work/v1.8.0-root-queue/QUEUE.md)
-  records run 42057329524's `FALL_2_1` landing failure followed by a passing rerun.
-  It stays open until runs show no recurrence; no fix is queued unless it recurs.
 - **Bay exit FIFO (2026-11-06).** [W313](../work/v1.8.0-root-queue/records/W313.md) seals/restores the exact-ordinal
   area after falling gravel changed the first winner in local full runs.
   It stays open until later local full runs show no recurrence.
 - **Sleep in vacuum (2026-11-07).** [W315](../work/v1.8.0-root-queue/records/W315.md) fixes the Moon/Space station
   comparison and [W318](../work/v1.8.0-root-queue/records/W318.md) cleans up leaked stations after local full-run failures.
   It stays open until later local full runs show no recurrence.
-- **Flowing-water fixture button (2026-11-08).** [W323](../work/v1.8.0-root-queue/records/W323.md) clears and logs
-  pre-existing items after the old stone button caused local full-run failures.
-  It stays open until runs show no recurrence.
-- **Bay exit fixture area (2026-11-09).** [W334](../work/v1.8.0-root-queue/records/W334.md) selects a block-entity-free
-  window inside its allocation after both attempts of run 42612205968 found a dungeon
-  chest. It stays open until more shared runs show no recurrence.
-- **Bay exit readiness (2026-11-10).** [W344](../work/v1.8.0-root-queue/records/W344.md) separates bounded loading from
-  measured ticks after run 42723245823 exhausted its wait while entity sections loaded.
-  It stays open until later runs show no recurrence.
-- **Player backup count (2026-11-10).** [W347](../work/v1.8.0-root-queue/records/W347.md) avoids the autosave inside
-  the deliberately blocked backup window that doubled the log counts in run 42748839833.
-  It stays open until later runs show no recurrence.
-- **Satellite coalesced flush (2026-11-10).** [W350](../work/v1.8.0-root-queue/records/W350.md) opens the test window
-  only with an idle writer after an autosave request captured the change in a local full run.
-  It stays open until later runs show no recurrence.
 - **I/O-completion budgets (2026-11-10).** [W350](../work/v1.8.0-root-queue/records/W350.md) records local failures of
   both proof-retry tests and sealed tank/bay automation, plus the durability-held warning;
   the hosted batches passed but the cause is unestablished.
   It stays open until later local full runs show no recurrence.
-- **Monitor cold warm-up (2026-11-09).** [W335](../work/v1.8.0-root-queue/records/W335.md) corrects what
-  DESTINATION_LOADING promises after the premature warm-up check failed locally.
-  It stays open until later runs show no recurrence.
-- **Concurrent flight (2026-11-17).** [W378](../work/v1.8.0-root-queue/records/W378.md) could not reproduce run
-  44109049691's post-spawn stall and added diagnostics; [W385](../work/v1.8.0-root-queue/records/W385.md)'s pre-spawn
-  ticket fix does not explain it. It stays open until a cause is found or later runs show no recurrence.
 - **Terminal-journal unit acknowledgement (2026-11-17).** [QUEUE's W372D/W372R
   observations](../work/v1.8.0-root-queue/QUEUE.md) retain the single failure without its XML, followed by
   isolated and complete passing runs; Root's slow-write reading is not a reproduced cause.
   The observation remains open, and a recurrence requires a diagnostic task.
-- **Writer benchmark unit readback (2026-11-13).** [QUEUE R455](../work/v1.8.0-root-queue/QUEUE.md) records
-  run 43395387417's first-attempt readback-count failure and passing second attempt,
-  with the check dependent on runner speed. It stays open until later runs show no
-  recurrence or that dependence is removed.
-- **Warm-up capacity (2026-11-20).** [W394](../work/v1.8.0-root-queue/records/W394.md) adds diagnostics after W392's
-  filtered-run eight-pad refusal; W392R found no leftover or batch-order cause.
-  It stays open until the cause is known or runs show no recurrence.
 - **Light transmission (2026-11-21).** [QUEUE's W433/R602](../work/v1.8.0-root-queue/QUEUE.md) retains run
   44861941486's opaque-control failures and the isolated branch's passing run 44886451261.
   It stays open until W433 merges after the C6 freeze and shared runs pass.
