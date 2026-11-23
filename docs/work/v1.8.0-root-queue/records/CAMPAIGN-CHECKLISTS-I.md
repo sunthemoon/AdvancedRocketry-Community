@@ -19,9 +19,8 @@ Use P1's C6 commit and hosted JAR SHA-256 on Java 17. Default is Forge 47.4.10 w
 47.4.23. JEI-present means exactly 15.56.0.205. I04 explicitly covers all four cells; I09 covers both JEI states.
 V1 means a real GPU, with CPU/GPU/driver/resolution/window/GUI-scale recorded, not Xvfb/LLVMpipe.
 P2 supplies immutable source fixtures; use disposable copies only. Its names below are fixture descriptions,
-not already delivered archive filenames. These **needs package K02** (historical), **needs package K05** (machine) or
-**needs package K16** (live control) archive hashes, coordinates, IDs and setup commands, as the rows specify.
-Pin server difficulty, view/simulation distance, config and loaded switches before each run.
+not already delivered archive filenames. These require historical, machine or live-control archive hashes, coordinates, IDs and setup commands, as the rows specify. Historical inputs remain open (**needs package K02** — in progress (W447); entry I-K02).
+Pin server difficulty, view/simulation distance, config and loaded switches before each run. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 Phase 3 DS uses the packaged server on the development PC with one real client A. Phase 4 V2 uses two real
 authenticated premium accounts A/B on the restricted packaged server with `online-mode=true`, `white-list=true`,
@@ -38,6 +37,195 @@ identities, raw samples and per-step UTC times. Screenshots are `<row>-<step>-<c
 videos are `<row>-<client>.mkv`. Index each artifact/reference/SHA-256 in `E/results/RESULTS.md`, `results.json`
 and `FINDINGS.md`; seal `E/SHA256SUMS.txt`. Each result also records Forge/JEI, machine, tester/script revision,
 start/end UTC and JAR SHA-256. Missing prerequisites mean NOT_COVERED with a reason, not a speculative PASS.
+
+## Package preparation index (W456, R649)
+
+This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
+Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
+remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
+Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
+an observed client result; preserve every original action, oracle, result field and budget.
+
+### I-K02: historical sources; forced-stop qualification in progress
+
+Source: `W431.md; W437.md; QUEUE.md rows W431/W437/W447`. Root acceptance/disposition: **R611/R631** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/SHA256SUMS.txt` | `06bf9946a02e6bda58577811c9c7b69ca84fb779f38f14fa7843fd6d42f357ab` |
+
+**Recipe and original-step mapping.** FI01/FI02/FI03/FI04/FI09 manifest.json and qualification directories map respectively to A03, B01, B04, pre-sky/API, and I03. Forced-stop runners retain W437's explicit sealed-disassembly option.
+
+**Remaining coverage and reasons.** Needs package K02 — in progress (W447). W437's flight 2 PASS/8 FAIL (JOURNAL_PENDING) and transaction 13 PASS/12 NOT_REACHABLE_ON_C6 stay unchanged pending the follow-up. Historical sources are reconstructed, not historically played; genuine adjacent-chunk/current-seat/expiry controls remain separate, NOT_COVERED where absent.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I03 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
+
+### I-K04: legal 64/512/2048 and multi-rocket inputs
+
+Source: `W434.md; QUEUE.md row W434`. Root acceptance/disposition: **R605** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/64/SHA256SUMS.txt` | `f131c6a61f3e4574535191465cdf9eea5f4a0bacd6144294efb967c371e33925` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/512/SHA256SUMS.txt` | `07a61be26a85db8893bab6782ea035fe1e8c1bdb54216d57e0700e169d1a4619` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/2048/SHA256SUMS.txt` | `df6588af878a25bf26c6c44ae6772c3e3c4fa5473d85776ef081a6ecc7a30713` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/multi/SHA256SUMS.txt` | `4bf6bd3310caff95147f6263802a046c7f6b01a91de0e461ef19944b70306627` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/64-relaunch/SHA256SUMS.txt` | `0b8e89a5850fd43d5ef3d6a85cd46f0a456d7e4e94e3d8b94e8862c4b4bb4c4c` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K04/512-relaunch/SHA256SUMS.txt` | `3509ddb6afe671fd723f976b1ddee1d93c616569c99b753c09b62867f882c623` |
+
+**Recipe and original-step mapping.** Per-scene layout.json rockets/grants/overview and manifest.json build/readback map A10's 2048 assembly and A12/I09's first-use, relaunch and multiple-rocket observations. Use recorded native snapshot counts, seat blocks and observer positions.
+
+**Remaining coverage and reasons.** Only these six qualified sources are selected here. W434's last 2048-relaunch readback was still unfinished at its record checkpoint; do not infer a new verdict from a later file's presence. The separate 128-payload boundary is NOT_COVERED: its synthetic test builder is absent from C6 and the framed 1-MiB specimen is refused. No GPU/cache/frame or operation-duration verdict is supplied.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I09 | Same six layouts -> original rendering/first-use/reload/heap comparison; the separate payload-boundary.json is NOT_COVERED, not an admitted visual scene. |
+
+### I-K05: nine r608 machine scenes and field inventory
+
+Source: `W435.md; QUEUE.md row W435`. Root acceptance/disposition: **R612; R608 preparation choices** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/a100-idle/SHA256SUMS.txt` | `239f4f439f8875dfb36995e8773355a49a7b5f3f9e78eb7393b38dfe836fd10f` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-idle/SHA256SUMS.txt` | `3b4c28ac927e28cf6ed6ba40d7d4ba77cfea9c220ab8cda5fdf7c237a82dfec9` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-half-active/SHA256SUMS.txt` | `b2bb9eeadcb3448846ae91b8178e192ad70a080de70d6d7637c97678ad9f457d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/b144-unload-restart/SHA256SUMS.txt` | `a76b37a2ad9ed083148dea561684a836e2ee0edfce2c3f35c16985ba0ff4b779` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-structure/SHA256SUMS.txt` | `8cac9c169dbc4e6b9fd093096b01fb9ff17b1b954dddb74c796df31989a78417` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-controller/SHA256SUMS.txt` | `d52eeca0b94cb5ee11a6b16e4807b438581305555a99a12fa510861e61cf4c7d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/damage-explosion/SHA256SUMS.txt` | `7f654afab7bc0bc10c1c87df03f0dce31b513faf6ada561c7f67c2acc4716297` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/two-owners/SHA256SUMS.txt` | `09bb41f6656db14fbdd8e43898441e595ec3b1008f5d18195461fd3529aa6eca` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K05/r608/declared-limits/SHA256SUMS.txt` | `11d82f88f3f5c88c1899d1a3b98d7e58b5ac92da8e12a1fc8278bf6b4e98cca9` |
+
+**Recipe and original-step mapping.** r608/manifest.json recipes/scenes/declared_fields and each scene's manifest.json layout/ledgers: C01 a100/b144; C02 unload; C03 two-owners; C04 three damage modes; C06 declared-limits; C08 distance; I02/I06/I08 and J21 machine views. Match the original numbered action to its named scene, not to a passing verdict.
+
+**Remaining coverage and reasons.** Half-active preparation is 56 real, energy-exhausted jobs plus 16 START_BY_MENU research sites, not 72 running jobs. Supply ordinary FE, load the 36 named chunks, bind accounts and perform the 16 menu starts before sampling. C13 has 18 fields inventoried but live at-limit/one-past refusal is NOT_COVERED (read-only projections/no setter). Cross-chunk ports, shared Precision, repair/resume, all delivered kinds/facings and actual GUI/V1/V2 remain partial. Piston rig is out of scope. C08 squared distance is 64 (radius 8), but no hostile intent was sent.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I02 | a100/b144 manifests -> original coexist/unload/restart actions for nine NORTH kinds; other kinds/facings not inferred. |
+| I04 | r608/manifest.json recipes -> recipe execution/display comparisons; actual JEI counts/pages remain unexecuted. |
+| I06 | Nine-kind layout views -> model-family/high-risk inspection; K13 is the complete inventory, not these nine kinds. |
+| I08 | Layouts -> original scale/language/reload steps; per-screen real-client coverage remains unexecuted. |
+
+### I-K13: asset/screen/sound/access inventories and resource packs
+
+Source: `W402.md; QUEUE.md row W402`. Root acceptance/disposition: **R546** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K13/SHA256SUMS.txt` | `6553bcb6a17fdea8f79f4d7569912f9c626e3e5b36cd21855ed5824ed46c6628` |
+
+**Recipe and original-step mapping.** classification.csv/model-families.csv/screens.csv map I02/I06/I08 and J21; access-matrix.csv maps I11/K18; sound-events.csv/sound-producers.csv and k13-long-text-pack.zip map J12-J16; k13-missing-resource-pack.zip maps I07 with K14. Read each CSV's named row/category, not historical aggregate counts.
+
+**Remaining coverage and reasons.** Inventory/resource generation is delivered, not successful client load/audio/visual coverage. Audio-enabled live profile was not built (W402 explicitly excludes it), and per-cell JEI runtime category/recipe counts remain NOT_COVERED until campaign C31. C6 copy's seal supersedes older-candidate input hashes; preserve individual pack hashes already recorded below. No captured 1.12 session exists for I07.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I04 | No runtime-count fixture: screens/asset inventory does not supply C31 JEI totals; original per-cell page and usage-query steps remain to run. |
+
+### I-K14: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps
+
+Source: `W449.md; QUEUE.md row W449`. Root acceptance/disposition: **R642** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K14/partial-r3/core-scenes/SHA256SUMS.txt` | `2bca0a1174f1e8a688da11fc5b075dccfb07f60db0d404056305118f7ba22dd4` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K14/partial-r3/prior-sleep/SHA256SUMS.txt` | `c58fc2f24161925c96fadeccba1e0fa3c9f20a3d47481d1fe27632aacfea411a` |
+
+**Recipe and original-step mapping.** partial-r3/client-steps.json keys I07.01-I07.07, J18.01-J18.14, J19.01-J19.11, J20.01-J20.07 map one-to-one to original steps; layout.json, values.json, sleep-hosts.json and frozen-recipe.json retain geometry/effective values/freeze text. For J21 N15-N19 use J20's lifecycle/interaction recipes plus K08 station controls; no batch or rider result is inferred.
+
+**Remaining coverage and reasons.** 33 sites, 25 structurally formed; eight research controller cells deliberately empty for A's player placement. Tall rockets are unfuelled/console-owned; named pad/elevator links/seat and rider actions remain scripted. FI08 prior-sleep has zero players, so prior-home/forced/pending-backup cases are NOT_COVERED there. R642 requires a new copy of the campaign's own A/B slept-and-saved world for those cases; V02 holders, V03 packs and V12 portal are campaign host steps, not already qualified. Callback/B1/R1, ordinary sleep, visible break/repair/tracking, real menus and every client-steps status stay NOT_COVERED until executed. Planet respawn extension is not implemented, not a passed row.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I07 | partial-r3/client-steps.json I07.01-I07.07 -> original steps1-7, one-to-one; layouts and missing-resource pack are input only. All seven visual/tracking outcomes remain NOT_COVERED. |
+
+### I-K15: bounded observers, with explicit remaining visibility gaps
+
+Source: `W403.md; QUEUE.md row W403; W452.md/R648`. Root acceptance/disposition: **R548; R648 for A08/A09** in `../QUEUE.md`.
+
+**Recipe and original-step mapping.** Tracked scripts/campaign_observe/{ticks,process,jdk,host,evidence}.py and scripts/run_campaign_observer.py at implementation 385c079dc10718f781a425527cd3e9a0765a0518 supply matched-copy window/process/heap/JFR/evidence operations. Use sample_ticks/force-load queries and owned-process-only diagnostics at the row's existing sampling step; K17 schedule and K08/K09/K10 load drivers supply concrete harness integrations.
+
+**Remaining coverage and reasons.** W403 created no sealed live fixture or SHA256SUMS.txt: none is invented. Window aggregates cannot prove whole-run percentiles/spike lengths. C6/K17's release-test raw sampler is used only in the separately labelled R648 REF run for A09. All-Forge-ticket, queue-internal, client/GPU allocation and direct cache-release proof remain NOT_COVERED where unavailable; histogram/heap/RSS proxies are labelled, not direct evidence. Actual REF acceptance/full windows and overhead checks remain unexecuted.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I09 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+| I10 | At the row's original measurement/readback actions, call tracked sample_ticks and process/owned-JFR helpers; retain source limitation above. No direct cache/all-Forge-ticket or unavailable raw-stream proof is supplied by window/histogram proxies. |
+
+### I-K16: v2 core scene, mapped controls and conditional recheck batches
+
+Source: `W427.md; W443.md; QUEUE.md rows W427/W443`. Root acceptance/disposition: **R595; R628 supersedes final/ with v2/** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K16/v2/SHA256SUMS.txt` | `27df12a711d23f500dd7370fab35a6c5d457f6eebd93e8366ee191889b140fa9` |
+
+**Recipe and original-step mapping.** v2/batch-index.json maps each row/step/file; manifest.json core_route/devices/supplies and candidate-recipes.json give counts/positions/recipes. A02/I01 use core-00/core-01, core-room/core-suit, core-rocket-assemble/-fuel/-invalid, core-flight-plan/-observe; A06/A13/A17 use core-station/core-screen-*; E07 uses sp-pause; J20/J21 use rechecks.json and batches/j21-*.json. controls.json gives effective viewport targets, not old pointer replay.
+
+**Remaining coverage and reasons.** R628 accepts only the en_us 1280x720 scale-3 dedicated rehearsal; scale2/fullscreen/zh_cn, integrated pause and 63 J21 requests are generated, not rehearsed. Fullscreen screen gate needs checking. B-5/3-2/8-2 remain checkpoint-only; no complete continuous quantitative crafting witness or all-screen/first-join/dual-seat/station ownership-transfer procedure is supplied. Return flight/paid warp/satellite flow, O5 accounts, N15-N19 physical setup and V1/V2 remain partial. Never replay old NBT-writing setup; R638 applies. Desktop-wide Alt/Shift are the recorded night-round operating condition.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I01 | manifest.json core_route, candidate-recipes.json and core-00/-01/assemble/fuel/flight/railgun -> original continuous route actions; granted core route is not a quantitative vanilla-to-endgame crafting witness or O4 hand-played subset. |
+| I06 | controls.json/screen requests -> original high-risk/language inspection inputs; not every C30 screen or model has a complete batch. |
+| I08 | controls.json/p9-session-*/core-screen-* -> original viewport/language/reload actions, with K13's full screen inventory; only one cell/scale/language rehearsed. |
+| I11 | Core devices -> normal menu/holder preconditions; K18 supplies only its finite intent cases; missing branch/control remains NOT_COVERED. |
+
+### I-K17: combined reference world and four-hour schedule
+
+Source: `W452.md; QUEUE.md row W452`. Root acceptance/disposition: **R648** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K17/source/SHA256SUMS.txt` | `d03941ecdb4bff0d1742cf452959293b951e2e26b2972d8983e6f5c0ccd3daf1` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K17/readback-settled/SHA256SUMS.txt` | `a4aba18f3649e82a8e00e5d20f0efc508ad3c35c8b21357938a9811c7efc3df4` |
+
+**Recipe and original-step mapping.** source/layout.json maps the 16 Moon rooms, ten station IDs, mission records and 2048/64/64 pads. source/schedule.json actions and client_steps.{connect,assembly_2048,flights,missions,a11} map A08-A11/I05/I10; use k17_reference.py schedule/run on disposable copies. Two 7200-s sampled segments, 120-s warm-up, flushed saves each 1800 s, one restart at sampled 7200 s, autosave retained.
+
+**Remaining coverage and reasons.** R648: A08 has no test properties; keep forge tps means/RSS/GC/forced chunks. A09 is a separate labelled REF run on the same world/schedule adding only -Dadvancedrocketrycommunity.releaseTestHooks=true for the read-only raw sampler; compare forge tps means under C10's baseline-spread review rule. The 16 forced room chunks are declared workload, not unexpected tickets. Without clients flights/disassembly/dimension transfer remain scripted; ACTIVE missions fall from 101 to zero within ~6000 ticks. Record actual counts and ordinary refills, not a sustained-load claim. K17 does not supply sustained 500/1000 mission or H07 endgame throughput. Full four hours/REF/two real connections/all-ticket/direct-cache evidence remains unexecuted.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I10 | source/schedule.json actions/client_steps all -> original four-hour joint workload; A/B flight, disassembly, transfer and mission refills are scripted, REF and declared Forge/JEI coverage remain. |
+
+### I-K18: bounded client intent JAR and case/readback matrix
+
+Source: `W432.md; intent-test-mod/README.md; QUEUE.md row W432`. Root acceptance/disposition: **R601** in `../QUEUE.md`.
+
+| External checksum list (sealed input directory) | SHA-256 of the list |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS.txt` | `aac26e987be0617ad63cec39b54aefb0fe7f3372085863ab14cd49731e392e57` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K18/SHA256SUMS-CORRECTED-1.txt` | `d29b209b8e7133f2d50f8463d3d9a1fa616572b2fe8b919ddbe58de254ec188f` |
+
+**Recipe and original-step mapping.** Install arce-intent-test-1.0.0.jar only on the probing client. intent-test-mod/README.md Triggering one case steps 1-6 and Case table map C08/D09/I11 flight_stale/range/non_owner/late and classic_stale/range/non_owner/late; E03 flight_forbidden_surface/private_station; E07 late and motion_disabled. R/C/M/L readbacks are required separately. F8 captures; a single F9 queues at most one bounded packet.
+
+**Remaining coverage and reasons.** Use SHA256SUMS-CORRECTED-1.txt: the original list's final-validator hash is stale and preserved, not silently repaired. There are three C2S channels, five S2C-only; no payload-terminal, research-menu, callback-fault, packet-burst, late-S2C/cache, all-ticket or same-tick claim control exists. Those branches remain NOT_COVERED with the README's named A0/A1 references/gaps. Client queue log is not server receipt. Actual real-client/server qualification and unchanged-state/loaded-chunk readbacks remain campaign work.
+
+**Mapping in checklist I.**
+
+| Original row/actions | Recipe selector and retained limitation |
+|---|---|
+| I11 | All applicable README case-table rows + R/C/M/L and 28-menu holder map -> original policy actions, respecting actual public/member/owner/OP access; no self-only distance policy invented. |
 
 ## I01 — One technology route from vanilla resources to endgame
 
@@ -62,7 +250,7 @@ for a full survival-played run and not authorization to omit the complete route.
 
 **Accepted preparation/action steps (W408):**
 
-(C29) Use one continuous scripted C6 witness from first machine to the **railgun pair** endgame device (accepted choice), including recipes/counts/resources. **Needs package K16**: route scene and witness manifest. O4 still chooses/records the hand-played subset; rehearsal is not a full survival-played claim.
+(C29) Use one continuous scripted C6 witness from first machine to the **railgun pair** endgame device (accepted choice), including recipes/counts/resources. Preparation is required for the route scene and witness manifest. O4 still chooses/records the hand-played subset; rehearsal is not a full survival-played claim. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Continuous/referenced route video, witness route and resource ledger, per-stage screenshots,
 server/client logs and the owner-confirmed hand-played subset under phase 2.
@@ -87,7 +275,7 @@ idle/active states, coordinates, recipes, buffers, energy, fluids and progress. 
 
 **Accepted preparation/action steps (W408):**
 
-(C30) Use FI10's 144 controllers, 16 of nine kinds, with no further scaling factor. **Needs package K05**: concrete many-machine layout/recipes/ledgers and per-machine restart sequence. Classification/inventory comes from W402/K13; no extra scaling is invented.
+(C30) Use FI10's 144 controllers, 16 of nine kinds, with no further scaling factor. Preparation is required for the concrete many-machine layout/recipes/ledgers and per-machine restart sequence. Classification/inventory comes from W402/K13; no extra scaling is invented. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Phase 3 machine-by-machine inventory/progress/unload/restart comparisons and phase 5 layout,
 scale factor, raw idle/active samples, queue/ticket counts and host record.
@@ -97,7 +285,7 @@ scale factor, raw idle/active samples, queue/ticket counts and host record.
 
 **Phase/level/machine/accounts:** 3 DS, development PC and A. **Gate:** Ordinary upgrade copy.
 **Preconditions:** P2 v1.7 world with every placeholder and old registry ID, its pre-upgrade ID/state manifest and
-immutable archive/hash. The complete archive/ID manifest **needs package K02**.
+immutable archive/hash. The complete archive/ID manifest **needs package K02** — in progress (W447); entry I-K02.
 
 1. [H] Hash the source archive and copy it without modifying the original. → Source remains recoverable and unchanged.
 2. [H] Start that copy on C6 and enumerate old blocks/items/roots. → All stable IDs remain; replacement art/behavior
@@ -108,7 +296,7 @@ immutable archive/hash. The complete archive/ID manifest **needs package K02**.
 
 **Accepted preparation/action steps (W408):**
 
-(C30) **Needs package K02**: immutable all-old-ID v1.7 source and manifest. Use K13's delivered inventory to enumerate new art; reconstruction remains labelled as such and is not a played-source claim.
+(C30) **Needs package K02** — in progress (W447); entry I-K02: immutable all-old-ID v1.7 source and manifest. Use K13's delivered inventory to enumerate new art; reconstruction remains labelled as such and is not a played-source claim.
 
 **Evidence to keep:** Phase 3 archive identity, pre/post ID/state inventory, two restart comparisons and full logs.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -137,7 +325,7 @@ counts from its resources/runner; W188's historical counts are not automatically
 
 **Accepted preparation/action steps (W408):**
 
-(C31; W400) Read category/recipe counts from C6 in each actual JEI-present named cell; W188 totals remain history. Show at least one recipe page and one usage query per category, capturing final synchronized receipts. The four manifest paths/hashes are in A. Runtime counts still **needs package K13**; recipe/machine scene **needs package K05**.
+(C31; W400) Read category/recipe counts from C6 in each actual JEI-present named cell; W188 totals remain history. Show at least one recipe page and one usage query per category, capturing final synchronized receipts. The four manifest paths/hashes are in A. Runtime counts still require qualification; the recipe/machine scene still requires preparation. Entry I-K13 (R546) supplies the following inputs: asset/screen/sound/access inventories and resource packs. The live audio-enabled profile and per-cell runtime JEI counts remain unqualified. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Phase 2 real-client pages/usages/screenshots and phase 3 per-cell command/profile manifests,
 ordered category receipts, counts, initial/restart client/server logs and state comparisons. D9 limits v1.8 support
@@ -180,7 +368,7 @@ screens/models/textures/sounds. Missing sample definition is a preparation gap, 
 
 **Accepted preparation/action steps (W408):**
 
-(C30; W402/R546) Use K13's `classification.csv`/`model-families.csv`: inspect all high-risk OBJ/multiblock/armour and W244/W261/W265-corrected assets, plus one pick per other model family. Open **every screen once per language**, including the eleven no other row names (W402 section 4). The 48 unreferenced textures are v1.9 Low cleanup, outside this campaign (R546), not silently a passed sample. **Needs package K05**: scene placement; screen navigation/recheck controls **needs package K16**.
+(C30; W402/R546) Use K13's `classification.csv`/`model-families.csv`: inspect all high-risk OBJ/multiblock/armour and W244/W261/W265-corrected assets, plus one pick per other model family. Open **every screen once per language**, including the eleven no other row names (W402 section 4). The 48 unreferenced textures are v1.9 Low cleanup, outside this campaign (R546), not silently a passed sample. Preparation is required for the scene placement; screen navigation/recheck controls still require qualification. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Phase 2 coverage inventory, high-risk complete checklist, contact sheets, screenshots/video,
 sound index, logs and matching-line list. I07/J15 provide deeper checks but do not replace the broad inventory.
@@ -231,7 +419,7 @@ Use their final corrections: actual Capsule mesh, all-face `rocketpad_`, and fla
 
 **Accepted preparation/action steps (W408):**
 
-(C32) No captured 1.12 session exists; "compared with 1.12 screenshots" is NOT_COVERED for that reason. Compare instead to W241's audited renderer inventory at upstream `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, preserving W244/W261/W265 corrections and without importing unaudited art. W402 delivers `k13-missing-resource-pack.zip`, SHA-256 `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf`, under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K13/`; its seven source-derived overrides/fallback expectations are W402 section 7, not observed loads. **Needs package K14**: phase-4 paired break/repair/tracking scene and actual pack checks.
+(C32) No captured 1.12 session exists; "compared with 1.12 screenshots" is NOT_COVERED for that reason. Compare instead to W241's audited renderer inventory at upstream `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`, preserving W244/W261/W265 corrections and without importing unaudited art. W402 delivers `k13-missing-resource-pack.zip`, SHA-256 `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf`, under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K13/`; its seven source-derived overrides/fallback expectations are W402 section 7, not observed loads. Preparation is required for the phase-4 paired break/repair/tracking scene and actual pack checks. Entry I-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations.
 
 **Evidence to keep:** Phase 2 per-model/facing/context screenshots, owner judgement, resource-pack names/hashes,
 full client logs, reload observations and phase 4 paired formation views. Sources give no substitute automated
@@ -251,7 +439,7 @@ visual verdict; the 1.12-screenshot comparison remains NOT_COVERED under C32; us
 
 **Accepted preparation/action steps (W408):**
 
-(C30) Open every delivered screen once in each language; K13's 32-row `screens.csv` includes overlays/non-menu screens and the eleven not named by another row. Use C2 effective viewports, never clamped scale 4 as a separate result. **Needs package K16**: navigation/long-state controls; **needs package K05**: machine placement. W402 supplies screen/asset classifications.
+(C30) Open every delivered screen once in each language; K13's 32-row `screens.csv` includes overlays/non-menu screens and the eleven not named by another row. Use C2 effective viewports, never clamped scale 4 as a separate result. Preparation is required for the navigation/long-state controls; preparation is required for the machine placement. W402 supplies screen/asset classifications. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Phase 2 screen × language × scale × mode index, screenshots, tooltips/reload timings and logs.
 **Result fields:** Actual: ____; Screenshot or video: ____; Tester: ____; Date: ____; Build hash: ____.
@@ -275,7 +463,7 @@ JEI 15.56.0.205. Freeze sampling interval, frame collector and heap measurement 
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W399/W403) Follow A's two same-cell Vanilla/Forge baseline runs, average/slowest-1%/first-stall/longest-frame definitions, reporting-only 50 ms and review-only spread trigger; no FPS/stall cutoff exists. Owned-client heap/histogram proxies are measured outside timed frames, never asserted as GPU/cache release. **Needs package K04**: three rockets; **needs package K15**: direct heap/cache qualification and comparison plan; O8 approves capture/version.
+(C5, R535; W399/W403) Follow A's two same-cell Vanilla/Forge baseline runs, average/slowest-1%/first-stall/longest-frame definitions, reporting-only 50 ms and review-only spread trigger; no FPS/stall cutoff exists. Owned-client heap/histogram proxies are measured outside timed frames, never asserted as GPU/cache release. Preparation is required for the three rockets; preparation is required for the direct heap/cache qualification and comparison plan; O8 approves capture/version. Entry I-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified. Entry I-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Phase 2 `frametime/` raw data, baselines/settings/hardware, scene manifests, first-stall video,
 three reloads per JEI state with heap/cache readings and per-category/search timing table. Sources set no numeric
@@ -304,7 +492,7 @@ I04's complete four-cell rerun separately; D9 does not require four independent 
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K17**: complete combined load, four sampled hours, 30-minute flushed saves and two-hour restart schedule (C4/R535 procedure parameters). **Needs package K15**: complete raw-tick/all-ticket observation; O7/O11 supply real connections and REF acceptance. Keep each Forge/JEI result distinct.
+Preparation is required for the complete combined load, four sampled hours, 30-minute flushed saves and two-hour restart schedule (C4/R535 procedure parameters). Preparation is required for the complete raw-tick/all-ticket observation; O7/O11 supply real connections and REF acceptance. Keep each Forge/JEI result distinct. Entry I-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry I-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Phase 5 raw full-duration samples, workload/actions/connection manifest, configuration,
 restart/resource comparisons and exact actual budget table; link I04's four-cell evidence by row ID.
@@ -328,7 +516,7 @@ force-field projector and pump as well as endgame devices. Record permissions an
 
 **Accepted preparation/action steps (W408):**
 
-(C14 corrected by R546; W402 section 6) Use delivered K13 holder/policy matrix, with bounded tool receipt and unchanged server-state readback for every negative case; logs only where code emits one. `suit_motion` affects only the sender's own worn jetpack and needs **no distance step**. Beacon, pad, projector and pump are block-use devices, not invented menus/packets. The projector's silent non-operator use is accepted Low KI-V180-UI-01, still check unchanged state. **Needs package K18**: safe per-channel probes and named A1 references for unreachable/late cases; the live fixture **needs package K16**.
+(C14 corrected by R546; W402 section 6) Use delivered K13 holder/policy matrix, with bounded tool receipt and unchanged server-state readback for every negative case; logs only where code emits one. `suit_motion` affects only the sender's own worn jetpack and needs **no distance step**. Beacon, pad, projector and pump are block-use devices, not invented menus/packets. The projector's silent non-operator use is accepted Low KI-V180-UI-01, still check unchanged state. Preparation is required for the safe per-channel probes and named A1 references for unreachable/late cases; the live fixture still requires qualification. Entry I-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Phase 4 menu/holder/variant table, paired screenshots/video, both client logs, server policy
 receipts, unchanged-resource/chunk comparisons and successful owner controls.
@@ -337,10 +525,11 @@ receipts, unchanged-resource/chunk comparisons and successful owner controls.
 ## Open questions for Root
 
 - **Answered:** C29 railgun-pair continuous witness; C30 high-risk/every-screen/family sample/144-controller scale; C31 page/usage query method; C32 audited W241 inventory with unavailable 1.12 screenshot comparison NOT_COVERED. W402 delivers classifications/screens/policies/resource packs; R546 covers unnamed screens, silent projector Low and no jetpack distance step.
-- **I01:** complete witness/recipe/count/control manifest **needs package K16**; O4 chooses the hand-played subset.
-- **I02/I03/I06/I08:** live machine scene **needs package K05**, all-old-ID historical source **needs package K02**, navigation/recheck batches **needs package K16**. Inventories/classifications are delivered, not new open choices.
-- **I04:** runtime per-cell JEI counts **needs package K13**, recipe scene **needs package K05**. W400 names/manifest paths are answered.
-- **I07:** actual missing-pack load and paired break/repair/tracking scene **needs package K14**. No captured 1.12 session is invented.
-- **I09:** three rocket scenes **needs package K04**, direct heap/cache observation **needs package K15**; O8 approves capture/version. No FPS/reload/response cutoff exists.
-- **I05/I10:** combined workload **needs package K17**, production recipe layout **needs package K05**, complete observers **needs package K15**. O7/O11 supply connections/node access.
-- **I11:** live fixture **needs package K16**, bounded receipt/readback/probes and A1 references **needs package K18**. Follow the actual holder matrix, not blanket owner-only policy.
+- **I01:** A complete witness/recipe/count/control manifest remains required; O4 chooses the hand-played subset. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+- **I02/I03/I06/I08:** Live machine scene preparation remains required; the all-old-ID historical source remains open (**needs package K02** — in progress (W447); entry I-K02); navigation/recheck batches still require qualification. Inventories/classifications are delivered, not new open choices. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+- **I04:** Runtime per-cell JEI counts and recipe scene qualification remain required. W400 names/manifest paths are answered. Entry I-K13 (R546) supplies the following inputs: asset/screen/sound/access inventories and resource packs. The live audio-enabled profile and per-cell runtime JEI counts remain unqualified. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
+- **I07:** Actual missing-pack load and paired break/repair/tracking scene qualification remain required. No captured 1.12 session is invented. Entry I-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations.
+- **I09:** Three rocket scenes and direct heap/cache observation remain required; O8 approves capture/version. No FPS/reload/response cutoff exists. Entry I-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified. Entry I-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **I05/I10:** A combined workload, production recipe layout and complete observers remain required. O7/O11 supply connections/node access. Entry I-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry I-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry I-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **I11:** A live fixture, bounded receipt/readback/probes and A1 references remain required. Follow the actual holder matrix, not blanket owner-only policy.
+Entry I-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry I-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
