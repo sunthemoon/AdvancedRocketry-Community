@@ -16,18 +16,18 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 ## Shared preconditions and evidence
 
 H means harness/operator and P means human; an arrow states the expected observation for that action.
-Use P2's representative v1.3–v1.7 world, specifically its endgame copy. The scene **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)** to freeze device/target coordinates,
+Use P2's representative v1.3–v1.7 world, specifically its endgame copy. The scene requires preparation to freeze device/target coordinates,
 endpoint/station IDs, account UUIDs, inventories and fixture archives/hashes first; these are absent from the version
 checklist. Include the laser drill, railgun, black-hole generator, gravity field and elevator, not only one device.
 Use P1's C6 JAR/hash and Java 17 on Forge 47.4.10 without JEI by default; record actual JEI state, and use only
 JEI 15.56.0.205 if installed. Repeat the 47.4.23 compatibility smoke. Pin difficulty, view-distance and
-simulation-distance; sources do not assign mandatory values (the historical performance run used distances 2).
+simulation-distance; sources do not assign mandatory values (the historical performance run used distances 2). Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 Ordinary rows need no marked bay campaign gate or extra JVM property. Keep admission switches off and endgame
-settings as recorded; physical laser mining defaults off, so its destructive case **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)** disposable-fixture
+settings as recorded; physical laser mining defaults off, so its destructive case requires disposable-fixture
 configuration, not a silent production change. After a config edit, restart and check `/arce endgame status`;
 `/reload` does not reload the common config. Phase 4 V2 has two real authenticated accounts A/B on a packaged DS,
-`online-mode=true`, `white-list=true`, `enforce-whitelist=true`, `enable-rcon=false` and restricted access.
+`online-mode=true`, `white-list=true`, `enforce-whitelist=true`, `enable-rcon=false` and restricted access. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 Evidence root E is `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/`. Keep V1 under
 `E/phase2-v1/<machine>/<round>/`, DS/S2 under `E/phase3-ds/<row>/`, V2 under `E/phase4-v2/<sitting>/` and REF/SOAK
@@ -139,7 +139,7 @@ known initial energy/cargo; include contention appropriate to each system, with 
 
 **Accepted preparation/action steps (W408):**
 
-**K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: target/device coordinates, contention scenes, owners, exact menus and native invocation; actor inputs are not two-real-client evidence.
+Preparation is required for the target/device coordinates, contention scenes, owners, exact menus and native invocation; actor inputs are not two-real-client evidence. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 **Evidence to keep:** Both videos/logs, target/consent data, tick/order transcript, audit and exact before/after
 resource projections in phase 4.
@@ -162,7 +162,7 @@ prepare station-member-but-not-device-owner variant without granting B operator 
 
 **Accepted preparation/action steps (W408):**
 
-**K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: five-device permission scenes, owner/member policies and positive controls; use R546 tool receipts/unchanged state and logs only on logging branches.
+Preparation is required for the five-device permission scenes, owner/member policies and positive controls; use R546 tool receipts/unchanged state and logs only on logging branches. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 **Evidence to keep:** Both clients' refusal and owner-success views, account/role manifest, audit and unchanged
 resource/chunk projections in phase 4. Pair this with I11's v1.8 owner-bound devices, without dropping either row.
@@ -184,7 +184,7 @@ mapped to [the recovery matrix](../../../releases/v1.7.0/RECOVERY-MATRIX.md); ph
 
 **Accepted preparation/action steps (W408):**
 
-**K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: matched C6 batch-cut seam, owned-process external-stop invocation and large-range variant. No old boundary is guessed.
+Preparation is required for the matched C6 batch-cut seam, owned-process external-stop invocation and large-range variant. No old boundary is guessed. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 **Evidence to keep:** Runner command/version, cut receipt, stopped-file projections, both restart logs and block,
 inventory/energy/ledger comparisons in phase 3. Exact batch/cut command is a Root prerequisite, not provided by §10.
@@ -207,7 +207,7 @@ denied target. Real third-party mods require the selected names, versions, licen
 
 **Accepted preparation/action steps (W408):**
 
-(C27) Record the inherited real-protection-mod item NOT_COVERED in v1.8, reason D9/O6 support scope; it moves to v1.9. Run adapter/event simulation only as supplementary evidence, never a real-mod pass. Its allow/deny scene **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**; no new third-party mod is selected.
+(C27) Record the inherited real-protection-mod item NOT_COVERED in v1.8, reason D9/O6 support scope; it moves to v1.9. Run adapter/event simulation only as supplementary evidence, never a real-mod pass. Its allow/deny scene still requires preparation; no new third-party mod is selected. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
 
 **Evidence to keep:** Adapter or real-mod identity/configuration/hashes, region manifest, event/audit transcript,
 allowed and denied state comparisons and restart logs in phase 3.
@@ -232,7 +232,7 @@ two real clients from phase 4 through SSH tunnels to the loopback-bound server, 
 
 **Accepted preparation/action steps (W408):**
 
-**K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: endgame workload/cleanup controls; **K17 supplied input/limits: combined reference world and four-hour schedule; entry H-K17 (R648)**: combined reference world and save/restart schedule; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry H-K15 (R548; R648 for A08/A09)**: qualified long-run observers. Owner O7 supplies real connections/equivalent decision; budgets and full duration stay unchanged.
+Preparation is required for the endgame workload/cleanup controls; preparation is required for the combined reference world and save/restart schedule; preparation is required for the qualified long-run observers. Owner O7 supplies real connections/equivalent decision; budgets and full duration stay unchanged. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open. Entry H-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry H-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Continuous workload/timing/memory/GC/ticket samples, start/end resource projections,
 normal-stop/restart logs and host/JVM/config identity in phase 5. An interrupted soak needs a new full run.
@@ -257,7 +257,7 @@ elevator, including successful and refused states and several simultaneous visib
 
 **Accepted preparation/action steps (W408):**
 
-(J21 A-F4/A-F5) At a generating Cygnus X-1 black-hole generator view the ring from two blocks below and five blocks above: visible from both sides. Also open railgun, black-hole generator, laser drill and laser target at their longest reason lines, scale 3, en_us/zh_cn: lines fit, full hover available. **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: generating scene/coordinates; **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry H-K16 (R595; R628 supersedes final/ with v2/)**: regenerated recheck batches. C2's effective viewport rule applies.
+(J21 A-F4/A-F5) At a generating Cygnus X-1 black-hole generator view the ring from two blocks below and five blocks above: visible from both sides. Also open railgun, black-hole generator, laser drill and laser target at their longest reason lines, scale 3, en_us/zh_cn: lines fit, full hover available. Preparation is required for the generating scene/coordinates; preparation is required for the regenerated recheck batches. C2's effective viewport rule applies. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open. Entry H-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Per-device screenshots, effect/screen video, scale/language/contact-sheet index, raw frame
 samples and both machines' client/server logs in phase 2. The owner supplies the visual verdict.
@@ -289,7 +289,7 @@ and 192 four-stack transit records. This supplements, not replaces, docs/17's ba
 
 **Accepted preparation/action steps (W408):**
 
-(C28; ADR-054) Classify two real connections separately from builder fixture players (not real players). Report achieved railgun throughput against the unchanged required launch load; a shortfall is not met, never a reason to lower it. Windows history is not REF evidence. **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**: actors, throughput method and native driver; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry H-K15 (R548; R648 for A08/A09)**: REF sampling. O7 supplies real connections.
+(C28; ADR-054) Classify two real connections separately from builder fixture players (not real players). Report achieved railgun throughput against the unchanged required launch load; a shortfall is not met, never a reason to lower it. Windows history is not REF evidence. Preparation is required for the actors, throughput method and native driver; preparation is required for the REF sampling. O7 supplies real connections. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open. Entry H-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Phase 5 load/throughput manifest, idle/cold/loaded timing output, raw per-flush samples
 including ramp, JFR/host samples, ticket audit and exact budget table with actual values.
@@ -298,7 +298,8 @@ including ramp, JFR/host samples, ticket audit and exact budget table with actua
 ## Open questions for Root
 
 - **Answered:** C27 real-mod H04 NOT_COVERED in v1.8, D9/O6, adapter supplementary and real-mod scope v1.9; C28 actor classification and unchanged achieved-versus-required load. H06 explicitly rechecks two-sided disc and long endgame reasons.
-- **H01-H07:** device/target/owner/resource scene, menu/native/refload controls, actors and throughput method **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**.
-- **H03:** C6 cut seam/large-range variant **K10 supplied input/limits: endgame sources, physical-layer cut and throughput shortfall; entry H-K10 (R635)**.
-- **H05/H07:** raw-tick/JFR/all-ticket/cache integration **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry H-K15 (R548; R648 for A08/A09)**, combined world **K17 supplied input/limits: combined reference world and four-hour schedule; entry H-K17 (R648)**. O7/O11 supply connections/node access; Windows history is not REF evidence.
-- **H06:** regenerated two-sided-disc/long-text batches **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry H-K16 (R595; R628 supersedes final/ with v2/)** plus K10's scene; O9 supplies second GPU.
+- **H01-H07:** The device/target/owner/resource scene, menu/native/refload controls, actors and throughput method remain required. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
+- **H03:** The C6 cut seam/large-range variant still requires qualification. Entry H-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open.
+- **H05/H07:** Raw-tick/JFR/all-ticket/cache integration and a combined world remain required. O7/O11 supply connections/node access; Windows history is not REF evidence. Entry H-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry H-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load.
+- **H06:** Regenerated two-sided-disc/long-text batches plus K10's scene remain required; O9 supplies second GPU.
+Entry H-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.

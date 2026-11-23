@@ -18,11 +18,11 @@ wording or demands for nonexistent refusal logs do not override these decisions.
 ## Shared preconditions and artifact rules
 
 H marks harness/operator actions; P marks human actions/judgements. Each arrow supplies the expected observation.
-Use the P2 representative v1.3–v1.7 world, specifically the mission fixture, on disposable copies. The manifest **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)** to pin its
+Use the P2 representative v1.3–v1.7 world, specifically the mission fixture, on disposable copies. The manifest requires preparation to pin its
 archive/hash, terminal coordinates, satellite/mission/instance IDs, launch packages, owner UUIDs, target bodies,
 reward snapshots and the ordinary start/claim/cancel controls before running. The cited version sections do not
 give these values; do not invent them. Include data, survey, asteroid and gas missions and at least three satellite
-types, not just one timed mission.
+types, not just one timed mission. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 Use C6 from P1 with Java 17, Forge 47.4.10 and no JEI by default; record the actual versions and use the 47.4.23
 compatibility profile for its smoke. If JEI is present it is 15.56.0.205. Phase 3 DS uses the packaged server on the
@@ -132,7 +132,7 @@ worst-case-root fixtures. Capture scheduler clock, statuses, deadlines, registry
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C24, R535) Read C6's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: >100/500/1,000 scenes, per-kind deadlines/default readback and driver; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry G-K15 (R548; R648 for A08/A09)**: raw sampling.
+(C10/C24, R535) Read C6's effective shipped scheduler defaults without increasing them. Use the standard matched sampling plan for short measurements; online missions run inside the four-hour soak, deadlines set so at least one mission of each kind expires inside its window. Offline work includes that soak restart plus a separate 30-minute stop (procedure parameter); downtime is not mission progress. Preparation is required for the >100/500/1,000 scenes, per-kind deadlines/default readback and driver; preparation is required for the raw sampling. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open. Entry G-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Phase 3 restart projections and writer-drain logs; phase 5 500/1,000/worst-root manifests,
 raw timing/GC/RSS/flush samples, backlog and reward comparisons, and reference hardware record.
@@ -155,7 +155,7 @@ with one per-kind expiry inside the running window; these are procedure paramete
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C24) The online interval is inside the four-hour soak; the stopped-server control is the soak restart plus one 30-minute stop, a procedure parameter. Read effective default scheduler limits; arrange one expiry per kind inside the appropriate running window, not wall-clock downtime. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: deadlines, scene and scheduler observations. Use A's matched sample/review rule where comparing costs.
+(C10/C24) The online interval is inside the four-hour soak; the stopped-server control is the soak restart plus one 30-minute stop, a procedure parameter. Read effective default scheduler limits; arrange one expiry per kind inside the appropriate running window, not wall-clock downtime. Preparation is required for the deadlines, scene and scheduler observations. Use A's matched sample/review rule where comparing costs. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 **Evidence to keep:** Disconnect/reconnect and stop/start times, logical clock/deadline snapshots, scheduler work
 counts/tick samples, mission/reward projections and logs in phase 3.
@@ -176,7 +176,7 @@ Configure the harness's input synchronization and server-tick observation before
 
 **Accepted preparation/action steps (W408):**
 
-(C9) Keep each claim's server receipt tick; "same tick" requires one identical tick in the server record, with no overlap tolerance. Otherwise report the gap, still check the two distinct once-only rewards/no gain or loss, and mark only same-tick V2 NOT_COVERED with its named A1 test. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: tick observation and ready missions; bounded intent support, if needed, **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry G-K18 (R601)**. Owner O5 supplies coordinated inputs.
+(C9) Keep each claim's server receipt tick; "same tick" requires one identical tick in the server record, with no overlap tolerance. Otherwise report the gap, still check the two distinct once-only rewards/no gain or loss, and mark only same-tick V2 NOT_COVERED with its named A1 test. Preparation is required for the tick observation and ready missions; bounded intent support, if needed, still requires qualification. Owner O5 supplies coordinated inputs. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open. Entry G-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
 
 **Evidence to keep:** Both client logs/video and server tick-correlated claim transcript, exact rewards, balances
 and terminal projections in phase 4. If same-tick delivery cannot be established, record NOT_COVERED for that variant.
@@ -213,7 +213,7 @@ Freeze one cut per complete copied world; A/B/D/C below are the matrix's histori
 
 **Accepted preparation/action steps (W408):**
 
-(C25) The exact matching C6 saved-boundary/epoch map **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)** before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write.
+(C25) The exact matching C6 saved-boundary/epoch map must be recorded before selecting a historical cut. A cut without a match is NOT_COVERED with that reason, not presumed equivalent to a synchronous historical write. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 **Evidence to keep:** Runner command/version, candidate installed-copy hash, cut logs, stopped-disk projections,
 both restart logs and exact reward conservation comparison in phase 3.
@@ -243,7 +243,7 @@ for unload/reload; capture initial loaded/forced chunks, registry/cache counts a
 
 **Accepted preparation/action steps (W408):**
 
-(C24/C26; ADR-051) Read effective default scheduler/TTL values, arrange per-kind expiry deadlines inside the C24 online window and 30-minute stop control; never count downtime as progress. Test the inherited "instance chunks" as owning-terminal unloading and logical record reclamation, not a nonexistent world region. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: concrete mission/deadline/unload controls.
+(C24/C26; ADR-051) Read effective default scheduler/TTL values, arrange per-kind expiry deadlines inside the C24 online window and 30-minute stop control; never count downtime as progress. Test the inherited "instance chunks" as owning-terminal unloading and logical record reclamation, not a nonexistent world region. Preparation is required for the concrete mission/deadline/unload controls. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 **Evidence to keep:** Instance lifecycle/expiry manifest, chunk and `/forceload query` observations, cache/record
 counts, cancellation/completion receipts and restart comparisons in phase 3.
@@ -269,7 +269,7 @@ failure/cancel/expiry fixtures and the relevant star-map targets. Keep the refer
 
 **Accepted preparation/action steps (W408):**
 
-(C26; ADR-051) State explicitly in the result that inherited "instance visuals" means logical record/target/reward presentation; no instance dimension/region is implemented or invented. **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: real terminal/mission/UI scene.
+(C26; ADR-051) State explicitly in the result that inherited "instance visuals" means logical record/target/reward presentation; no instance dimension/region is implemented or invented. Preparation is required for the real terminal/mission/UI scene. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 **Evidence to keep:** Mission gameplay video, step screenshots, progress/target/reward projections and client/server
 logs in phase 2, with hardware and language/scale indexes. Sources supply no mission-specific FPS threshold.
@@ -291,7 +291,7 @@ Prepare a separate B-owned mission so private balances can be compared.
 
 **Accepted preparation/action steps (W408):**
 
-**K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**: actual owners, missions, observer permissions and start/claim/cancel controls; R546's common receipt/state rule applies to every negative action.
+Preparation is required for the actual owners, missions, observer permissions and start/claim/cancel controls; R546's common receipt/state rule applies to every negative action. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
 
 **Evidence to keep:** Paired screenshots/video at each phase, account permissions, private balance projections,
 both client logs and server log in phase 4.
@@ -300,7 +300,8 @@ both client logs and server log in phase 4.
 ## Open questions for Root
 
 - **Answered:** C24 online soak/restart plus separate 30-minute stop/default limits/per-kind expiry procedure; C10/R535 samples; C9 same-tick proof/no tolerance; C25 cut mapping rule; C26/ADR-051 logical presentation/terminal unloading/record reclamation instead of physical-instance wording.
-- **G01-G07:** immutable mission IDs/owners/packages/rewards, controls, effective defaults, deadlines and driver **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**.
-- **G01/G02/G05:** raw scheduler/tick/all-ticket observations **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry G-K15 (R548; R648 for A08/A09)** alongside K09's workload. Downtime is not progress.
-- **G03:** actual receipt-tick observation **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**; extra intent support if required **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry G-K18 (R601)**. O5 coordinates inputs. Unproved identical ticks means same-tick V2 NOT_COVERED with named A1 test.
-- **G04:** each historical cut's C6 epoch/save-boundary mapping **K09 supplied input/limits: 102/501/1001-active source sets and mapped cuts; entry G-K09 (R625)**; no match means NOT_COVERED with reason.
+- **G01-G07:** Immutable mission IDs/owners/packages/rewards, controls, effective defaults, deadlines and driver remain required. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.
+- **G01/G02/G05:** Raw scheduler/tick/all-ticket observations remain required alongside K09's workload. Downtime is not progress. Entry G-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **G03:** Actual receipt-tick observation remains required; extra intent support, if required, still needs qualification. O5 coordinates inputs. Unproved identical ticks means same-tick V2 NOT_COVERED with named A1 test. Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open. Entry G-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
+- **G04:** Each historical cut's C6 epoch/save-boundary mapping remains required; no match means NOT_COVERED with reason.
+Entry G-K09 (R625) supplies the following inputs: 102/501/1001-active source sets and mapped cuts. Sustained 500/1,000 mission load, real-client same-tick proof and the listed unqualified cuts remain open.

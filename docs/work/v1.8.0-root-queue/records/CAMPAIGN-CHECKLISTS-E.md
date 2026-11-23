@@ -26,9 +26,9 @@ P2 supplies **representative v1.3 to v1.7 worlds**, **a v1.0 world**, **the
 reference workload world of docs/17 section 4**, and associated immutable hashes.
 The planetary scene is a P2-derived disposable copy with a fueled legal rocket,
 powered Satellite Terminal, Data Satellite components, supplied sealed rooms,
-complete oxygen-filled equipment and authorized station access. The scene **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)** to name
+complete oxygen-filled equipment and authorized station access. The scene requires preparation to name
 actual paths, coordinates, owners, station IDs and each pack variant; the source
-manuals do not provide a universal fixture placement script.
+manuals do not provide a universal fixture placement script. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 Read sources: [v1.4 version](../../../versions/V1.4.0-PLANETARY-EXPANSION.md),
 [MT140-01 to MT140-09](../../../releases/v1.4.0/MANUAL-TEST.md),
@@ -267,7 +267,7 @@ leg and never change the graph to force direct Mars-to-Venus travel.
 
 **Accepted preparation/action steps (W408):**
 
-(C1/C19) Flight wire protocol is C6's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**: actual per-leg server quotes/load qualification; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset.
+(C1/C19) Flight wire protocol is C6's pin **10**, not historical 7/8. Enumerate actual catalog/quote legs: Earth → Mars → Earth → Venus → Earth, `earth_mars` twice and `earth_venus` twice (namespace `advancedrocketrycommunity`), distances 80/80/95/95. Test every permitted consecutive pair: no direct Mars→Venus route is assumed or failed for being absent. Preparation is required for the actual per-leg server quotes/load qualification; preparation is required for the run manifest, mass, effective gravity/propulsion values and planetary scene. Mission 200/120/100 values remain as the original row states; no earned balances are reset. Entry E-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -318,7 +318,7 @@ values **200 ticks / 120 reward / 100 captured undiscovered fee**.
 
 **Accepted preparation/action steps (W408):**
 
-(C7) **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: fresh undiscovered and private-station copies, preserving earned balances/IDs/history; zero-start numeric totals are conditional, never obtained by resetting an account. Owner O5 still supplies coordinated real inputs. Use the packs below for held-menu rule changes, not a grant of research.
+(C7) Preparation is required for the fresh undiscovered and private-station copies, preserving earned balances/IDs/history; zero-start numeric totals are conditional, never obtained by resetting an account. Owner O5 still supplies coordinated real inputs. Use the packs below for held-menu rule changes, not a grant of research. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -375,7 +375,7 @@ use supported station controls, not direct edits to observed SavedData.
 
 **Accepted preparation/action steps (W408):**
 
-(C7/C14 corrected by R546) **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: naturally earned discovery/private-station variants; **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**: bounded forbidden gas-surface/stale intents and receipt/state proof. No tool reach means NOT_COVERED with reason and named A1 test, not a pass from a disabled Use surface control.
+(C7/C14 corrected by R546) Preparation is required for the naturally earned discovery/private-station variants; preparation is required for the bounded forbidden gas-surface/stale intents and receipt/state proof. No tool reach means NOT_COVERED with reason and named A1 test, not a pass from a disabled Use surface control. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open. Entry E-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
 
 **Evidence to keep:** Sitting-2 both menu/quote videos, active/editable target
 projections, membership/gas-intent/cancellation receipts, loaded-chunk and fuel
@@ -427,7 +427,7 @@ hazard. Station orbit never imports its planet's surface heat/pressure.
 
 **Accepted preparation/action steps (W408):**
 
-(C20) Leave damage modifiers, difficulty and game rules at C6/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: isolated/combined sites, equipment, exact coordinates and observation intervals.
+(C20) Leave damage modifiers, difficulty and game rules at C6/vanilla defaults and record effective values. Exercise each hazard alone and combined, keeping damage attempts distinct from mitigated health loss. Preparation is required for the isolated/combined sites, equipment, exact coordinates and observation intervals. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 **Evidence to keep:** Per-hazard step screenshots/video, effective pack/tag
 values, damage-attempt/health/oxygen/resource timeline, vent supply and logs.
@@ -450,7 +450,7 @@ and **128-body** catalogs, valid/invalid reload variants and missing/rejected
 client-cache method; baseline/JEI absent. Run English/Chinese, GUI scales
 **2/3/4**, smallest supported and large windows, windowed/fullscreen.
 C2/R535 supplies tested pixels/effective scales; no supported minimum is declared.
-W406 reads C6's 100-tick cooldown; live retry/presentation **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
+W406 reads C6's 100-tick cooldown; live retry/presentation still requires qualification. Entry E-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 | Step | Action, for each display/catalog cell | Expected observation |
 |---|---|---|
@@ -475,7 +475,7 @@ W406 reads C6's 100-tick cooldown; live retry/presentation **K06 supplied input/
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C6 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**: live loads/retry observations; **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**: station; **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**: missing/rejected/late client control; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: cache readback.
+(C2/C14/C21; W406) Use corrected effective viewports; no supported minimum exists. Full-catalog cooldown reads **100 ticks** in C6 source; still record its effective retry/presentation. On separate complete baseline copies with only the 11 original bindings, load each valid catalog/ID variant; lifetime bindings must never be erased to fit a case. The 48-character value is a **station** name, `K06 station ` plus 36 ASCII `n` characters, created by ordinary permitted K08 operations, not a nonexistent body-name pack/field. Test 129 bodies or ID characters only as post-valid-load rejections, never another row's setup. Preparation is required for the live loads/retry observations; preparation is required for the station; preparation is required for the missing/rejected/late client control; preparation is required for the cache readback. Entry E-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications. Entry E-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open. Entry E-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -546,7 +546,7 @@ SKY-V1-08's pre-sky-world identity/time/light/inventory comparison is in E10.
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W399/W403) Use A's same-cell/same-viewport Vanilla/Forge paired captures, twice-run baselines, average/1% low/first-stall/longest-frame definitions and reporting-only 50 ms. No FPS floor or stall limit exists; spread triggers Root review only. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: direct allocation/cache observation and client sky-pack live checks; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: viewpoints/effect scenes. O8/O9 supply approved capture/version and two GPU categories.
+(C5, R535; W399/W403) Use A's same-cell/same-viewport Vanilla/Forge paired captures, twice-run baselines, average/1% low/first-stall/longest-frame definitions and reporting-only 50 ms. No FPS floor or stall limit exists; spread triggers Root review only. Preparation is required for the direct allocation/cache observation and client sky-pack live checks; preparation is required for the viewpoints/effect scenes. O8/O9 supply approved capture/version and two GPU categories. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 **Evidence to keep:** `phase2-v1/<machine>/<round>/` complete body/time/
 display/immersion/effect matrix, native screenshots, videos, frame-time/memory
@@ -590,7 +590,7 @@ behavior, not proof from server time alone.
 
 **Accepted preparation/action steps (W408):**
 
-(C14/C22) Run the pause branch in phase 2 using W399 `mode=launch`, `singleplayer=true`, one copied-save client; **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry E-K16 (R595; R628 supersedes final/ with v2/)**: qualified integrated round and converted batches. If unavailable by that phase, pause alone is NOT_COVERED because dedicated menus do not pause the world. SKY-V2-01/navigation V2 lifecycle remains sitting 2. Late-packet intent receipt/readback **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)** and direct cache readback **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; unavailable branches carry reason and named A1 test.
+(C14/C22) Run the pause branch in phase 2 using W399 `mode=launch`, `singleplayer=true`, one copied-save client; preparation is required for the qualified integrated round and converted batches. If unavailable by that phase, pause alone is NOT_COVERED because dedicated menus do not pause the world. SKY-V2-01/navigation V2 lifecycle remains sitting 2. Late-packet intent receipt/readback and direct cache readback still require qualification; unavailable branches carry reason and named A1 test. Entry E-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry E-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Phase-2 audio/video, transition/body/menu/rocket IDs,
 raw cache/memory observations and unpaused-tick timing; sitting-2 both-client
@@ -632,8 +632,8 @@ station/progress identities and `advancedrocketrycommunity_planetary_bindings.js
 | 12 | [H] Compare original fixture hashes and all preserved projections. | Originals intact; no unexplained resource/identity change. |
 
 An allowed **blocked historical-progress** variant also follows DISC-MIG-01.
-That independently backed-up state **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; never erase historical IDs
-to make it proceed. Run this additional step list on that variant:
+That independently backed-up state remains required; never erase historical IDs
+to make it proceed. Run this additional step list on that variant: Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -651,7 +651,7 @@ or deleted as a normal test shortcut. This row is S1/reload, not an S2 cut claim
 
 **Accepted preparation/action steps (W408):**
 
-(C23) Recovery is only a complete-world backup restore or documented station commands on another backed-up copy. If a variant has no supported recovery, report it as such. Never selectively merge backups, erase IDs or promote scratch files. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: earned paid-pending/blocked histories, coherent removal/restore variants and supported recovery recipe; missing pack load/quote controls **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
+(C23) Recovery is only a complete-world backup restore or documented station commands on another backed-up copy. If a variant has no supported recovery, report it as such. Never selectively merge backups, erase IDs or promote scratch files. Preparation is required for the earned paid-pending/blocked histories, coherent removal/restore variants and supported recovery recipe; missing pack load/quote controls still require qualification. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open. Entry E-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 **Evidence to keep:** `phase3-ds/E08/` all pack variants, generation/reload/
 refusal/restore logs, binding and station/progress projections, pending-claim
@@ -685,7 +685,7 @@ Use ordinary station creation while standing on that mapped orbitable surface.
 
 **Accepted preparation/action steps (W408):**
 
-(C8) Use an account with ordinary ownership capacity, not a bypass; the two real accounts each create one owned station by ordinary play. **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: eligible owner/surface scene and **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)** for the station command/region manifest.
+(C8) Use an account with ordinary ownership capacity, not a bypass; the two real accounts each create one owned station by ordinary play. Preparation is required for the eligible owner/surface scene and for the station command/region manifest. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open. Entry E-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open.
 
 **Evidence to keep:** `phase3-ds/E09/` creation/arrival receipts, station
 UUID/orbit/member/region and environment projections, both restart logs and
@@ -724,7 +724,7 @@ new state on C6 and label it an untouched historical upgrade fixture.
 
 **Accepted preparation/action steps (W408):**
 
-(C7/C8) **K03 supplied input/limits: reconstructed FI05-FI08 chain; entry E-K03 (R614)**: hashed historical v1.4-v1.7 chain; **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**: pre-sky copy from an eligible ordinary owner. Label rebuilt worlds "reconstructed on JAR (hash), not historically played". No retained played pre-sky source means the played-world claim is NOT_COVERED; format migration remains testable. Keep earned balances/bindings, no ownership-limit bypass.
+(C7/C8) Preparation is required for the hashed historical v1.4-v1.7 chain; preparation is required for the pre-sky copy from an eligible ordinary owner. Label rebuilt worlds "reconstructed on JAR (hash), not historically played". No retained played pre-sky source means the played-world claim is NOT_COVERED; format migration remains testable. Keep earned balances/bindings, no ownership-limit bypass. Entry E-K03 (R614) supplies the following inputs: reconstructed FI05-FI08 chain. Historically played-source claims and the listed historical-state gaps remain NOT_COVERED. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 **Evidence to keep:** `phase3-ds/E10/<source>/` old runtime/world/pack
 hashes, raw inventory and schemas, migration differences, both restart logs,
@@ -747,8 +747,8 @@ switches off, no properties. **Sources:** v1.4 section 13.2 and GATE-1.4 G7.
 **Preconditions:** P2 planetary scene and **reference workload world of
 docs/17 section 4**; baseline/JEI absent, server heap <=4 GiB. Same-machine
 Vanilla/Forge frame-time baselines from A12. The actual resource-allocation/cache
-profiling tool and version **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; screenshots alone cannot prove
-that sky resources are not rebuilt every frame.
+profiling tool and version still require qualification; screenshots alone cannot prove
+that sky resources are not rebuilt every frame. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -761,7 +761,7 @@ that sky resources are not rebuilt every frame.
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W403) Keep paired Vanilla/Forge frame measures, 1% low, first/longest stall and twice-run baseline spread for Root review only; no FPS floor, stall limit or extra CPU/network/cache limit exists. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**: actual per-frame allocation/GPU/cache and raw-tick observation, not proof from histograms/screenshots; missing direct proof is NOT_COVERED. **K17 supplied input/limits: combined reference world and four-hour schedule; entry E-K17 (R648)**: reference world.
+(C5, R535; W403) Keep paired Vanilla/Forge frame measures, 1% low, first/longest stall and twice-run baseline spread for Root review only; no FPS floor, stall limit or extra CPU/network/cache limit exists. Preparation is required for the actual per-frame allocation/GPU/cache and raw-tick observation, not proof from histograms/screenshots; missing direct proof is NOT_COVERED. Preparation is required for the reference world. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry E-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load.
 
 **Evidence to keep:** Phase-2 raw resource/frame/allocation traces and E06
 media references; `phase5-ref/<run>/E11/` host/JVM/workload/config identity,
@@ -778,15 +778,15 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C1 flight protocol 10; C19/W406 itinerary Earth-Mars-Earth-Venus-Earth; C7/C8 history/ownership; C20 default modifiers; C21/W406 catalogs/source cooldown 100; C2 effective pixels; C22 integrated pause/sitting-2 lifecycle; C23 supported recovery only.
-- **E01-E11:** planetary coordinates, earned world variants and effective mission/config/resource values **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; live quotes/pack loads/recovery/runtime cooldown **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry E-K06 (R550)**.
-- **E02/E03:** earned undiscovered/private-station variants **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; O5 supplies second real input. Never reset balances.
-- **E03/E05/E07:** forbidden-surface/cache/late probes with receipt/A1 references **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry E-K18 (R601)**; direct allocation/cache observation **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**.
-- **E04:** isolated/combined default-modifier hazard sites/equipment **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**.
-- **E05:** exact 48-character station name is answered; permitted creation **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**. Valid catalogs use separate complete 11-binding baselines; never erase history or use invalid catalogs as setup.
-- **E06/E11:** live observer/client sky-pack qualification **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry E-K15 (R548; R648 for A08/A09)**; viewpoints **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**. O8/O9 confirm capture and second GPU category.
-- **E07:** qualified integrated pause round **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry E-K16 (R595; R628 supersedes final/ with v2/)**, otherwise pause alone is NOT_COVERED. Sitting-2 SKY/navigation V2 lifecycle remains required.
-- **E08:** earned paid-pending/blocked copies, coherent packs and actual supported recovery **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; absent supported recovery stays explicit.
-- **E09/E10:** station-eligible owner/commands **K08 supplied input/limits: station sets, two-account recipes and ordinary-energy copies; entry E-K08 (R621/R627)**, historical chain **K03 supplied input/limits: reconstructed FI05-FI08 chain; entry E-K03 (R614)**, pre-sky source **K07 supplied input/limits: seven earned planetary/hazard variants; entry E-K07 (R617)**; the played-source claim is NOT_COVERED where not retained.
+- **E01-E11:** Planetary coordinates, earned world variants and effective mission/config/resource values remain required; live quotes/pack loads/recovery/runtime cooldown still require qualification. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open. Entry E-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
+- **E02/E03:** Earned undiscovered/private-station variants remain required; O5 supplies second real input. Never reset balances. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
+- **E03/E05/E07:** Forbidden-surface/cache/late probes with receipt/A1 references remain required; direct allocation/cache observation remains required. Entry E-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **E04:** Isolated/combined default-modifier hazard sites/equipment remain required. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
+- **E05:** exact 48-character station name is answered; permitted creation still requires preparation. Valid catalogs use separate complete 11-binding baselines; never erase history or use invalid catalogs as setup. Entry E-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open.
+- **E06/E11:** Live observer/client sky-pack qualification remains required; viewpoints still require preparation. O8/O9 confirm capture and second GPU category. Entry E-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
+- **E07:** A qualified integrated pause round remains required, otherwise pause alone is NOT_COVERED. Sitting-2 SKY/navigation V2 lifecycle remains required. Entry E-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+- **E08:** Earned paid-pending/blocked copies, coherent packs and actual supported recovery remain required; absent supported recovery stays explicit. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
+- **E09/E10:** A station-eligible owner/commands, historical chain and pre-sky source remain required; the played-source claim is NOT_COVERED where not retained. Entry E-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open. Entry E-K03 (R614) supplies the following inputs: reconstructed FI05-FI08 chain. Historically played-source claims and the listed historical-state gaps remain NOT_COVERED. Entry E-K07 (R617) supplies the following inputs: seven earned planetary/hazard variants. Real-player hazard isolation, retained pending-menu controls and the listed live-client observations remain open.
 
 ## W396 preparation and verification record
 

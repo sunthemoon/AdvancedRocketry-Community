@@ -23,8 +23,8 @@ orientations and no mirroring; Precision is 3x3x4, four orientations and
 mirroring, five input/two output Item ports and one Energy input. Use the
 tracked [Rolling pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/rolling_machine.json)
 and [Precision pattern](../../../../src/main/resources/data/advancedrocketrycommunity/machine_patterns/precision_assembler.json),
-not an improvised shell. The layout **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)** to record anchors, orientation, mirror, all chunks,
-resource stores/owners, and layout/pack hashes. Keep original fixtures unchanged.
+not an improvised shell. The layout requires preparation to record anchors, orientation, mirror, all chunks,
+resource stores/owners, and layout/pack hashes. Keep original fixtures unchanged. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 Every row uses Java 17, Minecraft 1.20.1 and matching C6 client/server on Forge
 **47.4.10**, **JEI absent unless stated otherwise**. Additional compatibility
@@ -134,8 +134,8 @@ no properties. **Sources:** v1.2 sections 10.1, 13.1 and 13.5.
 
 **Preconditions:** K05 many-machine layout: **100 idle**, then a separate **144-controller**
 scene (16 of nine kinds), first idle then **72 active** (C11); baseline
-Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. Use the
-[quality budgets](../../../17-V1PLUS-QUALITY-BUDGETS.md), section 4.
+Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout remain required. Use the
+[quality budgets](../../../17-V1PLUS-QUALITY-BUDGETS.md), section 4. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -148,7 +148,7 @@ Forge/JEI absent; heap <=4 GiB. Concrete recipes/layout **K05 supplied input/lim
 
 **Accepted preparation/action steps (W408):**
 
-(C11; C10/R535) Run two distinct scenes: 100 idle machines; then 144 controllers, 16 of each of nine kinds, idle and half active (72), using the scale test's recipes. The second population/mix is an accepted procedure choice, not a new budget or an extra unspecified active population on the first scene. Apply A's matched two-minute warm-up/ten-minute sample and twice-run baseline rules. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: layout, recipes and exact ledgers; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry C-K15 (R548; R648 for A08/A09)**: qualified measurements.
+(C11; C10/R535) Run two distinct scenes: 100 idle machines; then 144 controllers, 16 of each of nine kinds, idle and half active (72), using the scale test's recipes. The second population/mix is an accepted procedure choice, not a new budget or an extra unspecified active population on the first scene. Apply A's matched two-minute warm-up/ten-minute sample and twice-run baseline rules. Preparation is required for the layout, recipes and exact ledgers; preparation is required for the qualified measurements. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry C-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** `phase5-ref/<run>/C01/` layout and active-count manifest,
 recipe hashes, all raw samples/intervals, CPU/cache/scan observations and ledgers.
@@ -186,7 +186,7 @@ fixture tickets. Set no production chunk-loading bypass for the case.
 
 **Accepted preparation/action steps (W408):**
 
-(C12) For each unload/reload or damage mode, capture the per-machine ledger before and after plus drops: before equals after plus drops, with legitimate processing conversions reconciled. Record refusal versus teardown per mode as an observation; neither is failure by itself. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: coordinates, chunk-boundary/unload controls, ledgers and damage variants.
+(C12) For each unload/reload or damage mode, capture the per-machine ledger before and after plus drops: before equals after plus drops, with legitimate processing conversions reconciled. Record refusal versus teardown per mode as an observation; neither is failure by itself. Preparation is required for the coordinates, chunk-boundary/unload controls, ledgers and damage variants. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** `phase3-ds/C02/` chunk/ticket observations, initial,
 unloaded, reloaded and restarted state, logs/exits and exact batch ledgers.
@@ -223,7 +223,7 @@ Item slots. O5 supplies actual concurrent input, not a single-client claim.
 
 **Accepted preparation/action steps (W408):**
 
-**K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: the two-player permission/controller scene and resource ledger. Owner O5 supplies coordinated inputs; retained-menu refusals use the common R546 proof method, with missing intent reach **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**.
+Preparation is required for the two-player permission/controller scene and resource ledger. Owner O5 supplies coordinated inputs; retained-menu refusals use the common R546 proof method, with missing intent reach still requiring a qualified control. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry C-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
 
 **Evidence to keep:** Sitting-1 both-client video/logs, simultaneous input
 times, menu IDs/generations, server inventory projections and batch accounting.
@@ -259,12 +259,12 @@ limits rather than assuming explosions guarantee arbitrary item recovery.
 
 **Accepted preparation/action steps (W408):**
 
-(C12) The oracle for every mode is per-machine conservation: before ledger equals after ledger plus drops, accounting for recipe conversions. Record protected refusal or teardown separately; neither outcome fails solely for not being the other. An actual-break branch not reached remains NOT_COVERED with its reason. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: safe damage/unload recipes, coordinates and ledgers.
+(C12) The oracle for every mode is per-machine conservation: before ledger equals after ledger plus drops, accounting for recipe conversions. Record protected refusal or teardown separately; neither outcome fails solely for not being the other. An actual-break branch not reached remains NOT_COVERED with its reason. Preparation is required for the safe damage/unload recipes, coordinates and ledgers. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Per-mode phase-2 video/screenshots; `phase3-ds/C04/`
 damage commands/input receipts, collision observations, resource/drop projections
 and any refusal. A protection that prevents a damage mode leaves the requested
-actual-break variant NOT_COVERED; a supported fixture **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**.
+actual-break variant NOT_COVERED; a supported fixture remains required. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 Actual:
 Screenshot or video:
@@ -310,8 +310,8 @@ Precision PREC-M-05.
 English/Chinese, GUI scales **2/3/4**, windowed/fullscreen. Precision has seven
 numbered Item slots, FE gauge, progress/status and a missing-casing variant.
 C13 takes names/numbers at and one past each C6-declared limit;
-extracted values and fixtures **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. Fields without limits
-are recorded as such, not assigned fabricated extremes.
+extracted values and fixtures remain required. Fields without limits
+are recorded as such, not assigned fabricated extremes. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 | Step | Action, for every machine/language/scale/window cell | Expected observation |
 |---|---|---|
@@ -325,7 +325,7 @@ are recorded as such, not assigned fabricated extremes.
 
 **Accepted preparation/action steps (W408):**
 
-(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C6's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: extracted per-field values and fixtures; use R546's receipt/state proof for negative actions.
+(C2/C13, R535) Use corrected effective display cells; no supported minimum is declared. For every bounded name/number field read C6's declared limit and test the value at it and one past it (must refuse). List fields with no declared limit as such; invent no long strings/values. Preparation is required for the extracted per-field values and fixtures; use R546's receipt/state proof for negative actions. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Per-cell native screenshots and actual resolutions,
 recipe/diagnostic fixture bytes, server values and client/server logs in phase 2.
@@ -374,9 +374,9 @@ ordinary copy, switches off, no properties. **Source:** v1.2 section 12.2.
 
 **Preconditions:** P2 protected machine/port fixture, A authorized and B not;
 baseline/JEI absent. Manifest supplies actual permission boundary and normal
-menu distance. The bounded retained-menu/intent method **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)** where
+menu distance. The bounded retained-menu/intent method requires qualification where
 normal UI closure prevents the requested operation; no fabricated packets or
-unspecified coordinates are assumed to exist in the harness.
+unspecified coordinates are assumed to exist in the harness. Entry C-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -389,7 +389,7 @@ unspecified coordinates are assumed to exist in the harness.
 
 **Accepted preparation/action steps (W408):**
 
-(C14 corrected by R546) **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**: separately built never-shipped fixture mod, bounded ordinary-client stale/range/permission/late intents against the eight-channel pin's applicable C2S channels; no invented packet. **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**: actual protected boundary and measured distance. Record tool receipt and unchanged authoritative state; logs only where emitted. If K18 is absent at the phase or cannot reach a branch, that branch is NOT_COVERED with reason and its named A1 test. Closed/disabled UI alone is no refusal proof.
+(C14 corrected by R546) Preparation is required for the separately built never-shipped fixture mod, bounded ordinary-client stale/range/permission/late intents against the eight-channel pin's applicable C2S channels; no invented packet. Preparation is required for the actual protected boundary and measured distance. Record tool receipt and unchanged authoritative state; logs only where emitted. If K18 is absent at the phase or cannot reach a branch, that branch is NOT_COVERED with reason and its named A1 test. Closed/disabled UI alone is no refusal proof. Entry C-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
 
 **Evidence to keep:** Sitting-1 both-client media/logs, positions/distances,
 permission/menu identities, bounded intent description and before/after resources
@@ -405,6 +405,7 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C11 fixes 100 idle and 144-controller/72-active scenes; C10/R535 fixes samples/review; C12 fixes per-mode conservation; C2 fixes effective pixels; C13 uses C6-declared limits only. C05 stays NOT_COVERED under O6/D9.
-- **C01-C04/C06-C08:** exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance **K05 supplied input/limits: nine r608 machine scenes and field inventory; entry C-K05 (R612; R608 preparation choices)**. O5 supplies C03 coordinated input.
-- **C01:** complete raw/live measurements **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry C-K15 (R548; R648 for A08/A09)**, with no new idle-cost/percentage threshold.
-- **C08/retained-menu negatives:** bounded ordinary-client tool, receipt/readback and named A1 fallbacks **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry C-K18 (R601)**. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.
+- **C01-C04/C06-C08:** Exact layout/recipes, damage/unload/permission controls, field-limit values and measured interaction distance remain required. O5 supplies C03 coordinated input. Entry C-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open.
+- **C01:** Complete raw/live measurements remain required, with no new idle-cost/percentage threshold. Entry C-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **C08/retained-menu negatives:** A bounded ordinary-client tool, receipt/readback and named A1 fallbacks remain required. Missing tool/branch reach at the phase is NOT_COVERED; no assumed log.
+Entry C-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.

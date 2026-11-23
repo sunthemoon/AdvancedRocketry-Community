@@ -12,9 +12,9 @@ No result or Gate is approved. The campaign plan remains the scheduling authorit
   Its location is `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar`.
   Hosted regression run `44770334930` attempt `1` and governance run
   `44770334865` identify these inputs (not new verdicts). R581 and C6-SWITCH-REPORT section 2.1 supersede the plan's old "not built" text. Sources/API
-  JARs and local Maven publication still **K01 supplied input/limits: sources/API and independent fixture binaries; entry A-K01 (R586 (W424 disposition), R592 (W426 completion))** at that same commit,
+  JARs and local Maven publication are required at that same commit,
   with local-build labels/hashes; report any locally rebuilt release-hash difference
-  without replacing the hosted tested JAR. Do not silently repin to a later candidate.
+  without replacing the hosted tested JAR. Do not silently repin to a later candidate. Entry A-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified.
 - P2 names the immutable fixtures: the **v0.9 Beta world archive**, **a v1.0 world**,
   **representative v1.3 to v1.7 worlds**, **the API fixture mod against C6**,
   **three rockets of 64, 512 and 2,048 blocks**, **the many-machine layout**, and
@@ -122,7 +122,7 @@ where applicable, native F2 frames and redacted logs in `evidence/`; index
 them in the plan's row folders. `COMPLETE` alone proves no pass.
 A window appearing is not a join receipt; no automatic reconnect hides failures.
 Historical regex waits need conversion to literal substrings. Live launch,
-input, window sizing and cleanup still **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)** qualification.
+input, window sizing and cleanup still require qualification. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Delivered K13 inventories/resource packs (W402).** The directory is
 `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K13/`.
@@ -138,8 +138,8 @@ it is not a fabricated different font.
 | `screens.csv` | `ffeceeb9340c2d08fef7669218d372acb7c2891606507d4879248686eea0219f` | Every-screen/every-language navigation, including eleven unnamed elsewhere. |
 | `sound-producers.csv` | `84cafa56eaa18848e21dd7f87497b26a5a720e7d66aa164105834d2785ef48cf` | J12-J16 actual C6 producers and previews (C38). |
 | `access-matrix.csv` | `3888f04c844db2deeb2cec16770f2d2f417a7414de031126672ae481d111d882` | I11 holder/policy/receipt branches, not blanket ownership. |
-| `k13-long-text-pack.zip` | `3857f549662bbff55ff1dbe4ca0548644c167b6dad9f6c90412c0b760c455a32` | J16 long-text/reason/hover stress; actual load **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**. |
-| `k13-missing-resource-pack.zip` | `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf` | I07's seven missing/corrupt resource controls; actual load **K14 supplied input/limits: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps; entry A-K14 (R642)**. |
+| `k13-long-text-pack.zip` | `3857f549662bbff55ff1dbe4ca0548644c167b6dad9f6c90412c0b760c455a32` | J16 long-text/reason/hover stress; actual load qualification remains required. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. |
+| `k13-missing-resource-pack.zip` | `81c43eea624037097b995d69d4317ee38a2b269f9fe99685c635acb35e88e1cf` | I07's seven missing/corrupt resource controls; actual load qualification remains required. Entry A-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations. |
 
 **Refusals (C14 corrected by R546; every refusal step in A-J).** For each
 negative intent, retain the intent tool's own receipt with sender/menu/target,
@@ -174,8 +174,8 @@ nine folders, row results, native media and hashes. Bind `$identity` to JSON
 with `git_commit`, `jar_sha256`, `forge`, `java`; bind `$phase` to
 the completed phase folder. K06/K13 already created fixture directories: the
 creator refuses an existing root, so use `--check` once the complete root and
-identity exist; never overwrite them. Root creation/identity reconciliation still
-**K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)** integration, with all existing fixtures preserved.
+identity exist; never overwrite them. Root creation/identity reconciliation still requires
+integration, with all existing fixtures preserved. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 ```powershell
 python -B scripts/run_campaign_observer.py root D:/GitHub/ARCE-Task-Evidence/final-campaign c8fa16e16 --identity $identity --drive C:/
@@ -200,9 +200,9 @@ or read-only `arce endgame release-test refload status`. Those diagnostics
 need release-test hooks/permission 2 on a separately documented diagnostic run;
 ordinary no-hook controls stay no-hook. W403 exports **window statistics**,
 not ordered ticks: no whole-run p95/p99 or consecutive-spike claim from their
-averages. Required raw-tick integration still **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)** (R544's W407
+averages. Raw-tick integration still requires qualification (R544's W407
 follow-up), as do queue, all-Forge-ticket and packet/cache-internal observations.
-Vanilla `forceload query` alone cannot prove all tickets absent.
+Vanilla `forceload query` alone cannot prove all tickets absent. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 Wrap only a harness-owned `Popen` in `CampaignJvm(popen, "server")`;
 allowlisted `GC.heap_info`, `GC.class_histogram -all`, `JFR.start` and
@@ -392,10 +392,10 @@ one real GPU client/account A; ordinary world, switches off, no test properties.
 [visual scenes, section 13](../../../15-REMOTE-LINUX-DEVELOPMENT-AND-VISUAL-VALIDATION.md).
 
 **Preconditions:** A new world, not the Beta copy; baseline Forge/JEI absent.
-The core scene **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)** to inventory craftable materials, electrolyzer recipe, powered
+The core scene requires preparation to inventory craftable materials, electrolyzer recipe, powered
 oxygen room, suit, legal rocket, invalid variant, fuel, station materials,
 research/mission inputs and their placement. These sources do not specify their
-coordinates or all quantities; record those inputs before execution.
+coordinates or all quantities; record those inputs before execution. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -427,7 +427,7 @@ coordinates or all quantities; record those inputs before execution.
 
 **Accepted preparation/action steps (W408):**
 
-(C2) Run the effective display cells in A's common procedure. **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**: C6 core scene, exact recipe/resource/position manifest and regenerated controls. Apply R546 to invalid-fuel/structure and replay refusals.
+(C2) Run the effective display cells in A's common procedure. Preparation is required for the C6 core scene, exact recipe/resource/position manifest and regenerated controls. Apply R546 to invalid-fuel/structure and replay refusals. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** V1 screenshots at steps 3, 5-8, 10, 14-15, 19-24; client
 and server logs, `results.jsonl`, `summary.json`, resource ledgers and identity
@@ -599,7 +599,7 @@ the second operator or authorized scripted input to a signed-in window.
 
 **Accepted preparation/action steps (W408):**
 
-(C3) Keep the three native readiness/current-seat/expiry observations separate as A04 requires. **Needs package K02** — in progress (W447); entry A-K02 for their genuine controls and **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)** for the two-seat scene; owner O5 supplies coordinated real input.
+(C3) Keep the three native readiness/current-seat/expiry observations separate as A04 requires. Their genuine controls remain open (**Needs package K02** — in progress (W447); entry A-K02), and preparation is required for the two-seat scene; owner O5 supplies coordinated real input. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** `phase4-v2/sitting-1/` both videos/logs, server phase and
 seat receipts, disconnect/rejoin UTC times and saved resource projections.
@@ -659,7 +659,7 @@ do not specify an ownership-transfer command spelling.
 
 **Accepted preparation/action steps (W408):**
 
-(C2) Use A's corrected effective viewports/scales. **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**: station invitation/ownership-transfer controls and scene. Owner O10 supplies UUIDs; permission refusals use R546's common evidence rule.
+(C2) Use A's corrected effective viewports/scales. Preparation is required for the station invitation/ownership-transfer controls and scene. Owner O10 supplies UUIDs; permission refusals use R546's common evidence rule. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Both-client screenshots of invitation/decline/accept/transfer,
 server ownership/member projections, refusal receipts and logs in sitting 1.
@@ -728,7 +728,7 @@ assembly/disassembly, one dimension transfer, periodic saves and restarts.
 
 **Accepted preparation/action steps (W408):**
 
-(C4, R535) Read back shipped defaults of `atmosphere.maxVolumeCells` and `atmosphere.maxInspectionsPerLevelTick` from the generated config without changing them. Use 16 rooms with one recorded footprint at most 4,096 blocks. Retain vanilla autosave, a flushed save every 30 minutes and one orderly restart at two sampled hours; collect four sampled hours, excluding restart downtime, and compare memory across the restart. Footprint, save/restart intervals are procedure parameters, not new budgets. **K17 supplied input/limits: combined reference world and four-hour schedule; entry A-K17 (R648)**: combined world, room layout and schedule; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**: live sampler/queue qualification. Owner O7 still supplies the two connections/equivalent decision.
+(C4, R535) Read back shipped defaults of `atmosphere.maxVolumeCells` and `atmosphere.maxInspectionsPerLevelTick` from the generated config without changing them. Use 16 rooms with one recorded footprint at most 4,096 blocks. Retain vanilla autosave, a flushed save every 30 minutes and one orderly restart at two sampled hours; collect four sampled hours, excluding restart downtime, and compare memory across the restart. Footprint, save/restart intervals are procedure parameters, not new budgets. Preparation is required for the combined world, room layout and schedule; preparation is required for the live sampler/queue qualification. Owner O7 still supplies the two connections/equivalent decision. Entry A-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Run-time preparation (R648).** Use entry A-K17's `source/schedule.json` with **no test JVM properties**. Keep `forge tps` means, RSS, GC, forced-chunk readbacks and resource/ACTIVE counts; the 16 Moon room chunks are declared load. A/B must ordinarily assemble/fuel/fly the two 64-block rockets, disassemble the 2048 rocket, perform the dimension transfer and refill missions as scripted. The no-client compressed qualification does not cover these actions or a four-hour sustained ACTIVE population. A09's instrumented run is separate, not a relabel of this run.
 
@@ -762,7 +762,7 @@ same measured load as A08. Record sampling tool/version and interval before run.
 
 **Accepted preparation/action steps (W408):**
 
-(W403) Use the common observer commands and preserve raw-tick/ticket coverage gaps; window-percentile averages cannot supply this row's whole-run distribution. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)** for raw-tick and all-ticket integration and **K17 supplied input/limits: combined reference world and four-hour schedule; entry A-K17 (R648)** for the reference world.
+(W403) Use the common observer commands and preserve raw-tick/ticket coverage gaps; window-percentile averages cannot supply this row's whole-run distribution. Preparation is required for the raw-tick and all-ticket integration and for the reference world. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry A-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load.
 
 **Run-time preparation (R648).** Run the **same K17 world and schedule separately on REF**, labelled `release-test raw sampler only`, adding only `-Dadvancedrocketrycommunity.releaseTestHooks=true` for the read-only raw sampler. Do not use this permission to drive/build/refuel/advance any workload. Compute this row's mean/P95/P99/spike length from ordered individual ticks, never averaged percentiles. Keep its `forge tps` means beside A08's; differences beyond twice-run baseline spread trigger C10 review, not a changed budget.
 
@@ -795,7 +795,7 @@ five-block recovery fixture. No specific operation-duration limit is given here.
 
 **Accepted preparation/action steps (W408):**
 
-**K04 supplied input/limits: legal 64/512/2048 and multi-rocket inputs; entry A-K04 (R605)**: exact 2,048-block legal rocket/layout and operation receipts; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**: raw tick/operation observation. Keep the original general reference budgets; no separate operation-duration limit exists.
+Preparation is required for the exact 2,048-block legal rocket/layout and operation receipts; preparation is required for the raw tick/operation observation. Keep the original general reference budgets; no separate operation-duration limit exists. Entry A-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** `phase5-ref/<run>/A10/` fixture count/layout hash,
 operation start/end receipts, raw tick samples, spike analysis and conservation.
@@ -827,7 +827,7 @@ No additional queue threshold exists.
 
 **Accepted preparation/action steps (W408):**
 
-(C4, R535) Use the same 16 rooms, recorded at-most-4,096-block footprint and unchanged generated `atmosphere.maxVolumeCells`/`atmosphere.maxInspectionsPerLevelTick` defaults as A08. **K17 supplied input/limits: combined reference world and four-hour schedule; entry A-K17 (R648)**: room/boundary coordinates; **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**: queue and loaded-chunk readback. No additional queue threshold exists.
+(C4, R535) Use the same 16 rooms, recorded at-most-4,096-block footprint and unchanged generated `atmosphere.maxVolumeCells`/`atmosphere.maxInspectionsPerLevelTick` defaults as A08. Preparation is required for the room/boundary coordinates; preparation is required for the queue and loaded-chunk readback. No additional queue threshold exists. Entry A-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** `phase5-ref/<run>/A11/` device/room layout, queue and
 tick samples, loaded-chunk observations, before/after oxygen/energy accounting.
@@ -863,7 +863,7 @@ Record OS, CPU, GPU, driver, resolution, window mode, GUI scale, JVM and packs.
 
 **Accepted preparation/action steps (W408):**
 
-(C5, R535; W399/W403) Follow A's paired Vanilla/Forge baselines, twice-run spread and frame-reader definitions; 50 ms is reporting only, with no FPS/stall limit. Keep docs/17 section 8's correctness list unchanged. Use owned-client heap/histogram proxies outside timed windows; direct cache-release/GPU-allocation proof still **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**, otherwise NOT_COVERED. **K04 supplied input/limits: legal 64/512/2048 and multi-rocket inputs; entry A-K04 (R605)** for all three rockets/multiple-rocket scene; owner O8 confirms capture tool/version (PresentMon recommended), O9 the second GPU/subset.
+(C5, R535; W399/W403) Follow A's paired Vanilla/Forge baselines, twice-run spread and frame-reader definitions; 50 ms is reporting only, with no FPS/stall limit. Keep docs/17 section 8's correctness list unchanged. Use owned-client heap/histogram proxies outside timed windows; direct cache-release/GPU-allocation proof still requires qualification, otherwise NOT_COVERED. Preparation is required for all three rockets/multiple-rocket scene; owner O8 confirms capture tool/version (PresentMon recommended), O9 the second GPU/subset. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry A-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified.
 
 **Evidence to keep:** `phase2-v1/<machine>/<round>/` per-size media, raw
 `frametime/` samples, baseline/settings records, client memory/cache observations
@@ -896,7 +896,7 @@ satellite/research interfaces in English and Chinese, using C2/R535's effective
 
 **Accepted preparation/action steps (W408):**
 
-(C2, R535) Execute 1280 by 720 at effective scales 2/3 and native fullscreen at offered scale 4, both languages; record actual scale and unavailable combinations, not requested values. No supported minimum exists. **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**: core scene/control manifest and regenerated pixel positions.
+(C2, R535) Execute 1280 by 720 at effective scales 2/3 and native fullscreen at offered scale 4, both languages; record actual scale and unavailable combinations, not requested values. No supported minimum exists. Preparation is required for the core scene/control manifest and regenerated pixel positions. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** Per-cell screenshots using the row-step-client-language-scale
 naming, actual window dimensions in the step table, server receipts and client log.
@@ -980,7 +980,7 @@ matching server Forge and the same C6 hash. Preserve separate world copies.
 
 **Accepted preparation/action steps (W408):**
 
-(W400) Use exactly the four named cells/manifests in A's common procedure. **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**: first live start/window/input qualification and per-cell core smoke; preparation alone is no join/visual result.
+(W400) Use exactly the four named cells/manifests in A's common procedure. Preparation is required for the first live start/window/input qualification and per-cell core smoke; preparation alone is no join/visual result. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** One profile/install manifest and media/log set per
 Forge/JEI cell; actual test subset and linked A-row step results. I04 remains
@@ -1012,7 +1012,7 @@ room, fueled/landed rocket, station, satellite and research state inventoried.
 
 **Accepted preparation/action steps (W408):**
 
-(C2) Use the corrected effective display cells when recording re-entry. **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)** for populated core scene, projections and controls.
+(C2) Use the corrected effective display cells when recording re-entry. Preparation is required for the populated core scene, projections and controls. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** `phase3-ds/A17/` all logs/exits, pre/post raw state and
 field differences, re-entry screenshots and resource accounting.
@@ -1051,7 +1051,7 @@ remains a finding until Root dispositions it; sources give no acceptable rate.
 
 **Accepted preparation/action steps (W408):**
 
-(C6; R542 N1) Run ten first joins on each Forge lane with JEI absent, each on a fresh server copy, fresh client process and fresh game directory, plus every A/B first join in phase 4. Ten is a procedure parameter. W399 launch mode and W400's no-JEI cells supply the reset mechanism; no automatic retries. Report timeouts/trials separately per lane and retain each failed attempt even if a retry succeeds. No tolerated rate exists: each timeout remains a finding until Root dispositions it (KI-V180-CONNECT-01). Live harness qualification still **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**.
+(C6; R542 N1) Run ten first joins on each Forge lane with JEI absent, each on a fresh server copy, fresh client process and fresh game directory, plus every A/B first join in phase 4. Ten is a procedure parameter. W399 launch mode and W400's no-JEI cells supply the reset mechanism; no automatic retries. Report timeouts/trials separately per lane and retain each failed attempt even if a retry succeeds. No tolerated rate exists: each timeout remains a finding until Root dispositions it (KI-V180-CONNECT-01). Live harness qualification still requires execution. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** `phase3-ds/A18/` and the paired V2 sitting's trial table,
 all first/failed/retry/restart logs, screenshots, UTC durations and per-lane counts.
@@ -1065,8 +1065,9 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C1 identity, W400 cell paths/hashes, W399 session/reset/frame commands, C2/R535 viewports, C4 room/schedule parameters, C5/C10/R535 sampling/review and C6 first-join trials/reset. W403 observers/seals are delivered but not fully live-qualified.
-- **A01-A18:** sources/API JARs **K01 supplied input/limits: sources/API and independent fixture binaries; entry A-K01 (R586 (W424 disposition), R592 (W426 completion))**; current core/world/control/batch and live harness qualification **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**; immutable Beta/historical/forced-stop baselines **needs package K02** — in progress (W447); entry A-K02.
+- **A01-A18:** Sources/API JARs are required; current core/world/control/batch and live harness qualification remain required; immutable Beta/historical/forced-stop baselines remain open (**needs package K02** — in progress (W447); entry A-K02). Entry A-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 - **A04/A05:** genuine adjacent-chunk/current-seat/expiry controls each **needs package K02** — in progress (W447); entry A-K02, otherwise the separate observation is NOT_COVERED.
-- **A08-A11:** combined world/layout **K17 supplied input/limits: combined reference world and four-hour schedule; entry A-K17 (R648)**; raw-tick/queue/all-ticket/live observer integration **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**. O7/O11 supply connections/equivalent decision and node acceptance.
-- **A12:** legal three-size/multi-rocket fixtures **K04 supplied input/limits: legal 64/512/2048 and multi-rocket inputs; entry A-K04 (R605)**; direct cache/allocation proof **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry A-K15 (R548; R648 for A08/A09)**, not a histogram inference. O8 confirms capture/version (PresentMon recommended); O9 the second GPU/subset.
-- **A18:** no trial-count decision remains: ten fresh no-JEI trials per lane plus every V2 A/B first join; live qualification **K16 supplied input/limits: v2 core scene, mapped controls and conditional recheck batches; entry A-K16 (R595; R628 supersedes final/ with v2/)**, O10 supplies UUIDs. No tolerated timeout rate exists.
+- **A08-A11:** The combined world/layout remains required; raw-tick/queue/all-ticket/live observer integration remains required. O7/O11 supply connections/equivalent decision and node acceptance. Entry A-K17 (R648) supplies the following inputs: combined reference world and four-hour schedule. The full four-hour REF/two-real-client run remains unexecuted; decaying missions do not establish sustained load. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **A12:** Legal three-size/multi-rocket fixtures remain required; direct cache/allocation proof remains required, not a histogram inference. O8 confirms capture/version (PresentMon recommended); O9 the second GPU/subset. Entry A-K04 (R605) supplies the following inputs: legal 64/512/2048 and multi-rocket inputs. Payload-boundary, GPU/cache and operation-duration coverage remains unqualified. Entry A-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **A18:** no trial-count decision remains: ten fresh no-JEI trials per lane plus every V2 A/B first join; live qualification remains required; O10 supplies UUIDs. No tolerated timeout rate exists.
+Entry A-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.

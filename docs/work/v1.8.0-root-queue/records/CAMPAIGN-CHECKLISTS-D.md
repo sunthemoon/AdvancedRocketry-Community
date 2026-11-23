@@ -37,9 +37,9 @@ Read sources: [v1.3 version](../../../versions/V1.3.0-PUBLIC-API-COMPATIBILITY.m
 Historical protocol 6/7/8 and API-minor numbers in these sources identify their
 own builds, not the C6 wire pin. Match current client/server artifacts.
 
-The scene **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)** to publish paths, owners, positions, slot/metadata ledgers, known
+The scene requires preparation to publish paths, owners, positions, slot/metadata ledgers, known
 unsupported container and rejected-provider controls. The manual tables do not
-give all those inputs; unresolved controls are listed at the end.
+give all those inputs; unresolved controls are listed at the end. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 ## Package preparation index (W456, R649)
 
@@ -185,7 +185,7 @@ not proof of two unrelated mod authors' interoperability.
 
 **Accepted preparation/action steps (W408):**
 
-(C1/C15) **K01 supplied input/limits: sources/API and independent fixture binaries; entry D-K01 (R586 (W424 disposition), R592 (W426 completion))**: API/source JARs and independently built `arce-adapter-compat-test-1.0.0.jar`, hashes and boundary reports. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: actual installed/omitted-client connections. Quote metadata's required-both-sides/no-display-test-exemption policy as expectation, but report measured connections separately; an omitted mandatory mod that connects is a finding. No client policy is inferred from metadata alone.
+(C1/C15) Preparation is required for the API/source JARs and independently built `arce-adapter-compat-test-1.0.0.jar`, hashes and boundary reports. Preparation is required for the actual installed/omitted-client connections. Quote metadata's required-both-sides/no-display-test-exemption policy as expectation, but report measured connections separately; an omitted mandatory mod that connects is a finding. No client policy is inferred from metadata alone. Entry D-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** `phase3-ds/D01/` startup/restart logs, registration
 receipts and JAR manifest; `phase4-v2/sitting-1/` both client logs/screenshots,
@@ -263,7 +263,7 @@ C16 records that callback branch NOT_COVERED at V1, because no packaged control 
 
 **Accepted preparation/action steps (W408):**
 
-(C16) Rejected-provider callbacks are NOT_COVERED at V1 (and slow callbacks at REF/D12): fault controls exist only in GameTests. Cite their A1 result as A1, not client/REF evidence. A finite extra control still **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry D-K18 (R601)** and Root scope approval. The healthy/unsupported packaged scene **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**.
+(C16) Rejected-provider callbacks are NOT_COVERED at V1 (and slow callbacks at REF/D12): fault controls exist only in GameTests. Cite their A1 result as A1, not client/REF evidence. A finite extra control still requires preparation and Root scope approval. The healthy/unsupported packaged scene still requires preparation. Entry D-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** Per-variant phase-2 assembler screenshots, fixture
 control/identity, exact before/after source projections, refusal and healthy-retry
@@ -284,8 +284,8 @@ fixture README's boundary contract.
 **Preconditions:** P2 API fixture Moon room with supplied vent and
 `arce_adapter_test:state_boundary` in its wall; baseline/JEI absent. Its open
 state retains a full collision cube, but the API rule makes it permeable.
-Boundary/vent positions **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**; W406 supplies the exact
-runner tag variants and hashes below (C17).
+Boundary/vent positions must be recorded; W406 supplies the exact
+runner tag variants and hashes below (C17). Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 | Step | Action | Expected observation |
 |---|---|---|
@@ -306,7 +306,7 @@ startup-compilation failure, not the normal visible-room case.
 
 **Accepted preparation/action steps (W408):**
 
-(C17; W406) Use only the atmosphere runner's own exact tag override, not an invented replacement tag. Enabled is additive with `arce_adapter_test:state_boundary`; disabled has empty additive values and removes only that pack's contribution. Capture actual tag membership/diagnostics and vent/boundary authority; do not promise a merge outcome without the installed fixture. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: Moon room coordinates/supplies; **K01 supplied input/limits: sources/API and independent fixture binaries; entry D-K01 (R586 (W424 disposition), R592 (W426 completion))**: binary; **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry D-K06 (R550)**: live load qualification.
+(C17; W406) Use only the atmosphere runner's own exact tag override, not an invented replacement tag. Enabled is additive with `arce_adapter_test:state_boundary`; disabled has empty additive values and removes only that pack's contribution. Capture actual tag membership/diagnostics and vent/boundary authority; do not promise a merge outcome without the installed fixture. Preparation is required for the Moon room coordinates/supplies; preparation is required for the binary; preparation is required for the live load qualification. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open. Entry D-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry D-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -353,7 +353,7 @@ M130-05 does not specify them. No suitSmoke FakePlayer substitutes for A.
 
 **Accepted preparation/action steps (W408):**
 
-(C17) Measure the real player's consumption/refill over a recorded interval with raw suit and canister ledgers. Actor figures 999, 998 and 1,997 are not expectations. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: actual equipment/oxygen/refill amounts, interval, HUD and reconnect controls.
+(C17) Measure the real player's consumption/refill over a recorded interval with raw suit and canister ledgers. Actor figures 999, 998 and 1,997 are not expectations. Preparation is required for the actual equipment/oxygen/refill amounts, interval, HUD and reconnect controls. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** Phase-2 equipment/HUD/refill/rejoin screenshots, real
 player ItemStack before/after data, canister ledger and all logs. The fixture's
@@ -398,7 +398,7 @@ empty-start native fixture proves every partial starting amount.
 
 **Accepted preparation/action steps (W408):**
 
-(C17) Begin at F=750 of 1,500 capacity (half capacity, a procedure parameter), through the ordinary item loader: the first fill moves 750 and retains 823 units of the captured 1,573 batch; one stick is issued only at completion. Keep this component/item-loader case separate from FI29 escrow fuel. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: eligible completion target and ordinary-loader scene.
+(C17) Begin at F=750 of 1,500 capacity (half capacity, a procedure parameter), through the ordinary item loader: the first fill moves 750 and retains 823 units of the captured 1,573 batch; one stick is issued only at completion. Keep this component/item-loader case separate from FI29 escrow fuel. Preparation is required for the eligible completion target and ordinary-loader scene. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Ordinary-player preparation (R638/R645).** Use entry D-K21's `R638/client-steps.json` `component.claim_and_half_fill[1..3]` and `component.steps[1..4]` (one-based), which supersede the old manifest's prospective assembly position. A builds/assembles a separate five-block target at 268,101,260, normally claims the item loader at 268,101,264, feeds three coal one at a time (127/254/381 fuel), then 41 sticks individually (+9 each) and reads **750/1500** with loader drained before the blaze-powder test. The console-owned zero-fuel rocket is not A's target. No owner/fuel/batch NBT write is permitted. The 1573 captured batch/823 remainder/completion/stick/two-restart actions remain unexecuted; do not replace them by setup observations.
 
@@ -479,7 +479,7 @@ charges 11. Use W406's hashed `satellite_payload.zip` then
 
 **Accepted preparation/action steps (W408):**
 
-(C14; W406) Start/capture the real mission at 400/137/11 (fee conditional on discovery) **before** applying changed pack 20/211/11 while its menu is open; the task keeps captured values and claims once. Use tool receipt/unchanged state, not an assumed server log, for stale/replay cases. **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry D-K18 (R601)**: bounded stale/permission/range probes and A1 fallback names; **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: real terminal/chip/equipment scene; **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry D-K06 (R550)**: live generation/load checks.
+(C14; W406) Start/capture the real mission at 400/137/11 (fee conditional on discovery) **before** applying changed pack 20/211/11 while its menu is open; the task keeps captured values and claims once. Use tool receipt/unchanged state, not an assumed server log, for stale/replay cases. Preparation is required for the bounded stale/permission/range probes and A1 fallback names; preparation is required for the real terminal/chip/equipment scene; preparation is required for the live generation/load checks. Entry D-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open. Entry D-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -526,7 +526,7 @@ window input alone may not send an invalid intent after a menu closes.
 
 **Accepted preparation/action steps (W408):**
 
-(C14 corrected by R546; W406) The two payload packs supply registration/reload context only, not hostile packet probes. Use their real open-menu generations for stale cases, record the tool's receipt and authoritative resources/chunks read back; use a log only if that handler writes it. **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry D-K18 (R601)**: ordinary-client bounded stale/range/permission probes; unreachable cases are NOT_COVERED with reason and named A1 test. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: A-owned payload/cargo/terminal scene and **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry D-K06 (R550)**: live pack loads.
+(C14 corrected by R546; W406) The two payload packs supply registration/reload context only, not hostile packet probes. Use their real open-menu generations for stale cases, record the tool's receipt and authoritative resources/chunks read back; use a log only if that handler writes it. Preparation is required for the ordinary-client bounded stale/range/permission probes; unreachable cases are NOT_COVERED with reason and named A1 test. Preparation is required for the A-owned payload/cargo/terminal scene and for the live pack loads. Entry D-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open. Entry D-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -579,7 +579,7 @@ ordinary player worlds and historical evidence are never removed or repaired.
 
 **Accepted preparation/action steps (W408):**
 
-(C18) Use two fresh independent removal copies under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/`, never the source. Take complete file inventories/hashes before removing the copied mod. **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: concrete copy paths and captured-payload inventories.
+(C18) Use two fresh independent removal copies under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/`, never the source. Take complete file inventories/hashes before removing the copied mod. Preparation is required for the concrete copy paths and captured-payload inventories. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** `phase3-ds/D10/<variant>/` copied-mod manifests,
 property lists, all logs/exits, raw retained/restored payloads and field
@@ -616,7 +616,7 @@ No unselected rendering/pipe/other mod is part of the declared support matrix.
 
 **Accepted preparation/action steps (W408):**
 
-(W400) The four named cells in A are the entire declared optional matrix; this input is answered, not a request to appoint another mod. **K01 supplied input/limits: sources/API and independent fixture binaries; entry D-K01 (R586 (W424 disposition), R592 (W426 completion))**: matching mandatory fixture binary; **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: per-cell installed/omitted-client observations and restarts.
+(W400) The four named cells in A are the entire declared optional matrix; this input is answered, not a request to appoint another mod. Preparation is required for the matching mandatory fixture binary; preparation is required for the per-cell installed/omitted-client observations and restarts. Entry D-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** `phase3-ds/D11/<forge>-<jei>/` mod manifests,
 server/client logs, startup/restart exits and real-client screenshots. If an
@@ -659,7 +659,7 @@ do not infer them from a successful connection.
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C16, R535) Use A's matched baseline/feature intervals and review-only spread trigger; no integration-specific percentage allowance exists. Slow/rejected callbacks remain NOT_COVERED at REF because controls are A1-only, unless Root adds finite K18 controls. **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry D-K15 (R548; R648 for A08/A09)**: CPU/network/cache and raw-tick integration; **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**: comparable integration workload.
+(C10/C16, R535) Use A's matched baseline/feature intervals and review-only spread trigger; no integration-specific percentage allowance exists. Slow/rejected callbacks remain NOT_COVERED at REF because controls are A1-only, unless Root adds finite K18 controls. Preparation is required for the CPU/network/cache and raw-tick integration; preparation is required for the comparable integration workload. Entry D-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
 
 **Evidence to keep:** `phase5-ref/<run>/D12/` node/workload/JVM manifests,
 raw CPU/tick/RSS/GC/network/cache traces, callback timing/diagnostics and
@@ -675,10 +675,11 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C1 identity/classifier provenance; C15 measured installed/omitted-client policy; C16 callback NOT_COVERED above A1; C17 exact runner tag scope, measured player oxygen and F=750; C18 safe removal copies; W400 four-cell support; W406 tag/payload hashes and conditional outcomes.
-- **D01-D12:** independently built matching API/fixture binary/reports **K01 supplied input/limits: sources/API and independent fixture binaries; entry D-K01 (R586 (W424 disposition), R592 (W426 completion))**; concrete API scenes/coordinates and installed/omitted-client connections **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**.
-- **D03/D12:** rejected/slow callbacks stay NOT_COVERED at V1/REF, because controls are GameTest-only. Added finite controls **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry D-K18 (R601)** and Root scope approval.
-- **D04/D08/D09:** actual tag/definition acceptance and restart checks **K06 supplied input/limits: 23 hashed data/resource packs, not blanket live qualification; entry D-K06 (R550)**; room/payload/equipment/loader scene **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**. Delivered ZIP bytes are not live loads.
-- **D05/D06:** actual oxygen/refill interval and eligible completion target/loader layout **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**; actor numbers are not real-player expectations, and F is already answered.
-- **D08/D09:** bounded stale/range/permission probes, receipt/readback and A1 references **K18 supplied input/limits: bounded client intent JAR and case/readback matrix; entry D-K18 (R601)**.
-- **D10:** concrete two-copy paths and full pre-removal file/payload inventories **K21 supplied input/limits: API scenes plus R638 ordinary-player preparation; entry D-K21 (R638/R645)**; never remove from a source world.
-- **D12:** complete network/cache/raw-tick and matched profiling integration **K15 supplied input/limits: bounded observers, with explicit remaining visibility gaps; entry D-K15 (R548; R648 for A08/A09)**. No separate numerical percentage allowance exists.
+- **D01-D12:** An independently built matching API/fixture binary and reports remain required; concrete API scenes/coordinates and installed/omitted-client connections remain required. Entry D-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
+- **D03/D12:** rejected/slow callbacks stay NOT_COVERED at V1/REF, because controls are GameTest-only. Added finite controls still require preparation and Root scope approval. Entry D-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
+- **D04/D08/D09:** Actual tag/definition acceptance and restart checks remain required; the room/payload/equipment/loader scene still requires preparation. Delivered ZIP bytes are not live loads. Entry D-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
+- **D05/D06:** The actual oxygen/refill interval and eligible completion target/loader layout remain required; actor numbers are not real-player expectations, and F is already answered. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
+- **D08/D09:** Bounded stale/range/permission probes, receipt/readback and A1 references remain required. Entry D-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
+- **D10:** Concrete two-copy paths and full pre-removal file/payload inventories remain required; never remove from a source world. Entry D-K21 (R638/R645) supplies the following inputs: API scenes plus R638 ordinary-player preparation. Ordinary player ownership/manufacture, real-player observations and the listed batch/completion/restart checks remain open.
+- **D12:** Complete network/cache/raw-tick and matched profiling integration remains required. No separate numerical percentage allowance exists.
+Entry D-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
