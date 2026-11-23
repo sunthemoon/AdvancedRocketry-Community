@@ -37,28 +37,68 @@ and [v1.1.1](../../../versions/V1.1.1-MAINTENANCE.md).
 This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
 Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
 remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
-Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
-an observed client result; preserve every original action, oracle, result field and budget.
+No package delivery remains in progress. Root accepted K02 as partial under R661/R664/R667
+and K12 as partial under R655; their uncovered observations and unexecuted client/REF work remain open.
+A delivered recipe is not an observed client result; preserve every original action, oracle, result field and budget.
 
-### B-K02: historical sources; forced-stop qualification in progress
+### B-K02: historical sources and partial forced-stop delivery
 
-Source: `W431.md; W437.md; QUEUE.md rows W431/W437/W447`. Root acceptance/disposition: **R611/R631** in `../QUEUE.md`.
+Sources are [W431](W431.md), [W437](W437.md), [W447](W447.md) and [W461](W461.md) through [W465](W465.md).
+Root accepted the source preparation under R611, W437 under R631 and W447 under R661 as partial K02,
+the UNKNOWN reruns under R664, the flight classifications/protocol under R663/R665/R666, and W465 under R667.
+These decisions are recorded in [QUEUE](../QUEUE.md); K02 remains partial, not a campaign or Gate pass.
 
-| External checksum list (sealed input directory) | SHA-256 of the list |
+| External checksum list or retained run index | SHA-256 of the listed file |
 |---|---|
 | `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/SHA256SUMS.txt` | `06bf9946a02e6bda58577811c9c7b69ca84fb779f38f14fa7843fd6d42f357ab` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R612-W437-restart-20261122/SHA256SUMS.txt` | `e5078a1c2153df3987d0f81f9548fa61ee3ba7000377147bd4b2a4205a9c5572` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R631-W447/inventory.json` | `c8665bd53513e81f80c4597040c9f69015a4d64ab0d8fac623e8f01752c7cc6e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/inventory.json` | `af675b05ab8ec48d79350af5c021dcb0210223ba74132c23014d8b69756d5a29` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/control-010-attempt-2/inventory.json` | `102e2d105a0bac03b269cc9ab3b825b93c87231684a44c9d317d3dff71a8ba1f` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W462/artifact-hashes.json` | `6ac00d083f1499a747d521cd150a3700bfb3cb2cb5e646242fa4de9f93ff609e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R663-W463/corrected/summary.json` | `929418496c6d9ea7b87453ba13556c971bc1657047a1c4035b85cb4cf22cda9e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R665-W464/artifact-hashes.json` | `25533a156c47d2fbcd33cc58139eab6a47c657024bde68e540e5ca11ab5e0ce4` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R666-W465/artifact-hashes.json` | `9833228907a1e374f6af61da810732ba967b69705c9a63457505a139df878efe` |
 
-**Recipe and original-step mapping.** FI01/FI02/FI03/FI04/FI09 manifest.json and qualification directories map respectively to A03, B01, B04, pre-sky/API, and I03. Forced-stop runners retain W437's explicit sealed-disassembly option.
+**Recipe and original-step mapping.** The K02 root above contains each source's `manifest.json`, `source-world/` and qualification directory.
+FI01 maps to A03 and retains a scripted Beta archive, not a historical player world.
+FI02 maps to B01 and is reconstructed on the pinned v1.0 JAR, not historically played.
+FI03 maps to B04 and is a reconstructed, flushed TRANSIT_PREPARED source with no passenger; its C6 copy-load proves readability, not completed flight recovery.
+FI04 supplies the pre-sky/API core baseline but not the missing historical adapter/custom-payload branch.
+FI09 maps to I03 and reconstructs all 30 old blocks, 57 items and 19 block-entity types at 24 positions on pinned v1.7.
+W431 records the exact layouts, host JAR hashes and copy-load qualifications; none of these inputs is a played-world-history claim.
 
-**Remaining coverage and reasons.** Needs package K02 — in progress (W447). W437's flight 2 PASS/8 FAIL (JOURNAL_PENDING) and transaction 13 PASS/12 NOT_REACHABLE_ON_C6 stay unchanged pending the follow-up. Historical sources are reconstructed, not historically played; genuine adjacent-chunk/current-seat/expiry controls remain separate, NOT_COVERED where absent.
+For A04, `R666-W465/run.py`, `summary.json`, `baseline-forced-chunks.json` and `baseline-world-identity.json` identify the flight run of record.
+It has **7 PASS and 3 FAIL: NOT_REACHABLE_ON_C6** under R666's loaded-ends contract, accepted under R667.
+The uncounted baseline persists only Overworld chunk (24,24) and Moon chunk (0,0); no counted case adds a chunk.
+All four modes (`--wait-ready-status`, `--sealed-disassembly-receipt`, `--journalled-launch-receipt` and `--settled-disassembly-protocol`) are explicit.
+The 30-second pause and 45-second disassembly budgets, identity/fuel/authority checks, SEALED/DONE receipts, five restored blocks and exact inventory oracle remain unchanged.
+This is an unmanned stand-in for a nearby requester, not connected-player or passenger qualification.
+
+W447's `R631-W447/native/plan.json` and `native/summary.json` cover all 89 direct sealed-disassembly rows, with 81 PASS and 8 FAIL in that attempt.
+W461's `R662-W461/native/summary.json` and `control-010-attempt-2/cohort-summary.json` add passing attempts for all eight UNKNOWN rows and both controls under R664.
+Together they give a passing C6 attempt for every one of the 89 rows, not an all-attempts pass or an integrated-flight proof.
+The eight original UNKNOWN/log-gate failures remain failed; W461 also retains control 010's first failed Yggdrasil key-fetch attempt separately from its authorized second PASS.
+W461 permits exactly one matching intentional UNKNOWN ERROR only at the selected UNKNOWN stage; all other log and recovery/resource checks remain.
+W437's fresh transaction matrix remains 13 PASS and 12 NOT_REACHABLE_ON_C6.
+W447 maps eight of those twelve legacy disassembly purposes to sealed semantic counterparts, without relabelling a legacy checkpoint as passed; the full mapping is in checklist A, entry A-K02.
+
+**Remaining coverage and reasons.** W437's flight 2 PASS/8 FAIL, W447's flight 5 PASS/5 FAIL and W463's corrected flight 5 PASS/5 FAIL remain counted history, not rewritten by W465.
+W447's DESCENT/LANDED cleanup failures and W463's unloaded-destination rejections are HARNESS findings under W462/W464, not counted passes or a diagnosed PRODUCT defect.
+DESTINATION_SPAWNED, PASSENGERS_TRANSFERRED and SOURCE_REMOVED remain failed NOT_REACHABLE_ON_C6 cuts: the clean-journal pause cannot stop before C6 dispatches the next acknowledged phase.
+RESTORING:3, RESTORING:4, RESTORING:5 and FAILED:1 have no exact sealed counterpart; all twelve original legacy rows remain NOT_REACHABLE_ON_C6.
+Genuine adjacent-chunk entity arrival, current-seat selection and native 200-tick expiry remain separate NOT_COVERED observations because K02 has no genuine controls for them.
+Passengers, real clients, played historical sources and the missing historical adapter payload remain outside K02's qualified coverage.
+[KI-V180-DISASSEMBLY-01](../../../releases/v1.8.0/KNOWN-ISSUES.md) records the support boundary: wait for settlement, make a fresh request after preparation, reconfirm exact fuel disposal and stay online in the same dimension within eight blocks until completion.
+This guidance and R666's baseline do not qualify real-player behavior.
 
 **Mapping in checklist B.**
 
 | Original row/actions | Recipe selector and retained limitation |
 |---|---|
-| B01 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
-| B03 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
-| B04 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
+| B01 | FI02's manifest, source-world and qualification-final directory supply the reconstructed v1.0 normal source under R611. It is not historically played; passenger and player-session observations remain unqualified. |
+| B03 | FI02 supplies the reconstructed v1.0 source under R611; K06 supplies the route packs. K02's copy-load is not a live reload, quote or two-restart route observation. |
+| B04 | FI03's manifest, source-world and qualification-final directory supply the reconstructed v1.0 in-flight source under R611. Its flushed TRANSIT_PREPARED copy-load proves readability only; real passenger/current-seat recovery and repeated campaign reopens remain unqualified. |
 
 ### B-K06: 23 hashed data/resource packs, not blanket live qualification
 
@@ -200,7 +240,7 @@ and resource projections before first C6 load. This is distinct from A03's Beta.
 
 **Accepted preparation/action steps (W408):**
 
-(C7) **Needs package K02** — in progress (W447); entry B-K02: normal v1.0 and in-flight worlds made on the pinned historical JAR. Label each rebuild "reconstructed on JAR (hash), not historically played"; it proves format migration, not played-world history. H02 covers the legacy-passenger branch only. Where no retained played in-flight source exists, that claim is NOT_COVERED for that reason. Never edit earned balances, IDs or binding history.
+(C7) Entry B-K02 pins FI02's normal v1.0 source and FI03's flushed TRANSIT_PREPARED source, with manifests and C6 copy-load qualifications accepted under R611. Both were reconstructed on the pinned historical JAR; FI03 has no passenger and its copy-load proves readability, not completed recovery. Label each rebuild "reconstructed on JAR (hash), not historically played"; it proves format migration, not played-world history. H02 covers the legacy-passenger branch only. Where no retained played in-flight source exists, that claim is NOT_COVERED for that reason. Never edit earned balances, IDs or binding history.
 
 **Evidence to keep:** `phase3-ds/B01/` source/copy manifests, before/after
 target/schema projections, each open log and exit, flight/station/claim receipts,
@@ -274,7 +314,7 @@ plan remains 50 via two orbit legs. Live quotes/readback still require qualifica
 
 **Accepted preparation/action steps (W408):**
 
-(W406) Begin with the baseline, then replace it with the valid variant; test invalid-anchor and unknown-body packs separately only **after** a valid load, restoring valid files before restart. Capture `/arce celestial route advancedrocketrycommunity:earth_moon`, catalog generation, direct definition and selected plan legs plus quote. Direct distance changes 50→75, but two 25-unit orbit legs keep shortest distance 50: do not require a +25 fuel increase or infer cache freshness from price alone. This refines step 4 to the actual graph, not an invented quote. Preparation is required for the live load, quotes/plan readback and two restarts; world source **needs package K02** — in progress (W447); entry B-K02. Entry B-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
+(W406) Begin with the baseline, then replace it with the valid variant; test invalid-anchor and unknown-body packs separately only **after** a valid load, restoring valid files before restart. Capture `/arce celestial route advancedrocketrycommunity:earth_moon`, catalog generation, direct definition and selected plan legs plus quote. Direct distance changes 50→75, but two 25-unit orbit legs keep shortest distance 50: do not require a +25 fuel increase or infer cache freshness from price alone. This refines step 4 to the actual graph, not an invented quote. Preparation is required for the live load, quotes/plan readback and two restarts; entry B-K02 supplies FI02's pinned reconstructed source manifest and qualification-final input under R611, not a completed live route-reload test. Entry B-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications.
 
 **Delivered K06 inputs (W406; generated, not load-qualified).** All ZIP names
 below are under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K06/`.
@@ -321,7 +361,7 @@ schema/protocol, not the historical flight=2/protocol=6 numbers as a C6 pin.
 
 **Accepted preparation/action steps (W408):**
 
-(C7) Keep the ordinary C6 restart separate from upgrading K02's historical in-flight copy; H02 is legacy-passenger-only. A rebuilt source is labelled reconstructed on its hashed JAR, not historically played; the retained-played-source claim is NOT_COVERED if unavailable. That source remains open (**Needs package K02** — in progress (W447); entry B-K02), and preparation is required for the current-flight timing/controls. Do not edit earned balances or identities. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+(C7) Keep the ordinary C6 restart separate from upgrading K02's historical in-flight copy; H02 is legacy-passenger-only. A rebuilt source is labelled reconstructed on its hashed JAR, not historically played; the retained-played-source claim is NOT_COVERED if unavailable. Entry B-K02 supplies FI03's sealed manifest and qualification-final input under R611; this is an unmanned reconstructed TRANSIT_PREPARED source, not a played-source or completed-recovery claim. Preparation is still required for the current-flight timing/controls. Do not edit earned balances or identities. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 
 **Evidence to keep:** `phase3-ds/B04/` selected/active/recovered target
 projections, journal/fuel/seat comparisons, disconnect/rejoin logs and screenshots.
@@ -450,7 +490,7 @@ Build hash (commit and JAR SHA-256):
 ## Open questions for Root
 
 - **Answered:** C7 reconstruction/H02 scope, C8 ownership setup, C9 server-tick reporting/no overlap tolerance, C10/R535 matched sampling/review, W406 pack bytes/hashes/source-derived outcomes.
-- **B01/B04:** historical normal/in-flight source/schema/boundary manifests remain open (**needs package K02** — in progress (W447); entry B-K02); current-flight controls still require qualification. No retained played in-flight source means that played-world claim is NOT_COVERED. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
+- **B01/B04:** Entry B-K02 supplies FI02/FI03's pinned source/schema/boundary manifests and C6 copy-load qualifications under R611. FI03 remains an unmanned reconstructed TRANSIT_PREPARED source; current-flight controls and repeated campaign recovery still require qualification. No retained played in-flight source means that played-world claim is NOT_COVERED. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 - **B02:** Regions/owners/energy and commands must be recorded, without owner-limit bypass. Entry B-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open.
 - **B03/B06:** Live pack loads/quotes/graph legs/removed-menu and two-restart qualification remain required; scene/control binding remains required. No fuel-price increase is promised by the distance-75 definition; rejected unknown data is not setup. Entry B-K06 (R550) supplies the following inputs: 23 hashed data/resource packs, not blanket live qualification. Live loads, quotes, cooldown behavior and restart observations remain unqualified except for the separately cited package qualifications. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
 - **B05:** Actual server receipt-tick correlation remains required if ordinary receipts lack it; scene preparation remains required. O5 supplies coordinated input. Missing same-tick proof is NOT_COVERED with a named A1 test. Entry B-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open. Entry B-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.

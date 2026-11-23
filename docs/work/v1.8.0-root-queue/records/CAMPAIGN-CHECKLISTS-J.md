@@ -104,8 +104,9 @@ source worlds and sealed evidence. Root, not these checklists, fills release rep
 This index resolves the package notes below; it is preparation, not execution or a Gate verdict.
 Each entry gives the sealed input, its checksum-list SHA-256, the recipe/step mapping and the
 remaining partial or NOT_COVERED work. Paths are external read-only inputs, never repository links.
-Only K02 (W447) and K12 (W454) remain package deliveries in progress. A delivered recipe is not
-an observed client result; preserve every original action, oracle, result field and budget.
+No package delivery remains in progress. Root accepted K02 as partial under R661/R664/R667
+and K12 as partial under R655; their uncovered observations and unexecuted client/REF work remain open.
+A delivered recipe is not an observed client result; preserve every original action, oracle, result field and budget.
 
 ### J-K01: sources/API and independent fixture binaries
 
@@ -126,23 +127,62 @@ Source: `W424.md; W426.md; QUEUE.md rows W424/W426`. Root acceptance/disposition
 |---|---|
 | J22 | Before the row's first start: candidate/IDENTITY.json and w426/consumer-reports; classifiers are inspection-only, independent fixture is the D01/D11 install input; the hosted release remains the run artifact. |
 
-### J-K02: historical sources; forced-stop qualification in progress
+### J-K02: historical sources and partial forced-stop delivery
 
-Source: `W431.md; W437.md; QUEUE.md rows W431/W437/W447`. Root acceptance/disposition: **R611/R631** in `../QUEUE.md`.
+Sources are [W431](W431.md), [W437](W437.md), [W447](W447.md) and [W461](W461.md) through [W465](W465.md).
+Root accepted the source preparation under R611, W437 under R631 and W447 under R661 as partial K02,
+the UNKNOWN reruns under R664, the flight classifications/protocol under R663/R665/R666, and W465 under R667.
+These decisions are recorded in [QUEUE](../QUEUE.md); K02 remains partial, not a campaign or Gate pass.
 
-| External checksum list (sealed input directory) | SHA-256 of the list |
+| External checksum list or retained run index | SHA-256 of the listed file |
 |---|---|
 | `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/SHA256SUMS.txt` | `06bf9946a02e6bda58577811c9c7b69ca84fb779f38f14fa7843fd6d42f357ab` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R612-W437-restart-20261122/SHA256SUMS.txt` | `e5078a1c2153df3987d0f81f9548fa61ee3ba7000377147bd4b2a4205a9c5572` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R631-W447/inventory.json` | `c8665bd53513e81f80c4597040c9f69015a4d64ab0d8fac623e8f01752c7cc6e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/inventory.json` | `af675b05ab8ec48d79350af5c021dcb0210223ba74132c23014d8b69756d5a29` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W461/control-010-attempt-2/inventory.json` | `102e2d105a0bac03b269cc9ab3b825b93c87231684a44c9d317d3dff71a8ba1f` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R662-W462/artifact-hashes.json` | `6ac00d083f1499a747d521cd150a3700bfb3cb2cb5e646242fa4de9f93ff609e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R663-W463/corrected/summary.json` | `929418496c6d9ea7b87453ba13556c971bc1657047a1c4035b85cb4cf22cda9e` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R665-W464/artifact-hashes.json` | `25533a156c47d2fbcd33cc58139eab6a47c657024bde68e540e5ca11ab5e0ce4` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K02/R666-W465/artifact-hashes.json` | `9833228907a1e374f6af61da810732ba967b69705c9a63457505a139df878efe` |
 
-**Recipe and original-step mapping.** FI01/FI02/FI03/FI04/FI09 manifest.json and qualification directories map respectively to A03, B01, B04, pre-sky/API, and I03. Forced-stop runners retain W437's explicit sealed-disassembly option.
+**Recipe and original-step mapping.** The K02 root above contains each source's `manifest.json`, `source-world/` and qualification directory.
+FI01 maps to A03 and retains a scripted Beta archive, not a historical player world.
+FI02 maps to B01 and is reconstructed on the pinned v1.0 JAR, not historically played.
+FI03 maps to B04 and is a reconstructed, flushed TRANSIT_PREPARED source with no passenger; its C6 copy-load proves readability, not completed flight recovery.
+FI04 supplies the pre-sky/API core baseline but not the missing historical adapter/custom-payload branch.
+FI09 maps to I03 and reconstructs all 30 old blocks, 57 items and 19 block-entity types at 24 positions on pinned v1.7.
+W431 records the exact layouts, host JAR hashes and copy-load qualifications; none of these inputs is a played-world-history claim.
 
-**Remaining coverage and reasons.** Needs package K02 — in progress (W447). W437's flight 2 PASS/8 FAIL (JOURNAL_PENDING) and transaction 13 PASS/12 NOT_REACHABLE_ON_C6 stay unchanged pending the follow-up. Historical sources are reconstructed, not historically played; genuine adjacent-chunk/current-seat/expiry controls remain separate, NOT_COVERED where absent.
+For A04, `R666-W465/run.py`, `summary.json`, `baseline-forced-chunks.json` and `baseline-world-identity.json` identify the flight run of record.
+It has **7 PASS and 3 FAIL: NOT_REACHABLE_ON_C6** under R666's loaded-ends contract, accepted under R667.
+The uncounted baseline persists only Overworld chunk (24,24) and Moon chunk (0,0); no counted case adds a chunk.
+All four modes (`--wait-ready-status`, `--sealed-disassembly-receipt`, `--journalled-launch-receipt` and `--settled-disassembly-protocol`) are explicit.
+The 30-second pause and 45-second disassembly budgets, identity/fuel/authority checks, SEALED/DONE receipts, five restored blocks and exact inventory oracle remain unchanged.
+This is an unmanned stand-in for a nearby requester, not connected-player or passenger qualification.
+
+W447's `R631-W447/native/plan.json` and `native/summary.json` cover all 89 direct sealed-disassembly rows, with 81 PASS and 8 FAIL in that attempt.
+W461's `R662-W461/native/summary.json` and `control-010-attempt-2/cohort-summary.json` add passing attempts for all eight UNKNOWN rows and both controls under R664.
+Together they give a passing C6 attempt for every one of the 89 rows, not an all-attempts pass or an integrated-flight proof.
+The eight original UNKNOWN/log-gate failures remain failed; W461 also retains control 010's first failed Yggdrasil key-fetch attempt separately from its authorized second PASS.
+W461 permits exactly one matching intentional UNKNOWN ERROR only at the selected UNKNOWN stage; all other log and recovery/resource checks remain.
+W437's fresh transaction matrix remains 13 PASS and 12 NOT_REACHABLE_ON_C6.
+W447 maps eight of those twelve legacy disassembly purposes to sealed semantic counterparts, without relabelling a legacy checkpoint as passed; the full mapping is in checklist A, entry A-K02.
+
+**Remaining coverage and reasons.** W437's flight 2 PASS/8 FAIL, W447's flight 5 PASS/5 FAIL and W463's corrected flight 5 PASS/5 FAIL remain counted history, not rewritten by W465.
+W447's DESCENT/LANDED cleanup failures and W463's unloaded-destination rejections are HARNESS findings under W462/W464, not counted passes or a diagnosed PRODUCT defect.
+DESTINATION_SPAWNED, PASSENGERS_TRANSFERRED and SOURCE_REMOVED remain failed NOT_REACHABLE_ON_C6 cuts: the clean-journal pause cannot stop before C6 dispatches the next acknowledged phase.
+RESTORING:3, RESTORING:4, RESTORING:5 and FAILED:1 have no exact sealed counterpart; all twelve original legacy rows remain NOT_REACHABLE_ON_C6.
+Genuine adjacent-chunk entity arrival, current-seat selection and native 200-tick expiry remain separate NOT_COVERED observations because K02 has no genuine controls for them.
+Passengers, real clients, played historical sources and the missing historical adapter payload remain outside K02's qualified coverage.
+[KI-V180-DISASSEMBLY-01](../../../releases/v1.8.0/KNOWN-ISSUES.md) records the support boundary: wait for settlement, make a fresh request after preparation, reconfirm exact fuel disposal and stay online in the same dimension within eight blocks until completion.
+This guidance and R666's baseline do not qualify real-player behavior.
 
 **Mapping in checklist J.**
 
 | Original row/actions | Recipe selector and retained limitation |
 |---|---|
-| J22 | FI01 manifest/qualification -> A03. FI02 -> B01. FI03 -> B04. FI04 -> pre-sky/API baseline. FI09 -> I03. A04/A05 runner controls remain W447 in progress; do not turn W437 failures/unreachable cuts into observations. |
+| J22 | The pinned K02 sources and W437/W447/W461/W463/W465 result files supply historical identities and per-run context under R611/R631/R661/R664/R665/R667. Their earlier failures and unreachable legacy/flight cuts remain distinct; Root still reviews the finished campaign hashes. |
 
 ### J-K05: nine r608 machine scenes and field inventory
 
@@ -239,27 +279,60 @@ Source: `W453.md; QUEUE.md row W453`. Root acceptance/disposition: **R647** in `
 | J28 | plan.json recipes.J28[1..2] -> original rider/dismount/retained-assignment/release-seat actions, requiring real ownership and idle rocket. No NBT seat edit. |
 | J29 | plan.json recipes.J29[1..2] -> original owner-disconnect/passenger retry actions; R647 J29.1-J29.5 NOT_COVERED (no exact connected-safe L1 witness). |
 
-### J-K12: queue/cargo/cut preparation in progress
+### J-K12: partial queue, cargo and external-stop preparation
 
-Source: `QUEUE.md row W454; TASK-W454-K12-QUEUES.md`. Root acceptance/disposition: **W454 remains in progress** in `../QUEUE.md`.
+Sources are [W454](W454.md), its sealed manifests and [the K12 driver](../../../../scripts/campaign_prep/k12_queues.py).
+[QUEUE](../QUEUE.md), R655 accepts **partial K12**, including the four C6 gated fixture builds permitted by R640, not prohibited NBT writes under R638.
+R655 requires a JFR file-event or wall-clock bracket for J11's REF flush interval and records removal of the superseded wait23-r1 world.
+The unchanged `first-event` copy and written J17 recipes stand separately; no delivery is a client/REF pass.
 
-**Recipe and original-step mapping.** Needs package K12 — in progress (W454). Keep existing J05-J11/J17/J22 requested scene/driver/award-probe steps until Root fills the delivery.
+| External checksum list or delivery audit | SHA-256 of the listed file |
+|---|---|
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/bay-queue/SHA256SUMS.txt` | `95afa41c062b76b7e062f688d6c307e1dc690f704449cf2937260b8fd71c1b30` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/wait23/SHA256SUMS.txt` | `4c8f0e4f19ed0cf2b858e460acd90bdf1b8ef1332a59584cac67bd2438bc4ffd` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/cargo-cells/SHA256SUMS.txt` | `af1d8c0bbcb3b60b7e1eedd56197983c4232e210b8a329e91c22b10b0a13b553` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/mixed/SHA256SUMS.txt` | `00c18301c9b3b3cadb6a3ff0edcd291d4e8455b8d5bd297debf5b92d1ca27fcd` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/first-event/SHA256SUMS.txt` | `f45652a303cf673e6684c1ffbca959a9885225bbc64aeaca64279cea9cddbbeb` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/j17-recipes/SHA256SUMS.txt` | `e7084cdfb9b4018e57c7d5355673223a73a7aa11b1fd35ee7e2c603556bf4e4d` |
+| `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/fixtures/K12/DELIVERY-AUDIT.json` | `3cfbe4d5ec1e01f54d9e9361d0a73c7b5e95d173365f59539fb10e2efe691502` |
 
-**Remaining coverage and reasons.** No accepted K12 seal or recipe is substituted from an in-progress output. No queue, isolated wait-23, cold/first-event or award/REF coverage is claimed.
+**Recipe and original-step mapping.** Each of the five sealed fixture directories contains `world/`, `manifest.json`, `build.json` and `readback.json`.
+The manifests' `procedure.steps` selectors below give the driver commands, raw-tick polls and matched-copy REF procedure.
+`bay-queue` contains eight D6-gated claims with five census columns each, including seven queued claims; it is larger than C6's small controls, not the 64-claim pool limit.
+`wait23` contains one claim far from spawn with no player, forced chunk, device or second rocket; isolation is by construction, not direct visibility of every ticket owner.
+`cargo-cells` preserves K04's 2,048-block rocket and adds C6's three R-042 owner cells A/B/S, with 15 before-state devices/rockets; `mixed` adds four D6-gated claims.
+`first-event` preserves K04's fuelled 64-block source unchanged with both event sources KNOWN:EMPTY and no progression root.
+Every source passed the recorded restart readback; the short qualification windows remain labelled WINDOWS_DRIVER_QUALIFICATION_NOT_REF.
+`j17-recipes/recipes.json` supplies all fourteen variants FM10a-FM10d, FX-Ma/FX-Mb, FX-Wa/FX-Wb, FX-Rm/FX-Rw, FX-Sm/FX-Sw and FX-Dm/FX-Dw, written but not run.
+Its `stops` select C6 ClassicFirstEventDelivery lines 486, 437 and 444 or the ARCE-rocket-journal baseline move; the writer stop is not a pinned source line.
+Its `player_save` names PlayerList.saveAll (`m_11302_`), and `award_probes` combine live advancement selectors with each saved player's JSON criterion.
+Runtime owned PIDs, authenticated A/B setup, debugger execution, external process stops and both restart observations still require the campaign sitting.
+
+**Remaining coverage and reasons.** J05's 34-column census and 64 claims remain NOT_COVERED because the packaged bay fixture is narrow and has one fixed owner; a wider real rocket needs player-inserted packages.
+J05 waits 1-9, 13-16 and 18-22 have no new K12 fixture; C6's timing/forced-stop families still need REF execution and a Debian start line instead of the Windows wrapper in `run_v180_w336_timing.py`.
+J06/J07 still require actual cursor/partial-stack, competitor, seat, synchronized hold and refusal observations; delivered before-state cells are not connected-client qualification.
+J08 steps 1-4 remain NOT_COVERED because CargoNativeFixtures is test-only and absent from C6's release JAR; step 5 has only the delivered device-cycle driver qualification.
+J09 step 4 remains NOT_COVERED because no packaged command starts the F1/W98/sealed-disassembly capture competitor against the shared quota.
+J10's four checked-margin rockets across both terrain cohorts were not built; capacity cases need real players, and `cold_columns` is only an offline region-header reader.
+J11's eligible participant remains NOT_COVERED because qualification used an unmanned gated launch, not a player's product route.
+J11's flush interval remains NOT_COVERED by raw ticks because K15's sample may exclude the receipt barrier's separate END-tick handler; use R655's JFR file-event or wall-clock bracket on REF.
+That flush limitation was added after the seals and is recorded in `DELIVERY-AUDIT.json`, not silently inserted into the immutable manifests.
+J17 execution remains NOT_COVERED: no debugger, client, stop or real-player award probe was run.
+No qualification window supplies Debian/REF budgets, V1/V2 results, a complete all-ticket census or an executed campaign family.
 
 **Mapping in checklist J.**
 
 | Original row/actions | Recipe selector and retained limitation |
 |---|---|
-| J05 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J06 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J07 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J08 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J09 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J10 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J11 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J17 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
-| J22 | Keep the original row/step request unchanged; W454 is still in progress. Root supplies the accepted seal and exact driver/cut/award-probe mapping after delivery. |
+| J05 | The sealed bay-queue/wait23/mixed manifests' procedure.steps and claim_waits/ticket_series readers map to step 3 and waits 10-12/17, wait 23, and cargo competition for waits 6/14. Entry J-K12 retains the 34-column/64-claim gaps, other-family REF requirements and construction-only isolation under R655. |
+| J06 | The cargo-cells manifest and procedure.steps.cargo-cells supply the three R-042 before-state owner cells and device reports under R655. Real-GPU cursor, partial-stack, hold and refusal observations are unqualified; K11's marked controls remain separate. |
+| J07 | The cargo-cells owner cells and reports supply preparation under R655. Real competitor/seat actions and synchronized L1/L2 holds still need connected-client qualification; no private forced-open menu becomes an observer view. |
+| J08 | The cargo-cells procedure and cargo_cycles reader map to step 5's fifteen device operations under R655. Steps 1-4 remain NOT_COVERED because the largest/oversize/64-record capture/hash fixture class is absent from the release JAR; REF and K17 loads remain separate. |
+| J09 | The cargo-cells and bay-queue procedures supply steps 1-2's separate baselines; mixed supplies step 3's four claims with fifteen device operations under R655. Step 4 remains NOT_COVERED without a packaged competing-capture command; Windows qualification windows are not REF. |
+| J10 | The delivered cold_columns reader maps only to step 1's region-header classification under R655. No checked-margin geometry worlds or connected-player capacity variants were delivered; steps 2-10 remain unqualified and REF execution remains open. |
+| J11 | The first-event manifest's procedure.steps.first-event and first_event_observation map to steps 1-3/5 under R655. The unmanned Windows window does not qualify an eligible participant or REF flush cost; the separate JFR/wall-clock bracket and two reopens remain required. |
+| J17 | The sealed j17-recipes/recipes.json supplies all fourteen recipes, stops, player_save and award_probes under R655. External-stop execution with owned runtime PIDs and actual A/B advancement/restart observations remains NOT_COVERED; connected-player H cuts stay forbidden. |
+| J22 | The six K12 seals, five build/readback pairs, Windows qualification outputs and DELIVERY-AUDIT.json supply preparation context under R655. Written J17 recipes and incomplete REF/client work are not campaign outputs; Root still reviews actual family manifests and hashes. |
 
 ### J-K13: asset/screen/sound/access inventories and resource packs
 
@@ -601,7 +674,7 @@ three census slots and more than two queued claims**, not just W336's developmen
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C36, R535) Use matched worlds/cells/host, two-minute discarded warm-up and ten-minute standard sample, with two baselines; spread triggers Root review only. No maximum latency exists for unbounded waits: retain raw waits, unfinished cases and reasons. Wait 23 runs on a world with no other ticket owner; a contaminated sweep is not compared to 400 ticks. **Needs package K12** — in progress (W454); entry J-K12: larger queues/isolated ticket world and raw boundary driver; preparation is required for the REF observer integration. Owner O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+(C10/C36, R535) Use matched worlds/cells/host, two-minute discarded warm-up and ten-minute standard sample, with two baselines; spread triggers Root review only. No maximum latency exists for unbounded waits: retain raw waits, unfinished cases and reasons. Wait 23 runs on a world with no other ticket owner; a contaminated sweep is not compared to 400 ticks. Entry J-K12 pins bay-queue/wait23/mixed seals and their procedure.steps, claim_waits and ticket_series drivers under R655. Eight five-column claims and the isolated one-claim world are delivered, but the 34-column/64-claim boundary and other timing-family REF work remain uncovered; preparation is required for the REF observer integration. Owner O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** All 23 raw boundary intervals, queue/slot/claim identities, D6/barrier and D3/writer samples,
 reference-host configuration, tick/RSS/GC/JFR data and restart states under phase 5, with per-wait coverage verdicts.
@@ -636,7 +709,7 @@ Pin a 64,000 mB cargo tank and a supported vanilla chest/barrel payload, four-sl
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K12** — in progress (W454); entry J-K12: four-device/cursor/partial-stack scenes and gated hold/readback recipes. W399 session fields and gate settings are in the shared procedure; K11 supplies the marked/no-hook kit. Apply R546 to every refused cargo action.
+Entry J-K12 pins cargo-cells' seal, three R-042 before-state owner cells and procedure.steps.cargo-cells under R655. Those device reports do not qualify real-GPU cursor/partial-stack, synchronized holds or refusal observations; those live actions remain unexecuted. W399 session fields and gate settings are in the shared procedure; K11 supplies the marked/no-hook kit. Apply R546 to every refused cargo action.
 
 **Evidence to keep:** Each device/direction's labeled screens and content-hash/typed-cursor/resource comparisons,
 reload timing, client/server logs and video of visual refresh under phase 2; gate/no-hook configuration separately.
@@ -671,7 +744,7 @@ reload timing, client/server logs and video of visual refresh under phase 2; gat
 
 **Accepted preparation/action steps (W408):**
 
-**Needs package K12** — in progress (W454); entry J-K12: four-kind L1/L2, competitor and seat probes; preparation is required for the marked gate/owner roles. The common R546 receipt and authoritative readback rule applies to all refusals; a forced-open private menu is never a synchronized observer view. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open.
+Entry J-K12 pins cargo-cells' seal, owner cells and device-report procedure under R655. Connected-client L1/L2 holds, competitor/seat probes and refusal observations remain unqualified; preparation is required for the marked gate/owner roles. The common R546 receipt and authoritative readback rule applies to all refusals; a forced-open private menu is never a synchronized observer view. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open.
 
 **Evidence to keep:** Both videos/client logs, server boundary/owner/seat/binding records and exact item/NBT or Fluid
 totals, competitor refusals and per-kind case map under phase 4; phase-3 recovery references if used.
@@ -703,7 +776,7 @@ totals, competitor refusals and per-kind case map under phase 4; phase-3 recover
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C36) Standard comparisons use matched ten-minute samples after two warm-up minutes and two baselines; keep longer/special cost cohorts intact. No unbounded-wait maximum is invented; budget findings come only from REF. **Needs package K12** — in progress (W454); entry J-K12: largest-admitted/oversize/mixed/native device scenes and raw cycle driver; preparation is required for the REF observation. O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+(C10/C36) Standard comparisons use matched ten-minute samples after two warm-up minutes and two baselines; keep longer/special cost cohorts intact. No unbounded-wait maximum is invented; budget findings come only from REF. Entry J-K12 pins cargo-cells' seal and cargo_cycles driver for step 5 under R655. Steps 1-4's largest-admitted/oversize/64-record capture/hash fixtures remain NOT_COVERED because their test-only builder is absent from the release JAR; preparation is required for the REF observation. O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Boundary encodings/admission/refusal totals, synthetic versus native sample files, per-device
 cycle table, capture/apply/hash/publication samples and host/tick/RSS/GC records under phase 5; shared soak I10 separate.
@@ -731,7 +804,7 @@ Pin real concurrent bay D4/D5, four-kind cargo preparation, F1, W98 and sealed-d
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C36) Run each baseline twice back to back under the same world/cell/host and sample plan (two discarded warm-up minutes, ten measured minutes). Baseline-spread differences trigger Root review only. Raw waits have no invented latency ceiling; REF alone supplies budget findings. **Needs package K12** — in progress (W454); entry J-K12: competing workload/queue driver; preparation is required for the grant/raw-tick observation; owner O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+(C10/C36) Run each baseline twice back to back under the same world/cell/host and sample plan (two discarded warm-up minutes, ten measured minutes). Baseline-spread differences trigger Root review only. Raw waits have no invented latency ceiling; REF alone supplies budget findings. Entry J-K12 pins cargo-cells/bay-queue baselines and mixed's procedure.steps for cargo competition under R655. Step 4 remains NOT_COVERED because no packaged command starts a shared-quota capture competitor; preparation is required for the grant/raw-tick observation; owner O11 supplies node access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Shared per-tick grant/work/visit trace, consumer IDs, D4/D5/D6/cargo wait timelines, baseline
 comparisons and whole-tick/reference host samples under phase 5, cross-referenced by J05 waits 6/14.
@@ -772,7 +845,7 @@ generated-but-cold controls are distinct; generated controls are saved by a sepa
 
 **Accepted preparation/action steps (W408):**
 
-(C10/C36) Keep matched-copy/cell/host comparisons and twice-run baselines; the short-window plan is two discarded warm-up minutes/ten measured minutes without dropping cold/first-use cohorts. No maximum for unbounded waits exists. **Needs package K12** — in progress (W454); entry J-K12: Debian cold/queue/lifecycle driver; preparation is required for the complete raw-tick/REF observations. Owner O11 supplies node access; Windows figures remain history. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+(C10/C36) Keep matched-copy/cell/host comparisons and twice-run baselines; the short-window plan is two discarded warm-up minutes/ten measured minutes without dropping cold/first-use cohorts. No maximum for unbounded waits exists. Entry J-K12 supplies the cold_columns region-header reader under R655, not the four checked-margin geometry worlds or connected-player capacity scenes. Those missing scenes and Debian execution remain unqualified; preparation is required for the complete raw-tick/REF observations. Owner O11 supplies node access; Windows figures remain history. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Cold qualification, geometry/column/ticket manifests, full native events/ticks, request/READY/F2/F8
 times, checkpoint cohorts/JFR/RSS/GC and two restart observations under phase 5; reference timing is separate from old Windows runs.
@@ -802,7 +875,7 @@ The real `advancedrocketrycommunity_classic_progression.dat` checked receipt bar
 
 **Accepted preparation/action steps (W408):**
 
-(C37) Measure a fresh first-event tick on REF; over-budget evidence requires Root's separately designed and independently reviewed persistence task under R245 before release. Disclosing a Windows limitation does not replace this run or waive its budget. **Needs package K12** — in progress (W454); entry J-K12: actual-event workload/driver; preparation is required for the force/flush/raw-tick observation; O11 supplies access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+(C37) Measure a fresh first-event tick on REF; over-budget evidence requires Root's separately designed and independently reviewed persistence task under R245 before release. Disclosing a Windows limitation does not replace this run or waive its budget. Entry J-K12 pins first-event's seal, procedure.steps.first-event and first_event_observation under R655. The unmanned Windows qualification supplies no eligible-player or REF result, and raw ticks may exclude the receipt barrier; use R655's JFR file-event or wall-clock flush bracket; preparation is required for the force/flush/raw-tick observation; O11 supplies access. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 
 **Evidence to keep:** Reference host/storage identity, raw first-event and flush/force timestamps, native tick/GC samples,
 pre/post progression/event files and restart comparisons under phase 5, linked to the R245 disposition.
@@ -979,7 +1052,7 @@ comparison, both-client refusal/railgun video and logs under phases 2/4.
 **Phase/level/machine/accounts:** 3 DS restart setup; 4 V2, eligible participant A and nonparticipant B; both.
 **Gate:** Production admission off. **No `arce.releaseTest.firstEventCut` property or headless halt seam** in real-client runs.
 **Preconditions:** [W44I “Not done”](W44I.md), [W44 design sections 3 and 6](W44-DESIGN.md).
-Debugger breakpoints, owned PIDs and exact C6 source lines **needs package K12** — in progress (W454); entry J-K12. Use controlled external stop X,
+Entry J-K12 pins j17-recipes/recipes.json under R655: all fourteen variants, C6 lines 486/437/444, the writer's baseline-move stop, player_save and award_probes are delivered but unexecuted. Owned PIDs must be captured at execution; the writer stop is not a pinned source line. Use controlled external stop X,
 not headless H: gate relaxation is forbidden. Actual criterion oracle is vanilla `AdvancementProgress` plus
 saved player advancement JSON for `classic/one_small_step` or `classic/first_station_warp`; a receipt alone is insufficient.
 Moon C-M means A aboard the unique completing rocket/B watching without a seat. Station C-W means A eligible
@@ -1022,7 +1095,7 @@ these two clients). Observe eligibility/readiness first; no claim of that latenc
 
 **Accepted preparation/action steps (W408):**
 
-(C39) First-event H cuts remain forbidden with connected real players; the bay connected-player exception does not apply. X uses external process stops only. **Needs package K12** — in progress (W454); entry J-K12: fourteen pinned debugger/save/deferral recipes, owned process IDs and actual award probes. No receipt alone or headless result proves a player criterion.
+(C39) First-event H cuts remain forbidden with connected real players; the bay connected-player exception does not apply. X uses external process stops only. Entry J-K12 pins the sealed j17-recipes/recipes.json, its fourteen debugger/save/deferral recipes and live-selector/saved-criterion award probes under R655. Actual owned PIDs, debugger/external-stop runs, A/B awards and both reopens remain NOT_COVERED because no client or stop was run. No receipt alone or headless result proves a player criterion.
 
 **Evidence to keep:** Debugger plan/transcripts, exact pause/stop/PID and save-return boundaries, two client logs/videos,
 actual progress/JSON before and after both starts, E/R(E) and participant/nonparticipant checks under phases 3/4.
@@ -1301,9 +1374,9 @@ Pin explicit historical G2, downgrade, X03 root-2 and C3 reader JARs/hashes/comm
 
 **Accepted preparation/action steps (W408):**
 
-(C43) Root reviews the actual C6 outputs with a retained hashed manifest. Keep X01, X02, failed downgrade verdicts and open risk decisions as distinct result rows, never mark an entire family passed by assumption. Historical JAR/source identities remain required; historical inputs remain open (**needs package K02** — in progress (W447); entry J-K02), and the per-family manifests remain open (**needs package K12** — in progress (W454); entry J-K12). Root's finished-output review is a Root action, not an invented package or verdict. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified.
+(C43) Root reviews the actual C6 outputs with a retained hashed manifest. Keep X01, X02, failed downgrade verdicts and open risk decisions as distinct result rows, never mark an entire family passed by assumption. Historical JAR/source identities remain required; entry J-K02 pins the accepted partial source/run manifests under R611/R631/R661-R667, and entry J-K12 pins the fixture manifests and unexecuted recipe seal under R655. K02's historical failures/unreachable cuts and K12's unexecuted client/REF/award work remain distinct from actual campaign family outputs. Root's finished-output review is a Root action, not an invented package or verdict. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified.
 
-**Filled-report input (C43/R646/R649).** W455's committed `C6-SWITCH-REPORT.md` fill at `30fa0fdf8` on `codex/v1.8.0-w455` is the read-only input for actions 1 and 4-7; its record is `fb5d52197`. The shared baseline `744fceadf` still has the unfilled report, so Root must integrate the fill, not copy a worker-tree snapshot. Report sections 2.1/11 pin C6 and the 78-family selection: attempt 2 remains **74 PASS / 4 FAILED**; the separate X03 rerun PASS gives R632's combined **75 PASS / 3 FAILED**, never an overwritten attempt. Keep the three R-044 old-JAR failures. Sections 13.2-13.5 keep **X01 FAIL**, W451's passive follow-up **OBSERVED** rather than PASS (next enabled operation untested, R641), and X02's original NOT_CAUGHT/INCOMPLETE classifications beside reruns. X02's ledger STALE remains NOT_CAUGHT; original bay/satellite pair verdicts are not erased by diagnostic/oracle explanations (R636/R639). The ten development-host timing passes are not REF/soak; 89 named hosted rows lack per-method shard evidence and remain NOT_COVERED. The report's client/REF/soak, residual-risk signatures, final X03 operator approval and all switch recommendations remain open. Apply the K11/R647 connected-controller and cap gaps to that packet; no report/native result proves those real-client rows. K02/W447 and K12/W454 remain in progress; this is preparation, not a J22 verdict or switch/Gate approval.
+**Filled-report input (C43/R646/R649).** W455's committed `C6-SWITCH-REPORT.md` fill at `30fa0fdf8` on `codex/v1.8.0-w455` is the read-only input for actions 1 and 4-7; its record is `fb5d52197`. The shared baseline `744fceadf` still has the unfilled report, so Root must integrate the fill, not copy a worker-tree snapshot. Report sections 2.1/11 pin C6 and the 78-family selection: attempt 2 remains **74 PASS / 4 FAILED**; the separate X03 rerun PASS gives R632's combined **75 PASS / 3 FAILED**, never an overwritten attempt. Keep the three R-044 old-JAR failures. Sections 13.2-13.5 keep **X01 FAIL**, W451's passive follow-up **OBSERVED** rather than PASS (next enabled operation untested, R641), and X02's original NOT_CAUGHT/INCOMPLETE classifications beside reruns. X02's ledger STALE remains NOT_CAUGHT; original bay/satellite pair verdicts are not erased by diagnostic/oracle explanations (R636/R639). The ten development-host timing passes are not REF/soak; 89 named hosted rows lack per-method shard evidence and remain NOT_COVERED. The report's client/REF/soak, residual-risk signatures, final X03 operator approval and all switch recommendations remain open. Apply the K11/R647 connected-controller and cap gaps to that packet; no report/native result proves those real-client rows. K02's accepted partial W447/W461-W465 sources/runs and K12's accepted partial W454 seals/recipes are pinned in entries J-K02/J-K12 under R661/R664/R667 and R655; their uncovered and unexecuted items remain open; this is preparation, not a J22 verdict or switch/Gate approval.
 
 **Evidence to keep:** Exact dry/full commands and runner revision, full family/case inventory, candidate and historical
 artifact identities, raw per-start logs/results/state/hash comparisons and aggregate report under phase 3. C6's existing
@@ -1556,16 +1629,16 @@ binding/seat state and raw/available totals at each boundary under phase 4, plus
 ## Open questions for Root
 
 - **Answered:** C1 candidate, W399 sessions/commands, W400 cells, W403 bounded observers/seals; C33-C44 cap scope, LAN/expiry non-coverage, per-variant dispositions, comparison/wait rules, REF first-event requirement, C6 audio, X-only cuts, unimplemented respawn extension, ordinary research variants, C42 findings and owner-only fuel views. R542 decides each residual; R546 fixes preview and refusal proof.
-- **All J rows:** Source/API/historical identities remain required; historical inputs remain open (**needs package K02** — in progress (W447); entry J-K02); current manifests remain required as each row specifies. Further preparation remains open (**needs package K12** — in progress (W454); entry J-K12). Direct raw-tick/cache/all-ticket integration remains required. O10/O11/O12 supply UUIDs/node access/sitting arrangements. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open. Entry J-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations. Entry J-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **All J rows:** Source/API/historical identities remain required; entry J-K02 supplies the pinned historical sources and separate forced-stop runs under R611/R631/R661-R667. Current manifests remain required as each row specifies. Entry J-K12 supplies five fixture manifests and the unexecuted fourteen-recipe seal under R655; historical play, real clients, missing controls, REF and award execution remain unqualified. Direct raw-tick/cache/all-ticket integration remains required. O10/O11/O12 supply UUIDs/node access/sitting arrangements. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open. Entry J-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations. Entry J-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 - **J01/J02:** Cap/menu/held-rocket/pad/seat recipes still require preparation. J03 remains NOT_COVERED while switches off/no LAN gate; an owner-enabled different candidate is not authorized here. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open.
 - **J04:** all 21 variants have individual synthetic-only/native references for this pass. Potential real-client external-stop recipes each still require qualification before changing coverage; EXIT.5 real-client expiry is unreachable. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open.
-- **J05-J10:** Larger queues/cargo/admitted/cold/isolated-wait-23 drivers remain open (**needs package K12** — in progress (W454); entry J-K12); the marked/no-hook kit still requires preparation; complete live observers still require qualification. No unbounded wait gains a maximum. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
-- **J11:** The actual-event REF run remains open (**needs package K12** — in progress (W454); entry J-K12). Qualified observer integration remains required. An over-budget tick opens R245's separate designed/reviewed task, not a waiver. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **J05-J10:** Entry J-K12 pins the bay-queue/cargo-cells/mixed/wait23 manifests and delivered readers under R655. The larger census/pool, largest-admitted/oversize, capture competitor, geometry and connected-player controls retain the stated gaps; the marked/no-hook kit still requires preparation; complete live observers still require qualification. No unbounded wait gains a maximum. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
+- **J11:** Entry J-K12 pins the first-event fixture and reader/procedure under R655. The actual-event REF run remains unexecuted; its eligible participant is absent from qualification and its flush needs the separate JFR/wall-clock bracket because raw ticks may miss the receipt barrier. Qualified observer integration remains required. An over-budget tick opens R245's separate designed/reviewed task, not a waiver. Entry J-K15 (R548; R648 for A08/A09) supplies the following inputs: bounded observers, with explicit remaining visibility gaps. Direct cache/GPU/all-Forge-ticket proof and actual REF qualification remain open.
 - **J12-J16:** producer tables/long-text pack are delivered; an audio-enabled live profile and qualified scene/pause/recheck batches remain required. O9/O12 supply machine/time. Preview uses the corrected namespace. Entry J-K13 (R546) supplies the following inputs: asset/screen/sound/access inventories and resource packs. The live audio-enabled profile and per-cell runtime JEI counts remain unqualified. Entry J-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open.
-- **J17:** fourteen external-stop/save/deferral recipes and real award probes **needs package K12** — in progress (W454); entry J-K12; connected-player H cuts remain forbidden.
+- **J17:** Entry J-K12 pins all fourteen external-stop/save/deferral recipes and live/saved award probes in j17-recipes/recipes.json under R655. Actual client/debugger/stop and award execution remains NOT_COVERED; connected-player H cuts remain forbidden.
 - **J18/J19:** Freeze/B1/R1 qualification and ordinary owner/competitor/rebind/full-account/pause scenes/C6 values remain required. The planet-point extension is not a test. Entry J-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations.
 - **J20/J21:** K19 map is delivered; all 21 owed rechecks, all Fixed finding evidence and N15-N19 actions still require qualified batches plus scenes; disc, station/warp and machine preparation remain required. Missing receipt probes still require qualification. Entry J-K16 (R595; R628 supersedes final/ with v2/) supplies the following inputs: v2 core scene, mapped controls and conditional recheck batches. Only the recorded en_us scale-3 rehearsal is qualified; the full witness, other display cells and listed live controls remain open. Entry J-K14 (R642) supplies the following inputs: partial-r3 paired/research/tall/sleep scenes and 39 scripted steps. The listed paired/sleep/control gaps and real-player execution remain open; scripted client steps are not observations. Entry J-K10 (R635) supplies the following inputs: endgame sources, physical-layer cut and throughput shortfall. Railgun throughput remains NOT_MET; the listed physical-cut limits, real-client and REF gaps remain open. Entry J-K08 (R621/R627) supplies the following inputs: station sets, two-account recipes and ordinary-energy copies. Ordinary account binding, consent/warp/docking/membership actions and the listed live/REF observations remain open. Entry J-K05 (R612; R608 preparation choices) supplies the following inputs: nine r608 machine scenes and field inventory. Account binding, ordinary FE resupply/menu starts and the listed live field/GUI/refusal checks remain open. Entry J-K18 (R601) supplies the following inputs: bounded client intent JAR and case/readback matrix. The listed unsupported intent/timing controls remain NOT_COVERED, and real-client receipt/state qualification remains open.
-- **J22:** Historical/per-family manifests remain open (**needs package K12** — in progress (W454); entry J-K12); JAR/source identities remain required; historical inputs remain open (**needs package K02** — in progress (W447); entry J-K02). Root reviews finished output hashes; X01/X02, downgrade verdicts and risk decisions remain separate. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified.
+- **J22:** Entry J-K12 supplies the pinned fixture manifests and unexecuted J17 recipe seal under R655; actual client/REF/per-family outputs remain unexecuted here. JAR/source identities remain required; entry J-K02 pins the historical sources and separate run hashes under R611/R631/R661-R667 without rewriting failed or unreachable attempts. Root reviews finished output hashes; X01/X02, downgrade verdicts and risk decisions remain separate. Entry J-K01 (R586 (W424 disposition), R592 (W426 completion)) supplies the following inputs: sources/API and independent fixture binaries. The locally built release is not a replacement for hosted C6; client connections and menus remain unqualified.
 - **J23-J29:** Menus/permitted B views/holds/probes/legitimate seat-clear and refusal recipes still require preparation; no invented packet or forced owner-menu access. Entry J-K11 (R647) supplies the following inputs: partial v1 marked/no-hook geometry and per-row recipes. The live/other-owner cap, connected-safe fuel L1/L2 controller and J04 V2 gaps remain NOT_COVERED; ordinary account/seat setup remains open.
 
 ## W397 preparation and verification record
