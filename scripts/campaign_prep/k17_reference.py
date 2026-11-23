@@ -501,6 +501,26 @@ def pad_status(console, name, validate=True):
     return fields
 
 
+def restored_structure(console, name, pump=None, timeout=600):
+    """C6 disassembles into sealed carrier blocks and turns them back into the original blocks lazily, under its
+    own per-tick budget. The assembler keeps its last report, so every poll asks for a new bounded validation."""
+    pad, started, attempts, fields = layout()["pads"]["items"][name], time.monotonic(), 0, {}
+    at = pos(pad["assembler"])
+    while True:
+        attempts += 1
+        console.all(f"arce rocket validate {at}", strict=False)
+        for _ in range(60):
+            fields = parse_fields(console.all(f"arce rocket status {at}", strict=False), "Rocket assembler ")
+            if fields["code"] != "SCAN_IN_PROGRESS":
+                break
+            time.sleep(.5)
+        if fields["code"] == "SUCCESS" and fields.get("blocks") == pad["expected_blocks"]:
+            return dict(fields, validations=attempts, wall_seconds=time.monotonic() - started)
+        chain.require(time.monotonic() - started < timeout, f"{name} was not restored: " + str(fields))
+        pump() if pump else None
+        time.sleep(2)
+
+
 def components(console):
     report = parse_fields(console.all("arce beta data-report"), "ARCE-BETA-1101 ")
     evidence = parse_fields(console.all("arce satellite admin evidence"), "ARCE_SATELLITE_EVIDENCE ")
@@ -752,8 +772,9 @@ def action_hook_disassemble(console, events, entity, pump=None):
                               60, index, pump)
     seconds = time.monotonic() - started
     events.append(dict(utc=utc_now(), event="disassembled-2048", path="release-test hook, not the player confirmation",
-                       receipt=receipt[0], durability=console.process.lines[done].strip().split("]: ", 1)[-1],
-                       restored=pad_status(console, "p2048"), wall_seconds=seconds))
+                       receipt=receipt[0], durability=console.process.lines[done].strip().split("]: ", 1)[-1], wall_seconds=seconds))
+    events.append(dict(utc=utc_now(), event="structure-restored-2048", **restored_structure(console, "p2048", pump),
+                       note="time from the sealed receipt until a new validation counts 2,048 legal blocks again"))
     console.all(f"forceload remove {pos(layout()['pads']['items']['p2048']['forceload'])}")
 
 

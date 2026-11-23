@@ -321,6 +321,30 @@ class SettleTests(unittest.TestCase):
         self.assertEqual((result["settled"], result["rooms_active"]), (False, [5, 6, 9, 10]))
 
 
+class RestoreTests(unittest.TestCase):
+    class FakeConsole:
+        def __init__(self, replies):
+            self.replies, self.sent = iter(replies), []
+        def all(self, command, strict=True):
+            self.sent.append(command)
+            return [] if " validate " in command else ["x: Rocket assembler " + next(self.replies)]
+
+    def test_each_poll_validates_again_until_the_carriers_are_gone(self):
+        console = self.FakeConsole(["code=FORBIDDEN_BLOCK detail=Rocket contains a forbidden block", "code=SCAN_IN_PROGRESS detail=x",
+                                    "code=SUCCESS blocks=2048 mass=1 thrust=1 fuel=1 seats=1 detail=validated"])
+        with patch.object(k.time, "sleep", lambda seconds: None):
+            result = k.restored_structure(console, "p2048")
+        self.assertEqual((result["blocks"], result["validations"]), (2048, 2))
+        self.assertEqual(sum(" validate " in c for c in console.sent), 2)
+
+    def test_a_structure_that_stays_sealed_or_short_is_not_restored(self):
+        for reply in ("code=FORBIDDEN_BLOCK detail=x", "code=SUCCESS blocks=2047 detail=validated"):
+            console = self.FakeConsole([reply] * 50)
+            clock = iter(range(0, 100000, 100))
+            with patch.object(k.time, "sleep", lambda seconds: None), patch.object(k.time, "monotonic", lambda: next(clock)),                     self.assertRaises(ValueError):
+                k.restored_structure(console, "p2048", timeout=600)
+
+
 class LockTests(unittest.TestCase):
     def test_lock_owner_must_be_this_task_and_hold_the_lock(self):
         with TemporaryDirectory() as temporary:
