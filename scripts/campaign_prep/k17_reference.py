@@ -188,7 +188,9 @@ def client_steps():
         assembly_2048=[f"A opens the Rocket Assembler at {big['assembler']} and assembles the 2,048-block structure through its screen (A10's normal path). "
                        "Without a player the driver sends the ordinary operator command arce rocket assemble instead.",
                        "A requests disassembly from the rocket and confirms with /arce rocket-disassembly confirm <id from the chat prompt>. "
-                       "The owner, a creative player or an operator may do this; the console cannot."],
+                       "The owner, a creative player or an operator may do this; the console cannot.",
+                       "C6 first leaves sealed carrier blocks and turns them back into the original blocks over the next ticks. "
+                       "Judge the restored structure only after arce rocket validate and arce rocket status count 2,048 blocks again."],
         missions=["Every mission lasts at most 72,000 ticks (one hour); data missions last 200 ticks and surveys 6,000. No mission stays ACTIVE for four hours.",
                   "At each half hour A and B each launch new missions from their own powered terminals, preferring asteroid and gas missions, "
                   "whose durations are the longest, and record each deadline from /arce satellite list.",
