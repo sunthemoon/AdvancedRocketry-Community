@@ -59,8 +59,17 @@ class K14Tests(unittest.TestCase):
             k14.check_command(command)
             self.assertNotIn("data modify", command)
             self.assertNotIn("forceload", command)
-        self.assertTrue(any("minecraft:hopper[facing=west]" in c for c in commands))
+        self.assertTrue(any("minecraft:hopper[facing=down]" in c for c in commands))
         self.assertTrue(any("container.0 with minecraft:coal 1" in c for c in commands))
+
+    def test_power_supplies_do_not_replace_pattern_cells(self):
+        layout = k14.core_layout(PatternJar())
+        k14.commands_for(layout)
+        for device in layout["devices"]:
+            pattern_cells = {tuple(cell["pos"]) for cell in device["cells"]}
+            for source in device.get("power_sources", []):
+                self.assertNotIn(tuple(source["pos"]), pattern_cells)
+                self.assertNotIn(tuple(source["hopper"]), pattern_cells)
 
     def test_forbidden_commands_rejected_even_inside_execute(self):
         for command in ("execute in minecraft:overworld run forceload add 0 0", "execute run data modify block 0 0 0 energy set value 1",

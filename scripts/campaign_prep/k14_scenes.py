@@ -114,13 +114,18 @@ def commands_for(layout):
         if device["kind"] in ("observatory", "astrobody_data_processor"):
             device["power_sources"] = []
             for plug in device["power_plugs"]:
-                generator = [plug[0], plug[1] - 1, plug[2]]
-                hopper = [plug[0] + 1, plug[1] - 1, plug[2]]
-                device["power_sources"].append(dict(kind="combustion_generator", pos=generator, hopper=hopper,
-                                                    grant="one vanilla coal via hopper; native 40 FE/t", reserve_fe=30000))
-                commands += [f"setblock {rockets.pos(generator)} {NS}:combustion_generator",
-                             f"setblock {rockets.pos(hopper)} minecraft:hopper[facing=west]",
-                             f"item replace block {rockets.pos(hopper)} container.0 with minecraft:coal 1"]
+                outward = rotate([0, 0, -1], FACINGS.index(device["facing"]))
+                sources = [([plug[i] + outward[i] for i in range(3)], "down")]
+                if device["kind"] == "observatory":
+                    sources.append(([plug[0], plug[1] - 1, plug[2]], "west"))
+                for generator, direction in sources:
+                    hopper = ([generator[0], generator[1] + 1, generator[2]] if direction == "down" else
+                              [generator[0] + 1, generator[1], generator[2]])
+                    device["power_sources"].append(dict(kind="combustion_generator", pos=generator, hopper=hopper,
+                        plug=plug, grant="one vanilla coal via hopper; native 40 FE/t", capacity_fe=20000))
+                    commands += [f"setblock {rockets.pos(generator)} {NS}:combustion_generator",
+                                 f"setblock {rockets.pos(hopper)} minecraft:hopper[facing={direction}]",
+                                 f"item replace block {rockets.pos(hopper)} container.0 with minecraft:coal 1"]
     for rocket in layout["rockets"]:
         x, y, z = rocket["origin"]
         commands += [f"fill {x-3} {y-2} {z-22} {x+3} {y-2} {z+3} minecraft:stone",
@@ -301,6 +306,23 @@ class Console(rockets.Console):
         chain.require(len(raw) == 1, "Missing block readback: " + rockets.pos(at))
         return machines.parse_snbt(raw[0])
 
+    def batch(self, commands):
+        for command in commands:
+            check_command(command)
+        start = len(self.process.lines)
+        self.commands.extend(commands)
+        for command in commands:
+            self.process.command(command)
+        token = "K14_BATCH_" + str(len(self.commands))
+        self.commands.append("say " + token)
+        self.process.command("say " + token)
+        self.process.wait_for(re.compile(r"\[Server\] " + token + r"\b"), 60, start_at=start)
+        lines = self.process.lines[start:]
+        chain.require(not any(any(marker in line for marker in ("Unknown block", "Unknown item", "Incorrect argument",
+            "Expected whitespace", "does not have property", "Unknown or incomplete command", "Cannot access blocks outside"))
+            for line in lines), "Rejected batch; retain console log")
+        return lines
+
 
 def native_state(console, layout):
     result = dict(devices=[], rockets=[], hosts={}, stations=console.send("arce station admin dump"),
@@ -322,8 +344,8 @@ def native_state(console, layout):
             row["research_identity"] = root.get("arce_" + device["kind"])
             row["identity_status"] = "NOT_COVERED: console setblock does not call player setPlacedBy; A must replace controller"
             row["power"] = []
-            for source, plug in zip(device["power_sources"], device["power_plugs"], strict=True):
-                hatch, generator = console.block(plug), console.block(source["pos"])
+            for source in device["power_sources"]:
+                hatch, generator = console.block(source["plug"]), console.block(source["pos"])
                 row["power"].append(dict(plug=hatch, generator=generator))
         result["devices"].append(row)
     for rocket in layout["rockets"]:
@@ -406,23 +428,26 @@ def run(output, scene, stage, cell_path, java, lock_owner):
             for device in layout["devices"]:
                 token = "K14_SPAWN_READY"
                 console.until(f"execute if loaded {rockets.pos(device['pos'])} run say {token}", "[Server] " + token)
-            for value in (folder / "commands.txt").read_text().splitlines():
-                if value:
-                    lines = console.send(value)
-                    chain.require(not any("Cannot access blocks outside" in line for line in lines), "Unloaded block placement")
+            console.batch([value for value in (folder / "commands.txt").read_text().splitlines() if value])
             for rocket in layout["rockets"]:
                 start = len(process.lines)
                 console.send("arce rocket assemble " + rockets.pos(rocket["assembler"]))
                 process.wait_for(flight.ASSEMBLY_LOG, 90, start_at=start)
             # Vanilla hopper -> generator item capability -> native burn -> claimed plug.
-            # Wait for full buffers; no research balance/identity or FE value is injected.
-            for device in layout["devices"]:
-                for source in device.get("power_sources", []):
-                    console.until(f"execute if data block {rockets.pos(source['pos'])} arce_combustion_generator run say K14_GENERATOR_ROOT", "[Server] K14_GENERATOR_ROOT", 30)
+            # Two native burners supply a survey within the empty-Level tick window.
+            # Never keep the Level alive with artificial players or force tickets.
             deadline = time.monotonic() + 120
             while True:
-                powers = [console.block(source["pos"]) for device in layout["devices"] for source in device.get("power_sources", [])]
-                if all(machines.number(row["arce_combustion_generator"]["energy"]) == 20000 for row in powers):
+                balances = []
+                for device in layout["devices"]:
+                    if not device.get("power_sources"):
+                        continue
+                    total = sum(machines.number(console.block(plug)["arce_classic_hatch"]["energy"])
+                                for plug in device["power_plugs"])
+                    total += sum(machines.number(console.block(source["pos"])["arce_combustion_generator"]["energy"])
+                                 for source in device["power_sources"])
+                    balances.append(total >= (20000 if device["kind"] == "observatory" else 4000))
+                if all(balances):
                     break
                 chain.require(time.monotonic() < deadline, "Native power buffers not full")
                 time.sleep(1)
