@@ -37,7 +37,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: b32a0cb14 (W463 merged, R665: the flight runner's opt-in settled disassembly protocol, with tests; before it W461, R664, the native runner's opt-in exact UNKNOWN expectation; every campaign preparation package is merged, K02 as partial under R667; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: b32a0cb14 (W463 merged, R665: the flight runner's opt-in settled disassembly protocol, with tests; before it W461, R664, the native runner's opt-in exact UNKNOWN expectation; every campaign preparation package is merged, K02 as partial under R667, and the checklists carry every package (W458, R669); scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 45195645440 at 60ead06cf passed (W461's and W463's merges and R664, R665); governance run 45195645531 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 5
 asset_review_items: 0
@@ -166,11 +166,11 @@ The reference node (REF) is the owner's Debian 12 machine with 4 vCPU and 8 GiB,
   3 FAIL; the three failures (DESTINATION_SPAWNED, PASSENGERS_TRANSFERRED and SOURCE_REMOVED) are
   NOT_REACHABLE_ON_C6 under [W462](../work/v1.8.0-root-queue/records/W462.md) and need a new checkpoint hook and candidate,
   which Root recommends for v1.9; W447's and W463's counted results stay as recorded, and
-  [QUEUE](../work/v1.8.0-root-queue/QUEUE.md) keeps the chain from R661 to R667. The K02/K12 checklist fill and the final
-  audit's remaining checklist check follow under [W459 M9 and QUEUE R658](../work/v1.8.0-root-queue/records/W459.md); K12's J05, J08, J09, J10, J11 and J17 gaps
-  remain as accepted under [W454/R655](../work/v1.8.0-root-queue/records/W454.md). Close only when those deliveries and
-  checklist updates have evidence for the covered steps and explicitly retain the
-  uncovered steps, including the reference-node flush bracket and external-stop recipes.
+  [QUEUE](../work/v1.8.0-root-queue/QUEUE.md) keeps the chain from R661 to R667. [W458](../work/v1.8.0-root-queue/records/W458.md) wrote K02's and K12's
+  deliveries into checklists A to J (R669, closing the final audit's M9); K12's J05, J08, J09, J10, J11 and J17 gaps
+  remain as accepted under [W454/R655](../work/v1.8.0-root-queue/records/W454.md). Close only when the campaign has evidence
+  for the covered steps and explicitly retains the uncovered steps, including K02's three unreachable checkpoints,
+  its passenger and client steps, the reference-node flush bracket and external-stop recipes.
 - **Off-switch client gaps.** [W453/R647](../work/v1.8.0-root-queue/records/W453.md) leaves the connected-safe fuel
   controller, arbitrary-owner cap rows and listed J24/J27/J29 steps NOT_COVERED, while the
   held rocket, seat pins and account-owned package setup require campaign clients.
