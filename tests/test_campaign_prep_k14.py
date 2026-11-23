@@ -71,6 +71,34 @@ class K14Tests(unittest.TestCase):
                 self.assertNotIn(tuple(source["pos"]), pattern_cells)
                 self.assertNotIn(tuple(source["hopper"]), pattern_cells)
 
+    def test_power_geometry_on_the_real_tracked_research_patterns(self):
+        class TrackedJar:
+            def read(self, name):
+                return (k14.common.ROOT / "src/generated/v1.8/resources" / name).read_bytes()
+        for kind in ("observatory", "astrobody_data_processor"):
+            for turn in range(4):
+                device = k14.pattern(TrackedJar(), kind, [20, 181, 20], turn)
+                k14.commands_for(dict(devices=[device], rockets=[]))
+                occupied = {tuple(cell["pos"]) for cell in device["cells"]}
+                for source in device["power_sources"]:
+                    self.assertNotIn(tuple(source["pos"]), occupied)
+                    self.assertNotIn(tuple(source["hopper"]), occupied)
+                    occupied.update((tuple(source["pos"]), tuple(source["hopper"])))
+                # A lower hopper must not siphon the other generator's coal.
+                for source in device["power_sources"]:
+                    above = [source["hopper"][0], source["hopper"][1] + 1, source["hopper"][2]]
+                    self.assertNotIn(above, [s["pos"] for s in device["power_sources"]])
+                self.assertEqual(len(device["power_sources"]), 2 if kind == "observatory" else 1)
+
+    def test_research_controller_sites_require_real_player_placement(self):
+        layout = k14.core_layout(PatternJar())
+        commands = k14.commands_for(layout)
+        for device in layout["devices"]:
+            if device["kind"] in ("observatory", "astrobody_data_processor"):
+                self.assertIn("setblock " + k14.rockets.pos(device["pos"]) + " minecraft:air", commands)
+                self.assertNotIn("setblock " + k14.rockets.pos(device["pos"]) + " " + k14.NS + ":" + device["kind"]
+                                 + "[facing=" + device["facing"] + "]", commands)
+
     def test_forbidden_commands_rejected_even_inside_execute(self):
         for command in ("execute in minecraft:overworld run forceload add 0 0", "execute run data modify block 0 0 0 energy set value 1",
                         "setblock 0 0 0 minecraft:chest{Items:[]}", "execute run summon minecraft:pig", "spawnpoint A",

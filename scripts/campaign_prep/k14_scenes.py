@@ -76,6 +76,7 @@ def pattern(jar, kind, at, turn=0):
     raw = jar.read(f"data/{NS}/machine_patterns/{kind}.json")
     return dict(kind=kind, pos=list(at), facing=FACINGS[turn], cells=cells,
                 pattern_sha256=common.digest(raw), dimension=OW,
+                player_controller_required=kind in ("observatory", "astrobody_data_processor"),
                 power_plugs=[c["pos"] for c in cells if c["block"] == NS + ":power_input_plug"],
                 glass=[c["pos"] for c in cells if c["block"] == "minecraft:glass"])
 
@@ -110,17 +111,22 @@ def commands_for(layout):
         hi = [max(c["pos"][i] for c in cells) + 2 for i in range(3)]
         commands.append(f"fill {lo[0]} {lo[1]} {lo[2]} {hi[0]} {lo[1]} {hi[2]} minecraft:stone")
         for cell in cells:
-            commands.append(f"setblock {rockets.pos(cell['pos'])} {cell['block']}")
+            # A console-created research controller has no ResearchIdentity. Its
+            # checkpoint becomes a retained invalid root on reopen. Leave the
+            # controller cell empty for ordinary player placement instead.
+            block = "minecraft:air" if device["player_controller_required"] and cell["pos"] == device["pos"] else cell["block"]
+            commands.append(f"setblock {rockets.pos(cell['pos'])} {block}")
         if device["kind"] in ("observatory", "astrobody_data_processor"):
             device["power_sources"] = []
             for plug in device["power_plugs"]:
                 outward = rotate([0, 0, -1], FACINGS.index(device["facing"]))
-                sources = [([plug[i] + outward[i] for i in range(3)], "down")]
+                sources = [([plug[i] + outward[i] for i in range(3)], [0, 1, 0], "down")]
                 if device["kind"] == "observatory":
-                    sources.append(([plug[0], plug[1] - 1, plug[2]], "west"))
-                for generator, direction in sources:
-                    hopper = ([generator[0], generator[1] + 1, generator[2]] if direction == "down" else
-                              [generator[0] + 1, generator[1], generator[2]])
+                    turn = FACINGS.index(device["facing"])
+                    sources.append(([plug[0], plug[1] - 1, plug[2]], rotate([1, 0, 0], turn),
+                                    ("west", "north", "east", "south")[turn]))
+                for generator, hopper_offset, direction in sources:
+                    hopper = [generator[i] + hopper_offset[i] for i in range(3)]
                     device["power_sources"].append(dict(kind="combustion_generator", pos=generator, hopper=hopper,
                         plug=plug, grant="one vanilla coal via hopper; native 40 FE/t", capacity_fe=20000))
                     commands += [f"setblock {rockets.pos(generator)} {NS}:combustion_generator",
@@ -196,7 +202,7 @@ def client_steps(layout):
         ("One fixed and one cyclic host.", "doDaylightCycle false/true and separate rain/doWeatherCycle controls.", "Native local wake independent of day write; primary time/weather unchanged by ARCE."),
         ("Both restart cycles completed for each player-bearing case.", "Compare disk Spawn fields/backup and final player/world state.", "No loss; same-window pause/crash/third-party-save residuals remain visible.")])
     add("J19", [
-        ("Four rotations in layout.json; A first breaks/replaces controllers using ordinary items to establish ResearchIdentity.", "Open both menus en_us/zh_cn at scales 2/3/4.", "ContainerData matches status/phase/progress/FE/owner/selection/missing cell."),
+        ("Four shell rotations in layout.json; empty controller cells. A places each controller ordinarily to establish ResearchIdentity and formation.", "Open both menus en_us/zh_cn at scales 2/3/4.", "ContainerData matches status/phase/progress/FE/owner/selection/missing cell."),
         ("A-owned observatory, clear night, charged plug plus combustion reserve >=20000 FE.", "Press START once; retain native job and instance UUIDs.", "ACTIVE/PENDING, WAITING_SAVE before paid advance; normal barrier ~100 ticks, no IO deadline claim."),
         ("Independent copies at same mid-survey state.", "Obstruct recorded highest lens, set day/rain, isolate power, walk away until required chunk unloads.", "NO_SKY/DAYTIME/WEATHER/NO_POWER/UNLOADED and no forced load; dry-biome rules retained."),
         ("Survey running, 1000 paid ticks, 20 FE/t.", "Complete survey under valid conditions.", "READY/AVAILABLE once, exactly 20000 FE across plug/generator ledger."),
@@ -333,16 +339,23 @@ def native_state(console, layout):
         result["hosts"][host] = dict(sample_loaded=any("[Server] " + token in line for line in lines),
             runtime_holder_status="NOT_COVERED", reason="No C6 holder inspection console hook; disk type references are not actual holder flags.")
     for device in layout["devices"]:
-        root = console.block(device["pos"])
+        if device["player_controller_required"]:
+            token = "K14_CONTROLLER_CELL_EMPTY"
+            lines = console.send(f"execute if block {rockets.pos(device['pos'])} minecraft:air run say {token}")
+            chain.require(any("[Server] " + token in line for line in lines), "Pending controller cell is not empty")
+            root = {}
+        else:
+            root = console.block(device["pos"])
         row = dict(kind=device["kind"], pos=device["pos"], facing=device["facing"], nbt=root)
         if "arce_classic_machine" in root:
             row["formation"] = root["arce_classic_machine"]["structure"]["formation_state"]
             chain.require(row["formation"] == '"FORMED"', "Unformed classic pattern: " + str(device["pos"]))
         else:
-            row["formation"] = "NOT_COVERED: endgame root does not persist live formation"
+            row["formation"] = ("NOT_COVERED: ordinary player must place research controller" if device["player_controller_required"] else
+                                "NOT_COVERED: endgame root does not persist live formation")
         if device["kind"] in ("observatory", "astrobody_data_processor"):
             row["research_identity"] = root.get("arce_" + device["kind"])
-            row["identity_status"] = "NOT_COVERED: console setblock does not call player setPlacedBy; A must replace controller"
+            row["identity_status"] = "NOT_COVERED: controller site empty; A must place controller via ordinary setPlacedBy"
             row["power"] = []
             for source in device["power_sources"]:
                 hatch, generator = console.block(source["plug"]), console.block(source["pos"])
