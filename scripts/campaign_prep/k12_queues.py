@@ -608,6 +608,22 @@ class Console:
                    for line in self.send(f"execute in {dimension} if loaded {cx * 16} 80 {cz * 16} run say {token}"))
 
 
+def unforce(console, dimensions=(OW, MOON)):
+    """Remove every forced chunk and prove it with the vanilla query.
+
+    Vanilla's `forceload remove all` removes from the set it iterates and can skip a chunk
+    (first-event readback, 2026-11-23: one of nine stayed forced), so it is repeated.
+    """
+    for dimension in dimensions:
+        for _ in range(8):
+            console.send(f"execute in {dimension} run forceload remove all")
+            if any("No force loaded chunks were found" in line
+                   for line in console.send(f"execute in {dimension} run forceload query")):
+                break
+        else:
+            raise ValueError("Forced chunks remain in " + dimension)
+
+
 def seen(console, pattern):
     return [line for line in console.process.lines if pattern.search(line)]
 
@@ -855,8 +871,7 @@ def run(output, name, stage, cell_path, java, lock_owner):
             stage_readback(console, spec, result, name, built)
         else:
             stage_qualify(console, spec, result, name, built)
-        for dimension in (OW, MOON):
-            console.send(f"execute in {dimension} run forceload remove all")
+        unforce(console)
         console.send("save-all flush")
         console.commands.append("stop")
         process.command("stop")

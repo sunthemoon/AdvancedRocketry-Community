@@ -237,7 +237,7 @@ class K12RecipeTests(unittest.TestCase):
 class FakeProcess:
     """Answers each command at once, as the server thread does for console commands."""
     def __init__(self, loaded_after=0):
-        self.lines, self.sent, self.loaded_after = [], [], loaded_after
+        self.lines, self.sent, self.loaded_after, self.stuck = [], [], loaded_after, 0
 
     def command(self, value):
         self.sent.append(value)
@@ -249,6 +249,9 @@ class FakeProcess:
                 self.lines.append("[Server] K04_LOADED")
         elif value == "time query gametime":
             self.lines.append(T.format(100 + len(self.sent)))
+        elif value.endswith("forceload query"):
+            self.stuck -= 1
+            self.lines.append("No force loaded chunks were found in x" if self.stuck < 0 else "A force loaded chunk was found in x at: [16, 16]")
         elif value == "bad":
             self.lines.append("Unknown or incomplete command, see below for error")
 
@@ -271,6 +274,18 @@ class K12ConsoleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Rejected console command"):
             console.send("bad")
         self.assertGreater(console.tick(), 100)
+
+
+    def test_forced_chunks_are_removed_until_the_query_is_empty(self):
+        process = FakeProcess()
+        process.stuck = 2  # the overworld needs three passes
+        k12.unforce(k12.Console(process))
+        removals = [command for command in process.sent if command.endswith("forceload remove all")]
+        self.assertEqual(3, sum(k12.OW in command for command in removals))
+        self.assertEqual(1, sum(k12.MOON in command for command in removals))
+        process.stuck = 99
+        with self.assertRaisesRegex(ValueError, "Forced chunks remain"):
+            k12.unforce(k12.Console(process))
 
 
 class K12SealTests(unittest.TestCase):
