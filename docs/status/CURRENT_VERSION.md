@@ -335,4 +335,9 @@ the stated recurrence condition, and historical failed attempts remain failed.
   44861941486's opaque-control failures and the isolated branch's passing run 44886451261.
   It stays open until W433 merges after the C6 freeze and shared runs pass.
 
+- **Bay mission matrix (2026-11-23).** Run 45190217982 on `codex/v1.8.0-w463`, whose `src/main` equals C6,
+  failed attempt 1 in `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (variant
+  NONE/REGISTERED_REMOVED_DATA), the method behind C6-SWITCH-REPORT rows F2.2 to F2.7 and F5.7; W468 diagnoses it
+  (R672). It stays open until the cause is classified and later runs show no recurrence.
+
 Only the owner marks a Gate or the version as passed.

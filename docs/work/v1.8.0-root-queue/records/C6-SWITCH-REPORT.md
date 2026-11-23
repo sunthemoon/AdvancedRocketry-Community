@@ -508,7 +508,7 @@ None of these rows existed at C1. Their smokes ran on locally built JARs.
 #### GameTest rows of W325-MATRIX
 
 The retained test inventory and historical execution come from [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md),
-section 3.2. R581 supplies the C6 aggregate; individual named shard records are not in the supplied evidence, so those exact rows remain open. (Correction added by Root on 2026-11-24, R671: the shard artifacts hold those records, and [W466](W466.md) fills each row's C6 cell from them.) Class names are short; W333's
+section 3.2. R581 supplies the C6 aggregate; individual named shard records are not in the supplied evidence, so those exact rows remain open. (Correction added by Root on 2026-11-24, R671: the shard artifacts hold those records, and [W466](W466.md) fills each row's C6 cell from them.) (Note added by Root on 2026-11-24, R672: `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix`, which rows F2.2 to F2.7 and F5.7 cite, failed once on C6's source in run 45190217982 on branch `codex/v1.8.0-w463`, attempt 1, variant NONE/REGISTERED_REMOVED_DATA; W468 diagnoses it, and those rows' hosted A1 PASS stands for run 44770334930 only.) Class names are short; W333's
 packages are in [W333-DESIGN](W333-DESIGN.md).
 
 | Row | Variant | C1 | Changed since C1 | Test in C6's hosted run | C6 |
