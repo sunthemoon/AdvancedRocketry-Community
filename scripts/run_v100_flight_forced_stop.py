@@ -54,6 +54,7 @@ DISASSEMBLY_RECEIPT = re.compile(
     rf"(?:{LEGACY_DISASSEMBLY.pattern})|(?:{SEALED_DISASSEMBLY.pattern})"
 )
 DISASSEMBLY_PENDING = re.compile(INFO_PREFIX + r"Release-test disassembly pending$")
+DISASSEMBLY_REFUSAL = re.compile(INFO_PREFIX + r"Release-test disassembly failed: ([A-Z_]+)$")
 DISASSEMBLY_DURABLE = re.compile(
     INFO_PREFIX + rf"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction=({UUID_PATTERN}) "
     r"phase=DONE reason=SEALED additional=\[\] overflow=0$"
@@ -70,6 +71,70 @@ LAUNCH_FAILED = re.compile(
 LAUNCH_OUTCOME = re.compile(
     rf"(?:{LAUNCH_RECEIPT.pattern})|(?:{LAUNCH_PREPARED.pattern})|(?:{LAUNCH_FAILED.pattern})"
 )
+
+
+def wait_settled_transfer(process, staged: dict, report: dict) -> dict:
+    """Match C6's exact post-settlement event in this recovery process only.
+
+    An already LANDED recovery logs INFO after adding T to settled; a resumed
+    DESCENT logs recovery at WARN before landing and needs the later retained event.
+    """
+    transfer = staged["transfer_id"]
+    if staged["state"] == "LANDED":
+        message = (f"ARCE_TRANSFER_RECOVERY transfer={transfer} phase=COMMITTED "
+                   "source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED")
+        form = "settled_recovery"
+    else:
+        message = (f"ARCE_TRANSFER_PHASE transfer={transfer} logical={report['logical']} "
+                   f"phase=COMMITTED event=landed_reservation_retained entity={report['entity']} "
+                   f"fuel_before={staged['fuel_before']} fuel_after={report['fuel']} "
+                   f"required={staged['required_fuel']}")
+        form = "retained"
+    pattern = re.compile(INFO_PREFIX + re.escape(message) + r"$")
+    index = process.wait_for(pattern, 60.0, start_at=0)
+    line = process.lines[index].rstrip("\r\n")
+    if pattern.fullmatch(line) is None:
+        raise SmokeError("Disassembly lacks the exact same-transfer settlement event")
+    return dict(form=form, transfer=transfer, line=line, line_index=index)
+
+
+def submit_disassembly_protocol(process, command: str, entity: str, logical: str,
+                                start_at: int, deadline: float) -> dict:
+    """No readiness line exists on C6: each two-second retry is a new request.
+
+    Only pending and REGION_BUSY are retryable. Neither is destructive admission.
+    Stop submitting on the first receipt, then require the unchanged receipt checks.
+    """
+    checked, attempts, retry_at = start_at, 0, time.monotonic()
+    answered = True
+    while True:
+        now = time.monotonic()
+        if now >= deadline:
+            raise SmokeError("Disassembly protocol exceeded the existing 45-second budget")
+        for index in range(checked, len(process.lines)):
+            line = process.lines[index].rstrip("\r\n")
+            refusal = DISASSEMBLY_REFUSAL.fullmatch(line)
+            if refusal is not None:
+                if refusal[1] != "REGION_BUSY":
+                    raise SmokeError(f"Disassembly protocol refused: {refusal[1]}")
+                answered = True
+            elif DISASSEMBLY_PENDING.fullmatch(line):
+                answered = True
+            elif DISASSEMBLY_RECEIPT.fullmatch(line):
+                if SEALED_DISASSEMBLY.fullmatch(line) is None:
+                    raise SmokeError("Settled disassembly protocol requires SEALED and DONE receipts")
+                receipt = wait_disassembly_receipt(process, entity, logical, start_at, deadline=deadline)
+                receipt["requests"] = attempts
+                return receipt
+        checked = len(process.lines)
+        if process.process.poll() is not None:
+            raise SmokeError("Server exited during disassembly protocol")
+        if answered and now >= retry_at:
+            process.command(command)
+            attempts += 1
+            answered, retry_at = False, now + 2.0
+        else:
+            time.sleep(min(0.05, deadline - now))
 
 
 def wait_launch_receipt(process, entity: str, logical: str, dimension: str,
@@ -243,6 +308,9 @@ class RecoveryHarness(flight.FlightHarness):
                     report=report, launch_receipt=receipt)
 
     def disassemble_and_verify(self, process, report: dict, marker: str):
+        protocol = getattr(self, "settled_disassembly_protocol", False)
+        if protocol and not getattr(self, "sealed_disassembly_receipt", False):
+            raise SmokeError("Settled disassembly protocol requires sealed-disassembly-receipt")
         if not getattr(self, "sealed_disassembly_receipt", False):
             return super().disassemble_and_verify(process, report, marker)
         dimension, entity, logical = (str(report[key]) for key in ("dimension", "entity", "logical"))
@@ -251,8 +319,21 @@ class RecoveryHarness(flight.FlightHarness):
         # C6 requires deliberate disposal of the exact fuel read in the validated report.
         if report["fuel"] > 0:
             command += f" discard-fuel {report['fuel']}"
-        process.command(flight._in_dimension(dimension, command))
-        receipt = wait_disassembly_receipt(process, entity, logical, start)
+        submitted_at = time.monotonic()
+        deadline = submitted_at + 45.0
+        if protocol:
+            receipt = submit_disassembly_protocol(
+                process, flight._in_dimension(dimension, command), entity, logical, start, deadline,
+            )
+        else:
+            process.command(flight._in_dimension(dimension, command))
+            receipt = wait_disassembly_receipt(process, entity, logical, start)
+
+        def remaining():
+            budget = deadline - time.monotonic()
+            if budget <= 0:
+                raise SmokeError("Disassembly verification exceeded the existing 45-second budget")
+            return budget
         # Kept identical to FlightHarness: a receipt alone never proves material restoration.
         origin_x, origin_y, origin_z = [int(value) for value in report["origin"]]
         conditions = (
@@ -264,15 +345,18 @@ class RecoveryHarness(flight.FlightHarness):
             f"if block {origin_x} {origin_y + 2} {origin_z} "
             "advancedrocketrycommunity:guidance_computer"
         )
+        marker_options = {"timeout": remaining()} if protocol else {}
         self.command_marker(
             process,
             flight._in_dimension(dimension, f"execute {conditions} run say {marker}"),
             marker,
+            **marker_options,
         )
         chest_position = f"{origin_x + 1} {origin_y} {origin_z}"
         data_start = len(process.lines)
         process.command(flight._in_dimension(dimension, f"data get block {chest_position} Items"))
-        data_index = process.wait_for(flight.BLOCK_DATA_MARKER, 30.0, start_at=data_start)
+        data_index = process.wait_for(flight.BLOCK_DATA_MARKER, remaining() if protocol else 30.0,
+                                      start_at=data_start)
         data_match = flight.BLOCK_DATA_MARKER.search(process.lines[data_index])
         chest_data = data_match.group(1) if data_match else ""
         if (
@@ -282,6 +366,22 @@ class RecoveryHarness(flight.FlightHarness):
             or "Count: 64b" not in chest_data
         ):
             raise SmokeError("Packaged disassembly changed chest inventory contents")
+        if protocol:
+            # The opt-in mode checks the complete two-slot inventory, not substrings.
+            expected = ('[{Slot: 0b, id: "minecraft:diamond", Count: 17b}, '
+                        '{Slot: 26b, id: "minecraft:iron_ingot", Count: 64b}]')
+            if chest_data != expected:
+                raise SmokeError("Packaged disassembly changed exact chest inventory")
+            receipts = [line for line in process.lines[start:]
+                        if DISASSEMBLY_RECEIPT.fullmatch(line.rstrip("\r\n"))]
+            if len(receipts) != 1:
+                raise SmokeError("Disassembly request emitted more than one receipt")
+            for line in process.lines[start:]:
+                refusal = DISASSEMBLY_REFUSAL.fullmatch(line.rstrip("\r\n"))
+                if refusal is not None and refusal[1] != "REGION_BUSY":
+                    raise SmokeError(f"Disassembly protocol refused: {refusal[1]}")
+            remaining()
+            receipt["elapsed_seconds"] = time.monotonic() - submitted_at
         process.command(flight._in_dimension(
             dimension,
             f"fill {origin_x - 1} {origin_y} {origin_z} "
@@ -377,6 +477,9 @@ def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
                     ), 60.0)
         report = harness.report(process, dimension, entity)
         validate_report(case, staged, report)
+        settlement = None
+        if getattr(harness, "settled_disassembly_protocol", False) and report["state"] == "LANDED":
+            settlement = wait_settled_transfer(process, staged, report)
         verify_single_authority(process, harness, report, case)
         disassembly = harness.disassemble_and_verify(process, report, f"V100_{case}_DISASSEMBLED")
         process.command(f"forceload remove {flight.X} {flight.Z}")
@@ -390,6 +493,7 @@ def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
             "snapshot_identity_and_fuel_preserved": True,
             "disassembly_blocks_and_expected_inventory_verified": True,
             "disassembly_receipt": disassembly,
+            **({"disassembly_settlement": settlement} if settlement is not None else {}),
         }
     except BaseException:
         if process is not None:
@@ -433,11 +537,16 @@ def parse_args() -> argparse.Namespace:
                         help="Also accept an identified SEALED receipt after pending, with DONE durability")
     parser.add_argument("--journalled-launch-receipt", action="store_true",
                         help="Accept JOURNAL_PENDING only with its matching post-acknowledgement SUCCESS callback")
+    parser.add_argument("--settled-disassembly-protocol", action="store_true",
+                        help="Wait for settlement and submit fresh exact-fuel requests within 45 seconds")
     parser.add_argument("--case", action="append", choices=CASES, dest="cases")
     java_home = os.environ.get("JAVA_HOME")
     parser.add_argument("--java", default=str(Path(java_home) / "bin/java") if java_home else "java")
     parser.add_argument("--startup-timeout", type=float, default=240.0)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.settled_disassembly_protocol and not args.sealed_disassembly_receipt:
+        parser.error("--settled-disassembly-protocol requires --sealed-disassembly-receipt")
+    return args
 
 
 def main() -> int:
@@ -488,6 +597,8 @@ def main() -> int:
         summary["sealed_disassembly_receipt"] = args.sealed_disassembly_receipt
         harness.journalled_launch_receipt = args.journalled_launch_receipt
         summary["journalled_launch_receipt"] = args.journalled_launch_receipt
+        harness.settled_disassembly_protocol = args.settled_disassembly_protocol
+        summary["settled_disassembly_protocol"] = args.settled_disassembly_protocol
         for case in summary["requested_cases"]:
             result = run_case(harness, case)
             summary["cases"].append(result)

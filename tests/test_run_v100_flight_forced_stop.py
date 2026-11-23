@@ -59,6 +59,145 @@ def launch_lines(code="JOURNAL_PENDING"):
             "code=SUCCESS candidates=1 chunks=1 detail=selected"]
 
 
+class ProtocolProcess(ReceiptProcess):
+    def __init__(self, replies, inventory=None):
+        super().__init__([])
+        self.replies = iter(replies)
+        self.process = Mock()
+        self.process.poll.return_value = None
+        self.inventory = inventory or ('[{Slot: 0b, id: "minecraft:diamond", Count: 17b}, '
+                                       '{Slot: 26b, id: "minecraft:iron_ingot", Count: 64b}]')
+
+    def command(self, command):
+        self.commands.append(command)
+        if "release-test disassemble" in command:
+            self.lines.extend(next(self.replies, ["Release-test disassembly pending"]))
+        if "data get block" in command:
+            self.lines.append("has the following block data: " + self.inventory)
+
+
+class SettledDisassemblyProtocolTests(unittest.TestCase):
+    def setUp(self):
+        self.clock = 0.0
+        self.harness = recovery.RecoveryHarness(java="java", server=Path("isolated"), port=25610,
+                                              expected_version="test", startup_timeout=240)
+        self.harness.sealed_disassembly_receipt = True
+        self.harness.settled_disassembly_protocol = True
+        self.report = dict(entity=ENTITY, logical=TRANSFER, dimension=recovery.flight.MOON,
+                           origin=[8, 20, 8], fuel=628)
+
+    def sleep(self, seconds):
+        self.clock += seconds
+
+    def run_protocol(self, process):
+        with patch.object(recovery.time, "monotonic", side_effect=lambda: self.clock), \
+                patch.object(recovery.time, "sleep", side_effect=self.sleep), \
+                patch.object(self.harness, "command_marker") as marker:
+            result = self.harness.disassemble_and_verify(process, self.report, "verified")
+        self.assertIn("unless entity " + ENTITY, marker.call_args.args[1])
+        self.assertEqual(5, marker.call_args.args[1].count("if block"))
+        self.assertLessEqual(marker.call_args.kwargs["timeout"], 45)
+        return result
+
+    def test_fresh_exact_fuel_request_after_preparation(self):
+        process = ProtocolProcess([["Release-test disassembly pending"], disassembly_lines()])
+        result = self.run_protocol(process)
+        requests = [c for c in process.commands if "release-test disassemble" in c]
+        self.assertEqual(2, result["requests"])
+        self.assertEqual([requests[0]] * 2, requests)
+        self.assertIn("discard-fuel 628", requests[0])
+        self.assertGreaterEqual(result["elapsed_seconds"], 2)
+        self.assertLess(result["elapsed_seconds"], 45)
+
+    def test_busy_can_clear_but_other_refusals_fail(self):
+        process = ProtocolProcess([["Release-test disassembly failed: REGION_BUSY"], disassembly_lines()])
+        self.assertEqual(2, self.run_protocol(process)["requests"])
+        for code in ("WORLD_CHANGED", "FUEL_DISPOSAL_REQUIRED", "ENTITY_STATE_INVALID"):
+            with self.subTest(code=code), self.assertRaisesRegex(recovery.SmokeError, code):
+                self.run_protocol(ProtocolProcess([[f"Release-test disassembly failed: {code}"] + disassembly_lines()]))
+
+    def test_busy_never_clears_and_preparation_never_ready_expire(self):
+        for answer in ("Release-test disassembly failed: REGION_BUSY", "Release-test disassembly pending"):
+            self.clock = 0
+            process = ProtocolProcess([[answer]] * 100)
+            with self.subTest(answer=answer), self.assertRaisesRegex(recovery.SmokeError, "45-second"):
+                self.run_protocol(process)
+            self.assertAlmostEqual(45, self.clock)
+            self.assertLessEqual(len(process.commands), 23)
+
+    def test_no_answer_is_not_permission_to_repeat_and_exit_fails(self):
+        process = ProtocolProcess([[]])
+        with self.assertRaisesRegex(recovery.SmokeError, "45-second"):
+            self.run_protocol(process)
+        self.assertEqual(1, len(process.commands))
+        self.clock = 0
+        process.process.poll.return_value = 1
+        with self.assertRaisesRegex(recovery.SmokeError, "Server exited"):
+            self.run_protocol(process)
+
+    def test_second_sealed_receipt_before_or_after_done_fails(self):
+        lines = disassembly_lines()
+        for replies in (lines[:2] + [lines[1]] + lines[2:], lines + [lines[1]]):
+            with self.subTest(replies=replies), self.assertRaisesRegex(recovery.SmokeError, "more than one"):
+                self.run_protocol(ProtocolProcess([replies]))
+
+    def test_protocol_requires_sealed_and_done_not_legacy_success(self):
+        with self.assertRaisesRegex(recovery.SmokeError, "requires SEALED and DONE"):
+            self.run_protocol(ProtocolProcess([disassembly_lines("legacy")]))
+
+    def test_material_failure_and_wrong_inventory_still_fail(self):
+        for inventory in ("[]", '[{Slot: 0b, id: "minecraft:diamond", Count: 17b}, '
+                          '{Slot: 26b, id: "minecraft:iron_ingot", Count: 64b}, {Count: 1b}]'):
+            with self.subTest(inventory=inventory), self.assertRaisesRegex(recovery.SmokeError, "inventory"):
+                self.run_protocol(ProtocolProcess([disassembly_lines()], inventory))
+        with patch.object(recovery.time, "monotonic", return_value=0), \
+                patch.object(self.harness, "command_marker", side_effect=recovery.SmokeError("blocks absent")), \
+                self.assertRaisesRegex(recovery.SmokeError, "blocks absent"):
+            self.harness.disassemble_and_verify(ProtocolProcess([disassembly_lines()]), self.report, "verified")
+
+    def test_verification_cannot_extend_budget(self):
+        process = ProtocolProcess([disassembly_lines()])
+        def late_blocks(*args, **kwargs):
+            self.clock = 45
+        with patch.object(recovery.time, "monotonic", side_effect=lambda: self.clock), \
+                patch.object(self.harness, "command_marker", side_effect=late_blocks), \
+                self.assertRaisesRegex(recovery.SmokeError, "45-second"):
+            self.harness.disassemble_and_verify(process, self.report, "verified")
+
+    def test_settlement_requires_exact_current_transfer_event(self):
+        staged = dict(transfer_id=LOGICAL, state="DESCENT", fuel_before=1000, required_fuel=372)
+        retained = (f"ARCE_TRANSFER_PHASE transfer={LOGICAL} logical={TRANSFER} phase=COMMITTED "
+                    f"event=landed_reservation_retained entity={ENTITY} fuel_before=1000 fuel_after=628 required=372")
+        process = ReceiptProcess([])
+        for line in (retained, "[12:34:56] [Server thread/INFO] [mod/]: " + retained):
+            process.lines = [line]
+            self.assertEqual(LOGICAL, recovery.wait_settled_transfer(process, staged, self.report)["transfer"])
+        for line in (retained.replace(LOGICAL, ENTITY), retained.replace(ENTITY, LOGICAL),
+                     retained.replace(TRANSFER, ENTITY), retained.replace("628", "629"),
+                     retained.replace("retained", "released"), retained + " extra", "[Server] " + retained):
+            process.lines = [line]
+            with self.subTest(line=line), self.assertRaises(recovery.SmokeError):
+                recovery.wait_settled_transfer(process, staged, self.report)
+        staged["state"] = "LANDED"
+        line = (f"ARCE_TRANSFER_RECOVERY transfer={LOGICAL} phase=COMMITTED "
+                "source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED")
+        process.lines = ["[12:34:56] [Server thread/INFO] [mod/]: " + line]
+        self.assertEqual("settled_recovery", recovery.wait_settled_transfer(process, staged, self.report)["form"])
+        process.lines = [process.lines[0].replace("/INFO", "/WARN")]
+        with self.assertRaises(recovery.SmokeError):
+            recovery.wait_settled_transfer(process, staged, self.report)
+
+    def test_option_defaults_off_and_requires_receipt_mode(self):
+        argv = ["runner", "source", "--session-dir", "session", "--baseline-summary", "baseline",
+                "--evidence-dir", "evidence", "--base-commit", "a" * 40]
+        with patch.object(sys, "argv", argv):
+            self.assertFalse(recovery.parse_args().settled_disassembly_protocol)
+        with patch.object(sys, "argv", argv + ["--settled-disassembly-protocol"]), self.assertRaises(SystemExit):
+            recovery.parse_args()
+        with patch.object(sys, "argv", argv + ["--settled-disassembly-protocol", "--sealed-disassembly-receipt"]):
+            self.assertTrue(recovery.parse_args().settled_disassembly_protocol)
+
+
 class JournalledLaunchTests(unittest.TestCase):
     def read(self, lines, start=0):
         process = ReceiptProcess([])
