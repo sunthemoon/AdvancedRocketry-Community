@@ -355,6 +355,13 @@ def kernel_formation(root):
     return None
 
 
+def endgame_formed(kind, lines):
+    # ElevatorAnchor.placement() returns its EndgameStructure code. Other
+    # endgame describeState implementations label that field "structure".
+    field = "placement" if kind == "elevator_anchor" else "structure"
+    return any(re.search(r"\b" + field + r"=OK(?:\s|$)", line) for line in lines)
+
+
 def native_state(console, layout):
     result = dict(devices=[], rockets=[], hosts={}, stations=console.send("arce station admin dump"),
                   catalog=console.send("arce celestial list"), packs=console.send("datapack list"))
@@ -381,7 +388,7 @@ def native_state(console, layout):
                                 "NOT_COVERED: endgame root does not persist live formation")
         if "endgame" in root:
             row["live_inspection"] = console.send("arce endgame device inspect " + rockets.pos(device["pos"]))
-            if any(" structure=OK " in line for line in row["live_inspection"]):
+            if endgame_formed(device["kind"], row["live_inspection"]):
                 row["formation"] = '"FORMED"'
         if device["kind"] in ("observatory", "astrobody_data_processor"):
             row["research_identity"] = root.get("arce_" + device["kind"])

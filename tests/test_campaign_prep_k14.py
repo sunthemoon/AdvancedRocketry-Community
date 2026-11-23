@@ -195,6 +195,12 @@ class K14Tests(unittest.TestCase):
         self.assertEqual(k14.kernel_formation({"arce_multiblock": {"formation_state": '"UNFORMED"'}}), '"UNFORMED"')
         self.assertIsNone(k14.kernel_formation({"endgame": {"energy": "0"}}))
 
+    def test_endgame_live_formation_requires_the_actual_field(self):
+        self.assertTrue(k14.endgame_formed("railgun", ["last=OK structure=OK destination=-"]))
+        self.assertFalse(k14.endgame_formed("railgun", ["last=OK structure=UNFORMED"]))
+        self.assertTrue(k14.endgame_formed("elevator_anchor", ["placement=OK pair=NOT_BOUND"]))
+        self.assertFalse(k14.endgame_formed("elevator_anchor", ["placement=WRONG_LEVEL last=OK"]))
+
     def test_frozen_recipe_is_taken_from_the_sealed_member(self):
         recipe = k14.frozen_recipe()
         self.assertEqual(recipe["status"], "NOT_COVERED")
