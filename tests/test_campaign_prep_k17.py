@@ -287,6 +287,22 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report["raw ticks"], "PRESENT")
 
 
+class SettleTests(unittest.TestCase):
+    def test_a_stale_lit_state_after_a_load_does_not_count_as_settled(self):
+        full = list(range(16))
+        polls = iter([full, [5, 6, 9, 10], full, full, full])
+        with patch.object(k, "lit_rooms", lambda console: next(polls)), patch.object(k.time, "sleep", lambda seconds: None):
+            result = k.settled_rooms(None)
+        self.assertTrue(result["settled"])
+        self.assertEqual(list(polls), [])  # all five polls were needed: the first full poll alone settles nothing
+
+    def test_rooms_that_never_all_light_are_reported_unsettled(self):
+        clock = iter(range(0, 10000, 100))
+        with patch.object(k, "lit_rooms", lambda console: [5, 6, 9, 10]), patch.object(k.time, "sleep", lambda seconds: None),                 patch.object(k.time, "monotonic", lambda: next(clock)):
+            result = k.settled_rooms(None, timeout=300)
+        self.assertEqual((result["settled"], result["rooms_active"]), (False, [5, 6, 9, 10]))
+
+
 class LockTests(unittest.TestCase):
     def test_lock_owner_must_be_this_task_and_hold_the_lock(self):
         with TemporaryDirectory() as temporary:

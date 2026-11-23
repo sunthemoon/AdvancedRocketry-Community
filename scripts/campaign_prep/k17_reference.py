@@ -440,6 +440,21 @@ def lit_rooms(console, expected=None, timeout=0):
         time.sleep(2)
 
 
+def settled_rooms(console, timeout=300):
+    """The supplied rooms once the scans after a load have settled.
+
+    The saved block state still says lit=true before a vent's first tick, and each vent goes dark while its room
+    is scanned again (four scans at a time at the shipped budget). Three full polls in a row are required.
+    """
+    started, streak = time.monotonic(), 0
+    while True:
+        lit = lit_rooms(console)
+        streak = streak + 1 if lit == list(range(16)) else 0
+        if streak >= 3 or time.monotonic() - started >= timeout:
+            return dict(rooms_active=lit, settled=streak >= 3, wall_seconds=time.monotonic() - started)
+        time.sleep(2)
+
+
 def pad_status(console, name, validate=True):
     pad = layout()["pads"]["items"][name]
     at = pos(pad["assembler"])
@@ -532,8 +547,9 @@ def build(args):
         for entry in station_plan(existing):
             line = console.query(f"arce station admin create {entry['owner']} {entry['orbit']} {entry['name']}", r"Created .* id=[a-f0-9-]{36}")
             receipt["stations_made"].append(dict(entry, id=re.search(r"id=([a-f0-9-]{36})", line)[1]))
-        receipt["rooms_active"] = lit_rooms(console, list(range(16)), 300)
-        chain.require(receipt["rooms_active"] == list(range(16)), "Not every room is supplied: " + str(receipt["rooms_active"]))
+        receipt["rooms_settled"] = settled_rooms(console)
+        receipt["rooms_active"] = receipt["rooms_settled"]["rooms_active"]
+        chain.require(receipt["rooms_settled"]["settled"], "Not every room is supplied: " + str(receipt["rooms_active"]))
         receipt["pads"] = {name: pad_status(console, name) for name in PADS}
         for pad in layout()["pads"]["items"].values():
             console.all(f"forceload remove {pos(pad['forceload'])}")
@@ -575,7 +591,8 @@ def readback(args):
     folder = args.output / "source"
     chain.verify_seal(folder)
     manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
-    evidence, runtime = args.output / "readback", args.output / "_work" / "readback"
+    chain.require(re.fullmatch(r"readback(-[a-z0-9]{1,16})?", args.tag) is not None, "Invalid readback tag")
+    evidence, runtime = args.output / args.tag, args.output / "_work" / args.tag
     evidence.mkdir(parents=True, exist_ok=False)
     receipt = dict(receipt_base(args, "readback"), source_seal_sha256=chain.digest(folder / "SHA256SUMS.txt"))
     process = None
@@ -584,7 +601,8 @@ def readback(args):
         process, started = start(args, runtime, evidence / "console.log", hooks=False)
         receipt.update(started)
         console = Console(process, receipt["commands"])
-        receipt["rooms_active"] = lit_rooms(console, list(range(16)), 300)
+        receipt["rooms_settled"] = settled_rooms(console)
+        receipt["rooms_active"] = receipt["rooms_settled"]["rooms_active"]
         for pad in manifest["layout"]["pads"]["items"].values():
             console.all(f"forceload add {pos(pad['forceload'])}")
             wait_loaded(console, OW, pad["forceload"])
@@ -597,7 +615,8 @@ def readback(args):
         receipt["accounting"] = accounting(runtime / "world")
         before, after = manifest["accounting"], receipt["accounting"]
         receipt["comparison"] = dict(
-            rooms_active=receipt["rooms_active"] == manifest["rooms_active"] == list(range(16)),
+            rooms_active=receipt["rooms_settled"]["settled"] and manifest["rooms_active"] == list(range(16))
+            and receipt["readbacks"]["components"]["rooms_active"] == list(range(16)),
             pads={k: v["blocks"] for k, v in receipt["pads"].items()} == {k: v["blocks"] for k, v in manifest["pads"].items()},
             atmosphere_config=receipt["readbacks"]["config"] == manifest["readbacks"]["config"],
             stations=after["identities"]["stations"] == before["identities"]["stations"] and len(after["identities"]["stations"]) == 10,
@@ -854,6 +873,9 @@ def soak(args):
             process, started = start(args, runtime, evidence / "console.log", bool(args.hooks))
             receipt.update(started)
             console = Console(process, receipt["commands"])
+            settled = settled_rooms(console)
+            events.append(dict(utc=utc_now(), event="rooms-settled", **settled))
+            chain.require(settled["settled"], "The rooms did not settle after the start: " + str(settled["rooms_active"]))
             receipt["readbacks_start"] = live_readbacks(console, runtime)
             receipt["summary"] = sample_segment(console, evidence, args, schedule_plan, segment, state, events)
             receipt["readbacks_end"] = live_readbacks(console, runtime)
@@ -907,6 +929,8 @@ def parser():
             p.add_argument("--component-interval", type=float, default=300)
             p.add_argument("--qualification", action="store_true")
             p.add_argument("--hooks", action="store_true", help="start with the release-test property: raw ticks and hook-driven rocket actions")
+        if name == "readback":
+            p.add_argument("--tag", default="readback", help="a new evidence folder; an earlier readback is never replaced")
         if name == "soak":
             p.add_argument("--tag", required=True)
             p.add_argument("--segment", choices=("1", "2", "all"), required=True)
