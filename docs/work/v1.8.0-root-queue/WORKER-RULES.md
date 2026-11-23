@@ -91,6 +91,10 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
 
   A script that takes the lock several times in a row (for example one native case at a time) waits at least
   90 seconds after each release before it tries again, so a script that polls once a minute gets its turn.
+  The 90 seconds also apply across a restart: a replacement launcher waits at least 90 seconds after the stopped
+  launcher's last release before its first attempt, for example by reading that release time from the stopped
+  launcher's events. (Added by Root on 2026-11-23, R663: W462's replacement launcher took the lock 59 seconds
+  after the stopped launcher released it.)
 
   If your own launcher stops a heavy step on a timeout, stop the whole process tree (`taskkill /PID <parent> /T /F`)
   and confirm that no `java.exe` of yours is left before you release the lock or delete a world. (Added by Root on
