@@ -106,7 +106,7 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   and a left lock stalled every worker until Root removed it (about 80 minutes on 2026-10-20). Delete your
   `build/gametest/world` and export trees in the same script's `finally` for the same reason.
 
-  Start a detached process with no console window: the owner asked on 2026-11-22 that background work keep
+  Start a detached process with no console window: the owner asked on 2026-11-22 ([OWNER-DECISIONS-20261122](records/OWNER-DECISIONS-20261122.md)) that background work keep
   only the main window on screen, and closing such a window stops the process. Launch it through
   `D:/GitHub/ARCE-Task-Evidence/root-queue/tools/hidden_run.py` with pyenv's `pythonw.exe`
   (`pythonw.exe -B hidden_run.py <working directory> <program> [arguments...]`), which runs the program with

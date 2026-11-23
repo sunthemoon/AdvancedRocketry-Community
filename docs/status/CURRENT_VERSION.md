@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 14a1b53cc (W452 merged, R648: the K17 reference workload driver; the campaign preparation packages K01 to K21 are merged except K02's follow-up W447 and K12's W454, both in progress; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-latest_hosted_regression: run 45105618074 at 854069fa5 passed (the merges of W452 and W453); governance runs 45105618083 and 45105631216 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 6bc5b628c (W454 merged, R655: the K12 queue fixture driver; every campaign preparation package is merged except K02's follow-up W447, which is running; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_hosted_regression: run 45115605836 at afeb38417 passed (W454's merge and R654 to R656); governance runs 45115605918 and 45115607657 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 5
 asset_review_items: 95
 required_gates_approved: none
@@ -102,18 +102,23 @@ It does not run:
 What is still open:
 
 - **Current state on 2026-11-23.** Candidate C6 (`c8fa16e16`, R581) has complete native evidence: the integrated
-  campaign stands at 75 PASS and 3 FAILED of 78 families, the three being R-044's known downgrade limit kept failed
-  (R632); X03's repair passes from both world origins (R616); X01's crash replay, with W448's harness repairs, has 72
+  campaign's attempt 2 had 74 PASS and 4 FAILED of 78 families: three are R-044's known downgrade limit, kept
+  failed, and the fourth, `cargo-X03-REPAIR`, failed on Windows' 260-character path limit and passed from both world
+  origins in a separate rerun (R616, R632); X01's crash replay, with W448's harness repairs, has 72
   of 82 states passing both starts and 10 Windows late-loss states failed, in which W451 saw no quantity lost or
   created but ledger authority and history lost and the next operation untested (R637, R641); X02's fault matrix,
-  with W446's repairs, has 49 SEEN_HELD, 16 CAUGHT_LATER, 3 NOT_CAUGHT and 4 NOT_APPLICABLE, its open items
+  with W446's repairs, has 49 SEEN_HELD, 16 CAUGHT_LATER, 3 NOT_CAUGHT and 4 NOT_APPLICABLE (with the two original
+  bay-receipt images kept, as R636 keeps their verdicts: 14 CAUGHT_LATER and 5 NOT_CAUGHT), its open items
   classified (R636, R639). W455 filled C6-SWITCH-REPORT and FUEL-ADMISSION-REPORT from this evidence (R651).
   The owner's packet carries C6's results (R652): P1 (R-044) ready to sign with its text unchanged, P3 (X03-D)
   recommended yes, P4 to P9 recommended no for v1.8, keeping the five switches and the fuel loader off. The final
-  campaign's preparation packages are delivered except K02's follow-up (W447) and K12 (W454); several are partial by
+  campaign's preparation packages are delivered except K02's follow-up (W447, running); several, K12 among them, are partial by
   design, because their remaining steps need the owner's accounts or are not coverable with the switches off (R638,
-  R642, R647). K20's second pass (W456) and the ADR-062 revision 8 draft (W457) are in progress. K10 measured railgun
-  throughput below ADR-054's requirement in short Windows windows (R635); REF decides. No Required Gate is approved,
+  R642, R647). K20's second pass is merged (W456, R654); the ADR-062 revision 8 draft (W457) waits on its branch for the owner's
+  answers to P4 to P8 (R656). The independent final audit (W459) found no false pass; Root's fixes for its findings are
+  recorded under R658. K10 measured railgun
+  throughput below ADR-054's requirement in short Windows windows (R635); the reference node (REF: the owner's Debian
+  12 machine with 4 vCPU and 8 GiB of docs/17 section 4) decides. No Required Gate is approved,
   no switch is enabled and no residual risk is accepted. The paragraphs below are the history up to C6.
 - **Ledger.** 5 units are still PLANNED: C17a 4 and C17c 1, the five loader variants, which wait for the escrow
   chain's admission and the bay (W153 delivered the monitoring station and the linker). On 2026-11-09 the owner chose
@@ -186,7 +191,9 @@ What is still open:
   containers, and W277 (merged at `f1469f09c`, R308, R314 and R332) replaced the remaining vanilla stand-in faces, the
   drawer-like side, the identical port sides and the nitrogen canister. On 2026-11-08 the owner accepted both in full
   ([OWNER-DECISIONS-20261108](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md)), and W324 (R383,
-  merged at `70dd5d43e`) set their two records to APPROVED, so no v1.8 provenance record is pending. Excluding a
+  merged at `70dd5d43e`) set their two records to APPROVED. That held until W412's audit (R562): 58 final batch
+  records written by W414 are `PENDING_HUMAN_REVIEW` and four c17a records have no review block, 62 in all, which
+  are the owner's packet item P12. Excluding a
   file does not clear its authorship; W279
   records whom the owner plans to ask about the AR 16x texture set.
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
