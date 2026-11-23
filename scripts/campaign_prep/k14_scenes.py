@@ -426,6 +426,17 @@ def require_lock(token, lock=chain.LOCK):
     chain.require(owner.startswith(token + " "), "Heavy-JVM ownership required")
 
 
+def native_properties(port):
+    from scripts import run_dedicated_server_smoke as smoke
+    props = smoke.expected_server_properties(port, False)
+    # Preserve k03_chain.run's historical fixture launch profile. Its inherited
+    # capture function contains save-all flush, which must parse at permission 4
+    # even though K14 never invokes the function. Do not edit/remove that pack.
+    props.update({"level-name": "world", "view-distance": "2", "simulation-distance": "2",
+                  "spawn-protection": "0", "function-permission-level": "4"})
+    return props
+
+
 def run(output, scene, stage, cell_path, java, lock_owner):
     from scripts import run_dedicated_server_smoke as smoke
     from scripts import run_v060_flight_server_smoke as flight
@@ -467,8 +478,7 @@ def run(output, scene, stage, cell_path, java, lock_owner):
             previous = json.loads((folder / "reopen-1.json").read_text())
             chain.require(loaded_before == previous["saved_world_files"], "Restart lineage changed since first reopen")
         shutil.copytree(load_world, runtime / "world")
-        props = smoke.expected_server_properties(smoke.allocate_port(), False)
-        props.update({"level-name": "world", "view-distance": "2", "simulation-distance": "2", "spawn-protection": "0"})
+        props = native_properties(smoke.allocate_port())
         (runtime / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())), encoding="ascii")
         args = runtime.resolve() / "libraries/net/minecraftforge/forge/1.20.1-47.4.10/win_args.txt"
         command = [str(java), "-Xms512M", "-Xmx3G", "-Dadvancedrocketrycommunity.releaseTestHooks=true", "@" + str(args), "nogui"]

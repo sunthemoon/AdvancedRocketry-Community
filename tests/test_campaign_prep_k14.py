@@ -137,6 +137,12 @@ class K14Tests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     k14.require_lock(token, lock)
 
+    def test_inherited_capture_function_keeps_k03_launch_permissions(self):
+        props = k14.native_properties(25589)
+        self.assertEqual(props["function-permission-level"], "4")
+        self.assertEqual(props["server-port"], "25589")
+        self.assertEqual(props["server-ip"], "127.0.0.1")
+
     def test_saved_angle_raw_bits_and_field_absence(self):
         from scripts import v170_world_fixture as fixture
         with tempfile.TemporaryDirectory() as directory:
