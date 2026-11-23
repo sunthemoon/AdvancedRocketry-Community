@@ -233,6 +233,95 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertIn("ledger: block:rocketfire: REJECTED needs an ADR", errors)
         self.assertIn("ledger: block:terraformer: DEFERRED needs an ADR", errors)
 
+    def test_v19_admission_deferral_with_marker_and_player_impact_adr_passes(self) -> None:
+        for notes in ("production_admission=off@v1.8.0",
+                      "Item load admission deferred; production_admission=off@v1.8.0 ; code remains shipped"):
+            with self.subTest(notes=notes):
+                self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="-",
+                                  decision="ADR-062", notes=notes)
+                self.assertEqual([], self._errors(require_accepted=True))
+
+    def test_v19_admission_deferral_without_exact_marker_fails(self) -> None:
+        for notes in ("", "Production admission is off in v1.8",
+                      "not_production_admission=off@v1.8.0", "production_admission=off@v1.8.0_pending",
+                      "marker production_admission=off@v1.8.0 in prose", "production_admission=off@v1.9.0"):
+            with self.subTest(notes=notes):
+                self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="-",
+                                  decision="ADR-062", notes=notes)
+                errors = self._errors()
+                self.assertEqual(1, len(errors), errors)
+                self.assertIn("ledger: block_variant:loader/3: DEFERRED plan must be post-2.0 or v1.9.0 "
+                              "with ADR-062 and notes marker 'production_admission=off@v1.8.0'", errors)
+
+    def test_v19_admission_deferral_still_needs_player_impact_adr(self) -> None:
+        self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="-",
+                          decision="ADR-049", notes="production_admission=off@v1.8.0")
+        errors = self._errors()
+        self.assertIn("ledger: block_variant:loader/3: DEFERRED needs ADR-062, which records the player impact",
+                      errors)
+        self.assertTrue(any("DEFERRED plan must be" in error for error in errors))
+
+    def test_post20_deferral_without_admission_marker_is_unchanged(self) -> None:
+        row = next(row for row in self._rows(LEDGER) if row["unit_id"] == "block:terraformer")
+        self.assertEqual("DEFERRED", row["disposition"])
+        self.assertEqual("post-2.0", row["plan"])
+        self.assertNotIn("production_admission=off@v1.8.0", row["notes"])
+        self.assertEqual([], self._errors(require_accepted=True))
+
+    def test_admission_marker_does_not_allow_other_deferred_plans(self) -> None:
+        for plan in ("v1.8.0", "v1.9.1", "v2.0.0", "C17a", "-"):
+            with self.subTest(plan=plan):
+                self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan=plan, target="-",
+                                  decision="ADR-062", notes="production_admission=off@v1.8.0")
+                errors = self._errors()
+                self.assertEqual(1, len(errors), errors)
+                self.assertTrue(any("DEFERRED plan must be" in error for error in errors))
+
+    def test_v19_admission_deferral_keeps_target_and_evidence_rules(self) -> None:
+        self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="item loader",
+                          decision="ADR-062", notes="production_admission=off@v1.8.0",
+                          evidence="docs/work/v1.8.0-content-audit.md")
+        errors = self._errors()
+        self.assertEqual(2, len(errors), errors)
+        self.assertIn("ledger: block_variant:loader/3: DEFERRED target must be '-'", errors)
+        self.assertIn("ledger: block_variant:loader/3: evidence is recorded only for rows delivered in v1.8.0",
+                      errors)
+
+    def test_v19_admission_deferral_still_requires_accepted_adr_at_closure(self) -> None:
+        self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="-",
+                          decision="ADR-062", notes="production_admission=off@v1.8.0")
+        path = self.root / PLAYER_IMPACT_PATH
+        path.write_text(path.read_text(encoding="utf-8").replace("status: ACCEPTED", "status: PROPOSED", 1),
+                        encoding="utf-8")
+        errors = self._errors(closure=True)
+        self.assertTrue(any("depend on ADR-062, which is not ACCEPTED" in error for error in errors))
+        self.assertIn("closure: 4 ledger rows are still PLANNED", errors)
+
+    def test_revision8_draft_rows_pass_closure_on_scratch_ledger(self) -> None:
+        draft = ROOT / "docs/work/v1.8.0-root-queue/records/ADR-062-REVISION-8-DRAFT.md"
+        blocks = re.findall(r"^```csv\n(.*?)\n```$", draft.read_text(encoding="utf-8"), re.M | re.S)
+        self.assertEqual(1, len(blocks))
+        reader = csv.DictReader(io.StringIO(blocks[0]))
+        rows = self._rows(LEDGER)
+        self.assertEqual(list(rows[0]), reader.fieldnames)
+        proposed = list(reader)
+        self.assertEqual(5, len(proposed))
+        replacements = {row["unit_id"]: row for row in proposed}
+        self.assertEqual({f"block_variant:loader/{index}" for index in range(1, 6)}, set(replacements))
+        for row in proposed:
+            self.assertEqual(("DEFERRED", "v1.9.0", "-", ""),
+                             (row["disposition"], row["plan"], row["target"], row["evidence"]))
+        self.assertEqual("ADR-049 ADR-062", replacements["block_variant:loader/1"]["decision"])
+        self._write_rows(LEDGER, [replacements.get(row["unit_id"], row) for row in rows])
+        summary, errors = validate(self.root, closure=True)
+        self.assertEqual([], errors)
+        self.assertEqual("PASS", summary["result"])
+        self.assertEqual(653, summary["units"])
+        self.assertEqual({}, summary["planned_by_batch"])
+        self.assertEqual(dict(DEFERRED=30, IMPLEMENTED=214, MERGED=94, REDESIGNED=257, REJECTED=58),
+                         summary["dispositions"])
+        self.assertEqual(dict(EXCLUDE=365, IMPORTED=89, REGENERATE=444), summary["assets"])
+
     def test_unknown_adr_and_unknown_token_fail(self) -> None:
         self._edit_ledger("block:lathe", decision="ADR-999")
         self._edit_ledger("block:centrifuge", decision="later")
