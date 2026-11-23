@@ -296,49 +296,84 @@ def reconcile(before, after, *, players=False):
                 rule="shells conserved per room; oxygen, coal and fuel cells never rise; fuel cells unchanged without players")
 
 
-def block_entities(world, dimension, region_name):
+def region_chunks(path):
+    """Occupied chunk slots of one closed region file as (cx, cz, compressed record)."""
     from scripts import v120_precision_world_fixture as region
-    folder = world if dimension == OW else world / "dimensions" / dimension.split(":")[0] / dimension.split(":")[1]
-    path = folder / region_name
     raw = region._read_regular(path, region.MAX_REGION_BYTES)
     rx, rz = map(int, path.stem.split(".")[1:])
-    result = {}
     for slot in range(1024):
         if int.from_bytes(raw[slot*4:slot*4+3], "big"):
             cx, cz = rx * 32 + slot % 32, rz * 32 + slot // 32
-            chunk = region._decode_chunk(region._region_chunk(raw, cx, cz), cx, cz)
-            for entity in chunk.get("block_entities", []):
+            yield cx, cz, region._region_chunk(raw, cx, cz)
+
+
+def dimension_of(world, path):
+    parts = path.relative_to(world).parts
+    return OW if parts[0] != "dimensions" else f"{parts[1]}:{parts[2]}"
+
+
+def block_entities(world):
+    from scripts import v120_precision_world_fixture as region
+    result = {}
+    for path in sorted(world.rglob("region/r.*.*.mca")):
+        dimension = dimension_of(world, path)
+        for cx, cz, record in region_chunks(path):
+            for entity in region._decode_chunk(record, cx, cz).get("block_entities", []):
                 result[(dimension, entity["x"], entity["y"], entity["z"])] = entity
     return result
 
 
-def identities(world):
+def rocket_rows(world):
+    """Rocket entities of a closed world. A 2,048-block snapshot has far more than the shared reader's 4,096 tags,
+    so this read uses that reader's own maximum; a chunk still out of bounds is listed, never skipped silently."""
+    import zlib
+    from scripts import inspect_celestial_saved_data as nbt
+    rockets, unreadable = [], []
+    for path in sorted(world.rglob("entities/r.*.*.mca")):
+        for cx, cz, record in region_chunks(path):
+            name = f"{path.relative_to(world).as_posix()}#{cx},{cz}"
+            try:
+                stream = zlib.decompressobj()
+                expanded = stream.decompress(record, nbt.MAX_DECOMPRESSED_BYTES + 1)
+                chain.require(len(expanded) <= nbt.MAX_DECOMPRESSED_BYTES and stream.eof, "Entity chunk exceeds the read bound")
+                root = nbt.NbtReader(expanded, max_tags=1_048_576).read_root()
+            except ValueError as failure:
+                unreadable.append(dict(chunk=name, reason=str(failure)))
+                continue
+            for entity in root.get("Entities", []):
+                if entity.get("id") == NS + ":rocket":
+                    flight = entity.get(k04.ROOT_KEY, {}).get("flight_data", {})
+                    fuel = flight.get("fuel") or {}
+                    rockets.append(dict(entity=next(iter(chain.saved_uuids(dict(v=entity["UUID"])))), chunk=name, state=flight.get("state"),
+                                        fuel=dict(amount=fuel.get("amount", 0), capacity=fuel.get("capacity", 0))))
+    return sorted(rockets, key=lambda r: r["entity"]), unreadable
+
+
+def identities(world, entities):
+    from scripts import v170_world_fixture as fixture
     from scripts.campaign_prep import k08_stations as stations
-    state = chain.snapshot(world)
-    roots = {name: payload["data"] for name, payload in state["roots"].items()}
+    roots = {path.name: fixture.read_nbt(path)["data"] for path in sorted((world / "data").glob(NS + "_*.dat"))}
     missions = roots[NS + "_satellite_missions.dat"]
     status = {}
     for mission in missions["missions"]:
         key = mission["kind"] + ":" + mission["status"]
         status[key] = status.get(key, 0) + 1
-    rockets = [dict(entity=next(iter(chain.saved_uuids(dict(v=row["value"]["UUID"])))),
-                    region=row["region"], fuel=row["value"].get(k04.ROOT_KEY, {}).get("flight_data", {}).get("fuel"))
-               for row in state["entities"] if row["value"]["id"] == NS + ":rocket"]
+    rockets, unreadable = rocket_rows(world)
+    mod = sorted(json.dumps([list(key), value], sort_keys=True) for key, value in entities.items()
+                 if str(value.get("id", "")).startswith(NS + ":"))
     return dict(stations=sorted(stations.uuid_text(s["station_id"]) for s in roots[NS + "_stations.dat"]["stations"]),
         mission_ids=sorted(next(iter(chain.saved_uuids(m["mission_id"]))) for m in missions["missions"]),
         mission_status=status, satellites=len(missions["satellites"]), clock=missions["clock"],
-        rockets=sorted(rockets, key=lambda r: r["entity"]),
-        forced={name: forced_longs(root["data"]["Forced"]) for name, root in state["forced_chunks"].items()},
-        mod_block_entities=len(state["block_entities"]),
-        mod_block_entity_roots_sha256=common.digest(common.json_bytes(sorted(
-            (json.dumps(row, sort_keys=True) for row in state["block_entities"])))))
+        rockets=rockets, unreadable_entity_chunks=unreadable,
+        rocket_fuel_units=sum((r["fuel"] or {}).get("amount", 0) for r in rockets),
+        forced={path.relative_to(world).as_posix(): forced_longs(fixture.read_nbt(path)["data"]["Forced"])
+                for path in sorted(world.rglob("chunks.dat"))},
+        mod_block_entities=len(mod), mod_block_entity_roots_sha256=common.digest(common.json_bytes(mod)))
 
 
 def accounting(world):
-    entities = {}
-    entities.update(block_entities(world, MOON, "region/r.2.2.mca"))
-    entities.update(block_entities(world, OW, "region/r.8.8.mca"))
-    return dict(accounting_from(entities, layout()), identities=identities(world))
+    entities = block_entities(world)
+    return dict(accounting_from(entities, layout()), identities=identities(world, entities))
 
 
 class Console(chain.Console):
@@ -887,6 +922,8 @@ def soak(args):
             chain.write(evidence / "accounting-after.json", after)
             before = json.loads((root / "accounting-before.json").read_text(encoding="utf-8"))
             receipt["reconciliation"] = reconcile(before, after)
+            receipt["accounting_complete"] = not after["identities"]["unreadable_entity_chunks"]
+            receipt["rocket_fuel_units"] = dict(before=before["identities"]["rocket_fuel_units"], after=after["identities"]["rocket_fuel_units"])
             receipt["identity_changes"] = {key: before["identities"][key] != after["identities"][key]
                                            for key in ("stations", "mission_ids", "satellites", "rockets", "forced", "mod_block_entity_roots_sha256")}
             state.update(segment_done=segment["index"], stopped_utc=receipt["stopped_utc"])

@@ -248,6 +248,24 @@ class AccountingTests(unittest.TestCase):
         self.assertEqual(k.reconcile(before, k.accounting_from(entities(self.layout, cells=65), self.layout), players=True)["status"], "UNEXPLAINED")
 
 
+class ClosedWorldTests(unittest.TestCase):
+    def test_dimension_comes_from_the_region_path(self):
+        world = Path("world")
+        self.assertEqual(k.dimension_of(world, world / "region" / "r.8.8.mca"), k.OW)
+        self.assertEqual(k.dimension_of(world, world / "dimensions" / k.NS / "moon" / "region" / "r.2.2.mca"), k.MOON)
+        self.assertEqual(k.dimension_of(world, world / "dimensions" / k.NS / "space" / "entities" / "r.0.0.mca"), k.SPACE)
+
+    def test_an_unreadable_entity_chunk_is_listed_not_dropped(self):
+        with TemporaryDirectory() as temporary:
+            world = Path(temporary)
+            (world / "entities").mkdir()
+            (world / "entities" / "r.0.0.mca").write_bytes(b"")
+            with patch.object(k, "region_chunks", lambda path: iter([(3, 4, b"not zlib")])),                     patch("zlib.decompressobj", side_effect=ValueError("bad record")):
+                rockets, unreadable = k.rocket_rows(world)
+        self.assertEqual(rockets, [])
+        self.assertEqual(unreadable, [dict(chunk="entities/r.0.0.mca#3,4", reason="bad record")])
+
+
 class ReportTests(unittest.TestCase):
     def sample(self, **changes):
         base = dict(kind="components", rooms_active=list(range(16)), stations=10,
