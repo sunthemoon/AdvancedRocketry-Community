@@ -250,6 +250,18 @@ class CampaignPrepK21Test(unittest.TestCase):
         for witness in ("empty-handed", "slot_role=0", "127,254,381", "n=1..41", "fuel750", "Survival", "owner_id"):
             self.assertIn(witness, loader)
 
+    def test_scripted_initial_target_is_in_range_but_not_connected_to_scene_blocks(self):
+        component = k21.client_steps()["component"]
+        x,y,z = component["initial_origin"]
+        loader = k21.plan("component")["positions"]["component_loader"]
+        self.assertLessEqual(sum((a-b)**2 for a,b in zip((x,y,z),loader)), 36)
+        initial = [(a+x-264,b+y-101,c+z-264) for a,b,c in k21.COMPONENTS]
+        existing = [(270,101,264), tuple(loader), (265,100,268)]
+        existing += [(a+1,b,c+4) for a,b,c in k21.COMPONENTS]
+        self.assertTrue(all(sum(abs(a-b) for a,b in zip(p,q)) > 1 for p in initial for q in existing))
+        self.assertIn(f"at {x} {y} {z}", component["steps"][0])
+        self.assertIn(f"x={x},y={y},z={z}", component["read_only_commands"][2])
+
 
 if __name__ == "__main__":
     unittest.main()
