@@ -2,10 +2,10 @@
 
 | Item | Value |
 |---|---|
-| Status | **DRAFT; all C6 results are PENDING.** Historical evidence, including the failed `cargo-G2-REUSE` and `w336-downgrade` checks, is not C6 evidence. Nothing here accepts a risk, enables production admission or passes a Gate, version or release. |
+| Status | **DRAFT; C6 evidence filled under R646.** Attempt 2 is 74 PASS / 4 FAILED; the separate X03 rerun is PASS (R632: 75 PASS / 3 FAILED across the 78-family selection, without erasing attempt 2). X01 remains FAIL and X02 retains residual classifications. Uncovered rows are explicitly open. Nothing here accepts a risk, enables production admission or passes a Gate, version or release. |
 | Written by | W351 wrote the original report; its structure and rows are retained from [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md). |
 | Retargeted by | W423, on 2026-11-21, under R581/R582 and [TASK-W423](../TASK-W423-RETARGET-TO-C6.md). W410's C5 draft remains history. |
-| Filled by | PENDING |
+| Filled by | W455, 2026-11-23, under R646; C6 evidence and recorded decisions only. |
 | Base | W423's drafting checkout is `bae39c56e` on `codex/v1.8.0-w423`; C6's distinct tested identity is in section 2.1. |
 | Owner request | [OWNER-DECISIONS-20261109](OWNER-DECISIONS-20261109.md) requests one candidate and separate risks/evidence for each switch. [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md) delegates design to Root and reserves the final yes-or-no decisions described in section 10. |
 | Earlier reports | [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md) preserves C5's draft and pre-run. [C4-SWITCH-REPORT](C4-SWITCH-REPORT.md), [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md) and [INTEGRATED-C1-REPORT-20261109](INTEGRATED-C1-REPORT-20261109.md) retain earlier history. |
@@ -14,7 +14,7 @@
 ## 1. Names used in this report
 
 - **C6** is the accounting-enabled candidate at `c8fa16e16be87554f26c402546733df6555d15e6` (R581).
-  Its identity is pinned in section 2.1; every C6 scenario result remains PENDING.
+  Its identity is pinned in section 2.1; results below come only from C6 evidence, with explicit NOT_COVERED reasons.
   **C1**, **C2**, **C3**, **C4** and **C5** are historical candidates, not sources of C6 results. C1 to C3 remain in
   [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 1 and 2; C4's run is in section 2.1.2 and C5's pre-run is in section 2.1.3.
 - **Wnnn** names a task and its record in this folder, for example [W331](W331.md). **Rnnn** without a hyphen is a Root
@@ -28,7 +28,7 @@
 - A **family** is one entry of the
   [campaign driver](../../../../scripts/run_v180_integrated_campaign.py). Family, case and test names are preserved
   for Root's filler, for example `forced-W331-D`, `cargo-C-S4-LOAD` or `r042-N_BAY`. The C6 run selects all 78 families;
-  its results are PENDING. [QUEUE](../QUEUE.md), W363F/R455, records the earlier 71-family selection.
+  its original result is FAILED: 74 PASS and 4 FAILED; the separately reported X03 rerun passes (R632). [QUEUE](../QUEUE.md), W363F/R455, records the earlier 71-family selection.
 - Bay row IDs come from [W325-MATRIX](W325-MATRIX.md): B1.1 to B18.7, CAP.1 to CAP.3 and EXIT.0 to EXIT.10 are native
   rows, and F2.1 to N2.6 are GameTest rows. Cargo row IDs come from [W326-MATRIX](W326-MATRIX.md): N001 to N120 are
   native cuts, Q01 to Q04 the per-owner cap, X01 to X03 residuals, and C-E-A01 to C-E-A14 and D-E-A01 to D-E-A12
@@ -41,16 +41,14 @@
 - **V1** is a check with one real client and **V2** a check with two real clients. The **reference node** is the
   performance host of [docs/17](../../../17-V1PLUS-QUALITY-BUDGETS.md). All three belong to the owner's final campaign.
 - **M1 to M6** and **L1 to L5** are the findings of W327's audit.
-- Result words after Root fills this draft are PASS, FAIL and NOT_COVERED (no evidence for that exact row).
-  Every C6 result cell is exactly PENDING, optionally with its case count. Historical C1 and smoke columns retain
-  their historical results. A reasoned unreachable row is not an executable pass. Section 11 describes the fill boundary.
+- Runner words are preserved: PASS, FAILED, X01 FAIL, and the X02 classifications, including INCOMPLETE and NOT_CAUGHT. NOT_COVERED means no evidence for the exact row; PARTIAL means a named requirement remains open. Historical C1 and smoke columns remain historical. A reasoned unreachable row is not an executable pass. Section 11 describes the fill boundary.
 
 ## 2. The candidate and what changed since C1
 
 ### 2.1 Candidate C6
 
 Root decision R581 (2026-11-21), following C5's pre-run, pins this candidate. Hosted identity and run
-metadata below are not filled scenario verdicts; every C6 scenario result stays PENDING.
+metadata and results below are distinguished from switch/risk/Gate approval. Paths and fingerprints are defined in section 2.1.4.
 
 | Identity or evidence | C6 |
 |---|---|
@@ -60,16 +58,15 @@ metadata below are not filled scenario verdicts; every C6 scenario result stays 
 | Candidate JAR name and size | `advancedrocketry-community-1.20.1-1.8.0-dev.jar`, 16,026,312 bytes |
 | Candidate JAR SHA-256 | `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4` (hosted artifact `v180-build-c8fa16e16be87554f26c402546733df6555d15e6-1`; the same hash is in the build evidence's `artifact-sha256.txt`) |
 | Local candidate JAR | `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/candidate/unpacked/advancedrocketry-community-1.20.1-1.8.0-dev.jar` |
-| Campaign run, selection and evidence location | Started 2026-11-21 at 00:48 from `D:/GitHub/arce-v180-c6` with `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/launch_c6.ps1`: all 78 families with `--yield-seconds 120` (`C6/campaign`), then X01 S3 (`C6/x01-s3`) and X02 S5 (`C6/x02-s5`). All results PENDING. These paths are under `D:/GitHub/ARCE-Task-Evidence/root-queue/` (outside Git) |
-| Final real-client campaign evidence root | `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/` (outside Git); results PENDING |
+| Campaign run, selection and evidence location | Attempt 1 at `C6/campaign/` is interrupted history. Attempt 2 ended 2026-11-22 at 11:06 +08:00: 78 families, 74 PASS and 4 FAILED, report status FAILED; `C6/campaign-attempt2/campaign-attempt2.json`. Three failures are the known R-044 downgrade limit; X03 is the harness path length (R616). Its separate 2026-11-23 01:41-02:38 rerun PASS is `C6/x03-rerun/native/results.json` (R632). X01 S3 and X02 attempt 3 with triage/follow-ups are in section 13. |
+| Final real-client campaign evidence root | `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/` (outside Git); NOT_COVERED: real-client campaign phase 2 and later, not this native run |
 
 C6 carries accounting activation and the C4-to-C5 and C5-to-C6 changes below. All five bay/cargo admission switches and the
 fuel loader's separate admission stay off. No risk, switch, Gate, version or release is accepted here.
 
 C3's outcome remains in [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 2.1 and 11: its 58 families ran, with
 56 passing and the two historical-JAR downgrade families failing under R-044. Its hosted run passed 1,859 GameTests.
-No historical pass or failure is copied into a C6 result. `cargo-G2-REUSE` and `w336-downgrade` retain their old
-failed checks; the new ledger-root-3 downgrade boundary has no C6 result yet (section 9.3 and section 12).
+No historical pass or failure is copied into a C6 result. C6 itself reports cargo-G2-REUSE, w336-downgrade and accounting-root3-old-jar as FAILED (R615/R618/R632); the unchanged downgrade assertions are not waived (sections 8.5 and 12).
 
 #### 2.1.1 C2's campaign is history, not this report's candidate evidence
 
@@ -149,6 +146,103 @@ Under R566 its eight-family pre-run passed on 2026-11-20 from 14:13 to 21:21
 78-family campaign, X01 S3 and X02 S5 were not run on C5; they run on C6.
 The pre-run is development evidence, not C6 evidence. [C5-SWITCH-REPORT](C5-SWITCH-REPORT.md)
 retains C5's identity, run and earlier history. No C5 result is relabelled C6.
+
+#### 2.1.4 Evidence paths and fingerprints
+
+External paths are code spans, never Markdown links. In result cells, `C6/` means `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/`; `X01-S3/` means `D:/GitHub/ARCE-Task-Evidence/x01-crash-replay/c8fa16e16be87554f26c402546733df6555d15e6/`; `X01-triage/` means `D:/GitHub/ARCE-Task-Evidence/x01-crash-replay/c8fa16e16be87554f26c402546733df6555d15e6-triage/`. These are path prefixes, not new candidate names. The following SHA-256 values were computed read-only by W455. Directory references point to the files named by these manifests/results. Historical attempts and sealed evidence were not changed.
+
+| Evidence file (using those prefixes) | SHA-256 |
+|---|---|
+| `C6/campaign-attempt2/campaign-attempt2.json` | `97faf03ecaa5757488652410909b81466e7a2de6fc52154a802219623bf3d62b` |
+| `C6/campaign-attempt2/forced-A-attempt2/native/results.json` | `ccf2dafd8bf9c7dc171b9c9180b2c9a73e9d7a14eb057b7257ee37293bd9a0ba` |
+| `C6/campaign-attempt2/forced-A-retry-attempt2/native/results.json` | `334af0f4f33a630ed3d10ab155719c7edac440367d0cd9e0c8c0c411bdf678cf` |
+| `C6/campaign-attempt2/released-attempt2/native/results.json` | `fa125c189c13d0de932ffb27dd1ebff14f30333873a5868f235d98cf6eea7f4b` |
+| `C6/campaign-attempt2/exit-attempt2/native/results.json` | `ec0e9e25357400b55f7d05e0eb8d4667ba8c34269d932b392e5481ec365748d9` |
+| `C6/campaign-attempt2/forced-B-attempt2/native/results.json` | `bcadca99454fcd035775dafd8db2928f6b0e0c815a48d7de9146b7dabf8dfe0b` |
+| `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` | `e983e28e732f545716fe92e66b33cb4908b8388e35fc66780be6963154191df6` |
+| `C6/campaign-attempt2/forced-E-attempt2/native/results.json` | `41137630a36771beaf51e9e9db5eeaa0f9ac1bef5afdc564dfa837b3c4590832` |
+| `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` | `895f9e882f97fa03b4da275dfbaa382b0742e1cd2c29b74b83ebdfcb6b38e5c1` |
+| `C6/campaign-attempt2/forced-F-attempt2/native/results.json` | `54b2b102ba5bfb9eb88908981d1969d6c5d92e76930ef8dcc23d91ae3b3a3abe` |
+| `C6/campaign-attempt2/forced-G-attempt2/native/results.json` | `f296fd2010d1f4fef4bc05c1d86d3bcd66f3fa3169fd9c48378b2565b977fcb0` |
+| `C6/campaign-attempt2/forced-GH-retry-attempt2/native/results.json` | `5341c8e8c1cc31e909e397cd576584b31cd6c1f99e890ad5ee39f517d02029fb` |
+| `C6/campaign-attempt2/forced-H-attempt2/native/results.json` | `3f73fecf9c20cd016ec5589ba7db85bdb6fbd85be132d73a30c18178c150b61e` |
+| `C6/campaign-attempt2/forced-W331-T-attempt2/native/results.json` | `f3d240f666aa9523494f5f06b907c6dad0032b97df9206b7d29b98e8a258d2fa` |
+| `C6/campaign-attempt2/forced-W331-W-attempt2/native/results.json` | `66d36711f6eb0ca25a44f2fe5abc9baac80158495192da4b699004f645e90ef2` |
+| `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` | `a4cd1aa85f1ae9855f087a1a40cb7dbdaab8357df7c3b222bc5ff69229f4ce6e` |
+| `C6/campaign-attempt2/forced-W331-G-attempt2/native/results.json` | `07391162f6e0782cbb4ca1b9f21879794eef77a795f186dd4aa800671f73ec59` |
+| `C6/campaign-attempt2/forced-W331-R-attempt2/native/results.json` | `fee632782c8afc5bb4550c1d4b37baa1ab79d225213b524b2b08fe83387da66c` |
+| `C6/campaign-attempt2/forced-W331-L-attempt2/native/results.json` | `222857f88b7388ef9e16d6b3ec7c805b8e91339daf83a97dbdfce3bbac071a68` |
+| `C6/campaign-attempt2/forced-W331-U-attempt2/native/results.json` | `78e7a6bef36b53416ac375ec287fe65f59dd9877424e86d28d17950000f4f79b` |
+| `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` | `446d746d8a8fc6315125cd0114407aa03a76b5834e9c2c1dba1d7f78f1b99575` |
+| `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` | `88e1aeb1ae6d8d7da4b8b434cd6bc423b103d8e7204b4e019daa34933c5213a0` |
+| `C6/campaign-attempt2/cargo-C-S3-attempt2/native/results.json` | `6204209213f99890e784126da382fecdb64858ca495e8b1962e2e3df8e23c16c` |
+| `C6/campaign-attempt2/cargo-C-S4-attempt2/native/results.json` | `e30689f1af6fd98017423851fc50ab5ee1b2cc17fce2ea36f4371545da7426a9` |
+| `C6/campaign-attempt2/cargo-C-S4-LOAD-attempt2/native/results.json` | `7b640fe170288ad5ef0100e9d7a600c6126cedd996ba9daeef0e66228cc9ab3d` |
+| `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` | `7929eb2a437a196c7f7e5ddf06476e18d78b9e801ba88c205affdd5c453af1b4` |
+| `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` | `7be8e3eeb98664dcc8828df6c8e4389552e7de6471a8c4b57e77b1acb4189eda` |
+| `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` | `4b87c4ae3335186da480a3e77be221375a96eb117443ca5071bf814e256b3027` |
+| `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` | `1b816f537e4ec59f9c34d362b3866ae3553af87aae86f67f2c2177ac84d774a7` |
+| `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` | `f7825b26f76b0130e18e388e5030c6853087ae5932610f261c8c770f9e597e6f` |
+| `C6/campaign-attempt2/cargo-B3-S1-REUSE-attempt2/native/results.json` | `a70061ba078395ded30544effda3eb6656c2dfca4f5dc4f7ff890b79262be413` |
+| `C6/campaign-attempt2/cargo-B3-S4-REUSE-attempt2/native/results.json` | `97c81da8acaa2ec608613c6d00ffab80ecfc64d6138ba5bc1f59effb668ef6b7` |
+| `C6/campaign-attempt2/cargo-B3-S5-REUSE-attempt2/native/results.json` | `dde9e2603f3e16feb9cd0df8ed2fa4d90ca98bbc9721bcd368a3ef1405544f36` |
+| `C6/campaign-attempt2/cargo-B3-S6-REUSE-attempt2/native/results.json` | `8dc14ea886aaabfe62c7eddd25ef47184966de87174818448c7060451479e7fa` |
+| `C6/campaign-attempt2/cargo-G2-REUSE-attempt2/native/results.json` | `d355ca8ce51897e928e77a199c1b18014ea5e1a0cae610dbbed215043a039e8e` |
+| `C6/campaign-attempt2/w336-timing-B12_D4-attempt2/native/results.json` | `44f6bf5d6eda82c7ae16297dc1036d317e7d35dd15789bbe1081ba5ff733cee8` |
+| `C6/campaign-attempt2/w336-timing-B12_D7-attempt2/native/results.json` | `42a4643fa9ed8340d5da0d8523ecebdf32397289d9ae2f3bfe6946c05062312a` |
+| `C6/campaign-attempt2/w336-timing-B13_FAILED-attempt2/native/results.json` | `e45e694add3b84f6906ddc89c6c5891edeb7c9c6fe1e35e2067e22f023a8138c` |
+| `C6/campaign-attempt2/w336-timing-B13_UNKNOWN-attempt2/native/results.json` | `c8d25b3472a6317d056729d2e8d932b2b7b0298eb3f6f7fa6d2f40019db8f4c5` |
+| `C6/campaign-attempt2/w336-timing-B16_MOTION-attempt2/native/results.json` | `8cdc272e33413f32c30e219067b32881f10e879164bfee54bdd1a3fbf85451ba` |
+| `C6/campaign-attempt2/w336-timing-B10_BLOCKED-attempt2/native/results.json` | `28e02c4f8a3ff5f912cbf5f969aae7f3ad960dce656ecba7ad751f037b76bc3d` |
+| `C6/campaign-attempt2/w336-timing-RECONNECT-attempt2/native/results.json` | `070bcb4a1eb59a8a73f8a3df160c7ffb50c914d3ca7917201849d6bb7066c59f` |
+| `C6/campaign-attempt2/w336-timing-TURNS-2-attempt2/native/results.json` | `cb8457e2e261d328c13c487cbdafabdadbeb1b065bd085e5b4167f13c65a79b2` |
+| `C6/campaign-attempt2/w336-timing-TURNS-3-attempt2/native/results.json` | `667e855a31283455f63a9ce029c20eb80bf36b07e87509a42c17a01108b267d2` |
+| `C6/campaign-attempt2/w336-timing-D6_RETRY-attempt2/native/results.json` | `a2e317c33572d2ae7e5d9d21b97cebe1efef47e0ee15982430f9241e6ddfba66` |
+| `C6/campaign-attempt2/w336-saturation-bay-attempt2/native/results.json` | `1de5dd64cdc96475c65842483ee6c20415198ea8ceb4a8fddf4b9ed8153c6fb5` |
+| `C6/campaign-attempt2/w336-saturation-item-load-attempt2/native/results.json` | `585ed03208563bef17bef12c1ccbc890eba361383c3ccddb9987225fba273927` |
+| `C6/campaign-attempt2/w336-saturation-item-unload-attempt2/native/results.json` | `a140df085e16f57575e2b53a8ed3b515f64ccc75224913a27926a458a161f3f4` |
+| `C6/campaign-attempt2/w336-saturation-fluid-load-attempt2/native/results.json` | `cd413c58b4ac2dd8eac89bea0af5704ee6c63f427f4133aeb16935835c494192` |
+| `C6/campaign-attempt2/w336-saturation-fluid-unload-attempt2/native/results.json` | `1cb2bc540663882698239785df1c7d2323aa4adf07eed22460a205dd776202f5` |
+| `C6/campaign-attempt2/w336-saturation-fuel-attempt2/native/results.json` | `cab8beb240bbba55d5da7309bcb16c27288687667f91477570aaaf4221d12b67` |
+| `C6/campaign-attempt2/w336-downgrade-attempt2/native/results.json` | `12d4248805504db0cb6f2a95ac1c9c8a2e2e4d3eca8a59fb903775d948fb5750` |
+| `C6/campaign-attempt2/r042-N_BAY-attempt2/native/results.json` | `cc61e7d355ea39529f56519ac7f5a9766914d297ddfa39d0621486e317c7c4cd` |
+| `C6/campaign-attempt2/r042-L_LEDGER-attempt2/native/results.json` | `5635d3834677d3465cea8e4f332acb66869288578a605b8cf2e8771f4a6298ae` |
+| `C6/campaign-attempt2/r042-P_SERVER-attempt2/native/results.json` | `7d9605cd0df66c2d5e51b8b1c4549be439aec6db9861be5679c027f372f41ae2` |
+| `C6/campaign-attempt2/r042-P_OWNER-attempt2/native/results.json` | `7e068436983d487135d52a0757d251bdbf7d0986ebe0f668f959f19a6b09d856` |
+| `C6/campaign-attempt2/r042-U_BAY-attempt2/native/results.json` | `b1377f50ce39712323056c4f3d4ba143692aa9e4ef90248e649c98c70f52a332` |
+| `C6/campaign-attempt2/r042-U_LEDGER-attempt2/native/results.json` | `a09a871beaf864ced261c56373041dba545e5cd6a468d9e2ab832eececbe49f4` |
+| `C6/campaign-attempt2/forced-W346-R-attempt2/native/results.json` | `2454749a931b9ec81f9772b456fcec2f98dfbe2b0586b650fda96cd159d215a3` |
+| `C6/campaign-attempt2/forced-W358-B10-INCOHERENT-attempt2/native/results.json` | `8b36c9deba8ab45c7b106c813074ef80ae21bb6db167d9e3847eda3c0e89e559` |
+| `C6/campaign-attempt2/forced-W358-B11-REARM-attempt2/native/results.json` | `804fe28ed2fa29dcb669a5381933e0de9e73ba772ae0fd70b4a840eaf1b97c4b` |
+| `C6/campaign-attempt2/forced-W358-B11-ESCROW-MAJOR-attempt2/native/results.json` | `11243db0862dd6ab8feba8e5b776a8dee8d7d57f05f3e7f52fd0da696c6a4a53` |
+| `C6/campaign-attempt2/forced-W358-B11-BAY-MAJOR-attempt2/native/results.json` | `2caa14656c9577bcdf40b4a0c6ea727a19db2e4d7a3cbc1f8110c62361b1fdcb` |
+| `C6/campaign-attempt2/forced-W358-B11-UNKNOWN-attempt2/native/results.json` | `f0ec7b48c3ca2c1d591126a20fdc9bf665834411509d1649acb1c55596e90b5e` |
+| `C6/campaign-attempt2/forced-W358-CAP-OWNER-attempt2/native/results.json` | `d1a2f1d256b154ece6e1b535ca2ecd43554d6e1884609f87ec9be6f04865945d` |
+| `C6/campaign-attempt2/forced-W363-B6-GOVERNED-attempt2/native/results.json` | `433086ff3904c9a05034837725fb86c6e09b25c64db64fb29ff12df14e0fbd70` |
+| `C6/campaign-attempt2/forced-W363-B17-UNLOADED-attempt2/native/results.json` | `0820ce1082df4dc646714316a2d067ab221ff77b59140d0336c928b8c543b546` |
+| `C6/campaign-attempt2/forced-W363-B17-UNLOADED-RESTART-attempt2/native/results.json` | `9c8077e18a03dd77bd417e42a92d142ed31cb6f05ddafdbc4622ceccf8920405` |
+| `C6/campaign-attempt2/r042-X_BAY-attempt2/native/results.json` | `81643bc5d46c2b304d32a48e837494efe8abbe1588910d3da397a05150a6cdb3` |
+| `C6/campaign-attempt2/r042-X_LEDGER-attempt2/native/results.json` | `e81a66832d3bc8e6b62120591c84d1fc6ecdf8819fd7be3ef8507d2068bfb13f` |
+| `C6/campaign-attempt2/r042-R031_FUTURE-attempt2/native/results.json` | `1fef195e6500b1d5c20b0d6b3e28c8bbf2d278fd5dd526ffb860b7758323d755` |
+| `C6/campaign-attempt2/r042-R031_INVALID-attempt2/native/results.json` | `ef24c79422a48b30477852c1fdb695e1e182b396945bdf7b5794a4c26905767d` |
+| `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` | `f1ddc39e750c0b14e70a083187b5ed27d4bcd88d27a1fe4fba21efce9ca590d8` |
+| `C6/campaign-attempt2/accounting-cuts-cargo-load-attempt2/native/results.json` | `368decaf8a8d8997a187c09c0f36fcb8123c7ba2c5f9196ab360b7d153effb34` |
+| `C6/campaign-attempt2/accounting-cuts-cargo-unload-attempt2/native/results.json` | `4ac5265e137d8302857057c6525e61ac9f22bf35667aab17edc51ef72d883610` |
+| `C6/campaign-attempt2/accounting-cuts-loader-attempt2/native/results.json` | `b827576fe884c585c56c05692854a3d6598d8a8b2bc4a2517fa033d3edc059f6` |
+| `C6/campaign-attempt2/accounting-outcomes-attempt2/native/results.json` | `3e2ad3ff6baf7682cb06f34a9dcf38eb329334d19be1d0c77252a62be90c2417` |
+| `C6/campaign-attempt2/accounting-root2-upgrade-attempt2/native/results.json` | `b78284160657fe6bc90e6da89a73673d510c4ba240d48c4212cec333081b69dc` |
+| `C6/campaign-attempt2/accounting-root3-old-jar-attempt2/native/results.json` | `cdb990d168a1370c49d23e74c10e9b731917f65ed0410096ed8f733da094d621` |
+| `C6/x03-rerun/native/results.json` | `37454e86ceaf1ba0eddca5022b685e44687354859d61684dbd1abea5ef1d5a6b` |
+| `X01-S3/MANIFEST.json` | `3456cd0a9b1e958c421cfc0ca44e1445ddfc7d588bc7b493a3ecb8161567dbf8` |
+| `X01-triage/MANIFEST.json` | `8ade054e5f10371515ebc24b22cd907abc345f916f6a34f4c81d80c963a6e765` |
+| `X01-triage/followup-bay/MANIFEST.json` | `f1b4fb88ed46ce24931d9536654fa70e5a419078f0433823b36bede990c717a9` |
+| `X01-triage/followup-passive/MANIFEST.json` | `fe925eb3fbdbd37707548c0e14246cfd417d44f1004009038b244b5e2c0d3a4f` |
+| `C6/x02-s5-attempt3/MANIFEST.json` | `b09e5c65f81fb1c5847ece1f687fdf2d7995dee62c850175458b5ee840f871a6` |
+| `C6/x02-s5-triage/MERGED-TOTALS.json` | `89ae1e84fca64ae9a9260fe1f25871ba17ba8447912e98f767653fd7f30cc8c7` |
+| `C6/x02-s5-satellite/COMPARISON.json` | `48cbf6164068e42031b1cc3bf739628a26461886c64e65e6d441b51c135bcab9` |
+| `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip` | `d189bea1278f5b4672708fcd6fab20767703803c51da5d655916230d1b0b50e8` |
+
+The candidate build-evidence ZIP contains the unit XML members cited in section 12.2. Its prefix is `AdvancedRocketry-Community/AdvancedRocketry-Community/build/test-results/test/`. It does **not** contain hosted GameTest shard results. R581 records the hosted aggregate (1,886 passed), but this fill leaves exact named GameTest rows NOT_COVERED rather than inventing per-method evidence. This does not reverse R581's aggregate result.
 
 ### 2.2 Production changes between C1 and C4 preparation
 
@@ -241,11 +335,11 @@ the other C5-to-C6 changes; they supply no C6 native or real-client verdict.
 
 | Switch | C1 native rows | C1 GameTest rows | Rows with a C6 family or named test | Remaining limits | C6 result |
 |---|---|---|---|---|---|
-| Bay (`block_variant:loader/1`) | 88 PASS, 27 NOT_COVERED | 13 PASS, 31 NOT_COVERED | Every retained C3 row plus W358's six selected gap families and W363's three families and two GameTests; section 3. | B11.2 and B17.5 are reasoned unreachable, not native passes. The final campaign and hosted results are awaited. | PENDING |
-| ITEM_CARGO_LOAD (`loader/3`) | 6 PASS | 6 PASS | All retained rows, seven new load cuts in D-S2-LOAD, and the shared R-031/presence/item-hold rows. | X01/X02 simulation, its real-storage residuals and deferred client/performance evidence. | PENDING |
-| ITEM_CARGO_UNLOAD (`loader/2`) | 24 PASS | 11 PASS | All retained rows, seven new unload cuts in D-S2, and the shared R-031/presence/item-hold rows. | As for item load. | PENDING |
-| FLUID_CARGO_LOAD (`loader/5`) | 44 PASS | 6 PASS, 1 NOT_COVERED | All retained rows plus the shared new rows and accounting evidence of section 12. | Activated accounting evidence, X01/X02, and deferred client/performance evidence. | PENDING |
-| FLUID_CARGO_UNLOAD (`loader/4`) | 46 PASS | 9 PASS, 3 NOT_COVERED | All retained rows plus the shared new rows, accounting and planned X03 repair evidence. | As for fluid load, plus X03's tool, review and native evidence. | PENDING |
+| Bay (`block_variant:loader/1`) | 88 PASS, 27 NOT_COVERED | 13 PASS, 31 NOT_COVERED | Every retained C3 row plus W358's six selected gap families and W363's three families and two GameTests; section 3. | B11.2 and B17.5 are reasoned unreachable, not native passes. Client/REF/soak results remain open; exact named hosted evidence is not supplied (section 2.1.4). | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` PASS: `forced-W358-B11-BAY-MAJOR`; `C6/campaign-attempt2/forced-W358-B11-BAY-MAJOR-attempt2/native/results.json` PASS: `forced-W363-B6-GOVERNED`; `C6/campaign-attempt2/forced-W363-B6-GOVERNED-attempt2/native/results.json` NOT_COVERED: B11.2/B17.5 reasoned unreachable; client/REF/soak outstanding; X01 FAIL (section 13). |
+| ITEM_CARGO_LOAD (`loader/3`) | 6 PASS | 6 PASS | All retained rows, seven new load cuts in D-S2-LOAD, and the shared R-031/presence/item-hold rows. | X01/X02 simulation, its real-storage residuals and deferred client/performance evidence. | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` X01 FAIL; client/REF/soak NOT_COVERED. |
+| ITEM_CARGO_UNLOAD (`loader/2`) | 24 PASS | 11 PASS | All retained rows, seven new unload cuts in D-S2, and the shared R-031/presence/item-hold rows. | As for item load. | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` X01 FAIL; client/REF/soak NOT_COVERED. |
+| FLUID_CARGO_LOAD (`loader/5`) | 44 PASS | 6 PASS, 1 NOT_COVERED | All retained rows plus the shared new rows and accounting evidence of section 12. | Activated accounting evidence, X01/X02, and deferred client/performance evidence. | PASS: `cargo-C-S1`; `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` PASS: `cargo-C-S4-LOAD`; `C6/campaign-attempt2/cargo-C-S4-LOAD-attempt2/native/results.json` PASS: `accounting-cuts-cargo-load`; `C6/campaign-attempt2/accounting-cuts-cargo-load-attempt2/native/results.json` X01 FAIL; X02 residuals; client/REF/soak NOT_COVERED. |
+| FLUID_CARGO_UNLOAD (`loader/4`) | 46 PASS | 9 PASS, 3 NOT_COVERED | All retained rows plus the shared new rows, accounting and planned X03 repair evidence. | As for fluid load, plus X03's tool, review and native evidence. | PASS: `cargo-C-S1`; `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` PASS: `cargo-C-S4`; `C6/campaign-attempt2/cargo-C-S4-attempt2/native/results.json` PASS: `accounting-cuts-cargo-unload`; `C6/campaign-attempt2/accounting-cuts-cargo-unload-attempt2/native/results.json` X03 rerun PASS, original FAILED (section 13); X01 FAIL; client/REF/soak NOT_COVERED. |
 
 The historical C1 gaps and C3 outcome remain in [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 2.4.
 Sections 3 to 9 retain all its scenario, risk and timing rows. Sections 12 and 13 add accounting and the selected
@@ -269,127 +363,127 @@ X01-to-X03 approach. The inventory is not a coverage verdict: Root fills results
 
 **Changes common to every native bay row since C1.** W331 made the runners take the candidate as an argument. W341
 added the complete receipt-set comparison and the installed-JAR rechecks. W337 runs every case through the campaign
-driver. "Common" in the table means that only these changes apply. A family named twice means that the case is selected in both families, as at C1. C6 results are awaited.
+driver. "Common" in the table means that only these changes apply. A family named twice means that the case is selected in both families, as at C1. C6 native results are filled below; native facility passengers are not real-client V2.
 
 #### Native rows of W325-MATRIX
 
 | Row | Scenario | C1 | Changed since C1 | C6 family (case) | C6 |
 |---|---|---|---|---|---|
-| B1.1 | INTENT staged only | PASS | Common | `forced-A` (`B1_STAGED`) | PENDING |
-| B1.2 | INTENT replaced before the callback; interrupted restart and same-operation retry | PASS | Common | `forced-A` (`B1_MOVED`) | PENDING |
-| B2.1 | Registration in RAM, registry staged only | PASS | Common | `forced-B` (`B2_STAGED`) | PENDING |
-| B2.2 | Registry replaced before the callback; INTENT promotion | PASS | Common | `forced-B` (`B2_MOVED`) | PENDING |
-| B3.1 | REGISTERED staged only, source not forced, no passengers | PASS | Common | `forced-B` (`B3_STAGED`) | PENDING |
-| B3.2 | REGISTERED replaced, source not forced, no passengers | PASS | Common | `forced-B` (`B3_MOVED`) | PENDING |
-| B3.3 | REGISTERED replaced, source forced, no passengers | PASS | Common | `forced-B` (`B3_SAVED`) | PENDING |
-| B3.4 | REGISTERED replaced, source present, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PENDING |
-| B3.5 | REGISTERED replaced, source absent, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PENDING |
-| B3.6 | REGISTERED staged only, source present, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_PRESENT`) | PENDING |
-| B3.7 | REGISTERED staged only, source absent, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_ABSENT`) | PENDING |
-| B3.8 | REGISTERED staged only, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE`) | PENDING |
-| B3.9 | REGISTERED staged only, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE_ABSENT`) | PENDING |
-| B3.10 | REGISTERED replaced, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE`) | PENDING |
-| B3.11 | REGISTERED replaced, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE_ABSENT`) | PENDING |
-| B3.12 | A restart waits for the checked startup journal, then resumes | PASS | Common | `forced-CD` (`B3_JOURNAL_HELD`) | PENDING |
-| B4.1 | Idle non-data X decommissioned on the first restart tick (narrower than a decommission before the kill) | PASS | Common; W341 also checks this survey case's stopped world after both restarts | `forced-B` (`B4_DECOMMISSION`) | PENDING |
-| B4.2 | X decommissioned on the first restart tick, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-CD` (`W185_B4_ABSENT`) | PENDING |
-| B4.3 | X absent on the initial disk, source present, offline seat | NOT_COVERED | W331 built a pre-kill decommission; its composition carries T′ (the B5.2 mixed state) | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT`) | PENDING |
-| B4.4 | X live, source present, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_PRESENT_S`) | PENDING |
-| B4.5 | X live, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_ABSENT_S`) | PENDING |
-| B4.6 | X absent, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT_ONLINE`) | PENDING |
-| B4.7 | X absent, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT_ONLINE`) | PENDING |
-| B4.8 | X live, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_PRESENT_ONLINE`) | PENDING |
-| B4.9 | X live, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_ABSENT_ONLINE`) | PENDING |
-| B4.10 | X absent on the initial disk, source absent, offline seat | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT`) | PENDING |
-| B5.1 | Mixed S′ and T, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_SOURCE_AFTER`) | PENDING |
-| B5.2 | Mixed S and T′, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_JOURNAL_AFTER`) | PENDING |
-| B5.3 | Boundary before either D5 image, offline seat | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PENDING |
-| B5.4 | Boundary after both D5 images, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PENDING |
-| B6.1 | Source not forced at D5's completion | PASS | Common | `forced-B` (`B6_D5`) | PENDING |
-| B6.2 | Source forced at D5's completion | PASS | Common | `forced-B` (`B6_SAVED`) | PENDING |
-| B6.3 | Source absent, original T, offline seat | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PENDING |
-| B6.4 | Source absent, consumed T′, offline seat | PASS | Common | `forced-CD` (`W185_B6_AFTER_ABSENT`) | PENDING |
-| B6.5 | Destination absent after D7; reconstruction from the consumed record | NOT_COVERED | W331's case reaches the consumed-source recovery that production chooses when S′ is on disk; W338 (finding 3) showed the destination rebuild is reachable; W342 added three GameTests; W346, with W349's inventory scan, built the native save-boundary case | `forced-W331-R` (`W331_B6_DESTINATION_ABSENT`, keeps the consumed source) and `forced-W346-R` (`W346_B6_SAVE_BOUNDARY`, rebuilds the destination from T′) | PENDING |
-| B6.6 | Protected duplicate | PASS | Common | `forced-CD` (`W185_B6_PROTECTED`) | PENDING |
-| B6.7 | Conflicting or unrecognized duplicate | PASS | Common | `forced-CD` (`W185_B6_UNEXPECTED`) | PENDING |
-| B6.8 | Non-neutral source refused, packages byte-equal, menu reason | NOT_COVERED | W363 addresses W358's governed-flight finding. R451 requires the reason in the launching session only; no reason survives restart. Packages stay byte-equal, with no claim, receipt or registration. [W363](W363.md). | `forced-W363-B6-GOVERNED` (`W363_B6_GOVERNED`); GameTest `BayDeploymentGameTests.anEscrowBoundSourceIsRefusedWithBaySourceProtectedAndKeepsItsPackages` remains direct-D0 evidence only. | PENDING |
-| B7.1 | D6 complete before retirement, loaded source, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PENDING |
-| B7.2 | D6 complete before retirement, cold source chunk, offline seat | PASS | Common | `forced-CD` (`W185_B7_COLD`) | PENDING |
-| B7.3 | Login while retirement is queued: no settlement, fresh proofs | NOT_COVERED | W331; after the handoff the normal transfer carries the rider to the destination, unlike the GameTest's handoff-time view | `forced-W331-L` (`W331_B7_LOGIN_QUEUED`) | PENDING |
-| B8.1 | Retirement staged only, no passengers | PASS | Common | `forced-B` (`B8_STAGED`) | PENDING |
-| B8.2 | Retirement replaced before the callback, no passengers | PASS | Common | `forced-B` (`B8_MOVED`) | PENDING |
-| B8.3 | Retirement staged only, offline seat | PASS | Common | `forced-E` (`W325_B8_STAGED_OFFLINE`) | PENDING |
-| B8.4 | Retirement replaced, offline seat | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_OFFLINE`) | PENDING |
-| B8.5 | Retirement staged only, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_STAGED_ONLINE`) | PENDING |
-| B8.6 | Retirement replaced, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_ONLINE`) | PENDING |
-| B8.7 | Partial multi-REGISTERED group retirement, before replacement | NOT_COVERED | W331 (three bays: two register, one research-locked); W341's complete receipt set closes W338's finding 1 for this group | `forced-W331-G` (`W331_B8_TRIO_STAGED`) | PENDING |
-| B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B8_TRIO_MOVED`) | PENDING |
-| B9.1 | Registration refused after INTENT, REJECTED staged only | PASS | Common | `forced-A` (`B9_STAGED`) | PENDING |
-| B9.2 | REJECTED replaced before the callback | PASS | Common | `forced-A` (`B9_MOVED`) | PENDING |
-| B9.3 | A refused package later succeeds with the same operation | PASS | Common | `forced-GH-retry`, `forced-H` (`W325_B9_RETRY`) | PENDING |
-| B10.1 | Blocked registry, unreleased INTENT hold | PASS | Common | `forced-A`, `forced-A-retry` (`B10_BLOCKED`) | PENDING |
-| B10.2 | Coherent blocked INTENT, release flag staged only | PASS | Common | `released` (`B10_BLOCKED_STAGED`) | PENDING |
-| B10.3 | Coherent blocked INTENT, release flag replaced | PASS | Common | `released` (`B10_BLOCKED_MOVED`) | PENDING |
-| B10.4 | Coherent REPAIR, release flag staged only | PASS | Common | `released` (`B10_REPAIR_STAGED`) | PENDING |
-| B10.5 | Coherent REPAIR, release flag replaced | PASS | Common | `released` (`B10_REPAIR_MOVED`) | PENDING |
-| B10.6 | Incoherent signature authority stays frozen | NOT_COVERED | W358 builds the incoherent REPAIR seed; receipt authority and packages stay frozen. [W358](W358.md). | `forced-W358-B10-INCOHERENT` (`W358_B10_INCOHERENT`); released-conflict GameTests remain separate. | PENDING |
-| B11.1 | Shared server pending saturation, bay-only fill of 64 | PASS | Common | `forced-A`, `forced-A-retry` (`B11_FULL`) | PENDING |
-| B11.2 | Per rocket: 7 escrow and 1 bay against the limit of 8 | NOT_COVERED | Reasoned unreachable: active escrow prevents launch, and bayNeutral precedes D1 even for a historical seven-operation root. [W358](W358.md), feasibility. | None natively; F3.2 checks the synthetic authority boundary, not launch. | PENDING |
-| B11.3 | Retained 4,096 per server, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_GLOBAL`) | PENDING |
-| B11.4 | Retained 128 per owner, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_OWNER`) | PENDING |
-| B11.5 | REPAIR operations keep their charges across restarts | PASS | Common | `forced-F` (`W325_REPAIR_FULL`) | PENDING |
-| B11.6 | Released operations keep saturated capacity across restarts | PASS | Common | `forced-F` (`W325_RELEASED_FULL`) | PENDING |
-| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 retains captured/successor coverage. W358 holds UNKNOWN across a retry; the unacknowledged successor does not survive restart. [W358](W358.md). | `forced-W331-U` (`W331_B11_UNION`), plus `forced-W358-B11-UNKNOWN` (`W358_B11_UNKNOWN`). | PENDING |
-| B11.8 | A REJECTED re-arm is refused at full capacity and later reuses its operation | NOT_COVERED | W358 fills/unfills its fixture owner's receipts, checks refusal, then later same-operation consumption. [W358](W358.md). | `forced-W358-B11-REARM` (`W358_B11_REARM`). | PENDING |
-| B11.9 | Mixed consumers: 63 escrow and 1 bay, and the reverse | NOT_COVERED | W358 uses checked typed seeds for both directions: loaded mixed capacity, not live creation of 63 fills. [W358](W358.md). | `forced-W358-B11-ESCROW-MAJOR` (`W358_B11_ESCROW_MAJOR`) and `forced-W358-B11-BAY-MAJOR` (`W358_B11_BAY_MAJOR`). | PENDING |
-| B12.1 | D1 receipt, definite failure before replacement | PASS | Common | `forced-A` (`B12_FAILED`) | PENDING |
-| B12.2 | D1 receipt UNKNOWN, exact retry | PASS | Common | `forced-A` (`B12_UNKNOWN`) | PENDING |
-| B12.3 | D4 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D4`) | PENDING |
-| B12.4 | D7 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D7`) | PENDING |
-| B12.5 | D4 receipt, definite failure before replacement | PASS | Common | `forced-G` (`W325_D4_FAILED`) | PENDING |
-| B12.6 | D7 receipt, definite failure before replacement | PASS | Common | `forced-G`, `forced-GH-retry` (`W325_D7_FAILED`) | PENDING |
-| B13.1 | Registry checkpoint definitely FAILED, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_FAILED`) | PENDING |
-| B13.2 | Registry checkpoint UNKNOWN, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_UNKNOWN`) | PENDING |
-| B13.3 | Durable INTENT at restart: first-tick launch and decommission fences | PASS | Common | `forced-B` (`B2_STAGED`) | PENDING |
-| B14.1 | Unproved transaction journal, stopped before the checkpoint completes | PASS | Common | `forced-A` (`B14_T1`) | PENDING |
-| B14.2 | A stop drains the journal request without the D1 callback | PASS | Common | `forced-A`, `forced-A-retry` (`B14_STOP`) | PENDING |
-| B14.3 | The journal request fails with no assembly record | NOT_COVERED | W331, through a definite failure of the checkpoint D0 requested; the REFUSED answer stays GameTest-only | `forced-W331-T` (`W331_B14_FAILED`) | PENDING |
-| B14.4 | A stale assembly record of L remains at D0 | NOT_COVERED | W331; the stale record names L in a dimension that never loads | `forced-W331-T` (`W331_B14_STALE`) | PENDING |
-| B15.1 | D4 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D4`) | PENDING |
-| B15.2 | D7 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D7`) | PENDING |
-| B15.3 | D1 receipt replaced, then an exception and readback | NOT_COVERED | W331 (new gated cut value `B15_D1`) | `forced-W331-W` (`W331_B15_D1`) | PENDING |
-| B15.4 | Registry replaced, then an exception and readback | NOT_COVERED | W331 | `forced-W331-W` (`W331_B15_REGISTRY`) | PENDING |
-| B15.5 | Transaction journal replaced, then an exception and readback | NOT_COVERED | W331; the oracle requires D0's own requested write | `forced-W331-T` (`W331_B15_JOURNAL`) | PENDING |
-| B16.1 | A captured retirement is invalidated by a superseding source save | PASS | Common | `forced-CD` (`B16_SAVE`) | PENDING |
-| B16.2 | ... by a late duplicate join | PASS | Common | `forced-CD` (`B16_JOIN`) | PENDING |
-| B16.3 | ... by the source leaving and reloading | PASS | Common | `forced-CD` (`B16_LEAVE`) | PENDING |
-| B16.4 | ... by source motion | PASS | Common | `forced-CD` (`B16_MOTION`) | PENDING |
-| B17.1 | Unresolved work ahead of a healthy group still lets it progress | PASS | Common | `forced-A`, `forced-A-retry` (`B17_FAIR`) | PENDING |
-| B17.2 | A REPAIR group ahead of healthy groups | PASS | Common | `forced-F` (`W325_REPAIR_FAIR`) | PENDING |
-| B17.3 | An unloaded group ahead of healthy groups | NOT_COVERED | W363's readiness seam holds one group's end. Its second form leaves a healthy restart group behind it; R451 fixes the R2-slot starvation this exposed. [W363](W363.md). | `forced-W363-B17-UNLOADED` (`W363_B17_UNLOADED`) and `forced-W363-B17-UNLOADED-RESTART` (`W363_B17_UNLOADED_RESTART`). | PENDING |
-| B17.4 | Partial D1, immutable group hashes | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B17_PARTIAL_D1`) | PENDING |
-| B17.5 | A mixed REGISTERED, REJECTED and REPAIR group | NOT_COVERED | Reasoned unreachable: repair stops D1/D2, REGISTERED members publish together, and REJECTED is not a pending restart member. No forged triple is substituted. [W358](W358.md). | None natively; the exact triple has no named test. [W358](W358.md) lists the guard evidence. | PENDING |
-| B18.1 | Clean stop with an active INTENT | PASS | Common | `forced-A` (`B18_INTENT`) | PENDING |
-| B18.2 | Clean stop with an active REJECTED | PASS | Common | `forced-A` (`B18_REJECTED`) | PENDING |
-| B18.3 | Clean stop at the REGISTERED replacement | PASS | Common | `forced-B` (`B18_D4`) | PENDING |
-| B18.4 | Clean stop at the retirement replacement | PASS | Common | `forced-B` (`B18_D7`) | PENDING |
-| B18.5 | Crash teardown with no callback completion | PASS | Common | `forced-A` (`B18_CRASH`) | PENDING |
-| B18.6 | Clean stop with a successor write queued | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_SUCCESSOR`) | PENDING |
-| B18.7 | Clean stop with an unresolved UNKNOWN write | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_UNKNOWN`) | PENDING |
-| CAP.1 | 16 pending operations of one owner refuse bay admission, packages unchanged | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OWNER_FULL`) | PENDING |
-| CAP.2 | Another owner keeps bay admission room | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OTHER_OWNER_ROOM`) | PENDING |
-| CAP.3 | The owner cap refuses a loader before native capture | NOT_COVERED | W358's real loader is refused before capture, with unchanged native envelopes and queue/admission counts, and no ledger. [W358](W358.md). | `forced-W358-CAP-OWNER` (`W358_CAP_OWNER`); F3.8 remains separate. | PENDING |
-| EXIT.0 | Control: held passenger, no exit | PASS | Common (the exit runner has the candidate argument and installed-JAR check) | `exit` (`X0_CONTROL`) | PENDING |
-| EXIT.1 | Sneak-input exit, live fall offer | PASS | Common | `exit` (`X1_OFFER`) | PENDING |
-| EXIT.2 | Ticked-connection descent, detached player data flushed | PASS | Common | `exit` (`X2_DESCENT`) | PENDING |
-| EXIT.3 | Correction window before the tracker acknowledges | PASS | Common | `exit` (`X3_CORRECTION`) | PENDING |
-| EXIT.4 | Landing timed like a real client: one protected FALL, exit flushed | PASS | Common | `exit` (`X4_LANDING`) | PENDING |
-| EXIT.5 | Fixed 200-tick expiry with a ticked connection, exit flushed | PASS | Common | `exit` (`X5_EXPIRY`) | PENDING |
-| EXIT.6 | Trusted movement revokes the slot without a remount | PASS | Common | `exit` (`X6_TRUSTED`) | PENDING |
-| EXIT.7 | A same-Level teleport revokes protection; a later landing is unprotected | PASS | Common | `exit` (`X7_REVOKED`) | PENDING |
-| EXIT.8 | Held-menu SAFE exit onto a loaded pad, exit flushed | PASS | Common | `exit` (`X8_SAFE_MENU`) | PENDING |
-| EXIT.9 | Same-tick protected landing, mapped-observer smoke | PASS | Common | `exit` (`X9_FIRST_TICK`) | PENDING |
-| EXIT.10 | Same-tick teleport-revoked landing, mapped-observer smoke | PASS | Common | `exit` (`X10_FIRST_TICK_REVOKED`) | PENDING |
+| B1.1 | INTENT staged only | PASS | Common | `forced-A` (`B1_STAGED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B1.2 | INTENT replaced before the callback; interrupted restart and same-operation retry | PASS | Common | `forced-A` (`B1_MOVED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B2.1 | Registration in RAM, registry staged only | PASS | Common | `forced-B` (`B2_STAGED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B2.2 | Registry replaced before the callback; INTENT promotion | PASS | Common | `forced-B` (`B2_MOVED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B3.1 | REGISTERED staged only, source not forced, no passengers | PASS | Common | `forced-B` (`B3_STAGED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B3.2 | REGISTERED replaced, source not forced, no passengers | PASS | Common | `forced-B` (`B3_MOVED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B3.3 | REGISTERED replaced, source forced, no passengers | PASS | Common | `forced-B` (`B3_SAVED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B3.4 | REGISTERED replaced, source present, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B3.5 | REGISTERED replaced, source absent, offline seat, copies at both ends | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B3.6 | REGISTERED staged only, source present, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_PRESENT`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` |
+| B3.7 | REGISTERED staged only, source absent, offline seat | PASS | Common | `forced-E` (`W325_B3_STAGED_ABSENT`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` |
+| B3.8 | REGISTERED staged only, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B3.9 | REGISTERED staged only, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_STAGED_ONLINE_ABSENT`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B3.10 | REGISTERED replaced, source present, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B3.11 | REGISTERED replaced, source absent, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B3_MOVED_ONLINE_ABSENT`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B3.12 | A restart waits for the checked startup journal, then resumes | PASS | Common | `forced-CD` (`B3_JOURNAL_HELD`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B4.1 | Idle non-data X decommissioned on the first restart tick (narrower than a decommission before the kill) | PASS | Common; W341 also checks this survey case's stopped world after both restarts | `forced-B` (`B4_DECOMMISSION`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B4.2 | X decommissioned on the first restart tick, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-CD` (`W185_B4_ABSENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B4.3 | X absent on the initial disk, source present, offline seat | NOT_COVERED | W331 built a pre-kill decommission; its composition carries T′ (the B5.2 mixed state) | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B4.4 | X live, source present, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_PRESENT_S`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` |
+| B4.5 | X live, source absent, offline seat | PASS | Common; W341 survey-case checks | `forced-E` (`W325_B4_LIVE_X_ABSENT_S`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` |
+| B4.6 | X absent, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_PRESENT_ONLINE`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B4.7 | X absent, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT_ONLINE`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B4.8 | X live, source present, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_PRESENT_ONLINE`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B4.9 | X live, source absent, online passenger | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_LIVE_X_S_ABSENT_ONLINE`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B4.10 | X absent on the initial disk, source absent, offline seat | NOT_COVERED | W331 | `forced-W331-D` (`W331_B4_GONE_X_S_ABSENT`) | PASS: `forced-W331-D`; `C6/campaign-attempt2/forced-W331-D-attempt2/native/results.json` |
+| B5.1 | Mixed S′ and T, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_SOURCE_AFTER`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B5.2 | Mixed S and T′, neutral copies at both ends, offline seat | PASS | Common | `forced-CD` (`W185_B5_JOURNAL_AFTER`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B5.3 | Boundary before either D5 image, offline seat | PASS | Common | `forced-CD` (`W185_B3_PRESENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B5.4 | Boundary after both D5 images, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B6.1 | Source not forced at D5's completion | PASS | Common | `forced-B` (`B6_D5`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B6.2 | Source forced at D5's completion | PASS | Common | `forced-B` (`B6_SAVED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B6.3 | Source absent, original T, offline seat | PASS | Common | `forced-CD` (`W185_B3_ABSENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B6.4 | Source absent, consumed T′, offline seat | PASS | Common | `forced-CD` (`W185_B6_AFTER_ABSENT`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B6.5 | Destination absent after D7; reconstruction from the consumed record | NOT_COVERED | W331's case reaches the consumed-source recovery that production chooses when S′ is on disk; W338 (finding 3) showed the destination rebuild is reachable; W342 added three GameTests; W346, with W349's inventory scan, built the native save-boundary case | `forced-W331-R` (`W331_B6_DESTINATION_ABSENT`, keeps the consumed source) and `forced-W346-R` (`W346_B6_SAVE_BOUNDARY`, rebuilds the destination from T′) | PASS: `forced-W331-R`; `C6/campaign-attempt2/forced-W331-R-attempt2/native/results.json` PASS: `forced-W346-R`; `C6/campaign-attempt2/forced-W346-R-attempt2/native/results.json` |
+| B6.6 | Protected duplicate | PASS | Common | `forced-CD` (`W185_B6_PROTECTED`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B6.7 | Conflicting or unrecognized duplicate | PASS | Common | `forced-CD` (`W185_B6_UNEXPECTED`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B6.8 | Non-neutral source refused, packages byte-equal, menu reason | NOT_COVERED | W363 addresses W358's governed-flight finding. R451 requires the reason in the launching session only; no reason survives restart. Packages stay byte-equal, with no claim, receipt or registration. [W363](W363.md). | `forced-W363-B6-GOVERNED` (`W363_B6_GOVERNED`); GameTest `BayDeploymentGameTests.anEscrowBoundSourceIsRefusedWithBaySourceProtectedAndKeepsItsPackages` remains direct-D0 evidence only. | PASS: `forced-W363-B6-GOVERNED`; `C6/campaign-attempt2/forced-W363-B6-GOVERNED-attempt2/native/results.json` |
+| B7.1 | D6 complete before retirement, loaded source, offline seat | PASS | Common | `forced-CD` (`W185_B7_SAVED`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B7.2 | D6 complete before retirement, cold source chunk, offline seat | PASS | Common | `forced-CD` (`W185_B7_COLD`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B7.3 | Login while retirement is queued: no settlement, fresh proofs | NOT_COVERED | W331; after the handoff the normal transfer carries the rider to the destination, unlike the GameTest's handoff-time view | `forced-W331-L` (`W331_B7_LOGIN_QUEUED`) | PASS: `forced-W331-L`; `C6/campaign-attempt2/forced-W331-L-attempt2/native/results.json` |
+| B8.1 | Retirement staged only, no passengers | PASS | Common | `forced-B` (`B8_STAGED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B8.2 | Retirement replaced before the callback, no passengers | PASS | Common | `forced-B` (`B8_MOVED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B8.3 | Retirement staged only, offline seat | PASS | Common | `forced-E` (`W325_B8_STAGED_OFFLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` |
+| B8.4 | Retirement replaced, offline seat | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_OFFLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B8.5 | Retirement staged only, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_STAGED_ONLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B8.6 | Retirement replaced, online passenger | PASS | Common | `forced-E`, `forced-E-retry` (`W325_B8_MOVED_ONLINE`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| B8.7 | Partial multi-REGISTERED group retirement, before replacement | NOT_COVERED | W331 (three bays: two register, one research-locked); W341's complete receipt set closes W338's finding 1 for this group | `forced-W331-G` (`W331_B8_TRIO_STAGED`) | PASS: `forced-W331-G`; `C6/campaign-attempt2/forced-W331-G-attempt2/native/results.json` |
+| B8.8 | Partial multi-REGISTERED group retirement, after replacement | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B8_TRIO_MOVED`) | PASS: `forced-W331-G`; `C6/campaign-attempt2/forced-W331-G-attempt2/native/results.json` |
+| B9.1 | Registration refused after INTENT, REJECTED staged only | PASS | Common | `forced-A` (`B9_STAGED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B9.2 | REJECTED replaced before the callback | PASS | Common | `forced-A` (`B9_MOVED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B9.3 | A refused package later succeeds with the same operation | PASS | Common | `forced-GH-retry`, `forced-H` (`W325_B9_RETRY`) | PASS: `forced-GH-retry`; `C6/campaign-attempt2/forced-GH-retry-attempt2/native/results.json` PASS: `forced-H`; `C6/campaign-attempt2/forced-H-attempt2/native/results.json` |
+| B10.1 | Blocked registry, unreleased INTENT hold | PASS | Common | `forced-A`, `forced-A-retry` (`B10_BLOCKED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` PASS: `forced-A-retry`; `C6/campaign-attempt2/forced-A-retry-attempt2/native/results.json` |
+| B10.2 | Coherent blocked INTENT, release flag staged only | PASS | Common | `released` (`B10_BLOCKED_STAGED`) | PASS: `released`; `C6/campaign-attempt2/released-attempt2/native/results.json` |
+| B10.3 | Coherent blocked INTENT, release flag replaced | PASS | Common | `released` (`B10_BLOCKED_MOVED`) | PASS: `released`; `C6/campaign-attempt2/released-attempt2/native/results.json` |
+| B10.4 | Coherent REPAIR, release flag staged only | PASS | Common | `released` (`B10_REPAIR_STAGED`) | PASS: `released`; `C6/campaign-attempt2/released-attempt2/native/results.json` |
+| B10.5 | Coherent REPAIR, release flag replaced | PASS | Common | `released` (`B10_REPAIR_MOVED`) | PASS: `released`; `C6/campaign-attempt2/released-attempt2/native/results.json` |
+| B10.6 | Incoherent signature authority stays frozen | NOT_COVERED | W358 builds the incoherent REPAIR seed; receipt authority and packages stay frozen. [W358](W358.md). | `forced-W358-B10-INCOHERENT` (`W358_B10_INCOHERENT`); released-conflict GameTests remain separate. | PASS: `forced-W358-B10-INCOHERENT`; `C6/campaign-attempt2/forced-W358-B10-INCOHERENT-attempt2/native/results.json` |
+| B11.1 | Shared server pending saturation, bay-only fill of 64 | PASS | Common | `forced-A`, `forced-A-retry` (`B11_FULL`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` PASS: `forced-A-retry`; `C6/campaign-attempt2/forced-A-retry-attempt2/native/results.json` |
+| B11.2 | Per rocket: 7 escrow and 1 bay against the limit of 8 | NOT_COVERED | Reasoned unreachable: active escrow prevents launch, and bayNeutral precedes D1 even for a historical seven-operation root. [W358](W358.md), feasibility. | None natively; F3.2 checks the synthetic authority boundary, not launch. | NOT_COVERED: B11.2 native launch shape is unreachable: active escrow prevents launch and bayNeutral precedes D1 (W358). |
+| B11.3 | Retained 4,096 per server, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_GLOBAL`) | PASS: `forced-F`; `C6/campaign-attempt2/forced-F-attempt2/native/results.json` |
+| B11.4 | Retained 128 per owner, independent of pending | PASS | Common | `forced-F` (`W325_RETAINED_OWNER`) | PASS: `forced-F`; `C6/campaign-attempt2/forced-F-attempt2/native/results.json` |
+| B11.5 | REPAIR operations keep their charges across restarts | PASS | Common | `forced-F` (`W325_REPAIR_FULL`) | PASS: `forced-F`; `C6/campaign-attempt2/forced-F-attempt2/native/results.json` |
+| B11.6 | Released operations keep saturated capacity across restarts | PASS | Common | `forced-F` (`W325_RELEASED_FULL`) | PASS: `forced-F`; `C6/campaign-attempt2/forced-F-attempt2/native/results.json` |
+| B11.7 | UNKNOWN, captured and successor copies counted once across restarts | NOT_COVERED | W331 retains captured/successor coverage. W358 holds UNKNOWN across a retry; the unacknowledged successor does not survive restart. [W358](W358.md). | `forced-W331-U` (`W331_B11_UNION`), plus `forced-W358-B11-UNKNOWN` (`W358_B11_UNKNOWN`). | PASS: `forced-W331-U`; `C6/campaign-attempt2/forced-W331-U-attempt2/native/results.json` PASS: `forced-W358-B11-UNKNOWN`; `C6/campaign-attempt2/forced-W358-B11-UNKNOWN-attempt2/native/results.json` |
+| B11.8 | A REJECTED re-arm is refused at full capacity and later reuses its operation | NOT_COVERED | W358 fills/unfills its fixture owner's receipts, checks refusal, then later same-operation consumption. [W358](W358.md). | `forced-W358-B11-REARM` (`W358_B11_REARM`). | PASS: `forced-W358-B11-REARM`; `C6/campaign-attempt2/forced-W358-B11-REARM-attempt2/native/results.json` |
+| B11.9 | Mixed consumers: 63 escrow and 1 bay, and the reverse | NOT_COVERED | W358 uses checked typed seeds for both directions: loaded mixed capacity, not live creation of 63 fills. [W358](W358.md). | `forced-W358-B11-ESCROW-MAJOR` (`W358_B11_ESCROW_MAJOR`) and `forced-W358-B11-BAY-MAJOR` (`W358_B11_BAY_MAJOR`). | PASS: `forced-W358-B11-ESCROW-MAJOR`; `C6/campaign-attempt2/forced-W358-B11-ESCROW-MAJOR-attempt2/native/results.json` PASS: `forced-W358-B11-BAY-MAJOR`; `C6/campaign-attempt2/forced-W358-B11-BAY-MAJOR-attempt2/native/results.json` |
+| B12.1 | D1 receipt, definite failure before replacement | PASS | Common | `forced-A` (`B12_FAILED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B12.2 | D1 receipt UNKNOWN, exact retry | PASS | Common | `forced-A` (`B12_UNKNOWN`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B12.3 | D4 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D4`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B12.4 | D7 receipt UNKNOWN, exact retry | PASS | Common | `forced-B` (`B12_D7`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B12.5 | D4 receipt, definite failure before replacement | PASS | Common | `forced-G` (`W325_D4_FAILED`) | PASS: `forced-G`; `C6/campaign-attempt2/forced-G-attempt2/native/results.json` |
+| B12.6 | D7 receipt, definite failure before replacement | PASS | Common | `forced-G`, `forced-GH-retry` (`W325_D7_FAILED`) | PASS: `forced-G`; `C6/campaign-attempt2/forced-G-attempt2/native/results.json` PASS: `forced-GH-retry`; `C6/campaign-attempt2/forced-GH-retry-attempt2/native/results.json` |
+| B13.1 | Registry checkpoint definitely FAILED, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_FAILED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B13.2 | Registry checkpoint UNKNOWN, then a later successful checkpoint | PASS | Common | `forced-B` (`B13_UNKNOWN`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B13.3 | Durable INTENT at restart: first-tick launch and decommission fences | PASS | Common | `forced-B` (`B2_STAGED`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B14.1 | Unproved transaction journal, stopped before the checkpoint completes | PASS | Common | `forced-A` (`B14_T1`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B14.2 | A stop drains the journal request without the D1 callback | PASS | Common | `forced-A`, `forced-A-retry` (`B14_STOP`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` PASS: `forced-A-retry`; `C6/campaign-attempt2/forced-A-retry-attempt2/native/results.json` |
+| B14.3 | The journal request fails with no assembly record | NOT_COVERED | W331, through a definite failure of the checkpoint D0 requested; the REFUSED answer stays GameTest-only | `forced-W331-T` (`W331_B14_FAILED`) | PASS: `forced-W331-T`; `C6/campaign-attempt2/forced-W331-T-attempt2/native/results.json` |
+| B14.4 | A stale assembly record of L remains at D0 | NOT_COVERED | W331; the stale record names L in a dimension that never loads | `forced-W331-T` (`W331_B14_STALE`) | PASS: `forced-W331-T`; `C6/campaign-attempt2/forced-W331-T-attempt2/native/results.json` |
+| B15.1 | D4 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D4`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B15.2 | D7 receipt replaced, then an exception and readback | PASS | Common | `forced-B` (`B15_D7`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B15.3 | D1 receipt replaced, then an exception and readback | NOT_COVERED | W331 (new gated cut value `B15_D1`) | `forced-W331-W` (`W331_B15_D1`) | PASS: `forced-W331-W`; `C6/campaign-attempt2/forced-W331-W-attempt2/native/results.json` |
+| B15.4 | Registry replaced, then an exception and readback | NOT_COVERED | W331 | `forced-W331-W` (`W331_B15_REGISTRY`) | PASS: `forced-W331-W`; `C6/campaign-attempt2/forced-W331-W-attempt2/native/results.json` |
+| B15.5 | Transaction journal replaced, then an exception and readback | NOT_COVERED | W331; the oracle requires D0's own requested write | `forced-W331-T` (`W331_B15_JOURNAL`) | PASS: `forced-W331-T`; `C6/campaign-attempt2/forced-W331-T-attempt2/native/results.json` |
+| B16.1 | A captured retirement is invalidated by a superseding source save | PASS | Common | `forced-CD` (`B16_SAVE`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B16.2 | ... by a late duplicate join | PASS | Common | `forced-CD` (`B16_JOIN`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B16.3 | ... by the source leaving and reloading | PASS | Common | `forced-CD` (`B16_LEAVE`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B16.4 | ... by source motion | PASS | Common | `forced-CD` (`B16_MOTION`) | PASS: `forced-CD`; `C6/campaign-attempt2/forced-CD-attempt2/native/results.json` |
+| B17.1 | Unresolved work ahead of a healthy group still lets it progress | PASS | Common | `forced-A`, `forced-A-retry` (`B17_FAIR`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` PASS: `forced-A-retry`; `C6/campaign-attempt2/forced-A-retry-attempt2/native/results.json` |
+| B17.2 | A REPAIR group ahead of healthy groups | PASS | Common | `forced-F` (`W325_REPAIR_FAIR`) | PASS: `forced-F`; `C6/campaign-attempt2/forced-F-attempt2/native/results.json` |
+| B17.3 | An unloaded group ahead of healthy groups | NOT_COVERED | W363's readiness seam holds one group's end. Its second form leaves a healthy restart group behind it; R451 fixes the R2-slot starvation this exposed. [W363](W363.md). | `forced-W363-B17-UNLOADED` (`W363_B17_UNLOADED`) and `forced-W363-B17-UNLOADED-RESTART` (`W363_B17_UNLOADED_RESTART`). | PASS: `forced-W363-B17-UNLOADED`; `C6/campaign-attempt2/forced-W363-B17-UNLOADED-attempt2/native/results.json` PASS: `forced-W363-B17-UNLOADED-RESTART`; `C6/campaign-attempt2/forced-W363-B17-UNLOADED-RESTART-attempt2/native/results.json` |
+| B17.4 | Partial D1, immutable group hashes | NOT_COVERED | W331; W341 | `forced-W331-G` (`W331_B17_PARTIAL_D1`) | PASS: `forced-W331-G`; `C6/campaign-attempt2/forced-W331-G-attempt2/native/results.json` |
+| B17.5 | A mixed REGISTERED, REJECTED and REPAIR group | NOT_COVERED | Reasoned unreachable: repair stops D1/D2, REGISTERED members publish together, and REJECTED is not a pending restart member. No forged triple is substituted. [W358](W358.md). | None natively; the exact triple has no named test. [W358](W358.md) lists the guard evidence. | NOT_COVERED: B17.5 mixed REGISTERED/REJECTED/REPAIR live group is unreachable under W358's producer/guard rules; no forged triple. |
+| B18.1 | Clean stop with an active INTENT | PASS | Common | `forced-A` (`B18_INTENT`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B18.2 | Clean stop with an active REJECTED | PASS | Common | `forced-A` (`B18_REJECTED`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B18.3 | Clean stop at the REGISTERED replacement | PASS | Common | `forced-B` (`B18_D4`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B18.4 | Clean stop at the retirement replacement | PASS | Common | `forced-B` (`B18_D7`) | PASS: `forced-B`; `C6/campaign-attempt2/forced-B-attempt2/native/results.json` |
+| B18.5 | Crash teardown with no callback completion | PASS | Common | `forced-A` (`B18_CRASH`) | PASS: `forced-A`; `C6/campaign-attempt2/forced-A-attempt2/native/results.json` |
+| B18.6 | Clean stop with a successor write queued | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_SUCCESSOR`) | PASS: `forced-W331-W`; `C6/campaign-attempt2/forced-W331-W-attempt2/native/results.json` |
+| B18.7 | Clean stop with an unresolved UNKNOWN write | NOT_COVERED | W331 | `forced-W331-W` (`W331_B18_UNKNOWN`) | PASS: `forced-W331-W`; `C6/campaign-attempt2/forced-W331-W-attempt2/native/results.json` |
+| CAP.1 | 16 pending operations of one owner refuse bay admission, packages unchanged | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OWNER_FULL`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| CAP.2 | Another owner keeps bay admission room | PASS | Common | `forced-E`, `forced-E-retry` (`W325_OTHER_OWNER_ROOM`) | PASS: `forced-E`; `C6/campaign-attempt2/forced-E-attempt2/native/results.json` PASS: `forced-E-retry`; `C6/campaign-attempt2/forced-E-retry-attempt2/native/results.json` |
+| CAP.3 | The owner cap refuses a loader before native capture | NOT_COVERED | W358's real loader is refused before capture, with unchanged native envelopes and queue/admission counts, and no ledger. [W358](W358.md). | `forced-W358-CAP-OWNER` (`W358_CAP_OWNER`); F3.8 remains separate. | PASS: `forced-W358-CAP-OWNER`; `C6/campaign-attempt2/forced-W358-CAP-OWNER-attempt2/native/results.json` |
+| EXIT.0 | Control: held passenger, no exit | PASS | Common (the exit runner has the candidate argument and installed-JAR check) | `exit` (`X0_CONTROL`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.1 | Sneak-input exit, live fall offer | PASS | Common | `exit` (`X1_OFFER`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.2 | Ticked-connection descent, detached player data flushed | PASS | Common | `exit` (`X2_DESCENT`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.3 | Correction window before the tracker acknowledges | PASS | Common | `exit` (`X3_CORRECTION`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.4 | Landing timed like a real client: one protected FALL, exit flushed | PASS | Common | `exit` (`X4_LANDING`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.5 | Fixed 200-tick expiry with a ticked connection, exit flushed | PASS | Common | `exit` (`X5_EXPIRY`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.6 | Trusted movement revokes the slot without a remount | PASS | Common | `exit` (`X6_TRUSTED`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.7 | A same-Level teleport revokes protection; a later landing is unprotected | PASS | Common | `exit` (`X7_REVOKED`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.8 | Held-menu SAFE exit onto a loaded pad, exit flushed | PASS | Common | `exit` (`X8_SAFE_MENU`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.9 | Same-tick protected landing, mapped-observer smoke | PASS | Common | `exit` (`X9_FIRST_TICK`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
+| EXIT.10 | Same-tick teleport-revoked landing, mapped-observer smoke | PASS | Common | `exit` (`X10_FIRST_TICK_REVOKED`) | PASS: `exit`; `C6/campaign-attempt2/exit-attempt2/native/results.json` |
 
 The bay exit GameTests changed too (W334 chooses an exit area free of block entities; W344 waits for setup readiness
 without advancing the test clock). They are hosted regression tests, not W325 rows, and both changes are test-side only.
@@ -400,69 +494,69 @@ None of these rows existed at C1. Their smokes ran on locally built JARs.
 
 | Scenario | Added by | Evidence before C3 | C6 family | C6 |
 |---|---|---|---|---|
-| B6.5 at the source-save boundary: the source's removal saved, the destination never saved, then a kill; restart 1 rebuilds the destination from T′, restart 2 keeps it | W346, with W349's stopped-world inventory scan after W348's review | PASS on W346's JAR (`5ef21e2aa`) and again on W349's JAR (`56668d542`); a scratch JAR with W342's mutation M1 failed at restart 1, as intended | `forced-W346-R` | PENDING |
-| Bay receipts present but not loaded: every rocket held, satellite launch and decommission DEPLOYMENT_PENDING, insertion refused, all five kinds refused; recovery at S2 | W332, W343 | PASS (W332 smoke 4; W343 `smoke-N`) | `r042-N_BAY` | PENDING |
-| Escrow ledger present but not loaded: bay admission refused with the four cargo kinds and fuel | W332, W343 | PASS; the vanilla-dismount row stays NOT_COVERED | `r042-L_LEDGER` | PENDING |
-| The shared pool full server-wide: the bay menu shows DEPLOYMENT_CAPACITY | W332, W343 | PASS at S0, S1 and S2 | `r042-P_SERVER` | PENDING |
-| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay uses a fixed owner, so its admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PENDING |
-| Receipt presence unknown at the pre-start check: startup refused, then clean recovery | W332 could not reach it; W340 showed a delete-pending handle reaches it; W343 restored it; W345 applied Root decision R416's metadata boundary | PASS on W345's JAR; whole-world byte equality stays false because vanilla updates `level.dat` | `r042-U_BAY` | PENDING |
-| Ledger presence unknown at the pre-start check | As above | As above | `r042-U_LEDGER` | PENDING |
-| Waiting-time observations for R-043 (section 9.2) | W336 | All nine timing profiles PASS with both restarts | `w336-timing-B12_D4`, `-B12_D7`, `-B13_FAILED`, `-B13_UNKNOWN`, `-B16_MOTION`, `-B10_BLOCKED`, `-RECONNECT`, `-TURNS-2`, `-TURNS-3`, `-D6_RETRY` | PENDING |
-| Unsupported bay roots in the per-Level 256-coordinate pool, with 255 fuel-loader denials as background | W336 | PASS with both restarts | `w336-saturation-bay`; the fuel control `w336-saturation-fuel` uses bay denials as background | PENDING |
-| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed. The historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429); W339 keeps a non-PASS status from being reported as PASS | `w336-downgrade` | PENDING |
+| B6.5 at the source-save boundary: the source's removal saved, the destination never saved, then a kill; restart 1 rebuilds the destination from T′, restart 2 keeps it | W346, with W349's stopped-world inventory scan after W348's review | PASS on W346's JAR (`5ef21e2aa`) and again on W349's JAR (`56668d542`); a scratch JAR with W342's mutation M1 failed at restart 1, as intended | `forced-W346-R` | PASS: `forced-W346-R`; `C6/campaign-attempt2/forced-W346-R-attempt2/native/results.json` |
+| Bay receipts present but not loaded: every rocket held, satellite launch and decommission DEPLOYMENT_PENDING, insertion refused, all five kinds refused; recovery at S2 | W332, W343 | PASS (W332 smoke 4; W343 `smoke-N`) | `r042-N_BAY` | PASS: `r042-N_BAY`; `C6/campaign-attempt2/r042-N_BAY-attempt2/native/results.json` |
+| Escrow ledger present but not loaded: bay admission refused with the four cargo kinds and fuel | W332, W343 | PASS; the vanilla-dismount row stays NOT_COVERED | `r042-L_LEDGER` | PASS: `r042-L_LEDGER`; `C6/campaign-attempt2/r042-L_LEDGER-attempt2/native/results.json` |
+| The shared pool full server-wide: the bay menu shows DEPLOYMENT_CAPACITY | W332, W343 | PASS at S0, S1 and S2 | `r042-P_SERVER` | PASS: `r042-P_SERVER`; `C6/campaign-attempt2/r042-P_SERVER-attempt2/native/results.json` |
+| One owner full: the bay menu shows OWNER_PENDING_FULL | W332, W343 | PASS; the bay uses a fixed owner, so its admission of another owner is not shown here (CAP.2 covers it) | `r042-P_OWNER` | PASS: `r042-P_OWNER`; `C6/campaign-attempt2/r042-P_OWNER-attempt2/native/results.json` |
+| Receipt presence unknown at the pre-start check: startup refused, then clean recovery | W332 could not reach it; W340 showed a delete-pending handle reaches it; W343 restored it; W345 applied Root decision R416's metadata boundary | PASS on W345's JAR; whole-world byte equality stays false because vanilla updates `level.dat` | `r042-U_BAY` | PASS: `r042-U_BAY`; `C6/campaign-attempt2/r042-U_BAY-attempt2/native/results.json` |
+| Ledger presence unknown at the pre-start check | As above | As above | `r042-U_LEDGER` | PASS: `r042-U_LEDGER`; `C6/campaign-attempt2/r042-U_LEDGER-attempt2/native/results.json` |
+| Waiting-time observations for R-043 (section 9.2) | W336 | All nine timing profiles PASS with both restarts | `w336-timing-B12_D4`, `-B12_D7`, `-B13_FAILED`, `-B13_UNKNOWN`, `-B16_MOTION`, `-B10_BLOCKED`, `-RECONNECT`, `-TURNS-2`, `-TURNS-3`, `-D6_RETRY` | PASS: `w336-timing-B12_D4`; `C6/campaign-attempt2/w336-timing-B12_D4-attempt2/native/results.json` PASS: `w336-timing-B12_D7`; `C6/campaign-attempt2/w336-timing-B12_D7-attempt2/native/results.json` PASS: `w336-timing-B13_FAILED`; `C6/campaign-attempt2/w336-timing-B13_FAILED-attempt2/native/results.json` PASS: `w336-timing-B13_UNKNOWN`; `C6/campaign-attempt2/w336-timing-B13_UNKNOWN-attempt2/native/results.json` PASS: `w336-timing-B16_MOTION`; `C6/campaign-attempt2/w336-timing-B16_MOTION-attempt2/native/results.json` PASS: `w336-timing-B10_BLOCKED`; `C6/campaign-attempt2/w336-timing-B10_BLOCKED-attempt2/native/results.json` PASS: `w336-timing-RECONNECT`; `C6/campaign-attempt2/w336-timing-RECONNECT-attempt2/native/results.json` PASS: `w336-timing-TURNS-2`; `C6/campaign-attempt2/w336-timing-TURNS-2-attempt2/native/results.json` PASS: `w336-timing-TURNS-3`; `C6/campaign-attempt2/w336-timing-TURNS-3-attempt2/native/results.json` PASS: `w336-timing-D6_RETRY`; `C6/campaign-attempt2/w336-timing-D6_RETRY-attempt2/native/results.json` Development host only; no upper bound or REF pass inferred. |
+| Unsupported bay roots in the per-Level 256-coordinate pool, with 255 fuel-loader denials as background | W336 | PASS with both restarts | `w336-saturation-bay`; the fuel control `w336-saturation-fuel` uses bay denials as background | PASS: `w336-saturation-bay`; `C6/campaign-attempt2/w336-saturation-bay-attempt2/native/results.json` PASS: `w336-saturation-fuel`; `C6/campaign-attempt2/w336-saturation-fuel-attempt2/native/results.json` |
+| Downgrade to W176's old JAR with a placed bay and actual receipts | W336 | W176's whole-world oracle FAILED on all three old-JAR attempts (unwaived); complete-backup restoration and both candidate starts passed. The historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429); W339 keeps a non-PASS status from being reported as PASS | `w336-downgrade` | FAILED: `w336-downgrade`; `C6/campaign-attempt2/w336-downgrade-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
 
 #### GameTest rows of W325-MATRIX
 
 The retained test inventory and historical execution come from [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md),
-section 3.2. Each named test must be confirmed again in C6's hosted shard results. Class names are short; W333's
+section 3.2. R581 supplies the C6 aggregate; individual named shard records are not in the supplied evidence, so those exact rows remain open. Class names are short; W333's
 packages are in [W333-DESIGN](W333-DESIGN.md).
 
 | Row | Variant | C1 | Changed since C1 | Test in C6's hosted run | C6 |
 |---|---|---|---|---|---|
-| F2.1 | DATA replay after a removed definition; no recreated initial mission | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PENDING |
-| F2.2 | Fresh DATA deterministic initial mission | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (NONE) | PENDING |
-| F2.3 | Cancel the initial mission before D3 or D4, then replay and promotion | NOT_COVERED | W333 | Same method (CANCEL) | PENDING |
-| F2.4 | Claim the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (CLAIM) | PENDING |
-| F2.5 | Prune the initial mission's history before D3 or D4 | NOT_COVERED | W333 | Same method (PRUNE) | PENDING |
-| F2.6 | Replace the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (REPLACE) | PENDING |
-| F2.7 | A later coalesced flush or autosave succeeds after a failed checkpoint | NOT_COVERED | W333 | Same method (coalesced and autosave variants) and `SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | PENDING |
-| F2.8 | Changed owner, definition or kind conflicts | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` | PENDING |
-| F3.1 | The bay fills the shared 64; a loader is refused until capacity is released | PASS | None | `BayLoaderSaturationGameTests.bayIntentsFillingTheSharedPendingSlotsStopALoaderUntilTheyResolve` | PENDING |
-| F3.2 | 63 escrow and 1 bay, the reverse, and 7 escrow and 1 bay per rocket | NOT_COVERED | W333 | `BayAdmissionRowGameTests.mixedConsumersShareGlobalAndRocketLimits` | PENDING |
-| F3.3 | One count over durable, captured, successor and UNKNOWN copies | NOT_COVERED | W333 | `BayAdmissionRowGameTests.writerCopiesChargeOnePendingSlot` | PENDING |
-| F3.4 | 64 REPAIR or released operations keep capacity after a reload | NOT_COVERED | W333 | `BayAdmissionRowGameTests.repairAndReleasedReceiptsStayFullAfterReload` | PENDING |
-| F3.5 | A REJECTED re-arm is refused when full and later admitted with the same operation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.rejectedRearmWaitsForExactCapacityRelease` | PENDING |
-| F3.6 | Independent retained limits of 4,096 and 128; mixed-store startup | NOT_COVERED | W333 | `BayAdmissionRowGameTests.retainedLimitsAreIndependentAndStartupIndexesBothStores` | PENDING |
-| F3.7 | A failed or UNKNOWN retirement keeps its reservation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.failedAndUnknownRetirementKeepReservations` | PENDING |
-| F3.8 | 16 per owner: unchanged refusal, room for other owners | PASS | None | `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity` | PENDING |
-| F4.1 | Matching DATA identity, removed definition, terminal extraction | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | PENDING |
-| F4.2 | Non-data terminal extraction, idempotent | PASS | None | `SatelliteKindTerminalGameTests.terminalLaunchesAnIdleSurveySatelliteAndConsumesAReplay` | PENDING |
-| F4.3 | Removed components, changed stats or research, changed or removed target | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesChangedDependenciesAtTerminalAndService` | PENDING |
-| F4.4 | Every satellite, mission, account and byte quota full | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesFullQuotasAtTerminalAndService` | PENDING |
-| F4.5 | Dirty matching X, failed persistence, exact barrier | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.dirtyReplayKeepsPackageUntilExactAcknowledgement` | PENDING |
-| F4.6 | Replace then throw, exact frozen readback | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.replaceThenThrowCompletesReplayOnceFromFrozenReadback` | PENDING |
-| F4.7 | Receipt-phase launch and decommission fences | PASS | None | `SatelliteRegistryProofGameTests.terminalLaunchAndDecommissionWaitForExactReceiptPhases` | PENDING |
-| F4.8 | Conflict, unauthorized caller, blocked registry, other-operation fence | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` and the barrier fixture | PENDING |
-| F5.1 | Missing physical body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesAMissingBodyForDataAndSolarBays` | PENDING |
-| F5.2 | Body that cannot be orbited, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesANonOrbitableBodyForDataAndSolarBays` | PENDING |
-| F5.3 | Legacy Space body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesTheLegacySpaceBodyForDataAndSolarBays` | PENDING |
-| F5.4 | The captured source body is the one the DATA receipt records | PASS | None | `BayDeploymentMatrixGameTests.theCapturedSourceBodyIsTheOneTheDataReceiptRecords` | PENDING |
-| F5.5 | Station orbit differs from the destination and changes later | NOT_COVERED | W333 | `BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | PENDING |
-| F5.6 | Undiscovered allowed body: DATA discovery against the non-data gate | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | PENDING |
-| F5.7 | REGISTERED replay after the physical catalog entry is removed | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (REGISTERED_REMOVED variants) | PENDING |
-| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 is in C3, so its hosted run includes the corrected window | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | PENDING |
-| RT.2 | Launch and decommission wait for the commit acknowledgement | PASS | None | `SatelliteRegistryTickGameTests.aTerminalLaunchAndDecommissionCompleteOnTicksAfterTheirCommits` | PENDING |
-| RT.3 | A DATA action shows its stored result only after its commit | PASS | None | `SatelliteRegistryTickGameTests.aDataActionShowsItsStoredResultAfterItsCommit` | PENDING |
-| RT.4 | A clean schema-4 reload leaves the literal and save epochs unchanged | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | PENDING |
-| RT.5 | Tagged origins, surveys, accounts and blocked roots across every write entry and outcome | NOT_COVERED | W333; a GameTest cannot stop its server, so the close drain is not a stopped-server autosave | `SatelliteTransportRowGameTests.allWriteEntriesPreserveTaggedAndBlockedRoots` | PENDING |
-| RT.6 | Replace then throw without a duplicate epoch or a lost pending flush | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.replaceThenThrowAdvancesOnceAndKeepsLaterPendingMutation` | PENDING |
-| RT.7 | Obsolete callbacks and stale hashes cannot obtain a permit | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` | PENDING |
-| N2.1 | UNKNOWN, then mission, claim or survey changes, a fresh checkpoint and a reload | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCheckpointResolvesFresh` | PENDING |
-| N2.2 | The same, resolved by a coalesced flush | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCoalescedWriteResolvesFresh` | PENDING |
-| N2.3 | The same, resolved by an autosave | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownAutosaveResolvesFresh` | PENDING |
-| N2.4 | A definite FAILED retries with a fresh capture | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.failedCheckpointRetriesFresh` | PENDING |
-| N2.5 | A second UNKNOWN skips another carried epoch | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.secondUnknownSkipsAnotherEpoch` | PENDING |
-| N2.6 | Every waiting consumer stays fenced until resolution; no rematerialized reward | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.waitingConsumersRemainFencedUntilResolution` | PENDING |
+| F2.1 | DATA replay after a removed definition; no recreated initial mission | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.2 | Fresh DATA deterministic initial mission | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (NONE) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.3 | Cancel the initial mission before D3 or D4, then replay and promotion | NOT_COVERED | W333 | Same method (CANCEL) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.4 | Claim the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (CLAIM) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.5 | Prune the initial mission's history before D3 or D4 | NOT_COVERED | W333 | Same method (PRUNE) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.6 | Replace the initial mission before D3 or D4 | NOT_COVERED | W333 | Same method (REPLACE) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.7 | A later coalesced flush or autosave succeeds after a failed checkpoint | NOT_COVERED | W333 | Same method (coalesced and autosave variants) and `SatelliteReplayBarrierRowGameTests.failedCheckpointThenLaterWriteStillProvesReplay` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F2.8 | Changed owner, definition or kind conflicts | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.1 | The bay fills the shared 64; a loader is refused until capacity is released | PASS | None | `BayLoaderSaturationGameTests.bayIntentsFillingTheSharedPendingSlotsStopALoaderUntilTheyResolve` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.2 | 63 escrow and 1 bay, the reverse, and 7 escrow and 1 bay per rocket | NOT_COVERED | W333 | `BayAdmissionRowGameTests.mixedConsumersShareGlobalAndRocketLimits` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.3 | One count over durable, captured, successor and UNKNOWN copies | NOT_COVERED | W333 | `BayAdmissionRowGameTests.writerCopiesChargeOnePendingSlot` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.4 | 64 REPAIR or released operations keep capacity after a reload | NOT_COVERED | W333 | `BayAdmissionRowGameTests.repairAndReleasedReceiptsStayFullAfterReload` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.5 | A REJECTED re-arm is refused when full and later admitted with the same operation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.rejectedRearmWaitsForExactCapacityRelease` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.6 | Independent retained limits of 4,096 and 128; mixed-store startup | NOT_COVERED | W333 | `BayAdmissionRowGameTests.retainedLimitsAreIndependentAndStartupIndexesBothStores` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.7 | A failed or UNKNOWN retirement keeps its reservation | NOT_COVERED | W333 | `BayAdmissionRowGameTests.failedAndUnknownRetirementKeepReservations` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F3.8 | 16 per owner: unchanged refusal, room for other owners | PASS | None | `BayLoaderSaturationGameTests.sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.1 | Matching DATA identity, removed definition, terminal extraction | PASS | None | `SatelliteRegistryProofGameTests.removedDefinitionReplayExtractsDataPackageWithoutRecreatingInitialMission` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.2 | Non-data terminal extraction, idempotent | PASS | None | `SatelliteKindTerminalGameTests.terminalLaunchesAnIdleSurveySatelliteAndConsumesAReplay` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.3 | Removed components, changed stats or research, changed or removed target | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesChangedDependenciesAtTerminalAndService` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.4 | Every satellite, mission, account and byte quota full | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.replayBypassesFullQuotasAtTerminalAndService` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.5 | Dirty matching X, failed persistence, exact barrier | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.dirtyReplayKeepsPackageUntilExactAcknowledgement` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.6 | Replace then throw, exact frozen readback | NOT_COVERED | W333 | `SatelliteReplayBarrierRowGameTests.replaceThenThrowCompletesReplayOnceFromFrozenReadback` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.7 | Receipt-phase launch and decommission fences | PASS | None | `SatelliteRegistryProofGameTests.terminalLaunchAndDecommissionWaitForExactReceiptPhases` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F4.8 | Conflict, unauthorized caller, blocked registry, other-operation fence | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.identityConflictsPrecedeReplay` and the barrier fixture | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.1 | Missing physical body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesAMissingBodyForDataAndSolarBays` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.2 | Body that cannot be orbited, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesANonOrbitableBodyForDataAndSolarBays` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.3 | Legacy Space body, DATA and solar | PASS | None | `BayDeploymentMatrixGameTests.f5RefusesTheLegacySpaceBodyForDataAndSolarBays` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.4 | The captured source body is the one the DATA receipt records | PASS | None | `BayDeploymentMatrixGameTests.theCapturedSourceBodyIsTheOneTheDataReceiptRecords` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.5 | Station orbit differs from the destination and changes later | NOT_COVERED | W333 | `BayStationRowGameTests.capturedOrbitSurvivesLaterStationChangeForBothKinds` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.6 | Undiscovered allowed body: DATA discovery against the non-data gate | NOT_COVERED | W333 | `SatelliteReplayRowGameTests.undiscoveredAllowedBodyAdmitsDataButNotNonData` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| F5.7 | REGISTERED replay after the physical catalog entry is removed | NOT_COVERED | W333 | `BayMissionRowGameTests.initialMissionProofReplayAndPromotionMatrix` (REGISTERED_REMOVED variants) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.1 | Coalesced and autosave requests publish on later ticks | PASS | W347 found why this test failed once in W342's local run; W350 opens its measured window only when the registry writer is idle. W350 is in C3, so its hosted run includes the corrected window | `SatelliteRegistryTickGameTests.coalescedAndAutosaveRequestsArePublishedOnLaterTicks` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.2 | Launch and decommission wait for the commit acknowledgement | PASS | None | `SatelliteRegistryTickGameTests.aTerminalLaunchAndDecommissionCompleteOnTicksAfterTheirCommits` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.3 | A DATA action shows its stored result only after its commit | PASS | None | `SatelliteRegistryTickGameTests.aDataActionShowsItsStoredResultAfterItsCommit` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.4 | A clean schema-4 reload leaves the literal and save epochs unchanged | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.cleanSchemaFourReloadIsAnObservation` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.5 | Tagged origins, surveys, accounts and blocked roots across every write entry and outcome | NOT_COVERED | W333; a GameTest cannot stop its server, so the close drain is not a stopped-server autosave | `SatelliteTransportRowGameTests.allWriteEntriesPreserveTaggedAndBlockedRoots` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.6 | Replace then throw without a duplicate epoch or a lost pending flush | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.replaceThenThrowAdvancesOnceAndKeepsLaterPendingMutation` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| RT.7 | Obsolete callbacks and stale hashes cannot obtain a permit | NOT_COVERED | W333 | `SatelliteTransportRowGameTests.obsoleteSessionProofCannotCoverCurrentWatch` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.1 | UNKNOWN, then mission, claim or survey changes, a fresh checkpoint and a reload | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCheckpointResolvesFresh` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.2 | The same, resolved by a coalesced flush | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownCoalescedWriteResolvesFresh` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.3 | The same, resolved by an autosave | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.unknownAutosaveResolvesFresh` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.4 | A definite FAILED retries with a fresh capture | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.failedCheckpointRetriesFresh` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.5 | A second UNKNOWN skips another carried epoch | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.secondUnknownSkipsAnotherEpoch` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| N2.6 | Every waiting consumer stays fenced until resolution; no rematerialized reward | NOT_COVERED | W333 | `SatelliteEpochRowGameTests.waitingConsumersRemainFencedUntilResolution` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 W333 also ran each family against a scratch copy with one protection disabled, and every family's new tests failed
 there ([W333](W333.md), "Negative protection checks").
@@ -471,17 +565,17 @@ there ([W333](W333.md), "Negative protection checks").
 
 | Scenario | Added by | Test in C6's hosted run | C6 |
 |---|---|---|---|
-| B6.5 main case: a consumed, committed group with neither entity rebuilds the destination from T′, with the consumed operations, no package back and no receipt | W342 | `BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime` | PENDING |
-| B6.5 control: the same state with the source present keeps the consumed source | W342 | `BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource` | PENDING |
-| B6.5 control: an unconsumed committed record rebuilds the destination with the packages aboard | W342 | `BayRebuildDestinationGameTests.anUnconsumedCommittedRecordRebuildsItsDestinationWithThePackagesAboard` | PENDING |
-| The bay neutral-source check fails while the ledger is NOT_LOADED, and passes under NO_FILE | W329 | One test of each pair in `EscrowLedgerNotLoadedGameTests` (batches `w329_ledger_not_loaded` and `w329_ledger_no_file`); the other 14 tests are shared (section 8.4) | PENDING (2) |
+| B6.5 main case: a consumed, committed group with neither entity rebuilds the destination from T′, with the consumed operations, no package back and no receipt | W342 | `BayRebuildDestinationGameTests.aConsumedCommittedGroupWithNeitherEntityRebuildsTheDestinationFromTPrime` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| B6.5 control: the same state with the source present keeps the consumed source | W342 | `BayRebuildDestinationGameTests.theSameConsumedStateWithItsSourcePresentKeepsTheConsumedSource` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| B6.5 control: an unconsumed committed record rebuilds the destination with the packages aboard | W342 | `BayRebuildDestinationGameTests.anUnconsumedCommittedRecordRebuildsItsDestinationWithThePackagesAboard` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| The bay neutral-source check fails while the ledger is NOT_LOADED, and passes under NO_FILE | W329 | One test of each pair in `EscrowLedgerNotLoadedGameTests` (batches `w329_ledger_not_loaded` and `w329_ledger_no_file`); the other 14 tests are shared (section 8.4) | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 #### GameTests added since C3
 
 | Scenario | Added by and source | Test in C6's hosted run | C6 |
 |---|---|---|---|
-| A governed flight refuses its packaged bays at ascent completion with BAY_SOURCE_PROTECTED, preserving packages without a deployment claim. | [W363](W363.md), R444/R451. | `BayGovernedFlightGameTests.aGovernedFlightRefusesItsBaysWithBaySourceProtectedAndKeepsItsPackages` | PENDING |
-| A restart group waiting on an absent Level leaves the R2 slot for the healthy restart group behind it. | [W363](W363.md), R451; the first native restart-form smoke stays failed in history. | `BayResumeFairnessGameTests.aWaitingRestartGroupDoesNotBlockTheRestartGroupBehindIt` | PENDING |
+| A governed flight refuses its packaged bays at ascent completion with BAY_SOURCE_PROTECTED, preserving packages without a deployment claim. | [W363](W363.md), R444/R451. | `BayGovernedFlightGameTests.aGovernedFlightRefusesItsBaysWithBaySourceProtectedAndKeepsItsPackages` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| A restart group waiting on an absent Level leaves the R2 slot for the healthy restart group behind it. | [W363](W363.md), R451; the first native restart-form smoke stays failed in history. | `BayResumeFairnessGameTests.aWaitingRestartGroupDoesNotBlockTheRestartGroupBehindIt` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 ### 3.3 Applicable risks
 
@@ -499,7 +593,7 @@ the switch off.
 | R-043 | Registration, consumption, copy recovery and released flight. Every wait lacks a timeout. A stale copy outside the census, or a single-file rollback, can bring back a consumed package or register a satellite twice (the register's risk D items 1 to 4). Recovery of existing receipts is live now. | One rocket and its packages; the server (the D6 turn queue, the shared cargo work budget); chunks (tickets on up to 2 + 32 columns per claim) | No timeouts; tickets end up to 400 ticks after their last renewal | Automatic retries; a restart reclassifies; whole-world offline repair for conflicts | B5 to B8, B16, B10.2 to B10.5, EXIT.0 to EXIT.10, B6.5 (W342, W346); the ten `w336-timing-*` families; section 9.2 |
 | R-035 | The transfer journal: when it is unreadable, blocked or unacknowledged, all transfers pause and D0, RESUME, D5, D6 and released flights wait. Also the shared check columns and the exclusion of R-032. | The server | Until the journal is acknowledged; for an unreadable journal, the session until repair | As R-035 describes | B3.12 and the forced-stop rows that restart through the journal |
 | R-044, shared pool | Bay denials count toward the per-Level pool of 256 coordinates that about 15 device families share (W327-M5). | The Level | Until the Level closes; it saturates again after a restart once the roots load (W336) | As R-038 | `w336-saturation-bay`, and `w336-saturation-fuel`, which uses bay denials |
-| R-044, downgrade |An older JAR rewrites `level.dat` before its transfer-journal guard refuses, and removes the registry IDs of newer blocks, including `rocket_satellite_bay` (W327-M4). Historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Ledger root 3 is a second old-JAR refusal reason even without a governed transfer record; metadata rewriting on that path is not yet tested ([R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3; R458).| The world | Permanent unless the world is restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade`; W176's whole-world verdict stays FAILED |
+| R-044, downgrade |An older JAR rewrites `level.dat` before its transfer-journal guard refuses, and removes the registry IDs of newer blocks, including `rocket_satellite_bay` (W327-M4). Historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Ledger root 3 is a second old-JAR refusal reason even without a governed transfer record; C6's accounting-root3-old-jar reports FAILED on metadata preservation (sections 8.5 and 12) ([R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3; R458).| The world | Permanent unless the world is restored from a complete backup | Restore the complete pre-downgrade backup | `w336-downgrade`; W176's whole-world verdict stays FAILED |
 | R-032 | Unobservable vanilla write failures, for example a stale source entity of an earlier flight, which R-043 names as the stale-copy trigger. | One rocket and its packages | Permanent once it happens | A whole-world backup | Cannot be shown natively; not accepted |
 
 The register also names these bay residuals, none accepted: the neutral-source limit (BAY_SOURCE_PROTECTED, for W27f);
@@ -515,15 +609,15 @@ These dispositions are mappings, not C6 results.
 
 | Row | Disposition since C3 | Evidence to fill or limit | C6 |
 |---|---|---|---|
-| B6.8 | Governed-flight refusal is recorded; its reason is session-only under R451. | `forced-W363-B6-GOVERNED`; `forced-W358-B6-BOUND` is excluded and keeps its failed smokes. | PENDING |
-| B10.6 | The incoherent REPAIR fixture is built. | `forced-W358-B10-INCOHERENT` | PENDING |
-| B11.2 | The native launch shape is unreachable under production rules. | W358's argument; F3.2 checks the synthetic authority boundary only. | PENDING |
-| B11.7, UNKNOWN part | The held writer crosses a retry with UNKNOWN/captured/successor copies. | `forced-W358-B11-UNKNOWN`; the unacknowledged successor is not restored. | PENDING |
-| B11.8 | Owner fill/unfill and two relaunches are built. | `forced-W358-B11-REARM` | PENDING |
-| B11.9 | Both loaded mixed-consumer directions use typed seeds. | `forced-W358-B11-ESCROW-MAJOR` and `forced-W358-B11-BAY-MAJOR` | PENDING |
-| B17.3 | Both live-behind-held and restart-behind-held forms are built; R451 fixes slot starvation. | `forced-W363-B17-UNLOADED` and `forced-W363-B17-UNLOADED-RESTART` | PENDING |
-| B17.5 | The requested triple-phase live group is unreachable without forged receipts. | W358's producer/guard argument is not a native pass. | PENDING |
-| CAP.3 | The owner-full fixture now visits the real loader before capture. | `forced-W358-CAP-OWNER` | PENDING |
+| B6.8 | Governed-flight refusal is recorded; its reason is session-only under R451. | `forced-W363-B6-GOVERNED`; `forced-W358-B6-BOUND` is excluded and keeps its failed smokes. | PASS: `forced-W363-B6-GOVERNED`; `C6/campaign-attempt2/forced-W363-B6-GOVERNED-attempt2/native/results.json` |
+| B10.6 | The incoherent REPAIR fixture is built. | `forced-W358-B10-INCOHERENT` | PASS: `forced-W358-B10-INCOHERENT`; `C6/campaign-attempt2/forced-W358-B10-INCOHERENT-attempt2/native/results.json` |
+| B11.2 | The native launch shape is unreachable under production rules. | W358's argument; F3.2 checks the synthetic authority boundary only. | NOT_COVERED: B11.2 reasoned unreachable; synthetic F3.2 is not a native launch. |
+| B11.7, UNKNOWN part | The held writer crosses a retry with UNKNOWN/captured/successor copies. | `forced-W358-B11-UNKNOWN`; the unacknowledged successor is not restored. | PASS: `forced-W358-B11-UNKNOWN`; `C6/campaign-attempt2/forced-W358-B11-UNKNOWN-attempt2/native/results.json` |
+| B11.8 | Owner fill/unfill and two relaunches are built. | `forced-W358-B11-REARM` | PASS: `forced-W358-B11-REARM`; `C6/campaign-attempt2/forced-W358-B11-REARM-attempt2/native/results.json` |
+| B11.9 | Both loaded mixed-consumer directions use typed seeds. | `forced-W358-B11-ESCROW-MAJOR` and `forced-W358-B11-BAY-MAJOR` | PASS: `forced-W358-B11-ESCROW-MAJOR`; `C6/campaign-attempt2/forced-W358-B11-ESCROW-MAJOR-attempt2/native/results.json` PASS: `forced-W358-B11-BAY-MAJOR`; `C6/campaign-attempt2/forced-W358-B11-BAY-MAJOR-attempt2/native/results.json` |
+| B17.3 | Both live-behind-held and restart-behind-held forms are built; R451 fixes slot starvation. | `forced-W363-B17-UNLOADED` and `forced-W363-B17-UNLOADED-RESTART` | PASS: `forced-W363-B17-UNLOADED`; `C6/campaign-attempt2/forced-W363-B17-UNLOADED-attempt2/native/results.json` PASS: `forced-W363-B17-UNLOADED-RESTART`; `C6/campaign-attempt2/forced-W363-B17-UNLOADED-RESTART-attempt2/native/results.json` |
+| B17.5 | The requested triple-phase live group is unreachable without forged receipts. | W358's producer/guard argument is not a native pass. | NOT_COVERED: B17.5 reasoned unreachable; producer/guard evidence is not a native pass. |
+| CAP.3 | The owner-full fixture now visits the real loader before capture. | `forced-W358-CAP-OWNER` | PASS: `forced-W358-CAP-OWNER`; `C6/campaign-attempt2/forced-W358-CAP-OWNER-attempt2/native/results.json` |
 
 **Limits of the covered rows.**
 
@@ -576,11 +670,11 @@ candidate commit and JAR SHA-256. W341 added the installed-JAR rechecks. W337 ru
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C6 family | C6 |
 |---|---|---|---|---|---|
-| N091 to N095 | `IC_LOAD_K2` (K2), `IC_LOAD_K3` (C2_DESTINATION_AFTER), `IC_LOAD_K4` (source-only store), `IC_LOAD_K5` (destination-only store), `IC_LOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
-| N101 | `IC_PARTIAL_APPLY` (C2_DESTINATION_AFTER) | PASS | Common | `cargo-D-S1` | PENDING |
-| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; W330 did not smoke the other 12 cases. W355's audit later confirms all 13 passed on the historical second candidate | `cargo-D-S2-LOAD` | PENDING (13) |
-| Q03, per-owner cap | `CQ_ITEM_LOAD`: 16 durable pending operations charge owner A; this kind's real device is refused before preparation; owner B completes once | NOT_COVERED | W330; smoke PASS (section 8.2) | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported item-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-load` | PENDING |
+| N091 to N095 | `IC_LOAD_K2` (K2), `IC_LOAD_K3` (C2_DESTINATION_AFTER), `IC_LOAD_K4` (source-only store), `IC_LOAD_K5` (destination-only store), `IC_LOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` |
+| N101 | `IC_PARTIAL_APPLY` (C2_DESTINATION_AFTER) | PASS | Common | `cargo-D-S1` | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` |
+| Load settlement, a C1 gap (Root decision R395) | 13 cases: `IS_LOAD_O1_AFTER`, `IS_LOAD_O2_ROCKET_BEFORE`, `IS_LOAD_O2_ROCKET_AFTER`, `IS_LOAD_O2_DEVICE_BEFORE`, `IS_LOAD_O2_DEVICE_AFTER`, `IS_LOAD_O3_AFTER`, `IS_LOAD_O3J_AFTER`, `IS_LOAD_O4_AFTER`, `IS_LOAD_PRUNE_AFTER`, `IS_LOAD_BIND_AFTER`, `IS_LOAD_BIND_VETO`, `IS_LOAD_ABANDON_ROCKET`, `IS_LOAD_ABANDON_DEVICE` | No case at C1 | W330. Smoke: `IS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; W330 did not smoke the other 12 cases. W355's audit later confirms all 13 passed on the historical second candidate | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Q03, per-owner cap | `CQ_ITEM_LOAD`: 16 durable pending operations charge owner A; this kind's real device is refused before preparation; owner B completes once | NOT_COVERED | W330; smoke PASS (section 8.2) | `cargo-C-Q` | PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` |
+| Shared pool, added since C1 | Unsupported item-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-load` | PASS: `w336-saturation-item-load`; `C6/campaign-attempt2/w336-saturation-item-load-attempt2/native/results.json` |
 
 #### Item settlement cuts added since C3
 
@@ -589,22 +683,22 @@ without inventing a choice; veto keeps the frozen intent and locked endpoints.
 
 | Row | Case | Source | C6 family | C6 |
 |---|---|---|---|---|
-| Load O1_BEFORE | `IS_LOAD_O1_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load BIND_BEFORE | `IS_LOAD_BIND_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load O3_BEFORE | `IS_LOAD_O3_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load O3J_BEFORE | `IS_LOAD_O3J_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load O4_BEFORE | `IS_LOAD_O4_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load PRUNE_BEFORE | `IS_LOAD_PRUNE_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
-| Load VETO_DESTINATION_SAVED | `IS_LOAD_VETO_DESTINATION_SAVED` | [W360](W360.md) | `cargo-D-S2-LOAD` | PENDING |
+| Load O1_BEFORE | `IS_LOAD_O1_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load BIND_BEFORE | `IS_LOAD_BIND_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load O3_BEFORE | `IS_LOAD_O3_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load O3J_BEFORE | `IS_LOAD_O3J_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load O4_BEFORE | `IS_LOAD_O4_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load PRUNE_BEFORE | `IS_LOAD_PRUNE_BEFORE` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| Load VETO_DESTINATION_SAVED | `IS_LOAD_VETO_DESTINATION_SAVED` | [W360](W360.md) | `cargo-D-S2-LOAD` | PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C6's hosted run | C6 |
 |---|---|---|---|---|---|
-| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PENDING |
-| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PENDING |
-| D-E-A05 | Load neutral normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PENDING |
-| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
+| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A05 | Load neutral normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 The shared rows of section 8 also apply to this kind: M01 to M09, the B3 and G2 reuse families, the six R-042 families,
 W329's GameTests plus W360's two item-device holds, the downgrade family, and X01/X02 (section 13).
@@ -615,7 +709,7 @@ W329's GameTests plus W360's two item-device holds, the downgrade family, and X0
 |---|---|---|---|---|---|
 | R-035, cargo scope (W11c, W11d) | One active cargo operation per rocket; settlement O1 to O4 and C0 to C8 REPAIR; rockets with settlement history, a READY head or legacy scalar fuel are refused; cut-E2 (an entity record over the inline-sector limit keeps its operation and endpoints locked); device protection, live now; the shared journal-writer stall. Mod chest subclasses, containers with unresolved loot tables and over-cap stacks do not move. | One device and one rocket; its terrain chunk; the Level after 256 coordinates (shared pool); the journal-writer stall is R-035's server-wide transfer availability | Device protection until its cause is resolved (a restart alone does not clear it); escrow locks until proved reconciliation or operator settlement; no timeouts | Automatic retry for retryable IO; audited settlement; whole-world offline repair (keep every file and hash, repair a copy, two saves and restarts, replace the whole world) | N091 to N095, N101; `cargo-D-S2-LOAD`; D-E rows above |
 | R-035, ledger presence and NOT_LOADED (W328, W329) | A ledger that did not load, or whose presence becomes unknown after the pre-start check, holds the whole server: no rocket launches, fills, loads or unloads cargo, or is disassembled, and every device holding a root is locked. An unknown presence at the pre-start check refuses world start. | The whole server; the world for the startup refusal | The session | Fix storage access and restart; a restart that loads the ledger or proves it absent clears it | `r042-L_LEDGER`, `r042-U_LEDGER`; W329's GameTests; W328's unit tests |
-| R-031 | A future or invalid ledger root refuses world start. | The world | Until a supporting JAR or offline repair | Whole-world offline repair | [W360](W360.md): `r042-R031_FUTURE` and `r042-R031_INVALID`; C6 results in section 8.3 are pending. The smoke used root 2; C6 must verify the activated boundary. |
+| R-031 | A future or invalid ledger root refuses world start. | The world | Until a supporting JAR or offline repair | Whole-world offline repair | [W360](W360.md): `r042-R031_FUTURE` and `r042-R031_INVALID`; C6 PASS results in section 8.3 verify the activated boundary; the earlier smoke used root 2. |
 | R-039, shared admission authority | The authority answers UNAVAILABLE for every consumer until both stores have loaded. The pool of 64 per server, 8 per rocket and 16 per owner is shared with the fuel loader and the bay. | The server; one owner | While the pool is full; while either store is NOT_LOADED | Slots free as operations resolve; offline repair where bay receipts hold them (R-042) | `CQ_ITEM_LOAD`; `r042-P_SERVER`, `r042-P_OWNER` |
 | R-042, bay effects on cargo | Bay receipts NOT_LOADED refuse cargo binding and admission on the whole server; W332 observed the answer `TRANSFER_JOURNAL_UNPROVED`. Released and REPAIR bay receipts can hold the pool: eight such rockets refuse every cargo operation on the server, and two full rockets of one owner refuse that owner. | The whole server; one owner | The session (NOT_LOADED); until offline repair, across restarts (held pool) | A restart for a transient NOT_LOADED; whole-world offline repair | `r042-N_BAY`, `r042-P_SERVER`, `r042-P_OWNER` |
 | R-043, shared cargo work budget | One budget per tick (16 MiB and 16,384 visits) serves the preparation of all four cargo kinds and the bay's D4 snapshot job and D5 copies. Each D5 copy takes the whole tick's budget (W327-L3). | The server | Per tick, with no fairness, while bay recovery runs | None needed | No C3 family measures it; W327 notes that it needs concurrent bay and cargo load |
@@ -625,8 +719,7 @@ W329's GameTests plus W360's two item-device holds, the downgrade family, and X0
 
 ### 4.4 Remaining work
 
-- C6 must run the fourteen now-built W360 item cuts, the R-031/post-check presence families and the two item-hold
-  GameTests. C3's missing-fixture description no longer applies ([W360](W360.md)).
+- C6 passed both seven-cut W360 item additions and all R-031/post-check presence families (sections 4.2, 5.2 and 8.3). Exact named hosted item-hold evidence remains open under section 2.1.4; C3's missing-fixture description no longer applies ([W360](W360.md)).
 - X01/X02 use R457's non-destructive E4 simulation. Results and real-storage residuals are in section 13; no new
   destructive run is authorized ([OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md)).
 - The shared cargo work budget remains unmeasured. The new R-031 families do not accept its risk.
@@ -650,13 +743,13 @@ W329's GameTests plus W360's two item-device holds, the downgrade family, and X0
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C6 family | C6 |
 |---|---|---|---|---|---|
-| N096 to N100 | `IC_UNLOAD_K2` (K2), `IC_UNLOAD_K3` (C2_DESTINATION_AFTER), `IC_UNLOAD_K4` (source-only store), `IC_UNLOAD_K5` (destination-only store), `IC_UNLOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PENDING (5) |
-| N102 | `IC_PARTIAL_STORE` (source-only store) | PASS | Common | `cargo-D-S1` | PENDING |
-| N103, N104 | `IR_CONTAINER` and `IR_LOOT` (before an offline damage edit); W143's earlier failures, rerun afresh at C1 | PASS (2) | Common | `cargo-D-S2` | PENDING (2) |
-| N105 to N117 | `IS_O1_AFTER`, `IS_O2_ROCKET_BEFORE`, `IS_O2_ROCKET_AFTER`, `IS_O2_DEVICE_BEFORE`, `IS_O2_DEVICE_AFTER`, `IS_O3_AFTER`, `IS_O3J_AFTER`, `IS_O4_AFTER`, `IS_PRUNE_AFTER`, `IS_BIND_AFTER`, `IS_BIND_VETO`, `IS_ABANDON_ROCKET`, `IS_ABANDON_DEVICE` | PASS (13) | Common; W330 extended the shared item settlement oracle for the load cuts | `cargo-D-S2` | PENDING (13) |
-| N118 to N120 | `IR_DISASSEMBLY` (K1), `IR_REBUILD` (rebuild refused), `IR_ROOT` (root preserved) | PASS (3) | Common | `cargo-D-S2` | PENDING (3) |
-| Q04, per-owner cap | `CQ_ITEM_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported item-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-unload` | PENDING |
+| N096 to N100 | `IC_UNLOAD_K2` (K2), `IC_UNLOAD_K3` (C2_DESTINATION_AFTER), `IC_UNLOAD_K4` (source-only store), `IC_UNLOAD_K5` (destination-only store), `IC_UNLOAD_K9` (K9) | PASS (5) | Common | `cargo-D-S1` | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` |
+| N102 | `IC_PARTIAL_STORE` (source-only store) | PASS | Common | `cargo-D-S1` | PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` |
+| N103, N104 | `IR_CONTAINER` and `IR_LOOT` (before an offline damage edit); W143's earlier failures, rerun afresh at C1 | PASS (2) | Common | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| N105 to N117 | `IS_O1_AFTER`, `IS_O2_ROCKET_BEFORE`, `IS_O2_ROCKET_AFTER`, `IS_O2_DEVICE_BEFORE`, `IS_O2_DEVICE_AFTER`, `IS_O3_AFTER`, `IS_O3J_AFTER`, `IS_O4_AFTER`, `IS_PRUNE_AFTER`, `IS_BIND_AFTER`, `IS_BIND_VETO`, `IS_ABANDON_ROCKET`, `IS_ABANDON_DEVICE` | PASS (13) | Common; W330 extended the shared item settlement oracle for the load cuts | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| N118 to N120 | `IR_DISASSEMBLY` (K1), `IR_REBUILD` (rebuild refused), `IR_ROOT` (root preserved) | PASS (3) | Common | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Q04, per-owner cap | `CQ_ITEM_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` |
+| Shared pool, added since C1 | Unsupported item-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-item-unload` | PASS: `w336-saturation-item-unload`; `C6/campaign-attempt2/w336-saturation-item-unload-attempt2/native/results.json` |
 
 #### Item settlement cuts added since C3
 
@@ -665,27 +758,27 @@ without inventing a choice; veto keeps the frozen intent and locked endpoints.
 
 | Row | Case | Source | C6 family | C6 |
 |---|---|---|---|---|
-| Unload O1_BEFORE | `IS_O1_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload BIND_BEFORE | `IS_BIND_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload O3_BEFORE | `IS_O3_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload O3J_BEFORE | `IS_O3J_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload O4_BEFORE | `IS_O4_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload PRUNE_BEFORE | `IS_PRUNE_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PENDING |
-| Unload VETO_DESTINATION_SAVED | `IS_VETO_DESTINATION_SAVED` | [W360](W360.md) | `cargo-D-S2` | PENDING |
+| Unload O1_BEFORE | `IS_O1_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload BIND_BEFORE | `IS_BIND_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload O3_BEFORE | `IS_O3_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload O3J_BEFORE | `IS_O3J_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload O4_BEFORE | `IS_O4_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload PRUNE_BEFORE | `IS_PRUNE_BEFORE` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| Unload VETO_DESTINATION_SAVED | `IS_VETO_DESTINATION_SAVED` | [W360](W360.md) | `cargo-D-S2` | PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C6's hosted run | C6 |
 |---|---|---|---|---|---|
-| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | PENDING |
-| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | PENDING |
-| D-E-A06 | Unload survivor proofs, typed readback, O3J, O4, pruning and a READY launch | PASS | None | `ItemCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PENDING |
-| D-E-A07 | Unload neutral source normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PENDING |
-| D-E-A08 | ABANDON with the rocket missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PENDING |
-| D-E-A09 | ABANDON with the device missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PENDING |
-| D-E-A10 | An unavailable item blocks before O2 normalization and readback | PASS | None | `ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2` | PENDING |
-| D-E-A11 | The latest item remainder is restored exactly once | PASS | None | `ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PENDING |
-| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
+| D-E-A01 | Native load and unload, partial counts, queued competitor, typed readback, L2 and C8 | PASS | None | `ItemCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A02 | Named F1 fence | PASS | None | `ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A03 | An unavailable item isolates its component | PASS | None | `ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A04 | A mismatched frozen replay leaves both endpoints unchanged | PASS | None | `ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A06 | Unload survivor proofs, typed readback, O3J, O4, pruning and a READY launch | PASS | None | `ItemCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A07 | Unload neutral source normalization and veto | PASS | None | `ItemCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A08 | ABANDON with the rocket missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A09 | ABANDON with the device missing | PASS | None | `ItemCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A10 | An unavailable item blocks before O2 normalization and readback | PASS | None | `ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A11 | The latest item remainder is restored exactly once | PASS | None | `ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| D-E-A12 | Two item-mutated flights, then the latest disassembly | PASS | None | `ItemCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 The shared rows of section 8 apply as listed for section 4.2.
 
@@ -704,8 +797,7 @@ Scope, duration and recovery are as in section 4.3.
 
 ### 5.4 Remaining work
 
-As section 4.4: candidate reruns of the now-built item/shared rows, X01/X02 simulation and residuals, the
-unmeasured shared budget and deferred campaign. Section 5.2 lists the seven unload cuts.
+As section 4.4: the native item/shared rows passed; X01 remains FAIL, X02 retains residuals, and the shared budget and client/REF/soak campaign remain open. Section 5.2 records the seven unload cuts.
 
 ## 6. FLUID_CARGO_LOAD (`block_variant:loader/5`)
 
@@ -723,25 +815,25 @@ unmeasured shared budget and deferred campaign. Section 5.2 lists the seven unlo
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C6 family | C6 |
 |---|---|---|---|---|---|
-| N001 to N014 | `FC_LOAD_PREPARING`, `FC_LOAD_L1_BEFORE` (K1), `FC_LOAD_L1_REPLACED` (K2), `FC_LOAD_L1_ACK`, `FC_LOAD_C2_SOURCE_AFTER`, `FC_LOAD_C2_DESTINATION_AFTER`, `FC_LOAD_SOURCE_ONLY_STORE`, `FC_LOAD_DESTINATION_ONLY_STORE`, `FC_LOAD_SECOND_FORCE_BEFORE`, `FC_LOAD_C6_JOINT_READBACK`, `FC_LOAD_K8`, `FC_LOAD_L2_REPLACED` (K9), `FC_LOAD_C7_ACKNOWLEDGED`, `FC_LOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
-| N029 to N032 | `FC_LOAD_D2_C2`, `FC_LOAD_D2_C5`, `FC_LOAD_D2_C6`, `FC_LOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
-| N037 to N044 | `FC_LOAD_E1_OWN_STORE`, `FC_LOAD_E2_CAPTURE`, `FC_LOAD_E2_ROCKET_EXTERNAL`, `FC_LOAD_E4L1_FAIL`, `FC_LOAD_E4L1_UNKNOWN`, `FC_LOAD_E4L2_UNKNOWN`, `FC_LOAD_E3_CACHE_CLOSE`, `FC_LOAD_E5_STALLED`; E3 and E5 were W138's earlier failures, rerun afresh at C1 | PASS (8) | Common | `cargo-C-S2` | PENDING (8) |
-| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common; W352 restores native R1's synthetic fixture fuel in C3; all ten cases passed on W352's JAR (section 2.1.1) | `cargo-C-S3` | PENDING (10) |
-| N075 to N078 | `FF_N1`, `FF_F1_AFTER_CARGO`, `FF_F6_AFTER_CARGO`, `FF_F8_AFTER_CARGO` | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
-| N087 to N090 | `FF_GOVERNED_MISSING`, `FF_GOVERNED_TERMINAL`, `FF_TWO_FLIGHTS`, `FF_CANCEL_AFTER_CARGO`; the last three were W142's earlier failures, rerun afresh at C1 | PASS (4) | Common | `cargo-C-S5` | PENDING (4) |
-| Load settlement, a C1 gap (Root decision R395) | 20 cases: `FS_LOAD_O1_BEFORE`, `FS_LOAD_O1_AFTER`, `FS_LOAD_BIND_BEFORE`, `FS_LOAD_BIND_AFTER`, `FS_LOAD_O2_ROCKET_BEFORE`, `FS_LOAD_O2_ROCKET_AFTER`, `FS_LOAD_O2_DEVICE_BEFORE`, `FS_LOAD_O2_DEVICE_AFTER`, `FS_LOAD_O3_BEFORE`, `FS_LOAD_O3_AFTER`, `FS_LOAD_O3J_BEFORE`, `FS_LOAD_O3J_AFTER`, `FS_LOAD_O4_BEFORE`, `FS_LOAD_O4_AFTER`, `FS_LOAD_PRUNE_BEFORE`, `FS_LOAD_PRUNE_AFTER`, `FS_LOAD_ABANDON_ROCKET`, `FS_LOAD_ABANDON_DEVICE`, `FS_LOAD_VETO_DESTINATION_SAVED`, `FS_LOAD_BIND_VETO` | No case at C1 | W330. Smoke: `FS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 19 cases were not smoked | `cargo-C-S4-LOAD` | PENDING (20) |
-| Q01, per-owner cap | `CQ_FLUID_LOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported fluid-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-load` | PENDING |
+| N001 to N014 | `FC_LOAD_PREPARING`, `FC_LOAD_L1_BEFORE` (K1), `FC_LOAD_L1_REPLACED` (K2), `FC_LOAD_L1_ACK`, `FC_LOAD_C2_SOURCE_AFTER`, `FC_LOAD_C2_DESTINATION_AFTER`, `FC_LOAD_SOURCE_ONLY_STORE`, `FC_LOAD_DESTINATION_ONLY_STORE`, `FC_LOAD_SECOND_FORCE_BEFORE`, `FC_LOAD_C6_JOINT_READBACK`, `FC_LOAD_K8`, `FC_LOAD_L2_REPLACED` (K9), `FC_LOAD_C7_ACKNOWLEDGED`, `FC_LOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PASS: `cargo-C-S1`; `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` |
+| N029 to N032 | `FC_LOAD_D2_C2`, `FC_LOAD_D2_C5`, `FC_LOAD_D2_C6`, `FC_LOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PASS: `cargo-C-S2`; `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` |
+| N037 to N044 | `FC_LOAD_E1_OWN_STORE`, `FC_LOAD_E2_CAPTURE`, `FC_LOAD_E2_ROCKET_EXTERNAL`, `FC_LOAD_E4L1_FAIL`, `FC_LOAD_E4L1_UNKNOWN`, `FC_LOAD_E4L2_UNKNOWN`, `FC_LOAD_E3_CACHE_CLOSE`, `FC_LOAD_E5_STALLED`; E3 and E5 were W138's earlier failures, rerun afresh at C1 | PASS (8) | Common | `cargo-C-S2` | PASS: `cargo-C-S2`; `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` |
+| N045 to N054 | `FC_LOAD_R1_255`, `FC_LOAD_R1_256`, `FC_LOAD_R2_DUPLICATE`, `FC_LOAD_R3_CURSOR`, `FC_LOAD_R3_OTHER`, `FC_LOAD_R3_RELOCATED`, `FC_LOAD_G1_FUTURE`, `FC_LOAD_G1_INVALID`, `FC_LOAD_G3_L1_INFLIGHT`, `FC_LOAD_G3_L2_UNKNOWN` | PASS (10) | Common; W352 restores native R1's synthetic fixture fuel in C3; all ten cases passed on W352's JAR (section 2.1.1) | `cargo-C-S3` | PASS: `cargo-C-S3`; `C6/campaign-attempt2/cargo-C-S3-attempt2/native/results.json` |
+| N075 to N078 | `FF_N1`, `FF_F1_AFTER_CARGO`, `FF_F6_AFTER_CARGO`, `FF_F8_AFTER_CARGO` | PASS (4) | Common | `cargo-C-S5` | PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` |
+| N087 to N090 | `FF_GOVERNED_MISSING`, `FF_GOVERNED_TERMINAL`, `FF_TWO_FLIGHTS`, `FF_CANCEL_AFTER_CARGO`; the last three were W142's earlier failures, rerun afresh at C1 | PASS (4) | Common | `cargo-C-S5` | PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` |
+| Load settlement, a C1 gap (Root decision R395) | 20 cases: `FS_LOAD_O1_BEFORE`, `FS_LOAD_O1_AFTER`, `FS_LOAD_BIND_BEFORE`, `FS_LOAD_BIND_AFTER`, `FS_LOAD_O2_ROCKET_BEFORE`, `FS_LOAD_O2_ROCKET_AFTER`, `FS_LOAD_O2_DEVICE_BEFORE`, `FS_LOAD_O2_DEVICE_AFTER`, `FS_LOAD_O3_BEFORE`, `FS_LOAD_O3_AFTER`, `FS_LOAD_O3J_BEFORE`, `FS_LOAD_O3J_AFTER`, `FS_LOAD_O4_BEFORE`, `FS_LOAD_O4_AFTER`, `FS_LOAD_PRUNE_BEFORE`, `FS_LOAD_PRUNE_AFTER`, `FS_LOAD_ABANDON_ROCKET`, `FS_LOAD_ABANDON_DEVICE`, `FS_LOAD_VETO_DESTINATION_SAVED`, `FS_LOAD_BIND_VETO` | No case at C1 | W330. Smoke: `FS_LOAD_O3_AFTER` passed with both restarts, and a scratch JAR with pruning disabled was rejected; the other 19 cases were not smoked | `cargo-C-S4-LOAD` | PASS: `cargo-C-S4-LOAD`; `C6/campaign-attempt2/cargo-C-S4-LOAD-attempt2/native/results.json` |
+| Q01, per-owner cap | `CQ_FLUID_LOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` |
+| Shared pool, added since C1 | Unsupported fluid-loader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-load` | PASS: `w336-saturation-fluid-load`; `C6/campaign-attempt2/w336-saturation-fluid-load-attempt2/native/results.json` |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C6's hosted run | C6 |
 |---|---|---|---|---|---|
-| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
-| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PENDING |
-| C-E-A05 | Load neutral normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | PENDING |
-| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
-| C-E-A14 | Exact-source cancellation after cargo | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.exactSourceCancellationPreservesTheLatestCargo` | PENDING |
+| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A05 | Load neutral normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldLoadNormalizesItsNeutralRocketOnlyAfterTheVetoClears` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A14 | Exact-source cancellation after cargo | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.exactSourceCancellationPreservesTheLatestCargo` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 The shared rows of section 8 also apply, including W329's device-hold GameTest, which uses a fluid cargo device.
 
@@ -753,9 +845,7 @@ Every row of section 4.3 applies, with these differences:
   component (`ARCE_ESCROW_FLUID_UNAVAILABLE`, evidenced by C-E-A04). Its other evidence is N001 to N014, N029 to N032,
   N037 to N054, N075 to N078, N087 to N090, `cargo-C-S4-LOAD` and the C-E rows above. The item-only rules about
   containers and stacks do not apply.
-- R-035's accounting is implemented in Slices A to D with versioned oracles, but activation and native evidence are
-  not established by those unit-tested slices. Section 12 gives the format, holds, migration, shared fuel-loader scope
-  and pending evidence ([W364](W364.md), [W366](W366.md), [QUEUE](../QUEUE.md), W372).
+- R-035's accounting is activated under R502-R504; C6's exact native accounting families pass except the retained old-JAR downgrade failure. Section 12 separates unit, native, migration and residual evidence ([W364](W364.md), [W366](W366.md), [QUEUE](../QUEUE.md)).
 - R-039 is evidenced by `CQ_FLUID_LOAD`; R-044's shared pool by `w336-saturation-fluid-load`; the downgrade removes
   `rocket_fluid_loader`'s ID.
 
@@ -763,9 +853,9 @@ Scope, duration and recovery are as in section 4.3.
 
 ### 6.4 Remaining work
 
-- Reviewed accounting activation and candidate evidence remain open (section 12).
+- Accounting activation is delivered; C6 native evidence is recorded in section 12. The old-JAR preservation assertion stays FAILED and acceptance remains open.
 - X01/X02 simulation/residuals, the unmeasured shared budget and deferred campaign remain open (sections 4.4 and 13).
-  W360's R-031 families need C6 results, not a new claim of no family.
+  W360's R-031 families passed on C6 (section 8.3), without accepting startup-refusal risk.
 
 ## 7. FLUID_CARGO_UNLOAD (`block_variant:loader/4`)
 
@@ -783,28 +873,28 @@ Scope, duration and recovery are as in section 4.3.
 
 | Rows | Cases (boundary) | C1 | Changed since C1 | C6 family | C6 |
 |---|---|---|---|---|---|
-| N015 to N028 | `FC_UNLOAD_PREPARING`, `FC_UNLOAD_L1_BEFORE` (K1), `FC_UNLOAD_L1_REPLACED` (K2), `FC_UNLOAD_L1_ACK`, `FC_UNLOAD_C2_SOURCE_AFTER`, `FC_UNLOAD_C2_DESTINATION_AFTER`, `FC_UNLOAD_SOURCE_ONLY_STORE`, `FC_UNLOAD_DESTINATION_ONLY_STORE`, `FC_UNLOAD_SECOND_FORCE_BEFORE`, `FC_UNLOAD_C6_JOINT_READBACK`, `FC_UNLOAD_K8`, `FC_UNLOAD_L2_REPLACED` (K9), `FC_UNLOAD_C7_ACKNOWLEDGED`, `FC_UNLOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PENDING (14) |
-| N033 to N036 | `FC_UNLOAD_D2_C2`, `FC_UNLOAD_D2_C5`, `FC_UNLOAD_D2_C6`, `FC_UNLOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PENDING (4) |
-| N055 to N074 | `FS_O1_BEFORE`, `FS_O1_AFTER`, `FS_BIND_BEFORE`, `FS_BIND_AFTER`, `FS_O2_ROCKET_BEFORE`, `FS_O2_ROCKET_AFTER`, `FS_O2_DEVICE_BEFORE`, `FS_O2_DEVICE_AFTER`, `FS_O3_BEFORE`, `FS_O3_AFTER`, `FS_O3J_BEFORE`, `FS_O3J_AFTER`, `FS_O4_BEFORE`, `FS_O4_AFTER`, `FS_PRUNE_BEFORE`, `FS_PRUNE_AFTER`, `FS_ABANDON_ROCKET`, `FS_ABANDON_DEVICE`, `FS_VETO_DESTINATION_SAVED`, `FS_BIND_VETO` | PASS (20) | Common; W330 extended the shared fluid settlement oracle for the load cuts | `cargo-C-S4` | PENDING (20) |
-| N079 to N086 | `FF_DISASSEMBLY_REMOVAL`, `FF_DISASSEMBLY_RESTORATION`, `FF_DISASSEMBLY_RELEASE`, `FF_REBUILD_DESTINATION`, `FF_KEEP_SOURCE`, `FF_REBUILD_SOURCE`, `FF_STALE_PREPARED`, `FF_RECONNECT` | PASS (8) | Common | `cargo-C-S5` | PENDING (8) |
-| Q02, per-owner cap | `CQ_FLUID_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PENDING |
-| Shared pool, added since C1 | Unsupported fluid-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-unload` | PENDING |
-| X03 | The operator's whole-world repair after REBUILD_SOURCE; `FF_REBUILD_SOURCE` shows a protected FLOOR_CONFLICT result, not a repair | NOT_COVERED | [W367-DESIGN](W367-DESIGN.md), with [QUEUE](../QUEUE.md), W367/R463, plans a narrow whole-copy repair. | None in the existing selection. `cargo-X03-REPAIR` is proposed, not delivered evidence; section 13. | PENDING |
+| N015 to N028 | `FC_UNLOAD_PREPARING`, `FC_UNLOAD_L1_BEFORE` (K1), `FC_UNLOAD_L1_REPLACED` (K2), `FC_UNLOAD_L1_ACK`, `FC_UNLOAD_C2_SOURCE_AFTER`, `FC_UNLOAD_C2_DESTINATION_AFTER`, `FC_UNLOAD_SOURCE_ONLY_STORE`, `FC_UNLOAD_DESTINATION_ONLY_STORE`, `FC_UNLOAD_SECOND_FORCE_BEFORE`, `FC_UNLOAD_C6_JOINT_READBACK`, `FC_UNLOAD_K8`, `FC_UNLOAD_L2_REPLACED` (K9), `FC_UNLOAD_C7_ACKNOWLEDGED`, `FC_UNLOAD_C8_RELEASED` | PASS (14) | Common | `cargo-C-S1` | PASS: `cargo-C-S1`; `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` |
+| N033 to N036 | `FC_UNLOAD_D2_C2`, `FC_UNLOAD_D2_C5`, `FC_UNLOAD_D2_C6`, `FC_UNLOAD_D2_C7` | PASS (4) | Common | `cargo-C-S2` | PASS: `cargo-C-S2`; `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` |
+| N055 to N074 | `FS_O1_BEFORE`, `FS_O1_AFTER`, `FS_BIND_BEFORE`, `FS_BIND_AFTER`, `FS_O2_ROCKET_BEFORE`, `FS_O2_ROCKET_AFTER`, `FS_O2_DEVICE_BEFORE`, `FS_O2_DEVICE_AFTER`, `FS_O3_BEFORE`, `FS_O3_AFTER`, `FS_O3J_BEFORE`, `FS_O3J_AFTER`, `FS_O4_BEFORE`, `FS_O4_AFTER`, `FS_PRUNE_BEFORE`, `FS_PRUNE_AFTER`, `FS_ABANDON_ROCKET`, `FS_ABANDON_DEVICE`, `FS_VETO_DESTINATION_SAVED`, `FS_BIND_VETO` | PASS (20) | Common; W330 extended the shared fluid settlement oracle for the load cuts | `cargo-C-S4` | PASS: `cargo-C-S4`; `C6/campaign-attempt2/cargo-C-S4-attempt2/native/results.json` |
+| N079 to N086 | `FF_DISASSEMBLY_REMOVAL`, `FF_DISASSEMBLY_RESTORATION`, `FF_DISASSEMBLY_RELEASE`, `FF_REBUILD_DESTINATION`, `FF_KEEP_SOURCE`, `FF_REBUILD_SOURCE`, `FF_STALE_PREPARED`, `FF_RECONNECT` | PASS (8) | Common | `cargo-C-S5` | PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` |
+| Q02, per-owner cap | `CQ_FLUID_UNLOAD` | NOT_COVERED | W330; smoke PASS | `cargo-C-Q` | PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` |
+| Shared pool, added since C1 | Unsupported fluid-unloader roots against 255 fuel-loader denials | No case at C1 | W336; smoke PASS | `w336-saturation-fluid-unload` | PASS: `w336-saturation-fluid-unload`; `C6/campaign-attempt2/w336-saturation-fluid-unload-attempt2/native/results.json` |
+| X03 | The operator's whole-world repair after REBUILD_SOURCE; `FF_REBUILD_SOURCE` shows a protected FLOOR_CONFLICT result, not a repair | NOT_COVERED | [W367-DESIGN](W367-DESIGN.md), with [QUEUE](../QUEUE.md), W367/R463, defines the delivered narrow whole-copy repair. | `cargo-X03-REPAIR`: original FAILED and separately passing both-origin rerun; section 13. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). |
 
 | GameTest row | Scenario | C1 | Changed since C1 | Test in C6's hosted run | C6 |
 |---|---|---|---|---|---|
-| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | PENDING |
-| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | PENDING |
-| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | PENDING |
-| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | PENDING |
-| C-E-A06 | Both survivor proofs, readback, pruning and a READY launch | PASS | None | `FluidCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | PENDING |
-| C-E-A07 | Unload neutral source normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | PENDING |
-| C-E-A08 | ABANDON with the rocket missing | PASS | None | `FluidCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | PENDING |
-| C-E-A09 | ABANDON with the device missing | NOT_COVERED | W330 | `FluidCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | PENDING |
-| C-E-A10 | The latest cargo is restored exactly once under a retained legacy record | PASS | None | `FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | PENDING |
-| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | PENDING |
-| C-E-A12 | Real cargo, then a stale PREPARED record with both entities and a protected keeper | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.stalePreparedWithBothEntitiesKeepsProtectedCargoAndRequiresSnapshotIdentity` | PENDING |
-| C-E-A13 | A disembarked passenger reconnects after cargo | NOT_COVERED | W330; a simulated reconnect is not V2 | `CargoRecoveryAcceptanceGameTests.disembarkedPassengerReconnectCannotReplayPreCargoAuthority` | PENDING |
+| C-E-A01 | Real load and unload; the first ledger; side effects of a disabled switch | PASS | None | `FluidCargoAdmissionGameTests.realLoadAndUnloadReachPreparedWithoutPublishingResources` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A02 | Native replay, typed store and readback, L2 and C8, competing devices | PASS | None | `FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A03 | Named F1 fence | PASS | None | `FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A04 | An unavailable fluid isolates its component | PASS | None | `FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A06 | Both survivor proofs, readback, pruning and a READY launch | PASS | None | `FluidCargoSettlementGameTests.heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A07 | Unload neutral source normalization and veto | PASS | None | `FluidCargoSettlementGameTests.heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A08 | ABANDON with the rocket missing | PASS | None | `FluidCargoSettlementGameTests.abandonProvesTheMissingRocketAndTheSurvivingDevice` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A09 | ABANDON with the device missing | NOT_COVERED | W330 | `FluidCargoSettlementGameTests.abandonProvesTheMissingDeviceAndSurvivingRocket` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A10 | The latest cargo is restored exactly once under a retained legacy record | PASS | None | `FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A11 | Two cargo-mutated flights, a successor mutation and the latest disassembly | PASS | None | `FluidCargoFlightGameTests.twoCargoMutatedFlightsThenTheLatestCargoDisassemblesExactlyOnce` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A12 | Real cargo, then a stale PREPARED record with both entities and a protected keeper | NOT_COVERED | W330 | `CargoRecoveryAcceptanceGameTests.stalePreparedWithBothEntitiesKeepsProtectedCargoAndRequiresSnapshotIdentity` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| C-E-A13 | A disembarked passenger reconnects after cargo | NOT_COVERED | W330; a simulated reconnect is not V2 | `CargoRecoveryAcceptanceGameTests.disembarkedPassengerReconnectCannotReplayPreCargoAuthority` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 The shared rows of section 8 also apply, including W329's device-hold GameTest.
 
@@ -823,9 +913,8 @@ Scope, duration and recovery are as in section 4.3.
 
 ### 7.4 Remaining work
 
-- X03 follows the narrow offline design and Root's R463 decisions; implementation, reviews, native evidence and final
-  operator text are still required (section 13).
-- Accounting activation/native evidence remain as in section 6.4.
+- X03's implementation/reviews and C6 both-origin rerun are delivered (section 13); final operator text/approval remains open. Its original harness failure is retained.
+- Accounting activation/native evidence is recorded as in section 6.4; no admission or risk approval follows.
 - X01/X02 simulation/residuals, the unmeasured shared budget and deferred campaign remain as in section 4.4.
 
 ## 8. Rows shared by the four cargo switches
@@ -834,26 +923,26 @@ Scope, duration and recovery are as in section 4.3.
 
 | Row | Boundary | C1 | Changed since C1 | C6 coverage | C6 |
 |---|---|---|---|---|---|
-| M01 | Ordinary prefix and apply, both save orders | PASS | Common | The C-S1, C-S2 and D-S1 families and the reconciliation GameTests | PENDING |
-| M02 | Composite binding and floor; shared ledger and floor reuse | NOT_COVERED | W330 added the reuse family | `cargo-B3-S5-REUSE`: missing, replaced and behind ledger, and every distinct, coalesced and saturated floor variant | PENDING |
-| M03 | Neutral normalization and veto | PASS | W330 added the load counterparts | C-S4, D-S2, C-S4-LOAD and D-S2-LOAD, and the settlement GameTests | PENDING |
-| M04 | O2, O3, O3J, O4 and pruning | PASS | As M03 | As M03 | PENDING |
-| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including governed P1-N2 and P1-F9, not ordinary LF_S6_F9_RESPAWN, which is NOT_COVERED under W211 R203 and R427) | PENDING |
-| M06 | Latest-cargo disassembly | PASS | Common | The three C-S5 disassembly windows and `IR_DISASSEMBLY` | PENDING |
-| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); C-S5's N1 and C-S2's E3 and E5 | PENDING |
-| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR; its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it, R428) and `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); the C-S3 and D-S2 roots | PENDING |
-| M09 | Cargo chains that do not apply | PASS (scope only) | None | No cargo chain is admitted, and no chain cut exists | PENDING |
+| M01 | Ordinary prefix and apply, both save orders | PASS | Common | The C-S1, C-S2 and D-S1 families and the reconciliation GameTests | PASS: `cargo-C-S1`; `C6/campaign-attempt2/cargo-C-S1-attempt2/native/results.json` PASS: `cargo-C-S2`; `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` PASS: `cargo-D-S1`; `C6/campaign-attempt2/cargo-D-S1-attempt2/native/results.json` |
+| M02 | Composite binding and floor; shared ledger and floor reuse | NOT_COVERED | W330 added the reuse family | `cargo-B3-S5-REUSE`: missing, replaced and behind ledger, and every distinct, coalesced and saturated floor variant | PASS: `cargo-B3-S5-REUSE`; `C6/campaign-attempt2/cargo-B3-S5-REUSE-attempt2/native/results.json` |
+| M03 | Neutral normalization and veto | PASS | W330 added the load counterparts | C-S4, D-S2, C-S4-LOAD and D-S2-LOAD, and the settlement GameTests | PASS: `cargo-C-S4`; `C6/campaign-attempt2/cargo-C-S4-attempt2/native/results.json` PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` PASS: `cargo-C-S4-LOAD`; `C6/campaign-attempt2/cargo-C-S4-LOAD-attempt2/native/results.json` PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| M04 | O2, O3, O3J, O4 and pruning | PASS | As M03 | As M03 | PASS: `cargo-C-S4`; `C6/campaign-attempt2/cargo-C-S4-attempt2/native/results.json` PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` PASS: `cargo-C-S4-LOAD`; `C6/campaign-attempt2/cargo-C-S4-LOAD-attempt2/native/results.json` PASS: `cargo-D-S2-LOAD`; `C6/campaign-attempt2/cargo-D-S2-LOAD-attempt2/native/results.json` |
+| M05 | Recognition, reconnect, replay and cancellation; shared flight reuse | NOT_COVERED | W330 added the A1 tests and the reuse family | C-S5; C-E-A12 to A14; `cargo-B3-S6-REUSE` (including governed P1-N2 and P1-F9, not ordinary LF_S6_F9_RESPAWN, which is NOT_COVERED under W211 R203 and R427) | PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` PASS: `cargo-B3-S6-REUSE`; `C6/campaign-attempt2/cargo-B3-S6-REUSE-attempt2/native/results.json` Ordinary LF_S6_F9_RESPAWN remains NOT_COVERED (W211 R203/R427). |
+| M06 | Latest-cargo disassembly | PASS | Common | The three C-S5 disassembly windows and `IR_DISASSEMBLY` | PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| M07 | Creation, storage and shutdown; shared writer reuse | NOT_COVERED | W330 added the reuse families | `cargo-B3-S1-REUSE` (N0, N2 definite and UNKNOWN, N3), `cargo-B3-S4-REUSE`, `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); C-S5's N1 and C-S2's E3 and E5 | PASS: `cargo-B3-S1-REUSE`; `C6/campaign-attempt2/cargo-B3-S1-REUSE-attempt2/native/results.json` PASS: `cargo-B3-S4-REUSE`; `C6/campaign-attempt2/cargo-B3-S4-REUSE-attempt2/native/results.json` PASS: `cargo-B3-S6-REUSE`; `C6/campaign-attempt2/cargo-B3-S6-REUSE-attempt2/native/results.json` PASS: `cargo-C-S5`; `C6/campaign-attempt2/cargo-C-S5-attempt2/native/results.json` PASS: `cargo-C-S2`; `C6/campaign-attempt2/cargo-C-S2-attempt2/native/results.json` Ordinary F9 remains NOT_COVERED. |
+| M08 | Protected roots and native save scope; shared lifecycle reuse | NOT_COVERED | W330 added the reuse families | `cargo-G2-REUSE` (the fuel loader's S1 campaign, with W176's old JAR; its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it, R428) and `cargo-B3-S6-REUSE` (LF_S6_F9_RESPAWN is NOT_COVERED under W211 R203 and R427); the C-S3 and D-S2 roots | FAILED: `cargo-G2-REUSE`; `C6/campaign-attempt2/cargo-G2-REUSE-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). PASS: `cargo-B3-S6-REUSE`; `C6/campaign-attempt2/cargo-B3-S6-REUSE-attempt2/native/results.json` PASS: `cargo-C-S3`; `C6/campaign-attempt2/cargo-C-S3-attempt2/native/results.json` PASS: `cargo-D-S2`; `C6/campaign-attempt2/cargo-D-S2-attempt2/native/results.json` |
+| M09 | Cargo chains that do not apply | PASS (scope only) | None | No cargo chain is admitted, and no chain cut exists | NOT_COVERED: scope-only cargo chain exclusion: no cargo chain is admitted and no executable chain cut exists. |
 
 ### 8.2 Shared families
 
 | Family | What it runs | Evidence before C3 | C6 |
 |---|---|---|---|
-| `cargo-C-Q` | The four cap cases of sections 4 to 7. Sixteen durable REPAIR operations on 16 other rockets charge owner A within the real 64, 8 and 16 limits. A's real device is refused with its complete ledger, device and rocket envelopes unchanged, across both restarts; owner B completes once without using A's capacity. | All four passed with both restarts (W330). One cap case also ran on a scratch JAR with the cap check disabled and was rejected, and all 12 retained archives passed the later complete-root comparison. | PENDING (4) |
-| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 or on C1; W354's corrected fixture passed all seven with both restarts before C3 (section 2.1.1) | PENDING (7) |
-| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (15) |
-| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PENDING (8) |
-| `cargo-B3-S6-REUSE` | 96 selected shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. LF_S6_F9_RESPAWN is excluded as NOT_COVERED under W211 R203 and R427. | Historical selected-case passes, including the nine later cases after the second candidate's main run; the excluded ordinary F9 attempts remain failed, not passes (section 2.1.1) | PENDING (96) |
-| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428). | Six historical rows passed; three downgrade rows failed and remain unwaived (section 2.1.1) | PENDING |
+| `cargo-C-Q` | The four cap cases of sections 4 to 7. Sixteen durable REPAIR operations on 16 other rockets charge owner A within the real 64, 8 and 16 limits. A's real device is refused with its complete ledger, device and rocket envelopes unchanged, across both restarts; owner B completes once without using A's capacity. | All four passed with both restarts (W330). One cap case also ran on a scratch JAR with the cap check disabled and was rejected, and all 12 retained archives passed the later complete-root comparison. | PASS: `cargo-C-Q`; `C6/campaign-attempt2/cargo-C-Q-attempt2/native/results.json` |
+| `cargo-B3-S1-REUSE` | 7 shared loader cases: creation refusal and baseline (N0, N2, N3). | Not run by W330 or on C1; W354's corrected fixture passed all seven with both restarts before C3 (section 2.1.1) | PASS: `cargo-B3-S1-REUSE`; `C6/campaign-attempt2/cargo-B3-S1-REUSE-attempt2/native/results.json` |
+| `cargo-B3-S4-REUSE` | 15 shared loader cases: storage and reconciliation. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PASS: `cargo-B3-S4-REUSE`; `C6/campaign-attempt2/cargo-B3-S4-REUSE-attempt2/native/results.json` |
+| `cargo-B3-S5-REUSE` | 8 shared loader cases: ledger missing, replaced or behind, and floor variants. | Historical fuel-loader passes; the family also passed on the second candidate after its main run (section 2.1.1) | PASS: `cargo-B3-S5-REUSE`; `C6/campaign-attempt2/cargo-B3-S5-REUSE-attempt2/native/results.json` |
+| `cargo-B3-S6-REUSE` | 96 selected shared loader S6 cases: checkpoint proofs, recovery, shutdown, settlement and flight. LF_S6_F9_RESPAWN is excluded as NOT_COVERED under W211 R203 and R427. | Historical selected-case passes, including the nine later cases after the second candidate's main run; the excluded ordinary F9 attempts remain failed, not passes (section 2.1.1) | PASS: `cargo-B3-S6-REUSE`; `C6/campaign-attempt2/cargo-B3-S6-REUSE-attempt2/native/results.json` |
+| `cargo-G2-REUSE` | The fuel loader's nine-start S1 campaign, with W176's old JAR and its migration, downgrade, protected-root and two-restart oracles. Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428). | Six historical rows passed; three downgrade rows failed and remain unwaived (section 2.1.1) | FAILED: `cargo-G2-REUSE`; `C6/campaign-attempt2/cargo-G2-REUSE-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
 
 The shared fuel-loader limits above are those of [W355](W355.md). Ordinary `LF_S6_F9_RESPAWN` is NOT_COVERED
 ([W211](W211.md), R203; R427), not replaced by the governed P1-F9 evidence. The fuel loader's first BI veto attempt
@@ -869,11 +958,11 @@ Its R416 boundary preserves every managed/non-metadata file; only the allowed La
 
 | Scenario | Source | C6 family and case | C6 |
 |---|---|---|---|
-| R-031 future ledger root refuses before READY; restored fixture gets two clean restarts. | [W360](W360.md) | `r042-R031_FUTURE` (`R031_FUTURE`) | PENDING |
-| R-031 invalid negative issued_through refuses before READY with the same preservation boundary. | [W360](W360.md) | `r042-R031_INVALID` (`R031_INVALID`) | PENDING |
-| Bay presence becomes UNKNOWN after the pre-start check; real status failure gives PRESENCE_UNKNOWN, then recovery. | [W360](W360.md) | `r042-X_BAY` (`X_BAY`) | PENDING |
-| Ledger presence becomes UNKNOWN after the pre-start check; the protective hold is followed by recovery. | [W360](W360.md) | `r042-X_LEDGER` (`X_LEDGER`) | PENDING |
-| Vanilla dismount during ledger NOT_LOADED is unreachable through supported production flow. | [W360](W360.md), dismount argument. | `r042-L_LEDGER` has no executable subcase: classification precedes login, all later mounts are vetoed, and no supported production ledger detachment exists. This is not a pass. | PENDING |
+| R-031 future ledger root refuses before READY; restored fixture gets two clean restarts. | [W360](W360.md) | `r042-R031_FUTURE` (`R031_FUTURE`) | PASS: `r042-R031_FUTURE`; `C6/campaign-attempt2/r042-R031_FUTURE-attempt2/native/results.json` |
+| R-031 invalid negative issued_through refuses before READY with the same preservation boundary. | [W360](W360.md) | `r042-R031_INVALID` (`R031_INVALID`) | PASS: `r042-R031_INVALID`; `C6/campaign-attempt2/r042-R031_INVALID-attempt2/native/results.json` |
+| Bay presence becomes UNKNOWN after the pre-start check; real status failure gives PRESENCE_UNKNOWN, then recovery. | [W360](W360.md) | `r042-X_BAY` (`X_BAY`) | PASS: `r042-X_BAY`; `C6/campaign-attempt2/r042-X_BAY-attempt2/native/results.json` |
+| Ledger presence becomes UNKNOWN after the pre-start check; the protective hold is followed by recovery. | [W360](W360.md) | `r042-X_LEDGER` (`X_LEDGER`) | PASS: `r042-X_LEDGER`; `C6/campaign-attempt2/r042-X_LEDGER-attempt2/native/results.json` |
+| Vanilla dismount during ledger NOT_LOADED is unreachable through supported production flow. | [W360](W360.md), dismount argument. | `r042-L_LEDGER` has no executable subcase: classification precedes login, all later mounts are vetoed, and no supported production ledger detachment exists. This is not a pass. | NOT_COVERED: vanilla dismount under ledger NOT_LOADED is unreachable in supported production flow (W360); L_LEDGER has no such executable subcase. |
 
 ### 8.4 W329's GameTests
 
@@ -882,13 +971,13 @@ while the ledger is NOT_LOADED, and `w329_ledger_no_file` checks that NO_FILE an
 `escrowIdle`, `flightFrozen`, `retirementUnprotected`, `bayNeutral`, `escrowLogicalLocked`,
 `RocketCargoDeviceHold.locked` (with a fluid cargo device), `EscrowLoaderAdmission.progress` and the status command. W329
 also showed that reverting its production change fails all eight NOT_LOADED tests. C3's execution is historical ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 8.4).
-C6 must confirm all sixteen again.
+Exact named C6 hosted records for all sixteen are not supplied; section 2.1.4 states that limit.
 
 | Scenario | Source | C6 hosted inventory | C6 |
 |---|---|---|---|
-| The sixteen original protective-read/control GameTests. | [W329](W329.md) | `EscrowLedgerNotLoadedGameTests`, the original two batches named above. | PENDING (16) |
-| A real item loader is held and removal-protected under NOT_LOADED without NBT changes. | [W360](W360.md) | `EscrowLedgerNotLoadedGameTests.notLoadedItemLoaderIsHeld` | PENDING |
-| A real item unloader is held and removal-protected under NOT_LOADED without NBT changes. | [W360](W360.md) | `EscrowLedgerNotLoadedGameTests.notLoadedItemUnloaderIsHeld` | PENDING |
+| The sixteen original protective-read/control GameTests. | [W329](W329.md) | `EscrowLedgerNotLoadedGameTests`, the original two batches named above. | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| A real item loader is held and removal-protected under NOT_LOADED without NBT changes. | [W360](W360.md) | `EscrowLedgerNotLoadedGameTests.notLoadedItemLoaderIsHeld` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
+| A real item unloader is held and removal-protected under NOT_LOADED without NBT changes. | [W360](W360.md) | `EscrowLedgerNotLoadedGameTests.notLoadedItemUnloaderIsHeld` | NOT_COVERED: native campaign does not run hosted GameTests; R581 reports 1,886 aggregate hosted passes, but individual named shard records are not in the supplied evidence (`docs/work/v1.8.0-root-queue/QUEUE.md`, C6 run). |
 
 ### 8.5 The downgrade family
 
@@ -897,23 +986,22 @@ actual bay receipts, a schema-3 transfer journal and a valid empty ledger, then 
 Its historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R429,
 [QUEUE](../QUEUE.md)); both restored-candidate restarts passing does not waive those failures.
 C3's failures remain historical ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 8.5).
-Ledger root 3 adds a second refusal reason even without a governed transfer record; whether that path rewrites
-metadata is untested ([R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3). Neither restored-candidate starts
+Ledger root 3 adds a second refusal reason without a governed transfer record. C6 accounting-root3-old-jar FAILED on all three refused starts rewriting level.dat/level.dat_old (R618); its managed roots remain distinct from the whole-world assertion ([R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 5). Neither restored-candidate starts
 nor a later risk signature turn the old failed downgrade checks into passes.
 
 | Scenario | Evidence to fill | C6 |
 |---|---|---|
-| The retained five-device downgrade family. | `w336-downgrade`; keep its whole-world oracle unchanged. | PENDING |
-| Shared historical-JAR lifecycle/downgrade rows. | `cargo-G2-REUSE`; C3 rows 3 to 5 stay failed history. | PENDING |
-| Root-3 ledger downgrade refusal without a governed transfer record. | Planned C6 accounting/downgrade cases, not yet assigned a delivered family; section 12. | PENDING |
+| The retained five-device downgrade family. | `w336-downgrade`; keep its whole-world oracle unchanged. | FAILED: `w336-downgrade`; `C6/campaign-attempt2/w336-downgrade-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
+| Shared historical-JAR lifecycle/downgrade rows. | `cargo-G2-REUSE`; C3 rows 3 to 5 stay failed history. | FAILED: `cargo-G2-REUSE`; `C6/campaign-attempt2/cargo-G2-REUSE-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
+| Root-3 ledger downgrade refusal without a governed transfer record. | C6 accounting-root3-old-jar; OLD_JAR_REFUSAL remains FAILED (R618), section 12. | FAILED: `accounting-root3-old-jar`; `C6/campaign-attempt2/accounting-root3-old-jar-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
 
 ### 8.6 Residuals
 
 | Row | Kinds | C1 | Since C1 | C6 |
 |---|---|---|---|---|
-| X01 | All four | NOT_COVERED: a forced Java-process stop does not simulate OS crash or power loss | R457 selects non-destructive E4 replay; [W368-DESIGN](W368-DESIGN.md) and section 13 define coverage and residuals. | PENDING |
-| X02 | All four | NOT_COVERED: unobservable storage, cache and close failures | R457 selects seam fault injection; [W368-DESIGN](W368-DESIGN.md) and section 13 give the three-way classification. | PENDING |
-| X03 | FLUID_CARGO_UNLOAD | NOT_COVERED: the operator's whole-world repair after REBUILD_SOURCE | [W367-DESIGN](W367-DESIGN.md), R463, selects a narrow whole-copy offline repair; implementation/native evidence remain open (section 13). | PENDING |
+| X01 | All four | NOT_COVERED: a forced Java-process stop does not simulate OS crash or power loss | R457 selects non-destructive E4 replay; [W368-DESIGN](W368-DESIGN.md) and section 13 define coverage and residuals. | FAIL: S3 3 PASS / 9 FAIL of 12; `X01-S3/MANIFEST.json`. With W448 reruns: 5 PASS / 7 FAIL, 72/82 states pass both starts and 10 late-loss states fail (R637); `X01-triage/MANIFEST.json`; `X01-triage/followup-bay/MANIFEST.json`. W451 OBSERVED, not PASS: no quantity lost/created in five lost-history states; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X02 | All four | NOT_COVERED: unobservable storage, cache and close failures | R457 selects seam fault injection; [W368-DESIGN](W368-DESIGN.md) and section 13 give the three-way classification. | INCOMPLETE: attempt 3, 44 SEEN_HELD / 10 CAUGHT_LATER / 10 NOT_CAUGHT / 4 INCOMPLETE / 4 NOT_APPLICABLE; `C6/x02-s5-attempt3/MANIFEST.json`. W446 merged reruns: 49 / 16 / 3 / 0 / 4; keeping original bay images: 49 / 14 / 5 / 0 / 4; `C6/x02-s5-triage/MERGED-TOTALS.json`. R636 bay diagnostic omission, R639 satellite oracle-contract mismatch, ledger STALE residual remain; no classification is promoted to PASS. |
+| X03 | FLUID_CARGO_UNLOAD | NOT_COVERED: the operator's whole-world repair after REBUILD_SOURCE | [W367-DESIGN](W367-DESIGN.md), R463, selects a narrow whole-copy offline repair; implementation and both-origin rerun are recorded in section 13; operator approval remains open. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). |
 
 ## 9. The owner's three checks
 
@@ -979,8 +1067,7 @@ register's description accepts no risk.
 **About the figures.** W336's observations are vanilla game-time intervals, bracketed with `time query gametime` on the
 **development host**, on a locally built JAR (production inputs `b3e33720e`, SHA-256 `f9aca893…7cd5ab`), with small
 numbers of claims. They are not C6 results and **not reference-node figures**. W336 states that they do not establish
-worst-case timings and do not justify extrapolating the 64-claim, 34-slot estimate. C6's planned timing families repeat them on
-the candidate, still on the development host.
+worst-case timings and do not justify extrapolating the 64-claim, 34-slot estimate. C6's timing families repeat them on the candidate, still on the development host; the later table distinguishes those observations from the historical W336 figures.
 
 The rows follow W327's numbering of the waits from D0 to D7 and in recovery. "Bounded" means bounded by code;
 "estimated" means a hand calculation with no run behind it; "measured" means a run recorded the time.
@@ -1011,13 +1098,28 @@ The rows follow W327's numbering of the waits from D0 to D7 and in recovery. "Bo
 | 22 | Reconnect queue | 200 ticks | Bounded | Login to expiry: 198 to 203 and 197 to 202 ticks on the two restarts | `w336-timing-RECONNECT` |
 | 23 | Ticket expiry after a claim ends | 400 ticks after the last renewal (vanilla) | Bounded (code and vanilla) | Census columns: 4 columns all loaded at [298,303] and all unloaded by [789,794]; 6 columns at [322,329] and by [797,804]. Other tickets were present, so this is not an isolated bay-ticket expiry. | Recorded with the timing families |
 
-**C6's timing families.** Results and measured intervals are PENDING. The ten selected timing names are retained
+**C6's timing families.** All ten report PASS. Each file retains bracketed server-game-tick events and both restarts; an observed hold or test-window length is not an upper bound. The ten selected timing names are retained
 in section 3.2 and the table above. Historical C3 intervals remain in [C3-SWITCH-REPORT](C3-SWITCH-REPORT.md),
 section 9.2, not as C6 measurements. Root must keep development-host timing separate from a reference-node result.
 
 | Timing evidence | Source/mapping | C6 |
 |---|---|---|
-| The ten timing profiles with both restarts, interval observations and an explicit upper-bound verdict. | [W336](W336.md); the exact timing families in section 3.2. | PENDING (10) |
+| The ten timing profiles with both restarts, interval observations and an explicit upper-bound verdict. | [W336](W336.md); the exact timing families in section 3.2. | PASS: `w336-timing-B12_D4`; `C6/campaign-attempt2/w336-timing-B12_D4-attempt2/native/results.json` PASS: `w336-timing-B12_D7`; `C6/campaign-attempt2/w336-timing-B12_D7-attempt2/native/results.json` PASS: `w336-timing-B13_FAILED`; `C6/campaign-attempt2/w336-timing-B13_FAILED-attempt2/native/results.json` PASS: `w336-timing-B13_UNKNOWN`; `C6/campaign-attempt2/w336-timing-B13_UNKNOWN-attempt2/native/results.json` PASS: `w336-timing-B16_MOTION`; `C6/campaign-attempt2/w336-timing-B16_MOTION-attempt2/native/results.json` PASS: `w336-timing-B10_BLOCKED`; `C6/campaign-attempt2/w336-timing-B10_BLOCKED-attempt2/native/results.json` PASS: `w336-timing-RECONNECT`; `C6/campaign-attempt2/w336-timing-RECONNECT-attempt2/native/results.json` PASS: `w336-timing-TURNS-2`; `C6/campaign-attempt2/w336-timing-TURNS-2-attempt2/native/results.json` PASS: `w336-timing-TURNS-3`; `C6/campaign-attempt2/w336-timing-TURNS-3-attempt2/native/results.json` PASS: `w336-timing-D6_RETRY`; `C6/campaign-attempt2/w336-timing-D6_RETRY-attempt2/native/results.json` Development host only; no upper bound or REF pass inferred. |
+
+C6's observed start-window lengths are listed below in server game ticks, in recorded order (including both seeded trials for TURNS). They are **whole observation windows**, not D6 latency or a worst-case bound. The D6_RETRY file additionally records retry brackets [201,203] and [201,203]. The other exact transition brackets remain in each file's `measured_starts/events`.
+
+| C6 profile | Recorded window lengths (ticks) | Bound/evidence |
+|---|---|---|
+| `B10_BLOCKED` | 398, 248, 249 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B10_BLOCKED-attempt2/native/results.json` |
+| `B12_D4` | 494, 34, 34 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B12_D4-attempt2/native/results.json` |
+| `B12_D7` | 492, 33, 34 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B12_D7-attempt2/native/results.json` |
+| `B13_FAILED` | 898, 34, 28 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B13_FAILED-attempt2/native/results.json` |
+| `B13_UNKNOWN` | 901, 29, 33 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B13_UNKNOWN-attempt2/native/results.json` |
+| `B16_MOTION` | 549, 29, 29 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-B16_MOTION-attempt2/native/results.json` |
+| `D6_RETRY` | 176, 754, 27 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-D6_RETRY-attempt2/native/results.json` |
+| `RECONNECT` | 399, 254, 255 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-RECONNECT-attempt2/native/results.json` |
+| `TURNS-2` | 204, 574, 29, 204, 616, 39 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-TURNS-2-attempt2/native/results.json` |
+| `TURNS-3` | 230, 620, 42, 230, 653, 39 | NOT_ESTABLISHED; `C6/campaign-attempt2/w336-timing-TURNS-3-attempt2/native/results.json` |
 
 **Summary.** Only the per-attempt retry spacings (rows 2, 5 and 13), the 32-step budget (row 18), the reconnect queue
 (row 22) and ticket expiry (row 23) are bounded. W336's retry and reconnect observations (rows 5, 13 and 22) lie within
@@ -1038,7 +1140,7 @@ D5 (row 6; W327-L3, now in R-043). No run measures this.
 | An unsupported device root: the device is protected and disabled, and ordinary removal is refused | **One device.** The fuel loader in R-044; each cargo device in R-035's cargo paragraph; the bay in R-038 | R-044, R-035, R-038 | Code (W327 section 3.1); the W336 saturation fixtures place unsupported roots of each device |
 | One chunk's terrain save refused | **One chunk**, per device as above | As above | As above |
 | The 256-coordinate denial pool | **Shared per ServerLevel** by about 15 device families: suit workstations, tanks, force fields, landing pads, solar arrays, combustion generators, pumps, classic and research machines, unlit torches, life-support devices, the bay, the four cargo devices and the fuel loader. Any family's denials use it up, and the 257th coordinate refuses every later terrain save in the Level. | R-044 (shared-pool text, W327-M5); R-038 and R-035's cargo paragraph refer to it | W336: each of the five bay and cargo controls ran against 255 fuel-loader denials, and the fuel control against bay denials. Terrain without a device saved at 255 and 256 and was refused after the 257th. All 257 unsupported roots stayed byte-identical. Restart 1 reset the in-memory pool; restart 2 loaded the roots, saturated again and refused a change. A scratch JAR without the pool was rejected. |
-| The downgrade rewrite |**The world.** It comes from the old JAR's transfer-journal refusal (R-035) Ledger root 3 adds the second refusal boundary (R458); its metadata effect needs C6 evidence.| R-044 (W327-M4 text) |W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED; historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. C3's `w336-downgrade` and `cargo-G2-REUSE` failed the same way (section 2.1). [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3, states the new boundary without claiming it was tested.|
+| The downgrade rewrite |**The world.** It comes from the old JAR's transfer-journal refusal (R-035) Ledger root 3 adds the second refusal boundary (R458); its C6 metadata-preservation assertion is FAILED (R618).| R-044 (W327-M4 text) |W336 with W176's old JAR: all three refusals changed only `level.dat` and `level.dat_old`, and the 43 other world files stayed identical. The registry lost 13 block and 12 item entries, including all five placed device IDs. Device roots, receipts, the empty ledger, terrain and the transfer journal stayed byte-identical. W176's whole-world verdict stays FAILED; historical-JAR downgrade checks are expected to fail under R-044 until the owner decides it (R428, R429). Restoring the complete backup reproduced every hash, and both later candidate starts were clean and kept all five roots. C3's `w336-downgrade` and `cargo-G2-REUSE` failed the same way (section 2.1). [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3, now retains the failed root-3 boundary in section 5; C6's repeated failure is in sections 8.5 and 12.|
 | The pending pool of 64, 8 and 16 | **Shared** by the fuel loader, the four cargo kinds and the bay | R-039, R-042 | `cargo-C-Q`; CAP rows; `r042-P_SERVER`, `r042-P_OWNER`; F3 GameTests |
 | NOT_LOADED of the receipts or the ledger | **The whole server**: every rocket and every device holding a root | R-042, R-035 | `r042-N_BAY`, `r042-L_LEDGER`; W329's GameTests |
 | The shared cargo work budget | **Shared** by the four cargo kinds and the bay | R-043 (W327-L3 text) | Not measured |
@@ -1083,7 +1185,7 @@ does not change the register or decide admission.
 6. R-044 records W176's 12 removed block and 11 item entries; W336 observed 13 and 12 with its JAR. The count depends
    on the JAR.
 7. W329 originally tested only a fluid device's hold. [W360](W360.md) adds the item-loader and item-unloader
-   GameTests of section 8.4; their C4 results are awaited.
+   GameTests of section 8.4; their exact named C6 hosted results remain open under section 2.1.4.
 8. W350's local full run failed three tests it did not touch, including
    `SealedSpecialHostAutomationGameTests.tankAndBayStaySealedUnderTickingAutomation`, and QUEUE keeps that as an open
    item. The branch run 42849035668 passed them. W350 did not establish a cause.
@@ -1125,8 +1227,11 @@ remains PENDING. The C4 run summary in section 2.1.2 is history, not a fill from
 
 [W423](W423.md) records the R581/R582 identity, independently computed cell
 hashes, K06/K13 manifest checks and the C5-to-C6 retargeting.
-Earlier candidate statements and all scenario rows are retained. Every C6
-scenario result is PENDING; C5's pre-run stays historical development evidence.
+Earlier candidate statements and all scenario rows were retained with PENDING results at W423's drafting snapshot; C5's pre-run stays historical development evidence. W455's subsequent fill below supersedes only those pending-result descriptions.
+
+### W455's evidence fill (2026-11-23)
+
+Under R646, W455 read attempt 2, X03's short-path rerun, X01 S3/triage/follow-ups and X02 attempt 3/triage/satellite comparison. Results are transcribed without changing runners, oracles, failed verdicts or Root dispositions. Evidence fingerprints are in section 2.1.4. Exact named hosted GameTests are not inferred from the aggregate. No server, lock, Gradle task, product test, switch, Gate, risk acceptance or owner signature is created by this documentation work.
 
 ## 12. Per-fluid signed accounting
 
@@ -1134,9 +1239,7 @@ scenario result is PENDING; C5's pre-run stays historical development evidence.
 
 The authority is R-035's accounting paragraph in the [risk register](../../../11-RISK-REGISTER.md), with
 [W357-DESIGN](W357-DESIGN.md), [W361](W361.md), [W362](W362.md), [W364](W364.md) and [W366](W366.md).
-The register describes Slices A/B as not activated; W372's later activation task is separate and unresolved at
-this drafting snapshot ([QUEUE](../QUEUE.md), R466/R468/R469). C6 is intended to carry the reviewed activation,
-not merely the account model.
+The earlier inactive-stage register wording is historical: W372D/E activation is delivered under R502-R504 ([QUEUE](../QUEUE.md)); C6 carries ENABLED=true, while production admission stays off. The C6 native families below exercise the activated model.
 
 | Subject | Recorded rule and scope | Source |
 |---|---|---|
@@ -1149,48 +1252,37 @@ not merely the account model.
 | Migration/start refusal | With activation on, root 2 migrates at pre-start, retaining embedded history as UNKNOWN. A noncanonical source, invalid/full target, root 1 or BACKUP_LIMIT refuses the whole world before start and preserves source bytes. Migration backup is not a complete world backup. | R-035 accounting paragraph; [W362](W362.md); [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md). |
 | Bounds and availability | Rows have a 2,048-byte, depth-5, 65-node, 14-member saved bound; the measured frozen new-format component fits 13. Reservations charge each row once, reducing admitted byte capacity without raising the existing ceilings. No new chunk/Level save refusal or shared-denial coordinate is added. | [W362](W362.md), R447 correction; R-035 accounting paragraph. |
 | Logs and duration | Each live held operation has one ARCE_ESCROW_ACCOUNTING_HELD WARN, at most 64 live IDs; IDs are forgotten after leaving the ledger. Release has one INFO; confirmed operator audit is bounded to 64 members/320 key rows. Holds have no auto-clear timeout; startup refusal lasts until repair/support. | R-035 accounting paragraph; [W364](W364.md); [W366](W366.md). |
-| Downgrade | Root 3 is an extra old-JAR refusal reason, even without a governed transfer record. Complete-world backup/restore remains required; metadata behavior on this path is not yet tested. | [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3; R458. |
+| Downgrade | Root 3 is an extra old-JAR refusal reason, even without a governed transfer record. Complete-world backup/restore remains required; C6 repeats its FAILED metadata-preservation assertion (R618), without weakening it. | [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3; R458. |
 
 ### 12.2 Evidence per fluid kind and the shared fuel loader
 
-These are evidence requirements/mappings, not candidate results. Unit classes exercise explicit root-3 models
-while activation is off; they do not prove the normal root-3 writer, migration or native restarts.
+These rows distinguish C6 unit evidence from C6 native/restart evidence. Unit XML alone proves neither native writes nor migrations; the separately named native families supply their scoped results. Every production admission switch stays off.
 
 | Evidence row | Applies to | Named test or planned run | Source | C6 |
 |---|---|---|---|---|
-| Slice A: key identity, signed balance, half application, chains, UNKNOWN and bounded codec/size. | FLUID_CARGO_LOAD, FLUID_CARGO_UNLOAD and fuel loader. | `EscrowFluidAccountTest`, `EscrowFluidAccountCodecTest`, `EscrowFluidAccountSizeTest`. | [W361](W361.md); R443/R447 in [QUEUE](../QUEUE.md). | PENDING |
-| Slice B: root/operation/intent/receipt versions, migration refusals, capacity and authority-copy preservation. | Both fluid cargo kinds and fuel loader; all kinds share ledger startup. | `EscrowAccountingFormatTest`, `EscrowAccountingMigrationTest`, `EscrowAccountingDecodeTest`, `EscrowAccountingCapacityMeasurementTest`. | [W362](W362.md); R445 to R449. | PENDING |
-| Slice C: typed fuel capture and normal zero-residual reconciliation/retirement. | Fuel loader. | `EscrowAccountingCaptureTest`, `EscrowAccountingReconciliationTest`. | [W364](W364.md). | PENDING |
-| Slice C: cursor-only cargo capture, both directions, zero residual and component-local mismatch. | FLUID_CARGO_LOAD and FLUID_CARGO_UNLOAD. | `EscrowAccountingCaptureTest`, `EscrowAccountingReconciliationTest`. | [W364](W364.md). | PENDING |
-| Slice D: signed preview/confirm, O1 to O4, known and missing sides, shared ownership, diagnostics and permanent rows. | Both fluid cargo kinds and fuel loader; mixed item components share pending roots. | `EscrowAccountingSettlementTest`; paired schema-4 pruning coverage described by W366. | [W366](W366.md); R462 to R465. | PENDING |
-| Slice E part 1: versioned native readers and independent accounting expectations. | Both fluid cargo kinds and fuel loader; root framing also applies to items. | `EscrowAccountingOracleFixtureTest` and W365's reader/oracle tests. | [W365](W365.md); R452. | PENDING |
-| Activation: full unit suite, runData/clean generated diff, full GameTest/log checker and independent read-only review. | The shared ledger, both fluid cargo kinds and fuel loader. | W372/R466; candidate hosted run identity remains PENDING. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md); [QUEUE](../QUEUE.md), R468/R469. | PENDING |
-| Activation native smoke: fresh fuel fill writes, reads and retires root 3 through two restarts. | Fuel loader. | W372's required existing-family smoke; concrete case and artifact pins await its record. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md). | PENDING |
-| Activation native smoke: fresh fluid cargo writes, reads and retires root 3 through two restarts. | Fluid cargo; the actual direction must be named in the result, not inferred for both. | W372's required existing-family smoke; concrete case and artifact pins await its record. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md). | PENDING |
-| Slice E part 2 native accounting: fresh normal and settlement/repair paths with exact accounts and two restarts. | FLUID_CARGO_LOAD. | Planned W373 native cases; no assigned case/family identifiers are invented here. | [W365](W365.md), remaining native work; [QUEUE](../QUEUE.md), W372/R466. | PENDING |
-| Slice E part 2 native accounting: fresh normal and settlement/repair paths with exact accounts and two restarts. | FLUID_CARGO_UNLOAD. | Planned W373 native cases. | [W365](W365.md); [QUEUE](../QUEUE.md), W372/R466. | PENDING |
-| Slice E part 2 native accounting: bank ownership, signed/UNKNOWN settlement, exact retries and restart proofs. | Fuel loader, where it shares the risk. | Planned W373 native cases. | [W365](W365.md); [W366](W366.md), remaining work; [QUEUE](../QUEUE.md), W372/R466. | PENDING |
-| Root-2 migration, legacy UNKNOWN and root-3 downgrade boundaries on the final candidate. | The shared ledger and all five switches; fluid accounting and fuel loader share the migration risk. | Planned accounting-native/downgrade cases; exact selection awaits W373 and Root. | [W365](W365.md); [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3. | PENDING |
+| Slice A: key identity, signed balance, half application, chains, UNKNOWN and bounded codec/size. | FLUID_CARGO_LOAD, FLUID_CARGO_UNLOAD and fuel loader. | `EscrowFluidAccountTest`, `EscrowFluidAccountCodecTest`, `EscrowFluidAccountSizeTest`. | [W361](W361.md); R443/R447 in [QUEUE](../QUEUE.md). | PASS: `EscrowFluidAccountTest` (19), `EscrowFluidAccountCodecTest` (9), `EscrowFluidAccountSizeTest` (7); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). |
+| Slice B: root/operation/intent/receipt versions, migration refusals, capacity and authority-copy preservation. | Both fluid cargo kinds and fuel loader; all kinds share ledger startup. | `EscrowAccountingFormatTest`, `EscrowAccountingMigrationTest`, `EscrowAccountingDecodeTest`, `EscrowAccountingCapacityMeasurementTest`. | [W362](W362.md); R445 to R449. | PASS: `EscrowAccountingFormatTest` (13), `EscrowAccountingMigrationTest` (11), `EscrowAccountingDecodeTest` (4), `EscrowAccountingCapacityMeasurementTest` (3); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). |
+| Slice C: typed fuel capture and normal zero-residual reconciliation/retirement. | Fuel loader. | `EscrowAccountingCaptureTest`, `EscrowAccountingReconciliationTest`. | [W364](W364.md). | PASS: `EscrowAccountingCaptureTest` (5), `EscrowAccountingReconciliationTest` (12); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). |
+| Slice C: cursor-only cargo capture, both directions, zero residual and component-local mismatch. | FLUID_CARGO_LOAD and FLUID_CARGO_UNLOAD. | `EscrowAccountingCaptureTest`, `EscrowAccountingReconciliationTest`. | [W364](W364.md). | PASS: `EscrowAccountingCaptureTest` (5), `EscrowAccountingReconciliationTest` (12); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). |
+| Slice D: signed preview/confirm, O1 to O4, known and missing sides, shared ownership, diagnostics and permanent rows. | Both fluid cargo kinds and fuel loader; mixed item components share pending roots. | `EscrowAccountingSettlementTest`; paired schema-4 pruning coverage described by W366. | [W366](W366.md); R462 to R465. | PASS: `EscrowAccountingSettlementTest` (12); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). |
+| Slice E part 1: versioned native readers and independent accounting expectations. | Both fluid cargo kinds and fuel loader; root framing also applies to items. | `EscrowAccountingOracleFixtureTest` and W365's reader/oracle tests. | [W365](W365.md); R452. | PASS: `EscrowAccountingOracleFixtureTest` (1); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). Python oracle integration is exercised by the accounting native families, not by this XML alone. |
+| Activation: full unit suite, runData/clean generated diff, full GameTest/log checker and independent read-only review. | The shared ledger, both fluid cargo kinds and fuel loader. | W372D/E activation delivered R502-R504; candidate hosted identity R581, run 44770334930. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md); [QUEUE](../QUEUE.md), R468/R469. | PARTIAL: R581 hosted build/data/regression PASS at C6 (section 2.1); PASS: `EscrowAccountingFormatTest` (13); `C6/candidate/v180-build-evidence-c8fa16e16be87554f26c402546733df6555d15e6-1.zip`; XML members under `build/test-results/test/` (section 2.1.4). Activation/review delivered under R502-R504 (W372D/E). Individual hosted GameTest shard records are NOT_COVERED by the supplied evidence. |
+| Activation native smoke: fresh fuel fill writes, reads and retires root 3 through two restarts. | Fuel loader. | C6 accounting-cuts-loader, including LF_M_D2_C1_ACK; development activation smoke is historical. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md). | PASS: `accounting-cuts-loader`; `C6/campaign-attempt2/accounting-cuts-loader-attempt2/native/results.json` Fresh fuel LOAD: LF_M_D2_C1_ACK, root 3 and both restarts. |
+| Activation native smoke: fresh fluid cargo writes, reads and retires root 3 through two restarts. | Fluid cargo; the actual direction must be named in the result, not inferred for both. | C6 accounting-cuts-cargo-load and accounting-cuts-cargo-unload; directions are separately reported. | [TASK-W372](../TASK-W372-ACCOUNTING-ACTIVATION.md). | PASS: `accounting-cuts-cargo-load`; `C6/campaign-attempt2/accounting-cuts-cargo-load-attempt2/native/results.json` PASS: `accounting-cuts-cargo-unload`; `C6/campaign-attempt2/accounting-cuts-cargo-unload-attempt2/native/results.json` Directions LOAD and UNLOAD are separate 17-case runs, not inferred from one smoke. |
+| Slice E part 2 native accounting: fresh normal and settlement/repair paths with exact accounts and two restarts. | FLUID_CARGO_LOAD. | C6 accounting-cuts-cargo-load (17) and accounting-outcomes. | [W365](W365.md), remaining native work; [QUEUE](../QUEUE.md), W372/R466. | PASS: `accounting-cuts-cargo-load`; `C6/campaign-attempt2/accounting-cuts-cargo-load-attempt2/native/results.json` PASS: `accounting-outcomes`; `C6/campaign-attempt2/accounting-outcomes-attempt2/native/results.json` |
+| Slice E part 2 native accounting: fresh normal and settlement/repair paths with exact accounts and two restarts. | FLUID_CARGO_UNLOAD. | C6 accounting-cuts-cargo-unload (17) and accounting-outcomes. | [W365](W365.md); [QUEUE](../QUEUE.md), W372/R466. | PASS: `accounting-cuts-cargo-unload`; `C6/campaign-attempt2/accounting-cuts-cargo-unload-attempt2/native/results.json` PASS: `accounting-outcomes`; `C6/campaign-attempt2/accounting-outcomes-attempt2/native/results.json` |
+| Slice E part 2 native accounting: bank ownership, signed/UNKNOWN settlement, exact retries and restart proofs. | Fuel loader, where it shares the risk. | C6 accounting-cuts-loader (28) and accounting-outcomes. | [W365](W365.md); [W366](W366.md), remaining work; [QUEUE](../QUEUE.md), W372/R466. | PASS: `accounting-cuts-loader`; `C6/campaign-attempt2/accounting-cuts-loader-attempt2/native/results.json` PASS: `accounting-outcomes`; `C6/campaign-attempt2/accounting-outcomes-attempt2/native/results.json` |
+| Root-2 migration, legacy UNKNOWN and root-3 downgrade boundaries on the final candidate. | The shared ledger and all five switches; fluid accounting and fuel loader share the migration risk. | C6 accounting-root2-upgrade (4) and accounting-root3-old-jar (FAILED). | [W365](W365.md); [R044-SIGNOFF-DRAFT](R044-SIGNOFF-DRAFT.md), section 3. | PASS: `accounting-root2-upgrade`; `C6/campaign-attempt2/accounting-root2-upgrade-attempt2/native/results.json` FAILED: `accounting-root3-old-jar`; `C6/campaign-attempt2/accounting-root3-old-jar-attempt2/native/results.json` (R615/R618/R632: known R-044 downgrade limit; kept FAILED as directed on 2026-11-13). |
 
 ### 12.3 Remaining work and activation findings
 
-[QUEUE](../QUEUE.md), W372, records the activation run as blocked, not passed: 6,454 unit tests passed and 135 failed
-at the first attempt. W372B sorted those failures into seven format values, 127 old-format fixtures and one finding;
-77 originals passed after corrections, with 57 corrections not yet applied. R468 permits only explicit consistent
-fixtures or format-value re-pins, never replacing the original behavior assertion with the new refusal.
+W372's first 135 failed units and subsequent fixture failures remain historical failures. R468/R469 allowed only consistent fixture/format corrections, not replacement assertions. Activation was delivered under R502-R504 (W372D/E): 6,589 units, clean build/runData, 1,863 GameTests/checker and two native smokes in that development record. Those counts are not relabelled C6.
 
-R469 classifies W372-F2's R8 preview arithmetic as a capacity-fixture issue, not a production defect: use the actual
-frozen candidate row and deterministic padding, asserting that the first refusal's overshoot lies within slack.
-Both assertion meanings and ceilings remain. W372C's remaining corrections, complete verification, two native
-smokes and a different-engine read-only review are still required. This draft does not claim their completion.
+C6 runs 17 accounting load cuts, 17 unload cuts, 28 loader cuts, 18 outcome cases and four root-2 upgrade cases, all PASS. The latter include the stop after migration replacement and before startup completion. The loader cases include W391's substitution, both bank loss/gain and split-pruning saves. C6 accounting-root3-old-jar remains FAILED (R618); R-044 signing remains open. The XML rows above are read from C6's hosted build-evidence ZIP, not rerun by W455.
 
-W373's full native accounting cases, candidate results, exact retry/restart/log evidence and revised downgrade
-sign-off remain outstanding. W365's remaining-work section and W366's activation-boundary note are the sources.
-No W372/W373 record exists in this checkout, so those rows cite the tracked TASK/QUEUE and plans instead.
-The accounting detects/records discrepancies but does not resolve R-032, real storage/power-loss behavior,
-single-file rollback or stale physical copies; section 13 keeps those residuals separate.
+Accounting does not resolve R-032, real storage/power loss, single-file rollback or stale physical copies. X01's observed ledger-history loss and X02's classifications are recorded separately in section 13, without treating a numeric account as a whole-world conservation proof.
 
-## 13. X01 to X03: selected approach, pending evidence and residuals
+## 13. X01 to X03: C6 results, recorded dispositions and residuals
 
 ### 13.1 Decision and implementation boundary
 
@@ -1203,33 +1295,32 @@ found in such a state is a defect to schedule; neither the residual label nor a 
 
 | Implementation/evidence row | Source and boundary | C6 |
 |---|---|---|
-| S1 gated recorder and DIRECT file-operations seam, with a different-engine read-only review and recorded smoke. | [QUEUE](../QUEUE.md), W369/R461; this snapshot records dispatch, not delivery. | PENDING |
-| S2 crash-state builder, bounded replay runner and additive restart-only runner modes. | [QUEUE](../QUEUE.md), W370/R463/R467, records delivery at b3f5d0748 and 110 targeted Python tests; no native run was required by its TASK. Its review/inventory/CI integration still belongs to Root. | PENDING |
-| S3 X01 on the pinned candidate, two starts per state with unchanged existing oracles. | [W368-DESIGN](W368-DESIGN.md), sections 2, 3 and 7. | PENDING |
-| S4 injector/read wrapper/offline faults and S5 X02 classification report. | [W368-DESIGN](W368-DESIGN.md), sections 4 and 7. | PENDING |
+| S1 gated recorder and DIRECT file-operations seam, with a different-engine read-only review and recorded smoke. | [QUEUE](../QUEUE.md), W369/R/F/R2; delivered and reviewed, merged d588a6fbe (R485). | DELIVERED: W369/R/F/R2, merged d588a6fbe under R476/R482/R485; recorder/DIRECT seam exercised by S3 `X01-S3/MANIFEST.json`; this is tooling evidence, not an X01 pass. |
+| S2 crash-state builder, bounded replay runner and additive restart-only runner modes. | [QUEUE](../QUEUE.md), W370/R463/R467, records delivery at b3f5d0748 and 110 targeted Python tests; no native run was required by its TASK. Its subsequent integration is recorded by Root; native S3/triage evidence is in this section. | DELIVERED: W370, merged c0b9bfcea; builder/restart-only modes exercised by S3 `X01-S3/MANIFEST.json`; W448 corrections and native reruns `X01-triage/MANIFEST.json` (R637). |
+| S3 X01 on the pinned candidate, two starts per state with unchanged existing oracles. | [W368-DESIGN](W368-DESIGN.md), sections 2, 3 and 7. | FAIL: S3 3 PASS / 9 FAIL of 12; `X01-S3/MANIFEST.json`. With W448 reruns: 5 PASS / 7 FAIL, 72/82 states pass both starts and 10 late-loss states fail (R637); `X01-triage/MANIFEST.json`; `X01-triage/followup-bay/MANIFEST.json`. W451 OBSERVED, not PASS: no quantity lost/created in five lost-history states; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| S4 injector/read wrapper/offline faults and S5 X02 classification report. | [W368-DESIGN](W368-DESIGN.md), sections 4 and 7. | INCOMPLETE: attempt 3, 44 SEEN_HELD / 10 CAUGHT_LATER / 10 NOT_CAUGHT / 4 INCOMPLETE / 4 NOT_APPLICABLE; `C6/x02-s5-attempt3/MANIFEST.json`. W446 merged reruns: 49 / 16 / 3 / 0 / 4; keeping original bay images: 49 / 14 / 5 / 0 / 4; `C6/x02-s5-triage/MERGED-TOTALS.json`. R636 bay diagnostic omission, R639 satellite oracle-contract mismatch, ledger STALE residual remain; no classification is promoted to PASS. |
 
 ### 13.2 X01 replay rows
 
 Each row is from [W368-DESIGN](W368-DESIGN.md), section 3. Recorded/old-side case names below are exact.
 S-OLD, S-EMPTY, S-PREFIX, S-TORN, S-STAGED and S-NEW are the in-flight forms; there are at most seven late-loss
-forms and sixteen total states per case. OVER_BOUND is reported, not silently sampled. The planned maximum is
-192 copies/384 restart starts, not an observed run. Each result must identify the state, derive it before starting,
+forms and sixteen total states per case. OVER_BOUND is reported, not silently sampled. The design maximum is 192 copies/384 restart starts, not the observed total. S3 plus triage covers 82 derived states: 72 pass both starts and 10 remain failed (R637). Each result must identify the state, derive it before starting,
 and retain the state/file hashes and both restart outcomes.
 
 | Row | Store/write | Recorded case | Old-side oracle or boundary | C6 |
 |---|---|---|---|---|
-| X01-01 | Bay D1 INTENT. | `B1_MOVED` | `B1_STAGED` | PENDING |
-| X01-02 | Bay D4 REGISTERED; late loss also includes earlier receipts/registry. | `B3_MOVED` | `B3_STAGED` | PENDING |
-| X01-03 | Bay D7 removal; late loss includes D4/registry. | `B8_MOVED` | `B8_STAGED` | PENDING |
-| X01-04 | Fluid-load L1. | `FC_LOAD_L1_REPLACED` | `FC_LOAD_L1_BEFORE` | PENDING |
-| X01-05 | Fluid-load L2 and earlier L1 late loss. | `FC_LOAD_L2_REPLACED` | `FC_LOAD_K8` | PENDING |
-| X01-06 | Fluid-unload L2 and earlier L1 late loss. | `FC_UNLOAD_L2_REPLACED` | `FC_UNLOAD_K8` | PENDING |
-| X01-07 | Fluid-load barrier-to-L2 window, seam late loss only. | `FC_LOAD_C6_JOINT_READBACK` | No in-flight seam write; region files remain the kill image. | PENDING |
-| X01-08 | Item-load L1. | `IC_LOAD_K2` | New conservation expectation for the earlier ledger generation; not a weakened existing case. | PENDING |
-| X01-09 | Item-unload L2. | `IC_UNLOAD_K9` | New conservation expectation for the earlier ledger generation. | PENDING |
-| X01-10 | First ledger creation. | `FF_N1` | The earlier fixture has no ledger file. | PENDING |
-| X01-11 | Transfer-journal replacement. | `FS_O3J_AFTER` | `FS_O3J_BEFORE` | PENDING |
-| X01-12 | Satellite registry. | `R3` | The runner's durable count for staged-only state must be pinned by S2. | PENDING |
+| X01-01 | Bay D1 INTENT. | `B1_MOVED` | `B1_STAGED` | `X01-01`: S3 PASS (6 states); `X01-S3/MANIFEST.json`.  |
+| X01-02 | Bay D4 REGISTERED; late loss also includes earlier receipts/registry. | `B3_MOVED` | `B3_STAGED` | `X01-02`: S3 FAIL (9 states); `X01-S3/MANIFEST.json`. Follow-up FAIL, 07/08-LATE-LOSS fail both starts; 01-06 and 09 pass (09 uses existing B1_STAGED); `X01-triage/followup-bay/MANIFEST.json` (R637). |
+| X01-03 | Bay D7 removal; late loss includes D4/registry. | `B8_MOVED` | `B8_STAGED` | `X01-03`: S3 FAIL (9 states); `X01-S3/MANIFEST.json`. Retained FAIL: 07/08/09-LATE-LOSS (R637). |
+| X01-04 | Fluid-load L1. | `FC_LOAD_L1_REPLACED` | `FC_LOAD_L1_BEFORE` | `X01-04`: S3 PASS (6 states); `X01-S3/MANIFEST.json`.  |
+| X01-05 | Fluid-load L2 and earlier L1 late loss. | `FC_LOAD_L2_REPLACED` | `FC_LOAD_K8` | `X01-05`: S3 FAIL (7 states); `X01-S3/MANIFEST.json`. Retained FAIL: 07-LATE-LOSS (R637). W451 OBSERVED: quantities conserved on both passive starts, ledger authority/history lost; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X01-06 | Fluid-unload L2 and earlier L1 late loss. | `FC_UNLOAD_L2_REPLACED` | `FC_UNLOAD_K8` | `X01-06`: S3 FAIL (7 states); `X01-S3/MANIFEST.json`. Retained FAIL: 07-LATE-LOSS (R637). W451 OBSERVED: quantities conserved on both passive starts, ledger authority/history lost; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X01-07 | Fluid-load barrier-to-L2 window, seam late loss only. | `FC_LOAD_C6_JOINT_READBACK` | No in-flight seam write; region files remain the kill image. | `X01-07`: S3 FAIL (1 states); `X01-S3/MANIFEST.json`. Retained FAIL: 01-LATE-LOSS (R637). W451 OBSERVED: quantities conserved on both passive starts, ledger authority/history lost; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X01-08 | Item-load L1. | `IC_LOAD_K2` | New conservation expectation for the earlier ledger generation; not a weakened existing case. | `X01-08`: S3 PASS (6 states); `X01-S3/MANIFEST.json`.  |
+| X01-09 | Item-unload L2. | `IC_UNLOAD_K9` | New conservation expectation for the earlier ledger generation. | `X01-09`: S3 FAIL (7 states); `X01-S3/MANIFEST.json`. Retained FAIL: 07-LATE-LOSS (R637). W451 OBSERVED: quantities conserved on both passive starts, ledger authority/history lost; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X01-10 | First ledger creation. | `FF_N1` | The earlier fixture has no ledger file. | `X01-10`: S3 FAIL (6 states); `X01-S3/MANIFEST.json`. Triage PASS (6 states, both starts); `X01-triage/MANIFEST.json`; R637: absent-ledger old-side probe mismatch corrected; subsequent enabled admission remains NOT_COVERED. |
+| X01-11 | Transfer-journal replacement. | `FS_O3J_AFTER` | `FS_O3J_BEFORE` | `X01-11`: S3 FAIL (12 states); `X01-S3/MANIFEST.json`. Retained FAIL: 12-LATE-LOSS (R637). W451 OBSERVED: quantities conserved on both passive starts, ledger authority/history lost; next operation untested (R641); `X01-triage/followup-passive/MANIFEST.json`. |
+| X01-12 | Satellite registry. | `R3` | The runner's durable count for staged-only state must be pinned by S2. | `X01-12`: S3 FAIL (no state built); `X01-S3/MANIFEST.json`. Triage PASS (6 states, both starts); `X01-triage/MANIFEST.json`; R637: builder wrongly required directory force for sequential completed writes; genuine overlaps still refused. |
 
 ### 13.3 X02 fault rows
 
@@ -1240,16 +1331,95 @@ recovery. These are classification names, not pre-filled outcomes. Failed existi
 
 | Row | Fault and required evidence | Stores | Classification | C6 |
 |---|---|---|---|---|
-| X02-F1 | Write IOException, old target, held/retried then recovery. | All four named stores. | PENDING | PENDING |
-| X02-F2 | Partial write/full disk, and open failure variant; no target replacement. | All four. | PENDING | PENDING |
-| X02-F3 | Force/flush failure before the move. | All four. | PENDING | PENDING |
-| X02-F4 | Move failure before rename, sharing violation, and rename-then-throw/readback. | All four. | PENDING | PENDING |
-| X02-F5 | Close failure after successful force. | All four. | PENDING | PENDING |
-| X02-F6 | Write reports success but loses bytes; staging readback detects or fails to detect it. | All four. | PENDING | PENDING |
-| X02-F7 | Acknowledged write/flush lost offline: prior generation, zero length and zeroed tail, with two starts. | All four. | PENDING | PENDING |
-| X02-F8 | Cleanup/delete fails after an earlier write/flush failure. | All four. | PENDING | PENDING |
-| X02-F9 | In-session readback throws or returns another root after UNKNOWN move. | All four. | PENDING | PENDING |
-| X02-F10 | At-rest corruption: flipped byte and half truncation, with two starts. | All four. | PENDING | PENDING |
+| X02-F1 | Write IOException, old target, held/retried then recovery. | All four named stores. | Attempt 3: 1 NOT_APPLICABLE, 1 NOT_CAUGHT, 6 SEEN_HELD. Reruns: 1 NOT_APPLICABLE, 7 SEEN_HELD. | Cases `X02-BAY_RECEIPTS-WRITE_ERROR-4`, `X02-RESOURCE_ESCROW-WRITE_ERROR-1`, `X02-RESOURCE_ESCROW-WRITE_ERROR-4`, `X02-BAY_RECEIPTS-WRITE_ERROR-1`, `X02-ROCKET_TRANSFERS-WRITE_ERROR-1`, `X02-ROCKET_TRANSFERS-WRITE_ERROR-4`, `X02-SATELLITE_MISSIONS-WRITE_ERROR-1`, `X02-SATELLITE_MISSIONS-WRITE_ERROR-4`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F2 | Partial write/full disk, and open failure variant; no target replacement. | All four. | Attempt 3: 8 SEEN_HELD. Reruns: 8 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-DISK_FULL-1`, `X02-RESOURCE_ESCROW-DISK_FULL_OPEN-1`, `X02-BAY_RECEIPTS-DISK_FULL-1`, `X02-BAY_RECEIPTS-DISK_FULL_OPEN-1`, `X02-ROCKET_TRANSFERS-DISK_FULL-1`, `X02-ROCKET_TRANSFERS-DISK_FULL_OPEN-1`, `X02-SATELLITE_MISSIONS-DISK_FULL-1`, `X02-SATELLITE_MISSIONS-DISK_FULL_OPEN-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F3 | Force/flush failure before the move. | All four. | Attempt 3: 4 SEEN_HELD. Reruns: 4 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-FLUSH_ERROR-1`, `X02-BAY_RECEIPTS-FLUSH_ERROR-1`, `X02-ROCKET_TRANSFERS-FLUSH_ERROR-1`, `X02-SATELLITE_MISSIONS-FLUSH_ERROR-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F4 | Move failure before rename, sharing violation, and rename-then-throw/readback. | All four. | Attempt 3: 2 NOT_CAUGHT, 10 SEEN_HELD. Reruns: 12 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-MOVE_ERROR-1`, `X02-RESOURCE_ESCROW-MOVE_DENIED-1`, `X02-RESOURCE_ESCROW-MOVE_AFTER-1`, `X02-BAY_RECEIPTS-MOVE_ERROR-1`, `X02-BAY_RECEIPTS-MOVE_DENIED-1`, `X02-BAY_RECEIPTS-MOVE_AFTER-1`, `X02-ROCKET_TRANSFERS-MOVE_ERROR-1`, `X02-ROCKET_TRANSFERS-MOVE_DENIED-1`, `X02-ROCKET_TRANSFERS-MOVE_AFTER-1`, `X02-SATELLITE_MISSIONS-MOVE_ERROR-1`, `X02-SATELLITE_MISSIONS-MOVE_DENIED-1`, `X02-SATELLITE_MISSIONS-MOVE_AFTER-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F5 | Close failure after successful force. | All four. | Attempt 3: 4 SEEN_HELD. Reruns: 4 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-CLOSE_ERROR-1`, `X02-BAY_RECEIPTS-CLOSE_ERROR-1`, `X02-ROCKET_TRANSFERS-CLOSE_ERROR-1`, `X02-SATELLITE_MISSIONS-CLOSE_ERROR-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F6 | Write reports success but loses bytes; staging readback detects or fails to detect it. | All four. | Attempt 3: 4 SEEN_HELD. Reruns: 4 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-LOST_WRITE-1`, `X02-BAY_RECEIPTS-LOST_WRITE-1`, `X02-ROCKET_TRANSFERS-LOST_WRITE-1`, `X02-SATELLITE_MISSIONS-LOST_WRITE-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F7 | Acknowledged write/flush lost offline: prior generation, zero length and zeroed tail, with two starts. | All four. | Attempt 3: 5 CAUGHT_LATER, 2 INCOMPLETE, 3 NOT_APPLICABLE, 2 NOT_CAUGHT. Reruns: 8 CAUGHT_LATER, 3 NOT_APPLICABLE, 1 NOT_CAUGHT. | Cases `X02-BAY_RECEIPTS-STALE`, `X02-ROCKET_TRANSFERS-STALE`, `X02-SATELLITE_MISSIONS-STALE`, `X02-RESOURCE_ESCROW-STALE`, `X02-RESOURCE_ESCROW-ZERO_LENGTH`, `X02-RESOURCE_ESCROW-ZEROED_TAIL`, `X02-BAY_RECEIPTS-ZERO_LENGTH`, `X02-BAY_RECEIPTS-ZEROED_TAIL`, `X02-SATELLITE_MISSIONS-ZERO_LENGTH`, `X02-SATELLITE_MISSIONS-ZEROED_TAIL`, `X02-ROCKET_TRANSFERS-ZERO_LENGTH`, `X02-ROCKET_TRANSFERS-ZEROED_TAIL`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F8 | Cleanup/delete fails after an earlier write/flush failure. | All four. | Attempt 3: 4 SEEN_HELD. Reruns: 4 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-DELETE_ERROR-1`, `X02-BAY_RECEIPTS-DELETE_ERROR-1`, `X02-ROCKET_TRANSFERS-DELETE_ERROR-1`, `X02-SATELLITE_MISSIONS-DELETE_ERROR-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F9 | In-session readback throws or returns another root after UNKNOWN move. | All four. | Attempt 3: 4 NOT_CAUGHT, 4 SEEN_HELD. Reruns: 2 NOT_CAUGHT, 6 SEEN_HELD. | Cases `X02-RESOURCE_ESCROW-READ_ERROR-1`, `X02-RESOURCE_ESCROW-READ_CORRUPT-1`, `X02-BAY_RECEIPTS-READ_ERROR-1`, `X02-BAY_RECEIPTS-READ_CORRUPT-1`, `X02-ROCKET_TRANSFERS-READ_ERROR-1`, `X02-ROCKET_TRANSFERS-READ_CORRUPT-1`, `X02-SATELLITE_MISSIONS-READ_ERROR-1`, `X02-SATELLITE_MISSIONS-READ_CORRUPT-1`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+| X02-F10 | At-rest corruption: flipped byte and half truncation, with two starts. | All four. | Attempt 3: 5 CAUGHT_LATER, 2 INCOMPLETE, 1 NOT_CAUGHT. Reruns: 8 CAUGHT_LATER. | Cases `X02-RESOURCE_ESCROW-BIT_FLIP`, `X02-RESOURCE_ESCROW-TRUNCATED`, `X02-BAY_RECEIPTS-BIT_FLIP`, `X02-BAY_RECEIPTS-TRUNCATED`, `X02-SATELLITE_MISSIONS-BIT_FLIP`, `X02-SATELLITE_MISSIONS-TRUNCATED`, `X02-ROCKET_TRANSFERS-BIT_FLIP`, `X02-ROCKET_TRANSFERS-TRUNCATED`; `C6/x02-s5-attempt3/MANIFEST.json`; `C6/x02-s5-triage/MERGED-TOTALS.json`. |
+
+
+
+The following is a case-level classification index; order does not change any verdict. Original bay rows retain their original NOT_CAUGHT even where a fresh-image rerun says CAUGHT_LATER. Merged provenance is read from MERGED-TOTALS.json; original S0/S1 setup experiments remain historical rather than becoming equivalent cut evidence.
+
+| X02 case | Attempt 3 | W446 rerun/retained classification | Recorded cause or coverage limit |
+|---|---|---|---|
+| `X02-BAY_RECEIPTS-WRITE_ERROR-4` | NOT_APPLICABLE | NOT_APPLICABLE (attempt3) | The native case has one rocket. Its first receipt write that fails before the move cancels the deployment, and no second receipt write follows, so a fault on a later write of the bay receipts cannot be reached. |
+| `X02-BAY_RECEIPTS-STALE` | NOT_APPLICABLE | NOT_APPLICABLE (attempt3) | The earlier generation is an absent file; an absent root is a different case. |
+| `X02-ROCKET_TRANSFERS-STALE` | NOT_APPLICABLE | NOT_APPLICABLE (attempt3) | The earlier generation equals the current file. |
+| `X02-SATELLITE_MISSIONS-STALE` | NOT_APPLICABLE | NOT_APPLICABLE (attempt3) | The earlier generation is an absent file; an absent root is a different case. |
+| `X02-RESOURCE_ESCROW-WRITE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-WRITE_ERROR-4` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-DISK_FULL-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-DISK_FULL_OPEN-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-FLUSH_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-MOVE_ERROR-1` | NOT_CAUGHT | SEEN_HELD (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-RESOURCE_ESCROW-MOVE_DENIED-1` | NOT_CAUGHT | SEEN_HELD (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-RESOURCE_ESCROW-MOVE_AFTER-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-CLOSE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-LOST_WRITE-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-DELETE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-READ_ERROR-1` | NOT_CAUGHT | SEEN_HELD (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-RESOURCE_ESCROW-READ_CORRUPT-1` | NOT_CAUGHT | SEEN_HELD (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-RESOURCE_ESCROW-STALE` | NOT_CAUGHT | NOT_CAUGHT (attempt3) | Declared single-store rollback residual. |
+| `X02-RESOURCE_ESCROW-ZERO_LENGTH` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-ZEROED_TAIL` | INCOMPLETE | CAUGHT_LATER (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-RESOURCE_ESCROW-BIT_FLIP` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-RESOURCE_ESCROW-TRUNCATED` | INCOMPLETE | CAUGHT_LATER (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-BAY_RECEIPTS-WRITE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-DISK_FULL-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-DISK_FULL_OPEN-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-FLUSH_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-MOVE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-MOVE_DENIED-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-MOVE_AFTER-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-CLOSE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-LOST_WRITE-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-DELETE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-READ_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-READ_CORRUPT-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-ZERO_LENGTH` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-BAY_RECEIPTS-ZEROED_TAIL` | NOT_CAUGHT | CAUGHT_LATER (v3) | Original NOT_CAUGHT retained; fresh-image CAUGHT_LATER; R636: declared BETA-2002 refusal omitted by marker list. |
+| `X02-BAY_RECEIPTS-BIT_FLIP` | NOT_CAUGHT | CAUGHT_LATER (v3) | Original NOT_CAUGHT retained; fresh-image CAUGHT_LATER; R636: declared BETA-2002 refusal omitted by marker list. |
+| `X02-BAY_RECEIPTS-TRUNCATED` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-ZERO_LENGTH` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-ZEROED_TAIL` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-BIT_FLIP` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-TRUNCATED` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-WRITE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-WRITE_ERROR-4` | NOT_CAUGHT | SEEN_HELD (v4-journal) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-ROCKET_TRANSFERS-DISK_FULL-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-DISK_FULL_OPEN-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-FLUSH_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-MOVE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-MOVE_DENIED-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-MOVE_AFTER-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-CLOSE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-LOST_WRITE-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-DELETE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-READ_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-READ_CORRUPT-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-ZERO_LENGTH` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-ZEROED_TAIL` | INCOMPLETE | CAUGHT_LATER (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-ROCKET_TRANSFERS-BIT_FLIP` | CAUGHT_LATER | CAUGHT_LATER (attempt3) | Runner classification retained. |
+| `X02-ROCKET_TRANSFERS-TRUNCATED` | INCOMPLETE | CAUGHT_LATER (v3) | R629/R636: harness repair; original result retained, separate rerun. |
+| `X02-SATELLITE_MISSIONS-WRITE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-WRITE_ERROR-4` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-DISK_FULL-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-DISK_FULL_OPEN-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-FLUSH_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-MOVE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-MOVE_DENIED-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-MOVE_AFTER-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-CLOSE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-LOST_WRITE-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-DELETE_ERROR-1` | SEEN_HELD | SEEN_HELD (attempt3) | Runner classification retained. |
+| `X02-SATELLITE_MISSIONS-READ_ERROR-1` | NOT_CAUGHT | NOT_CAUGHT (v3) | R639: oracle-contract mismatch; exact-byte rule unchanged, one satellite/no missions. |
+| `X02-SATELLITE_MISSIONS-READ_CORRUPT-1` | NOT_CAUGHT | NOT_CAUGHT (v3) | R639: oracle-contract mismatch; exact-byte rule unchanged, one satellite/no missions. |
 
 ### 13.4 X03 operator repair rows
 
@@ -1258,24 +1428,21 @@ on a complete world copy for the retired, stationary R74/R76 REBUILD_SOURCE shap
 and terrain, refuses competing authority, and removes only the proved stale transfer record. Existing settlement
 cannot fix that exact shape. It invents no operation, account, receipt, refund or zero. Where L2 already removed
 the row, historical accounting is an external UNKNOWN audit unless a typed witness supports confirmed signed values.
-The proposed family name is a design identifier, not an already selected campaign family.
+The selected cargo-X03-REPAIR family is now executed on C6, with the original harness failure and separate both-origin PASS reported together.
 
 | Row | Required evidence and scope | Source | C6 |
 |---|---|---|---|
-| X03 design/reviews | Design read-only review before code and a separate review of the saved-data writer before merge. | [QUEUE](../QUEUE.md), W367/R463. | PENDING |
-| X03 planner/apply | Reviewed dry-run-derived file list, whole-copy hashes, all refusals and interrupted/no-effect failures. | [W367-DESIGN](W367-DESIGN.md), sections 2 and 3. | PENDING |
-| X03 root 2 | `cargo-X03-REPAIR` proposed case: keep the protected seed's 5,000 mB physical total, repair the copy, then two clean save/restart cycles and real unload/flight. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5. | PENDING |
-| X03 fresh root 3 | Same independent raw-file/identity/authority/conservation checks on activated C6; preserve unrelated account rows and external UNKNOWN history where no baseline survives. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5; R463. | PENDING |
-| X03 migrated retired root 2 | Same procedure after supported root-3 migration; no hand-edited fake activation. A related live account/operation is outside this narrow repair and is refused. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5. | PENDING |
-| X03 negative control | Valid unrelated POI mutation outside the frozen runtime list must fail the independent oracle; the unmutated coordinator also refuses the copy. Playability/conservation alone is insufficient. | [W367-DESIGN](W367-DESIGN.md), section 5. | PENDING |
-| X03 operator text | Final procedure and evidence in the owner's final packet; design prose is not approved operator guidance. | [QUEUE](../QUEUE.md), W367/R463; [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md). | PENDING |
+| X03 design/reviews | Design read-only review before code and a separate review of the saved-data writer before merge. | [QUEUE](../QUEUE.md), W367/R463. | DELIVERED: W367 revisions and reviews; W380J/B 97576e2be and W387/C 102c97fe5 (QUEUE/W388 F28). Design/review delivery is not a native pass; `C6/x03-rerun/native/results.json`. |
+| X03 planner/apply | Reviewed dry-run-derived file list, whole-copy hashes, all refusals and interrupted/no-effect failures. | [W367-DESIGN](W367-DESIGN.md), sections 2 and 3. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). Planner/apply and refusal outputs are in each origin's cycle-1/2 result/plan/refusal JSON files; no broader repair permission. |
+| X03 root 2 | `cargo-X03-REPAIR` design case: keep the protected seed's 5,000 mB physical total, repair the copy, then two clean save/restart cycles and real unload/flight. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5. | NOT_COVERED: a standalone unactivated root-2 repair was not rerun on C6; upgraded-root-2 is the supported migration then root-3 repair, reported separately below. |
+| X03 fresh root 3 | Same independent raw-file/identity/authority/conservation checks on activated C6; preserve unrelated account rows and external UNKNOWN history where no baseline survives. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5; R463. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). Fresh origin `C6/x03-rerun/native/fresh-root-3/`. |
+| X03 migrated retired root 2 | Same procedure after supported root-3 migration; no hand-edited fake activation. A related live account/operation is outside this narrow repair and is refused. | [W367-DESIGN](W367-DESIGN.md), sections 4 and 5. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). Migrated origin `C6/x03-rerun/native/upgraded-root-2/`. |
+| X03 negative control | Valid unrelated POI mutation outside the frozen runtime list must fail the independent oracle; the unmutated coordinator also refuses the copy. Playability/conservation alone is insufficient. | [W367-DESIGN](W367-DESIGN.md), section 5. | FAILED: `cargo-X03-REPAIR`; `C6/campaign-attempt2/cargo-X03-REPAIR-attempt2/native/results.json` R616: harness path length (264 characters, LongPathsEnabled=0), not a product result. Rerun PASS (`PASS_ACCOUNTING_ENABLED_BOTH_ORIGINS`), fresh-root-3 and upgraded-root-2; `C6/x03-rerun/native/results.json` (R632). Both origins' POI negative-control/refusal checks are retained in their cycle results. |
+| X03 operator text | Final procedure and evidence in the owner's final packet; design prose is not approved operator guidance. | [QUEUE](../QUEUE.md), W367/R463; [OWNER-DECISIONS-20261117](OWNER-DECISIONS-20261117.md). | NOT_COVERED: X03-D-OPERATOR-GUIDANCE is drafted; final packet/operator approval is not supplied by a native run. R463 boundary remains. |
 
 ### 13.5 Remaining work and stated residuals
 
-Finish/review the recorder and replay integration, implement/review the fault injector, and run/report S3 and S5 on
-the pinned candidate before claiming simulated X01/X02 coverage. X03 still needs design review, tool, independent
-oracle, both saved-form paths, negative control, two repair restarts and reviewed operator text. The source designs
-give estimates, not measured completion times; W370's synthetic tests are not crash or power-loss evidence.
+Recorder, replay, injector and X03 implementation/reviews are delivered; native outcomes are above. Remaining work is the owner's residual-risk/signature packet, final X03 operator text and client/REF/soak evidence. The source designs' estimates are not measured bounds; neither tooling tests nor these simulations establish power-loss safety.
 
 The following remain uncovered even if every simulated case passes
 ([W368-DESIGN](W368-DESIGN.md), section 5; R461 in [QUEUE](../QUEUE.md)):
@@ -1293,3 +1460,13 @@ X03 repairs only its proved one-record stationary shape; it does not recover los
 identities, other repair causes, resource loss, stale copies or power-loss behavior. A single-file rollback is not
 an operational recovery procedure. Complete-world backup/restore, unchanged oracles, residual-risk signatures and
 the real-client/performance Gates remain separate.
+
+
+**Observed residuals, with Root's dispositions.**
+
+- **X01 remains FAIL (R637).** The ten late-loss states are the declared Windows missing-directory-flush residual. In W448's wording, rollback loses a satellite registration while its package stays consumed (X01-02/08, X01-03/08), leaves an orphaned registration or a repair-held bay claim (X01-02/07, X01-03/07 and /09), and loses cargo and settlement sequence and audit history (X01-05/07, X01-06/07, X01-07/01, X01-09/07, X01-11/12). No enablement follows; all ten failed oracles remain failed. Evidence: [W448](W448.md), `X01-S3/MANIFEST.json` and `X01-triage/followup-bay/MANIFEST.json`.
+- **W451 is OBSERVED, not PASS (R641).** Re-recorded states are structurally equivalent to S3, not byte-identical kill images. Both hook-without-probe and plain-server variants start/save/stop twice: X01-05/06/07 each retain 5,000 mB water; X01-09 retains 70 items; X01-11 retains 5,000 mB water and 1,000 fuel. No quantity is lost or created in those observations, but ledger sequence/PREPARED or settlement/account/tombstone history is lost; stale sequence-1 endpoint markers remain in the first four states. The next load, unload, disassembly or launch is **untested**. R641 makes that next-operation test a precondition for enabling cargo, not additional v1.8 work; production admission stays off. Evidence: [W451](W451.md), `X01-triage/followup-passive/MANIFEST.json`.
+- **X02 original bay pair stays NOT_CAUGHT (R636).** ZEROED_TAIL and BIT_FLIP refuse both starts with ARCE-BETA-2002 (expanded data oversized), keeping the store byte-identical. Root calls this a declared refusal under a diagnostic omitted by the per-store marker list, not a product defect. The marker list is unchanged; fresh-image CAUGHT_LATER reruns do not erase the original verdicts. Evidence: [W446](W446.md), `C6/x02-s5-triage/MERGED-TOTALS.json`.
+- **X02 satellite pair stays NOT_CAUGHT (R639).** READ_ERROR-1 and READ_CORRUPT-1 hold/report UNKNOWN or FAILED and pass both healthy restarts, but the exact-byte retry rule rejects a fresh capture. Of 48 decoded fields, only the two mission-clock values and save_epoch change under the documented retry contract. Root classifies oracle-contract mismatch, not product defect; the exact-byte rule remains unchanged. Fixture limit: one satellite, no missions. Evidence: [W450](W450.md), `C6/x02-s5-satellite/COMPARISON.json`.
+- **X02 RESOURCE_ESCROW-STALE stays NOT_CAUGHT.** A valid old ledger rolls back issued sequence/history while endpoint saves survive: the declared single-store rollback residual, not an accepted recovery method. X02's four NOT_APPLICABLE shapes remain uncovered; neither missing previous generations nor an unreachable fourth bay write is counted as a pass.
+- **History is retained.** X02 attempt 2 counts for nothing under R620. Attempt 3's four INCOMPLETE observations and the setup-targeted original experiments stay in their evidence; W446's EOF handling/declared skip repairs give separate results, never overwritten verdicts. X03's original FAILED path-length attempt stays beside the R632 both-origin PASS. No risk, Gate or switch is approved.
