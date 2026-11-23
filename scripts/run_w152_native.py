@@ -158,6 +158,19 @@ def comparable(state: dict) -> dict:
     return {key: value for key, value in state.items() if key != "files"}
 
 
+def check_errors(lines, cut, events, *, expect_unknown=False):
+    """Opt in to W198's single UNKNOWN publication at the selected stage's cut."""
+    errors = [line.rstrip("\r\n") for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+    if expect_unknown and cut in ("C1_UNKNOWN", "C3_UNKNOWN", "C5_UNKNOWN"):
+        pattern = (r"\[[0-9:]+\] \[Server thread/ERROR\] \[io\.gi\.su\.ad\.ro\.pe\.RocketTransactionSavedData/\]: "
+                   r"ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome=UNKNOWN sequence=\d+ acknowledged=(?:none|\d+)")
+        if (len(errors) != 1 or not re.fullmatch(pattern, errors[0])
+                or sum(event.get("label") == cut.replace("_UNKNOWN", "_WRITE_UNKNOWN") for event in events) != 1):
+            raise smoke.SmokeError("Missing, repeated or unexpected injected UNKNOWN error/observation")
+    elif errors:
+        raise smoke.SmokeError("Native ERROR/FATAL observed")
+
+
 def compare_consumers(sealed: Path, vanilla: Path, both: Path) -> dict:
     paths = (sealed, vanilla, both)
     results = [json.loads((path / "results.json").read_text(encoding="utf-8")) for path in paths]
@@ -239,8 +252,8 @@ def run(args) -> dict:
             expected = "STABLE" if cut == "NONE" else "CUT"
             if raw["status"] != expected:
                 raise smoke.SmokeError(f"{stage}: {raw['status']}: {raw.get('detail')}")
-            if any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
-                raise smoke.SmokeError("Native ERROR/FATAL observed")
+            check_errors(process.lines, cut, raw.get("events", []),
+                         expect_unknown=getattr(args, "expect_unknown", False))
             state = inspect(session / "world", experiment, args.payload_hosts)
             (evidence / (stage + "-native.json")).write_text(json.dumps(state, indent=2), encoding="utf-8")
             raw_inputs = preserve_native(session / "world", evidence, stage, state)
@@ -283,6 +296,8 @@ def main() -> int:
     parser.add_argument("--recovery-cut", choices=CUTS)
     parser.add_argument("--initial-d", choices=("SAVED", "NEVER_SAVED"), default="SAVED")
     parser.add_argument("--payload-hosts", choices=("CONTAINERS", "ALL"), default="CONTAINERS")
+    parser.add_argument("--expect-unknown", action="store_true",
+                        help="Require exactly W198's UNKNOWN error/observation only at a selected UNKNOWN cut")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))
     return 0 if result["status"] in ("PASS", "DOCUMENTED_RESIDUAL") else 1
 
