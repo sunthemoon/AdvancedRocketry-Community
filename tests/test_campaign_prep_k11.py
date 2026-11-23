@@ -48,6 +48,13 @@ class K11Tests(unittest.TestCase):
             kit.generate(output, parent)
         self.assertEqual(before, kit.common.tree_hashes(output))
 
+    def test_generation_cannot_write_inside_sealed_parent(self):
+        parent = self.sealed(self.root / "parent")
+        before = kit.common.tree_hashes(parent)
+        with self.assertRaisesRegex(ValueError, "overlaps"):
+            kit.generate(parent / "new-kit", parent)
+        self.assertEqual(before, kit.common.tree_hashes(parent))
+
     def test_changed_parent_rejected_before_output(self):
         parent = self.sealed(self.root / "parent")
         (parent / "world/level.dat").write_bytes(b"changed")
@@ -175,6 +182,41 @@ class K11Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Geometry mismatch"):
             kit.readbacks(console, kit.geometry())
 
+    def test_nohook_refusal_is_observed_without_success_only_console(self):
+        class Process:
+            def __init__(self):
+                self.lines = []
+
+            def command(self, command):
+                if command.startswith("arce"):
+                    self.lines.append("Unknown or incomplete command, see below for error")
+                else:
+                    self.lines.append("[Server] K11_REFUSAL_BARRIER")
+
+            def wait_for(self, pattern, timeout, start_at):
+                if not any(pattern.search(v) for v in self.lines[start_at:]):
+                    raise AssertionError("No barrier")
+        console = kit.Console(Process())
+        lines = kit.nohook_refusal(console)
+        self.assertIn("Unknown or incomplete command", lines[0])
+        self.assertEqual(2, len(console.commands))
+
+    def test_missing_nohook_refusal_fails(self):
+        console = unittest.mock.Mock()
+        console.commands = []
+        console.process.lines = []
+        with self.assertRaisesRegex(ValueError, "did not refuse"):
+            kit.nohook_refusal(console)
+
+    def test_refusals_are_individually_dispositioned(self):
+        rows = kit.fuel_refusals()
+        self.assertEqual(18, len(rows))
+        self.assertEqual(18, len({r["status"] for r in rows}))
+        for row in rows:
+            self.assertEqual("NOT_COVERED", row["qualification"])
+            self.assertTrue(row["recipe"])
+        self.assertIn("R638", next(r for r in rows if r["status"] == "INVALID_DATA")["recipe"])
+
     def test_bound_sessions_are_w399_compatible_and_do_not_edit_source(self):
         output, _ = self.generated()
         source = output / "source"
@@ -186,7 +228,7 @@ class K11Tests(unittest.TestCase):
         server.mkdir()
         (server / "template").write_bytes(b"immutable")
         cell_path = self.root / "cell.json"
-        cell = dict(schema_version=1, forge="47.4.10", jei=False, runtime_root=str(self.root),
+        cell = dict(schema_version=1, forge="47.4.10", jei=False, runtime_root=str(self.root / "runtime"),
                     server_dir=str(server), client_game_dir=str(self.root / "client"), version_id="synthetic",
                     candidate=dict(path="synthetic.jar", sha256=kit.common.JAR_HASH), jei_jar=None)
         kit.write_json(cell_path, cell)
@@ -226,6 +268,12 @@ class K11Tests(unittest.TestCase):
         checks = kit.probes(scenes)
         self.assertEqual(sum(len(s["cells"]) for s in scenes) + 7, len(checks))
         self.assertEqual(len(checks), len({label for _, label in checks}))
+
+    def test_output_cannot_contain_or_be_inside_a_protected_input(self):
+        for target, source in ((self.root / "source/child", self.root / "source"),
+                               (self.root / "parent", self.root / "parent/child")):
+            with self.subTest(target=target), self.assertRaisesRegex(ValueError, "overlaps"):
+                kit.disjoint_output(target, source)
 
 
 if __name__ == "__main__":

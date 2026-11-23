@@ -37,6 +37,17 @@ def write_json(path, value):
     path.write_bytes(common.json_bytes(value))
 
 
+def disjoint_output(target, *sources):
+    for part in (target, *target.parents):
+        if part.is_symlink() or getattr(part, "is_junction", lambda: False)():
+            raise ValueError("Linked output ancestor")
+    target = target.resolve()
+    for source in sources:
+        source = source.resolve()
+        if target.is_relative_to(source) or source.is_relative_to(target):
+            raise ValueError("Output overlaps a protected input")
+
+
 def verify_seal(directory):
     """Require a complete inventory; never trust traversal, duplicates or linked files."""
     directory = directory.resolve()
@@ -145,10 +156,11 @@ def recipes():
                 "Receipt phases are NONE, INTENT, REGISTERED, REJECTED, REPAIR, not an invented linear state sequence.",
                 "Fixed-owner cap ONLY: on a separate marked disposable copy, arce bay release-test w358 owner-fill 16; "
                 "arce bay release-test pending. Require 16 distinct pending IDs, exact acknowledgements and owner "
-                + FIXTURE_OWNER + ". Then arce bay release-test fixture 512 150 256 parked, record logical UUID; "
-                "arce bay release-test w358 launch <logical> <fresh-transfer-uuid>; require OWNER_PENDING_FULL "
-                "and unchanged packages. Force-load/check that bounded chunk before fixture. Save/reopen same copy; "
-                "verify durable union, not just requested=16. This recipe is NOT_RUN, fixed-owner native only, not A cap/menu evidence.",
+                + FIXTURE_OWNER + ". Poll pending until pending=16 work=false; arce bay release-test w358 writer status "
+                "must report pending=16 owner=OWNER_PENDING_FULL. Save/reopen same copy; verify durable union, not just "
+                "requested=16. This admission probe is NOT_RUN, fixed-owner native only, not A cap/menu evidence. "
+                "A real bay deployment/menu refusal at this bound is NOT_COVERED: the native fixture owner is not A. "
+                "Do not use parked launch as a cap proof: it has capacity-1000 fuel and can refuse before D0.",
                 "B's admission is tested only with packages/rocket/bays placed and owned by B on B's separate scene. "
                 "No foreign-owner cap coverage; no fixed-owner UUID impersonation.",
                 "All phase/reason GUI variants beyond normal reachable states are NOT_COVERED until live-qualified; "
@@ -187,7 +199,9 @@ def recipes():
                 "unclaimed/unbound/empty is not that control. C6-created shells alone cannot prove it.",
                 "Baseline control requires exact tank/bank 5000/0, normal compatible container exchange and supported "
                 "fluid engine/tank definition. Native shell is NOT yet an assembled/qualified fluid bank. "
-                "The 749mB control needs separate 1000/1251 baseline ->251/2000; do not overwrite a prior run.",
+                "The 749mB control needs separate 1000/1251 baseline ->251/2000 with TWO mono tanks placed "
+                "before assembly (add second at383,151,256); do not overwrite a prior run. Exact 1251/749mB "
+                "container stimuli are not supplied here and that control remains NOT_COVERED.",
                 "L1 hold/UNKNOWN, exact release into apply 4000/1000, L2 hold/release and pending views: "
                 "NOT_COVERED on connected clients. Existing EscrowLoaderReleaseProbe uses "
                 "escrowScenario seed/recover with a native case and fixture-owned endpoints, not an arbitrary "
@@ -220,6 +234,7 @@ def recipes():
 
 
 def generate(output, parent=PARENT):
+    disjoint_output(output, parent)
     parent_receipt = verify_seal(parent)
     scenes = geometry()
     output.mkdir(parents=True, exist_ok=False)
@@ -228,6 +243,7 @@ def generate(output, parent=PARENT):
                scenes=scenes, marker_sha256=common.digest(MARKER), accounts="UNBOUND_OWNER_INPUT_REQUIRED",
                coverage="GEOMETRY_ONLY_NOT_READY_FOR_CAMPAIGN", recipes=recipes()))
     write_json(output / "variants.json", variant_table())
+    write_json(output / "fuel-refusals.json", fuel_refusals())
     commands = build_commands(scenes)
     (output / "commands.txt").write_text("\n".join(commands) + "\n", encoding="ascii")
     # Templates intentionally fail W399 validation until authenticated metadata is supplied.
@@ -278,6 +294,43 @@ def readbacks(console, scenes):
                 raise ValueError("Missing unique native root: " + position)
             roots[position] = native[0]
     return dict(cells=cells, roots=roots)
+
+
+def fuel_refusals():
+    controls = {
+        "EMPTY": "Bind an otherwise eligible owned loader/rocket; leave the tank empty.",
+        "BANK_FULL": "Normally fill the eligible bank to its read-back capacity, then retry; do not edit bank amount.",
+        "INCOMPATIBLE_FLUID": "Use a normal water bucket on an owned empty loader, bind to MONO rocket-fuel bank; retry.",
+        "AMBIGUOUS_BANK": "No qualified ambiguous-bank scene under unchanged C6 definitions.",
+        "UNBOUND": "Sneak-use linker on an idle owned loader to clear binding, then inspect/attempt.",
+        "STALE_BINDING": "No qualified identity-replacement scene; do not rewrite a binding or physical UUID.",
+        "WAITING_UNLOADED": "Needs verified FULL/entity-section absence and ticket observer; no support forceload.",
+        "OUT_OF_RANGE": "Actor >8 or target >6 are different checks; distant-owner UI feedback may be absent (J25).",
+        "NOT_OWNER": "B ordinary empty-hand interaction on A's placed loader; action bar only, no private menu.",
+        "ROCKET_BUSY": "B boards, then dismounts with assignment retained; each refuses. Clear via J28 release-seat.",
+        "ESCROW_FULL": "No client-safe capacity/locked-endpoint recipe qualified; no budget increase.",
+        "OWNER_PENDING_FULL": "J01 fixed-owner w358 owner-fill 16 and writer status; not A's live-menu proof.",
+        "LEDGER_UNAVAILABLE": "No connected-safe IO-failure/lookup fixture; no ledger corruption or deletion.",
+        "TRANSFER_JOURNAL_UNPROVED": "No qualified journal boundary; no manual SavedData edits.",
+        "UNSUPPORTED_DATA": "No authorized future-root construction under R638; do not insert raw NBT.",
+        "INVALID_DATA": "No authorized malformed-root construction under R638; do not insert raw NBT.",
+        "ADMISSION_DISABLED": "Use eligible same-world no-property control; unclaimed/unbound/empty is insufficient.",
+        "ESCROW_PENDING": "Needs applied/locked exact L1/L2 boundary; UI alone does not prove zero movement."}
+    return [dict(status=name, recipe=recipe, qualification="NOT_COVERED", reason="Stimulus not live-qualified on C6.")
+            for name, recipe in controls.items()]
+
+
+def nohook_refusal(console):
+    process = console.process
+    start = len(process.lines)
+    for value in ("arce bay release-test pending", "say K11_REFUSAL_BARRIER"):
+        console.commands.append(value)
+        process.command(value)
+    process.wait_for(re.compile(r"\[Server\] K11_REFUSAL_BARRIER\b"), 60, start_at=start)
+    lines = process.lines[start:]
+    if not any("Unknown or incomplete command" in v or "Incorrect argument" in v for v in lines):
+        raise ValueError("No-hook release-test command did not refuse")
+    return lines
 
 
 def run(output, stage, cell_path, java, lock_owner):
@@ -363,15 +416,7 @@ def run(output, stage, cell_path, java, lock_owner):
             raise ValueError("Campaign marker was not recognized")
         if stage == "nohook":
             # This is a command-registration refusal, NOT a fuel-attempt/menu proof.
-            start = len(process.lines)
-            for value in ("arce bay release-test pending", "say K11_REFUSAL_BARRIER"):
-                console.commands.append(value)
-                process.command(value)
-            process.wait_for(re.compile(r"\[Server\] K11_REFUSAL_BARRIER\b"), 60, start_at=start)
-            lines = process.lines[start:]
-            if not any("Unknown or incomplete command" in v or "Incorrect argument" in v for v in lines):
-                raise ValueError("No-hook release-test command did not refuse")
-            report["nohook_refusal"] = lines
+            report["nohook_refusal"] = nohook_refusal(console)
         else:
             console.send("arce bay release-test pending")
         console.send("forceload remove all")
@@ -417,6 +462,7 @@ def bind_session(output, target, mode, accounts, cell_path, java):
     if len(accounts) != 2 or any(set(a) != {"name", "uuid", "pid", "game_dir"} for a in accounts):
         raise ValueError("Two accounts with name/uuid/pid/game_dir only required; no credentials")
     selected = properties(mode, [a["uuid"] for a in accounts])
+    disjoint_output(target, output, *[Path(a["game_dir"]) for a in accounts])
     # Validate names, UUIDs, distinct PIDs and game directories before copying anything.
     spec = json.loads((output / (mode + "-session.template.json")).read_text(encoding="ascii"))
     spec.update(cell=str((target / "cell.json").resolve()), run_dir=str((target / "run").resolve()), java=str(java))
@@ -430,6 +476,7 @@ def bind_session(output, target, mode, accounts, cell_path, java):
     cell = {k: cell[k] for k in keys}
     if cell["candidate"]["sha256"] != common.JAR_HASH:
         raise ValueError("Not C6")
+    disjoint_output(target, Path(cell["server_dir"]), Path(cell["client_game_dir"]), Path(cell["runtime_root"]))
     target.mkdir(parents=True, exist_ok=False)
     write_json(target / "session.json", spec)
     load_session(target / "session.json")
