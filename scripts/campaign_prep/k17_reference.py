@@ -741,14 +741,19 @@ def action_hook_flights(console, events, pump=None):
 
 
 def action_hook_disassemble(console, events, entity, pump=None):
-    from scripts import run_v060_flight_server_smoke as flight
+    """C6 answers the hook with "pending" and finishes through its sealed path, which logs its own two lines."""
     start_index, started = len(console.process.lines), time.monotonic()
     console.all(f"arce rocket release-test disassemble {entity}")
-    index = console.await_line(flight.DISASSEMBLY_LOG, 120, start_index, pump)
-    match = flight.DISASSEMBLY_LOG.search(console.process.lines[index])
-    chain.require(match[3] == "SUCCESS" and int(match[4]) == 2048, "Disassembly differs: " + match[0])
+    sealed = re.compile(r"ARCE_ROCKET_SEALED_DISASSEMBLY entity=" + re.escape(entity) + r" logical=([0-9a-f-]{36}) result=([A-Z_]+)")
+    index = console.await_line(sealed, 120, start_index, pump)
+    receipt = sealed.search(console.process.lines[index])
+    chain.require(receipt[2] == "SEALED", "Disassembly differs: " + receipt[0])
+    done = console.await_line(re.compile(r"ARCE_DISASSEMBLY_DURABILITY_COMPLETE transaction=[0-9a-f-]{36} phase=DONE reason=SEALED "),
+                              60, index, pump)
+    seconds = time.monotonic() - started
     events.append(dict(utc=utc_now(), event="disassembled-2048", path="release-test hook, not the player confirmation",
-                       receipt=match[0], restored=pad_status(console, "p2048"), wall_seconds=time.monotonic() - started))
+                       receipt=receipt[0], durability=console.process.lines[done].strip().split("]: ", 1)[-1],
+                       restored=pad_status(console, "p2048"), wall_seconds=seconds))
     console.all(f"forceload remove {pos(layout()['pads']['items']['p2048']['forceload'])}")
 
 
