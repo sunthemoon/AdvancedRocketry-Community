@@ -37,7 +37,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 076d817a1 (W447 merged, R661: K02's opt-in journalled-launch mode of the flight runner, with tests; every campaign preparation package is merged, K02 as partial with its follow-ups W461 and W462 queued under R662; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
+latest_code_commit: 5438a0d6e (W461 merged, R664: the native runner's opt-in exact UNKNOWN expectation, with tests; every campaign preparation package is merged, K02 as partial with its flight follow-up W463 running under R663; scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 45168545600 at f9f6cd094 passed (W447's merge and R661, R662); governance run 45168545264 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 ledger_planned_units: 5
 asset_review_items: 0
@@ -159,8 +159,9 @@ The reference node (REF) is the owner's Debian 12 machine with 4 vCPU and 8 GiB,
   unselected loader cuts. Close with exact candidate-bound named evidence and required
   S1/S2 integration/restart coverage, preserving failed and structurally unreachable rows
   rather than treating fixture evidence from an earlier JAR as acceptance.
-- **Partial packages and checklist integration.** K02's eight failed UNKNOWN native cuts await
-  W461's rerun with the exact UNKNOWN log expectation (R662); of its five failed flight checkpoints,
+- **Partial packages and checklist integration.** K02's eight UNKNOWN native cuts that failed in W447
+  pass on C6 with the exact UNKNOWN log expectation ([W461](../work/v1.8.0-root-queue/records/W461.md), R664), so every
+  sealed native row has a passing C6 attempt; of its five failed flight checkpoints,
   [W462](../work/v1.8.0-root-queue/records/W462.md) classifies three as NOT_REACHABLE_ON_C6 and two as harness failures, and
   W463 reruns the ten flight cases with the corrected disassembly protocol (R663, [QUEUE](../work/v1.8.0-root-queue/QUEUE.md)); the K02/K12 checklist fill and the final
   audit's remaining checklist check follow under [W459 M9 and QUEUE R658](../work/v1.8.0-root-queue/records/W459.md); K12's J05, J08, J09, J10, J11 and J17 gaps
