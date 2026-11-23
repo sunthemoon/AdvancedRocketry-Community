@@ -571,6 +571,10 @@ class Console:
                 raise ValueError("No answer before the deadline: " + command)
             time.sleep(0.25)
 
+    def until(self, command, marker, timeout=120):
+        """K04's console contract: repeat a command until its plain marker appears (k04.load_chunks)."""
+        return self.retry(command, re.compile(re.escape(marker)), timeout)
+
     def tick(self):
         start = len(self.process.lines)
         self.process.command("time query gametime")

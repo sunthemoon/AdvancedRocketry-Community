@@ -234,6 +234,45 @@ class K12RecipeTests(unittest.TestCase):
         self.assertEqual(2, len(procedure["journal_hold"]))
 
 
+class FakeProcess:
+    """Answers each command at once, as the server thread does for console commands."""
+    def __init__(self, loaded_after=0):
+        self.lines, self.sent, self.loaded_after = [], [], loaded_after
+
+    def command(self, value):
+        self.sent.append(value)
+        if value.startswith("say "):
+            self.lines.append("[Server] " + value[4:])
+        elif "run say K04_LOADED" in value:
+            self.loaded_after -= 1
+            if self.loaded_after < 0:
+                self.lines.append("[Server] K04_LOADED")
+        elif value == "time query gametime":
+            self.lines.append(T.format(100 + len(self.sent)))
+        elif value == "bad":
+            self.lines.append("Unknown or incomplete command, see below for error")
+
+    def wait_for(self, pattern, timeout, start_at=0):
+        return next(i for i in range(start_at, len(self.lines)) if pattern.search(self.lines[i]))
+
+
+class K12ConsoleTests(unittest.TestCase):
+    def test_console_serves_k04s_chunk_loader(self):
+        from scripts.campaign_prep import k04_rockets as k04
+        process = FakeProcess(loaded_after=2)
+        console = k12.Console(process)
+        k04.load_chunks(console, dict(rockets=[dict(origin=[256, 100, 256])]), (k12.OW,))
+        self.assertEqual(1, sum(command.startswith("execute in minecraft:overworld run forceload add 240 240 287 287")
+                                for command in process.sent))
+        self.assertEqual(3, sum("run say K04_LOADED" in command for command in process.sent))
+
+    def test_console_refuses_rejected_commands_and_reads_game_time(self):
+        console = k12.Console(FakeProcess())
+        with self.assertRaisesRegex(ValueError, "Rejected console command"):
+            console.send("bad")
+        self.assertGreater(console.tick(), 100)
+
+
 class K12SealTests(unittest.TestCase):
     def test_parent_checksum_list_must_match_exactly(self):
         with tempfile.TemporaryDirectory() as temp:
