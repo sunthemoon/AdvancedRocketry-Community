@@ -2,7 +2,7 @@
 
 | Item | Value |
 |---|---|
-| Status | **DRAFT, not signed.** Root wrote it on 2026-11-13 under Root decision R433 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). R-044 stays unaccepted until the owner signs. On 2026-11-19 Root added section 5, the revised text for both format boundaries, which replaces section 1 for signing; the root-3 case it waited for ran on candidate C6 with the same result (section 6, R652), so section 5 is the text to sign. The same day Root corrected item 4 of section 1: the Chinese text said the backup taken before the upgrade, but W176 and W336 restored the backup taken before the downgrade, as the English rendering already said. |
+| Status | **SIGNED on 2026-11-24 with the section 5 text, unchanged.** Root signed it on the owner's behalf under the owner's delegation of 2026-11-24 ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md), Root decision R679); the owner is the responsible person (section 7). Before that it was a draft: Root wrote it on 2026-11-13 under Root decision R433 ([OWNER-DECISIONS-20261113](OWNER-DECISIONS-20261113.md)). R-044 stayed unaccepted until the signature. On 2026-11-19 Root added section 5, the revised text for both format boundaries, which replaces section 1 for signing; the root-3 case it waited for ran on candidate C6 with the same result (section 6, R652), so section 5 is the text to sign. The same day Root corrected item 4 of section 1: the Chinese text said the backup taken before the upgrade, but W176 and W336 restored the backup taken before the downgrade, as the English rendering already said. |
 | Kept as failed | `cargo-G2-REUSE` rows 3 to 5 and `w336-downgrade` on candidate C3, W176's three downgrade rows, and W373B's `accounting-root3-old-jar`, with C6's reruns of these families, stay FAIL in every record before and after a signature. No assertion is relaxed or waived. |
 | Register | The downgrade paragraph of R-044 in the [risk register](../../../11-RISK-REGISTER.md) (Root decision R138). |
 | Evidence | [W176](W176.md), [W336](W336.md), C3's `cargo-G2-REUSE` and `w336-downgrade` ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), sections 2.1, 8.5 and 9.3), and W373B's `accounting-root3-old-jar` ([W373B](W373B.md); evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/W373B/campaign2/accounting-root3-old-jar-attempt2/`), and C6's rerun of that case (section 6; evidence `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/campaign-attempt2/accounting-root3-old-jar-attempt2/`). |
@@ -116,7 +116,7 @@ owner.
 > 7. **不包括。** 本签核只接受上述降级残余风险。它不接受 R-044 的其他部分（不受支持的设备根、256 坐标共享池等），不开启任何生产开关，不批准任何 Gate、版本或发布。
 > 8. **复审条件。** v1.9.0 发布前复审；转移日志 schema、托管账本 root、方块或物品注册 ID、或世界元数据的写入方式发生变化时，本签核失效，需要重新签核。
 >
-> 负责人：所有者。签核日期：＿＿＿＿
+> 负责人：所有者。签核：Root（Claude）依所有者 2026-11-24 的委托代为签核（Root 决定 R679，[OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)）。签核日期：2026-11-24
 
 **English rendering (for the records; the Chinese text is what the owner signs):**
 
@@ -178,3 +178,17 @@ same root-2 JAR as W373B (SHA-256 `459669bf...f81744b`). Its result is the same 
 
 The family stays FAILED (R618). The text of section 5 therefore stands unchanged for signing; it is packet item P1.
 Evidence: `D:/GitHub/ARCE-Task-Evidence/root-queue/C6/campaign-attempt2/accounting-root3-old-jar-attempt2/native/results.json`.
+
+## 7. Signature (2026-11-24, R679)
+
+The owner wrote on 2026-11-24 that Root should decide the final packet unless external resources are needed
+([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)). Under those words Root signed the section 5 text, unchanged,
+on the owner's behalf; the owner is the responsible person. Root kept the three choices as drafted: item 1 names every
+JAR without support for the format and says only the measured JARs were tested; item 4 keeps a v1.8 start on a world
+rewritten at boundary (a) without a restore unsupported; item 8 ties re-review to v1.9.0 and to format changes.
+
+Root then made the changes of section 4: R-044's register paragraph, the acceptance in ADR-065's W176 note, the backup
+and downgrade instruction in the v1.8.0 [KNOWN-ISSUES](../../../releases/v1.8.0/KNOWN-ISSUES.md) (KI-V180-DOWNGRADE-01),
+the [CHANGELOG](../../../../CHANGELOG.md), the [endgame operator guide](../../../ENDGAME-OPERATOR-GUIDE.md) and the
+migration report, and notes in [C6-SWITCH-REPORT](C6-SWITCH-REPORT.md) and the status file. `cargo-G2-REUSE`,
+`w336-downgrade` and `accounting-root3-old-jar`, W176's three rows and C3's history stay FAILED in every record.

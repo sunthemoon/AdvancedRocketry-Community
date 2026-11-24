@@ -163,7 +163,7 @@ that does not qualify C1.
 |---|---|---|
 | X01 | All four | NOT_COVERED: host/OS power-loss durability is not simulated by a forced Java-process stop. Needs a separately authorized destructive-storage campaign and owner residual-risk decision. |
 | X02 | All four | NOT_COVERED: unobservable storage/cache/close failures remain diagnostic residuals; observable E1/E3 representatives do not prove every device/OS failure. Needs storage design/diagnostics and an owner decision, not an oracle relaxation. |
-| X03 | FLUID_CARGO_UNLOAD | FF_REBUILD_SOURCE is a protected FLOOR_CONFLICT result under W142 R76, not a demonstrated operator repair. Offline whole-world repair remains NOT_COVERED. |
+| X03 | FLUID_CARGO_UNLOAD | FF_REBUILD_SOURCE is a protected FLOOR_CONFLICT result under W142 R76, not a demonstrated operator repair. Offline whole-world repair remains NOT_COVERED. Update 2026-11-24 (Root decision R681): candidate C6's `cargo-X03-REPAIR` passed with both world origins (R616, R632), and the X03-D whole-world repair is approved and published in the endgame operator guide for C6's build; it repairs this one shape and enables no switch. |
 
 ## Per-owner pending cap over cargo
 

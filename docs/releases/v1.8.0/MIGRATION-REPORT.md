@@ -71,26 +71,31 @@ the activated accounting format uses ledger root 3; an older root migrates under
 checked writes. The complete inventory of other schemas remains to be archived;
 root 3 is not a world-wide schema number.
 
-The [owner packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md)
-P2 proposes KI-V180-UPGRADE-01: interruption before replacement can leave
-`.…migrating-<uuid>` staging files and a backup directory. Incomplete backup
-directories count toward the fixed five-directory cap. A still-unmigrated world
-at that cap refuses startup with `ARCE-BETA-2004`; an already migrated world is
-not blocked by that cap. P2 remains an owner decision, not an accepted new
-known issue in this report. Candidate results and diagnostic timing are PENDING.
+Root decision R680 (2026-11-24, under the
+[owner's delegation](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)
+of the [owner packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md))
+accepts KI-V180-UPGRADE-01 in [KNOWN-ISSUES](KNOWN-ISSUES.md): interruption before
+replacement can leave `.…migrating-<uuid>` staging files and a backup directory.
+Incomplete backup directories count toward the fixed five-directory cap. A
+still-unmigrated world at that cap refuses startup with `ARCE-BETA-2004`; an
+already migrated world is not blocked by that cap. Candidate results and
+diagnostic timing are PENDING.
 
 Proposed operational handling is stop first, preserve a complete backup, move
 older migration-backup directories outside the world rather than deleting them,
 and move stale staging files only after migration is verified. Migration backups
 are **not complete-world backups** and cannot be restored alone.
 
-P1's [R-044 sign-off draft](../../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md)
-§5 remains unsigned. Historical old-JAR startup changed `level.dat` and
+R-044's downgrade residual is accepted with the
+[R-044 sign-off](../../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) §5
+unchanged (Root decision R679, signed by Root on the owner's behalf on
+2026-11-24); KI-V180-DOWNGRADE-01 in [KNOWN-ISSUES](KNOWN-ISSUES.md) gives the
+backup and downgrade instruction. Historical old-JAR startup changed `level.dat` and
 `level.dat_old` before refusing; exit code 0 alone does not prove successful
 loading—operators must inspect `ARCE-BETA-2001`. Signing a limitation neither
 passes the failed checks nor enables admission. After an accidental downgrade,
 restore the entire stopped-world backup, never selected data/region/player files.
-The accounting root-3 boundary must be repeated on C6. There is no general
+C6 repeated the accounting root-3 boundary with the same result (R652). There is no general
 single-file rollback or power-loss guarantee.
 
 Tester, UTC dates, exact commands/exit codes, fixture and output hashes,

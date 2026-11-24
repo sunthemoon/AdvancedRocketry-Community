@@ -1,14 +1,16 @@
 # X03-D: operator guidance for the whole-world repair after FF_REBUILD_SOURCE
 
-Root: Claude. Date: 2026-11-19. **Status: DRAFT for the owner's approval in the final packet; not published, not a
-supported repair yet.**
+Root: Claude. Date: 2026-11-19. **Status: APPROVED and PUBLISHED on 2026-11-24 (Root decision R681, under the owner's
+delegation in [OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)).** The operator text of section 2 is published,
+with the approval wording, in the [endgame operator guide](../../../ENDGAME-OPERATOR-GUIDE.md), section "Whole-world
+repair after a FLOOR_CONFLICT fence"; this record keeps its history and the full refusal table.
 
 | Item | Value |
 |---|---|
 | Decision | Root decision R513 (QUEUE row W387) |
 | Design | [W367-DESIGN](W367-DESIGN.md), revision 3: section 3 (the procedure), section 4 (root 2 and root 3) and section 7 (the first draft of this text) |
 | Evidence so far | X03-B on root 2 ([W380](W380.md), merged as `97576e2be`) and X03-C on the accounting-enabled build ([W387](W387.md)), each with native accepting runs and read-only reviews (W380R, W380R2 and W387R). These are development evidence. |
-| Final evidence | The X03 family `cargo-X03-REPAIR` on candidate C4, with both world origins (R463, answer 3) |
+| Final evidence | The X03 family `cargo-X03-REPAIR` on candidate C4, with both world origins (R463, answer 3); candidate C6 replaced C4 (R581), and C6's rerun passed with both origins (R616, R632) |
 | Tool | `scripts/repair_v180_rebuild_source.py`, modes `plan`, `apply` and `census` |
 
 ## 1. What changed since the first draft
@@ -119,3 +121,8 @@ never repaired piece by piece. The complete list is in design section 3.5.
 3. Root then records the result in the W326 matrix row X03 and in the risk register's R-035 entry, and publishes
    the approved text as operator documentation. Production cargo admission stays off until the owner decides it
    separately.
+
+Status on 2026-11-24 (R681): condition 1 is met on C6, which replaced C4 (R581), by the rerun that passed both world
+origins (R616, R632); condition 2 is met by Root's approval under the owner's delegation; step 3 is done in the same
+commit: the W326 matrix row X03, R-035 and the endgame operator guide. Production cargo admission stays off in v1.8
+(R682).

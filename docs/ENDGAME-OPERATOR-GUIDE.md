@@ -224,9 +224,117 @@ while that owner is online with operator permissions.
 
   There is no command that drains these writers while the server keeps
   running (ADR-074 item 9).
-- **Downgrades.** A v1.6 server that loads a v1.7 world drops the endgame
-  blocks, which become air, and ignores the root. Escrowed and in-flight cargo
-  is lost. Downgrades are not supported.
+- **Migration backups.** The first v1.8 start of an older world copies the
+  managed SavedData files into `advancedrocketrycommunity-backups/` in the
+  world folder before it migrates them. These copies hold only the ledger and
+  the transfer journal; they are not a complete backup and cannot be restored
+  alone. An interrupted migration leaves its backup folder and, in `data/`,
+  staging files named `.…migrating-<uuid>`. The next start migrates again and
+  succeeds, and the leftovers stay. At most five backup folders count,
+  complete or not: a world that still needs migrating and already has five
+  refuses to start with `ARCE-BETA-2004` and is not changed. Stop the server
+  and move older backup folders out of the world folder; keep them, do not
+  delete them. Move staging files out of `data/` only after a complete backup
+  and after the world has finished upgrading (KI-V180-UPGRADE-01).
+- **Downgrades.** Downgrades are not supported.
+  - A v1.6 server that loads a v1.7 world drops the endgame blocks, which
+    become air, and ignores the root. Escrowed and in-flight cargo is lost.
+  - A world that v1.8 has run cannot go back to an older JAR. An older JAR
+    that does not know v1.8's transfer journal (schema 3) refuses to start,
+    but first rewrites `level.dat` and `level.dat_old` and removes the
+    registry entries of newer blocks and items. An older JAR that knows escrow
+    but not v1.8's ledger (root 3) refuses with `ARCE-BETA-2001` before the
+    world loads. Either refusal exits with code 0, so read the log for
+    `ARCE-BETA-2001` instead of trusting the exit code.
+  - Before upgrading to v1.8, and before any downgrade attempt, stop the
+    server and take a complete world backup: every dimension's terrain,
+    entity and POI files, global data, the journal, the ledger and receipts,
+    player data, and `level.dat` and `level.dat_old`. Every recovery replaces
+    the whole world folder with such a backup; never restore single files or
+    single stores.
+  - To stay on v1.8 after a downgrade attempt, restore the complete backup
+    taken before the attempt and start v1.8. A world that an older JAR only
+    refused with `ARCE-BETA-2001` can also be started on v1.8 directly. To go
+    back to the older version, restore the complete backup taken before the
+    upgrade to v1.8; everything done on v1.8 is lost.
+
+  This is R-044's accepted downgrade limit (KI-V180-DOWNGRADE-01).
+
+## Whole-world repair after a FLOOR_CONFLICT fence
+
+This repair is approved for v1.8.0's build and the repair tool of the same
+commit, `scripts/repair_v180_rebuild_source.py` in this repository, run with
+Python 3 (Root decision R681). Its modes are `plan`, `apply` and `census`;
+`--help` lists the arguments.
+
+- **When this applies.** Your server log shows the line
+  `ARCE_TRANSFER_FENCED transfer=<id> reason=FLOOR_CONFLICT repair=offline-whole-world`
+  for one transfer, and the rocket it names is standing still at its launch
+  position. Worlds on v1.8.0, where production cargo admission is off, are
+  not expected to reach this state.
+- **Before you start.** Stop the server, disable automatic restart and keep
+  players out. Do not delete the transfer entry, reset an epoch, restore one
+  store or rebuild the historical tank. Use only this tool and this build. You
+  need free space for three copies of the world, plus 10 GiB free on each
+  drive the tool uses.
+- **Qualifying start.** Start the unrepaired world once on this build, with
+  players excluded. Load the rocket's chunk and the device's chunk with
+  `forceload add`, wait for the fence line for the transfer, keep the server
+  running for at least 10 seconds after it has finished starting, remove the
+  forced chunks with `forceload remove`, and stop cleanly. If the world was
+  last run on an older build, this start also upgrades its saved data; that
+  is expected and repairs nothing.
+- **Backup and plan.** Make a hash-verified backup of the complete world:
+  every dimension, player file, ledger, journal, backup folder and metadata
+  file. Run `plan` on the backup with the log of the qualifying start and
+  `--profile enabled`. Read its identities, amounts, its account (UNKNOWN
+  unless you supplied a verified witness) and its exact edit, which removes
+  one journal entry, before you confirm the plan digest.
+- **Apply and verify.** `apply` writes a fresh copy and changes only the
+  transfer journal. Run `census` on the copy before any start. Then start the
+  copy three times in isolation, each a separate server process: load the two
+  chunks, run `save-all flush`, wait for its completion message, remove the
+  forced chunks, stop cleanly, and run `census --after-start` after each stop.
+  No start may log a fence line or a blocked store. These starts advance the
+  copy's game time, so the validated copy is slightly ahead of your original.
+- **Replace the whole world.** Promote only the entire validated copy while
+  the server is stopped, and keep the original and the backup. Never copy only
+  the repaired journal into a live or different world. Restarting alone is not
+  a repair, and the historical snapshot is not a refund.
+- **If the tool refuses.** Your world has another shape, or a step went wrong.
+  Keep the server stopped, keep the original and the backup, and ask for a
+  separately reviewed repair. Do not work around a refusal. Every refusal
+  leaves the original and the backup unchanged; discard a partial copy after
+  an `apply` error instead of repairing it piece by piece. The reasons you are
+  most likely to meet are:
+  - `ROOT_NOT_CURRENT:<store>` at `plan`: expected before the qualifying start
+    on a world last run on an older build. Do the qualifying start, take a new
+    backup and plan again; if it persists, stop and ask.
+  - `PLAN_ROOT_STAMPS_DIFFER`: plan again with `--profile enabled` on this
+    build.
+  - `FENCE_EVIDENCE_MISSING`: give the log of the qualifying start.
+    `FENCE_REASON_DIFFERS` is a different problem: stop and ask.
+  - `INSUFFICIENT_SPACE`, `WORLD_LOCKED`, `PATH_OVERLAP`: correct the
+    environment and run the step again.
+  - `STALE_PLAN`, `INPUT_CHANGED`: make a new backup and plan again.
+  - `MIGRATION_DURING_VERIFICATION`, `RAID_FILE_SET_CHANGED`: discard the
+    copy and start again from the qualifying start; do not add or delete raid
+    files by hand.
+  - Any other reason, such as `SECOND_PHYSICAL_ROCKET`,
+    `PASSENGER_ASSIGNMENT`, `DESTINATION_IN_TARGET_CHUNK`,
+    `RESOURCE_DISCREPANCY` or an authority reason: stop and ask. The tool
+    never deletes records to make a world fit.
+- **Limits.** It repairs one shape: a `FLOOR_CONFLICT` fence after
+  `FF_REBUILD_SOURCE` (a fluid unload whose source was rebuilt), with no
+  related escrow authority and an empty fluid-account list. It is not a
+  general `FLOOR_CONFLICT` repair, a settlement, a refund or a store restore,
+  and it enables no disabled production feature. Its raid check knows the
+  nine raid files of the vanilla and mod dimensions; other mods' raid files
+  are reported, not judged. After a start the census is semantic, not
+  byte-for-byte: it reports every changed file for you to read.
+
+The full refusal table and the evidence are in the
+[X03-D record](work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md).
 
 ## Laser drills in physical mode
 

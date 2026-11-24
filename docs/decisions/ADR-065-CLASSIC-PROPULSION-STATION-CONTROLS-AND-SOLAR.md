@@ -1268,6 +1268,20 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+**Acceptance of the downgrade residual (2026-11-24, Root decision R679).** R-044's downgrade residual at both format
+boundaries, transfer journal schema 3 and escrow ledger root 3, is accepted with the text of
+`records/R044-SIGNOFF-DRAFT.md` section 5, unchanged.
+
+- **Responsible person:** the owner. **Signer:** Root (Claude), on the owner's behalf under the owner's delegation of
+  2026-11-24 (`records/OWNER-DECISIONS-20261124.md`).
+- **Reason:** candidate C6 measured both boundaries with the same result as W373B (R652). The supported recovery,
+  replacing the whole world folder with a complete backup, restored every hash, and the refusals left terrain,
+  entities, the journal and the ledger unchanged.
+- **Re-review:** before v1.9.0 is released. The acceptance lapses if the transfer journal's schema, the escrow
+  ledger's root, the block or item registry IDs, or the way world metadata is written changes.
+- **Failures kept:** W176's three downgrade rows, `cargo-G2-REUSE`, `w336-downgrade` and `accounting-root3-old-jar`
+  stay FAILED. The acceptance waives no assertion, enables no production switch and approves no Gate.
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or

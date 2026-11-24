@@ -42,7 +42,7 @@ latest_hosted_regression: run 45195645440 at 60ead06cf passed (W461's and W463's
 ledger_planned_units: 5
 asset_review_items: 0
 required_gates_approved: none
-last_updated: 2026-11-23
+last_updated: 2026-11-24
 ```
 
 ## Current state
@@ -86,11 +86,10 @@ in the linked task evidence, not additional owner-packet items.
   root-3 ledgers; [FUEL-ADMISSION-REPORT](../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) lists 31 prerequisites as
   15 DONE, 11 PARTIAL and 5 OPEN, without enabling admission.
 - **Owner's packet and release boundary.** [OWNER-FINAL-PACKET-DRAFT](../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md)
-  carries C6's results under R652: P1's R-044 text is ready to sign unchanged, P3's operator
-  guidance is recommended yes, and P4 to P9 are recommended no for v1.8. The bay, the cargo
-  loading/unloading switches for items and fluids, and the separate fuel loader remain off;
-  the final real-client/reference-node campaign, remaining evidence, owner decisions and
-  release documentation are still required, and no Required Gate is approved.
+  carries C6's results under R652 and Root's decisions R679 to R684 under the owner's 2026-11-24
+  delegation. The bay, the cargo loading/unloading switches for items and fluids, and the separate
+  fuel loader stay off in v1.8 (R682); the final real-client/reference-node campaign, remaining
+  evidence, P11 and release documentation are still required, and no Required Gate is approved.
 
 The hosted regression checks the exact pushed commit with a clean build and unit tests,
 the artifact audit, two clean-tree `runData` runs, every GameTest and the GameTest log checker.
@@ -110,40 +109,43 @@ restart or real client; those need their own evidence.
   [PORTING_MATRIX](../PORTING_MATRIX.md) and content-ledger closure.
 - **Ledger and switch dispositions.** The PLANNED units counted above are the propulsion batch
   C17a's item/fluid cargo loaders and unloaders and the orbital-equipment batch C17c's satellite
-  bay; their admission and final ledger disposition remain open. W457's ADR-062 revision 8 draft
-  is held on `codex/v1.8.0-w457` under R656 until the owner answers P4 to P8, after which Root
-  applies the corresponding enabled or deferred rows as [QUEUE](../work/v1.8.0-root-queue/QUEUE.md) specifies.
-- **Residual-risk signatures and switches.** W203's question 4 (W203-Q4) and D14 remain open for the applicable
-  R-021, R-030, R-035, R-039, R-040 and R-041 to R-044 scopes in the
-  [risk register](../11-RISK-REGISTER.md); the owner's 2026-10-26 R-035 acceptance
+  bay. Under R682 all six production admission switches stay off in v1.8 (the bay, the four cargo
+  kinds and the fuel loader), so these five units go to `DEFERRED` with plan v1.9.0 through W457's
+  ADR-062 revision 8 on `codex/v1.8.0-w457`, which Root merges next as [QUEUE](../work/v1.8.0-root-queue/QUEUE.md)
+  specifies; until then the ledger still counts them as PLANNED.
+- **Residual-risk signatures.** W203's question 4 (W203-Q4) and D14 remain open for the applicable
+  R-021, R-030, R-035, R-039, R-040 and R-041 to R-043 scopes and for R-044's parts other than the
+  downgrade, in the [risk register](../11-RISK-REGISTER.md); the owner's 2026-10-26 R-035 acceptance
   covers only its named UNKNOWN settlement-loss accounting, capacities and P1-F8 crash windows
-  with W83/W90 prerequisites, not later additions or blanket admission. Close each fuel,
-  cargo-kind or bay decision only with its exact evidence-backed risk scope signed by the
-  owner, or an explicit continued-disable disposition in the
-  [owner's packet](../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md).
-- **Downgrade limit.** [R044-SIGNOFF-DRAFT sections 5 and 6](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md)
-  covers transfer-journal schema 3 and ledger root 3, complete-world-backup recovery and
-  `ARCE-BETA-2001` refusal despite exit code 0; C6 repeated the boundary failures. P1
-  awaits the owner's signature or disposition, and signature does not convert any failed
-  downgrade row into a pass.
-- **Operator guidance and upgrade limits.** P2's interrupted-upgrade temporary-file/backup
-  limitation and P3's [X03-D whole-world operator guidance](../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md)
-  still await the owner's decision in the [packet](../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md), although
-  X03's candidate rerun condition is met. Close with the explicit decisions and published
-  known-issue/operator text, not a general refund, reconstruction or fuel-repair permission.
-- **Provenance and excluded authorship.** P12 awaits review of 62 records: W414's 58 final
-  batch records are PENDING_HUMAN_REVIEW and the remaining c17a records lack review blocks,
-  with the review-sheet location and evidence in [W414](../work/v1.8.0-root-queue/records/W414.md). Close P12 only with the
-  owner's recorded visual/license review; [W279](../work/v1.8.0-root-queue/records/W279.md)'s AR 16x authorship question
-  separately remains unsettled until a sourced attribution is obtained, since exclusion
-  does not establish authorship.
-- **Campaign resources and reserved decisions.** Under the
-  [owner's 2026-11-17 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261117.md), Root chooses design and
-  sequencing, while P10 still needs the packet's O4, O5 and O7 to O12 arrangements for
-  route/recording, client operators and accounts, GPU/timing tools, reference-node access
-  and availability. Close those arrangements through the owner's recorded answers;
-  destructive tests, risk signatures and P11's Gate/version/release approval, tags and
-  `main` merge remain reserved to the owner.
+  with W83/W90 prerequisites, not later additions or blanket admission. With every switch off in
+  v1.8 (R682), no switch scope needs acceptance; Root settles the remaining scopes before P11 under
+  the [owner's 2026-11-24 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md).
+- **Downgrade limit.** R-044's downgrade residual is accepted with
+  [R044-SIGNOFF-DRAFT section 5](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) unchanged (R679, signed by Root on the
+  owner's behalf): transfer-journal schema 3 and ledger root 3, complete-world-backup recovery and
+  `ARCE-BETA-2001` refusal despite exit code 0. The backup and downgrade instruction is in
+  [KNOWN-ISSUES](../releases/v1.8.0/KNOWN-ISSUES.md) (KI-V180-DOWNGRADE-01), the CHANGELOG and the
+  [endgame operator guide](../ENDGAME-OPERATOR-GUIDE.md). C6's three downgrade families stay FAILED;
+  the acceptance converts no failed row into a pass.
+- **Operator guidance and upgrade limits.** KI-V180-UPGRADE-01, the interrupted upgrade's staging
+  files and backup folder, is accepted without a migration change (R680) and published in
+  KNOWN-ISSUES and the operator guide. The [X03-D whole-world repair](../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md)
+  is approved for C6's build and published in the operator guide (R681), after C6's rerun passed
+  both world origins. Neither is a general refund, reconstruction or fuel-repair permission.
+- **Provenance and excluded authorship.** P12 covers 62 records: W414's 58 final batch records are
+  PENDING_HUMAN_REVIEW and the remaining c17a records lack review blocks, with the review-sheet
+  location and evidence in [W414](../work/v1.8.0-root-queue/records/W414.md). Under R683 Root reviews the comparison sheets and
+  records, and a worker checks every hash against C6's JAR and writes the `APPROVED` blocks naming
+  Root as the reviewer; P12 closes with those blocks. [W279](../work/v1.8.0-root-queue/records/W279.md)'s AR 16x authorship question
+  separately remains unsettled until a sourced attribution is obtained, since exclusion does not
+  establish authorship.
+- **Campaign resources and reserved steps.** Under the
+  [owner's 2026-11-24 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md), Root decides the packet and the
+  owner supplies external resources. R684 takes O4, O7 and O8; O5 and O9 to O12 wait for the owner's
+  resources: the two accounts' UUIDs, a reference-node login, the second machine with the other GPU
+  class, a second person for one phase-4 session, and time slots. The tag, the `main` merge, a
+  published release and marking the Gates and version as passed get the owner's one confirmation
+  at P11.
 
 ### Campaign coverage and performance
 

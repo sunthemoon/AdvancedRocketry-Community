@@ -6,6 +6,14 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Take a complete world backup before upgrading: worlds that v1.8 has run
+  cannot be opened by older versions, and a downgrade means restoring that
+  backup. An older JAR's refusal exits with code 0, so check the log for
+  `ARCE-BETA-2001`. The migration backups in `advancedrocketrycommunity-backups/`
+  are not complete backups, and five of them stop a world that still needs
+  migrating (`ARCE-BETA-2004`). See KI-V180-DOWNGRADE-01 and KI-V180-UPGRADE-01
+  in the v1.8.0 known issues and the endgame operator guide, which also
+  describes the approved whole-world repair after a `FLOOR_CONFLICT` fence.
 - Add the Tracking Circuit with its classic Precision Assembler recipe: one
   redstone dust, one ender eye and one Basic Circuit Plate make one circuit in
   900 ticks at 50 FE/t. It has original artwork and English/Chinese labels.

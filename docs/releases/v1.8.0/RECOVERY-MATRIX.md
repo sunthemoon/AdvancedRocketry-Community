@@ -57,16 +57,19 @@ recipe/fuel consumption may change the total. Unknown quantities never mean zero
   its runtime/configuration, never mix data/region/entity/player files from
   different times. A restart alone is not a repair.
 - [R-044 sign-off §5](../../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md)
-  is a pending owner signature, not a passed downgrade test. An old-JAR refusal
+  is signed (Root decision R679, on the owner's behalf under the owner's
+  2026-11-24 delegation); it is an accepted limit, not a passed downgrade test. An old-JAR refusal
   can exit 0; inspect `ARCE-BETA-2001`. The complete backup rule applies to both
   journal and ledger downgrade boundaries.
 - [X03-D guidance](../../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md)
-  is not yet a release-supported general repair. Packet P3 depends on C6 proof
-  for both origins and owner acceptance. It does not authorize single-file rollback.
+  is approved for C6's build and published in the
+  [endgame operator guide](../../ENDGAME-OPERATOR-GUIDE.md) (Root decision R681,
+  after C6 passed both origins under R616 and R632). It repairs one world shape,
+  is not a general repair, and does not authorize single-file rollback.
 - [Fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md)
   preserves the narrow 2026-10-26 conditional fuel acceptance. It does not accept
   all later accounting, R-031/R-032, R-040, R-042–R-044 or whole-root availability
-  risks, nor enable fuel. Bay/cargo and fuel each need separate signed decisions.
+  risks, nor enable fuel. Bay/cargo and fuel stay off in v1.8 (Root decision R682).
 
 Actual commands/exit codes, stop/start UTCs, complete state manifests, oracles,
 failure/correction history, schema census, tester and independent review are
