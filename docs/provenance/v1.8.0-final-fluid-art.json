@@ -305,13 +305,11 @@
     "docs/provenance/v1.8.0-development-metadata.md"
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "status": "APPROVED",
     "content_digest": "6d98f50d14f23cf29cc8f135fe2f15d00f066f6338184d9f6f43a7d9c93438be",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": [
-      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
-      "Compare every listed NEW texture and every machine/casing face by eye with the ADR-061 section 4.5 vanilla counterparts. The external 4x sheet is preparation, not approval or V1/V2 evidence."
-    ]
+    "reviewer": "Root (Claude), under the owner's delegation of 2026-11-24 (R683, docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)",
+    "reviewed_at": "2026-11-24",
+    "findings": [],
+    "basis": "On 2026-11-24 Root compared every texture on W414's 26 comparison sheets by eye with the vanilla piston, furnace, dispenser, dropper, iron block, stone and cobblestone faces named by ADR-061 section 4.5, and found no copy or derivation; the textures are flat original designs.\nW470 rechecked every entry's SHA-256 against candidate C6's JAR, checked the license fields, and ran the section 4.8 pixel measures on the NEW textures against the vanilla 1.20.1 client JAR.\nThis review is by Root, an AI agent, under the owner's delegation; it is not a human review, a Gate result or a release approval.\nW470 record checks: entries=13; C6 SHA-256 matched=13, mismatched=0, missing=0; license/source exceptions=0; NEW PNGs=13: CLEAR=13, HIT=0, SUSPECT=0, UNSUPPORTED=0."
   }
 }

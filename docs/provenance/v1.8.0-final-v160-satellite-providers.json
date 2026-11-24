@@ -272,13 +272,11 @@
     }
   ],
   "review": {
-    "status": "PENDING_HUMAN_REVIEW",
+    "status": "APPROVED",
     "content_digest": "41941d0e4babfd58f8f71efcf8973256f7774afc55f77e7e523d99215f251421",
-    "reviewer": null,
-    "reviewed_at": null,
-    "findings": [
-      "Inspect each source/authoring snapshot, its base identity and MIT attribution; confirm every listed C5 target and SHA-256.",
-      "Review generated model/state/translation/profile references against the pinned provider and applicable retained/imported art. This documentation task did not rerun DataGen or execute a client."
-    ]
+    "reviewer": "Root (Claude), under the owner's delegation of 2026-11-24 (R683, docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)",
+    "reviewed_at": "2026-11-24",
+    "findings": [],
+    "basis": "W470 rechecked every entry's SHA-256 against candidate C6's JAR, checked the license fields, and ran the section 4.8 pixel measures on the NEW textures against the vanilla 1.20.1 client JAR.\nThis review is by Root, an AI agent, under the owner's delegation; it is not a human review, a Gate result or a release approval.\nW470 record checks: entries=9; C6 SHA-256 matched=9, mismatched=0, missing=0; license/source exceptions=0; NEW PNGs=0: CLEAR=0, HIT=0, SUSPECT=0, UNSUPPORTED=0."
   }
 }
