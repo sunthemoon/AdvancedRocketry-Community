@@ -277,5 +277,13 @@
         "Original code-authored monitoring instrument pixels, recipe and bilingual text; deterministic DataGen without upstream or vanilla art input. Shared mining tag preserves its prior entries and adds the monitor."
       ]
     }
-  ]
+  ],
+  "review": {
+    "status": "APPROVED",
+    "content_digest": "2f97ec9f958575598246358906814bf04b1e1e1f8046fc0e70430eda926c5e38",
+    "reviewer": "Root (Claude), under the owner's delegation of 2026-11-24 (R683, docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)",
+    "reviewed_at": "2026-11-24",
+    "findings": [],
+    "basis": "W470 rechecked this record against candidate C6's JAR and checked its license fields (0 exceptions). Non-language entries: 8 of 8 match C6's SHA-256. Its 2 entries in the shared language files under assets/advancedrocketrycommunity_v180/lang/ record whole-file hashes taken when this batch was written; later batches added their own keys to those files, so under Root decision R685 they are judged as the v1.8 provenance audit judges language files: all 90 new keys this record lists are present in C6's files. The record has no textures. The top-level reviewer field is the authoring-time declaration; this review block supersedes it.\nThis review is by Root, an AI agent, under the owner's delegation; it is not a human review, a Gate result or a release approval."
+  }
 }

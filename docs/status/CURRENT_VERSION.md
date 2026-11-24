@@ -131,13 +131,12 @@ restart or real client; those need their own evidence.
   KNOWN-ISSUES and the operator guide. The [X03-D whole-world repair](../work/v1.8.0-root-queue/records/X03-D-OPERATOR-GUIDANCE.md)
   is approved for C6's build and published in the operator guide (R681), after C6's rerun passed
   both world origins. Neither is a general refund, reconstruction or fuel-repair permission.
-- **Provenance and excluded authorship.** P12 covers 62 records: W414's 58 final batch records are
-  PENDING_HUMAN_REVIEW and the remaining c17a records lack review blocks, with the review-sheet
-  location and evidence in [W414](../work/v1.8.0-root-queue/records/W414.md). Under R683 Root reviews the comparison sheets and
-  records, and a worker checks every hash against C6's JAR and writes the `APPROVED` blocks naming
-  Root as the reviewer; P12 closes with those blocks. [W279](../work/v1.8.0-root-queue/records/W279.md)'s AR 16x authorship question
-  separately remains unsettled until a sourced attribution is obtained, since exclusion does not
-  establish authorship.
+- **Provenance and excluded authorship.** P12 is closed (R683, R685): all 62 records carry `APPROVED`
+  review blocks naming Root as the reviewer under the owner's delegation, after Root's by-eye review of W414's 26
+  comparison sheets and [W470](../work/v1.8.0-root-queue/records/W470.md)'s checks on C6 (hashes, license fields, and section 4.8's pixel measures
+  with all 154 NEW textures `CLEAR`); the four c17a records' shared language entries were judged by their new keys.
+  The review is an AI agent's, not a human's. [W279](../work/v1.8.0-root-queue/records/W279.md)'s AR 16x authorship question separately remains
+  unsettled until a sourced attribution is obtained, since exclusion does not establish authorship.
 - **Campaign resources and reserved steps.** Under the
   [owner's 2026-11-24 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md), Root decides the packet and the
   owner supplies external resources. R684 takes O4, O7 and O8; O5 and O9 to O12 wait for the owner's

@@ -367,5 +367,13 @@
         "screen.advancedrocketrycommunity.rocket_fluid_cargo.unknown_fluid"
       ]
     }
-  ]
+  ],
+  "review": {
+    "status": "APPROVED",
+    "content_digest": "46ef4ccc842dfffb6aafd8bcb094c14b8b8accbfc3c98ac60c679142e0e605b6",
+    "reviewer": "Root (Claude), under the owner's delegation of 2026-11-24 (R683, docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)",
+    "reviewed_at": "2026-11-24",
+    "findings": [],
+    "basis": "W470 rechecked this record against candidate C6's JAR and checked its license fields (0 exceptions). Non-language entries: 14 of 14 match C6's SHA-256. Its 2 entries in the shared language files under assets/advancedrocketrycommunity_v180/lang/ record whole-file hashes taken when this batch was written; later batches added their own keys to those files, so under Root decision R685 they are judged as the v1.8 provenance audit judges language files: all 72 new keys this record lists are present in C6's files. The record has no textures. The top-level reviewer field is the authoring-time declaration; this review block supersedes it.\nThis review is by Root, an AI agent, under the owner's delegation; it is not a human review, a Gate result or a release approval."
+  }
 }
