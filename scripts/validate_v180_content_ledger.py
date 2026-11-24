@@ -54,6 +54,8 @@ ALLOWLIST = Path("docs/work/v1.8.0-asset-import-allowlist.txt")
 ORIGIN_FINDINGS = Path("docs/provenance/v1.8.0-origin-findings.json")
 DERIVATION = Path("docs/work/v1.8.0-vanilla-derivation.json")
 PLAYER_IMPACT_ADR = "ADR-062"
+# A complete semicolon-delimited notes field, not a substring of prose.
+ADMISSION_OFF_MARKER = "production_admission=off@v1.8.0"
 PLAYER_IMPACT_PATH = Path("docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md")
 DERIVATION_ADR_PATH = Path("docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md")
 DERIVATION_TOOL = Path("tools/audit/vanilla_derivation.py")
@@ -413,8 +415,11 @@ def validate_ledger(root: Path, units: list[dict], rows: list[dict[str, str]], e
                         if not _token(f"{MOD_ID}:{modern}").search(text):
                             errors.append(f"{where}: evidence file {evidence} does not list {MOD_ID}:{modern}")
         elif disposition == "DEFERRED":
-            if plan != "post-2.0":
-                errors.append(f"{where}: DEFERRED plan must be post-2.0")
+            admission_deferred = (plan == "v1.9.0" and PLAYER_IMPACT_ADR in tokens and
+                                  ADMISSION_OFF_MARKER in {part.strip() for part in row["notes"].split(";")})
+            if plan != "post-2.0" and not admission_deferred:
+                errors.append(f"{where}: DEFERRED plan must be post-2.0 or v1.9.0 with {PLAYER_IMPACT_ADR} "
+                              f"and notes marker {ADMISSION_OFF_MARKER!r}")
         elif plan != "-":
             errors.append(f"{where}: {disposition} plan must be '-'")
         if disposition == "MERGED":
