@@ -354,7 +354,7 @@ X01-to-X03 approach. The inventory is not a coverage verdict: Root fills results
 - **The switch.** W371 supplies `BayDeploymentSwitches.PRODUCTION_ADMISSION = false`.
   Admission is the constant or the existing release-test gate, and remains off in production
   ([QUEUE](../QUEUE.md), W371/R464/R470; section 2.2).
-- **Root recommendation: PLACEHOLDER — PENDING ROOT REVIEW for the bay.** No enablement is recommended by this draft.
+- **Decision (R682, 2026-11-24): stays off in v1.8.** Root recommended no in the final packet and decided it under the owner's delegation ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)); ADR-062 revision 8 defers the unit's admission to v1.9.0. This is a continued-disable disposition, not an accepted risk scope.
 - **Live with the switch off.** The bay is craftable at C3 (historical baseline) (its recipe `rocket_satellite_bay` is in
   `src/generated/v1.8`). So the code for its root protection and save refusal (R-038), the package insertion fences and
   NOT_LOADED (R-042) is active in production now, and recovery of receipts already in a world runs on every server
@@ -656,7 +656,7 @@ R-043 step-timing measurement plan.
 
 - **The switch.** `EscrowCargoSwitches.production(ITEM_CARGO_LOAD)` returns false
   ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 2.2; R459 makes no admission change).
-- **Root recommendation: PLACEHOLDER — PENDING ROOT REVIEW for ITEM_CARGO_LOAD.**
+- **Decision (R682, 2026-11-24): stays off in v1.8.** Root recommended no in the final packet and decided it under the owner's delegation ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)); ADR-062 revision 8 defers the unit's admission to v1.9.0. This is a continued-disable disposition, not an accepted risk scope.
 - **Live with the switch off.** The item loader is craftable at C3 (historical baseline) (`rocket_item_loader`), so its device protection
   (R-035's cargo paragraph) already applies. Reconciliation of existing ledger records runs on every server, and the
   kind is refused under either NOT_LOADED state (W327, section 4). The register states that production worlds have no
@@ -735,7 +735,7 @@ W329's GameTests plus W360's two item-device holds, the downgrade family, and X0
 
 - **The switch.** `EscrowCargoSwitches.production(ITEM_CARGO_UNLOAD)` returns false
   ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 2.2; R459 makes no admission change).
-- **Root recommendation: PLACEHOLDER — PENDING ROOT REVIEW for ITEM_CARGO_UNLOAD.**
+- **Decision (R682, 2026-11-24): stays off in v1.8.** Root recommended no in the final packet and decided it under the owner's delegation ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)); ADR-062 revision 8 defers the unit's admission to v1.9.0. This is a continued-disable disposition, not an accepted risk scope.
 - **Live with the switch off.** The item unloader is craftable at C3 (historical baseline) (`rocket_item_unloader`); otherwise as in section
   4.1.
 
@@ -807,7 +807,7 @@ As section 4.4: the native item/shared rows passed; X01 remains FAIL, X02 retain
 
 - **The switch.** `EscrowCargoSwitches.production(FLUID_CARGO_LOAD)` returns false
   ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 2.2; R459 makes no admission change).
-- **Root recommendation: PLACEHOLDER — PENDING ROOT REVIEW for FLUID_CARGO_LOAD.**
+- **Decision (R682, 2026-11-24): stays off in v1.8.** Root recommended no in the final packet and decided it under the owner's delegation ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)); ADR-062 revision 8 defers the unit's admission to v1.9.0. This is a continued-disable disposition, not an accepted risk scope.
 - **Live with the switch off.** The fluid loader is craftable at C3 (historical baseline) (`rocket_fluid_loader`); otherwise as in section
   4.1.
 
@@ -865,7 +865,7 @@ Scope, duration and recovery are as in section 4.3.
 
 - **The switch.** `EscrowCargoSwitches.production(FLUID_CARGO_UNLOAD)` returns false
   ([C3-SWITCH-REPORT](C3-SWITCH-REPORT.md), section 2.2; R459 makes no admission change).
-- **Root recommendation: PLACEHOLDER — PENDING ROOT REVIEW for FLUID_CARGO_UNLOAD.**
+- **Decision (R682, 2026-11-24): stays off in v1.8.** Root recommended no in the final packet and decided it under the owner's delegation ([OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)); ADR-062 revision 8 defers the unit's admission to v1.9.0. This is a continued-disable disposition, not an accepted risk scope.
 - **Live with the switch off.** The fluid unloader is craftable at C3 (historical baseline) (`rocket_fluid_unloader`); otherwise as in
   section 4.1.
 

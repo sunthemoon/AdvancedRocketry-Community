@@ -27,6 +27,16 @@ COPIED = (
     Path("src/generated"),
     Path("src/main/resources"),
 )
+# ADR-062 revision 8 deferred these five units in the repository ledger. Tests of the PLANNED rules restore the rows,
+# as they stood before it, in their scratch copy.
+PLANNED_BEFORE_REVISION_8 = {
+    "block_variant:loader/1": ("C17c", "rocket satellite bay", "ADR-049 ADR-062",
+                               "deploy a satellite package on reaching orbit, exactly once"),
+    "block_variant:loader/2": ("C17a", "rocket item unloader", "ADR-062", "docked rocket inventories"),
+    "block_variant:loader/3": ("C17a", "rocket item loader", "ADR-062", "docked rocket inventories"),
+    "block_variant:loader/4": ("C17a", "rocket fluid unloader", "ADR-062", "docked rocket tanks"),
+    "block_variant:loader/5": ("C17a", "rocket fluid loader", "ADR-062", "docked rocket tanks"),
+}
 
 
 class OriginFindingAdoptionTests(unittest.TestCase):
@@ -171,6 +181,12 @@ class V180ContentLedgerTests(unittest.TestCase):
         writer.writerows(rows)
         (self.root / relative).write_text(buffer.getvalue(), encoding="utf-8", newline="")
 
+    def _restore_planned(self, *unit_ids: str) -> None:
+        for unit_id in unit_ids:
+            plan, target, decision, notes = PLANNED_BEFORE_REVISION_8[unit_id]
+            self._edit_ledger(unit_id, disposition="PLANNED", plan=plan, target=target, decision=decision,
+                              notes=notes, evidence="")
+
     def _edit_ledger(self, unit_id: str, **changes: str) -> None:
         rows = self._rows(LEDGER)
         for row in rows:
@@ -288,6 +304,8 @@ class V180ContentLedgerTests(unittest.TestCase):
                       errors)
 
     def test_v19_admission_deferral_still_requires_accepted_adr_at_closure(self) -> None:
+        self._restore_planned("block_variant:loader/1", "block_variant:loader/2", "block_variant:loader/4",
+                              "block_variant:loader/5")
         self._edit_ledger("block_variant:loader/3", disposition="DEFERRED", plan="v1.9.0", target="-",
                           decision="ADR-062", notes="production_admission=off@v1.8.0")
         path = self.root / PLAYER_IMPACT_PATH
@@ -330,6 +348,7 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("block:centrifuge: decision token 'later'" in error for error in errors))
 
     def test_planned_needs_a_v18_batch(self) -> None:
+        self._restore_planned("block_variant:loader/2")
         self._edit_ledger("block_variant:loader/2", plan="C20a")
         self.assertIn("ledger: block_variant:loader/2: PLANNED plan 'C20a' is not a v1.8 batch", self._errors())
 
@@ -425,6 +444,7 @@ class V180ContentLedgerTests(unittest.TestCase):
                       self._errors())
 
     def test_closure_requires_no_planned_rows(self) -> None:
+        self._restore_planned("block_variant:loader/2")
         self.assertTrue(any(error.startswith("closure: ") and "PLANNED" in error
                             for error in self._errors(closure=True)))
 

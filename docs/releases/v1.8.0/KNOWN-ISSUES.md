@@ -137,6 +137,17 @@ limit of 5 migration backups is reached"）拒绝整个世界，不修改世界�
 R-035 记载这一限制。Root 决定 R680（依所有者 2026-11-24 的委托）接受它为 v1.8 已知限制，不改迁移代码：现有行为不丢
 数据，拒绝时也不改世界。
 
+## KI-V180-ADMISSION-01 — 卫星舱和四种货物装置在 v1.8 不接受新的操作
+
+火箭卫星舱（`rocket_satellite_bay`）、火箭物品装载器和卸载器（`rocket_item_loader`、`rocket_item_unloader`）以及火箭
+流体装载器和卸载器（`rocket_fluid_loader`、`rocket_fluid_unloader`）在 v1.8 已注册，可以合成和放置，但它们的生产准入
+保持关闭：卫星舱不会在火箭到达轨道时部署新的卫星包，四种货物装置不接受新的托管装卸操作。合成这些方块不会开启这些
+功能。世界中已有的收据和托管记录仍按原规则恢复和保护，方块、物品和存档记录都不会被删除或改名。
+
+Root 决定 R682（依所有者 2026-11-24 的委托，[OWNER-DECISIONS-20261124](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)）
+与 [ADR-062 修订 8](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) 把这五项准入推迟到 v1.9.0
+再考虑。以后打开任何一项，都需要补上下一次操作的测试、参考节点和真实客户端用例，并做一个新候选。
+
 ## KI-V180-USER-01 — 用户文档中已说明的其他限制
 
 以下行为已在各自的用户文档中说明，这里集中列出（Root 决定 R542，来源见

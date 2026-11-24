@@ -1,6 +1,6 @@
 # ADR-062 revision 8 draft: production-admission deferrals
 
-Date: 2026-11-23. Status: **PROPOSED**. Assignment: [W457 / R653](../TASK-W457-ADR062-REVISION-8.md).
+Date: 2026-11-23. Status: **PROPOSED**; **applied on 2026-11-24** as ADR-062 revision 8 (Root decision R682, [OWNER-DECISIONS-20261124](OWNER-DECISIONS-20261124.md)), with the status paragraph, the date and two sentences about pending answers changed as the ADR's review history states. Assignment: [W457 / R653](../TASK-W457-ADR062-REVISION-8.md).
 This is a branch-only draft, not an amendment to the accepted ADR or the authoritative ledger.
 Root holds it until the owner answers P4 to P8. Nothing here enables a switch or approves a Gate.
 

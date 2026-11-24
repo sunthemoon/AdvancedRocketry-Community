@@ -39,7 +39,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: b32a0cb14 (W463 merged, R665: the flight runner's opt-in settled disassembly protocol, with tests; before it W461, R664, the native runner's opt-in exact UNKNOWN expectation; every campaign preparation package is merged, K02 as partial under R667, and the checklists carry every package (W458, R669); scripts, tests and records only, `src/main` equals candidate C6 and stays frozen there, R600). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
 latest_hosted_regression: run 45195645440 at 60ead06cf passed (W461's and W463's merges and R664, R665); governance run 45195645531 passed. Candidate C6's own run is 44770334930 at `c8fa16e16` (attempt 1). Earlier entries are in the implementation log `docs/work/v1.8.0-implementation-log.md`, section "Commit and hosted regression history (moved 2026-11-10)".
-ledger_planned_units: 5
+ledger_planned_units: 0
 asset_review_items: 0
 required_gates_approved: none
 last_updated: 2026-11-24
@@ -107,12 +107,11 @@ restart or real client; those need their own evidence.
   or candidate-acceptance gaps. Close only with the required evidence and owner approval,
   including the [release evidence](../releases/v1.8.0/RELEASE-EVIDENCE.md), final
   [PORTING_MATRIX](../PORTING_MATRIX.md) and content-ledger closure.
-- **Ledger and switch dispositions.** The PLANNED units counted above are the propulsion batch
-  C17a's item/fluid cargo loaders and unloaders and the orbital-equipment batch C17c's satellite
-  bay. Under R682 all six production admission switches stay off in v1.8 (the bay, the four cargo
-  kinds and the fuel loader), so these five units go to `DEFERRED` with plan v1.9.0 through W457's
-  ADR-062 revision 8 on `codex/v1.8.0-w457`, which Root merges next as [QUEUE](../work/v1.8.0-root-queue/QUEUE.md)
-  specifies; until then the ledger still counts them as PLANNED.
+- **Ledger and switch dispositions.** Under R682 all six production admission switches stay off in
+  v1.8 (the bay, the four cargo kinds and the fuel loader). [ADR-062 revision 8](../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md),
+  drafted by W457, moves the propulsion batch C17a's item/fluid cargo loaders and unloaders and the
+  orbital-equipment batch C17c's satellite bay to `DEFERRED` with plan v1.9.0; the ledger closure check
+  passes with no PLANNED unit, and KNOWN-ISSUES carries KI-V180-ADMISSION-01.
 - **Residual-risk signatures.** W203's question 4 (W203-Q4) and D14 remain open for the applicable
   R-021, R-030, R-035, R-039, R-040 and R-041 to R-043 scopes and for R-044's parts other than the
   downgrade, in the [risk register](../11-RISK-REGISTER.md); the owner's 2026-10-26 R-035 acceptance
