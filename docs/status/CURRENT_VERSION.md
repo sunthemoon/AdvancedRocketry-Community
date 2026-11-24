@@ -242,6 +242,10 @@ the stated recurrence condition, and historical failed attempts remain failed.
 under R672's rule (R674): the 18 items that met it are closed in the implementation log, and the items below keep
 their conditions; the adapter-component and bay exit FIFO items had hosted recurrences after their fixes, and the
 bay deployment matrix item had one (run 42403168945, the race W322 later fixed).
+[W469](../work/v1.8.0-root-queue/records/W469.md) then ran C6's full GameTest inventory three times locally, once
+unloaded and twice under CPU load, with no failure (R676): the five items whose condition named local or loaded
+full runs and that had no hosted recurrence after their fix are closed in the implementation log, and the seven
+items below keep their conditions.
 
 - **Escrow proof and monitor timing.** [W94](../work/v1.8.0-root-queue/records/W94.md), [W94B's follow-up](../work/v1.8.0-root-queue/QUEUE.md),
   [W111](../work/v1.8.0-root-queue/records/W111.md) and [W209](../work/v1.8.0-root-queue/records/W209.md) corrected the supersession/fixture-generation
@@ -252,28 +256,11 @@ bay deployment matrix item had one (run 42403168945, the race W322 later fixed).
 - **Adapter component (2026-11-03).** [W272](../work/v1.8.0-root-queue/records/W272.md) keeps pending-disassembly
   submissions advancing after the local `Original component block not yet published` timeouts.
   It stays open until local and hosted runs show no recurrence.
-- **Adapter capture stray button (2026-11-03).** [W273](../work/v1.8.0-root-queue/records/W273.md) removes the fixture
-  start control without drops after the loaded `throwingCapturePreservesSource` failures.
-  It stays open until loaded and hosted runs show no recurrence.
-- **Classic scale and sawmill under load (2026-11-04).** [W283](../work/v1.8.0-root-queue/records/W283.md) did not
-  reproduce the scale-stage and `Batch did not complete exactly once` failures in its
-  loaded repetitions, so neither is fixed. Both stay open until loaded runs show no recurrence.
 - **Bay deployment matrix (2026-11-05).** [W298](../work/v1.8.0-root-queue/records/W298.md) corrected the observer's
   assumption that a recorded destination ID is already a published entity after run
   41870324437. It stays open until runs show no recurrence.
-- **Adapter restore under load (2026-11-05).** [W299](../work/v1.8.0-root-queue/records/W299.md) records the
-  `throwingRestoreCleansPartialInventoryAndRetries` ASSEMBLY timeout when capture
-  exceeded its callback budget. It stays open until loaded runs show no recurrence;
-  no fix is queued unless it recurs.
 - **Bay exit FIFO (2026-11-06).** [W313](../work/v1.8.0-root-queue/records/W313.md) seals/restores the exact-ordinal
   area after falling gravel changed the first winner in local full runs.
-  It stays open until later local full runs show no recurrence.
-- **Sleep in vacuum (2026-11-07).** [W315](../work/v1.8.0-root-queue/records/W315.md) fixes the Moon/Space station
-  comparison and [W318](../work/v1.8.0-root-queue/records/W318.md) cleans up leaked stations after local full-run failures.
-  It stays open until later local full runs show no recurrence.
-- **I/O-completion budgets (2026-11-10).** [W350](../work/v1.8.0-root-queue/records/W350.md) records local failures of
-  both proof-retry tests and sealed tank/bay automation, plus the durability-held warning;
-  the hosted batches passed but the cause is unestablished.
   It stays open until later local full runs show no recurrence.
 - **Terminal-journal unit acknowledgement (2026-11-17).** [QUEUE's W372D/W372R
   observations](../work/v1.8.0-root-queue/QUEUE.md) retain the single failure without its XML, followed by
