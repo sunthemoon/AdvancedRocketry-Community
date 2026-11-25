@@ -144,11 +144,13 @@ restart or real client; those need their own evidence.
   class, a second person for one phase-4 session, and time slots. The tag, the `main` merge, a
   published release and marking the Gates and version as passed get the owner's one confirmation
   at P11.
-- **Final campaign phase 2.** Round 1 ([W471](../work/v1.8.0-root-queue/records/W471.md), R686) ran 15 real-GPU
-  sessions on C6 in launch mode with an isolated offline client: 0 of 45 V1 rows passed, E04 and A12
-  failed on operator and staging faults rather than product defects (R687), 9 rows are NOT_COVERED
-  (six need the owner's account in attach mode) and 34 were not run. Round 2 (W472, R688) reruns the
-  two rows with fixed operator tools and continues the rest. No V1 row is accepted yet.
+- **Final campaign phase 2.** Rounds 1 and 2 ([W471](../work/v1.8.0-root-queue/records/W471.md), W472;
+  R686 to R688, R690) ran 43 real-GPU sessions on C6 in launch mode with an isolated offline client. Every
+  failed attempt was an operator or staging fault, not a product defect, and the clients logged no missing
+  model, texture or translation. No step is scored PASS yet: 0 of 45 V1 rows pass, six need the owner's
+  account in attach mode, and the 394 steps are NOT_COVERED or NOT_RUN. W474 writes full-row scenarios by
+  day for a depth-first night run with per-step scoring. Two first-connection timeouts match
+  KI-V180-CONNECT-01 and stay pending findings.
 
 ### Campaign coverage and performance
 
