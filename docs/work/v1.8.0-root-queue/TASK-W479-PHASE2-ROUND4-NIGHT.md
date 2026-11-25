@@ -24,8 +24,13 @@ Root's reading of the cause:
 - Round 02's sessions met the same gate in 26 sessions at about 01:00 on 2026-11-25, after Synergy's log reported
   the server offline at 00:11.
 
-The pointer gate is right and stays unchanged. Synergy is the owner's program: never close, change or block it, or
-any other program you did not start.
+Correction at 00:40 on 2026-11-26, before launch: Synergy alone is not the cause. Root's probe found the clip
+holding from 00:37:32 while Synergy was still connected, after the owner had closed Chrome, which had been playing a
+YouTube video in the foreground all evening. The cause is not proven; Chrome is the likelier one. The check below
+works whatever the cause is.
+
+The pointer gate is right and stays unchanged. Synergy, Chrome and every other program you did not start belong to
+the owner: never close, change or block them.
 
 ## What to do
 
