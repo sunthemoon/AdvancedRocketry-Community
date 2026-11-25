@@ -524,5 +524,103 @@ class RegionHeaderTest(unittest.TestCase):
                 self.assertEqual({}, oracle.chunks(world))
 
 
+class OracleOrderingTest(RepairFixture):
+    def read_reversed_listing(self):
+        from unittest.mock import patch
+
+        rglob = Path.rglob
+
+        def reversed_listing(world, pattern):
+            return iter(sorted(rglob(world, pattern), reverse=True))
+
+        with patch.object(Path, 'rglob', reversed_listing):
+            return oracle.read(self.source)
+
+    def test_managed_roots_are_sorted_despite_reversed_filesystem_listing(self):
+        state = self.read_reversed_listing()
+        self.assertGreater(len(state['managed']), 1)
+        self.assertEqual(sorted(state['managed']), list(state['managed']))
+
+    def test_reversed_listing_keeps_writer_generation_as_the_first_strict_error(self):
+        before = self.read_reversed_listing()
+        after = copy.deepcopy(before)
+        satellite = 'data/advancedrocketrycommunity_satellite_missions.dat'
+        after['managed'][satellite].value['data'].value['save_epoch'].value += 1
+        findings = []
+        with oracle.measurement(findings):
+            oracle.compare_functional(before, after, action='unload')
+        self.assertEqual(['WRITER_GENERATION', 'UNLOAD_GENERATION', 'OBJECT_CHANGED'],
+                         [row['reason'] for row in findings])
+        self.assertEqual(satellite, findings[-1]['file'])
+        self.assertEqual('/data/save_epoch', findings[-1]['path'])
+        with self.assertRaises(oracle.OracleError) as raised:
+            oracle.compare_functional(before, after, action='unload')
+        self.assertEqual('WRITER_GENERATION', str(raised.exception))
+
+    def test_managed_comparisons_sort_findings_and_first_error_despite_reversed_mappings(self):
+        for repaired in (False, True):
+            with self.subTest(repaired=repaired):
+                before = oracle.read(self.source)
+                if repaired:
+                    self.data['rocket_transfers'].value['transfers'] = E()
+                    self.write_roots()
+                    after = oracle.read(self.source)
+                else:
+                    after = copy.deepcopy(before)
+                names = sorted(before['managed'])
+                for root in after['managed'].values():
+                    root.value['opaque'].value['z'].value += 1
+                for state in (before, after):
+                    state['managed'] = {name: state['managed'][name] for name in reversed(names)}
+
+                def compare():
+                    if repaired:
+                        oracle.compare_repair(before, after, self.transfer)
+                    else:
+                        oracle.compare_functional(before, after)
+
+                findings = []
+                with oracle.measurement(findings):
+                    compare()
+                self.assertEqual([dict(reason='OBJECT_CHANGED', file=name, path='/opaque/z',
+                                       before_type=nbt.BYTE, after_type=nbt.BYTE) for name in names], findings)
+                with self.assertRaises(oracle.OracleError) as raised:
+                    compare()
+                self.assertEqual('OBJECT_CHANGED:' + names[0] + ':/opaque/z', str(raised.exception))
+
+    def test_new_root_findings_are_sorted(self):
+        before = oracle.read(self.source)
+        names = ['data/advancedrocketrycommunity_unexpected_' + str(i) + '.dat' for i in range(8)]
+        for order in (names, list(reversed(names))):
+            with self.subTest(order=order):
+                after = copy.deepcopy(before)
+                for name in order:
+                    after['managed'][name] = C(data=C(schema_version=I(1), format_epoch=S('unexpected')),
+                                               DataVersion=I(3465))
+                findings = []
+                with oracle.measurement(findings):
+                    oracle.compare_functional(before, after)
+                self.assertEqual(['MANAGED_ROOT_SET_CHANGED'] + ['UNEXPECTED_NEW_ROOT:' + name for name in names],
+                                 [row['reason'] for row in findings])
+                with self.assertRaises(oracle.OracleError) as raised:
+                    oracle.compare_functional(before, after)
+                self.assertEqual('MANAGED_ROOT_SET_CHANGED', str(raised.exception))
+
+    def test_raid_findings_and_first_error_are_sorted(self):
+        names = sorted(oracle.RAID_FILES)
+        for order in (names, list(reversed(names))):
+            with self.subTest(order=order):
+                before = {name: C(data=C(Tick=I(2))) for name in order}
+                after = {name: C(data=C(Tick=I(1))) for name in order}
+                findings = []
+                with oracle.measurement(findings):
+                    oracle.compare_raids(before, after)
+                self.assertEqual(['RAID_TICK_DECREASE_OR_TYPE:' + name for name in names],
+                                 [row['reason'] for row in findings])
+                with self.assertRaises(oracle.OracleError) as raised:
+                    oracle.compare_raids(before, after)
+                self.assertEqual('RAID_TICK_DECREASE_OR_TYPE:' + names[0], str(raised.exception))
+
+
 if __name__ == '__main__':
     unittest.main()

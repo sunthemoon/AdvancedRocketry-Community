@@ -260,7 +260,7 @@ def read(world):
                                 if 'pressurized_tank' in nbt.block(root, bx, y, bz):
                                     tanks.append((name, bx, y, bz))
     managed = {}
-    for path in world.rglob('advancedrocketrycommunity_*.dat'):
+    for path in sorted(world.rglob('advancedrocketrycommunity_*.dat')):
         if 'advancedrocketrycommunity-backups' not in path.parts:
             managed[path.relative_to(world).as_posix()] = nbt.read_gzip(path)[1]
     require(len(rockets) == len(devices) == 1 and not tanks, 'DUPLICATED_OR_MISSING_ROCKET_DEVICE_OR_TANK')
@@ -369,7 +369,8 @@ def compare_repair(baseline, current, transfer, *, expected_schema=2):
     compare_raids(baseline.get('raids', {}), current.get('raids', {}))
     compare_chunks(baseline['chunks'], current['chunks'])
     checked(lambda: require(baseline['managed'].keys() == current['managed'].keys(), 'MANAGED_ROOT_SET_CHANGED'))
-    for name, root in baseline['managed'].items():
+    for name in sorted(baseline['managed']):
+        root = baseline['managed'][name]
         if name not in current['managed']:
             checked(lambda: require(False, 'MANAGED_ROOT_MISSING:' + name))
             continue
@@ -477,9 +478,9 @@ def compare_functional(before, after, *, action=None):
     allowed_new = set(FUNCTIONAL_DATA_FILES) - {LEDGER} if action == 'launch' else set()
     checked(lambda: require(not before['managed'].keys() - after['managed'].keys() and new_roots <= allowed_new, 'MANAGED_ROOT_SET_CHANGED'))
     event = moon_event(after) if action == 'launch' else None
-    for name in new_roots:
+    for name in sorted(new_roots):
         checked(lambda: validate_new_functional_root(name, after['managed'][name], event))
-    for name in before['managed']:
+    for name in sorted(before['managed']):
         if name not in after['managed']:
             checked(lambda: require(False, 'MANAGED_ROOT_MISSING:' + name))
             continue
@@ -557,7 +558,7 @@ def validate_moon_receipt(receipt, event):
 
 def compare_raids(before, after):
     checked(lambda: require(before.keys() == after.keys(), 'RAID_FILE_SET_CHANGED'))
-    for name in before.keys() & after.keys():
+    for name in sorted(before.keys() & after.keys()):
         left, right = copy.deepcopy(before[name]), copy.deepcopy(after[name])
         a, b = nbt.compound(left, 'data', 'Tick'), nbt.compound(right, 'data', 'Tick')
         checked(lambda: require(a.type == b.type == nbt.INT and b.value >= a.value, 'RAID_TICK_DECREASE_OR_TYPE:' + name))
