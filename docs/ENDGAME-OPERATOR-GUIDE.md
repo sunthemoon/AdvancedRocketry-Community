@@ -236,6 +236,30 @@ while that owner is online with operator permissions.
   and move older backup folders out of the world folder; keep them, do not
   delete them. Move staging files out of `data/` only after a complete backup
   and after the world has finished upgrading (KI-V180-UPGRADE-01).
+- **Save refusals by protected devices.** About 15 protected device families,
+  including the fuel loader, the satellite bay and the four cargo devices
+  with production admission off, disable a device whose data is unsupported
+  and refuse to save its whole terrain chunk when the data cannot be saved
+  byte for byte. All families share 256 distinct refused chunk coordinates
+  per dimension; the 257th refuses every later terrain save in that
+  dimension until it closes, with no online reset. Write down the device,
+  its family and the first refused chunk, stop players promptly, keep the
+  logs and watch free disk space. Repair only a complete offline copy of the
+  world, check the writer succeeds and that nearby containers and players
+  kept their contents through two real saves and restarts, then replace the
+  whole world. A clean restart is not a repair, and the GameTest cleanup call
+  is not an operator reset (KI-V180-GUARD-01).
+- **Rocket holds from retained receipts or ledgers.** Tell apart a startup
+  refusal for an invalid root, `PRESENCE_UNKNOWN` (the file's presence could
+  not be proved before start), `LOAD_FAILED` (the file did not load, which
+  holds every rocket for the session), an ordinary pending journal write and
+  a retained receipt's lock. Keep the startup diagnostics and the exact
+  identities. A restart after the storage is fixed clears a load hold; a
+  persistent authority conflict needs the whole-world offline repair, which
+  reconciles every linked store. Released and `REPAIR` receipts have no
+  online retirement, waits have no bound, and a bay's hold reason may appear
+  only in the log. Never delete receipts, the ledger or a journal to release
+  a rocket (KI-V180-HOLD-01).
 - **Downgrades.** Downgrades are not supported.
   - A v1.6 server that loads a v1.7 world drops the endgame blocks, which
     become air, and ignores the root. Escrowed and in-flight cargo is lost.

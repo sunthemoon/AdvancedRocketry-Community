@@ -112,13 +112,15 @@ restart or real client; those need their own evidence.
   drafted by W457, moves the propulsion batch C17a's item/fluid cargo loaders and unloaders and the
   orbital-equipment batch C17c's satellite bay to `DEFERRED` with plan v1.9.0; the ledger closure check
   passes with no PLANNED unit, and KNOWN-ISSUES carries KI-V180-ADMISSION-01.
-- **Residual-risk signatures.** W203's question 4 (W203-Q4) and D14 remain open for the applicable
-  R-021, R-030, R-035, R-039, R-040 and R-041 to R-043 scopes and for R-044's parts other than the
-  downgrade, in the [risk register](../11-RISK-REGISTER.md); the owner's 2026-10-26 R-035 acceptance
-  covers only its named UNKNOWN settlement-loss accounting, capacities and P1-F8 crash windows
-  with W83/W90 prerequisites, not later additions or blanket admission. With every switch off in
-  v1.8 (R682), no switch scope needs acceptance; Root settles the remaining scopes before P11 under
-  the [owner's 2026-11-24 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md).
+- **Residual-risk signatures.** W473 drafted a signing text for each remaining scope
+  ([RESIDUAL-RISK-SIGNOFF-DRAFTS](../work/v1.8.0-root-queue/records/RESIDUAL-RISK-SIGNOFF-DRAFTS.md)). Under the
+  [owner's 2026-11-24 delegation](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md) Root signed four
+  on 2026-11-25 (R691), after publishing KI-V180-GUARD-01 and KI-V180-HOLD-01: R-039, R-042, and R-044's
+  unsupported fuel-loader root and shared 256-coordinate denial pool. R-021, R-030, R-035, R-040, R-041 and
+  R-043 wait for named campaign rows and reference-node results; W203's question 4 (W203-Q4) and D14 stay
+  open for them. The owner's 2026-10-26 R-035 acceptance covers only its named UNKNOWN settlement-loss
+  accounting, capacities and P1-F8 crash windows with W83/W90 prerequisites. With every switch off in v1.8
+  (R682), no switch scope needs acceptance.
 - **Downgrade limit.** R-044's downgrade residual is accepted with
   [R044-SIGNOFF-DRAFT section 5](../work/v1.8.0-root-queue/records/R044-SIGNOFF-DRAFT.md) unchanged (R679, signed by Root on the
   owner's behalf): transfer-journal schema 3 and ledger root 3, complete-world-backup recovery and

@@ -1,6 +1,6 @@
 # v1.8 residual-risk signing drafts, with production admission off
 
-Date: 2026-11-25. Status: **DRAFT ONLY. Every signature below is blank.**
+Date: 2026-11-25. Status: **Four scopes SIGNED on 2026-11-25 with their texts unchanged** (Root decision R691, under the owner's delegation of 2026-11-24; the owner is the responsible person): R-039 (section 7), R-042 (section 10), R-044's unsupported fuel-loader root (section 12) and R-044's shared denial pool (section 13), after KI-V180-GUARD-01 and KI-V180-HOLD-01 were published in KNOWN-ISSUES and the operator guide. The other six scopes remain drafts with blank signatures until their preconditions hold.
 Authority: [TASK W473](../TASK-W473-RESIDUAL-RISK-SIGNOFF-DRAFTS.md), Root decision R689,
 and the [owner's delegation of 2026-11-24](OWNER-DECISIONS-20261124.md). Root may decide on
 the owner's behalf; this worker supplies evidence-based drafts, not decisions.
@@ -51,13 +51,13 @@ These are recommendations for the individual scopes, not a proposal to close eve
 | R-021: ordinary machines' save refusal, including classic controllers/hatches and solar arrays. | Live on ordinary worlds with non-admissible retained roots; no ledger or switch is required. | SIGN_AFTER | Section 4's native refusal/repair evidence, plus I02/I05 and the operator disclosure. |
 | R-030: registry refusal/quarantine and ground-survey sizing. | Live ordinary satellite/research and startup code. | SIGN_AFTER | G01, J19, A09 and A08/I10; explicit canonical-refusal carry-over review. |
 | R-035: ordinary journal/sealed/rejoin effects and existing-ledger recovery/migration. | Ordinary journal/rejoin work is live; escrow recovery needs existing history, not a new switch. | SIGN_AFTER | A04/K02 disposition, A10/A17, J10/J11/J17 and A09/A08/I10; section 6's uncovered items remain explicit. |
-| R-039: receipt storage, insertion fencing and startup presence checks. | Presence checks affect any world; retained-file effects need that file; new receipts need a test admission. | SIGN_NOW | none. |
+| R-039: receipt storage, insertion fencing and startup presence checks. | Presence checks affect any world; retained-file effects need that file; new receipts need a test admission. | SIGN_NOW; **SIGNED (R691)** | none. |
 | R-040: off-thread transaction writer and shutdown wait. | Live ordinary assembly/disassembly, including worlds without bays or ledgers. | SIGN_AFTER | A04/A10/A17, REF A09 and A08/I10, including writer drain and near-bound costs. |
 | R-041: off-thread registry, terminal locks and epoch exhaustion. | Live ordinary satellite terminal/research workflows; no bay admission is required. | SIGN_AFTER | G01/G04/G07, A13/J19 and A09/A08/I10. |
-| R-042: retained receipts/ledger holds and shared pending quotas. | Retained files or a post-preflight access race can affect ordinary rockets server-wide. | NEEDS_KNOWN_ISSUE | Publish proposed KI-V180-HOLD-01 and its operator instructions; retain section 10's coverage limits. |
+| R-042: retained receipts/ledger holds and shared pending quotas. | Retained files or a post-preflight access race can affect ordinary rockets server-wide. | NEEDS_KNOWN_ISSUE; **SIGNED (R691)** | Publish proposed KI-V180-HOLD-01 and its operator instructions; retain section 10's coverage limits. |
 | R-043: retained-receipt recovery, duplicate boundary and unbounded waits. | Existing-receipt recovery runs on production servers; new D0 remains test-only. | SIGN_AFTER | J01-J05/J09, A09/A08/I10; larger REF queues and section 11's client/coverage dispositions. |
-| R-044: unsupported fuel-loader roots. | Craftable/placeable loader protection is live without filling admission. | SIGN_NOW | none. |
-| R-044: shared 256-coordinate denial pool. | Live for all participating protected families, not just the six deferred devices. | NEEDS_KNOWN_ISSUE | Publish proposed KI-V180-GUARD-01 and the common save-refusal procedure. |
+| R-044: unsupported fuel-loader roots. | Craftable/placeable loader protection is live without filling admission. | SIGN_NOW; **SIGNED (R691)** | none. |
+| R-044: shared 256-coordinate denial pool. | Live for all participating protected families, not just the six deferred devices. | NEEDS_KNOWN_ISSUE; **SIGNED (R691)** | Publish proposed KI-V180-GUARD-01 and the common save-refusal procedure. |
 
 ## 3. Evidence rules and open items shared by the drafts
 
@@ -315,7 +315,7 @@ does not add a named C6 pass beyond W466's audited mappings.
 > 7. **不包括。** 不接受新部署、乘员行为、跨存储断电耐久或有限等待承诺，不开启任何生产开关，不批准 Gate、版本或发布。
 > 8. **复审。** 最迟 v1.9.0 发布前复审；路径预检、根、索引、写入结果、容量、退役守卫或准入改变时，或出现被拒文件被覆盖的新证据时，本文失效。
 >
-> 负责人：所有者。签核：＿＿＿＿。签核日期：＿＿＿＿
+> 负责人：所有者。签核：Root（Claude）依所有者 2026-11-24 的委托代为签核（Root 决定 R691）。签核日期：2026-11-25
 
 **English rendering.** This covers C6 existing receipt storage/index/insertion protection and all-world presence
 checks with new admission off. Unknown presence or invalid roots can refuse startup; a later index failure holds
@@ -490,7 +490,7 @@ methods `notLoadedRocketIsNotIdleAndKillLeavesIt`, `notLoadedLogicalRocketIsLock
 > 7. **不包括。** 不保证乘员安全、有限等待、未观察副本或跨存储断电耐久，不开启开关，不批准 Gate、版本或发布，不改变 R682 的延期范围。
 > 8. **复审。** 最迟 v1.9.0 发布前复审；持有触发、保护性读取、名额、退役、恢复或准入变化，或普通无历史世界出现可重复的非存储原因锁死时，本文失效。
 >
-> 负责人：所有者。签核：＿＿＿＿。签核日期：＿＿＿＿
+> 负责人：所有者。签核：Root（Claude）依所有者 2026-11-24 的委托代为签核（Root 决定 R691）。签核日期：2026-11-25
 
 **English rendering.** This covers only off-state protective holds from retained receipts/ledgers or unknown
 presence. A loaded index holds named rockets; NOT_LOADED can hold every rocket and rooted device on the server,
@@ -613,7 +613,7 @@ saturation acceptance. No generic offline repair tool is established by these fi
 > 7. **不包括。** 不接受共享池饱和、托管加注、原始替换的零损失或断电保证，不开启任何生产开关，不批准 Gate、版本或发布。
 > 8. **复审。** 最迟 v1.9.0 发布前复审；原生检查、保留根、装置保护、保存或准入策略变化，或出现有效普通数据被丢弃时，本文失效。
 >
-> 负责人：所有者。签核：＿＿＿＿。签核日期：＿＿＿＿
+> 负责人：所有者。签核：Root（Claude）依所有者 2026-11-24 的委托代为签核（Root 决定 R691）。签核日期：2026-11-25
 
 **English rendering.** This covers only C6 unsupported fuel-loader roots and their single-chunk native-save
 refusal, not shared-pool saturation or the separate downgrade. Unsupported roots disable/protect the device
@@ -666,7 +666,7 @@ KNOWN-ISSUES entry currently explains the Level-wide pool, despite its ordinary-
 > 7. **不包括。** 不接受其他设备独立数据风险、任意丢弃或跨存储零损失，不开启开关，不批准 Gate、版本或发布。
 > 8. **复审。** 最迟 v1.9.0 发布前复审；参与族、容量键、饱和、保存事件、生命周期、日志或恢复规则改变，或出现支持范围内的新资源分歧证据时，本文失效。
 >
-> 负责人：所有者。签核：＿＿＿＿。签核日期：＿＿＿＿
+> 负责人：所有者。签核：Root（Claude）依所有者 2026-11-24 的委托代为签核（Root 决定 R691）。签核日期：2026-11-25
 
 **English rendering.** This covers the common per-ServerLevel denial pool, not each family's independent data
 risk. It tracks 256 distinct chunk coordinates; duplicates do not consume more, and the 257th denies every
