@@ -3,8 +3,8 @@
 **DRAFT inventory, not a completed security audit.** Candidate C6 is
 `c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
-Automated hosted results exist; native, V2 and final independent audit verdicts
-remain PENDING. Test counts cannot establish zero Critical/High.
+Automated hosted and selected native results exist; V2 and the final independent
+audit remain PENDING. Root's recorded decisions are not new security approval. Test counts cannot establish zero Critical/High.
 
 ## Reviewed-input identity
 
@@ -72,13 +72,13 @@ and loaded-chunk projections, not merely a message shown on the client.
 | Threat / invariant | Planned exact evidence | C6 verdict |
 |---|---|---|
 | Foreign/stale/remote/spectator/unloaded/rate intents | I11/K18 plus C08/D09/H02; holder-specific C6 GameTests | PENDING live/independent review |
-| Concurrent automation, replayed credit and inventory duplication | I05/I10, cargo C/D families, loader B3 reuse and accounting outcomes | PENDING native/campaign |
+| Concurrent automation, replayed credit and inventory duplication | I05/I10, cargo C/D families, loader B3 reuse and accounting outcomes | Selected native families PASS in attempt 2; [C6 results](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md). X01 lost-history FAIL/untested next operation remain; I05/I10 PENDING. |
 | Endgame owner/operator/member boundaries | H02/I11 and per-system authority tests | PENDING V2 |
 | Oversize/invalid recipes and reload logging | DataPackOverLimitReloadGameTests, serializer bounds; review ADR-076 precise platform exception/expiry | PENDING final audit; hosted tests are partial automated evidence |
-| Unreviewed/excluded asset in JAR | C6 provenance/JAR audit, approved ledger/manifest reconciliation | PENDING final G0 audit |
-| Malformed/future stores, unknown file presence, shared capacity | `r042-*`, W336 saturation and accounting-root families; no unsafe reads/admission while NOT_LOADED | PENDING native |
+| Unreviewed/excluded asset in JAR | C6 provenance/JAR audit, approved ledger/manifest reconciliation | P12 closed by R683/R685: all 62 records approved by Root as an AI reviewer under delegation; final G0 audit/approval remains PENDING. |
+| Malformed/future stores, unknown file presence, shared capacity | `r042-*`, W336 saturation and accounting-root families; no unsafe reads/admission while NOT_LOADED | Selected r042/saturation families PASS; old-JAR families stay FAILED; [C6 results](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md). R691 signatures are narrow protective dispositions, not general safety or availability. |
 | Real player exit, disconnect, retained seats and observer consistency | J02–J04/J07/J27–J29 | PENDING V2; fake players do not qualify |
-| Unobservable storage, file rollback, corruption and power loss | X01 S3/X02 S5 E4 classification and residual review | PENDING; not real power-loss proof |
+| Unobservable storage, file rollback, corruption and power loss | X01 S3/X02 S5 E4 classification and residual review | X01 FAIL: 72/82 states pass, 10 late-loss failures. X02 retains 49 SEEN_HELD / 14 CAUGHT_LATER / 5 NOT_CAUGHT / 0 INCOMPLETE / 4 NOT_APPLICABLE with original images (R636/R639). [C6 results](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) section 13; not real power-loss proof. |
 
 See [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §§8–13
 and [fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md)
@@ -94,6 +94,13 @@ matrix policy with actual source/negative-case receipts, reconcile every C6
 native and V2 result with the threat model, and issue a candidate-wide findings
 report including severity, affected data scope, reproduction and closure.
 Reviewer, review commit/date, commands, receipts, findings and zero-Critical/High
-verdict are **PENDING**. Owner P1/P3–P9 residual-risk decisions in the
-[final packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md)
-remain separate from this technical review and from P11 release approval.
+verdict are **PENDING**. [The owner delegation](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md)
+records P1 downgrade acceptance (R679), P2 upgrade limit (R680), P3 narrow X03
+guidance (R681), and all six switches staying off (R682). R691 signs R-039,
+R-042 and R-044's unsupported loader root/shared pool, after the GUARD/HOLD
+known issues were published. R-021/R-030/R-035/R-040/R-041/R-043 remain unsigned
+until the named campaign/reference prerequisites in
+[the residual drafts](../../work/v1.8.0-root-queue/records/RESIDUAL-RISK-SIGNOFF-DRAFTS.md)
+exist. These decisions are separate from the technical audit and the owner's
+one P11 confirmation for Gate/version/tag/main/release approval. No signature
+changes a failed, NOT_COVERED or unrun row into a pass.

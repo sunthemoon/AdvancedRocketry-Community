@@ -4,10 +4,27 @@ Current candidate: `c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`, regression 44770334930 attempt 1 and governance
 44770334865 attempt 1 (R581). See the
 [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md).
-**C6 audit/census reconciliation: PENDING.** W423 retargets the candidate, not
-the source-bound findings, counts, hashes or test results below. Those remain
-the historical C5 audit; C6 includes W415–W421 changes and requires its own
-reconciliation. No C5 receipt is claimed as C6 evidence.
+**Reconciled 2026-11-25 under Root decision R693.** The detailed C5 census,
+counts, source-line citations and findings below retain their historical identity.
+The following C6 successors supersede their missing-delivery statements, not
+native, visual or release acceptance. A complete C6 per-machine source-line and
+requirement audit remains PENDING; no C5 receipt is relabelled C6.
+
+| Historical finding | Recorded C6 successor and remaining boundary |
+|---|---|
+| F1, operating documentation | [W421](../../work/v1.8.0-root-queue/records/W421.md) adds the per-device guide (R573/R581); final playability and installation review remain PENDING. |
+| F2/F4/F6/F7 | [W415](../../work/v1.8.0-root-queue/records/W415.md) adds current-format research/satellite/assembler restart tests; [W418](../../work/v1.8.0-root-queue/records/W418.md) integrates/executes them under R579, included in C6 R581. These are A1 tests, not native process restarts. |
+| F3/F8/F12 | [W416](../../work/v1.8.0-root-queue/records/W416.md) and W418 add/qualify simple-device, station and elevator restart tests (R579/R581); native/client campaigns remain PENDING. |
+| F9/F10/F11 | [W417](../../work/v1.8.0-root-queue/records/W417.md) and W418 add/qualify active endgame restart tests (R579/R581); this is not native/reference evidence. |
+| F5 | [W419](../../work/v1.8.0-root-queue/records/W419.md) adds JEI operation pages (R574/R581); [applicability](JEI-APPLICABILITY.md) has 11 Category / 37 Information / 4 Crafting devices. Actual four-cell display/navigation acceptance remains PENDING. |
+| F13/F14 | [W420](../../work/v1.8.0-root-queue/records/W420.md) supplies the archived [operational graph](RECIPE-GRAPH-REPORT.md) (R575/R581); it reaches all 196 required nodes. Dynamic guards, full gameplay and historical C5 archive identity are not thereby proven. |
+
+Native attempt 2 is **74 PASS / 4 FAILED**; the separate X03 rerun passes both
+origins (R632), without overwriting attempt 2. [W466/R671](../../work/v1.8.0-root-queue/records/W466.md)
+provides 89 named hosted mappings. [W471](../../work/v1.8.0-root-queue/records/W471.md)/
+[W472](../../work/v1.8.0-root-queue/records/W472.md) ran 43 real-GPU sessions with
+no step PASS (R690). All six admissions stay off by R682; deferred workflows
+still ship devices, stable IDs, protection and retained-history recovery.
 
 ## Historical C5 machine census and recipe-graph coverage
 
@@ -41,7 +58,8 @@ the [requirement map](REQUIREMENT-MAP.md) and [test report](TEST-REPORT.md).
   representative named tests, not a claim that the row has only three tests.
   R distinguishes successful state/identity restoration, refusal-only reload and
   presentation-only reload. A current-format NBT load or chunk unload is **not an S1/S2
-  process restart**. The candidate's native campaign remains pending as recorded in TEST-REPORT.
+  process restart**. The C5 native wait was historical; C6 native results are
+  recorded in [TEST-REPORT](TEST-REPORT.md), with its failures and exclusions retained.
   Bold **none** identifies a missing kind; F2/F6–F12 also identify narrower restoration gaps
   even where a reload-related GameTest exists.
 - W402 classifications describe the candidate assets to inspect, not visual passes.

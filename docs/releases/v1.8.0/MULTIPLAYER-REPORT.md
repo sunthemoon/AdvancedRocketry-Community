@@ -20,7 +20,7 @@ historical local multiplayer observations are not candidate acceptance.
   are PENDING. Some simultaneous actions need a second person, not one operator
   guessing two timings.
 - V2 is phase 4, after relevant V1/DS failures are resolved; performance phase 5
-  follows it. P4–P9 switch decisions precede V2, with unapproved admissions off.
+  follows it. R682 has decided P4–P9: all six admissions stay off in v1.8.
   A separately approved enabling commit changes the candidate and requires
   requalification; it cannot silently keep the C6 identity.
 - Bay/cargo/fuel scenarios use R298's disposable marked world, with the
@@ -29,6 +29,14 @@ historical local multiplayer observations are not candidate acceptance.
   account UUIDs, no RCON and required startup/login checks. Fuel additionally
   needs its explicit gated loader property. A third client voids that marked
   session and closes the gate; repeat it, rather than retaining a partial pass.
+
+The 43 phase 2 sessions in [W471](../../work/v1.8.0-root-queue/records/W471.md)
+and [W472](../../work/v1.8.0-root-queue/records/W472.md) used one isolated offline
+launch-mode client (Root decisions R686–R688/R690), not two authenticated accounts.
+Their media and completed input sequences supply no V2 result. R684 selects two
+connected clients for soak, but does not supply accounts, a second person, GPU
+or time. R691 signs four narrow storage/protection scopes, not passenger safety,
+bounded waits, multiplayer correctness or G6/G8.
 
 ## Scenario results
 

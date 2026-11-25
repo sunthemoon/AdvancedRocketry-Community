@@ -1,6 +1,6 @@
 # v1.8.0 manual-test report — C6 draft
 
-**DRAFT; all execution results PENDING.** Candidate commit
+**DRAFT; all row actuals PENDING; phase 2 operator rounds are recorded below.** Candidate commit
 `c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 These are report slots for the 117 IDs of the
@@ -9,6 +9,31 @@ not a new or reduced checklist. Follow each linked checklist's preconditions,
 numbered actions, expected results and evidence requirements.
 
 ## Environment and execution rules
+
+[W471](../../work/v1.8.0-root-queue/records/W471.md) and
+[W472](../../work/v1.8.0-root-queue/records/W472.md), under Root decisions
+R686–R688/R690 in [QUEUE](../../work/v1.8.0-root-queue/QUEUE.md), ran **43 sessions**
+(15 + 28) on 2026-11-24/25. These were launch-mode, isolated offline loopback
+sessions, not authenticated-account or V2 evidence. **No step was scored PASS.**
+Round 01 records 0 PASS / 2 FAIL / 9 NOT_COVERED / 34 NOT_RUN rows; round 02
+records 20 NOT_COVERED / 25 NOT_RUN rows. The original 45-row / 394-step inventory
+is retained. Operator/staging failures remain sealed, not product defects or
+retroactive passes; J13's interruption produced no runtime result. Two pre-join
+timeouts remain A18/KI-V180-CONNECT-01 findings, with no accepted failure ratio.
+Under R690, each later step is scored against **its own oracle and evidence**,
+and rows run depth first. W474's scenario preparation is not execution. Every
+actual-result cell below stays PENDING; round observations are not copied into
+those cells.
+
+The recorded primary environment is Windows 11 Pro 10.0.26200, AMD Ryzen 5 5500
+(6 cores / 12 threads), NVIDIA GeForce RTX 3070 Laptop GPU, WMI driver
+32.0.15.6636 and native F3 OpenGL 4.6 NVIDIA 566.36. Java is JDK 17.0.7;
+Forge 47.4.10, JEI absent, en_us, effective GUI scale 3, windowed 1280×720
+on a 2560×1440 desktop. RAM, complete JVM/configuration inventory, other display
+cells and the second GPU remain PENDING. The client was ArceTester1, an offline
+profile, on 127.0.0.1:25574 with a 3G server heap, RCON disabled and no extra
+JVM test properties. This is real-GPU observation, not an owner-account result.
+
 
 - Minecraft 1.20.1, Java 17; Forge 47.4.10 baseline and 47.4.23 compatibility,
   each without JEI and with client-only JEI 15.56.0.205. I04 fills all four cells.
@@ -23,11 +48,13 @@ numbered actions, expected results and evidence requirements.
 - Follow phases 1 preparation, 2 V1, 3 DS/restart, 4 V2, then 5 reference/soak.
   Account/equipment choices O4/O5/O7–O12 in the
   [owner packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md)
-  remain PENDING. Root's O1/O2/O3/O6 choices are procedures, not test results.
-- I01 uses Root's recommendation of scripted rehearsal plus a recorded
-  hand-played subset only after owner O4 confirmation. It still must show a
+  have O4/O7/O8 selected by Root (R684); O5/O9–O12 still need the owner's
+  accounts/UUIDs, second GPU, reference login, second person and time. Root's
+  choices are procedures, not test results.
+- I01 uses the scripted rehearsal plus recorded hand-played subset selected
+  by Root under R684; recording and the owner's manual time remain PENDING. It still must show a
   representative base-to-endgame route; graph reachability alone is insufficient.
-- All six production admissions remain off. J01–J09 use the disposable marked
+- All six production admissions stay off in v1.8 by R682, not an unanswered choice. J01–J09 use the disposable marked
   campaign world for gated actions. Fuel J23–J29 additionally need
   `-Dadvancedrocketrycommunity.escrowLoaderAdmission=true` and the release-test
   gate only on that copy. Record no-hook disabled behaviour separately.
@@ -230,8 +257,12 @@ unexplained repeated WARNs fail; retain their exact lines.
 
 ## Open completion fields
 
-Candidate run dates, testers, all actual observations, screenshot/video hashes,
-findings, owner judgments and the independent reviewer remain **PENDING**.
+Round dates, worker identities, frames and seals are recorded in W471/W472 and
+[the media catalogue](videos-or-links.md). Every row actual, its final step-linked
+receipt, remaining visual/audio judgment and independent review remain **PENDING**.
+J01/J06/J23–J26 need attach mode with the owner's account (R686); second GPU,
+PresentMon, languages/scales/JEI cells and V2 are not covered by these rounds.
+R691's four narrow signatures do not supply these results.
 The media catalogue is `videos-or-links.md`; visual, multiplayer, migration,
 recovery and performance observations have separate reports. Fill once from
 candidate-bound receipts and reference the same row IDs, rather than creating

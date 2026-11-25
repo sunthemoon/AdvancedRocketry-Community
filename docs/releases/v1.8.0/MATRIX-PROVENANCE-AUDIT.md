@@ -4,10 +4,21 @@ Current candidate: `c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`, regression 44770334930 attempt 1 and governance
 44770334865 attempt 1 (R581). See the
 [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md).
-**C6 audit/census reconciliation: PENDING.** W423 retargets the candidate, not
-the source-bound findings, counts, hashes or test results below. Those remain
-the historical C5 audit; C6 includes W415–W421 changes and requires its own
-reconciliation. No C5 receipt is claimed as C6 evidence.
+**Reconciled 2026-11-25 under Root decision R693.** The C5 audit, all 908
+asset rows, counts, hashes and original findings below remain history. Current
+C6 decisions supersede the following open-delivery statements; final candidate
+matrix/package reconciliation and independent G0 review remain PENDING.
+
+| Historical finding | Recorded C6 disposition and evidence |
+|---|---|
+| MP-01, five PLANNED units | R682 and [ADR-062 revision 8](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) defer five bay/cargo admissions to v1.9. The 653-unit ledger has zero PLANNED, 30 DEFERRED, 214 IMPLEMENTED, 257 REDESIGNED, 94 MERGED and 58 REJECTED. Closure validation passes; no behavior or Gate passes. Fuel admission stays off separately. |
+| MP-02, missing final batches | [W414](../../work/v1.8.0-root-queue/records/W414.md) supplies 58 final records covering 583 assets; [W470](../../work/v1.8.0-root-queue/records/W470.md) checks C6 hashes/license fields and 154 NEW PNGs (all CLEAR). R683/R685 approve these records through delegated Root review, not a new universal originality guarantee or V1. |
+| MP-03, four unapproved c17a records | R685 approves all four after checking 182 owned new language keys and 36 other entries in C6. W470's eight old whole-language-file mismatches remain recorded; historical digests were not rewritten. All 62 records now have APPROVED blocks naming Root as AI reviewer under [owner delegation](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261124.md); P12 is closed. |
+| MP-04/MP-05, matrix wording and broad dispositions | Final PORTING_MATRIX/ADR wording reconciliation remains PENDING for Root; static packaged classes do not establish parity or release approval. W279's excluded AR 16x authorship question remains separate. |
+
+The immutable C5 observations below explain why work was needed, not the state
+of current C6 approvals. R691's four narrow residual signatures are recorded in
+[release evidence](RELEASE-EVIDENCE.md); they do not pass G0 or change failed tests.
 
 ## Historical C5 matrix, disposition and provenance audit
 
@@ -31,6 +42,8 @@ Severity uses [quality budgets §3](../../17-V1PLUS-QUALITY-BUDGETS.md). The Med
 
 ### MP-01 — Medium: five agreed-scope units remain undelivered in the authoritative ledger
 
+Current disposition: R682/ADR-062 revision 8 supersede this historical open item through admission deferral, not delivery or runtime acceptance; see the C6 table above.
+
 The main matrix contains no literal `MISSING`, but ADR-062 §1 explicitly treats `PLANNED` units as MISSING until delivery. Strict closure exits 1: `closure: 5 ledger rows are still PLANNED`. All five are inside v1.8, not covered by its deferred/rejected decisions:
 
 | Ledger unit | Batch / intended modern ID | C5 observation |
@@ -48,6 +61,8 @@ Evidence: [ledger](../../work/v1.8.0-content-ledger.csv), [ModBlocks](../../../s
 
 ### MP-02 — Medium: final generated/NEW provenance coverage is weaker than the complete batch-manifest requirement
 
+Current disposition: W414/W470 and R683/R685 supply final records and approvals; the C5 coverage counts below remain historical, not current missing-review counts.
+
 **596/908 assets have no exact per-file JSON naming in `docs/provenance`** (533 in the v1.8 generated root; 63 inherited). This is **not** a claim that all 596 have unknown authorship: many have coherent Markdown NEW declarations, and six v1.4 assets (four visual profiles and two language files) have matching supplementary inventory pins. Appendix A distinguishes those cases from generation-only evidence and records every shipped hash. Missing a hash in a Markdown declaration is not itself a hash mismatch.
 
 There nevertheless are shipped NEW artwork cohorts for which the required final batch record is absent. Concrete examples are `assets/advancedrocketrycommunity/textures/block/observatory.png` (SHA-256 `8c02528c222690d9700991c6a8222ba37d05bccf7d252da4b4f5f15297ae98c4`) and `astrobody_data_processor.png` (`a55354280cc898f1ce3028297022c5657d78262b52ea1176b7bf94cb6a4a060e`). Their source is original code in [V180ResearchArt](../../../src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ResearchArt.java), but no per-file JSON naming or scoped record in `docs/provenance` was found for that research-art cohort. A Java “Original MIT” comment and a generated-root match are not the batch review record required by [ADR-061 §§4.3–4.5](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md).
@@ -57,6 +72,8 @@ Other explicit partial examples are [the tank receipt](../../provenance/v1.8.0-c
 **Closes with:** Root reconciles Appendix A's generation-only and scope-only entries to committed final NEW/GENERATED batch records (source, MIT license, authoring/base identity, applicable target hashes and review), including existing records outside `docs/provenance` where legitimately referenced. Resolve genuine missing cohorts rather than treating all 596 as imports or inventing upstream identities. Preserve historical receipts and evidence.
 
 ### MP-03 — Medium: four current provenance records have no approval block
+
+Current disposition: R685 approved all four c17a records by owned language keys plus the 36 other entries; the missing blocks below describe the C5 audit date, not C6 today.
 
 These JSON records contain source/target hashes and MIT NEW/GENERATED declarations, but **no `review` block**. The asset hashes match; approval is a different check.
 
