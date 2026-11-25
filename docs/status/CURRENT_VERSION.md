@@ -149,12 +149,15 @@ restart or real client; those need their own evidence.
   published release and marking the Gates and version as passed get the owner's one confirmation
   at P11.
 - **Final campaign phase 2.** Rounds 1 and 2 ([W471](../work/v1.8.0-root-queue/records/W471.md), W472;
-  R686 to R688, R690) ran 43 real-GPU sessions on C6 in launch mode with an isolated offline client. Every
-  failed attempt was an operator or staging fault, not a product defect, and the clients logged no missing
-  model, texture or translation. No step is scored PASS yet: 0 of 45 V1 rows pass, six need the owner's
-  account in attach mode, and the 394 steps are NOT_COVERED or NOT_RUN. W474 writes full-row scenarios by
-  day for a depth-first night run with per-step scoring. Two first-connection timeouts match
-  KI-V180-CONNECT-01 and stay pending findings.
+  R686 to R688) ran 43 real-GPU sessions on C6 in launch mode with an isolated offline client, and R690 moved
+  scoring to each step's own oracle. After W474 and W476 authored full-row scenarios by day, the round-04 and
+  round-05 nights ([W479](../work/v1.8.0-root-queue/records/W479.md), [W480](../work/v1.8.0-root-queue/records/W480.md);
+  R699 to R701) completed 23 row queues in 119 live sessions. Every failed first attempt was an operator or
+  staging fault rerun on a fresh copy, and no product defect was established. Taking each row's latest round,
+  the 394 steps score 6 PASS, 0 FAIL and 93 P_PENDING for Root's visual judgment; 211 are NOT_RUN (197 not yet
+  authored) and 84 NOT_COVERED (41 need the owner's account in attach mode, 15 a human listener, 12 two
+  signed-in clients, 12 PresentMon and 4 the second GPU). No row passes yet. Seven first-connection timeouts
+  match KI-V180-CONNECT-01 and stay pending findings. W481 authors the open steps by day for round 06 (R702).
 
 ### Campaign coverage and performance
 
