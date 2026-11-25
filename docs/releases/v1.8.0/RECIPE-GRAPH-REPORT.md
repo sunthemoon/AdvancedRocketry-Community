@@ -25,6 +25,20 @@ archive's embedded content/hash on subsequent runs.
 
 ## Result and interpretation
 
+C6, pinned by Root decision R581 in [release evidence](RELEASE-EVIDENCE.md),
+includes W420's analyzer and witness below (R575). Their original source commit,
+command, eight-test result and embedded-byte hash remain unchanged; this is
+not a recovered C5 artifact or a fresh W475 execution. The C6 hosted automated
+results and [W466's named mappings](../../work/v1.8.0-root-queue/records/W466.md)
+are separate receipts. R682 and [ADR-062 revision 8](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md)
+keep all six admissions off in v1.8; an existential producer is not permission
+to use a deferred workflow. I01 gameplay/video, actual JEI navigation, REF and
+soak remain PENDING until the campaign supplies their own evidence. The 43
+real-GPU sessions of [W471](../../work/v1.8.0-root-queue/records/W471.md)/
+[W472](../../work/v1.8.0-root-queue/records/W472.md) have no scored step PASS
+(R690), and do not establish progression completion.
+
+
 The combined graph contains 820 nodes, 811 producers and 219 inherited survival
 roots. It reaches 810 nodes, including all 196 required operational nodes.
 The only 10 unavailable nodes are the pre-existing optional compatibility dust

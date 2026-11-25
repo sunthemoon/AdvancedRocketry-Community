@@ -1,6 +1,6 @@
 # v1.8.0 performance report — C6 draft
 
-**DRAFT; every candidate performance measurement is PENDING.** Hosted test
+**DRAFT; reference-budget and qualified client frame-time results are PENDING.** Hosted test
 durations and development-host microbenchmarks do not satisfy reference-node
 or real-GPU budgets. Candidate: `c8fa16e16be87554f26c402546733df6555d15e6`,
 JAR SHA-256 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
@@ -20,9 +20,10 @@ rockets, one 2,048-block assembly/disassembly, a dimension transfer, periodic
 save and restart must coexist in the reference workload. Add v1.8's many-machine
 idle/active layout and long production totals; an empty-server run is invalid.
 O7 in the [owner packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md)
-still needs the account arrangement for two connected real clients driven by the
-harness. Fixture scale/placement, actual action schedule and achieved load are
-PENDING, not inferred from a builder script.
+was selected by Root (R684): two real clients stay connected for four hours,
+driven by the harness. The owner's accounts and schedule still need arranging.
+Fixture scale/placement, actual action schedule and achieved load are PENDING,
+not inferred from a builder script.
 
 ## Reference server result table
 
@@ -71,10 +72,17 @@ hard maxima and per-tick caps. In particular existing rocket visual limits stay
 524,288 bytes total / 32,768 per chunk and 1,048,576 BlockEntity NBT bytes;
 the generic “about 1 MiB” guidance is not permission to raise them.
 
-Client fields: OS/CPU/GPU/driver/resolution/effective GUI scale, frame capture
-tool/version and raw CSV hash, JVM/client memory, scenes/rocket counts, baseline
-comparison and first-stall definition are all **PENDING**. PresentMon is the
-packet's O8 recommendation, not a tool already selected by the owner. Absolute
+The primary round OS/CPU/GPU/driver/resolution/effective GUI scale and observed
+rocket scenes are recorded in [the visual report](VISUAL-VALIDATION-REPORT.md)
+and W471/W472. Qualified performance-run identities, frame capture tool/version
+and CSV hash, client memory/cache evidence, baseline comparison and first-stall
+definition remain **PENDING**. PresentMon is the
+tool selected by Root under O8/R684, not a measurement. It was absent in both
+phase 2 rounds ([W471](../../work/v1.8.0-root-queue/records/W471.md),
+[W472](../../work/v1.8.0-root-queue/records/W472.md)); 43 real-GPU sessions supply
+no qualified frame-time or baseline result. W472's JFR/heap samples are not
+reference-workload or budget proof. The environment is recorded in
+[the visual report](VISUAL-VALIDATION-REPORT.md). Absolute
 FPS is hardware-dependent; use baseline comparison, unacceptable spikes and
 correctness under docs/17 §8, without inventing a new universal FPS cutoff.
 
@@ -94,5 +102,10 @@ and does not waive a cell. Report the actual JEI configuration and coverage.
 Reference/soak phase 5 follows V2 phase 4, with no overlapping storage-fault
 experiment. Source: [final campaign plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md)
 §§5–7. Actual commands, UTC run interval, logs/hashes, testers, findings and
-independent budget review remain PENDING. Any failed budget stays failed until
+independent budget review remain PENDING. R691 leaves R-030/R-035/R-040/R-041/
+R-043 unsigned pending their named reference/campaign rows; R-021 additionally
+needs machine-native mapping and conservation. [Release evidence](RELEASE-EVIDENCE.md)
+lists each precondition. Native timing-family successes on the development host
+are not REF; K10's railgun throughput shortfall and A09's separate hooks-only
+run under R648 remain obligations. Any failed budget stays failed until
 a fix/retest or separately approved ADR under docs/17 §10; no implicit waiver.

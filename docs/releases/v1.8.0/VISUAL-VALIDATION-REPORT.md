@@ -4,20 +4,36 @@
 `c8fa16e16be87554f26c402546733df6555d15e6`, host JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 [Quality levels](../../17-V1PLUS-QUALITY-BUDGETS.md) require V1 real GPU and V2
-two real clients; V0 Xvfb/LLVMpipe is supplemental only. No client was run for
-this draft. Earlier listening, artwork approval and client rounds retain their
-own identities, not C6 observations.
+two real clients; V0 Xvfb/LLVMpipe is supplemental only. C6 phase 2 rounds
+01/02 now have real-GPU media, but no passed step. Earlier development listening
+and artwork approvals retain their own identities, not C6 row results.
 
 ## Environment sheets
 
+[W471](../../work/v1.8.0-root-queue/records/W471.md) and
+[W472](../../work/v1.8.0-root-queue/records/W472.md), under Root decisions
+R686–R688/R690 in [QUEUE](../../work/v1.8.0-root-queue/QUEUE.md), ran **43 sessions**
+(15 + 28) on 2026-11-24/25. These were launch-mode, isolated offline loopback
+sessions, not authenticated-account or V2 evidence. **No step was scored PASS.**
+Round 01 records 0 PASS / 2 FAIL / 9 NOT_COVERED / 34 NOT_RUN rows; round 02
+records 20 NOT_COVERED / 25 NOT_RUN rows. The original 45-row / 394-step inventory
+is retained. Operator/staging failures remain sealed, not product defects or
+retroactive passes; J13's interruption produced no runtime result. Two pre-join
+timeouts remain A18/KI-V180-CONNECT-01 findings, with no accepted failure ratio.
+Under R690, each later step is scored against **its own oracle and evidence**,
+and rows run depth first. W474's scenario preparation is not execution. Every
+actual-result cell below stays PENDING; round observations are not copied into
+those cells.
+
+
 | Field | Primary real-GPU machine | Second GPU category |
 |---|---|---|
-| OS / CPU / RAM / Java / JVM flags | PENDING | PENDING |
-| GPU / vendor / driver / renderer | PENDING | PENDING |
-| Resolution / window mode / effective GUI scale | PENDING | PENDING |
-| Forge / JEI / packs/configuration hashes | PENDING | PENDING |
-| Tester / UTC interval / client and server log hashes | PENDING | PENDING |
-| Frame-time tool/version / CSV hash / baseline scene | PENDING | PENDING |
+| OS / CPU / RAM / Java / JVM flags | Windows 11 Pro 10.0.26200; Ryzen 5 5500 (6C/12T); JDK 17.0.7; RAM/full flags PENDING; server heap 3G, no extra test properties (W471/W472) | PENDING |
+| GPU / vendor / driver / renderer | NVIDIA RTX 3070 Laptop GPU; WMI 32.0.15.6636; native OpenGL 4.6 NVIDIA 566.36 (W471/W472) | PENDING |
+| Resolution / window mode / effective GUI scale | 1280×720 windowed, effective scale 3, en_us; desktop 2560×1440; other cells PENDING | PENDING |
+| Forge / JEI / packs/configuration hashes | 47.4.10, JEI absent; per-start options/identity files in round seals; complete final inventory and other cells PENDING | PENDING |
+| Tester / UTC interval / client and server log hashes | Codex operator; W471/W472 retain start UTCs/logs under the two round seals in [the media catalogue](videos-or-links.md); offline profile, not owner authentication | PENDING |
+| Frame-time tool/version / CSV hash / baseline scene | Intel PresentMon selected by Root (R684), absent in both rounds; version/CSV/baseline PENDING | PENDING |
 
 Use windowed 1280×720 effective scale 2/3 and native fullscreen scale 4 only
 when offered, both en_us/zh_cn. A clamped request is not a scale-4 observation.
@@ -54,7 +70,8 @@ Low v1.9 cleanup under R546, not visually passed. Its 32 screen rows include
 28 menu types and four non-menu presentations; the eleven without another
 specific checklist row still receive I06/I08's every-screen pass. Hash the
 C6 K13 manifest and map each selected asset to its actual scene and receipt.
-Scene construction/navigation inputs K05/K16 remain PENDING preparation.
+Preparation inputs K05/K16 are delivered, including declared partial coverage;
+W471/W472 used fresh copies. Scene input delivery is not completed inspection.
 
 All eleven sound events and seventeen producer rows must be reconciled, not
 only the ten previously accepted NEW sounds. J15 uses
@@ -78,4 +95,7 @@ screenshots `<row>-<step>-<client>-<language>-<scale>.png`, videos
 `<row>-<client>.mkv`; record actual dimensions, GPU/driver, build hash, UTC,
 tester, expected/actual, SHA-256 and finding ID. Raw screenshots/video/CSV stay
 outside Git; `videos-or-links.md` indexes them. Evidence references, actuals,
-frame statistics, owner judgment and independent reviewer: **PENDING**.
+frame statistics, remaining per-step judgments and independent review remain
+**PENDING**. R683/R685 approved all 62 provenance records through Root's delegated
+AI-agent review, not human review or V1 inspection. That decision and the four
+R691 residual signatures do not fill a visual row.

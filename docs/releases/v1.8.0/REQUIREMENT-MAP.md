@@ -1,6 +1,6 @@
 # v1.8.0 requirement map — candidate C6 draft
 
-Snapshot: 2026-11-21. **IN_PROGRESS; no requirement or Gate is approved here.**
+Reconciled: 2026-11-25 under Root decision R693; original snapshot: 2026-11-21. **IN_PROGRESS; no requirement or Gate is approved here.**
 The [version document](../../versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md) is the
 requirement source. IDs below use its section and item order; G0–G9 are its
 section 19 Required Gates. There is one row for every checklist item, followed
@@ -11,7 +11,14 @@ C6 is commit `c8fa16e16be87554f26c402546733df6555d15e6`, JAR SHA-256
 `9f7e9d1ef708e27fa5778ca3c72ea3b3605f889465ae0d0d1054a890eb808dd4`.
 “C6 hosted run passed” describes automated evidence only, never acceptance.
 “Document PENDING” means the named document/audit must be completed against C6.
-“Campaign PENDING” and “Native PENDING on C6” must not inherit earlier results.
+“Campaign PENDING” still means an uncompleted row actual, not that no sessions
+ran. Native attempt 2 is 74 PASS / 4 FAILED; X03's separate rerun passes (R632),
+without overwriting failures. [Release evidence](RELEASE-EVIDENCE.md) defines
+worker/decision/risk/package IDs and records R679–R685/R691. All six switches
+stay off (R682); all 62 provenance reviews are APPROVED (R683/R685), not G0.
+[W471](../../work/v1.8.0-root-queue/records/W471.md)/[W472](../../work/v1.8.0-root-queue/records/W472.md)
+ran 43 real-GPU sessions with no scored step PASS (R690). No earlier-candidate
+result is reused as C6 evidence.
 All A–J IDs refer to the 117-row [final campaign plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md),
 sections 4 and 6. Exact steps are in its tracked checklists A–J.
 
@@ -26,13 +33,13 @@ sections 4 and 6. Exact steps are in its tracked checklists A–J.
 | 9.1 | Unique registry IDs | C6 Forge construction during build/DataGen/GameTest plus ledger uniqueness checks: C6 hosted run passed; final audit PENDING | [W62 §3](../../work/v1.8.0-root-queue/records/W62.md), [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1 |
 | 9.2 | All model/texture/sound/lang/recipe references exist | RegisteredContentResourcesTest, resource/provenance audits; C6 hosted run passed; I06 live missing-resource check PENDING | [W62 §3](../../work/v1.8.0-root-queue/records/W62.md), [I06](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 9.3 | Deterministic DataGen | C6 first/repeat DataGen logs, empty generated diffs and clean status receipts: C6 hosted run passed | [C6 run](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1; archived build receipt described in TEST-REPORT.md |
-| 9.4 | Reachable technology/recipe graph | RegisteredItemReachabilityTest, ClassicAdvancementReachabilityTest and PackagedRecipeGraphTest: C6 hosted run passed; archive graph reports and I01 gameplay PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md), [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
-| 9.5 | Each machine has happy/failure/restart tests | W62 per-machine census and C6 hosted machine/recovery classes; C6 hosted run passed, final per-machine evidence reconciliation PENDING; I02/C02 native co-existence/restarts PENDING | [W62 §4](../../work/v1.8.0-root-queue/records/W62.md), [I02](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
+| 9.4 | Reachable technology/recipe graph | C6 hosted graph tests passed; W420 archives the operational witness in [RECIPE-GRAPH-REPORT](RECIPE-GRAPH-REPORT.md) (R575/R581); I01 gameplay/video and final audit PENDING. | [W71](../../work/v1.8.0-root-queue/records/W71.md), [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
+| 9.5 | Each machine has happy/failure/restart tests | W415–W418 add/qualify restart tests included in C6 (R579/R581); [MACHINE-CENSUS](MACHINE-CENSUS.md) maps successors. Final per-machine reconciliation and I02/C02 native coexistence/restarts PENDING. | [W62 §4](../../work/v1.8.0-root-queue/records/W62.md), [I02](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 9.6 | Full-content dedicated sidedness | C6 source and bytecode scans, dedicated GameTests: C6 hosted run passed; A01/I04 packaged client join PENDING | [C6 run](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1, [A01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-A.md) |
-| 9.7 | Complete provenance | C6 packaged provenance audit: hosted run passed; owner D7 and W275/W277 approvals already recorded, not candidate-wide G0 approval; final manifest audit PENDING | [2026-11-04 decision](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md), [2026-11-08 decision](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md), [W71](../../work/v1.8.0-root-queue/records/W71.md) |
-| 10.1 | Dedicated base-to-endgame technology flow | I01 recorded route; campaign PENDING; O4 route arrangement owner decision PENDING | [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [packet P10/O4](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| 9.7 | Complete provenance | C6 audit exists; W414/W470 plus R683/R685 supply all 62 approved provenance records. Final package/matrix audit and G0 approval PENDING; AI review is not human review. | [2026-11-04 decision](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261104.md), [2026-11-08 decision](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md), [W71](../../work/v1.8.0-root-queue/records/W71.md) |
+| 10.1 | Dedicated base-to-endgame technology flow | I01 recorded route remains PENDING; Root selected O4's scripted route plus manual subset (R684), with the owner's manual time still needed. | [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [packet P10/O4](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | 10.2 | Many machines coexist and unload | I02 plus C02; campaign PENDING | [I02](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [C02](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-C.md) |
-| 10.3 | Upgrade placeholder/old IDs | I03 all-old-ID v1.7 fixture, two restarts; campaign PENDING, K02 input still needed | [I03](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
+| 10.3 | Upgrade placeholder/old IDs | I03 all-old-ID v1.7 fixture, two restarts; campaign PENDING, K02 delivered as partial under R667; exact uncovered steps retained | [I03](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 10.4 | JEI present and absent | I04 real recipe and usage display; campaign PENDING | [I04](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 10.5 | Forge × JEI four-cell smoke | I04, Forge 47.4.10/47.4.23 × absent/JEI 15.56.0.205; campaign PENDING; full modpacks NOT_COVERED in v1.8 under accepted D9 | [D9](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md), [I04](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 10.6 | Long production without duplication | I05 production totals with save/restart and I10 joint soak; campaign PENDING | [I05/I10](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
@@ -40,9 +47,9 @@ sections 4 and 6. Exact steps are in its tracked checklists A–J.
 | 11.2 | OBJ/multiblock/armour on real GPU | I07 plus second GPU subset E06/H06/I07/A12; campaign and equipment decision PENDING | [I07](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [packet O9](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | 11.3 | Languages, GUI scales, resource reload | I08, A13 and J14/J26; campaign PENDING, effective display cells follow C2/R535 | [I08](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [display convention](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-A.md) |
 | 11.4 | Zero missing textures/models | I06 complete client-log scan and visual inspection; campaign PENDING; deliberate invalid-pack I07 observations recorded separately | [I06/I07](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
-| 11.5 | Candidate technology-flow video | I01 video with build hash, tester and UTC times; campaign/owner O4 PENDING | [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| 11.5 | Candidate technology-flow video | O4 scripted route plus recorded manual subset selected by Root (R684); actual I01 route/video remains PENDING. | [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | 12.1 | Uniform new-machine packet policy | ClassicControlsChannelGameTests and holder-policy tests: C6 hosted run passed; I11/K18 V2 refusals and independent matrix wording review PENDING | [W402 §6/10](../../work/v1.8.0-root-queue/records/W402.md), [I11](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
-| 12.2 | Automation conserves resources | ProcessPortGameTests and machine conservation classes: C6 hosted run passed; I05/I10 campaign PENDING; cargo/loader native families PENDING on C6 | [W62 §3](../../work/v1.8.0-root-queue/records/W62.md), [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §§4–8 |
+| 12.2 | Automation conserves resources | C6 hosted conservation tests and selected native cargo/loader/accounting families PASS in attempt 2; X01 FAIL and untested next operation remain explicit. I05/I10 campaign PENDING. | [W62 §3](../../work/v1.8.0-root-queue/records/W62.md), [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §§4–8 |
 | 12.3 | Endgame permissions retained | I11/H02 owner, non-owner and member variants; campaign PENDING, automated endgame authority evidence in C6 hosted run | [I11](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [H02](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-H.md) |
 | 12.4 | Recipe/data-pack overload bounds | DataPackOverLimitReloadGameTests and serializer bounds: C6 hosted run passed; final security audit checks ADR-076 limits/expiry, document PENDING | [W62 §3](../../work/v1.8.0-root-queue/records/W62.md), [ADR-076](../../decisions/ADR-076-DATA-PACK-RELOAD-ENTRIES-OUTSIDE-THE-MOD.md) |
 | 12.5 | Unreviewed imports blocked from JAR | C6 provenance/JAR audits: hosted run passed; final G0 package audit PENDING, no human approval inferred from validator success | [W71](../../work/v1.8.0-root-queue/records/W71.md), [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1 |
@@ -52,25 +59,25 @@ sections 4 and 6. Exact steps are in its tracked checklists A–J.
 | 13.4 | Large technology/JEI response | I09 per-category opening/search timing plus I04 correctness; campaign PENDING | [I09/I04](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 13.5 | Four-hour reference soak within D9 scope | I10, A08/A09, I05 and J05/J08–J11; campaign PENDING, O7 account arrangement PENDING; not four hours per cell | [I10](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [D9](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md) |
 | 14.1 | No UNKNOWN classic matrix entries | Final PORTING_MATRIX/ledger reconciliation using W71 counts; document PENDING, candidate audit still required | [W71](../../work/v1.8.0-root-queue/records/W71.md), [matrix](../../PORTING_MATRIX.md) |
-| 14.2 | No in-scope MISSING; deferred/rejected items have ADRs | Final matrix/ledger/ADR-062 closure audit; document PENDING; ordinary ledger validation is not strict closure | [W71](../../work/v1.8.0-root-queue/records/W71.md), [ADR-062](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) |
-| 14.3 | All imports have complete provenance | Candidate G0 audit against approved records, manifests and packaged bytes; document PENDING; automated C6 audit exists | [W71](../../work/v1.8.0-root-queue/records/W71.md), [asset decisions](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md) |
-| 14.4 | Complete chain reachable and playable | Hosted recipe graphs plus I01/I04 and video; campaign PENDING, owner O4 PENDING | [I01/I04](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
-| 14.5 | Resource/server/visual/performance acceptance | C6 hosted, J22 native, all A–J campaign results and independent audit; native/campaign/owner decision PENDING | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P11](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| 14.2 | No in-scope MISSING; deferred/rejected items have ADRs | R682/ADR-062 revision 8 defer five admissions: ledger closure passes, zero PLANNED and 30 DEFERRED of 653. Final matrix/disposition acceptance remains PENDING; closure is not delivery. | [W71](../../work/v1.8.0-root-queue/records/W71.md), [ADR-062](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) |
+| 14.3 | All imports have complete provenance | P12 closed by R683/R685: 62 approved records, W470 C6 hash/license checks, four c17a records judged by owned language keys; final G0 audit PENDING. | [W71](../../work/v1.8.0-root-queue/records/W71.md), [asset decisions](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261108.md) |
+| 14.4 | Complete chain reachable and playable | W420 archived graph plus I01/I04/video; Root selected O4 (R684), actual playability and video PENDING. | [I01/I04](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
+| 14.5 | Resource/server/visual/performance acceptance | C6 hosted/native results recorded: attempt 2 74 PASS / 4 FAILED, separate X03 pass; final A–J row actuals, independent audit and owner P11 remain PENDING. | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P11](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | 14.6 | Zero Critical/High | Candidate-wide findings register and independent audit after all runs; document and owner decision PENDING; no clean verdict from test counts | [plan §5–7](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P11](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 
 ## Required Gates (section 19)
 
 | ID | Requirement | Planned evidence and current state | Source record |
 |---|---|---|---|
-| G0 | Identity/license/provenance | C6 artifact/provenance checks exist; final candidate-wide manifest/licence/identity audit PENDING | [release rules](../../06-RELEASE-AND-ACCEPTANCE-GATES.md), [W71](../../work/v1.8.0-root-queue/records/W71.md) |
+| G0 | Identity/license/provenance | All 62 reviews approved R683/R685; final candidate-wide identity/licence/manifest/package audit and owner approval PENDING. | [release rules](../../06-RELEASE-AND-ACCEPTANCE-GATES.md), [W71](../../work/v1.8.0-root-queue/records/W71.md) |
 | G1 | Reproducible build | C6 hosted clean Java 17 build passed; independent reproduction, classifier identity and final artifact reconciliation PENDING | [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1, [plan K01](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) |
 | G2 | Data/generated resources | C6 first/repeat DataGen clean; final retained resource reports and candidate audit PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md), [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) |
-| G3 | Automated behaviour | C6 6,766 units and 1,886 GameTests passed; candidate row/class reconciliation and retained failures/exclusions review PENDING | [C6 run](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1; TEST-REPORT.md |
+| G3 | Automated behaviour | 6,766 units / 1,886 GameTests; W466/R671 maps 89 rows / 86 methods / 106 mappings. Exclusion/failed-attempt/exception-expiry review and four intermittent items PENDING. | [C6 run](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §2.1; TEST-REPORT.md |
 | G4 | Dedicated server/sides | A01/A02, I01–I04 and V2; campaign PENDING | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) §§4–5 |
-| G5 | Persistence/recovery | J22 all 78 families, separate X01/X02 and A03/A04/I03 upgrades; native/campaign PENDING, P1/P2/P3 decisions PENDING | [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md), [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
-| G6 | Security/authority | I11/H02/D09, J02–J04/J07/J27–J29, independent C6 security audit; campaign/owner signatures PENDING | [W402](../../work/v1.8.0-root-queue/records/W402.md), [fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) |
-| G7 | Performance | Phase 5 reference workload, I02/I05/I09/I10 and J05/J08–J11; campaign PENDING, O7/O8/O11 arrangements PENDING | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P10](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
-| G8 | Manual flow | V1/V2 phases, I01 video, all A–J manual rows with media/hash/tester/date; campaign/owner arrangements PENDING | [plan §6](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P10](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| G5 | Persistence/recovery | J22 attempt 2 74 PASS / 4 FAILED; X01 FAIL and X02 classifications retained; X03 separate pass. R679/R680/R681 decide P1/P2/P3. Partial K02, A03/A04/I03 and six unsigned risk scopes remain PENDING. | [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md), [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| G6 | Security/authority | I11/H02/D09 and bay/cargo/fuel V2 plus independent security review PENDING. R682 keeps all six admissions off; R691 signs four narrow protective scopes; six others remain unsigned. | [W402](../../work/v1.8.0-root-queue/records/W402.md), [fuel readiness](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) |
+| G7 | Performance | Phase 5 REF/soak and qualified client frame times PENDING; O7/O8 selected R684, owner accounts/node/second GPU/time still required. | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P10](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| G8 | Manual flow | 43 phase 2 real-GPU sessions, no step PASS (R690); all row actuals, remaining V1, attach-mode owner account, second GPU, V2 and media judgments PENDING. | [plan §6](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md), [packet P10](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | G9 | Documentation/release | Complete report set, installation by uninvolved tester, checksums, final independent audit and P11; document/owner decision PENDING | [release rules](../../06-RELEASE-AND-ACCEPTANCE-GATES.md), [packet P11](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 
 ## Non-checklist delivery obligations
@@ -86,11 +93,11 @@ These rows keep prose requirements visible instead of treating them as implicitl
 | 3.2 | Items/armour/components/tools/recipes/advancements | Recipe graph plus I01/I06/I07/J14/J17; campaign PENDING | [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) |
 | 3.3 | OBJ/JSON/textures/GUI/audio/languages | I06–I09/J15; campaign PENDING | [checklist I](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md), [checklist J](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-J.md) |
 | 3.4 | Research/technology/balance loop | I01/J19 and graph report; campaign PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md), [plan](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md) |
-| 3.5 | Per-batch provenance/hash/license/transforms | Approved records plus final C6 JAR audit; document PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
+| 3.5 | Per-batch provenance/hash/license/transforms | All 62 final records approved R683/R685; W470 C6 checks and R685 owned-language-key judgment recorded; final manifest/package reconciliation PENDING. | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
 | 3.6 | Close PORTING_MATRIX entries individually | W71 derived counts and Root's matrix audit; document PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
 | 3.7 | ADRs for missing/redesigned/rejected content | ADR-062 disposition/impact audit; document PENDING | [ADR-062](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) |
 | 4.1 | No bulk-copy substitute for migration | G0 per-file manifests and batch audit; document PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md) |
-| 4.2 | No unclear/incompatible community assets | C6 provenance audit plus G0 human review; document PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md) |
+| 4.2 | No unclear/incompatible community assets | C6 provenance audit plus delegated Root AI review (R683/R685); final G0 remains PENDING, no human review inferred. | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md) |
 | 4.3 | No exact old-ID/recipe-value parity promise | Publish ADR-061/062 identities and redesigned values; document PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md), [ADR-062](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) |
 | 4.4 | No direct 1.12.2 world upgrade promise | Migration/install instructions explicitly state this boundary; document PENDING | [compatibility promise](../../../PROJECT-CONFIG.md), [roadmap §6](../../16-POST-1.0-VERSION-ROADMAP.md) |
 | 5.1 | Stable namespace/registry IDs | ADR-061 identity table, I03 old-ID comparison; campaign PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md), [I03](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
@@ -104,14 +111,14 @@ These rows keep prose requirements visible instead of treating them as implicitl
 | 8.4 | Recipe change does not rewrite inventories | I03 pre/post inventory census and I05 resource totals; campaign PENDING | [checklist I](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 8.5 | Missing content dependency is explicit, not silently deleted | D10 missing-provider/mod refusal/reinstall on copies; campaign PENDING; final content-disposition audit must confirm applicable dependencies | [D10](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-D.md) |
 | 15.1 | Archive updated matrix | W71 counts plus committed Root matrix update; document PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
-| 15.2 | Archive batch provenance manifests | W71 provenance index plus approved records; document PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
-| 15.3 | Archive recipe graph | W71 collector from C6 graph reports; document PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
+| 15.2 | Archive batch provenance manifests | Final provenance records and approvals exist (W414/W470/R685); final durable release index/manifest reconciliation PENDING. | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
+| 15.3 | Archive recipe graph | W420 operational witness archived in [RECIPE-GRAPH-REPORT](RECIPE-GRAPH-REPORT.md), included in C6 R581; final release-index integration PENDING. | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
 | 15.4 | Archive progression report/video | W71 witness report plus I01 recording; document/campaign PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md), [I01](../../work/v1.8.0-root-queue/records/CAMPAIGN-CHECKLISTS-I.md) |
 | 15.5 | Archive asset validation | C6 audits and I06/I07, W71 collector; document/campaign PENDING | [W71](../../work/v1.8.0-root-queue/records/W71.md) |
 | 15.6 | Archive scoped performance/compatibility report | I04/I10 under D9; campaign PENDING; full modpack NOT_COVERED in v1.8 | [D9](../../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md) |
 | 17.1 | Asset batches independently reversible | Manifest/disposition review documents batch rollback without silent ID/data removal; document PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md) |
 | 17.2 | Registry removal has migration first | I03 and additive-ID audit; document/campaign PENDING | [W62 10.3](../../work/v1.8.0-root-queue/records/W62.md) |
-| 17.3 | Disabled/deferred machine scope has approval and impact | ADR-062 and packet P4–P9 per-switch decisions; document/owner decision PENDING | [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
+| 17.3 | Disabled/deferred machine scope has approval and impact | R682/ADR-062 revision 8 decide all six off, with five admission units DEFERRED to v1.9 and stable IDs/protection/recovery retained; no pending switch answer or admission acceptance. | [packet](../../work/v1.8.0-root-queue/records/OWNER-FINAL-PACKET-DRAFT.md) |
 | 17.4 | Disputed sources isolated, not distributed | G0 manifest/JAR audit against exclusions; document PENDING | [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md) |
 | 19.cmd1 | clean build | C6 hosted build passed; clean release reproduction PENDING | [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) |
 | 19.cmd2 | test | C6 archived JUnit XML: 6,766 tests, zero failure/error/skip; hosted run passed | [C6 identity](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md); TEST-REPORT.md archive receipt |
@@ -136,5 +143,7 @@ textures are outside the campaign under R546. The exact shapes are not passes.
 See [C6 report](../../work/v1.8.0-root-queue/records/C6-SWITCH-REPORT.md) §§3/8/13,
 [fuel inventory](../../work/v1.8.0-root-queue/records/FUEL-ADMISSION-REPORT.md) F12/F22–F29,
 and [plan §7.3](../../work/v1.8.0-root-queue/records/FINAL-CAMPAIGN-PLAN.md).
-Unbuilt K02/K05/K16/K18 and other marked campaign inputs are preparation gaps,
-not missing planned coverage or permission to claim acceptance.
+K01–K21 preparation inputs are delivered, including explicitly partial packages.
+K02's unmatched/unreachable/player gaps, K11's off-switch client/control gaps
+and K12's reference limits remain as recorded. Execution and per-step evidence,
+not simply rebuilding a package, close the applicable PENDING requirements.

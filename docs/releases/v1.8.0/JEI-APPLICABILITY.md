@@ -110,6 +110,19 @@ recipes: their owning controller's category/page explains the machine.
 
 ## Display acceptance
 
+C6 is the candidate pinned by Root decision R581 in
+[the release evidence](RELEASE-EVIDENCE.md). R682 keeps the bay, four cargo
+admissions and fluid-fuel admission off in v1.8. Their information pages explain
+server-authoritative operations, not enabled production use; IDs, recipes and
+retained-history protections remain present under
+[ADR-062 revision 8](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md).
+The 43 phase 2 sessions ([W471](../../work/v1.8.0-root-queue/records/W471.md),
+[W472](../../work/v1.8.0-root-queue/records/W472.md), R686–R688/R690) ran without
+JEI. All JEI display/uses/language/scale/reload and four-cell actuals remain
+PENDING until those candidate-bound rows execute and receive per-step review.
+R683/R685 provenance approval is not JEI rendering evidence.
+
+
 Unit registration and translation checks do not prove JEI rendering. The campaign's C31
 JEI cells must inspect the candidate with JEI, recipes/uses navigation, both languages,
 GUI scales and resource reload, and repeat the declared with/without-JEI startup matrix.
