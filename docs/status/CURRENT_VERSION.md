@@ -42,7 +42,7 @@ latest_hosted_regression: run 45195645440 at 60ead06cf passed (W461's and W463's
 ledger_planned_units: 0
 asset_review_items: 0
 required_gates_approved: none
-last_updated: 2026-11-24
+last_updated: 2026-11-25
 ```
 
 ## Current state
@@ -74,9 +74,11 @@ in the linked task evidence, not additional owner-packet items.
   retains the original runs, the alternative repaired-image tally and R636/R639 classifications.
 - **Preparation packages.** The final campaign packages are delivered; delivery is not campaign
   execution, and the accepted partial packages retain their uncovered steps under R638, R642,
-  R647, R655 and R661. K02 is accepted as partial ([W447](../work/v1.8.0-root-queue/records/W447.md), R661): its flight
-  matrix has 5 PASS and 5 FAIL, its sealed native cuts on a diagnostic JAR built from C6 have 81 PASS and
-  8 FAIL of 89, and four of W437's legacy disassembly rows remain NOT_REACHABLE_ON_C6. K20's checklist second pass is merged ([W456](../work/v1.8.0-root-queue/records/W456.md), R654), K12 is accepted
+  R647, R655 and R661. K02 is accepted as partial ([W447](../work/v1.8.0-root-queue/records/W447.md), R661; latest counts
+  under R666 and R667 in "Partial packages and checklist integration" below): its flight matrix now has 7 PASS and
+  3 FAIL that are NOT_REACHABLE_ON_C6, all 89 sealed native cuts have a passing C6 run, and four of W437's legacy
+  disassembly rows remain NOT_REACHABLE_ON_C6. W447's first counts (flight 5 PASS and 5 FAIL; cuts 81 PASS
+  and 8 FAIL) stay in its record as history. K20's checklist second pass is merged ([W456](../work/v1.8.0-root-queue/records/W456.md), R654), K12 is accepted
   as partial ([W454](../work/v1.8.0-root-queue/records/W454.md), R655), and [QUEUE](../work/v1.8.0-root-queue/QUEUE.md) records each package's boundary.
 - **Assets and accounting.** The asset plan has no REVIEW or IMPORT entries and retains
   89 IMPORTED, 365 EXCLUDE and 444 REGENERATE files under
