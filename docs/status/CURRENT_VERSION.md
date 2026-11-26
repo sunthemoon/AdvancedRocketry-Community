@@ -158,7 +158,7 @@ restart or real client; those need their own evidence.
   row's latest round, the 394 steps score 48 PASS (6 machine-scored and 42 visual), 4 FAIL, 47 STILL_PENDING
   (a frame to recapture or a required display cell not yet captured), 211 NOT_RUN and 84 NOT_COVERED (41 need
   the owner's account in attach mode, 15 a human listener, 12 two signed-in clients, 12 PresentMon and 4 the
-  second GPU). No row passes yet. The four failures are product findings F-W482-01 to F-W482-04, among them
+  second GPU). PresentMon 2.6.0 is now on this machine (R711); its 12 steps still need their capture authored. No row passes yet. The four failures are product findings F-W482-01 to F-W482-04, among them
   the precision assembler's hull drawn beside its structure and a data-pack test body shown as a raw
   identifier. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
   C6's code with fix sketches, and found that all six formed hulls mismatch their redesigned patterns
