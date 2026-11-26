@@ -12,9 +12,19 @@ from .evidence import copy_log, dumps, now, write_json
 from .gates import ExpectationFailed, PreconditionFailed
 from .input import Input
 from .launch import prepare_client
-from .processes import CapturedProcess, require_windows
+from .processes import CapturedProcess, require_windows, wait_for_log
 from .protocol import INPUTS, load_session, read_request
 from .server import server_command, write_settings
+
+
+def command_rejection(line):
+    """Minecraft command syntax failures, including the separate echoed cursor context."""
+    return any(text in line for text in ("Unknown or incomplete command", "<--[HERE]",
+                                         "Incorrect argument for command"))
+
+
+class CommandRejected(Exception):
+    """The server rejected a readback command instead of producing its reply."""
 
 
 def lock_label(value):
@@ -152,9 +162,11 @@ class Session:
         self.summary["status"] = "READY"
         self.save()
 
-    def client_wait(self, client, substring, timeout, start=0):
+    def client_wait(self, client, substring, timeout, start=0, match=None):
         if client["process"]:
-            return client["process"].wait_for(substring, timeout, self.sleep, start)
+            if match is None:
+                return client["process"].wait_for(substring, timeout, self.sleep, start)
+            return wait_for_log(client["process"], substring, timeout, self.sleep, start, match)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             client["attached"].verify(foreground=False)
@@ -163,7 +175,7 @@ class Session:
                 while line := stream.readline(65536):
                     if len(line) == 65536 and not line.endswith("\n"):
                         raise ValueError("Client log line exceeds bound")
-                    if index >= start and substring in line:
+                    if index >= start and (match(line) if match is not None else substring in line):
                         return line.rstrip("\n")
                     index += 1
                     if index % 1024 == 0:
@@ -194,10 +206,17 @@ class Session:
         self.server.command(command)
         return start
 
-    def log_wait(self, client, substring, timeout, start):
+    def log_wait(self, client, substring, timeout, start, fail_on_rejection=False):
+        def match(line):
+            if command_rejection(line):
+                if fail_on_rejection:
+                    raise CommandRejected(line.rstrip("\n"))
+                return False
+            return substring in line
+
         if self.server is None:
-            return self.client_wait(client, substring, timeout, start)
-        return self.server.wait_for(substring, timeout, self.sleep, start)
+            return self.client_wait(client, substring, timeout, start, match)
+        return wait_for_log(self.server, substring, timeout, self.sleep, start, match)
 
     def perform(self, op):
         self.check_time()
@@ -222,16 +241,21 @@ class Session:
         if kind == "require":
             # Ask again only for a reply; no input is repeated, and a command here should be a readback.
             attempts = op.get("attempts", 1)
+            rejection = None
             for attempt in range(1, attempts + 1):
                 start = self.send_command(client, op["command"])
                 try:
-                    receipt = self.log_wait(client, op["expect"], op.get("timeout", 5), start)
+                    receipt = self.log_wait(client, op["expect"], op.get("timeout", 5), start,
+                                            fail_on_rejection=True)
                     return {"precondition": "MET", "attempt": attempt, "receipt": receipt}
-                except TimeoutError:
+                except (TimeoutError, CommandRejected) as exc:
+                    if isinstance(exc, CommandRejected):
+                        rejection = str(exc)
                     self.check_time()
                     if attempt < attempts:
                         self.sleep(op.get("interval", 1))
-            raise PreconditionFailed(f"{op['command']!r} did not report {op['expect']!r} in {attempts} attempt(s)")
+            detail = f"; command rejected: {rejection}" if rejection is not None else ""
+            raise PreconditionFailed(f"{op['command']!r} did not report {op['expect']!r} in {attempts} attempt(s){detail}")
         if kind == "expect_log":
             try:
                 return {"expectation": "MET",
