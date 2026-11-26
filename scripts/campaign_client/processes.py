@@ -2,6 +2,7 @@
 import ctypes as C
 from ctypes import wintypes as W
 from collections import deque
+from contextlib import nullcontext
 import os
 import subprocess
 import threading
@@ -18,6 +19,24 @@ def require_windows(message="Live campaign sessions require Windows"):
     """The one platform guard for live sessions; tests replace it to exercise the Windows paths with fakes."""
     if os.name != "nt":
         raise ValueError(message)
+
+
+def wait_for_log(source, substring, timeout, sleep, start=0, match=None):
+    """Wait on indexed captured lines; an optional matcher also examines nonmatching replies."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if getattr(source, "error", None):
+            raise ValueError("Process output capture failed")
+        # In-memory log sources need no lock; live CapturedProcess readers always provide one.
+        with getattr(source, "lock", nullcontext()):
+            lines = list(source.lines)
+        for index, line in lines:
+            if index >= start and (match(line) if match is not None else substring in line):
+                return line
+        if source.process.poll() is not None:
+            raise ValueError("Owned process exited while waiting")
+        sleep(0.1)
+    raise TimeoutError("Process log wait expired")
 
 
 class THREADENTRY32(C.Structure):
@@ -149,18 +168,7 @@ class CapturedProcess:
             return [line for _, line in list(self.lines)[-count:]] if count else []
 
     def wait_for(self, substring, timeout, sleep, start=0):
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            if self.error:
-                raise ValueError("Process output capture failed")
-            with self.lock:
-                found = [line for index, line in self.lines if index >= start and substring in line]
-            if found:
-                return found[0]
-            if self.process.poll() is not None:
-                raise ValueError("Owned process exited while waiting")
-            sleep(0.1)
-        raise TimeoutError("Process log wait expired")
+        return wait_for_log(self, substring, timeout, sleep, start)
 
     def close(self, server=False):
         try:
