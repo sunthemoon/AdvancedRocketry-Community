@@ -153,11 +153,19 @@ restart or real client; those need their own evidence.
   scoring to each step's own oracle. After W474 and W476 authored full-row scenarios by day, the round-04 and
   round-05 nights ([W479](../work/v1.8.0-root-queue/records/W479.md), [W480](../work/v1.8.0-root-queue/records/W480.md);
   R699 to R701) completed 23 row queues in 119 live sessions. Every failed first attempt was an operator or
-  staging fault rerun on a fresh copy, and no product defect was established. Taking each row's latest round,
-  the 394 steps score 6 PASS, 0 FAIL and 93 P_PENDING for Root's visual judgment; 211 are NOT_RUN (197 not yet
-  authored) and 84 NOT_COVERED (41 need the owner's account in attach mode, 15 a human listener, 12 two
-  signed-in clients, 12 PresentMon and 4 the second GPU). No row passes yet. Seven first-connection timeouts
-  match KI-V180-CONNECT-01 and stay pending findings. W481 authors the open steps by day for round 06 (R702).
+  staging fault rerun on a fresh copy. After Root's visual judgment of those frames
+  ([W482](../work/v1.8.0-root-queue/records/W482.md), [W485](../work/v1.8.0-root-queue/records/W485.md); R703 to R707), and taking each
+  row's latest round, the 394 steps score 48 PASS (6 machine-scored and 42 visual), 4 FAIL, 47 STILL_PENDING
+  (a frame to recapture or a required display cell not yet captured), 211 NOT_RUN and 84 NOT_COVERED (41 need
+  the owner's account in attach mode, 15 a human listener, 12 two signed-in clients, 12 PresentMon and 4 the
+  second GPU). No row passes yet. The four failures are product findings F-W482-01 to F-W482-04, among them
+  the precision assembler's hull drawn beside its structure and a data-pack test body shown as a raw
+  identifier. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
+  C6's code with fix sketches, and found that all six formed hulls mismatch their redesigned patterns
+  (finding F-W487-01). Their fixes wait for one candidate decision after phase 2's first full pass, while
+  `src/` stays frozen at C6 (R600). Seven first-connection timeouts match KI-V180-CONNECT-01 and stay pending
+  findings. W484's harness fix (R707) stops a rejected command from satisfying a check. W486 authors the open
+  steps and the recaptures by day for the round-06 night (R706).
 
 ### Campaign coverage and performance
 
