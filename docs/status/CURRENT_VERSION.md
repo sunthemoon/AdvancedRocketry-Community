@@ -163,9 +163,11 @@ restart or real client; those need their own evidence.
   identifier. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
   C6's code with fix sketches, and found that all six formed hulls mismatch their redesigned patterns
   (finding F-W487-01). Their fixes wait for one candidate decision after phase 2's first full pass, while
-  `src/` stays frozen at C6 (R600). Seven first-connection timeouts match KI-V180-CONNECT-01 and stay pending
-  findings. W484's harness fix (R707) stops a rejected command from satisfying a check. W486 authors the open
-  steps and the recaptures by day for the round-06 night (R706).
+  `src/` stays frozen at C6 (R600). Thirteen first-connection timeouts, six of them in round 06, match KI-V180-CONNECT-01
+  and stay pending findings. W484's harness fix (R707) stops a rejected command from satisfying a check. Round 06's first night
+  ([W488](../work/v1.8.0-root-queue/records/W488.md), R713) reached 23 of its 34 rows in 107 native sessions. Its 62 newly
+  captured visual steps wait for judgment (W490), so the totals above stand until then. D06's floating kick at
+  the rocket console is not yet attributed. The unreached rows and the reruns continue in round 07 (W489).
 
 ### Campaign coverage and performance
 
