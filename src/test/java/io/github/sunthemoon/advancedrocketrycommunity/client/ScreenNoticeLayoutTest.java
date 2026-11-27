@@ -5,6 +5,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class ScreenNoticeLayoutTest {
+    @Test void terminalIn240PixelWindowUsesTopWithoutCoveringSlotsOrControls() {
+        var bounds = ScreenNoticeLayout.forContainer(427, 240, 37, 3, 352, 234);
+        assertEquals(0, bounds.y());
+        assertTrue(bounds.y() + bounds.height() <= 3 + 18); // First sidebar control.
+        assertTrue(bounds.y() + bounds.height() < 3 + 208); // Hotbar.
+        assertTrue(bounds.x() >= 0 && bounds.x() + bounds.width() <= 427);
+    }
+
+    @Test void terminalIn360PixelWindowKeepsBottomAndDoesNotCoverPanel() {
+        var bounds = ScreenNoticeLayout.forContainer(640, 360, 144, 63, 352, 234);
+        assertEquals(ScreenNoticeLayout.bottom(640, 360), bounds);
+        assertTrue(bounds.y() >= 63 + 234);
+    }
+
     @Test void scaleThreeNoticeIsInsideTheFrameAndBelowThreeStatusRows() {
         int width = 427, height = 240, panelWidth = 256, panelHeight = 222;
         int left = (width - panelWidth) / 2, top = (height - panelHeight) / 2;

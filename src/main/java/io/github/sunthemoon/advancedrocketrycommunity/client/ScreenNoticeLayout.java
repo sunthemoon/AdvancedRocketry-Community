@@ -13,6 +13,14 @@ public final class ScreenNoticeLayout {
         return new Bounds(8, height - 24, width - 16, HEIGHT);
     }
 
+    /** Container slots remain clickable under a notice, so never put the notice over the panel. */
+    public static Bounds forContainer(int width, int height, int left, int top, int panelWidth, int panelHeight) {
+        Bounds bottom = bottom(width, height);
+        boolean intersects = bottom.x() < left + panelWidth && bottom.x() + bottom.width() > left
+                && bottom.y() < top + panelHeight && bottom.y() + bottom.height() > top;
+        return intersects ? new Bounds(8, 0, width - 16, HEIGHT) : bottom;
+    }
+
     public static Optional<Bounds> forPanel(int width, int height, int left, int top, int panelWidth,
                                            int panelHeight, int contentBottom) {
         Bounds bottom = bottom(width, height);

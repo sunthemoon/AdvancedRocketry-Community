@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.client.station.StationCont
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
@@ -54,6 +55,9 @@ public final class ScreenActionMessages {
         var font = Minecraft.getInstance().font;
         ScreenNoticeLayout.Bounds bounds = screen instanceof StationControllerScreen controller
                 && WarpScreenNotice.isNotice(message) ? controller.noticeBounds().orElse(null)
+                : screen instanceof AbstractContainerScreen<?> container
+                ? ScreenNoticeLayout.forContainer(screen.width, screen.height, container.getGuiLeft(), container.getGuiTop(),
+                        container.getXSize(), container.getYSize())
                 : ScreenNoticeLayout.bottom(screen.width, screen.height);
         if (bounds == null) { return; }
         int x = bounds.x(), y = bounds.y();
