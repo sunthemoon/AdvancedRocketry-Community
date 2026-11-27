@@ -241,7 +241,7 @@ public final class ElevatorMenu extends EndgameDeviceMenu {
             if (endpoint.frozen()) {
                 lines.add(EndgameDeviceView.Line.key(VIEW + "warning", VALUE + "break_resolves"));
             }
-            lines.add(EndgameDeviceView.Line.text(VIEW + "pair", endpoint.pairCheck().describe()));
+            lines.add(pairLine(endpoint.pairCheck()));
             farEnd(endpoint, lines);
             if (terminal) {
                 selection(lines);
@@ -259,6 +259,11 @@ public final class ElevatorMenu extends EndgameDeviceMenu {
         }
         return new EndgameDeviceView(containerId, EndgameSystem.SPACE_ELEVATOR, status, endpoint.lastCode(), detail,
                 lines.subList(0, Math.min(lines.size(), EndgameDeviceView.MAX_LINES)));
+    }
+
+    static EndgameDeviceView.Line pairLine(ElevatorRules.Check check) {
+        return check.rule().isEmpty() ? EndgameDeviceView.Line.key(VIEW + "pair", check.code().translationKey())
+                : EndgameDeviceView.Line.text(VIEW + "pair", check.describe());
     }
 
     /** The other end of the pair, for viewers with detail (its owner, the station owner and operators). */
