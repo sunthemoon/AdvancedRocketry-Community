@@ -95,6 +95,11 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180RejoinLanguage.entries(chinese).forEach(this::add);
         V180ScreenLayoutLanguage.entries(chinese).forEach(this::add);
 
+        // W504: replace the HUD's ambiguous historical exposed key without rewriting v0.4 language output.
+        add("hud." + NS + ".life_support.state.vacuum", chinese ? "真空" : "VACUUM");
+        add("hud." + NS + ".life_support.state.non_breathable_atmosphere", chinese ? "不可呼吸大气" : "NON-BREATHABLE ATMOSPHERE");
+        add("hud." + NS + ".life_support.state.no_air", chinese ? "无可呼吸空气" : "NO AIR");
+
         add("screen." + NS + ".railgun.redstone_short", chinese ? "红石" : "Signal");
         add("screen." + NS + ".orbital_laser_drill.redstone_short", chinese ? "红石" : "Signal");
         add("screen." + NS + ".laser_target.reset_short", chinese ? "重置" : "Reset");

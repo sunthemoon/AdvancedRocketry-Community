@@ -2,8 +2,11 @@ package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerProtectionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportClientCache;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.client.LifeSupportHudLayout.Anchor;
 import io.github.sunthemoon.advancedrocketrycommunity.client.LifeSupportHudLayout.Mode;
 import io.github.sunthemoon.advancedrocketrycommunity.client.LifeSupportHudLayout.Panel;
@@ -18,19 +21,22 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 /**
- * Compact high-contrast HUD; all values are display-only server-synchronized data. Environment and oxygen come from
- * the life-support snapshot, hydrogen and modules from the worn suit (ADR-066 section 7.1), and the rocket readout
+ * Compact high-contrast HUD; all values are display-only server-synchronized data. Protection and oxygen come from
+ * the life-support snapshot, ambient pressure from the celestial catalog, hydrogen and modules from the worn suit
+ * (ADR-066 section 7.1), and the rocket readout
  * from the ridden rocket's synchronized flight state and fuel. Every visible panel is placed in one layout pass.
  */
 public final class LifeSupportHud {
@@ -65,10 +71,7 @@ public final class LifeSupportHud {
             }
             Component status = Component.translatable(
                     "hud.advancedrocketrycommunity.life_support.status",
-                    Component.translatable(
-                            "hud.advancedrocketrycommunity.life_support.state."
-                                    + snapshot.status().diagnosticKey()
-                    )
+                    statusLabel(snapshot.status(), player.level().dimension().location(), CelestialClientCache.snapshot())
             ).withStyle(ChatFormatting.WHITE);
             Component oxygen = Component.translatable(
                     "hud.advancedrocketrycommunity.life_support.oxygen",
@@ -121,6 +124,21 @@ public final class LifeSupportHud {
 
     static boolean visible(boolean hasPlayer, boolean hideGui, boolean debug) {
         return hasPlayer && !hideGui && !debug;
+    }
+
+    static Component statusLabel(PlayerProtectionStatus status, ResourceLocation level,
+                                 Optional<CelestialSnapshot> catalog) {
+        String key = status.diagnosticKey();
+        if (status == PlayerProtectionStatus.EXPOSED) {
+            // ADR-066 3.1: use the actual Level's ambient pressure, never an orbited body's surface profile.
+            // Until the catalog knows this Level, report only the server-known lack of breathable air.
+            key = catalog.stream().flatMap(view -> view.entries().stream())
+                    .filter(entry -> entry.levelId().filter(level::equals).isPresent())
+                    .findFirst()
+                    .map(entry -> entry.vacuum() ? "vacuum" : "non_breathable_atmosphere")
+                    .orElse("no_air");
+        }
+        return Component.translatable("hud.advancedrocketrycommunity.life_support.state." + key);
     }
 
     private static Component modules(List<ModuleKind> kinds) {
