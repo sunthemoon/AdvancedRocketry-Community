@@ -109,7 +109,7 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             new ObjModelCheck.Bounds(-0.25, -0.25, 0, 3, 1.5, 5), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90, 3);
 
     public static final ObjModelFixture ELEVATOR_ANCHOR = new ObjModelFixture("elevator_anchor", ModIdentity.id("elevator_anchor"),
-            ModIdentity.id("models/spaceelevator.obj"), true, true, 1, 1, -1, 0.5,
+            ModIdentity.id("models/spaceelevator.obj"), true, true, 1, 1, -1, 0,
             new ObjModelCheck.Bounds(-5, -1, -4.999871, 4.999871, 508, 3.999871), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 90, 2);
 
     public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE, PRECISION_LASER_ETCHER,

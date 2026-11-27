@@ -38,7 +38,7 @@ public final class K4ModelProjection {
             case "precision_assembler" -> new AABB(-1, 0, 0, 2, 3, 4);
             case "railgun" -> new AABB(-4, 0, -3, 5, 11, 6);
             case "rolling_machine" -> new AABB(-2, 0, -0.5, 3, 3, 2.5);
-            case "elevator_anchor" -> new AABB(-4, -1, -4.5, 5, 1, 5.5);
+            case "elevator_anchor" -> new AABB(-4, -1, -5, 5, 1, 5);
             default -> throw new IllegalArgumentException("Unknown K4 model " + kind);
         };
         AABB rotated = switch (facing) {

@@ -173,7 +173,7 @@ class K4ObjModelTest {
             case "orbital_laser_drill" -> new double[] {-4, -1, -1};
             case "railgun" -> new double[] {0, 0, -2};
             case "rolling_machine" -> new double[] {-1, 0, -.5};
-            case "elevator_anchor" -> new double[] {0, -1, -4.5};
+            case "elevator_anchor" -> new double[] {0, -1, -5};
             default -> throw new AssertionError(id);
         };
         return rotate(facing, new double[] {north[0] + shift[0], north[1] + shift[1], north[2] + shift[2]});
@@ -207,8 +207,25 @@ class K4ObjModelTest {
                 var b = new AABB(p.x(),p.y(),p.z(),p.x()+1,p.y()+1,p.z()+1); structure = structure == null ? b : structure.minmax(b);
             }
             assertNotNull(hull); assertNotNull(structure);
-            assertEquals(structure.getCenter().x, hull.getCenter().x, 1.0E-4, id + " horizontal centre x");
-            assertEquals(structure.getCenter().z, hull.getCenter().z, 1.0E-4, id + " horizontal centre z");
+            double[] centre = switch (id) {
+                case "elevator_anchor" -> rotate(facing, new double[] {.5, 0, 0});
+                default -> new double[] {structure.getCenter().x, 0, structure.getCenter().z};
+            };
+            assertEquals(centre[0], hull.getCenter().x, 1.0E-4, id + " functional centre x");
+            assertEquals(centre[2], hull.getCenter().z, 1.0E-4, id + " functional centre z");
+            if (id.equals("elevator_anchor")) {
+                // W497 F02: the hidden source tether's seat, not the asymmetric hull, meets the drawn beam.
+                var raw = resource(f.model()); var sourcePoints = positions(raw); AABB seat = null;
+                for (int index : indices(raw).get("Tether")) {
+                    var p = sourcePoints.get(index); var v = f.toController(facing, p[0], p[1], p[2]);
+                    var b = new AABB(v[0],v[1],v[2],v[0],v[1],v[2]); seat = seat == null ? b : seat.minmax(b);
+                }
+                assertNotNull(seat);
+                assertEquals(.5, seat.getCenter().x, 1.0E-4, "tether seat x");
+                assertEquals(.5, seat.getCenter().z, 1.0E-4, "tether seat z");
+                assertEquals(1, seat.getXsize(), 1.0E-4, "full-scale tether width");
+                assertEquals(1, seat.getZsize(), 1.0E-4, "full-scale tether depth");
+            }
             if (id.equals("black_hole_generator")) {
                 // W497 F01: the head stays at C6 height below the disc; only its stem extends below the pattern.
                 assertEquals(-4, hull.minY, 1.0E-4, id + " stem base");
