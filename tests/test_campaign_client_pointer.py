@@ -95,6 +95,7 @@ class PointerAdapterTests(unittest.TestCase):
         adapter.u.GetSystemMetrics.side_effect = metrics.__getitem__
         adapter.u.GetCursorInfo.side_effect = get_cursor
         adapter.u.GetForegroundWindow.return_value = 456
+        adapter.u.WindowFromPoint.return_value = 456
         return adapter
 
     def test_fullscreen_reads_initialized_cursor_info_without_input(self):
@@ -106,7 +107,7 @@ class PointerAdapterTests(unittest.TestCase):
                 self.assertEqual(2, adapter.u.GetClipCursor.call_count)
                 self.assertEqual(2, adapter.u.GetForegroundWindow.call_count)
                 self.assertTrue(all(call[0] in {"GetClipCursor", "ClientToScreen", "GetSystemMetrics",
-                                               "GetCursorInfo", "GetForegroundWindow"}
+                                               "GetCursorInfo", "GetForegroundWindow", "WindowFromPoint"}
                                     for call in adapter.u.mock_calls), adapter.u.mock_calls)
                 adapter.k.assert_not_called()
                 self.assertEqual([], adapter.k.mock_calls)
