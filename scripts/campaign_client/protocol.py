@@ -170,12 +170,18 @@ def load_session(path):
     spec = read_object(path)
     required = {"schema_version", "mode", "cell", "run_dir", "time_limit_seconds", "input_interval_seconds",
                 "clients", "server", "java", "singleplayer"}
-    if set(spec) - {"launch_kind"} != required or type(spec["schema_version"]) is not int or spec["schema_version"] != 1:
+    if set(spec) - {"launch_kind", "paired_world"} != required or type(spec["schema_version"]) is not int or spec["schema_version"] != 1:
         raise ValueError("Unsupported session schema")
     if spec.get("launch_kind", "candidate") not in ("candidate", "baseline"):
         raise ValueError("Unsupported launch kind")
     if spec.get("launch_kind") == "baseline" and (spec["mode"] != "launch" or spec["singleplayer"] is not True):
         raise ValueError("Baseline requires a disposable singleplayer launch")
+    if "paired_world" in spec:
+        if spec.get("launch_kind") != "baseline":
+            raise ValueError("paired_world is only supported for baseline sessions")
+        from .baseline_pairing import load_pairing
+        paired = load_pairing(path.parent, spec["paired_world"])
+        spec["paired_world"] = {"path": paired["path"], "sha256": paired["sha256"]}
     if spec["mode"] not in ("launch", "attach") or type(spec["singleplayer"]) is not bool:
         raise ValueError("Invalid mode")
     number(spec["time_limit_seconds"], 1, 21600, "session limit")

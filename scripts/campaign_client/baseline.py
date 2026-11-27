@@ -1,16 +1,19 @@
-"""Account-free, hash-pinned empty baselines; never download or install a runtime."""
+"""Account-free, hash-pinned Vanilla, empty Forge and JEI-only baselines; no installs."""
 import hashlib
 import json
 import re
 import zipfile
 from pathlib import Path
 
-from .cells import artifact, path_at, read_object
+from .cells import artifact, is_jei, path_at, read_object
 from .evidence import sha256
 from scripts.v100_compatibility_runtime import child, libraries, profile, read_json, safe_path, verify_file
 
 VANILLA = "VANILLA_1_20_1"
 FORGE = "FORGE_47_4_10_EMPTY"
+FORGE_JEI = "FORGE_47_4_10_JEI_ONLY"
+JEI_FILE = "jei-1.20.1-forge-15.56.0.205.jar"
+JEI_SHA256 = "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c"
 VERSION_FILES = {
     "versions/1.20.1/1.20.1.json": "802d49b1ca907c9dad7ee0bb7c65678e452acf963962eff3b6fe8ecb4dbb23c8",
     "versions/1.20.1/1.20.1.jar": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f",
@@ -41,13 +44,34 @@ def check_empty_game(game):
             raise ValueError("Baseline game directories must be empty")
 
 
+def jei_mods():
+    entries = [{"file": JEI_FILE, "sha256": JEI_SHA256, "jei": True}]
+    digest = hashlib.sha256((json.dumps(entries, sort_keys=True, separators=(",", ":")) + "\n").encode()).hexdigest()
+    return entries, digest
+
+
+def check_jei_game(game):
+    """Exactly the campaign JEI JAR; no arbitrary config, pack, save, hidden entry or link."""
+    safe_path(game)
+    if not game.is_dir() or {p.name for p in game.iterdir()} != EMPTY_DIRS:
+        raise ValueError("JEI baseline template needs exactly five game directories")
+    for name in EMPTY_DIRS:
+        directory = safe_path(game / name)
+        expected = {JEI_FILE} if name == "mods" else set()
+        if not directory.is_dir() or {p.name for p in directory.iterdir()} != expected:
+            raise ValueError("JEI baseline needs exactly the pinned JEI JAR and otherwise empty directories")
+    jar = safe_path(game / "mods" / JEI_FILE)
+    if not jar.is_file() or sha256(jar) != JEI_SHA256 or not is_jei(jar):
+        raise ValueError("Baseline JEI SHA-256 or mod identity mismatch")
+
+
 def load_baseline(path):
     path = safe_path(Path(path))
     raw = read_object(path)
     required = {"schema_version", "kind", "profile", "runtime_root", "libraries_root", "assets_root",
                 "client_game_dir", "version_files", "mods"}
     if (set(raw) != required or type(raw["schema_version"]) is not int or raw["schema_version"] != 1
-            or raw["kind"] != "baseline" or raw["profile"] not in (VANILLA, FORGE)):
+            or raw["kind"] != "baseline" or raw["profile"] not in (VANILLA, FORGE, FORGE_JEI)):
         raise ValueError("Unsupported baseline schema or profile")
     cell = dict(raw)
     for key in ("runtime_root", "libraries_root", "assets_root", "client_game_dir"):
@@ -57,15 +81,17 @@ def load_baseline(path):
     for key in ("runtime_root", "client_game_dir"):
         if not cell[key].is_relative_to(path.parent) or cell[key] == path.parent:
             raise ValueError("Baseline version and game directories must be inside the profile")
-    check_empty_game(cell["client_game_dir"])
+    jei = raw["profile"] == FORGE_JEI
+    (check_jei_game if jei else check_empty_game)(cell["client_game_dir"])
     mods = raw["mods"]
     if not isinstance(mods, dict) or set(mods) != {"path", "entries", "sha256"}:
-        raise ValueError("Baseline needs an empty mods identity")
-    if (mods["entries"] != [] or mods["sha256"] != EMPTY_MODS_SHA256
+        raise ValueError("Baseline needs a mods identity")
+    expected_mods, mods_sha256 = jei_mods() if jei else ([], EMPTY_MODS_SHA256)
+    if (mods["entries"] != expected_mods or mods["sha256"] != mods_sha256
             or baseline_path(path.parent, mods["path"]) != cell["client_game_dir"] / "mods"):
-        raise ValueError("Invalid empty mods identity")
+        raise ValueError("Invalid baseline mods identity")
     expected = dict(VERSION_FILES)
-    forge = raw["profile"] == FORGE
+    forge = raw["profile"] in (FORGE, FORGE_JEI)
     if forge:
         expected[FORGE_VERSION] = FORGE_PROFILE_SHA256
         # The official helper verifies this installer's pinned SHA-1 and embedded profile below.
@@ -104,7 +130,7 @@ def load_baseline(path):
     index = vanilla["assetIndex"]
     verify_file(child(cell["assets_root"], f"indexes/{index['id']}.json"), index["sha1"], index["size"])
     runtime_files = check_forge_outputs(cell) if forge else []
-    cell.update(forge="47.4.10" if forge else None, jei=False, candidate=None,
+    cell.update(forge="47.4.10" if forge else None, jei=jei, candidate=None,
                 version_id="1.20.1-forge-47.4.10" if forge else "1.20.1",
                 baseline_path=path, baseline_identity={"profile": raw["profile"],
                     "manifest_sha256": sha256(path), "version_files": records, "mods": mods,
@@ -144,7 +170,7 @@ def check_forge_outputs(cell):
 
 
 def baseline_metadata(cell):
-    if cell["profile"] == FORGE:
+    if cell["profile"] in (FORGE, FORGE_JEI):
         return profile(cell["runtime_root"], "47.4.10")
     vanilla = read_json(cell["runtime_root"] / "versions/1.20.1/1.20.1.json")
     if vanilla.get("id") != "1.20.1" or vanilla.get("mainClass") != "net.minecraft.client.main.Main":

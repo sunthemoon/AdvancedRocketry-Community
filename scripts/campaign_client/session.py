@@ -11,6 +11,7 @@ from .attach import AttachedClient, matching_windows
 from .cells import copy_tree, load_cell
 from .baseline import load_baseline
 from .baseline_launch import prepare_baseline
+from .baseline_pairing import load_pairing, pairing_identity
 from .evidence import copy_log, dumps, now, write_json
 from .gates import ExpectationFailed, PreconditionFailed
 from .input import Input
@@ -80,6 +81,8 @@ class Session:
         self.request_start = 0
         if spec.get("launch_kind") == "baseline":
             self.summary.update(launch_kind="baseline", baseline_identity=cell["baseline_identity"])
+            if "paired_world" in spec:
+                self.summary["paired_world"] = pairing_identity(load_pairing(self.run.parent, spec["paired_world"]))
 
     def check_time(self):
         if any(getattr(process, "error", None) for process, _ in self.owned):
@@ -106,6 +109,8 @@ class Session:
         sources = [self.cell[key] for key in keys]
         if self.spec.get("launch_kind") == "baseline":
             sources.append(self.cell["baseline_path"].parent)
+            if "paired_world" in self.spec:
+                sources.append(self.spec["paired_world"]["path"].parent)
         sources += [c["game_dir"] for c in self.spec["clients"] if "game_dir" in c]
         for source in sources:
             if self.run.is_relative_to(source) or source.is_relative_to(self.run):
@@ -141,7 +146,8 @@ class Session:
                 game = self.run / ("client-" + spec["player_name"])
                 self.temporary.append(game)
                 if self.spec.get("launch_kind") == "baseline":
-                    command = prepare_baseline(self.cell, spec, game, self.spec["java"])
+                    pairing = {"paired_world": self.spec["paired_world"]} if "paired_world" in self.spec else {}
+                    command = prepare_baseline(self.cell, spec, game, self.spec["java"], **pairing)
                 else:
                     command = prepare_client(self.cell, spec, game, self.spec["server"]["server-port"],
                                              self.spec["java"], self.spec["singleplayer"])
