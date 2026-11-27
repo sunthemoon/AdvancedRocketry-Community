@@ -6,9 +6,42 @@ import com.google.gson.JsonParser;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.HashMap;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import net.minecraft.client.StringSplitter;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class RocketFlightScreenLayoutTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void everyNavigationInstructionFitsTwoRowsWithoutTouchingBoardOrLaunch() throws Exception {
+        var splitter = new StringSplitter((cp, style) -> width(new String(Character.toChars(cp))));
+        for (String locale : List.of("en_us", "zh_cn")) {
+            var language = new HashMap<String, String>();
+            try (var files = Files.walk(Path.of("src/generated"))) {
+                for (var path : files.filter(p -> p.endsWith("lang/" + locale + ".json")).sorted().toList()) {
+                    JsonParser.parseString(Files.readString(path)).getAsJsonObject().entrySet()
+                            .forEach(e -> language.put(e.getKey(), e.getValue().getAsString()));
+                }
+            }
+            for (var status : RocketNavigationStatus.values()) {
+                String full = language.get(status.translationKey()); assertNotNull(full, status.translationKey());
+                var lines = splitter.splitLines(Component.literal(full), RocketFlightScreenLayout.STATUS_WIDTH, Style.EMPTY);
+                assertTrue(lines.size() <= RocketFlightScreenLayout.STATUS_ROWS, locale + " " + full);
+                assertEquals(full.replace(" ", ""), String.join("", lines.stream().map(l -> l.getString().replace(" ", "")).toList()));
+                for (var line : lines) { assertTrue(width(line.getString()) <= RocketFlightScreenLayout.STATUS_WIDTH); }
+                var map = BoundedTextLayout.fit(full, 204, RocketFlightScreenLayoutTest::width);
+                assertTrue(width(map.text()) <= 204);
+            }
+        }
+        assertTrue(RocketFlightScreenLayout.STATUS_Y + 9 * RocketFlightScreenLayout.STATUS_ROWS + 2
+                <= RocketFlightScreenLayout.BOARD_BUTTON_Y);
+        assertTrue(RocketFlightScreenLayout.BOARD_BUTTON_Y + RocketFlightScreenLayout.BOARD_BUTTON_HEIGHT + 2 <= 176);
+    }
     @Test
     void defaultFontFuelRowHasSpaceBeforeThePanelBorderAndDestinationControls() {
         int defaultFontLineHeight = 9;
@@ -52,7 +85,6 @@ class RocketFlightScreenLayoutTest {
         return text.codePoints().map(c -> c >= 0x2E80 ? 9 : "i!.,:;'|".indexOf(c) >= 0 ? 2 : "l`".indexOf(c) >= 0 ? 3
                 : "tI[] ".indexOf(c) >= 0 ? 4 : "fk(){}<>\"*".indexOf(c) >= 0 ? 5 : 6).sum();
     }
-}
 
     @Test void packBodyButtonUsesBoundedLabelAndKeepsLeadingMarker() {
         for (String full : List.of("[TEST] Test Mars", "[PACK] A Very Long Datapack Body Name")) {
@@ -62,3 +94,4 @@ class RocketFlightScreenLayoutTest {
             if (fit.shortened()) { assertTrue(fit.text().endsWith("...")); }
         }
     }
+}

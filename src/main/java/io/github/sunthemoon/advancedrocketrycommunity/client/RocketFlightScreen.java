@@ -101,11 +101,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         boardButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.board"),
                 button -> act(() -> send(RocketFlightAction.BOARD))
-        ).bounds(leftPos + 22, topPos + 148, 98, 20).build());
+        ).bounds(leftPos + 22, topPos + RocketFlightScreenLayout.BOARD_BUTTON_Y, 98,
+                RocketFlightScreenLayout.BOARD_BUTTON_HEIGHT).build());
         leaveButton = addRenderableWidget(Button.builder(
                 Component.translatable("screen.advancedrocketrycommunity.rocket.leave"),
                 button -> act(() -> send(RocketFlightAction.LEAVE))
-        ).bounds(leftPos + 128, topPos + 148, 98, 20).build());
+        ).bounds(leftPos + 128, topPos + RocketFlightScreenLayout.BOARD_BUTTON_Y, 98,
+                RocketFlightScreenLayout.BOARD_BUTTON_HEIGHT).build());
         updateButtons();
     }
 
@@ -297,6 +299,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         if (!mapMode && mouseX >= leftPos + 22 && mouseX < leftPos + 226
                 && mouseY >= topPos + 33 && mouseY < topPos + 43) {
             graphics.renderTooltip(font, font.split(routeLabel(), 300), mouseX, mouseY);
@@ -374,7 +377,8 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         } else {
             var status = !RocketStarMap.coherent(menu) ? RocketStarMap.text("syncing")
                     : Component.translatable(menu.quotes().forTarget(selected).status().translationKey());
-            graphics.drawString(font, font.plainSubstrByWidth(status.getString(), 204), 22, 136, MUTED, false);
+            text.wrapped(graphics, font, status, 22, RocketFlightScreenLayout.STATUS_Y,
+                    RocketFlightScreenLayout.STATUS_WIDTH, RocketFlightScreenLayout.STATUS_ROWS, MUTED);
         }
     }
 

@@ -10,6 +10,11 @@ final class RocketFlightScreenLayout {
     static final int DESTINATION_BUTTON_Y = 89;
     static final int STATION_BUTTON_WIDTH = 98;
     static final int BUTTON_TEXT_INSET = 6;
+    static final int STATUS_Y = 136;
+    static final int STATUS_WIDTH = 204;
+    static final int STATUS_ROWS = 2;
+    static final int BOARD_BUTTON_Y = 156;
+    static final int BOARD_BUTTON_HEIGHT = 18;
 
     static BoundedTextLayout.Line stationLabel(String full, ToIntFunction<String> width) {
         return BoundedTextLayout.fit(full, STATION_BUTTON_WIDTH - 2 * BUTTON_TEXT_INSET, width);
