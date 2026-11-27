@@ -1,10 +1,10 @@
-"""Create new vanilla-only world metadata, never import a campaign/modded world."""
+"""Create fresh vanilla-only world metadata, optionally from validated pairing inputs."""
 from scripts import loader_cut_nbt as nbt
 
 WORLD = "baseline"
 
 
-def create_world(game):
+def create_world(game, pairing=None):
     world = game / "saves" / WORLD
     world.mkdir(parents=True, exist_ok=False)
     def text(value):
@@ -43,5 +43,11 @@ def create_world(game):
         WorldGenSettings=compound(seed=nbt.Tag(nbt.LONG, 0), generate_features=nbt.Tag(nbt.BYTE, 0),
                                   bonus_chest=nbt.Tag(nbt.BYTE, 0),
                                   dimensions=nbt.Tag(nbt.COMPOUND, dimensions)))
+    if pairing is not None:
+        # No source chunks, mod dimensions, packs, inventories or arbitrary root tags are imported.
+        data.value.update(pairing["state"])
+        settings = data.value["WorldGenSettings"].value
+        settings.update(pairing["worldgen"])
+        settings["dimensions"].value["minecraft:overworld"] = pairing["overworld"]
     nbt.write_gzip(world / "level.dat", b"", compound(Data=data))
     return world

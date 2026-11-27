@@ -7,24 +7,37 @@ import uuid
 import zipfile
 
 from scripts.v100_compatibility_runtime import child, expand, libraries, verify_file
-from .baseline import FORGE, baseline_metadata, load_baseline
+from .baseline import VANILLA, baseline_metadata, baseline_path, load_baseline
+from .baseline_pairing import load_pairing
 from .baseline_world import WORLD, create_world
+from .evidence import sha256
 
 
-def prepare_baseline(cell, spec, game, java):
+def prepare_baseline(cell, spec, game, java, paired_world=None):
     # Recheck both pinned inputs and empty directories immediately before building the command.
     checked = load_baseline(cell["baseline_path"])
     if checked["baseline_identity"] != cell["baseline_identity"]:
         raise ValueError("Baseline identity changed after session validation")
+    pairing = load_pairing(game.parent, paired_world) if paired_world is not None else None
+    if pairing is not None:
+        source, target = pairing["path"].parent, game.resolve()
+        if target.is_relative_to(source) or source.is_relative_to(target):
+            raise ValueError("Baseline game directory must not overlap the paired source world")
     game.mkdir()
     for name in ("mods", "config", "defaultconfigs", "resourcepacks", "saves"):
         (game / name).mkdir()
+    for entry in cell["baseline_identity"]["mods"]["entries"]:
+        source = baseline_path(cell["client_game_dir"], "mods/" + entry["file"])
+        target = game / "mods" / entry["file"]
+        shutil.copy2(source, target)
+        if sha256(target) != entry["sha256"]:
+            raise ValueError("Baseline JEI changed during copy")
     pause = "true" if spec.get("pause_on_lost_focus", False) else "false"
     (game / "options.txt").write_text(
         f"lang:{spec['language']}\nguiScale:{spec['gui_scale']}\nfullscreen:false\n"
         f"pauseOnLostFocus:{pause}\ntutorialStep:none\nonboardAccessibility:false\n"
         "skipMultiplayerWarning:true\njoinedFirstServer:true\nnarrator:0\n", encoding="utf-8")
-    create_world(game)
+    create_world(game, pairing)
     vanilla, patched = baseline_metadata(cell)
     natives = game / "natives"
     natives.mkdir()
@@ -67,7 +80,7 @@ def prepare_baseline(cell, spec, game, java):
         "library_directory": str(cell["libraries_root"]), "classpath_separator": os.pathsep}
     jvm = expand([*vanilla["arguments"]["jvm"], *patched["arguments"]["jvm"]], substitutions)
     args = expand([*vanilla["arguments"]["game"], *patched["arguments"]["game"]], substitutions)
-    main = patched["mainClass"] if cell["profile"] == FORGE else vanilla["mainClass"]
+    main = vanilla["mainClass"] if cell["profile"] == VANILLA else patched["mainClass"]
     return [str(java), "-Xms512M", "-Xmx3G", *jvm, main, *args,
             "--width", str(spec["window_size"][0]), "--height", str(spec["window_size"][1]),
             "--quickPlaySingleplayer", WORLD]

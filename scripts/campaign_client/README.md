@@ -96,9 +96,10 @@ and point `cell` at a baseline manifest. This is allowed only with `mode: "launc
 setting it to `"candidate"`) retains the existing candidate-cell validation; neither
 kind accepts the other kind's manifest. Unknown launch kinds are refused.
 
-The only baseline profiles are `VANILLA_1_20_1` and `FORGE_47_4_10_EMPTY`.
-Other Minecraft/Forge versions, JEI baselines and arbitrary empty clients are not
-accepted. The baseline manifest is a bounded schema-1 JSON object with exactly:
+The baseline profiles are `VANILLA_1_20_1`, `FORGE_47_4_10_EMPTY` and
+`FORGE_47_4_10_JEI_ONLY`. The last profile contains exactly the campaign's
+JEI 15.56.0.205 JAR, not ARCE. Other Minecraft/Forge/JEI versions and arbitrary
+clients are not accepted. The baseline manifest is a bounded schema-1 JSON object with exactly:
 
 ```json
 {
@@ -138,11 +139,24 @@ Baseline run directories must be disjoint from that entire profile directory,
 not just its client/runtime subdirectories. Keep live runs outside archived
 evidence packages as well.
 The version tree accepts only the inventoried files and their parent directories.
-The client template contains exactly five empty directories: `mods`, `config`,
-`defaultconfigs`, `resourcepacks`, `saves`. Even a hidden file, non-JAR or empty
+The client template contains exactly five directories: `mods`, `config`,
+`defaultconfigs`, `resourcepacks`, `saves`. They are all empty except for the
+JEI-only profile's `mods/jei-1.20.1-forge-15.56.0.205.jar`. Even a hidden file, non-JAR or empty
 subdirectory in one of these folders is refused. Links/junctions are refused.
 The mods identity is the canonical empty inventory `[]\n` and its SHA-256, verified
-against the actual empty folder. No candidate field or launcher/account file is
+against the actual empty folder, or, for JEI-only, exactly:
+
+```json
+{"path":"client/mods","entries":[{"file":"jei-1.20.1-forge-15.56.0.205.jar","sha256":"6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c","jei":true}],"sha256":"<inventory digest>"}
+```
+
+Use `baseline.jei_mods()` for the entries and digest. The digest is SHA-256 of
+`json.dumps(entries, sort_keys=True, separators=(",", ":")) + "\n"` encoded as UTF-8.
+Both the manifest identity and actual JAR must match the hard pin; updating a
+declared hash cannot substitute a different JEI. The JAR's mod metadata must also
+declare JEI. At launch only this JAR is copied and its destination is rehashed.
+All Forge version, installer and SRG checks apply to both Forge profiles.
+No candidate field or launcher/account file is
 accepted. Libraries/assets may reference an existing isolated runtime read-only;
 ordinary library hashes and the asset index are checked against official metadata.
 Asset objects themselves are not rechecked at launch or included in the READY
@@ -151,8 +165,9 @@ the dependency inventory before a live capture; an intact index alone does not
 establish unchanged textures, sounds or language files.
 
 At launch the driver revalidates the manifest, version files, Forge runtime outputs
-and empty inputs before creating its disposable game directory. It copies no saves,
-mods, configuration, resource packs or launcher data. Instead it writes a new
+and template inputs before creating its disposable game directory. It copies no saves,
+configuration, resource packs or launcher data (only the pinned JAR for JEI-only).
+With no pairing it writes the same new
 `saves/baseline/level.dat` with vanilla-only dimension generators, fixed seed 0,
 creative/peaceful mode and a structure-free plains superflat Overworld (bedrock,
 two dirt layers, grass). Mob spawning, weather and daylight progression are off.
@@ -160,27 +175,89 @@ There are initially no chunks, entities or imported mod data. `--quickPlaySingle
 baseline` asks the client to generate and enter this new world. Every session uses
 a new directory and cannot reuse an earlier baseline world.
 
+### Pair a fresh world with a candidate's metadata
+
+A baseline session may add this optional top-level field, with a relative or
+absolute path to the candidate world's **level.dat**, not to a copied save:
+
+```json
+"paired_world": {"path": "candidate-world/level.dat", "sha256": "<SHA-256 of that level.dat>"}
+```
+
+The pin identifies exactly the metadata bytes consumed, not a whole-world/chunk
+digest. `check` validates the pin and bounded NBT without writes or processes;
+launch rechecks it before creating the disposable game. Run directories cannot
+overlap the source world. Candidate sessions cannot use this field. Omitting it
+preserves the original flat seed-0 behavior; null or partial pairings are errors.
+
+Pairing copies the seed, generate-features/bonus-chest flags, and complete typed
+Overworld generator definition. It also copies spawn XYZ/angle, Time/DayTime,
+all supplied vanilla game rules, weather/timers, difficulty/lock and world-border
+settings. Available optional fields are copied without retyping; otherwise the
+fresh-world defaults apply. Required spawn XYZ,
+times, game rules, generation flags and DataVersion must exist and have the
+correct NBT types. If saved `Player` metadata is present, its Overworld `Pos`,
+`Rotation` and `Dimension` are copied into a fresh creative flying player. No
+inventory, effects, UUID, capabilities or other player data is copied.
+Without `Player`, only the spawn inputs are available: the receipt explicitly
+states that there is no saved player camera. The operator must stage the same
+capture camera on both sides; a spawn is not a measured viewpoint match.
+
+This deliberately supports only verified vanilla 1.20.1 inputs:
+
+- Built-in `minecraft:overworld` dimension type; plains flat generation with
+  air/bedrock/dirt/grass_block/stone/water layers, positive heights totaling at
+  most 384, boolean lakes/features and absent or empty structure overrides.
+- Named overworld/large_biomes/amplified noise settings with the built-in
+  overworld multi-noise preset. Inline/custom noise settings and biome lists,
+  other generator forms and extra generator fields are refused, even if their
+  names begin with `minecraft:`. No generator is approximated or replaced.
+- Known vanilla boolean/integer game rules only; unsupported values, unknown
+  rules, incorrect types, missing required fields, nonfinite state, non-Overworld
+  or malformed/out-of-range saved viewpoints, other DataVersions and invalid,
+  oversized or linked NBT inputs are named refusals.
+- Source enabled packs may be vanilla and the known campaign Forge/ARCE mod
+  packs. External/file packs and other mod packs are refused because their
+  generation overrides cannot be reproduced. Those campaign mod packs and
+  every source modded dimension are **excluded**, not copied. The output always
+  enables only `vanilla` and contains only the three vanilla dimensions.
+
+Only a new `level.dat` is written. Source regions, block entities, entities,
+datapacks and arbitrary mod/root metadata are never read into the baseline.
+This reproduces generation inputs, not authored terrain or modded scenes.
+The bounded reader limits compressed and decoded NBT to 4 MiB, depth to 64 and
+tag count to 262,144. No source file is written.
+
 The same `summary.json` READY receipt, client PID/window/launch timestamp, process
 ownership, input identity verification and cleanup apply as for candidate launches.
 Baseline receipts additionally contain `launch_kind`, the manifest/version/mods
 identity, verified Forge runtime hashes, and the client's process creation identity
 and disposable game directory. `candidate_sha256` is null; `forge` is null for
-Vanilla, `47.4.10` for Forge; `jei` is false. This preserves the fields used by
+Vanilla, `47.4.10` for either Forge profile; `jei` is true only for JEI-only.
+Paired receipts add `paired_world` with the level.dat pin, seed, copied state,
+generator and viewpoint availability. This preserves the fields used by
 the frame-time capture adapter. READY still means the window was found, not that
 world loading, visuals or a performance Gate passed.
 
 The first live night must confirm Quick Play actually enters the new world without
-recovery/experimental/datapack dialogs, the expected version/loader and empty mods,
-the new log's offline player/PID creation/window binding, and the flat empty scene
-and matched camera/options. Check logs and native screenshots, then verify owned
+recovery/experimental/datapack dialogs, the expected version/loader and exact mods,
+the new log's offline player/PID creation/window binding, and the generated scene,
+seed/generator/spawn/time/rules and matched camera/options. For JEI-only confirm
+JEI actually loads without ARCE, exposes its normal UI and creates configuration
+only in the disposable directory. Check logs and native screenshots, then verify owned
 process cleanup and source preservation. Only then perform warm-up and PID-scoped
 PresentMon captures under the campaign's existing rules. No live success, frame-rate
 comparison or Gate approval follows from offline preparation alone.
+Pairing does not manufacture W491 comparison keys: machine/GPU/driver,
+resolution/window mode/effective GUI scale/graphics/vsync/FPS cap, actual
+viewpoint and sampling plan still need independently matched live observations
+and two distinct baseline captures. Client options are not in `level.dat`.
 
 Pure Linux-compatible regression tests (no Java, Windows calls or downloads):
 
 ```bash
 python -B -m unittest discover -s tests -p 'test_campaign_client_baseline.py' -q
+python -B -m unittest discover -s tests -p 'test_campaign_client_paired_baseline.py' -q
 python -B -m unittest discover -s tests -p 'test_campaign_client*.py' -q
 ```
 
