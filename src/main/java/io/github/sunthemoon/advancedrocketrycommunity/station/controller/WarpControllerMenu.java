@@ -172,7 +172,8 @@ public final class WarpControllerMenu extends StationControllerMenu {
     }
 
     static Component bodyName(net.minecraft.resources.ResourceLocation id) {
-        return Component.translatableWithFallback("body." + id.getNamespace() + "." + id.getPath(), id.toString());
+        return Component.translatableWithFallback("body." + id.getNamespace() + "." + id.getPath().replace('/', '.'),
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.BodyNameFallback.readable(id));
     }
 
     @Override

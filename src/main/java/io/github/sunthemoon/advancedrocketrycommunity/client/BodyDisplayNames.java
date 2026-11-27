@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.BodyNameFallback;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshot;
 import java.util.Optional;
@@ -13,7 +14,7 @@ public final class BodyDisplayNames {
     public static Component bodyName(String value) {
         ResourceLocation id = ResourceLocation.tryParse(value);
         return id == null ? Component.literal(value) : Component.translatableWithFallback(
-                "body." + id.getNamespace() + "." + id.getPath().replace('/', '.'), value);
+                "body." + id.getNamespace() + "." + id.getPath().replace('/', '.'), BodyNameFallback.readable(id));
     }
 
     static Component levelName(String value) {

@@ -190,7 +190,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 .orElse(null);
         Component targetName = target == null
                 ? Component.translatable("screen.advancedrocketrycommunity.satellite.no_target")
-                : Component.translatable("body." + target.getNamespace() + "." + target.getPath());
+                : BodyDisplayNames.bodyName(target.toString());
         Component targetDisplay = target == null
                 ? targetName
                 : Component.empty()
@@ -305,7 +305,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 + current.kind().orElseThrow().id());
         return Optional.of(current.orbitBody()
                 .<Component>map(body -> Component.translatable("screen.advancedrocketrycommunity.satellite.kind_orbit",
-                        kind, Component.translatable("body." + body.getNamespace() + "." + body.getPath())))
+                        kind, BodyDisplayNames.bodyName(body.toString())))
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite.kind_idle", kind)));
     }
 

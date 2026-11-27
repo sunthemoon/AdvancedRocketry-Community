@@ -53,3 +53,12 @@ class RocketFlightScreenLayoutTest {
                 : "tI[] ".indexOf(c) >= 0 ? 4 : "fk(){}<>\"*".indexOf(c) >= 0 ? 5 : 6).sum();
     }
 }
+
+    @Test void packBodyButtonUsesBoundedLabelAndKeepsLeadingMarker() {
+        for (String full : List.of("[TEST] Test Mars", "[PACK] A Very Long Datapack Body Name")) {
+            var fit = RocketFlightScreenLayout.stationLabel(full, RocketFlightScreenLayoutTest::width);
+            assertTrue(width(fit.text()) <= 86);
+            assertTrue(fit.text().startsWith(full.substring(0, 6)));
+            if (fit.shortened()) { assertTrue(fit.text().endsWith("...")); }
+        }
+    }

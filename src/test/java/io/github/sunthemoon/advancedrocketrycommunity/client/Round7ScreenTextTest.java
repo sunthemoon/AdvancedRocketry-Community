@@ -162,8 +162,8 @@ class Round7ScreenTextTest {
                 1, 0, false, 270, body, body, new CelestialCapabilities(true, true, false), 1, 0)));
         Component name = BodyDisplayNames.levelName(level.toString(), Optional.of(snapshot));
         assertEquals("body.pack.different_body", ((TranslatableContents) name.getContents()).getKey());
-        assertEquals("pack:different_body", name.getString());
-        assertEquals("pack:unknown", BodyDisplayNames.levelName("pack:unknown", Optional.of(snapshot)).getString());
+        assertEquals("[PACK] Different Body", name.getString());
+        assertEquals("[PACK] Unknown", BodyDisplayNames.levelName("pack:unknown", Optional.of(snapshot)).getString());
     }
 
     @Test void unrelatedAndMalformedViewStringsStayIntactAndExplicitTranslationWins() {

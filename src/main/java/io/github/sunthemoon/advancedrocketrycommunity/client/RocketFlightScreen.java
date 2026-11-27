@@ -164,7 +164,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
             otherBodyIndex = selectedIndex < 0 ? 0 : (selectedIndex + 1) % bodies.size();
         }
         selection.select(bodies.get(otherBodyIndex));
-        otherBodyButton.setMessage(otherBodyLabel());
+        updateButtons();
     }
 
     @Override
@@ -206,7 +206,13 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         stationButton.setTooltip(menu.accessibleStations().isEmpty()
                 ? Tooltip.create(Component.translatable("screen.advancedrocketrycommunity.rocket.no_stations"))
                 : Tooltip.create(fullStationLabel));
-        otherBodyButton.setMessage(otherBodyLabel());
+        Component fullBodyLabel = otherBodyLabel();
+        var fittedBodyLabel = RocketFlightScreenLayout.stationLabel(fullBodyLabel.getString(), font::width);
+        otherBodyButton.setMessage(fittedBodyLabel.shortened()
+                ? Component.literal(fittedBodyLabel.text()) : fullBodyLabel);
+        var bodies = otherBodies();
+        otherBodyButton.setTooltip(bodies.isEmpty() ? null : Tooltip.create(fullBodyLabel.copy()
+                .append("\n" + bodies.get(otherBodyIndex).bodyId())));
         boolean countdown = menu.state() == RocketFlightState.COUNTDOWN;
         launchButton.visible = !countdown;
         boolean quotedLaunch = menu.quotes().forTarget(
