@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.HashMap;
+import java.util.ArrayList;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import net.minecraft.client.StringSplitter;
@@ -93,5 +94,27 @@ class RocketFlightScreenLayoutTest {
             assertTrue(fit.text().startsWith(full.substring(0, 6)));
             if (fit.shortened()) { assertTrue(fit.text().endsWith("...")); }
         }
+    }
+
+    @Test void shortenedRouteHasExactlyOneTooltipAndOtherReadoutsRemainAvailable() {
+        String route = "Long station and pad name ".repeat(20);
+        assertTrue(width(route) > 300);
+        assertTrue(BoundedTextLayout.fit(route, 204, RocketFlightScreenLayoutTest::width).shortened());
+        for (int[] point : new int[][] {{22,33}, {225,42}}) {
+            var calls = new ArrayList<String>();
+            RocketFlightScreenLayout.renderReadoutTooltip(false, point[0], point[1],
+                    () -> calls.add("wrapped route"), () -> calls.add("generic readout"));
+            assertEquals(List.of("wrapped route"), calls);
+        }
+        for (int[] point : new int[][] {{21,33}, {226,33}, {22,32}, {22,43}, {22,136}}) {
+            var calls = new ArrayList<String>();
+            RocketFlightScreenLayout.renderReadoutTooltip(false, point[0], point[1],
+                    () -> calls.add("wrapped route"), () -> calls.add("generic readout"));
+            assertEquals(List.of("generic readout"), calls);
+        }
+        var mapCalls = new ArrayList<String>();
+        RocketFlightScreenLayout.renderReadoutTooltip(true, 22, 33,
+                () -> mapCalls.add("wrapped route"), () -> mapCalls.add("generic readout"));
+        assertEquals(List.of("generic readout"), mapCalls);
     }
 }

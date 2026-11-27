@@ -299,11 +299,9 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
-        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
-        if (!mapMode && mouseX >= leftPos + 22 && mouseX < leftPos + 226
-                && mouseY >= topPos + 33 && mouseY < topPos + 43) {
-            graphics.renderTooltip(font, font.split(routeLabel(), 300), mouseX, mouseY);
-        }
+        RocketFlightScreenLayout.renderReadoutTooltip(mapMode, mouseX - leftPos, mouseY - topPos,
+                () -> graphics.renderTooltip(font, font.split(routeLabel(), 300), mouseX, mouseY),
+                () -> text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY));
     }
 
     @Override

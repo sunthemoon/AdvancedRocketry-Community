@@ -20,6 +20,16 @@ final class RocketFlightScreenLayout {
         return BoundedTextLayout.fit(full, STATION_BUTTON_WIDTH - 2 * BUTTON_TEXT_INSET, width);
     }
 
+    /** The route owns its wrapped tooltip; a shortened readout must not draw a second box behind it. */
+    static void renderReadoutTooltip(boolean mapMode, int mouseX, int mouseY,
+                                     Runnable routeTooltip, Runnable readoutTooltip) {
+        if (!mapMode && mouseX >= 22 && mouseX < 226 && mouseY >= 33 && mouseY < 43) {
+            routeTooltip.run();
+        } else {
+            readoutTooltip.run();
+        }
+    }
+
     private RocketFlightScreenLayout() {
     }
 }
