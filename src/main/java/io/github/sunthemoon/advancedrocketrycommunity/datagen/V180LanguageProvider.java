@@ -98,7 +98,8 @@ public final class V180LanguageProvider extends LanguageProvider {
         add("screen." + NS + ".railgun.redstone_short", chinese ? "红石" : "Signal");
         add("screen." + NS + ".orbital_laser_drill.redstone_short", chinese ? "红石" : "Signal");
         add("screen." + NS + ".laser_target.reset_short", chinese ? "重置" : "Reset");
-        add("screen." + NS + ".satellite.assemble_short", chinese ? "组装" : "Build");
+        add("screen." + NS + ".satellite.assemble_short", chinese ? "组装" : "BUILD");
+        add("screen." + NS + ".satellite.delivery.none_short", chinese ? "未选择内容" : "No selection");
 
         add("block." + NS + ".force_field_projector", chinese ? "力场投影器" : "Force Field Projector");
         add("block." + NS + ".force_field", chinese ? "力场" : "Force Field");

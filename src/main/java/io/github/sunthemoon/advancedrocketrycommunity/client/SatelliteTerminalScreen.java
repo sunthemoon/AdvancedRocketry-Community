@@ -246,7 +246,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
             centered(graphics, Component.translatable(DELIVERY + "product", itemName(view.product().id().orElseThrow()),
                     view.product().position() + 1, view.product().size()), 22, TEXT);
         } else {
-            centered(graphics, Component.translatable(DELIVERY + "none"), 22, MUTED);
+            centered(graphics, Component.translatable(DELIVERY + "none_short"), 22, MUTED);
         }
         int items = view.buffer().stream().mapToInt(RewardEntry::count).sum();
         text(graphics, Component.translatable(DELIVERY + "buffer", items, SatelliteTerminalViewPacket.MAX_BUFFER_ITEMS), 88,
