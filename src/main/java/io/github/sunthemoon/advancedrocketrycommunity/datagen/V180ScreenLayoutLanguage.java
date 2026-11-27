@@ -9,6 +9,8 @@ public final class V180ScreenLayoutLanguage {
                 "black_hole_fuel.advancedrocketrycommunity.default", chinese ? "标准黑洞燃料" : "Standard black-hole fuel",
                 "screen.advancedrocketrycommunity.satellite.launch_short", chinese ? "发射" : "LAUNCH",
                 "screen.advancedrocketrycommunity.satellite.power_short", chinese ? "电量 %s FE" : "Power %s FE",
+                "screen.advancedrocketrycommunity.satellite.delivery.deliveries", chinese ? "资源交付 %s/%s" : "DELIVERIES %s/%s",
+                "screen.advancedrocketrycommunity.satellite.delivery.no_deliveries", chinese ? "此处未绑定资源交付" : "No bound deliveries",
                 "screen.advancedrocketrycommunity.satellite_builder.ready", chinese ? "组装机就绪" : "Builder ready",
                 "screen.advancedrocketrycommunity.satellite_builder.output_ready", chinese ? "卫星已组装，请取出" : "Satellite ready",
                 "screen.advancedrocketrycommunity.tooltip.scroll", chinese ? "%s-%s / %s 行；滚轮翻阅" : "%s-%s / %s rows; scroll");

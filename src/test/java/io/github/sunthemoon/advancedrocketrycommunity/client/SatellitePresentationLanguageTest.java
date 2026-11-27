@@ -31,6 +31,17 @@ class SatellitePresentationLanguageTest {
         }
     }
 
+    @Test void deliveryListNamesAndEmptyStateFitThePanelInBothLanguages() throws Exception {
+        for (String locale : new String[] {"en_us", "zh_cn"}) {
+            var language = language(locale);
+            String title = language.get(PREFIX + "delivery.deliveries").getAsString();
+            String empty = language.get(PREFIX + "delivery.no_deliveries").getAsString();
+            assertTrue(width(title.formatted(128, 128)) <= 118, locale + " " + title);
+            assertTrue(width(empty) <= 118, locale + " " + empty);
+            assertEquals(locale.equals("en_us") ? "DELIVERIES %s/%s" : "资源交付 %s/%s", title);
+        }
+    }
+
     private static int width(String value) {
         return value.codePoints().map(c -> c >= 0x2E80 ? 9 : "i!.,:;'|".indexOf(c) >= 0 ? 2 : "l`".indexOf(c) >= 0 ? 3
                 : "tI[] ".indexOf(c) >= 0 ? 4 : "fk(){}<>\"*".indexOf(c) >= 0 ? 5 : 6).sum();

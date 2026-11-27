@@ -252,10 +252,10 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         text(graphics, Component.translatable(DELIVERY + "buffer", items, SatelliteTerminalViewPacket.MAX_BUFFER_ITEMS), 88,
                 items > 0 ? GOLD : MUTED);
         entries(graphics, view.buffer(), 99, 3);
-        text(graphics, Component.translatable(DELIVERY + "missions", view.missionPages() == 0 ? 0 : view.missionPage() + 1,
+        text(graphics, Component.translatable(DELIVERY + "deliveries", view.missionPages() == 0 ? 0 : view.missionPage() + 1,
                 view.missionPages()), 148, CYAN);
         if (view.missions().isEmpty()) {
-            text(graphics, Component.translatable(DELIVERY + "no_missions"), 159, MUTED);
+            text(graphics, Component.translatable(DELIVERY + "no_deliveries"), 159, MUTED);
         }
         int line = 159;
         for (SatelliteTerminalViewPacket.MissionSummary mission : view.missions()) {

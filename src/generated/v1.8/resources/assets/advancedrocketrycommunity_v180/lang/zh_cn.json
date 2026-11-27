@@ -717,6 +717,8 @@
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.unauthorized": "包裹的所有者没有发射这枚火箭。",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.unsupported_data": "包裹由更新的版本制作，已原样保留。",
   "screen.advancedrocketrycommunity.satellite.assemble_short": "组装",
+  "screen.advancedrocketrycommunity.satellite.delivery.deliveries": "资源交付 %s/%s",
+  "screen.advancedrocketrycommunity.satellite.delivery.no_deliveries": "此处未绑定资源交付",
   "screen.advancedrocketrycommunity.satellite.delivery.none_short": "未选择内容",
   "screen.advancedrocketrycommunity.satellite.launch_short": "发射",
   "screen.advancedrocketrycommunity.satellite.power_short": "电量 %s FE",

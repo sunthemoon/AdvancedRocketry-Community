@@ -717,6 +717,8 @@
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.unauthorized": "The package's owner did not launch this rocket.",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.unsupported_data": "The package was made by a newer version and is kept unchanged.",
   "screen.advancedrocketrycommunity.satellite.assemble_short": "BUILD",
+  "screen.advancedrocketrycommunity.satellite.delivery.deliveries": "DELIVERIES %s/%s",
+  "screen.advancedrocketrycommunity.satellite.delivery.no_deliveries": "No bound deliveries",
   "screen.advancedrocketrycommunity.satellite.delivery.none_short": "No selection",
   "screen.advancedrocketrycommunity.satellite.launch_short": "LAUNCH",
   "screen.advancedrocketrycommunity.satellite.power_short": "Power %s FE",
