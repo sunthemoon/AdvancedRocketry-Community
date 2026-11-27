@@ -172,7 +172,7 @@ class K4ObjModelTest {
             case "black_hole_generator" -> new double[] {0, 0, .125};
             case "orbital_laser_drill" -> new double[] {-4, -1, -1};
             case "railgun" -> new double[] {0, 0, -2};
-            case "rolling_machine" -> new double[] {-1, 0, -.5};
+            case "rolling_machine" -> new double[] {-1, 0, 0};
             case "elevator_anchor" -> new double[] {0, -1, -5};
             default -> throw new AssertionError(id);
         };
@@ -209,6 +209,8 @@ class K4ObjModelTest {
             assertNotNull(hull); assertNotNull(structure);
             double[] centre = switch (id) {
                 case "elevator_anchor" -> rotate(facing, new double[] {.5, 0, 0});
+                // W497 F04: leave the front flush with the controller; the extra depth stays behind it.
+                case "rolling_machine" -> rotate(facing, new double[] {.5, 0, 1.5});
                 default -> new double[] {structure.getCenter().x, 0, structure.getCenter().z};
             };
             assertEquals(centre[0], hull.getCenter().x, 1.0E-4, id + " functional centre x");

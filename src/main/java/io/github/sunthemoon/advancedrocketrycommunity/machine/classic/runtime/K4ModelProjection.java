@@ -37,7 +37,7 @@ public final class K4ModelProjection {
             case "orbital_laser_drill" -> new AABB(-6, -1.000025, -3.00005, 6, 2.25, 6.00005);
             case "precision_assembler" -> new AABB(-1, 0, 0, 2, 3, 4);
             case "railgun" -> new AABB(-4, 0, -3, 5, 11, 6);
-            case "rolling_machine" -> new AABB(-2, 0, -0.5, 3, 3, 2.5);
+            case "rolling_machine" -> new AABB(-2, 0, 0, 3, 3, 3);
             case "elevator_anchor" -> new AABB(-4, -1, -5, 5, 1, 5);
             default -> throw new IllegalArgumentException("Unknown K4 model " + kind);
         };

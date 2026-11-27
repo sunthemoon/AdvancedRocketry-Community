@@ -105,7 +105,7 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             new ObjModelCheck.Bounds(-4.49987, 0, -4.49987, 4.499871, 11, 4.49987), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 90, 12);
 
     public static final ObjModelFixture ROLLING_MACHINE = new ObjModelFixture("rolling_machine", ModIdentity.id("rolling_machine"),
-            ModIdentity.id("models/rollingmachine.obj"), true, true, 1, -2, 0, -0.5,
+            ModIdentity.id("models/rollingmachine.obj"), true, true, 1, -2, 0, 0,
             new ObjModelCheck.Bounds(-0.25, -0.25, 0, 3, 1.5, 5), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90, 3);
 
     public static final ObjModelFixture ELEVATOR_ANCHOR = new ObjModelFixture("elevator_anchor", ModIdentity.id("elevator_anchor"),
