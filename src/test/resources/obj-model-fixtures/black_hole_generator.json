@@ -8,7 +8,7 @@
   "model_y_rotation_degrees": 0,
   "offset_north": [
     0.5,
-    3.5,
+    0.5,
     0.625
   ],
   "render_type": "entity_cutout",
@@ -25,34 +25,34 @@
   "render_bounds": {
     "north": [
       -1,
-      -1,
+      -4,
       0,
       2,
-      5,
+      2,
       3
     ],
     "east": [
       -2,
-      -1,
+      -4,
       -1,
       1,
-      5,
+      2,
       2
     ],
     "south": [
       -1,
-      -1,
+      -4,
       -2,
       2,
-      5,
+      2,
       1
     ],
     "west": [
       0,
-      -1,
+      -4,
       -1,
       3,
-      5,
+      2,
       2
     ]
   },

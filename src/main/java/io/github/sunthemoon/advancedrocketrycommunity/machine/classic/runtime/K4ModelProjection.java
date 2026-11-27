@@ -33,7 +33,7 @@ public final class K4ModelProjection {
     /** Fixed render-only union of the legacy idle hull and modern pattern, not collision or match bounds. */
     public static AABB bounds(String kind, Direction facing, BlockPos controller) {
         AABB north = switch (kind) {
-            case "black_hole_generator" -> new AABB(-1, -1, 0, 2, 5, 3);
+            case "black_hole_generator" -> new AABB(-1, -4, 0, 2, 2, 3);
             case "orbital_laser_drill" -> new AABB(-6, -1.000025, -3.00005, 6, 2.25, 6.00005);
             case "precision_assembler" -> new AABB(-1, 0, 0, 2, 3, 4);
             case "railgun" -> new AABB(-4, 0, -3, 5, 11, 6);

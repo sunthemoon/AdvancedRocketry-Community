@@ -87,9 +87,9 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/solar_array.obj"), true, true, 1, 0, 0, 1,
             new ObjModelCheck.Bounds(0, 0, -2, 1, 1, 1), ModIdentity.id("textures/block/solar_array_front.png"), ENTITY_CUTOUT, 270);
 
-    // P01: centre full-scale idle hulls over modern patterns and align their bases; source geometry is unchanged.
+    // P01: align full-scale idle hulls with modern patterns and their functional anchors; source geometry is unchanged.
     public static final ObjModelFixture BLACK_HOLE_GENERATOR = new ObjModelFixture("black_hole_generator", ModIdentity.id("black_hole_generator"),
-            ModIdentity.id("models/blackholegenerator.obj"), true, true, 1, 0.5, 3.5, 0.625,
+            ModIdentity.id("models/blackholegenerator.obj"), true, true, 1, 0.5, 0.5, 0.625,
             new ObjModelCheck.Bounds(-1.25, -4.5, -0.5, 1.25, 1.5, 2.25), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 0, 4);
 
     public static final ObjModelFixture ORBITAL_LASER_DRILL = new ObjModelFixture("orbital_laser_drill", ModIdentity.id("orbital_laser_drill"),

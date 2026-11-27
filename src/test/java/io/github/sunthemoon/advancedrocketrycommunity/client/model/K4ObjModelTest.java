@@ -169,7 +169,7 @@ class K4ObjModelTest {
         }
         var north = legacy(id, Direction.NORTH, part, point);
         double[] shift = switch (id) {
-            case "black_hole_generator" -> new double[] {0, 3, .125};
+            case "black_hole_generator" -> new double[] {0, 0, .125};
             case "orbital_laser_drill" -> new double[] {-4, -1, -1};
             case "railgun" -> new double[] {0, 0, -2};
             case "rolling_machine" -> new double[] {-1, 0, -.5};
@@ -190,7 +190,7 @@ class K4ObjModelTest {
     }
 
     @ParameterizedTest @ValueSource(strings = {"black_hole_generator", "orbital_laser_drill", "precision_assembler", "railgun", "rolling_machine", "elevator_anchor"})
-    void drawnHullIsCenteredOnPatternAndStartsAtItsBaseInEveryFacing(String id) throws Exception {
+    void drawnHullMatchesItsPatternOrFunctionalAnchorInEveryFacing(String id) throws Exception {
         var f = model(id); var pin = frozen(id).getAsJsonObject("unchanged_pattern");
         var pattern = MultiblockPatternJsonCodec.decode(Files.readAllBytes(Path.of(pin.get("path").getAsString())));
         var checked = ObjModelSet.check(List.of(f), source(Set.of())).models().get(id);
@@ -209,7 +209,13 @@ class K4ObjModelTest {
             assertNotNull(hull); assertNotNull(structure);
             assertEquals(structure.getCenter().x, hull.getCenter().x, 1.0E-4, id + " horizontal centre x");
             assertEquals(structure.getCenter().z, hull.getCenter().z, 1.0E-4, id + " horizontal centre z");
-            assertEquals(structure.minY, hull.minY, 1.0E-4, id + " base");
+            if (id.equals("black_hole_generator")) {
+                // W497 F01: the head stays at C6 height below the disc; only its stem extends below the pattern.
+                assertEquals(-4, hull.minY, 1.0E-4, id + " stem base");
+                assertEquals(structure.maxY, hull.maxY, 1.0E-5, id + " head top");
+            } else {
+                assertEquals(structure.minY, hull.minY, 1.0E-4, id + " base");
+            }
             if (id.equals("precision_assembler")) {
                 assertEquals(structure.maxY, hull.maxY, 1.0E-5);
                 assertEquals(structure.getXsize(), hull.getXsize(), 1.0E-5);
