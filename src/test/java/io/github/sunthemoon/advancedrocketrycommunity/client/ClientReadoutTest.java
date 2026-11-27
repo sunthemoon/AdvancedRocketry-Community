@@ -20,12 +20,12 @@ class ClientReadoutTest {
         }
     }
 
-    @Test void orbitalBodyUsesTheCelestialTranslationKeyWithAnIdFallback() {
+    @Test void orbitalBodyUsesTheCelestialTranslationKeyWithAReadablePackFallback() {
         var earth = BodyDisplayNames.bodyName("advancedrocketrycommunity:earth");
         var contents = assertInstanceOf(TranslatableContents.class, earth.getContents());
         assertEquals("body.advancedrocketrycommunity.earth", contents.getKey());
-        assertEquals("advancedrocketrycommunity:earth", contents.getFallback());
+        assertEquals("[PACK] Earth", contents.getFallback());
         assertEquals("not a body id", BodyDisplayNames.bodyName("not a body id").getString());
-        assertEquals("custom:untranslated", BodyDisplayNames.bodyName("custom:untranslated").getString());
+        assertEquals("[PACK] Untranslated", BodyDisplayNames.bodyName("custom:untranslated").getString());
     }
 }

@@ -15,11 +15,13 @@ class WarpBodyLabelTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
     @Test void controllerBodyNamesUseTheExistingBodyTranslationKeys() {
-        for (String name : new String[]{"earth", "moon", "tau_ceti_f", "cygnus_x1"}) {
+        for (String[] entry : new String[][]{{"earth", "[PACK] Earth"}, {"moon", "[PACK] Moon"},
+                {"tau_ceti_f", "[PACK] Tau Ceti F"}, {"cygnus_x1", "[PACK] Cygnus X1"}}) {
+            String name = entry[0];
             ResourceLocation id = new ResourceLocation("advancedrocketrycommunity", name);
             var contents = (TranslatableContents) WarpControllerMenu.bodyName(id).getContents();
             assertEquals("body.advancedrocketrycommunity." + name, contents.getKey());
-            assertEquals(id.toString(), contents.getFallback());
+            assertEquals(entry[1], contents.getFallback());
         }
     }
 
