@@ -153,7 +153,7 @@ public final class LifeSupportHud {
         return Component.translatable("hud.advancedrocketrycommunity.suit", labels);
     }
 
-    private static PanelText measure(Font font, Component text, int screenWidth, boolean gauge) {
+    static PanelText measure(Font font, Component text, int screenWidth, boolean gauge) {
         int lineHeight = font.lineHeight;
         int normalWidth = Math.toIntExact(Math.max(NORMAL_MIN_WIDTH, (long) font.width(text) + 14L));
         int normalHeight = Math.toIntExact((long) lineHeight + (gauge ? 19L : 10L));
@@ -224,7 +224,7 @@ public final class LifeSupportHud {
     ) {
     }
 
-    private record PanelText(
+    record PanelText(
             Component full,
             List<FormattedCharSequence> compactLines,
             Size normalSize,
