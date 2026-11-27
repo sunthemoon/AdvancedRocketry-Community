@@ -134,6 +134,9 @@ the pin identifies this campaign's bytes, not reproducibility across every
 installation. No installer is run.
 
 Version files and the client template must be inside the manifest's directory.
+Baseline run directories must be disjoint from that entire profile directory,
+not just its client/runtime subdirectories. Keep live runs outside archived
+evidence packages as well.
 The version tree accepts only the inventoried files and their parent directories.
 The client template contains exactly five empty directories: `mods`, `config`,
 `defaultconfigs`, `resourcepacks`, `saves`. Even a hidden file, non-JAR or empty

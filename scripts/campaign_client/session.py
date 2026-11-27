@@ -104,6 +104,8 @@ class Session:
         else:
             keys = ("server_dir", "client_game_dir", "runtime_root")
         sources = [self.cell[key] for key in keys]
+        if self.spec.get("launch_kind") == "baseline":
+            sources.append(self.cell["baseline_path"].parent)
         sources += [c["game_dir"] for c in self.spec["clients"] if "game_dir" in c]
         for source in sources:
             if self.run.is_relative_to(source) or source.is_relative_to(self.run):

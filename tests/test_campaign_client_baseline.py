@@ -432,6 +432,22 @@ class BaselineTests(Fixture):
                     session.setup()
                 spawn.assert_not_called()
 
+    def test_baseline_run_inside_profile_is_refused_before_writes_or_spawn(self):
+        cell = b.load_baseline(self.manifest)
+        before = {p.relative_to(self.base): sha256(p) if p.is_file() else None for p in self.base.rglob("*")}
+        for target in (self.base, self.base / "run-inside-profile", self.base / "nested/run"):
+            self.session_spec["run_dir"] = str(target)
+            session = Session(load_session(self.dump_session()), cell, FakeWindows())
+            with self.subTest(target=target), patch("scripts.campaign_client.session.CapturedProcess") as spawn, \
+                    patch("scripts.campaign_client.session.prepare_baseline") as prepare:
+                with self.assertRaisesRegex(ValueError, "overlap prepared inputs"):
+                    session.setup()
+                spawn.assert_not_called()
+                prepare.assert_not_called()
+                self.assertFalse(session.created)
+                self.assertEqual(before, {p.relative_to(self.base): sha256(p) if p.is_file() else None
+                                          for p in self.base.rglob("*")})
+
     def test_recheck_refuses_changed_manifest_even_when_still_valid(self):
         cell = b.load_baseline(self.manifest)
         self.manifest.write_text(json.dumps(self.raw, indent=2), encoding="utf-8")
