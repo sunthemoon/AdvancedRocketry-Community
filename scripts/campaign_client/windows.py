@@ -40,6 +40,7 @@ class Windows:
             (self.u, "keybd_event", [W.BYTE, W.BYTE, W.DWORD, C.c_size_t], None),
             (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
             (self.u, "GetCursorInfo", [C.POINTER(CURSORINFO)], W.BOOL),
+            (self.u, "WindowFromPoint", [W.POINT], W.HWND),
             (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
         for dll, name, args, result in definitions:
@@ -138,8 +139,8 @@ class Windows:
         try:
             return cursor_captured(clip_rect, client, desktop)
         except CursorVisibilityRequired:
-            # GetCursorInfo is global. Only trust it for the foreground game window,
-            # with a stable clip across the sample. No focus change or input is sent.
+            # GetCursorInfo is global. Require the game both in front and under the
+            # sampled pointer, with a stable clip. No focus change or input is sent.
             if self.foreground() != handle:
                 raise ValueError("Cursor visibility needs the client window in front")
             info = CURSORINFO()
@@ -150,6 +151,8 @@ class Windows:
                 raise ValueError("Client window lost the front during cursor visibility read")
             if clip_rect != (clip.left, clip.top, clip.right, clip.bottom):
                 raise ValueError("Pointer clip changed during cursor visibility read")
+            if self.u.WindowFromPoint(info.ptScreenPos) != handle:
+                raise ValueError("Cursor visibility needs the game window under the pointer")
             return cursor_captured(clip_rect, client, desktop, info.flags)
 
     def post(self, handle, message, word=0, value=0):

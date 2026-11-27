@@ -257,6 +257,51 @@ class PointerAdapterTests(unittest.TestCase):
         self.assertIsNone(session.perform({"op": "status"})["pointer_captured"])
         adapter.u.GetCursorInfo.assert_not_called()
 
+    def test_fallback_accepts_only_game_window_at_sampled_cursor_position(self):
+        from ctypes import wintypes as W
+
+        for flags in (0, 1):
+            with self.subTest(flags=flags):
+                adapter = self.adapter(flags=flags)
+                get_cursor = adapter.u.GetCursorInfo.side_effect
+
+                def sample(pointer):
+                    get_cursor(pointer)
+                    pointer._obj.ptScreenPos.x, pointer._obj.ptScreenPos.y = 731, 482
+                    return 1
+
+                adapter.u.GetCursorInfo.side_effect = sample
+                adapter.u.WindowFromPoint.return_value = 456
+                self.assertIs(flags == 0, adapter.cursor_captured(456))
+                adapter.u.WindowFromPoint.assert_called_once()
+                point = adapter.u.WindowFromPoint.call_args.args[0]
+                self.assertIsInstance(point, W.POINT)
+                self.assertEqual((731, 482), (point.x, point.y))
+                adapter.u.GetCursorPos.assert_not_called()
+                adapter.u.PostMessageW.assert_not_called()
+                adapter.u.keybd_event.assert_not_called()
+                adapter.u.SetForegroundWindow.assert_not_called()
+
+    def test_fallback_refuses_other_or_missing_window_under_pointer_in_both_states(self):
+        for flags, window in product((0, 1), (999, 0, None)):
+            with self.subTest(flags=flags, window=window):
+                adapter = self.adapter(flags=flags)
+                adapter.u.WindowFromPoint.return_value = window
+                with self.assertRaisesRegex(ValueError, "window under the pointer"):
+                    adapter.cursor_captured(456)
+                adapter.u.WindowFromPoint.assert_called_once()
+                adapter.u.PostMessageW.assert_not_called()
+                adapter.u.keybd_event.assert_not_called()
+                adapter.u.SetForegroundWindow.assert_not_called()
+
+    def test_decidable_clip_does_not_query_window_under_pointer(self):
+        for clip, answer in ((CLIENT, True), (DESKTOP, False)):
+            with self.subTest(clip=clip):
+                adapter = self.adapter(clip=clip, client=CLIENT)
+                adapter.u.WindowFromPoint.side_effect = AssertionError("Unneeded window-at-point read")
+                self.assertIs(answer, adapter.cursor_captured(456))
+                adapter.u.WindowFromPoint.assert_not_called()
+
 
 class CursorBindingTests(unittest.TestCase):
     def test_cursor_info_binding_has_structure_pointer_and_bool_result(self):
@@ -269,6 +314,16 @@ class CursorBindingTests(unittest.TestCase):
             Windows()
         self.assertEqual([C.POINTER(CURSORINFO)], user.GetCursorInfo.argtypes)
         self.assertIs(W.BOOL, user.GetCursorInfo.restype)
+
+    def test_window_from_point_binding_takes_point_by_value_and_returns_hwnd(self):
+        from ctypes import wintypes as W
+
+        user = Mock()
+        with patch.object(C, "WinDLL", side_effect=[Mock(), user], create=True), \
+                patch.object(C, "WINFUNCTYPE", C.CFUNCTYPE, create=True):
+            Windows()
+        self.assertEqual([W.POINT], user.WindowFromPoint.argtypes)
+        self.assertIs(W.HWND, user.WindowFromPoint.restype)
 
 
 if __name__ == "__main__":

@@ -171,7 +171,9 @@ disabled-cursor mode hides the cursor with `SetCursor(NULL)` and clips it to the
 restores the cursor image and removes that clip (see `updateCursorImage`, `disableCursor` and
 `enableCursor` in `glfw/glfw`, tag `3.3.8`, `src/win32_window.c`). Missing, suppressed or unknown
 visibility, a hidden cursor without the full client clip, or a foreground/clip change during this
-read refuses the request. The fallback only reads state; it sends no input. All other clip decisions
+read refuses the request. `WindowFromPoint` at the returned `ptScreenPos` must also be exactly the
+game window; another window or no window is refused. The fallback only reads state; it sends no
+input. All other clip decisions
 are unchanged, including fullscreen on one monitor of a larger desktop. `status` reports the same
 reading as `pointer_captured` (null when the window is not in front or the reading is undecidable).
 
