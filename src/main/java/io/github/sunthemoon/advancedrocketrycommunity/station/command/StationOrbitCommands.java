@@ -103,11 +103,11 @@ public final class StationOrbitCommands {
         boolean changed = result.code() == StationManagementCode.ALTITUDE_SET
                 || result.code() == StationManagementCode.ORIENTATION_SET;
         context.getSource().sendSuccess(() -> successMessage(result.code(),
-                "; station=" + station.stationId() + " " + describe(station.orbitalControls())), changed);
+                "station=" + station.stationId() + " " + describe(station.orbitalControls())), changed);
         return 1;
     }
 
     static Component successMessage(StationManagementCode code, String details) {
-        return Component.translatable(code.translationKey()).append(details);
+        return Component.translatable(code.translationKey()).append(" " + details);
     }
 }

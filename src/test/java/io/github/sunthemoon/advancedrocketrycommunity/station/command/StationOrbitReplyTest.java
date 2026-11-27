@@ -14,9 +14,9 @@ class StationOrbitReplyTest {
     @Test void successUsesExistingTranslationAndPreservesOperatorDetails() {
         for (var code : StationManagementCode.values()) {
             if (!code.success()) { continue; }
-            var reply = StationOrbitCommands.successMessage(code, "; station=example control=details");
+            var reply = StationOrbitCommands.successMessage(code, "station=example control=details");
             assertEquals(code.translationKey(), ((TranslatableContents) reply.getContents()).getKey());
-            assertEquals("; station=example control=details", reply.getSiblings().get(0).getString());
+            assertEquals(" station=example control=details", reply.getSiblings().get(0).getString());
         }
     }
 }
