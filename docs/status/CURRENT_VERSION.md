@@ -153,21 +153,23 @@ restart or real client; those need their own evidence.
   scoring to each step's own oracle. After W474 and W476 authored full-row scenarios by day, the round-04 and
   round-05 nights ([W479](../work/v1.8.0-root-queue/records/W479.md), [W480](../work/v1.8.0-root-queue/records/W480.md);
   R699 to R701) completed 23 row queues in 119 live sessions. Every failed first attempt was an operator or
-  staging fault rerun on a fresh copy. After Root's visual judgment of those frames
-  ([W482](../work/v1.8.0-root-queue/records/W482.md), [W485](../work/v1.8.0-root-queue/records/W485.md); R703 to R707), and taking each
-  row's latest round, the 394 steps score 48 PASS (6 machine-scored and 42 visual), 4 FAIL, 47 STILL_PENDING
-  (a frame to recapture or a required display cell not yet captured), 211 NOT_RUN and 84 NOT_COVERED (41 need
+  staging fault rerun on a fresh copy. Round 06's first night
+  ([W488](../work/v1.8.0-root-queue/records/W488.md), R713) reached 23 of its 34 rows in 107 native sessions. After Root's
+  visual judgment of the frames ([W482](../work/v1.8.0-root-queue/records/W482.md), [W485](../work/v1.8.0-root-queue/records/W485.md),
+  [W490](../work/v1.8.0-root-queue/records/W490.md); R703 to R714), and taking each row's latest round, the 394 steps
+  score 76 PASS, 6 FAIL, 30 STILL_PENDING (a frame to recapture or a required display cell not yet captured),
+  198 NOT_RUN and 84 NOT_COVERED (41 need
   the owner's account in attach mode, 15 a human listener, 12 two signed-in clients, 12 PresentMon and 4 the
-  second GPU). PresentMon 2.6.0 is now on this machine (R711); its 12 steps still need their capture authored. No row passes yet. The four failures are product findings F-W482-01 to F-W482-04, among them
+  second GPU). PresentMon 2.6.0 is now on this machine (R711), and W491 authors the capture for its 12 steps. No row passes
+  yet. Four failures are product findings F-W482-01 to F-W482-04, among them
   the precision assembler's hull drawn beside its structure and a data-pack test body shown as a raw
-  identifier. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
+  identifier; round 06 shows F-W482-02 again. D06 steps 3 and 4 fail provisionally on a floating kick at the
+  rocket console (F-W488-18) until W489 attributes it. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
   C6's code with fix sketches, and found that all six formed hulls mismatch their redesigned patterns
   (finding F-W487-01). Their fixes wait for one candidate decision after phase 2's first full pass, while
   `src/` stays frozen at C6 (R600). Thirteen first-connection timeouts, six of them in round 06, match KI-V180-CONNECT-01
-  and stay pending findings. W484's harness fix (R707) stops a rejected command from satisfying a check. Round 06's first night
-  ([W488](../work/v1.8.0-root-queue/records/W488.md), R713) reached 23 of its 34 rows in 107 native sessions. Its 62 newly
-  captured visual steps wait for judgment (W490), so the totals above stand until then. D06's floating kick at
-  the rocket console is not yet attributed. The unreached rows and the reruns continue in round 07 (W489).
+  and stay pending findings. W484's harness fix (R707) stops a rejected command from satisfying a check. The unreached rows and the reruns
+  continue in round 07 (W489).
 
 ### Campaign coverage and performance
 
