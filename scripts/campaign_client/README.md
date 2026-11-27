@@ -122,9 +122,16 @@ not a runnable manifest. `baseline.py` pins the Vanilla JSON and JAR SHA-256 val
 and the Forge 47.4.10 JSON SHA-256. A Forge manifest additionally inventories
 `runtime/versions/1.20.1-forge-47.4.10/1.20.1-forge-47.4.10.json` and
 `runtime/forge-47.4.10-installer.jar`. The existing official-runtime verifier checks
-the installer's pinned SHA-1 and its embedded version metadata. Installed Forge
-client-patch/extra outputs and runtime-discovered Forge libraries are also verified
-against that installer, not substituted with server outputs. No installer is run.
+the installer's pinned SHA-1 and its embedded version metadata. Forge's patched
+client, client-extra and listed Forge runtime libraries are verified against that
+installer, not substituted with server outputs. The SRG client JAR at
+`net/minecraft/client/1.20.1-20230612.114412/client-1.20.1-20230612.114412-srg.jar`
+is separately checked against the campaign runtime's measured SHA-256,
+`e2e940fe7ca0a9fba5a5c11ad2cf3e2f7df91bbf51d12af22cdde7af18adc344`,
+and included in the receipt's Forge runtime identity. A missing or changed SRG
+client is refused. The installer provides no digest for this intermediate;
+the pin identifies this campaign's bytes, not reproducibility across every
+installation. No installer is run.
 
 Version files and the client template must be inside the manifest's directory.
 The version tree accepts only the inventoried files and their parent directories.
@@ -135,7 +142,10 @@ The mods identity is the canonical empty inventory `[]\n` and its SHA-256, verif
 against the actual empty folder. No candidate field or launcher/account file is
 accepted. Libraries/assets may reference an existing isolated runtime read-only;
 ordinary library hashes and the asset index are checked against official metadata.
-Prepare and inventory all referenced asset objects before a live session as well.
+Asset objects themselves are not rechecked at launch or included in the READY
+identity. Prepare and inventory all referenced objects, then verify them against
+the dependency inventory before a live capture; an intact index alone does not
+establish unchanged textures, sounds or language files.
 
 At launch the driver revalidates the manifest, version files, Forge runtime outputs
 and empty inputs before creating its disposable game directory. It copies no saves,

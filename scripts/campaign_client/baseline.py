@@ -17,6 +17,9 @@ VERSION_FILES = {
 }
 FORGE_VERSION = "versions/1.20.1-forge-47.4.10/1.20.1-forge-47.4.10.json"
 FORGE_PROFILE_SHA256 = "de680055791048582f749d061dc3a2fdcfaff9b04ea3058017c8b91ae9d3feaa"
+# Measured from the campaign runtime; the installer supplies no MC_SRG_SHA.
+FORGE_SRG_CLIENT = "net/minecraft/client/1.20.1-20230612.114412/client-1.20.1-20230612.114412-srg.jar"
+FORGE_SRG_CLIENT_SHA256 = "e2e940fe7ca0a9fba5a5c11ad2cf3e2f7df91bbf51d12af22cdde7af18adc344"
 EMPTY_MODS_SHA256 = hashlib.sha256(b"[]\n").hexdigest()
 EMPTY_DIRS = {"mods", "config", "defaultconfigs", "resourcepacks", "saves"}
 
@@ -131,6 +134,12 @@ def check_forge_outputs(cell):
         file = child(cell["libraries_root"], entry["path"])
         verify_file(file, entry["sha1"], entry.get("size"))
         result.append({"path": file, "sha256": sha256(file)})
+    srg = child(cell["libraries_root"], FORGE_SRG_CLIENT)
+    verify_file(srg)
+    digest = sha256(srg)
+    if digest != FORGE_SRG_CLIENT_SHA256:
+        raise ValueError("Forge SRG client SHA-256 mismatch")
+    result.append({"path": srg, "sha256": digest})
     return result
 
 

@@ -97,6 +97,9 @@ class BaselineTests(Fixture):
                                 self.sha1(self.runtime / "versions/1.20.1/1.20.1.json")))
         self.enterContext(patch.dict("scripts.v100_compatibility_runtime.FORGE_HASHES",
                                      {"47.4.10": self.sha1(installer)}, clear=True))
+        self.srg_client = self.libs / b.FORGE_SRG_CLIENT
+        self.srg_client.write_bytes(b"synthetic SRG client")
+        self.enterContext(patch.object(b, "FORGE_SRG_CLIENT_SHA256", sha256(self.srg_client)))
         self.raw["profile"] = b.FORGE
         self.raw["version_files"] += [self.record(path), self.record(installer)]
         self.dump_baseline()
@@ -269,7 +272,7 @@ class BaselineTests(Fixture):
         with self.assertRaises(SmokeError):
             b.load_baseline(self.manifest)
         file.write_bytes(original)
-        self.assertEqual(2, len(b.load_baseline(self.manifest)["baseline_identity"]["forge_runtime_files"]))
+        self.assertEqual(3, len(b.load_baseline(self.manifest)["baseline_identity"]["forge_runtime_files"]))
 
     def test_baseline_session_is_only_singleplayer_launch(self):
         self.assertEqual("baseline", load_session(self.dump_session())["launch_kind"])
@@ -280,6 +283,36 @@ class BaselineTests(Fixture):
             self.session_spec[key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
                 load_session(self.dump_session())
+
+    def test_forge_srg_client_present_is_recorded_with_its_pinned_hash(self):
+        self.forge()
+        cell = b.load_baseline(self.manifest)
+        runtime_files = cell["baseline_identity"]["forge_runtime_files"]
+        self.assertEqual([{"path": self.srg_client.resolve(), "sha256": b.FORGE_SRG_CLIENT_SHA256}],
+                         [entry for entry in runtime_files if entry["path"] == self.srg_client.resolve()])
+
+    def test_forge_srg_client_absent_is_refused_before_output_or_spawn(self):
+        self.forge()
+        cell = b.load_baseline(self.manifest)
+        self.srg_client.unlink()
+        with self.assertRaisesRegex(SmokeError, "missing"):
+            b.load_baseline(self.manifest)
+        game = self.root / "no-srg-game"
+        with patch("subprocess.Popen") as spawn:
+            with self.assertRaisesRegex(SmokeError, "missing"):
+                prepare_baseline(cell, self.session_spec["clients"][0], game, "java.exe")
+            spawn.assert_not_called()
+        self.assertFalse(game.exists())
+
+    def test_forge_srg_client_changed_same_size_is_refused(self):
+        self.forge()
+        original = self.srg_client.read_bytes()
+        self.srg_client.write_bytes(b"X" * len(original))
+        self.assertEqual(len(original), self.srg_client.stat().st_size)
+        with self.assertRaisesRegex(ValueError, "SRG client SHA-256 mismatch"):
+            b.load_baseline(self.manifest)
+        self.srg_client.write_bytes(original)
+        self.assertEqual(3, len(b.load_baseline(self.manifest)["baseline_identity"]["forge_runtime_files"]))
 
     def test_baseline_and_candidate_manifests_are_not_interchangeable(self):
         with self.assertRaises(ValueError):
