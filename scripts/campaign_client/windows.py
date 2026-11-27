@@ -4,7 +4,11 @@ from ctypes import wintypes as W
 from pathlib import PureWindowsPath
 
 from .attach import ProcessIdentity, WindowIdentity
-from .gates import cursor_captured
+from .gates import CursorVisibilityRequired, cursor_captured
+
+
+class CURSORINFO(C.Structure):
+    _fields_ = [("cbSize", W.DWORD), ("flags", W.DWORD), ("hCursor", W.HANDLE), ("ptScreenPos", W.POINT)]
 
 
 class Windows:
@@ -35,6 +39,8 @@ class Windows:
             (self.u, "AttachThreadInput", [W.DWORD, W.DWORD, W.BOOL], W.BOOL),
             (self.u, "keybd_event", [W.BYTE, W.BYTE, W.DWORD, C.c_size_t], None),
             (self.u, "GetClipCursor", [C.POINTER(W.RECT)], W.BOOL),
+            (self.u, "GetCursorInfo", [C.POINTER(CURSORINFO)], W.BOOL),
+            (self.u, "WindowFromPoint", [W.POINT], W.HWND),
             (self.u, "GetSystemMetrics", [C.c_int], C.c_int),
         ]
         for dll, name, args, result in definitions:
@@ -128,8 +134,26 @@ class Windows:
         width, height = self.size(handle)
         left, top = self.u.GetSystemMetrics(76), self.u.GetSystemMetrics(77)
         desktop = (left, top, left + self.u.GetSystemMetrics(78), top + self.u.GetSystemMetrics(79))
-        return cursor_captured((clip.left, clip.top, clip.right, clip.bottom),
-                               (origin.x, origin.y, origin.x + width, origin.y + height), desktop)
+        clip_rect = (clip.left, clip.top, clip.right, clip.bottom)
+        client = (origin.x, origin.y, origin.x + width, origin.y + height)
+        try:
+            return cursor_captured(clip_rect, client, desktop)
+        except CursorVisibilityRequired:
+            # GetCursorInfo is global. Require the game both in front and under the
+            # sampled pointer, with a stable clip. No focus change or input is sent.
+            if self.foreground() != handle:
+                raise ValueError("Cursor visibility needs the client window in front")
+            info = CURSORINFO()
+            info.cbSize = C.sizeof(info)
+            self.require(self.u.GetCursorInfo(C.byref(info)))
+            self.require(self.u.GetClipCursor(C.byref(clip)))
+            if self.foreground() != handle:
+                raise ValueError("Client window lost the front during cursor visibility read")
+            if clip_rect != (clip.left, clip.top, clip.right, clip.bottom):
+                raise ValueError("Pointer clip changed during cursor visibility read")
+            if self.u.WindowFromPoint(info.ptScreenPos) != handle:
+                raise ValueError("Cursor visibility needs the game window under the pointer")
+            return cursor_captured(clip_rect, client, desktop, info.flags)
 
     def post(self, handle, message, word=0, value=0):
         self.require(self.u.PostMessageW(handle, message, word, value))
