@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 from .cells import load_cell
+from .baseline import load_baseline
 from .evidence import dumps, redact, write_json
 from .frametimes import analyze
 from .protocol import load_session, number, validate_request
@@ -78,8 +79,9 @@ def main(argv=None):
             return 0
         if args.command == "check":
             spec = load_session(args.session)
-            load_cell(spec["cell"])
-            print("PASS: session and prepared cell validated; no process started")
+            (load_baseline if spec.get("launch_kind") == "baseline" else load_cell)(spec["cell"])
+            label = "baseline profile" if spec.get("launch_kind") == "baseline" else "cell"
+            print(f"PASS: session and prepared {label} validated; no process started")
             return 0
         if args.command == "request":
             return submit(args.run, args.ops, args.mode, args.players, args.timeout)
