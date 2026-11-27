@@ -102,8 +102,12 @@ public final class StationOrbitCommands {
         StationState station = result.station().orElseThrow();
         boolean changed = result.code() == StationManagementCode.ALTITUDE_SET
                 || result.code() == StationManagementCode.ORIENTATION_SET;
-        context.getSource().sendSuccess(() -> Component.literal("Station " + result.code().description()
-                + "; station=" + station.stationId() + " " + describe(station.orbitalControls())), changed);
+        context.getSource().sendSuccess(() -> successMessage(result.code(),
+                "; station=" + station.stationId() + " " + describe(station.orbitalControls())), changed);
         return 1;
+    }
+
+    static Component successMessage(StationManagementCode code, String details) {
+        return Component.translatable(code.translationKey()).append(details);
     }
 }
