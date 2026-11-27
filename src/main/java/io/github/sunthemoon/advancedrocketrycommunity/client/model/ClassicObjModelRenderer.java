@@ -7,7 +7,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.Fo
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
@@ -44,7 +43,7 @@ public final class ClassicObjModelRenderer<T extends BlockEntity & FormedModelCo
         int light = LevelRenderer.getLightColor(level, controller.getBlockPos().above(fixture.lightCellAboveController()));
         pose.pushPose();
         place(pose, fixture, facing);
-        entry.model().render(pose, buffers, texture -> RenderType.entityCutout(entry.texture(texture)), light,
+        entry.model().render(pose, buffers, texture -> HullRenderTypes.cutout(entry.texture(texture)), light,
                 OverlayTexture.NO_OVERLAY, partialTick, CompositeRenderable.Transforms.EMPTY);
         pose.popPose();
     }
