@@ -131,7 +131,7 @@ class K4ObjModelTest {
     }
 
     @ParameterizedTest @ValueSource(strings = {"black_hole_generator", "orbital_laser_drill", "precision_assembler", "railgun", "rolling_machine", "elevator_anchor"})
-    void everyDrawnPositionInEveryFacingEqualsTheTranscribedLegacyRenderer(String id) throws Exception {
+    void everyDrawnPositionInEveryFacingEqualsThePatternAlignedPlacement(String id) throws Exception {
         var f = model(id); byte[] raw = resource(f.model()); var sourcePoints = positions(raw); var sourceParts = indices(raw);
         var checked = ObjModelSet.check(List.of(f), source(Set.of())).models().get(id);
         var parserPoints = positions(checked.parserInput()); var drawn = indices(checked.parserInput());
@@ -152,13 +152,70 @@ class K4ObjModelTest {
                 for (int i = 0; i < part.getValue().size(); i++) {
                     var p = parserPoints.get(part.getValue().get(i));
                     var placed = pose.last().pose().transformPosition(new Vector3f((float)p[0], (float)p[1], (float)p[2]));
-                    var expected = legacy(id, facing, part.getKey(), sourcePoints.get(part.getValue().get(i) + sourceOffset));
+                    var original = sourcePoints.get(part.getValue().get(i) + sourceOffset);
+                    var expected = aligned(id, facing, part.getKey(), original);
                     assertArrayEquals(expected, new double[] {placed.x,placed.y,placed.z}, 1.0E-5, id + " " + facing + " " + part.getKey() + " face position " + i);
                     compared++;
                 }
             }
         }
         assertTrue(compared >= 4 * 100, id + " compares too few positions");
+    }
+
+    private static double[] aligned(String id, Direction facing, String part, double[] point) {
+        // P01: assembler matches the redesigned pattern exactly; other hulls keep their scale and idle pose.
+        if (id.equals("precision_assembler")) {
+            return rotate(facing, new double[] {2 - point[0], point[1], point[2]});
+        }
+        var north = legacy(id, Direction.NORTH, part, point);
+        double[] shift = switch (id) {
+            case "black_hole_generator" -> new double[] {0, 3, .125};
+            case "orbital_laser_drill" -> new double[] {-4, -1, -1};
+            case "railgun" -> new double[] {0, 0, -2};
+            case "rolling_machine" -> new double[] {-1, 0, -.5};
+            case "elevator_anchor" -> new double[] {0, -1, -4.5};
+            default -> throw new AssertionError(id);
+        };
+        return rotate(facing, new double[] {north[0] + shift[0], north[1] + shift[1], north[2] + shift[2]});
+    }
+
+    private static double[] rotate(Direction facing, double[] p) {
+        return switch (facing) {
+            case NORTH -> p;
+            case EAST -> new double[] {1-p[2],p[1],p[0]};
+            case SOUTH -> new double[] {1-p[0],p[1],1-p[2]};
+            case WEST -> new double[] {p[2],p[1],1-p[0]};
+            default -> throw new AssertionError(facing);
+        };
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"black_hole_generator", "orbital_laser_drill", "precision_assembler", "railgun", "rolling_machine", "elevator_anchor"})
+    void drawnHullIsCenteredOnPatternAndStartsAtItsBaseInEveryFacing(String id) throws Exception {
+        var f = model(id); var pin = frozen(id).getAsJsonObject("unchanged_pattern");
+        var pattern = MultiblockPatternJsonCodec.decode(Files.readAllBytes(Path.of(pin.get("path").getAsString())));
+        var checked = ObjModelSet.check(List.of(f), source(Set.of())).models().get(id);
+        var points = positions(checked.parserInput());
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            AABB hull = null, structure = null;
+            var pose = new PoseStack(); ClassicObjModelRenderer.place(pose, f, facing);
+            for (var part : indices(checked.parserInput()).values()) { for (int index : part) {
+                var p = points.get(index); var v = pose.last().pose().transformPosition(new Vector3f((float)p[0], (float)p[1], (float)p[2]));
+                var b = new AABB(v.x,v.y,v.z,v.x,v.y,v.z); hull = hull == null ? b : hull.minmax(b);
+            } }
+            for (var cell : pattern.cells().keySet()) {
+                var p = ClassicModelProjection.transform(facing).localToWorld(cell, pattern.controllerAnchor(), new PatternPosition(0,0,0));
+                var b = new AABB(p.x(),p.y(),p.z(),p.x()+1,p.y()+1,p.z()+1); structure = structure == null ? b : structure.minmax(b);
+            }
+            assertNotNull(hull); assertNotNull(structure);
+            assertEquals(structure.getCenter().x, hull.getCenter().x, 1.0E-4, id + " horizontal centre x");
+            assertEquals(structure.getCenter().z, hull.getCenter().z, 1.0E-4, id + " horizontal centre z");
+            assertEquals(structure.minY, hull.minY, 1.0E-4, id + " base");
+            if (id.equals("precision_assembler")) {
+                assertEquals(structure.maxY, hull.maxY, 1.0E-5);
+                assertEquals(structure.getXsize(), hull.getXsize(), 1.0E-5);
+                assertEquals(structure.getZsize(), hull.getZsize(), 1.0E-5);
+            }
+        }
     }
 
     @ParameterizedTest @ValueSource(strings = {"black_hole_generator", "orbital_laser_drill", "precision_assembler", "railgun", "rolling_machine", "elevator_anchor"})

@@ -33,12 +33,12 @@ public final class K4ModelProjection {
     /** Fixed render-only union of the legacy idle hull and modern pattern, not collision or match bounds. */
     public static AABB bounds(String kind, Direction facing, BlockPos controller) {
         AABB north = switch (kind) {
-            case "black_hole_generator" -> new AABB(-1, -4, 0, 2, 3, 3);
-            case "orbital_laser_drill" -> new AABB(-2, -1, -2.00005, 10, 3.25, 7.00005);
-            case "precision_assembler" -> new AABB(-1, 0, 0, 4, 3, 4);
-            case "railgun" -> new AABB(-4, 0, -1, 5, 11, 8);
-            case "rolling_machine" -> new AABB(-2, 0, 0, 4, 3, 3);
-            case "elevator_anchor" -> new AABB(-4, -1, -2, 5, 1.5, 10);
+            case "black_hole_generator" -> new AABB(-1, -1, 0, 2, 5, 3);
+            case "orbital_laser_drill" -> new AABB(-6, -1.000025, -3.00005, 6, 2.25, 6.00005);
+            case "precision_assembler" -> new AABB(-1, 0, 0, 2, 3, 4);
+            case "railgun" -> new AABB(-4, 0, -3, 5, 11, 6);
+            case "rolling_machine" -> new AABB(-2, 0, -0.5, 3, 3, 2.5);
+            case "elevator_anchor" -> new AABB(-4, -1, -4.5, 5, 1, 5.5);
             default -> throw new IllegalArgumentException("Unknown K4 model " + kind);
         };
         AABB rotated = switch (facing) {

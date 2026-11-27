@@ -87,29 +87,29 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/solar_array.obj"), true, true, 1, 0, 0, 1,
             new ObjModelCheck.Bounds(0, 0, -2, 1, 1, 1), ModIdentity.id("textures/block/solar_array_front.png"), ENTITY_CUTOUT, 270);
 
-    // K4 preserves the transcribed legacy idle orientation; source geometry is never rewritten.
+    // P01: centre full-scale idle hulls over modern patterns and align their bases; source geometry is unchanged.
     public static final ObjModelFixture BLACK_HOLE_GENERATOR = new ObjModelFixture("black_hole_generator", ModIdentity.id("black_hole_generator"),
-            ModIdentity.id("models/blackholegenerator.obj"), true, true, 1, 0.5, 0.5, 0.5,
+            ModIdentity.id("models/blackholegenerator.obj"), true, true, 1, 0.5, 3.5, 0.625,
             new ObjModelCheck.Bounds(-1.25, -4.5, -0.5, 1.25, 1.5, 2.25), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 0, 4);
 
     public static final ObjModelFixture ORBITAL_LASER_DRILL = new ObjModelFixture("orbital_laser_drill", ModIdentity.id("orbital_laser_drill"),
-            ModIdentity.id("models/orbitallaserdrill.obj"), true, true, 1, 5, 0, 3,
+            ModIdentity.id("models/orbitallaserdrill.obj"), true, true, 1, 1, -1, 2,
             new ObjModelCheck.Bounds(-5.000025, -0.000025, -6.00005, 4.000025, 3.25, 5), ModIdentity.id("textures/block/orbital_laser_front.png"), ENTITY_CUTOUT, 90, 4);
 
     public static final ObjModelFixture PRECISION_ASSEMBLER = new ObjModelFixture("precision_assembler", ModIdentity.id("precision_assembler"),
-            ModIdentity.id("models/precisionassembler.obj"), true, true, 1, 0, 0, 0,
-            new ObjModelCheck.Bounds(0, 0, 0, 3, 3, 4), ModIdentity.id("textures/block/precision_assembler_front.png"), ENTITY_CUTOUT, 90, 3);
+            ModIdentity.id("models/precisionassembler.obj"), true, true, 1, 2, 0, 0,
+            new ObjModelCheck.Bounds(0, 0, 0, 3, 3, 4), ModIdentity.id("textures/block/precision_assembler_front.png"), ENTITY_CUTOUT, 0, 3);
 
     public static final ObjModelFixture RAILGUN = new ObjModelFixture("railgun", ModIdentity.id("railgun"),
-            ModIdentity.id("models/railgun.obj"), true, true, 1, 0.5, 0, 3.5,
+            ModIdentity.id("models/railgun.obj"), true, true, 1, 0.5, 0, 1.5,
             new ObjModelCheck.Bounds(-4.49987, 0, -4.49987, 4.499871, 11, 4.49987), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 90, 12);
 
     public static final ObjModelFixture ROLLING_MACHINE = new ObjModelFixture("rolling_machine", ModIdentity.id("rolling_machine"),
-            ModIdentity.id("models/rollingmachine.obj"), true, true, 1, -1, 0, 0,
+            ModIdentity.id("models/rollingmachine.obj"), true, true, 1, -2, 0, -0.5,
             new ObjModelCheck.Bounds(-0.25, -0.25, 0, 3, 1.5, 5), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90, 3);
 
     public static final ObjModelFixture ELEVATOR_ANCHOR = new ObjModelFixture("elevator_anchor", ModIdentity.id("elevator_anchor"),
-            ModIdentity.id("models/spaceelevator.obj"), true, true, 1, 1, 0, 5,
+            ModIdentity.id("models/spaceelevator.obj"), true, true, 1, 1, -1, 0.5,
             new ObjModelCheck.Bounds(-5, -1, -4.999871, 4.999871, 508, 3.999871), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 90, 2);
 
     public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE, PRECISION_LASER_ETCHER,
