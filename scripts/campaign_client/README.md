@@ -163,10 +163,17 @@ When a gate is not met the request stops there: its remaining actions are not se
 carries `PRECONDITION_FAILED: ...` (or `EXPECTATION_FAILED: ...` for `expect_log`), it counts as a
 failed request, and `summary.json` counts it in `precondition_failures`. Later requests still run.
 
-The screen state is read from the pointer clip that GLFW sets while the game holds the pointer, so
-the window must be in front, and a window that covers the whole desktop on a single monitor is
-refused as undecidable. `status` reports the same reading as `pointer_captured` (null when the
-window is not in front).
+The screen state is read from the pointer clip that GLFW sets while the game holds the pointer;
+the window must be in front. Only when the clip equals the virtual desktop and is inside the client
+(so clipping cannot distinguish capture from release) does the driver also read Win32 `GetCursorInfo`:
+hidden (`flags == 0`) means captured, showing (`CURSOR_SHOWING == 1`) means released. GLFW's Windows
+disabled-cursor mode hides the cursor with `SetCursor(NULL)` and clips it to the client; normal mode
+restores the cursor image and removes that clip (see `updateCursorImage`, `disableCursor` and
+`enableCursor` in `glfw/glfw`, tag `3.3.8`, `src/win32_window.c`). Missing, suppressed or unknown
+visibility, a hidden cursor without the full client clip, or a foreground/clip change during this
+read refuses the request. The fallback only reads state; it sends no input. All other clip decisions
+are unchanged, including fullscreen on one monitor of a larger desktop. `status` reports the same
+reading as `pointer_captured` (null when the window is not in front or the reading is undecidable).
 
 In launch mode the driver brings its disposable client to the front before each input. When Windows
 refuses that to a session started without a console window, the driver first shares the foreground
