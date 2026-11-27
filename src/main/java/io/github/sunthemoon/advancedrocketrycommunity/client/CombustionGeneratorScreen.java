@@ -43,17 +43,15 @@ public final class CombustionGeneratorScreen extends AbstractContainerScreen<Com
         graphics.fill(x + 8, y + 20, x + 20, y + 68, 0xFF0B1317);
         int energyHeight = menu.energy() * 48 / CombustionBurn.CAPACITY;
         graphics.fill(x + 8, y + 68 - energyHeight, x + 20, y + 68, 0xFFE5B45B);
-        graphics.fill(x + 43, y + 33, x + 61, y + 51, 0xFF0B1317);
-        graphics.renderOutline(x + 43, y + 33, 18, 18, 0xFFC08A53);
         graphics.fill(x + 43, y + 55, x + 61, y + 60, 0xFF0B1317);
         int credit = menu.duration() == 0 ? 0 : (int) Math.min(18L, 18L * menu.remaining() / menu.duration());
         graphics.fill(x + 43, y + 55, x + 43 + credit, y + 60, 0xFFD47743);
-        for (int row = 0; row < 4; row++) {
-            int rowY = y + (row < 3 ? 83 + row * 18 : 141);
-            for (int column = 0; column < 9; column++) {
-                graphics.fill(x + 7 + column * 18, rowY, x + 25 + column * 18, rowY + 18, 0xFF0B1317);
-            }
-        }
+        drawSlots(menu.slots, x, y, graphics::fill);
+    }
+
+    static void drawSlots(java.util.List<net.minecraft.world.inventory.Slot> slots, int x, int y,
+                          ContainerSlotBackground.Fill fill) {
+        ContainerSlotBackground.draw(slots, x, y, 0xFFC08A53, 0xFF0B1317, fill);
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
