@@ -4,10 +4,13 @@ import re
 import shutil
 import time
 import uuid
+from dataclasses import asdict
 from pathlib import Path
 
 from .attach import AttachedClient, matching_windows
 from .cells import copy_tree, load_cell
+from .baseline import load_baseline
+from .baseline_launch import prepare_baseline
 from .evidence import copy_log, dumps, now, write_json
 from .gates import ExpectationFailed, PreconditionFailed
 from .input import Input
@@ -72,9 +75,11 @@ class Session:
         self.deadline = time.monotonic() + spec["time_limit_seconds"]
         self.summary = {"schema_version": 1, "started_at": now(), "mode": spec["mode"], "status": "STARTING",
                         "forge": cell["forge"], "jei": cell["jei"], "version_id": cell["version_id"],
-                        "candidate_sha256": cell["candidate"]["sha256"], "request_count": 0,
+                        "candidate_sha256": cell["candidate"]["sha256"] if cell["candidate"] else None, "request_count": 0,
                         "failed_requests": 0, "precondition_failures": 0, "screenshots": [], "cleanup_errors": []}
         self.request_start = 0
+        if spec.get("launch_kind") == "baseline":
+            self.summary.update(launch_kind="baseline", baseline_identity=cell["baseline_identity"])
 
     def check_time(self):
         if any(getattr(process, "error", None) for process, _ in self.owned):
@@ -94,7 +99,11 @@ class Session:
                        "clients": [c["attached"].record for c in self.clients.values()]})
 
     def setup(self):
-        sources = [self.cell[key] for key in ("server_dir", "client_game_dir", "runtime_root")]
+        if self.spec.get("launch_kind") == "baseline":
+            keys = ("client_game_dir", "runtime_root", "libraries_root", "assets_root")
+        else:
+            keys = ("server_dir", "client_game_dir", "runtime_root")
+        sources = [self.cell[key] for key in keys]
         sources += [c["game_dir"] for c in self.spec["clients"] if "game_dir" in c]
         for source in sources:
             if self.run.is_relative_to(source) or source.is_relative_to(self.run):
@@ -129,8 +138,11 @@ class Session:
                 self.check_time()
                 game = self.run / ("client-" + spec["player_name"])
                 self.temporary.append(game)
-                command = prepare_client(self.cell, spec, game, self.spec["server"]["server-port"],
-                                         self.spec["java"], self.spec["singleplayer"])
+                if self.spec.get("launch_kind") == "baseline":
+                    command = prepare_baseline(self.cell, spec, game, self.spec["java"])
+                else:
+                    command = prepare_client(self.cell, spec, game, self.spec["server"]["server-port"],
+                                             self.spec["java"], self.spec["singleplayer"])
                 self.check_time()
                 proc = CapturedProcess(command, game, self.evidence / ("client-" + spec["player_name"] + "-console.log"))
                 self.owned.append((proc, False))
@@ -159,6 +171,8 @@ class Session:
                     "input": Input(self.backend, window.handle, verify, self.spec["input_interval_seconds"], self.sleep, "launch", self.pacer)}
                 self.summary.setdefault("clients", {})[spec["player_name"]] = {"pid": proc.process.pid,
                     "window": window.handle, "launched_at": now()}
+                if self.spec.get("launch_kind") == "baseline":
+                    self.summary["clients"][spec["player_name"]].update(process=asdict(identity), game_dir=game)
         self.summary["status"] = "READY"
         self.save()
 
@@ -403,7 +417,7 @@ def run_session(path, lock, label=None):
     # Default: the run directory's name, reduced to the label's alphabet.
     label = lock_label(label if label is not None
                        else ("campaign-" + re.sub(r"[^A-Za-z0-9._-]", "-", spec["run_dir"].name))[:64])
-    cell = load_cell(spec["cell"])
+    cell = (load_baseline if spec.get("launch_kind") == "baseline" else load_cell)(spec["cell"])
     # No platform probing, process access or JVM start until validation has succeeded.
     require_windows("Live sessions require Windows")
     for drive in {Path.home().anchor, spec["run_dir"].anchor, os.environ.get("SystemDrive", "C:") + "/"}:

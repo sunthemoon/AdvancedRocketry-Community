@@ -88,6 +88,89 @@ such as `4096M`. Values above `8G` / `8192M` are refused. The initial heap stays
 `1G` unless the maximum is smaller, in which case both use that smaller value.
 Heap configuration is not a change to the campaign's reference-node budgets.
 
+## Empty frame-time baselines
+
+Candidate sessions are unchanged. A session may instead set `"launch_kind": "baseline"`
+and point `cell` at a baseline manifest. This is allowed only with `mode: "launch"`,
+`singleplayer: true` and one disposable offline client. Omitting `launch_kind` (or
+setting it to `"candidate"`) retains the existing candidate-cell validation; neither
+kind accepts the other kind's manifest. Unknown launch kinds are refused.
+
+The only baseline profiles are `VANILLA_1_20_1` and `FORGE_47_4_10_EMPTY`.
+Other Minecraft/Forge versions, JEI baselines and arbitrary empty clients are not
+accepted. The baseline manifest is a bounded schema-1 JSON object with exactly:
+
+```json
+{
+  "schema_version": 1,
+  "kind": "baseline",
+  "profile": "VANILLA_1_20_1",
+  "runtime_root": "runtime",
+  "libraries_root": "D:/campaign/isolated-runtime/libraries",
+  "assets_root": "D:/campaign/isolated-runtime/assets",
+  "client_game_dir": "client",
+  "version_files": [
+    {"path": "runtime/versions/1.20.1/1.20.1.json", "sha256": "<pinned SHA-256>"},
+    {"path": "runtime/versions/1.20.1/1.20.1.jar", "sha256": "<pinned SHA-256>"}
+  ],
+  "mods": {"path": "client/mods", "entries": [], "sha256": "<SHA-256 of [] followed by LF>"}
+}
+```
+
+The placeholders above must be replaced with the actual digests; this example is
+not a runnable manifest. `baseline.py` pins the Vanilla JSON and JAR SHA-256 values
+and the Forge 47.4.10 JSON SHA-256. A Forge manifest additionally inventories
+`runtime/versions/1.20.1-forge-47.4.10/1.20.1-forge-47.4.10.json` and
+`runtime/forge-47.4.10-installer.jar`. The existing official-runtime verifier checks
+the installer's pinned SHA-1 and its embedded version metadata. Installed Forge
+client-patch/extra outputs and runtime-discovered Forge libraries are also verified
+against that installer, not substituted with server outputs. No installer is run.
+
+Version files and the client template must be inside the manifest's directory.
+The version tree accepts only the inventoried files and their parent directories.
+The client template contains exactly five empty directories: `mods`, `config`,
+`defaultconfigs`, `resourcepacks`, `saves`. Even a hidden file, non-JAR or empty
+subdirectory in one of these folders is refused. Links/junctions are refused.
+The mods identity is the canonical empty inventory `[]\n` and its SHA-256, verified
+against the actual empty folder. No candidate field or launcher/account file is
+accepted. Libraries/assets may reference an existing isolated runtime read-only;
+ordinary library hashes and the asset index are checked against official metadata.
+Prepare and inventory all referenced asset objects before a live session as well.
+
+At launch the driver revalidates the manifest, version files, Forge runtime outputs
+and empty inputs before creating its disposable game directory. It copies no saves,
+mods, configuration, resource packs or launcher data. Instead it writes a new
+`saves/baseline/level.dat` with vanilla-only dimension generators, fixed seed 0,
+creative/peaceful mode and a structure-free plains superflat Overworld (bedrock,
+two dirt layers, grass). Mob spawning, weather and daylight progression are off.
+There are initially no chunks, entities or imported mod data. `--quickPlaySingleplayer
+baseline` asks the client to generate and enter this new world. Every session uses
+a new directory and cannot reuse an earlier baseline world.
+
+The same `summary.json` READY receipt, client PID/window/launch timestamp, process
+ownership, input identity verification and cleanup apply as for candidate launches.
+Baseline receipts additionally contain `launch_kind`, the manifest/version/mods
+identity, verified Forge runtime hashes, and the client's process creation identity
+and disposable game directory. `candidate_sha256` is null; `forge` is null for
+Vanilla, `47.4.10` for Forge; `jei` is false. This preserves the fields used by
+the frame-time capture adapter. READY still means the window was found, not that
+world loading, visuals or a performance Gate passed.
+
+The first live night must confirm Quick Play actually enters the new world without
+recovery/experimental/datapack dialogs, the expected version/loader and empty mods,
+the new log's offline player/PID creation/window binding, and the flat empty scene
+and matched camera/options. Check logs and native screenshots, then verify owned
+process cleanup and source preservation. Only then perform warm-up and PID-scoped
+PresentMon captures under the campaign's existing rules. No live success, frame-rate
+comparison or Gate approval follows from offline preparation alone.
+
+Pure Linux-compatible regression tests (no Java, Windows calls or downloads):
+
+```bash
+python -B -m unittest discover -s tests -p 'test_campaign_client_baseline.py' -q
+python -B -m unittest discover -s tests -p 'test_campaign_client*.py' -q
+```
+
 ## Commands
 
 ```powershell
