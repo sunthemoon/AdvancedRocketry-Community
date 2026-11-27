@@ -13,11 +13,11 @@ public final class V180ResearchLanguage {
         String[] en = {"Start survey", "Cancel survey", "Previous", "Next", "Claim analysis", "Rebind here"};
         String[] zh = {"开始巡天", "取消巡天", "上一项", "下一项", "认领分析", "重新绑定"};
         for (int i = 0; i < buttons.length; i++) { entries.put(prefix + buttons[i], chinese ? zh[i] : en[i]); }
-        entries.put(prefix + "progress", chinese ? "进度：%s / %s tick" : "Progress: %s / %s ticks");
+        entries.put(prefix + "progress", chinese ? "进度：%s / %s 刻" : "Progress: %s / %s ticks");
         entries.put(prefix + "energy", chinese ? "能量：%s FE（需要 %s FE/t）" : "Energy: %s FE (needs %s FE/t)");
-        entries.put(prefix + "selection", chinese ? "任务：%s / %s" : "Job: %s / %s");
+        entries.put(prefix + "selection", chinese ? "作业：%s / %s" : "Job: %s / %s");
         entries.put(prefix + "diagnostic", chinese ? "缺失单元：(%s, %s, %s)，需要 %s" : "Missing cell: (%s, %s, %s), needs %s");
-        entries.put(prefix + "state", chinese ? "任务 %s / 分析 %s" : "Survey: %s / analysis: %s");
+        entries.put(prefix + "state", chinese ? "勘测：%s / 分析：%s" : "Survey: %s / analysis: %s");
         entries.put(prefix + "owner", chinese ? "所有者：%s" : "Owner: %s");
         labels(entries, prefix + "phase.", chinese ? new String[]{"无", "巡天中", "就绪", "已处理", "已取消", "已隔离"}
                 : new String[]{"None", "Active", "Ready", "Processed", "Cancelled", "Quarantined"});
