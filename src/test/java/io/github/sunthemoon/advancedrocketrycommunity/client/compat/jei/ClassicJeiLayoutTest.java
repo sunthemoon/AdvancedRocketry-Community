@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class ClassicJeiLayoutTest {
     @Test void centrifugeFitsTheScaleThreeWindowIncludingEveryBoundedOutput() {
-        // Round 07: recipe content starts at GUI y=80; keep its frame above the y=226 window edge.
-        assertTrue(80 + ClassicJeiLayout.CENTRIFUGE_HEIGHT + 4 <= 226);
+        // JEI 15.56 at 1280x720, scale 3: a 142-pixel recipe area with a 4-pixel border per side.
+        assertTrue(ClassicJeiLayout.CENTRIFUGE_HEIGHT + 8 <= 142);
         assertTrue(ClassicJeiLayout.WIDTH <= 190);
         int cost = ClassicJeiLayout.costY(true);
         assertTrue(4 + 3 * 18 + 17 < cost); // All four ordinary item rows, including the slot frame.
