@@ -154,29 +154,34 @@ restart or real client; those need their own evidence.
   round-05 nights ([W479](../work/v1.8.0-root-queue/records/W479.md), [W480](../work/v1.8.0-root-queue/records/W480.md);
   R699 to R701) completed 23 row queues in 119 live sessions. Every failed first attempt was an operator or
   staging fault rerun on a fresh copy. Round 06's first night
-  ([W488](../work/v1.8.0-root-queue/records/W488.md), R713) reached 23 of its 34 rows in 107 native sessions. After Root's
-  visual judgment of the frames ([W482](../work/v1.8.0-root-queue/records/W482.md), [W485](../work/v1.8.0-root-queue/records/W485.md),
-  [W490](../work/v1.8.0-root-queue/records/W490.md); R703 to R715), and taking each row's latest round, the 394 steps
-  score 76 PASS, 4 FAIL, 32 STILL_PENDING (a frame to recapture or a required display cell not yet captured),
-  198 NOT_RUN and 84 NOT_COVERED (41 need
+  ([W488](../work/v1.8.0-root-queue/records/W488.md), R713) reached 23 of its 34 rows in 107 native sessions, and round 07
+  ([W492](../work/v1.8.0-root-queue/records/W492.md), R731) reached all 17 of its rows in 106 native attempts. After the independent visual
+  judgments of the frames ([W482](../work/v1.8.0-root-queue/records/W482.md), [W485](../work/v1.8.0-root-queue/records/W485.md), [W490](../work/v1.8.0-root-queue/records/W490.md),
+  [W505](../work/v1.8.0-root-queue/records/W505.md); R703 to R735), and taking each row's latest round, the 394 steps score 83 PASS, 4 FAIL,
+  35 STILL_PENDING (a frame or readback to recapture, or a required display cell not yet captured), 188 NOT_RUN
+  and 84 NOT_COVERED (41 need
   the owner's account in attach mode, 15 a human listener, 12 two signed-in clients, 12 PresentMon and 4 the
   second GPU). No row passes yet. The four failures are product findings F-W482-01 to F-W482-04, among them
   the precision assembler's hull drawn beside its structure and a data-pack test body shown as a raw
   identifier; round 06 shows F-W482-02 again. [W487](../work/v1.8.0-root-queue/records/W487.md) (R709) traced them and nine more product defects to
   C6's code with fix sketches, and found that all six formed hulls mismatch their redesigned patterns
   (finding F-W487-01). `src/` stays frozen at C6 (R600), so the fixes wait on unmerged branches for one candidate
-  decision after phase 2's first full pass (R716): W493 fixed P01 to P11 (P12 and P13 need no change, as W487 advises), [W497](../work/v1.8.0-root-queue/records/W497.md) reviewed them and W493
-  applied its five corrections (R719, R721), and W504 stops the oxygen panel calling Venus's atmosphere a vacuum
-  (R729, R730); full local builds and all 1,886 GameTests passed on both branches. Thirteen first-connection
-  timeouts, six of them in round 06, match KI-V180-CONNECT-01 and stay pending findings. W484's harness fix (R707)
-  stops a rejected command from satisfying a check. W489 found that round 06's other failures were the test scenes'
-  own faults (R715). The unreached rows and the reruns continue in round 07 (W492) on the night of 2026-11-27.
-  [W500](../work/v1.8.0-root-queue/records/W500.md) prepared round 08 for the next night (R723, R724): a smoke launch of the empty baseline clients,
-  D03's unsupported-container fixture, the six fullscreen cells with [W494](../work/v1.8.0-root-queue/records/W494.md)'s pointer gate and the five
-  hull scenes, followed by round 07's carry-over. The 12 PresentMon steps run in rounds 09 and 10 (R728) with
-  [W491](../work/v1.8.0-root-queue/records/W491.md)'s captures, [W503](../work/v1.8.0-root-queue/records/W503.md)'s player-launched flights, all-model scene and split JEI sessions, and
-  the harness's baseline launches ([W498](../work/v1.8.0-root-queue/records/W498.md), [W501](../work/v1.8.0-root-queue/records/W501.md); R722, R727), which pair a vanilla world with
-  five of the seven candidate worlds and add a JEI-only client.
+  decision after phase 2's first full pass (R716): W493 fixed P01 to P11 (P12 and P13 need no change, as W487
+  advises), [W497](../work/v1.8.0-root-queue/records/W497.md) reviewed them and W493 applied its five corrections (R719, R721); W504 stops the
+  oxygen panel calling Venus's atmosphere a vacuum (R729, R730); and W507 fixes round 07's four new defects, JEI's
+  Centrifuge layout, fluid slots and Precision Assembler title and the unformed Observatory's survey buttons,
+  reviewed by [W511](../work/v1.8.0-root-queue/records/W511.md) (R732, R736 to R738). Full local builds and all 1,886 GameTests passed on each
+  branch's fixes. Nineteen first-connection timeouts, six each in rounds 06 and 07, match KI-V180-CONNECT-01 and
+  stay pending findings. W484's harness fix (R707) stops a rejected command from satisfying a check. W489 and
+  [W506](../work/v1.8.0-root-queue/records/W506.md) found that the other failures of rounds 06 and 07 were the test scenes' own faults (R715,
+  R733). Round 08 runs on the night of 2026-11-28 (W508): [W500](../work/v1.8.0-root-queue/records/W500.md) and W506 prepared a smoke launch of
+  the empty baseline clients, D03's unsupported-container fixture, the six fullscreen cells with
+  [W494](../work/v1.8.0-root-queue/records/W494.md)'s pointer gate and the five hull scenes, followed by round 07's carry-over with W506's
+  corrections (R723, R724, R733). The 12 PresentMon steps run in rounds 09 and 10 (R728) with
+  [W491](../work/v1.8.0-root-queue/records/W491.md)'s captures, [W503](../work/v1.8.0-root-queue/records/W503.md)'s player-launched flights, all-model scene and split JEI
+  sessions, and the harness's baseline launches ([W498](../work/v1.8.0-root-queue/records/W498.md), [W501](../work/v1.8.0-root-queue/records/W501.md); R722, R727), which pair a
+  vanilla world with five of the seven candidate worlds and add a JEI-only client. [W509](../work/v1.8.0-root-queue/records/W509.md)'s recaptures
+  of four open steps join them, as amended after [W510](../work/v1.8.0-root-queue/records/W510.md)'s review (R734, R735).
 
 ### Campaign coverage and performance
 
