@@ -24,7 +24,7 @@ final class PrecisionAssemblerJeiCategory extends AbstractRecipeCategory<Precisi
     private final IDrawable arrow;
 
     PrecisionAssemblerJeiCategory(IGuiHelper helper) {
-        super(TYPE, Component.translatable("menu.advancedrocketrycommunity.precision_assembler"),
+        super(TYPE, Component.translatable("jei.advancedrocketrycommunity.precision_assembler"),
                 helper.createDrawableItemLike(ModItems.PRECISION_ASSEMBLER.get()), 190, 61);
         arrow = helper.getRecipeArrow();
     }

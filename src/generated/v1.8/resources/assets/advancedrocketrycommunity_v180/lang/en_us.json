@@ -303,6 +303,7 @@
   "itemGroup.advancedrocketrycommunity.materials": "Advanced Rocketry: Materials",
   "jei.advancedrocketrycommunity.chance": "Independent chance: %s%%; at most four successes",
   "jei.advancedrocketrycommunity.iridium_cap": "Built-in order: effective iridium chance 0.25%%",
+  "jei.advancedrocketrycommunity.precision_assembler": "Precision Assembler",
   "jei.advancedrocketrycommunity.retained": "Retained in its input slot",
   "jei.advancedrocketrycommunity.rocket_satellite_bay": "Holds one satellite package owned by the bay's owner. Hoppers and droppers can insert and extract it, except while a rocket assembly or disassembly holds the bay. In a flying rocket the package is locked. Deployment in orbit is not available in this version. Breaking or blowing up the bay drops the bay and its package once each.",
   "jei.advancedrocketrycommunity.small_plate_press.redstone": "Redstone pulse",

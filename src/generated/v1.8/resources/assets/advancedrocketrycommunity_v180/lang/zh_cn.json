@@ -303,6 +303,7 @@
   "itemGroup.advancedrocketrycommunity.materials": "高级火箭：材料",
   "jei.advancedrocketrycommunity.chance": "独立概率：%s%%；最多四次成功",
   "jei.advancedrocketrycommunity.iridium_cap": "内置顺序下铱的实际概率：0.25%%",
+  "jei.advancedrocketrycommunity.precision_assembler": "精密组装机",
   "jei.advancedrocketrycommunity.retained": "在原输入槽中保留",
   "jei.advancedrocketrycommunity.rocket_satellite_bay": "放入一个属于卫星舱所有者的卫星包裹。漏斗和投掷器可以放入和取出包裹；火箭组装或拆解期间不可存取。卫星舱随火箭飞行时包裹被锁定。本版本尚不能在轨部署卫星。正常破坏或爆炸时掉落卫星舱和其中的包裹各一次。",
   "jei.advancedrocketrycommunity.small_plate_press.redstone": "红石脉冲",
