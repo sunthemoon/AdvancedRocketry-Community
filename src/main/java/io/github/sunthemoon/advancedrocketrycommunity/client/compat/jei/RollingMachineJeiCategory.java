@@ -40,7 +40,7 @@ final class RollingMachineJeiCategory extends AbstractRecipeCategory<RollingMach
                 .addItemStacks(view.itemInputs().get(0).alternatives());
         MachineRecipeView.FluidInput fluid = view.fluidInputs().get(0);
         builder.addInputSlot(33, 10).setStandardSlotBackground()
-                .setFluidRenderer(fluid.amount(), true, 16, 16)
+                .setFluidRenderer(fluid.amount(), false, 16, 16)
                 .addFluidStack(fluid.fluid(), fluid.amount());
         builder.addOutputSlot(118, 10).setStandardSlotBackground()
                 .addItemStack(view.itemOutputs().get(0));

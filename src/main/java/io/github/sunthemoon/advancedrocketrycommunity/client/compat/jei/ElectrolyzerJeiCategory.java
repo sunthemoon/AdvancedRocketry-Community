@@ -55,7 +55,7 @@ final class ElectrolyzerJeiCategory extends AbstractRecipeCategory<ElectrolyzerR
                 .addItemStacks(inputs);
         builder.addInputSlot(31, 10)
                 .setStandardSlotBackground()
-                .setFluidRenderer(recipe.spec().waterAmount(), true, 16, 16)
+                .setFluidRenderer(recipe.spec().waterAmount(), false, 16, 16)
                 .addFluidStack(recipe.fluid(), recipe.spec().waterAmount());
         builder.addOutputSlot(87, 10)
                 .setStandardSlotBackground()

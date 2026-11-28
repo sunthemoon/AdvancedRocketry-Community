@@ -63,12 +63,12 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
         }
         for (int index = 0; index < recipe.rows().fluidInputs().size(); index++) {
             var row = recipe.rows().fluidInputs().get(index);
-            builder.addInputSlot(30, 4 + index * 18).setStandardSlotBackground().setFluidRenderer(16_000, true, 16, 16)
+            builder.addInputSlot(30, 4 + index * 18).setStandardSlotBackground().setFluidRenderer(row.amount(), false, 16, 16)
                     .addFluidStack(BuiltInRegistries.FLUID.get(row.fluidId()), row.amount());
         }
         for (int index = 0; index < recipe.rows().fluidOutputs().size(); index++) {
             var row = recipe.rows().fluidOutputs().get(index);
-            builder.addOutputSlot(106, 4 + index * 18).setStandardSlotBackground().setFluidRenderer(16_000, true, 16, 16)
+            builder.addOutputSlot(106, 4 + index * 18).setStandardSlotBackground().setFluidRenderer(row.amount(), false, 16, 16)
                     .addFluidStack(BuiltInRegistries.FLUID.get(row.fluidId()), row.amount());
         }
         for (int index = 0; index < recipe.rows().chanceOutputs().size(); index++) {
