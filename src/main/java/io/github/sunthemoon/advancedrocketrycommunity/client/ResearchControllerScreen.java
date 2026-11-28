@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +32,22 @@ public final class ResearchControllerScreen extends AbstractContainerScreen<Rese
             }).bounds(leftPos + 10 + i % 3 * 88, topPos + 176 + i / 3 * 22, 84, 20).build();
             buttons.add(addRenderableWidget(button));
         }
+        updateButtons();
     }
     @Override protected void containerTick() {
         super.containerTick();
-        for (int i = 0; i < buttons.size(); i++) { buttons.get(i).active = menu.ownerRelation() == 1
-                && (i != 0 && i != 1 || !menu.processor()) && (i != 4 || menu.processor()); }
+        updateButtons();
+    }
+    private void updateButtons() {
+        for (int i = 0; i < buttons.size(); i++) {
+            buttons.get(i).active = actionEnabled(i, menu.ownerRelation(), menu.processor(), menu.status(), menu.diagnosticRole());
+        }
+    }
+    static boolean actionEnabled(int action, int ownerRelation, boolean processor, ResearchStatus status, int diagnosticRole) {
+        // No new formation flag is sent: the status and missing-cell diagnostic already come from the server.
+        boolean surveyAvailable = !processor && status != ResearchStatus.UNFORMED
+                && status != ResearchStatus.UNLOADED && diagnosticRole == 0;
+        return ownerRelation == 1 && (action != 0 && action != 1 || surveyAvailable) && (action != 4 || processor);
     }
     @Override protected void renderBg(GuiGraphics graphics, float partial, int mouseX, int mouseY) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFF314A50);
