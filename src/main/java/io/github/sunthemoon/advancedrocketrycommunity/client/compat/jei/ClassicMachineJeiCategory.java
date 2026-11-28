@@ -30,7 +30,8 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
     static final RecipeType<ClassicMachineRecipe> CENTRIFUGE = RecipeType.create(ModIdentity.MOD_ID, "centrifuging", ClassicMachineRecipe.class);
     ClassicMachineJeiCategory(IGuiHelper helper, RecipeType<ClassicMachineRecipe> type, String block, ItemLike catalyst) {
         super(type, Component.translatable("block.advancedrocketrycommunity." + block),
-                helper.createDrawableItemLike(catalyst), 156, type == CENTRIFUGE ? 192 : 104); arrow = helper.getRecipeArrow();
+                helper.createDrawableItemLike(catalyst), ClassicJeiLayout.WIDTH,
+                type == CENTRIFUGE ? ClassicJeiLayout.CENTRIFUGE_HEIGHT : ClassicJeiLayout.HEIGHT); arrow = helper.getRecipeArrow();
     }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ClassicMachineRecipe recipe, IFocusGroup focuses) {
         var alternatives = recipe.resolveInputs();
@@ -72,7 +73,7 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
         }
         for (int index = 0; index < recipe.rows().chanceOutputs().size(); index++) {
             var row = recipe.rows().chanceOutputs().get(index);
-            builder.addOutputSlot(4 + index % 4 * 36, 106 + index / 4 * 18).setStandardSlotBackground()
+            builder.addOutputSlot(ClassicJeiLayout.chanceX(index), ClassicJeiLayout.chanceY(index)).setStandardSlotBackground()
                     .addItemStack(new ItemStack(BuiltInRegistries.ITEM.get(row.itemId()), row.count()))
                     .addRichTooltipCallback((slot, tooltip) -> {
                         tooltip.add(Component.translatable("jei.advancedrocketrycommunity.chance", row.weight()));
@@ -85,7 +86,7 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
     @Override public void draw(ClassicMachineRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 63, 25);
         graphics.drawString(Minecraft.getInstance().font, recipe.rows().processingTicks() + " ticks / "
-                + recipe.rows().energyPerTick() + " FE/t", 4, 84, 0xFF555555, false);
+                + recipe.rows().energyPerTick() + " FE/t", 4, ClassicJeiLayout.costY(getRecipeType() == CENTRIFUGE), 0xFF555555, false);
     }
     @Override public ResourceLocation getRegistryName(ClassicMachineRecipe recipe) { return recipe.getId(); }
 }
