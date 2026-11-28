@@ -17,7 +17,7 @@ class JeiCategoryTitleTest {
             var language = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
             assertNotNull(language.get(KEY), locale);
             String title = language.get(KEY).getAsString();
-            assertEquals(locale.equals("en_us") ? "Precision Assembler" : "精密组装机", title);
+            assertEquals(locale.equals("en_us") ? "Precision Assembler" : "精密装配机", title);
             // Conservative default-font advances, with room for both title arrows at GUI scale 3.
             assertTrue(title.codePoints().map(c -> c >= 0x2E80 ? 9 : c == ' ' ? 4 : 6).sum() <= 120);
         }

@@ -147,7 +147,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         }
         add("jei." + NS + ".small_plate_press.redstone",
                 chinese ? "红石脉冲" : "Redstone pulse");
-        add("jei." + NS + ".precision_assembler", chinese ? "精密组装机" : "Precision Assembler");
+        add("jei." + NS + ".precision_assembler", chinese ? "精密装配机" : "Precision Assembler");
         // C15b surface blocks and biomes (ADR-063 section 5), with the legacy names where the legacy game had them.
         add("block." + NS + ".moon_turf", chinese ? "月面土" : "Moon Turf");
         add("block." + NS + ".dark_moon_turf", chinese ? "暗色月面土" : "Dark Moon Turf");
