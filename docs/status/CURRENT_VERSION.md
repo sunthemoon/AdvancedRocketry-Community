@@ -174,7 +174,7 @@ restart or real client; those need their own evidence.
   branch's fixes. Nineteen first-connection timeouts, six each in rounds 06 and 07, match KI-V180-CONNECT-01 and
   stay pending findings. W484's harness fix (R707) stops a rejected command from satisfying a check. W489 and
   [W506](../work/v1.8.0-root-queue/records/W506.md) found that the other failures of rounds 06 and 07 were the test scenes' own faults (R715,
-  R733). Round 08 runs on the night of 2026-11-28 (W508): [W500](../work/v1.8.0-root-queue/records/W500.md) and W506 prepared a smoke launch of
+  R733). Round 08 runs from 17:30 on 2026-11-28 to the next morning, because the owner freed the desktop early (W508, R741): [W500](../work/v1.8.0-root-queue/records/W500.md) and W506 prepared a smoke launch of
   the empty baseline clients, D03's unsupported-container fixture, the six fullscreen cells with
   [W494](../work/v1.8.0-root-queue/records/W494.md)'s pointer gate and the five hull scenes, followed by round 07's carry-over with W506's
   corrections (R723, R724, R733). The 12 PresentMon steps run in rounds 09 and 10 (R728) with

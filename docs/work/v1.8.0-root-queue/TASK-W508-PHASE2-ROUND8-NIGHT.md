@@ -6,20 +6,22 @@ Root: Claude. Date: 2026-11-28. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 |---|---|
 | Worktree | `D:/GitHub/arce-v180-w500`, on the new branch `codex/v1.8.0-w508` that Root created there from W506's commit `e82381bb2`. Round 08's tools are bound to this path; do not rebind them |
 | Branch note | This branch predates this task. Read it at its absolute path `D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-root-queue/TASK-W508-PHASE2-ROUND8-NIGHT.md`. In your record, link only to files that exist on this branch, and name this task as a code span |
-| Decision | Root decisions R724, R731 and R733 (QUEUE rows W500, W492, W506 and W508), under the owner's delegation of 2026-11-24 ([OWNER-DECISIONS-20261124](records/OWNER-DECISIONS-20261124.md)) |
+| Decision | Root decisions R724, R731, R733 and R741 (QUEUE rows W500, W492, W506 and W508), under the owner's delegation of 2026-11-24 ([OWNER-DECISIONS-20261124](records/OWNER-DECISIONS-20261124.md)), where the owner's words of 2026-11-28 that freed the desktop early are recorded |
 | Rules | Everything in [TASK W488](TASK-W488-PHASE2-ROUND6-NIGHT1.md) applies, except where this task changes it |
 | Sources | [W506](records/W506.md), [W500](records/W500.md) and round 08 under `D:/GitHub/ARCE-Task-Evidence/final-campaign/c8fa16e16/phase2/authoring-w500/round-08/`, identified by `w506/delivery-inputs.json`; read `w506/OPERATOR-RUNBOOK.md`, `w506/ATTRIBUTION.md` and W500's `OPERATOR-RUNBOOK.md` before starting |
 | Outputs | Outside Git: the night's evidence in `round-08/`, with your notes in `round-08/w508/`, sealed at the end with `round-08/SHA256SUMS.txt`. Tracked: the record `docs/work/v1.8.0-root-queue/records/W508.md` |
-| Window | Rows start from 23:30 on 2026-11-28 and not after 07:30 on 2026-11-29. The input deadline is 07:43; stop everything by 07:45 |
+| Window | **R741:** the owner freed the desktop early, so rows start from 17:30 on 2026-11-28, not 23:30, and not after 07:30 on 2026-11-29. The input deadline is 07:43; stop everything by 07:45. Where W506's runbook or earlier tasks say 23:30, R741 replaces it for this night |
 
 ## What is different from W492
 
 - **The package is W506's round 08.** It runs in place. Root checked every file against W506's inventory and reran
-  the checks below from this worktree at about 09:00. Change nothing before the first row.
+  the checks below from this worktree at about 09:00. At about 17:30 Root applied R741's window edit to eight
+  tool files (`r741/changes.json`, with preimages in `r741/preimage/`) and reran the checks with the same
+  results. Change nothing before the first row.
 - **The order (R724, R731).** A new block of about 173 minutes comes first: the baseline smoke, D03, the six
   fullscreen cells of B06, C06 and A13, and the five hulls. Round 07's carry-over follows: E06's Space and profile
   sessions, D06, C06's non-fullscreen sessions, I06, C07, E05 from session 3 and I08 last. W506 estimates 978.3
-  minutes against about 480. Rows not reached by 07:30 stay NOT_RUN for a later night. Do not reorder, skip or
+  minutes against about 840 from 17:30. Rows not reached by 07:30 stay NOT_RUN for a later night. Do not reorder, skip or
   shorten rows.
 - **The baseline smoke.** Its result is for Root's review in the morning. No frame-time capture runs tonight, so a
   failed or partial smoke does not stop the later rows: record it, then continue from D03 as W506's runbook says.
@@ -38,7 +40,8 @@ Root: Claude. Date: 2026-11-28. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 ## What to do
 
 1. **Before Java:**
-   - Run `python -B <round-08>/r733/verify_inputs.py`. It must report PASS. If it fails, stop and report: do not
+   - Run `python -B <round-08>/r741/verify_inputs.py`, which checks W506's inventory and R741's eight edits. It
+     must report PASS. If it fails, stop and report: do not
      run the night on inputs Root has not reviewed.
    - Check the JAR hash and the fixture seals with the runbook's preflight, free space above 10 GB on C and D, that
      no Java runs and that `D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm` is absent.
@@ -49,13 +52,15 @@ Root: Claude. Date: 2026-11-28. Read [WORKER-RULES](WORKER-RULES.md) first. You 
      - the harness tests `python -B -m unittest discover -s tests -p 'test_campaign_client*.py' -q` (194 tests).
 
      Root got exactly these results. A different result is a stop-and-report before Java.
-2. **Run the night** with the runbook's entry command and a new tag. Its own guards wait for 23:30.
+2. **Run the night** with the runbook's entry command and a new tag. Its guards permit rows from 17:30 (R741),
+   so it starts as soon as the checks pass. If the entry refuses only because it is still before 17:30, wait
+   until 17:30 and run the same command once more; that is not an operator fault.
 3. **When the runner stops before 07:30,** apply TASK W488 step 3 with R713's cap above.
 4. **Score each step on its own** (R690). Label captured visual-oracle steps P_PENDING, keep partial inputs NOT_RUN
    as `PARTIAL_INPUT_ONLY`, and do not judge frames yourself.
 5. **Collect and record** everything TASK W488 step 5 lists, with each row's minutes against W506's estimate.
 6. **After 07:45,** clean up as the runbook says and seal round 08 with `SHA256SUMS.txt`, covering W500's and
-   W506's inputs under `round-08/`, Root's `r733/` files, your `w508/` notes and the night's evidence.
+   W506's inputs under `round-08/`, Root's `r733/` and `r741/` files, your `w508/` notes and the night's evidence.
 
 ## Rules
 
