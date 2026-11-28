@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob.Phase;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,14 +41,17 @@ public final class ResearchControllerScreen extends AbstractContainerScreen<Rese
     }
     private void updateButtons() {
         for (int i = 0; i < buttons.size(); i++) {
-            buttons.get(i).active = actionEnabled(i, menu.ownerRelation(), menu.processor(), menu.status(), menu.diagnosticRole());
+            buttons.get(i).active = actionEnabled(i, menu.ownerRelation(), menu.processor(), menu.status(),
+                    menu.diagnosticRole(), menu.phaseCode());
         }
     }
-    static boolean actionEnabled(int action, int ownerRelation, boolean processor, ResearchStatus status, int diagnosticRole) {
+    static boolean actionEnabled(int action, int ownerRelation, boolean processor, ResearchStatus status, int diagnosticRole, int phaseCode) {
         // No new formation flag is sent: the status and missing-cell diagnostic already come from the server.
         boolean surveyAvailable = !processor && status != ResearchStatus.UNFORMED
                 && status != ResearchStatus.UNLOADED && diagnosticRole == 0;
-        return ownerRelation == 1 && (action != 0 && action != 1 || surveyAvailable) && (action != 4 || processor);
+        boolean cancelAvailable = !processor && phaseCode == Phase.ACTIVE.ordinal() + 1;
+        return ownerRelation == 1 && (action != 0 || surveyAvailable)
+                && (action != 1 || cancelAvailable) && (action != 4 || processor);
     }
     @Override protected void renderBg(GuiGraphics graphics, float partial, int mouseX, int mouseY) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFF314A50);
